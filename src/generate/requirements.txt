@@ -1,0 +1,7 @@
+# The Lambda Python runtime already ships boto3 + botocore, and the handler has
+# no other third-party dependencies (ULID and SHA-256 are stdlib). This file is
+# intentionally empty of packages so `sam build` produces a tiny artifact.
+#
+# If you ever pin a newer boto3 than the runtime provides (e.g. for a brand-new
+# Bedrock API field), add it here, e.g.:
+#   boto3==1.35.0

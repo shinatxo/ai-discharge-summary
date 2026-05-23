@@ -6,7 +6,11 @@ resolve_s3 = true
 s3_prefix = "discharge-audit"
 region = "eu-west-2"
 confirm_changeset = true
-capabilities = "CAPABILITY_IAM"
+# CAPABILITY_NAMED_IAM (not just CAPABILITY_IAM) because slice 2 creates an IAM
+# role with an explicit RoleName (discharge-audit-generate-fn-role). Named IAM
+# resources require the stronger acknowledgement, since a fixed name can collide
+# across stacks. (SAA: CAPABILITY_IAM vs CAPABILITY_NAMED_IAM.)
+capabilities = "CAPABILITY_NAMED_IAM"
 parameter_overrides = "Environment=\"demo\""
 image_repositories = []
 

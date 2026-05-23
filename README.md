@@ -2,7 +2,7 @@
 
 Turn a doctor's messy ward-round notes into a structured discharge summary, a GP letter, and a plain-English version for the patient — safely, with every output left as a **draft for a clinician to review and sign**.
 
-> **Status:** Phase 1 (Discovery & Validation). Portfolio / demonstration project. **Not a medical device; not deployed in clinical care.** All evaluation data is synthetic.
+> **Status:** Phase 1 (Discovery & Validation) substantively complete; **Phase 2 (Build) underway** — see [Build status](#build-status-phase-2). Portfolio / demonstration project. **Not a medical device; not deployed in clinical care.** All evaluation data is synthetic.
 
 ---
 
@@ -42,11 +42,30 @@ Bedrock          DynamoDB (audit log, KMS-CMK, hash-only — no PHI)
 S3 (generated documents, KMS-encrypted, signed-URL only, lifecycle → Glacier @ 90d)
 ```
 
-- **Single-region, eu-west-2 (London)** for all stateful resources; model inference pinned to the EU (on-demand in eu-west-2 where available, otherwise the EU geographic inference profile — never US/global). Region and inference profile are logged on every generation as residency evidence.
+- **Single-region, eu-west-2 (London)** for all stateful resources. Model **pinned to `anthropic.claude-sonnet-4-6`, invoked on-demand in eu-west-2** (ADR-001/003 rule 1 — both data-at-rest *and* inference stay UK-only; the EU geographic inference profile is retained only as a documented fallback, never US/global). Region and inference path are logged on every generation as residency evidence.
 - **Audit log:** one DynamoDB table, on-demand, KMS-CMK encrypted, `PK = USER#<cognito_sub>`, `SK = GEN#<timestamp>#<ulid>`. Stores hashes (`input_sha256`, per-output `output_sha256`), model version, output type, region, and inference profile — **never the clinical content**. The only mutable field is `draft → reviewed_at`; no `DeleteItem`; PITR + append-only stream.
 - **No fine-tuning.** Behaviour is shaped by an auditable system prompt (currently v0.5), which is preferable to opaque weights for a safety-critical draft.
 
 SAA-C03 services exercised (~70% of the syllabus): Lambda, API Gateway, DynamoDB, Cognito, S3 (encryption + lifecycle), KMS CMK, CloudFront, Route 53, IAM, CloudWatch, plus Bedrock.
+
+## Build status (Phase 2)
+
+The backend is being built in thin vertical slices, defined as infrastructure-as-code under [`infra/`](infra/) (AWS SAM / CloudFormation) with the function code under [`src/`](src/). Honest state of play:
+
+| Slice | What | Status |
+|-------|------|--------|
+| 1 | KMS CMK + hash-only DynamoDB audit table (ADR-002) — stack `discharge-audit`, eu-west-2 | **Deployed** |
+| 2 | Bedrock-calling `generate` Lambda + least-privilege execution role | **Built, deploy pending** |
+| 3 | DynamoDB Streams → S3 Object Lock (WORM) tamper-evidence ledger | Planned |
+| 4 | API Gateway + Cognito front door; React UI on CloudFront | Planned |
+
+**Slice 2 detail.** A Python 3.13 Lambda ([`src/generate/`](src/generate/)) calls Bedrock Converse on the pinned model, splits the combined output into the three parts, and writes the hash-only audit item from ADR-002 (write-once; no PHI in the table or logs). Its execution role is scoped to exactly three resources and nothing else:
+
+- the **audit table** — `dynamodb:PutItem`/`UpdateItem` only (no `DeleteItem`, no `Scan`);
+- the **CMK** — `kms:Decrypt`/`GenerateDataKey`/`DescribeKey`, constrained by a `kms:ViaService` condition so the key can only ever be used *through DynamoDB*, never for a standalone KMS call;
+- the **one pinned model ARN** — `bedrock:InvokeModel` on `…:foundation-model/anthropic.claude-sonnet-4-6` and no other model.
+
+Slice 1 was deployed as plain CloudFormation because the SAM transform macro needs `cloudformation:CreateChangeSet` on the Serverless transform, which the deploying IAM user initially lacked; that permission has since been granted and the transform is back in for slice 2.
 
 ## The interesting part: how it's evaluated
 
@@ -83,9 +102,9 @@ This project treats governance as a first-class deliverable, not an afterthought
 
 ## Roadmap
 
-- **Phase 1 (now):** problem definition, system prompt, evaluation harness, architecture decisions, governance — largely complete; clinician review in progress.
-- **Phase 2:** build the backend skeleton (API Gateway + Lambda + the DynamoDB audit table per ADR-002), wire the Bedrock call, add Cognito and the React frontend, deploy behind CloudFront with KMS.
-- **Open decisions:** pin the exact Claude model + version available on-demand in eu-west-2 at build time; choose the audit-log tamper-evidence mechanism (Streams → S3 Object Lock/WORM vs PITR-only).
+- **Phase 1:** problem definition, system prompt, evaluation harness, architecture decisions, governance — substantively complete; independent clinician review (Run 4) in progress (does not gate the build).
+- **Phase 2 (now):** build the backend in slices (see [Build status](#build-status-phase-2)) — audit foundation deployed, Bedrock Lambda built, then the WORM tamper-evidence ledger, then the API Gateway + Cognito front door and React frontend behind CloudFront.
+- **Phase-1 open decisions — all resolved (2026-05-23):** model pinned to `anthropic.claude-sonnet-4-6` on-demand in eu-west-2; tamper-evidence = DynamoDB Streams → S3 Object Lock (WORM); single combined prompt for all three outputs. See [`ADR-phase1.md`](docs/ADR-phase1.md).
 
 ## Disclaimer
 

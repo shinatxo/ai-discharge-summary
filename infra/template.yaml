@@ -1,14 +1,26 @@
 AWSTemplateFormatVersion: '2010-09-09'
-# NOTE: the SAM transform (AWS::Serverless-2016-10-09) is intentionally omitted for
-# this slice. It contains only plain CloudFormation resources (KMS + DynamoDB), so no
-# transform is needed. We re-add it when the Lambda arrives - at which point the
-# deploying principal must also be granted cloudformation:CreateChangeSet on
-# arn:aws:cloudformation:*:aws:transform/Serverless-2016-10-09.
+
+# The SAM transform is BACK for slice 2. A "transform" is a macro CloudFormation
+# runs server-side before deploying: it expands the shorthand AWS::Serverless::*
+# resources into the full-blown CloudFormation (a Serverless::Function becomes a
+# Lambda function + version + the plumbing). Slice 1 was plain CFN (KMS+DynamoDB)
+# so we stripped the transform out; the Lambda needs it again.
+#
+# GOTCHA (slice 1 history): expanding this transform requires the deploying
+# principal to hold cloudformation:CreateChangeSet on
+#   arn:aws:cloudformation:*:aws:transform/Serverless-2016-10-09
+# Shina's IAM user lacked that and the first SAM deploy failed. That permission
+# has since been granted, so the transform is safe to re-add.
+Transform: AWS::Serverless-2016-10-09
+
 Description: >
-  AI Discharge Summary Assistant - Phase 2 build slice 1.
-  Audit-log foundation: a customer-managed KMS key (CMK) plus the immutable,
-  hash-only DynamoDB audit table defined in ADR-002. No PHI is ever stored here -
-  only hashes of the input/outputs, who/when, and which model version was used.
+  AI Discharge Summary Assistant - Phase 2 build slice 2.
+  Audit-log foundation (slice 1): a customer-managed KMS key (CMK) plus the
+  immutable, hash-only DynamoDB audit table from ADR-002. Slice 2 adds the
+  Bedrock-calling generate Lambda and its least-privilege execution role, scoped
+  to exactly the audit table, the CMK (via DynamoDB only), and the one pinned
+  Bedrock model. No PHI is ever stored or logged - only hashes of the
+  input/outputs, who/when, and which model version was used.
 
 # -----------------------------------------------------------------------------
 # Parameters let one template serve multiple environments without code changes.
@@ -22,6 +34,16 @@ Parameters:
       - demo
       - prod
     Description: Deployment environment - drives naming and (later) WORM retention.
+
+  ModelId:
+    Type: String
+    Default: anthropic.claude-sonnet-4-6
+    Description: >
+      Bedrock foundation-model id, pinned per ADR-001. On-demand in eu-west-2
+      (ADR-003 rule 1 - both data-at-rest AND inference stay UK-only). This single
+      value is used twice: passed to the handler as BEDROCK_MODEL_ID, AND used to
+      build the model ARN that scopes the bedrock:InvokeModel permission, so the
+      function can invoke this model and no other.
 
 Resources:
 
@@ -111,9 +133,157 @@ Resources:
       # (or disable deletion protection on the table), otherwise the delete fails.
       DeletionProtectionEnabled: true
 
+  # ===========================================================================
+  # SLICE 2 - the Bedrock-calling Lambda + its least-privilege execution role.
+  # ===========================================================================
+
+  # ---------------------------------------------------------------------------
+  # 3) The function's log group, declared explicitly (not auto-created).
+  #
+  # If we let CloudWatch auto-create the log group on first invoke, we couldn't
+  # set retention or scope the role to it ahead of time. Declaring it lets us:
+  #   - cap retention (logs are NOT the system of record - the audit table is),
+  #   - grant the function logs perms on THIS group only (see role below).
+  # The handler never logs note content, so default (AWS-managed key) log
+  # encryption is acceptable; CMK-encrypting logs is a documented future
+  # hardening (it needs a logs.${region}.amazonaws.com statement in the key
+  # policy, out of scope for this slice).
+  # ---------------------------------------------------------------------------
+  GenerateFunctionLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub "/aws/lambda/${AWS::StackName}-generate"
+      RetentionInDays: 30
+
+  # ---------------------------------------------------------------------------
+  # 4) Explicit, least-privilege execution role for the generate function.
+  #
+  # We write the role by hand (rather than letting SAM auto-generate one) so the
+  # blast radius is visible and reviewable in the template. The function can do
+  # EXACTLY four things, each scoped to a single resource ARN:
+  #   a) append audit items + the one review-flag update   (no Delete, no Scan)
+  #   b) use the CMK, but ONLY via DynamoDB                 (kms:ViaService guard)
+  #   c) invoke ONE Bedrock model                           (the pinned Sonnet)
+  #   d) write to its OWN log group                         (no logs:* wildcard)
+  #
+  # SAA: this is least privilege made concrete - identity-based policies whose
+  # Resource is a specific ARN (never "*"), plus a condition key that narrows
+  # *how* a permission may be used.
+  # ---------------------------------------------------------------------------
+  GenerateFunctionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub "${AWS::StackName}-generate-fn-role"
+      # Service-to-service trust: only the Lambda service may assume this role.
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        # (a) Audit table: append + the single review-transition update only.
+        #     Note the ABSENCE of DeleteItem / BatchWriteItem / Scan / Query -
+        #     that is ADR-002's write-once-then-flip-the-review-flag contract,
+        #     enforced at the IAM layer, not just in code.
+        - PolicyName: audit-table-write
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Sid: PutAndReviewTransitionOnly
+                Effect: Allow
+                Action:
+                  - dynamodb:PutItem
+                  - dynamodb:UpdateItem
+                Resource: !GetAtt AuditTable.Arn
+        # (b) CMK - usable ONLY when the call flows through DynamoDB.
+        #     DynamoDB actually performs at-rest encryption via a grant on its
+        #     own behalf, so the data-plane PutItem path does not strictly need
+        #     the caller to hold KMS perms. We grant tightly-scoped CMK access
+        #     anyway to match ADR-002's "scoped to the CMK" intent - and the
+        #     kms:ViaService condition guarantees this role can NEVER use the key
+        #     for a standalone/direct KMS call, only as part of a DynamoDB
+        #     request in this region. (SAA: condition keys narrow HOW, not just
+        #     WHAT.)
+        - PolicyName: cmk-via-dynamodb-only
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Sid: UseCmkViaDynamoDbOnly
+                Effect: Allow
+                Action:
+                  - kms:Decrypt
+                  - kms:GenerateDataKey
+                  - kms:DescribeKey
+                Resource: !GetAtt AuditKey.Arn
+                Condition:
+                  StringEquals:
+                    kms:ViaService: !Sub "dynamodb.${AWS::Region}.amazonaws.com"
+        # (c) Bedrock - invoke exactly the one pinned foundation model, no other.
+        #     Foundation-model ARNs have an EMPTY account field (arn:...:bedrock:
+        #     region::foundation-model/...) because the models are AWS-owned.
+        - PolicyName: bedrock-invoke-pinned-model
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Sid: InvokePinnedSonnetOnly
+                Effect: Allow
+                Action:
+                  - bedrock:InvokeModel
+                  - bedrock:InvokeModelWithResponseStream
+                Resource: !Sub "arn:${AWS::Partition}:bedrock:${AWS::Region}::foundation-model/${ModelId}"
+        # (d) Logs - this function's own log group, nothing else. We deliberately
+        #     omit logs:CreateLogGroup because the group is created above.
+        - PolicyName: own-log-group-only
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Sid: WriteOwnLogsOnly
+                Effect: Allow
+                Action:
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
+                Resource: !Sub "arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/${AWS::StackName}-generate:*"
+
+  # ---------------------------------------------------------------------------
+  # 5) The generate function itself (AWS::Serverless::Function - the shorthand
+  #    the SAM transform expands). It reads ward-round notes from the event,
+  #    calls Bedrock Converse on the pinned Sonnet model, splits the combined
+  #    output into PART A/B/C, and writes a hash-only audit item (ADR-002).
+  # ---------------------------------------------------------------------------
+  GenerateFunction:
+    Type: AWS::Serverless::Function
+    # Make sure the log group exists before the function (so the first invoke
+    # writes into our retention-capped group, not an auto-created one).
+    DependsOn: GenerateFunctionLogGroup
+    Properties:
+      FunctionName: !Sub "${AWS::StackName}-generate"
+      Description: >-
+        Drafts the discharge summary / GP letter / patient version via Bedrock
+        and writes a hash-only audit record. Stores/logs no PHI (ADR-002).
+      CodeUri: ../src/generate/
+      Handler: app.lambda_handler
+      Runtime: python3.13
+      # Graviton/arm64 is ~20% cheaper per ms than x86 (SAA cost-optimisation),
+      # and boto3 is pure-Python so there's nothing arch-specific to worry about.
+      Architectures:
+        - arm64
+      MemorySize: 512
+      # Generating three outputs from one Bedrock call can take tens of seconds.
+      Timeout: 60
+      # Use OUR hand-written role, not a SAM-generated one (least privilege).
+      Role: !GetAtt GenerateFunctionRole.Arn
+      Environment:
+        Variables:
+          AUDIT_TABLE_NAME: !Ref AuditTable
+          BEDROCK_MODEL_ID: !Ref ModelId
+          # Bumped only when the audit item shape changes (ADR-002 schema_version).
+          SCHEMA_VERSION: '1'
+
 # -----------------------------------------------------------------------------
-# Outputs surface the identifiers the next slice (the Lambda) will need, and
-# double as residency/governance evidence.
+# Outputs surface the identifiers each slice needs, and double as
+# residency/governance evidence.
 # -----------------------------------------------------------------------------
 Outputs:
   AuditTableName:
@@ -128,3 +298,15 @@ Outputs:
   AuditKeyArn:
     Description: CMK ARN used for table encryption
     Value: !GetAtt AuditKey.Arn
+  GenerateFunctionName:
+    Description: Name of the Bedrock-calling generate Lambda (use with `aws lambda invoke`)
+    Value: !Ref GenerateFunction
+  GenerateFunctionArn:
+    Description: ARN of the generate Lambda
+    Value: !GetAtt GenerateFunction.Arn
+  GenerateFunctionRoleArn:
+    Description: Least-privilege execution role ARN (table + CMK-via-DDB + one model)
+    Value: !GetAtt GenerateFunctionRole.Arn
+  BedrockModelArn:
+    Description: The single Bedrock model ARN the function is permitted to invoke
+    Value: !Sub "arn:${AWS::Partition}:bedrock:${AWS::Region}::foundation-model/${ModelId}"

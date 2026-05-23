@@ -1,0 +1,8 @@
+node_modules/
+*.tmp
+.~lock.*#
+.DS_Store
+.claude/
+
+# SAM build artifacts
+.aws-sam/

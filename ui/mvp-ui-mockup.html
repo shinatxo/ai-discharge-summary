@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Discharge Summary Assistant — MVP UI Mockup</title>
+<style>
+  :root{
+    --bg:#f4f6f8; --panel:#ffffff; --ink:#1c2530; --muted:#5b6b7b;
+    --line:#dce3ea; --brand:#005eb8; /* NHS blue */ --brand-dark:#003d78;
+    --ok:#007f3b; --warn:#a35200; --warnbg:#fff4e5; --draft:#c8102e;
+    --tabbg:#eef2f6;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:Arial,Helvetica,sans-serif;background:var(--bg);color:var(--ink);font-size:15px;line-height:1.45}
+  header{background:var(--brand);color:#fff;padding:14px 22px;display:flex;align-items:center;gap:12px}
+  header .logo{font-weight:bold;background:#fff;color:var(--brand);padding:4px 10px;border-radius:3px;letter-spacing:.5px}
+  header h1{font-size:17px;margin:0;font-weight:600}
+  header .env{margin-left:auto;font-size:12px;background:var(--brand-dark);padding:4px 9px;border-radius:3px}
+  .wrap{max-width:1180px;margin:18px auto;padding:0 18px;display:grid;grid-template-columns:1fr 1fr;gap:18px}
+  @media(max-width:900px){.wrap{grid-template-columns:1fr}}
+  .panel{background:var(--panel);border:1px solid var(--line);border-radius:8px;overflow:hidden;display:flex;flex-direction:column}
+  .panel h2{font-size:13px;text-transform:uppercase;letter-spacing:.6px;color:var(--muted);margin:0;padding:13px 16px;border-bottom:1px solid var(--line);background:#fafbfc}
+  .body{padding:16px}
+  textarea{width:100%;min-height:340px;border:1px solid var(--line);border-radius:6px;padding:12px;font-family:Menlo,Consolas,monospace;font-size:13px;resize:vertical;color:var(--ink)}
+  .row{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:12px}
+  button{font-family:inherit;font-size:14px;border-radius:6px;padding:10px 16px;border:1px solid transparent;cursor:pointer}
+  .btn-primary{background:var(--brand);color:#fff}
+  .btn-primary:hover{background:var(--brand-dark)}
+  .btn-ghost{background:#fff;color:var(--brand);border-color:var(--brand)}
+  .btn-ghost:hover{background:#f0f6fc}
+  .btn-disabled{background:#e7ebef;color:#9aa7b3;border-color:var(--line);cursor:not-allowed}
+  .hint{font-size:12px;color:var(--muted);margin-top:8px}
+  /* tabs */
+  .tabs{display:flex;border-bottom:1px solid var(--line);background:var(--tabbg)}
+  .tab{padding:11px 16px;font-size:13px;cursor:pointer;border-right:1px solid var(--line);color:var(--muted);position:relative;white-space:nowrap}
+  .tab.active{background:#fff;color:var(--brand);font-weight:600}
+  .tab.active::after{content:"";position:absolute;left:0;right:0;bottom:-1px;height:2px;background:var(--brand)}
+  .output{padding:16px;min-height:300px;white-space:pre-wrap;font-family:Menlo,Consolas,monospace;font-size:12.5px;position:relative}
+  .draft-flag{display:inline-block;border:1px dashed var(--draft);color:var(--draft);font-size:10.5px;letter-spacing:1px;padding:2px 7px;border-radius:3px;margin-bottom:12px;text-transform:uppercase;font-family:Arial}
+  .gate{margin-top:4px;padding:14px 16px;background:var(--warnbg);border-top:1px solid #f0d9b8}
+  .gate label{display:flex;gap:10px;align-items:flex-start;font-size:13.5px;cursor:pointer}
+  .gate input{margin-top:2px;width:17px;height:17px}
+  .gate .sub{color:var(--warn);font-size:12px;margin-top:6px;margin-left:27px}
+  .actions{display:flex;gap:10px;padding:14px 16px;border-top:1px solid var(--line);align-items:center;flex-wrap:wrap}
+  .meta{font-size:11.5px;color:var(--muted);margin-left:auto;text-align:right;line-height:1.5}
+  .pill{display:inline-block;font-size:11px;padding:2px 8px;border-radius:20px;background:#eaf1f8;color:var(--brand);margin-left:6px}
+  .callout{font-size:12px;color:var(--muted);background:#f0f6fc;border:1px solid #d6e6f5;border-radius:6px;padding:10px 12px;margin:14px 18px 0}
+  .legend{max-width:1180px;margin:6px auto 26px;padding:0 18px;font-size:12px;color:var(--muted)}
+  .legend b{color:var(--ink)}
+</style>
+</head>
+<body>
+<header>
+  <span class="logo">NHS</span>
+  <h1>Discharge Summary Assistant</h1>
+  <span class="env">DEMO · not for clinical use</span>
+</header>
+
+<div class="callout">
+  <b>MVP UI mockup (Phase 1).</b> Wireframe for click-through review only — the output text is illustrative and no model is called. It demonstrates the four required interactions: input box, three output tabs, the "I have reviewed this" download gate, and regenerate.
+</div>
+
+<div class="wrap">
+  <!-- INPUT -->
+  <section class="panel">
+    <h2>1 · Clinical notes (input)</h2>
+    <div class="body">
+      <textarea id="notes" placeholder="Paste ward-round notes here…">Day 1 (12/05) 82F via ED. PC: central chest pain + SOB on exertion x2/7.
+PMH: HFrEF (EF 35%), CKD 3b, T2DM, HTN, prev MI 2019.
+DH: ramipril 5mg OD, bisoprolol 5mg OD, furosemide 40mg OD, metformin 1g BD, atorvastatin 80mg ON, aspirin 75mg OD. NKDA.
+... (see eval scenario 1) ...</textarea>
+      <div class="row">
+        <button class="btn-primary" onclick="generate()">Generate drafts</button>
+        <button class="btn-ghost" onclick="clearNotes()">Clear</button>
+        <span class="hint">Input is hashed for the audit log — raw clinical text is never stored.</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- OUTPUT -->
+  <section class="panel">
+    <h2>2 · Generated drafts (output)</h2>
+    <div class="tabs" id="tabs">
+      <div class="tab active" data-tab="summary" onclick="switchTab('summary')">Discharge summary</div>
+      <div class="tab" data-tab="gp" onclick="switchTab('gp')">GP letter</div>
+      <div class="tab" data-tab="patient" onclick="switchTab('patient')">Patient version</div>
+    </div>
+
+    <div class="output" id="output">
+      <span class="draft-flag">Draft · unreviewed</span>
+      <div id="outtext">Press <b>Generate drafts</b> to populate all three outputs.</div>
+    </div>
+
+    <!-- Human-in-the-loop gate -->
+    <div class="gate">
+      <label>
+        <input type="checkbox" id="reviewed" onchange="updateGate()">
+        <span><b>I have reviewed and edited this output.</b> I confirm it is clinically accurate and I take responsibility as the signing clinician.</span>
+      </label>
+      <div class="sub">Download stays locked until this is ticked. Each draft is marked <code>draft=true</code> in the audit log until confirmed.</div>
+    </div>
+
+    <div class="actions">
+      <button class="btn-ghost" id="regenBtn" onclick="regenerate()" disabled>↻ Regenerate this tab</button>
+      <button class="btn-disabled" id="downloadBtn" onclick="download()" disabled>Download PDF</button>
+      <div class="meta" id="meta">No generation yet</div>
+    </div>
+  </section>
+</div>
+
+<div class="legend">
+  <b>Interactions demonstrated:</b> input box · three output tabs (summary / GP letter / patient version) · per-tab regenerate · "I have reviewed this" gate that unlocks download · draft watermark + audit metadata. &nbsp;Ticking review applies to the <i>currently shown</i> tab; switching tabs resets the gate so each output is reviewed on its own.
+</div>
+
+<script>
+  const drafts = {
+    summary: `DISCHARGE SUMMARY\n\nPatient: Margaret Owusu | DOB: 03/08/1943 (82y) | NHS No: 123 456 7890\nAdmitted: 12/05/2026 | Discharged: 16/05/2026\nSpecialty: Cardiology / General Medicine\n\nDIAGNOSIS\nPrimary: NSTEMI\nSecondary: Severe 3-vessel disease — not for revascularisation; HFrEF (EF 35%); CKD 3b; T2DM; HTN; previous MI (2019)\n\nRESUSCITATION STATUS\nDNACPR. *** CHANGED DURING ADMISSION *** Initially for resuscitation; DNACPR documented 14/05/2026 by Dr Patel after angiogram findings + MDT + family agreement.\n\nMEDICATIONS ON DISCHARGE\n- Aspirin 75mg OD (continued)\n- Ticagrelor 90mg BD (NEW)\n- Bisoprolol 7.5mg OD (INCREASED from 5mg)\n- Isosorbide mononitrate 30mg OD (NEW)\n- Ramipril 5mg OD (continued) ...`,
+    gp: `Dear GP,\n\nRe: Margaret Owusu, DOB 03/08/1943, NHS 123 456 7890\nAdmitted 12/05/2026, discharged 16/05/2026.\n\nThank you for taking over the care of this 82-year-old lady who was admitted with an NSTEMI. Coronary angiography showed severe three-vessel disease not suitable for revascularisation; she is being managed medically following MDT discussion.\n\nResuscitation status: a DNACPR decision was made and agreed with the patient and family on 14/05/2026.\n\nActions requested of you:\n- Monitor renal function (creatinine 142 at discharge, peaked 168).\n- Uptitrate ACE inhibitor as tolerated.\n\nMedication changes are detailed in the summary (ticagrelor and ISMN started; bisoprolol increased to 7.5mg). Cardiology will review in 6 weeks.\n\nYours sincerely,\n[Clinician name, grade]`,
+    patient: `Your hospital stay — a summary for you\n\nWhy you came in\nYou had chest pain and breathlessness. Tests showed you had a heart attack.\n\nWhat we found and did\nA special X-ray of your heart showed narrowing in your heart's blood vessels. The heart team decided the best treatment for you is medicine, not an operation.\n\nYour medicines\nWe have started two new medicines and changed the dose of one. Please take them every day. A full list is on your medicine sheet.\n\nWhat happens next\nThe heart clinic will see you in about 6 weeks. A heart rehab team will also contact you.\n\nWhen to get help\nCall 999 if you have chest pain that does not go away, or you feel very breathless.\n\n(Reading level target: grade 8 or below.)`
+  };
+  const modelVersion = "anthropic.claude-3-5-sonnet (eu geo profile)";
+  let current = "summary";
+  let generated = false;
+  let reviewedTabs = {summary:false, gp:false, patient:false};
+
+  function generate(){
+    generated = true;
+    reviewedTabs = {summary:false, gp:false, patient:false};
+    render();
+    stamp();
+  }
+  function regenerate(){
+    if(!generated) return;
+    reviewedTabs[current] = false;
+    document.getElementById('reviewed').checked = false;
+    render();
+    stamp(true);
+  }
+  function switchTab(t){
+    current = t;
+    document.querySelectorAll('.tab').forEach(el=>el.classList.toggle('active', el.dataset.tab===t));
+    render();
+  }
+  function render(){
+    const txt = generated ? drafts[current] : "Press <b>Generate drafts</b> to populate all three outputs.";
+    const flag = reviewedTabs[current]
+      ? '<span class="draft-flag" style="border-color:var(--ok);color:var(--ok)">Reviewed · ready to sign</span>'
+      : '<span class="draft-flag">Draft · unreviewed</span>';
+    document.getElementById('output').innerHTML = (generated?flag:'') + '<div id="outtext">'+txt+'</div>';
+    document.getElementById('reviewed').checked = reviewedTabs[current];
+    document.getElementById('regenBtn').disabled = !generated;
+    updateGate();
+  }
+  function updateGate(){
+    const checked = document.getElementById('reviewed').checked;
+    reviewedTabs[current] = checked && generated;
+    const dl = document.getElementById('downloadBtn');
+    if(reviewedTabs[current]){
+      dl.disabled = false; dl.className = "btn-primary";
+    } else {
+      dl.disabled = true; dl.className = "btn-disabled";
+    }
+  }
+  function download(){
+    if(!reviewedTabs[current]) return;
+    alert("PDF download (mock).\\nAudit log entry written: draft=false, reviewed_by=<clinician>, "+modelVersion+".");
+  }
+  function clearNotes(){ document.getElementById('notes').value=''; }
+  function stamp(regen){
+    const now = new Date().toLocaleTimeString();
+    document.getElementById('meta').innerHTML =
+      (regen?'Regenerated ':'Generated ')+now+'<br>model: '+modelVersion+'<span class="pill">draft</span>';
+  }
+  render();
+</script>
+</body>
+</html>

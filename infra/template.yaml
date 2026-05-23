@@ -1,0 +1,130 @@
+AWSTemplateFormatVersion: '2010-09-09'
+# NOTE: the SAM transform (AWS::Serverless-2016-10-09) is intentionally omitted for
+# this slice. It contains only plain CloudFormation resources (KMS + DynamoDB), so no
+# transform is needed. We re-add it when the Lambda arrives - at which point the
+# deploying principal must also be granted cloudformation:CreateChangeSet on
+# arn:aws:cloudformation:*:aws:transform/Serverless-2016-10-09.
+Description: >
+  AI Discharge Summary Assistant - Phase 2 build slice 1.
+  Audit-log foundation: a customer-managed KMS key (CMK) plus the immutable,
+  hash-only DynamoDB audit table defined in ADR-002. No PHI is ever stored here -
+  only hashes of the input/outputs, who/when, and which model version was used.
+
+# -----------------------------------------------------------------------------
+# Parameters let one template serve multiple environments without code changes.
+# (SAA: parameters are how a single CloudFormation template stays reusable.)
+# -----------------------------------------------------------------------------
+Parameters:
+  Environment:
+    Type: String
+    Default: demo
+    AllowedValues:
+      - demo
+      - prod
+    Description: Deployment environment - drives naming and (later) WORM retention.
+
+Resources:
+
+  # ---------------------------------------------------------------------------
+  # 1) Customer-managed KMS key (CMK) for encrypting the audit table at rest.
+  #
+  # ADR-002 requires a CMK rather than the default AWS-owned key, because we want:
+  #   - control over the key policy (who can use/manage it),
+  #   - automatic annual rotation (a CMK-only feature), and
+  #   - a CloudTrail record of every encrypt/decrypt call (auditability).
+  # ---------------------------------------------------------------------------
+  AuditKey:
+    Type: AWS::KMS::Key
+    Properties:
+      Description: !Sub "CMK for the discharge-summary audit log (${Environment})"
+      EnableKeyRotation: true
+      KeyPolicy:
+        Version: '2012-10-17'
+        Statement:
+          # The "root" statement delegates key control to this account's IAM
+          # policies. It does NOT grant anyone implicit access to the data -
+          # principals still need explicit kms permissions in their own policy.
+          - Sid: EnableIAMUserPermissions
+            Effect: Allow
+            Principal:
+              AWS: !Sub "arn:aws:iam::${AWS::AccountId}:root"
+            Action: "kms:*"
+            Resource: "*"
+
+  # A friendly alias so we reference the key by name, not by raw key id.
+  AuditKeyAlias:
+    Type: AWS::KMS::Alias
+    Properties:
+      AliasName: !Sub "alias/${AWS::StackName}-audit"
+      TargetKeyId: !Ref AuditKey
+
+  # ---------------------------------------------------------------------------
+  # 2) The audit table (ADR-002): hash-only and immutable by design.
+  #    PK = USER#<cognito_sub>          (partition by clinician)
+  #    SK = GEN#<ISO8601_timestamp>#<ulid>  (sortable, unique per generation)
+  #
+  # Only the key attributes are declared below. DynamoDB is schemaless for every
+  # other attribute (input_sha256, output_sha256, model_version, draft, etc.),
+  # so we do NOT predeclare them - they are written at item-put time.
+  # ---------------------------------------------------------------------------
+  AuditTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: !Sub "${AWS::StackName}-audit"
+
+      # On-demand capacity: pay per request, no capacity planning. Ideal for the
+      # spiky, low-volume traffic of a demo. (SAA: PAY_PER_REQUEST vs PROVISIONED.)
+      BillingMode: PAY_PER_REQUEST
+
+      AttributeDefinitions:
+        - AttributeName: PK
+          AttributeType: S
+        - AttributeName: SK
+          AttributeType: S
+      KeySchema:
+        - AttributeName: PK
+          KeyType: HASH      # partition key
+        - AttributeName: SK
+          KeyType: RANGE     # sort key
+
+      # Encryption at rest with our CMK (not the default AWS-owned key).
+      SSESpecification:
+        SSEEnabled: true
+        SSEType: KMS
+        KMSMasterKeyId: !Ref AuditKey
+
+      # Point-in-Time Recovery: continuous backup, restore to any second in the
+      # last 35 days. This is our OPERATIONAL RECOVERY net (per ADR-002) - it is
+      # NOT the tamper-evidence control. Immutability comes from the S3 Object
+      # Lock (WORM) ledger fed by the stream below, built in a later slice.
+      PointInTimeRecoverySpecification:
+        PointInTimeRecoveryEnabled: true
+
+      # DynamoDB Streams: emits a change record on every write. A later slice
+      # consumes this stream and writes each event to an S3 Object Lock bucket -
+      # the append-only, tamper-evident audit ledger from ADR-002.
+      StreamSpecification:
+        StreamViewType: NEW_AND_OLD_IMAGES
+
+      # Guard against accidental deletion of the whole table.
+      # NOTE: to tear the stack down you must first set this to false and redeploy
+      # (or disable deletion protection on the table), otherwise the delete fails.
+      DeletionProtectionEnabled: true
+
+# -----------------------------------------------------------------------------
+# Outputs surface the identifiers the next slice (the Lambda) will need, and
+# double as residency/governance evidence.
+# -----------------------------------------------------------------------------
+Outputs:
+  AuditTableName:
+    Description: DynamoDB audit table name
+    Value: !Ref AuditTable
+  AuditTableArn:
+    Description: Audit table ARN (scope the Lambda's IAM policy to this)
+    Value: !GetAtt AuditTable.Arn
+  AuditTableStreamArn:
+    Description: Stream ARN - feeds the future tamper-evidence (WORM) consumer
+    Value: !GetAtt AuditTable.StreamArn
+  AuditKeyArn:
+    Description: CMK ARN used for table encryption
+    Value: !GetAtt AuditKey.Arn

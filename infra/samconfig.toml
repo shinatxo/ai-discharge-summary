@@ -1,0 +1,14 @@
+version = 0.1
+
+[default.deploy.parameters]
+stack_name = "discharge-audit"
+resolve_s3 = true
+s3_prefix = "discharge-audit"
+region = "eu-west-2"
+confirm_changeset = true
+capabilities = "CAPABILITY_IAM"
+parameter_overrides = "Environment=\"demo\""
+image_repositories = []
+
+[default.global.parameters]
+region = "eu-west-2"

@@ -1,0 +1,6 @@
+# The Lambda Python runtime already ships boto3 + botocore, and the ledger
+# handler has no other third-party dependencies (json/hashlib/datetime are
+# stdlib). Intentionally empty of packages so the packaged artifact stays tiny.
+#
+# If you ever need a newer boto3 than the runtime provides, pin it here, e.g.:
+#   boto3==1.35.0

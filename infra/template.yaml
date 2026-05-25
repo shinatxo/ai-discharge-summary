@@ -15,13 +15,16 @@ AWSTemplateFormatVersion: '2010-09-09'
 # See the README "Build status" section for the full story.
 
 Description: >
-  AI Discharge Summary Assistant - Phase 2 build slice 2.
+  AI Discharge Summary Assistant - Phase 2 build slice 3.
   Audit-log foundation (slice 1): a customer-managed KMS key (CMK) plus the
   immutable, hash-only DynamoDB audit table from ADR-002. Slice 2 adds the
   Bedrock-calling generate Lambda and its least-privilege execution role, scoped
   to exactly the audit table, the CMK (via DynamoDB only), and the one pinned
-  Bedrock model. No PHI is ever stored or logged - only hashes of the
-  input/outputs, who/when, and which model version was used.
+  Bedrock model. Slice 3 adds the tamper-evidence ledger: an S3 Object Lock
+  (WORM) bucket plus a stream-consumer Lambda that copies every audit-table
+  change event into it, immutably (Governance mode in demo, Compliance mode in
+  prod). No PHI is ever stored or logged - only hashes of the input/outputs,
+  who/when, and which model version was used.
 
 # -----------------------------------------------------------------------------
 # Parameters let one template serve multiple environments without code changes.
@@ -45,6 +48,29 @@ Parameters:
       value is used twice: passed to the handler as BEDROCK_MODEL_ID, AND used to
       build the model ARN that scopes the bedrock:InvokeModel permission, so the
       function can invoke this model and no other.
+
+  LedgerRetentionDays:
+    Type: Number
+    Default: 1
+    MinValue: 1
+    Description: >
+      S3 Object Lock DEFAULT retention, in days, applied to every object written
+      to the WORM ledger (slice 3). Demo uses 1 day (immutable but no long-term
+      storage lock-in). For prod, pass an NHS-required retention (e.g. years) -
+      and note that in prod the lock is COMPLIANCE mode (see the IsProd condition),
+      so objects are undeletable even by the account root until the period lapses.
+
+# -----------------------------------------------------------------------------
+# Conditions let one template behave differently per environment. Here the only
+# difference that matters for safety is the Object Lock MODE:
+#   - demo  -> GOVERNANCE (a principal holding s3:BypassGovernanceRetention can
+#              still delete early - convenient for tearing a demo down);
+#   - prod  -> COMPLIANCE (no one, not even root, can delete before expiry -
+#              the posture the THREAT_MODEL's "immutable audit log" claim needs).
+# (SAA: Conditions + Fn::If are how a single template stays environment-aware.)
+# -----------------------------------------------------------------------------
+Conditions:
+  IsProd: !Equals [!Ref Environment, prod]
 
 Resources:
 
@@ -289,6 +315,220 @@ Resources:
           # Bumped only when the audit item shape changes (ADR-002 schema_version).
           SCHEMA_VERSION: '1'
 
+  # ===========================================================================
+  # SLICE 3 - the tamper-evidence ledger.
+  #
+  #   AuditTable stream  ->  EventSourceMapping  ->  LedgerFunction  ->  LedgerBucket (WORM)
+  #
+  # The audit table is already write-once + no-DeleteItem (slices 1-2). This
+  # slice adds INDEPENDENT, immutable evidence: every change event is copied to
+  # an S3 Object Lock bucket where it cannot be altered or deleted for its
+  # retention period. That is what upgrades the THREAT_MODEL claim from "we log
+  # usage" to "we can prove the log was not tampered with".
+  # ===========================================================================
+
+  # ---------------------------------------------------------------------------
+  # 6) The WORM ledger bucket (ADR-002 tamper-evidence control).
+  #
+  # Object Lock is WORM (write-once-read-many): once an object version is
+  # written it is locked for a retention period and cannot be overwritten or
+  # deleted. Three things are mandatory for Object Lock and easy to get wrong:
+  #   - it can only be turned on at CREATE time (ObjectLockEnabled: true),
+  #   - it REQUIRES versioning to be enabled, and
+  #   - the lock applies per object VERSION.
+  # (SAA: S3 data protection - versioning, Object Lock, retention modes.)
+  # ---------------------------------------------------------------------------
+  LedgerBucket:
+    Type: AWS::S3::Bucket
+    # Keep the immutable ledger even if the stack is deleted - vanishing evidence
+    # would defeat the point. (For a demo teardown you must wait out the 1-day
+    # retention, then empty + delete the bucket by hand.)
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
+    Properties:
+      # Bucket names are GLOBAL; account id + region keep it unique and lowercase.
+      BucketName: !Sub "${AWS::StackName}-ledger-${AWS::AccountId}-${AWS::Region}"
+      ObjectLockEnabled: true
+      VersioningConfiguration:
+        Status: Enabled
+      ObjectLockConfiguration:
+        ObjectLockEnabled: Enabled
+        Rule:
+          DefaultRetention:
+            # GOVERNANCE in demo (deletable only with a special bypass perm we do
+            # NOT grant); COMPLIANCE in prod (undeletable even by root till expiry).
+            Mode: !If [IsProd, COMPLIANCE, GOVERNANCE]
+            Days: !Ref LedgerRetentionDays
+      # Encrypt at rest with the SAME customer-managed key as the audit table, so
+      # the whole audit domain sits under one auditable, rotating CMK. A Bucket
+      # Key collapses per-object KMS calls into one per key/refresh - cheaper and
+      # faster (SAA cost-optimisation) with no security trade-off.
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - BucketKeyEnabled: true
+            ServerSideEncryptionByDefault:
+              SSEAlgorithm: aws:kms
+              KMSMasterKeyID: !GetAtt AuditKey.Arn
+      # Belt-and-braces: this bucket is never public.
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+
+  # ---------------------------------------------------------------------------
+  # 7) The ledger function's own log group (same rationale as the generate one):
+  #    declared explicitly so we can cap retention and scope the role to it.
+  # ---------------------------------------------------------------------------
+  LedgerFunctionLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub "/aws/lambda/${AWS::StackName}-ledger"
+      RetentionInDays: 30
+
+  # ---------------------------------------------------------------------------
+  # 8) Least-privilege execution role for the ledger consumer. It can do exactly:
+  #    a) READ this table's stream      (the 3 stream-data actions, scoped to the
+  #       stream ARN; ListStreams cannot be resource-scoped so it stays minimal),
+  #    b) s3:PutObject to the ledger    (NO Get/Delete, NO PutObjectRetention,
+  #       NO BypassGovernanceRetention - the writer cannot weaken a lock),
+  #    c) use the CMK, but ONLY via S3  (kms:ViaService guard), to write SSE-KMS,
+  #    d) write to its OWN log group    (no logs:* wildcard).
+  # ---------------------------------------------------------------------------
+  LedgerFunctionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub "${AWS::StackName}-ledger-fn-role"
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        # (a) Read the audit table's stream. GetRecords/GetShardIterator/
+        #     DescribeStream are scoped to the one stream ARN. ListStreams does
+        #     not support resource-level scoping, so it is granted on "*" - the
+        #     standard, unavoidable exception for this action.
+        - PolicyName: read-audit-stream
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Sid: ReadThisTableStream
+                Effect: Allow
+                Action:
+                  - dynamodb:GetRecords
+                  - dynamodb:GetShardIterator
+                  - dynamodb:DescribeStream
+                Resource: !GetAtt AuditTable.StreamArn
+              - Sid: ListStreamsUnscoped
+                Effect: Allow
+                Action: dynamodb:ListStreams
+                Resource: "*"
+        # (b) Append to the ledger bucket - PutObject only. The conspicuous
+        #     absence of DeleteObject / PutObjectRetention / PutObjectLegalHold /
+        #     BypassGovernanceRetention is the point: even this writer cannot
+        #     shorten, lift, or bypass a lock it just created.
+        - PolicyName: ledger-put-only
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Sid: AppendToLedgerOnly
+                Effect: Allow
+                Action: s3:PutObject
+                Resource: !Sub "${LedgerBucket.Arn}/*"
+        # (c) CMK - used in TWO scoped contexts, never as a standalone KMS call:
+        #     (i)  via DynamoDB, to DECRYPT the stream records we read - the
+        #          audit table is CMK-encrypted, so its stream is encrypted too;
+        #     (ii) via S3, to write SSE-KMS objects into the ledger bucket.
+        #     Each statement pins kms:ViaService to one service, so this role can
+        #     only ever use the key as part of a DynamoDB or S3 request in-region.
+        - PolicyName: cmk-via-dynamodb-and-s3-only
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Sid: DecryptStreamViaDynamoDb
+                Effect: Allow
+                Action:
+                  - kms:Decrypt
+                Resource: !GetAtt AuditKey.Arn
+                Condition:
+                  StringEquals:
+                    kms:ViaService: !Sub "dynamodb.${AWS::Region}.amazonaws.com"
+              - Sid: WriteLedgerViaS3
+                Effect: Allow
+                Action:
+                  - kms:GenerateDataKey
+                  - kms:Decrypt
+                Resource: !GetAtt AuditKey.Arn
+                Condition:
+                  StringEquals:
+                    kms:ViaService: !Sub "s3.${AWS::Region}.amazonaws.com"
+        # (d) Logs - this function's own group only.
+        - PolicyName: own-log-group-only
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Sid: WriteOwnLogsOnly
+                Effect: Allow
+                Action:
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
+                Resource: !Sub "arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/${AWS::StackName}-ledger:*"
+
+  # ---------------------------------------------------------------------------
+  # 9) The ledger consumer function. Plain AWS::Lambda::Function (no SAM
+  #    transform). Reads stream records, writes each verbatim to the WORM bucket.
+  # ---------------------------------------------------------------------------
+  LedgerFunction:
+    Type: AWS::Lambda::Function
+    DependsOn: LedgerFunctionLogGroup
+    Properties:
+      FunctionName: !Sub "${AWS::StackName}-ledger"
+      Description: >-
+        Copies every audit-table DynamoDB-stream change event into the S3 Object
+        Lock (WORM) ledger. Hash-only data, no PHI (ADR-002 tamper-evidence).
+      Code: ../src/ledger
+      Handler: app.lambda_handler
+      Runtime: python3.13
+      Architectures:
+        - arm64
+      MemorySize: 256
+      Timeout: 30
+      Role: !GetAtt LedgerFunctionRole.Arn
+      LoggingConfig:
+        LogGroup: !Ref LedgerFunctionLogGroup
+      Environment:
+        Variables:
+          LEDGER_BUCKET_NAME: !Ref LedgerBucket
+          LEDGER_SCHEMA_VERSION: '1'
+
+  # ---------------------------------------------------------------------------
+  # 10) Wire the table's stream to the ledger function. The EventSourceMapping is
+  #     a poller AWS manages for us: it reads the stream and invokes the function
+  #     in batches. (SAA: event-driven, decoupled, poll-based integration - the
+  #     producer/DynamoDB never knows the consumer exists.)
+  # ---------------------------------------------------------------------------
+  LedgerStreamMapping:
+    Type: AWS::Lambda::EventSourceMapping
+    Properties:
+      EventSourceArn: !GetAtt AuditTable.StreamArn
+      FunctionName: !Ref LedgerFunction
+      # TRIM_HORIZON = start from the OLDEST record still in the stream, so we
+      # also capture events written before this mapping existed (e.g. the slice-2
+      # smoke-test row), not just new ones.
+      StartingPosition: TRIM_HORIZON
+      BatchSize: 10
+      MaximumBatchingWindowInSeconds: 5
+      # Report only the records that failed so Lambda redrives just those, not
+      # the whole batch (the handler returns {"batchItemFailures": [...]}).
+      FunctionResponseTypes:
+        - ReportBatchItemFailures
+      # Don't let one poison record wedge the shard forever.
+      MaximumRetryAttempts: 5
+      BisectBatchOnFunctionError: true
+
 # -----------------------------------------------------------------------------
 # Outputs surface the identifiers each slice needs, and double as
 # residency/governance evidence.
@@ -318,3 +558,18 @@ Outputs:
   BedrockModelArn:
     Description: The single Bedrock model ARN the function is permitted to invoke
     Value: !Sub "arn:${AWS::Partition}:bedrock:${AWS::Region}::foundation-model/${ModelId}"
+  LedgerBucketName:
+    Description: WORM (S3 Object Lock) tamper-evidence ledger bucket
+    Value: !Ref LedgerBucket
+  LedgerBucketArn:
+    Description: Ledger bucket ARN (scope the ledger Lambda's PutObject to this)
+    Value: !GetAtt LedgerBucket.Arn
+  LedgerFunctionName:
+    Description: Name of the DynamoDB-stream -> WORM ledger consumer Lambda
+    Value: !Ref LedgerFunction
+  LedgerFunctionArn:
+    Description: ARN of the ledger consumer Lambda
+    Value: !GetAtt LedgerFunction.Arn
+  LedgerFunctionRoleArn:
+    Description: Least-privilege ledger role ARN (stream-read + S3 PutObject + CMK-via-S3)
+    Value: !GetAtt LedgerFunctionRole.Arn

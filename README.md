@@ -50,13 +50,13 @@ SAA-C03 services exercised (~70% of the syllabus): Lambda, API Gateway, DynamoDB
 
 ## Build status (Phase 2)
 
-The backend is being built in thin vertical slices, defined as infrastructure-as-code under [`infra/`](infra/) (AWS SAM / CloudFormation) with the function code under [`src/`](src/). Honest state of play:
+The backend is being built in thin vertical slices, defined as infrastructure-as-code under [`infra/`](infra/) (plain CloudFormation) with the function code under [`src/`](src/). Honest state of play:
 
 | Slice | What | Status |
 |-------|------|--------|
 | 1 | KMS CMK + hash-only DynamoDB audit table (ADR-002) — stack `discharge-audit`, eu-west-2 | **Deployed** |
 | 2 | Bedrock-calling `generate` Lambda + least-privilege execution role | **Deployed** |
-| 3 | DynamoDB Streams → S3 Object Lock (WORM) tamper-evidence ledger | Planned |
+| 3 | DynamoDB Streams → S3 Object Lock (WORM) tamper-evidence ledger | **Deployed** |
 | 4 | API Gateway + Cognito front door; React UI on CloudFront | Planned |
 
 **Slice 2 detail.** A Python 3.13 Lambda ([`src/generate/`](src/generate/)) calls Bedrock Converse on the pinned model, splits the combined output into the three parts, and writes the hash-only audit item from ADR-002 (write-once; no PHI in the table or logs). Its execution role is scoped to exactly three resources and nothing else:
@@ -65,7 +65,9 @@ The backend is being built in thin vertical slices, defined as infrastructure-as
 - the **CMK** — `kms:Decrypt`/`GenerateDataKey`/`DescribeKey`, constrained by a `kms:ViaService` condition so the key can only ever be used *through DynamoDB*, never for a standalone KMS call;
 - the **one pinned model ARN** — `bedrock:InvokeModel` on `…:foundation-model/anthropic.claude-sonnet-4-6` and no other model.
 
-Both slices deploy as **plain CloudFormation**. We attempted the AWS SAM transform for slice 2, but `cloudformation:CreateChangeSet` on the AWS-owned Serverless transform ARN was denied on every attempt — even with `AdministratorAccess` *plus* an explicit inline `Allow` for that exact action and ARN, and with no permissions boundary and no Organizations SCP. Both the IAM policy simulator and the live engine denied it, so rather than keep fighting an account-specific IAM anomaly, the Lambda is defined as a raw `AWS::Lambda::Function` and its code is uploaded with `aws cloudformation package` (no macro, so the transform permission is never exercised).
+**Slice 3 detail.** A second Python 3.13 Lambda ([`src/ledger/`](src/ledger/)) consumes the audit table's DynamoDB stream (via a managed `EventSourceMapping`, `TRIM_HORIZON`) and copies every change event into an **S3 Object Lock (WORM)** bucket — an append-only, immutable ledger that cannot be altered or deleted within its retention window (Governance mode + 1-day retention in demo; Compliance mode + NHS retention in prod, switched by an `IsProd` condition). This is the control that makes the THREAT_MODEL's "immutable audit log" claim *provable* rather than aspirational: PITR is operational recovery (a privileged principal can disable it), whereas an Object-Lock version cannot be rewritten or deleted. Its execution role can read only this one stream, `s3:PutObject` only (no delete, no `PutObjectRetention`, no `BypassGovernanceRetention` — so the writer itself cannot weaken a lock), and use the CMK only via the DynamoDB and S3 service contexts. The ledger objects are SSE-KMS-encrypted with the same CMK and carry only hashes — no PHI.
+
+Every slice deploys as **plain CloudFormation**. We attempted the AWS SAM transform for slice 2, but `cloudformation:CreateChangeSet` on the AWS-owned Serverless transform ARN was denied on every attempt — even with `AdministratorAccess` *plus* an explicit inline `Allow` for that exact action and ARN, and with no permissions boundary and no Organizations SCP. Both the IAM policy simulator and the live engine denied it, so rather than keep fighting an account-specific IAM anomaly, each Lambda is defined as a raw `AWS::Lambda::Function` and its code is uploaded with `aws cloudformation package` (no macro, so the transform permission is never exercised).
 
 ## The interesting part: how it's evaluated
 
@@ -103,7 +105,7 @@ This project treats governance as a first-class deliverable, not an afterthought
 ## Roadmap
 
 - **Phase 1:** problem definition, system prompt, evaluation harness, architecture decisions, governance — substantively complete; independent clinician review (Run 4) in progress (does not gate the build).
-- **Phase 2 (now):** build the backend in slices (see [Build status](#build-status-phase-2)) — audit foundation deployed, Bedrock Lambda built, then the WORM tamper-evidence ledger, then the API Gateway + Cognito front door and React frontend behind CloudFront.
+- **Phase 2 (now):** build the backend in slices (see [Build status](#build-status-phase-2)) — audit foundation, Bedrock `generate` Lambda, and the WORM tamper-evidence ledger are all deployed; next is the API Gateway + Cognito front door and the React frontend behind CloudFront.
 - **Phase-1 open decisions — all resolved (2026-05-23):** model pinned to `anthropic.claude-sonnet-4-6` on-demand in eu-west-2; tamper-evidence = DynamoDB Streams → S3 Object Lock (WORM); single combined prompt for all three outputs. See [`ADR-phase1.md`](docs/ADR-phase1.md).
 
 ## Disclaimer

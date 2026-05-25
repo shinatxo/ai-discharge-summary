@@ -6,3 +6,10 @@ node_modules/
 
 # SAM build artifacts
 .aws-sam/
+
+# cloudformation package output (generated at deploy time)
+infra/packaged.yaml
+
+# local test/invoke artifacts
+infra/out.json
+out.json

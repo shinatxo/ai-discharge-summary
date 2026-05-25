@@ -55,7 +55,7 @@ The backend is being built in thin vertical slices, defined as infrastructure-as
 | Slice | What | Status |
 |-------|------|--------|
 | 1 | KMS CMK + hash-only DynamoDB audit table (ADR-002) — stack `discharge-audit`, eu-west-2 | **Deployed** |
-| 2 | Bedrock-calling `generate` Lambda + least-privilege execution role | **Built, deploy pending** |
+| 2 | Bedrock-calling `generate` Lambda + least-privilege execution role | **Deployed** |
 | 3 | DynamoDB Streams → S3 Object Lock (WORM) tamper-evidence ledger | Planned |
 | 4 | API Gateway + Cognito front door; React UI on CloudFront | Planned |
 
@@ -65,7 +65,7 @@ The backend is being built in thin vertical slices, defined as infrastructure-as
 - the **CMK** — `kms:Decrypt`/`GenerateDataKey`/`DescribeKey`, constrained by a `kms:ViaService` condition so the key can only ever be used *through DynamoDB*, never for a standalone KMS call;
 - the **one pinned model ARN** — `bedrock:InvokeModel` on `…:foundation-model/anthropic.claude-sonnet-4-6` and no other model.
 
-Slice 1 was deployed as plain CloudFormation because the SAM transform macro needs `cloudformation:CreateChangeSet` on the Serverless transform, which the deploying IAM user initially lacked; that permission has since been granted and the transform is back in for slice 2.
+Both slices deploy as **plain CloudFormation**. We attempted the AWS SAM transform for slice 2, but `cloudformation:CreateChangeSet` on the AWS-owned Serverless transform ARN was denied on every attempt — even with `AdministratorAccess` *plus* an explicit inline `Allow` for that exact action and ARN, and with no permissions boundary and no Organizations SCP. Both the IAM policy simulator and the live engine denied it, so rather than keep fighting an account-specific IAM anomaly, the Lambda is defined as a raw `AWS::Lambda::Function` and its code is uploaded with `aws cloudformation package` (no macro, so the transform permission is never exercised).
 
 ## The interesting part: how it's evaluated
 

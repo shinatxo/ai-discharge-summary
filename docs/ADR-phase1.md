@@ -53,9 +53,13 @@ in-region, which is the stronger residency posture. `claude-opus-4-6-v1` is like
 ON_DEMAND in eu-west-2 and is the candidate eval/grading model (kept off the hot path
 per the cost stance above). Haiku-class (`claude-haiku-4-5-…`) is inference-profile-only
 in-region, so a future Haiku patient-version pass would need the EU profile (ties to
-open question #3). **On-demand invocation confirmed 2026-05-23** — a `Converse` call to
-`anthropic.claude-sonnet-4-6` in eu-west-2 returned successfully, clearing any first-use
-Anthropic use-case gate. ADR-001 is now fully locked.
+open question #3). **On-demand invocation confirmed 2026-05-25** — invoking first required
+clearing the Bedrock **Anthropic use-case gate** (a one-time, account-level use-case form,
+submitted via the Model catalog since the standalone "Model access" page is retired). After
+that, a `Converse` call to `anthropic.claude-sonnet-4-6` in eu-west-2 (on-demand) returned
+successfully and the Phase-2 generate Lambda produced all three outputs with a hash-only
+audit write. (An earlier draft of this ADR claimed the gate was cleared on 2026-05-23; that
+was incorrect — it was actually cleared on 2026-05-25.) ADR-001 is now fully locked.
 
 ### Consequences
 - Model version becomes an audited field — every generation logs the model+version

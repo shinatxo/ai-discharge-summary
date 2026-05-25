@@ -1,17 +1,18 @@
 AWSTemplateFormatVersion: '2010-09-09'
 
-# The SAM transform is BACK for slice 2. A "transform" is a macro CloudFormation
-# runs server-side before deploying: it expands the shorthand AWS::Serverless::*
-# resources into the full-blown CloudFormation (a Serverless::Function becomes a
-# Lambda function + version + the plumbing). Slice 1 was plain CFN (KMS+DynamoDB)
-# so we stripped the transform out; the Lambda needs it again.
-#
-# GOTCHA (slice 1 history): expanding this transform requires the deploying
-# principal to hold cloudformation:CreateChangeSet on
-#   arn:aws:cloudformation:*:aws:transform/Serverless-2016-10-09
-# Shina's IAM user lacked that and the first SAM deploy failed. That permission
-# has since been granted, so the transform is safe to re-add.
-Transform: AWS::Serverless-2016-10-09
+# NOTE: deliberately NO SAM transform.
+# We tried `Transform: AWS::Serverless-2016-10-09` for the slice-2 Lambda, but
+# every deploy failed at change-set creation with:
+#   user/Shina is not authorized to perform: cloudformation:CreateChangeSet on
+#   arn:aws:cloudformation:eu-west-2:aws:transform/Serverless-2016-10-09
+# This held even though the user has AdministratorAccess AND an explicit inline
+# Allow for exactly that action + transform ARN, with no permissions boundary
+# and no Organizations SCP. Both the IAM policy simulator and the live engine
+# denied it - an account-specific anomaly we could not clear from the IAM side.
+# So slice 2, like slice 1, uses PLAIN CloudFormation: the function below is a
+# raw AWS::Lambda::Function and its code is uploaded with `aws cloudformation
+# package` (which needs no macro, hence no CreateChangeSet-on-transform check).
+# See the README "Build status" section for the full story.
 
 Description: >
   AI Discharge Summary Assistant - Phase 2 build slice 2.
@@ -247,13 +248,14 @@ Resources:
                 Resource: !Sub "arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/${AWS::StackName}-generate:*"
 
   # ---------------------------------------------------------------------------
-  # 5) The generate function itself (AWS::Serverless::Function - the shorthand
-  #    the SAM transform expands). It reads ward-round notes from the event,
-  #    calls Bedrock Converse on the pinned Sonnet model, splits the combined
-  #    output into PART A/B/C, and writes a hash-only audit item (ADR-002).
+  # 5) The generate function itself - a plain AWS::Lambda::Function (no SAM
+  #    transform; see the note at the top of this file). It reads ward-round
+  #    notes from the event, calls Bedrock Converse on the pinned Sonnet model,
+  #    splits the combined output into PART A/B/C, and writes a hash-only audit
+  #    item (ADR-002).
   # ---------------------------------------------------------------------------
   GenerateFunction:
-    Type: AWS::Serverless::Function
+    Type: AWS::Lambda::Function
     # Make sure the log group exists before the function (so the first invoke
     # writes into our retention-capped group, not an auto-created one).
     DependsOn: GenerateFunctionLogGroup
@@ -262,7 +264,10 @@ Resources:
       Description: >-
         Drafts the discharge summary / GP letter / patient version via Bedrock
         and writes a hash-only audit record. Stores/logs no PHI (ADR-002).
-      CodeUri: ../src/generate/
+      # Local source dir. `aws cloudformation package` zips it and rewrites this
+      # Code property to an S3 location before deploy. No third-party deps
+      # (boto3 ships with the runtime), so a plain zip of the dir is enough.
+      Code: ../src/generate
       Handler: app.lambda_handler
       Runtime: python3.13
       # Graviton/arm64 is ~20% cheaper per ms than x86 (SAA cost-optimisation),
@@ -272,8 +277,11 @@ Resources:
       MemorySize: 512
       # Generating three outputs from one Bedrock call can take tens of seconds.
       Timeout: 60
-      # Use OUR hand-written role, not a SAM-generated one (least privilege).
+      # Our hand-written least-privilege role (table + CMK-via-DDB + one model).
       Role: !GetAtt GenerateFunctionRole.Arn
+      # Send logs to the explicit, retention-capped group declared above.
+      LoggingConfig:
+        LogGroup: !Ref GenerateFunctionLogGroup
       Environment:
         Variables:
           AUDIT_TABLE_NAME: !Ref AuditTable

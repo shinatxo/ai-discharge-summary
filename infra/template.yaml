@@ -15,7 +15,7 @@ AWSTemplateFormatVersion: '2010-09-09'
 # See the README "Build status" section for the full story.
 
 Description: >
-  AI Discharge Summary Assistant - Phase 2 build slice 3.
+  AI Discharge Summary Assistant - Phase 2 build slices 1-4a.
   Audit-log foundation (slice 1): a customer-managed KMS key (CMK) plus the
   immutable, hash-only DynamoDB audit table from ADR-002. Slice 2 adds the
   Bedrock-calling generate Lambda and its least-privilege execution role, scoped
@@ -23,8 +23,12 @@ Description: >
   Bedrock model. Slice 3 adds the tamper-evidence ledger: an S3 Object Lock
   (WORM) bucket plus a stream-consumer Lambda that copies every audit-table
   change event into it, immutably (Governance mode in demo, Compliance mode in
-  prod). No PHI is ever stored or logged - only hashes of the input/outputs,
-  who/when, and which model version was used.
+  prod). Slice 4a adds the authenticated front door: a Cognito User Pool (email
+  login, MFA OPTIONAL + TOTP, admin-create only), a public SPA app client, an
+  HTTP API (API Gateway v2) with POST /generate, and a native JWT authoriser
+  that validates Cognito IdTokens *before* Lambda is invoked. No PHI is ever
+  stored or logged - only hashes of the input/outputs, who/when, and which
+  model version was used.
 
 # -----------------------------------------------------------------------------
 # Parameters let one template serve multiple environments without code changes.
@@ -529,6 +533,245 @@ Resources:
       MaximumRetryAttempts: 5
       BisectBatchOnFunctionError: true
 
+  # ===========================================================================
+  # SLICE 4a - the authenticated front door.
+  #
+  #   Clinician browser
+  #      | (IdToken in Authorization: Bearer ...)
+  #   HTTP API (API Gateway v2) -- JWT authoriser validates the token
+  #      |
+  #   GenerateFunction (slice 2) -- pulls Cognito 'sub' from the verified claims
+  #
+  # SAA framing: the JWT authoriser is API Gateway v2's NATIVE way to integrate
+  # with Cognito. It verifies the IdToken's signature, issuer (the User Pool
+  # URL), audience (the App Client id), and exp BEFORE Lambda is ever invoked.
+  # That keeps the hot path single-Lambda (no second "Lambda authoriser" cold
+  # start) and removes any "should we re-check the token in the handler?"
+  # question - by the time the handler runs, the claims are trusted.
+  # ===========================================================================
+
+  # ---------------------------------------------------------------------------
+  # 11) Cognito User Pool.
+  #
+  # The pool is the directory of clinicians who may use the app. Choices baked
+  # in here:
+  #   - UsernameAttributes: [email]  -> users sign in with email (no separate
+  #     username), and AutoVerifiedAttributes makes Cognito send the email-OTP.
+  #   - MfaConfiguration: OPTIONAL + TOTP -> we ALLOW TOTP MFA but don't force
+  #     it. This is the honest middle ground for a portfolio: the README can
+  #     truthfully say "Cognito MFA supported" without making the demo flow
+  #     punishing on video. Flipping to "ON" in prod is a one-property change.
+  #   - AdminCreateUserConfig.AllowAdminCreateUserOnly: true -> NO public
+  #     self-signup. For a demo with synthetic data this is the safe default;
+  #     it also means an attacker who finds the API can't simply create an
+  #     account and call /generate.
+  #   - Password policy: 12 chars, mixed case + number + symbol. Defensible
+  #     baseline; lift in prod per NHS DSPT.
+  # ---------------------------------------------------------------------------
+  UserPool:
+    Type: AWS::Cognito::UserPool
+    Properties:
+      UserPoolName: !Sub "${AWS::StackName}-users"
+      UsernameAttributes:
+        - email
+      AutoVerifiedAttributes:
+        - email
+      MfaConfiguration: OPTIONAL
+      EnabledMfas:
+        - SOFTWARE_TOKEN_MFA   # TOTP (e.g. Authy, Google Authenticator)
+      Policies:
+        PasswordPolicy:
+          MinimumLength: 12
+          RequireLowercase: true
+          RequireUppercase: true
+          RequireNumbers: true
+          RequireSymbols: true
+          TemporaryPasswordValidityDays: 7
+      AdminCreateUserConfig:
+        AllowAdminCreateUserOnly: true
+      AccountRecoverySetting:
+        RecoveryMechanisms:
+          - Name: verified_email
+            Priority: 1
+      # Don't email-out PHI even by accident - keep the pool's outbound mail
+      # to the default Cognito sender; custom domains/SES are a later concern.
+      EmailConfiguration:
+        EmailSendingAccount: COGNITO_DEFAULT
+      # Tag every pool object with the environment for clean per-env teardown.
+      UserPoolTags:
+        Environment: !Ref Environment
+        Project: ai-discharge-summary
+
+  # ---------------------------------------------------------------------------
+  # 12) Public SPA App Client.
+  #
+  # A SINGLE-PAGE-APP client cannot keep a client secret (the browser would
+  # leak it), so GenerateSecret stays false. We enable the auth flows the
+  # frontend and our smoke test need:
+  #   - ALLOW_USER_SRP_AUTH        -> Amplify's default (sends a derived
+  #                                   verifier, never the raw password).
+  #   - ALLOW_USER_PASSWORD_AUTH   -> lets a `aws cognito-idp initiate-auth`
+  #                                   curl smoke test exchange username+password
+  #                                   for tokens without setting up SRP.
+  #   - ALLOW_REFRESH_TOKEN_AUTH   -> lets the SPA refresh the IdToken silently
+  #                                   so the user isn't bounced every hour.
+  # We deliberately do NOT enable ADMIN_USER_PASSWORD (server-side login) or
+  # the implicit OAuth grant - this client only speaks the modern auth flows.
+  # ---------------------------------------------------------------------------
+  UserPoolClient:
+    Type: AWS::Cognito::UserPoolClient
+    Properties:
+      ClientName: !Sub "${AWS::StackName}-spa"
+      UserPoolId: !Ref UserPool
+      GenerateSecret: false
+      PreventUserExistenceErrors: ENABLED    # don't leak "user not found" vs "wrong password"
+      ExplicitAuthFlows:
+        - ALLOW_USER_SRP_AUTH
+        - ALLOW_USER_PASSWORD_AUTH
+        - ALLOW_REFRESH_TOKEN_AUTH
+      # Token lifetimes: hours for ID/access, 30 days for refresh - typical SPA
+      # defaults. Short enough to limit blast radius if a token leaks, long
+      # enough not to log the user out mid-shift.
+      AccessTokenValidity: 1
+      IdTokenValidity: 1
+      RefreshTokenValidity: 30
+      TokenValidityUnits:
+        AccessToken: hours
+        IdToken: hours
+        RefreshToken: days
+      # Read/write the standard attributes only; we ask Cognito to populate
+      # email_verified so the JWT authoriser can rely on it being present.
+      ReadAttributes:
+        - email
+        - email_verified
+        - name
+      WriteAttributes:
+        - email
+        - name
+
+  # ---------------------------------------------------------------------------
+  # 13) HTTP API (API Gateway v2).
+  #
+  # Why HTTP API and not REST API: this app is a single Lambda behind a single
+  # POST route fronted by a JWT authoriser. HTTP API does that natively,
+  # at ~70% lower cost per request and lower latency than REST API, and it is
+  # the AWS-recommended default for Lambda + Cognito in 2024+. (See ADR-004 in
+  # docs/, added with this slice, for the full trade-off write-up.)
+  #
+  # CORS: for slice 4a + 4b we allow the Vite dev origin and the curl no-origin
+  # case. In slice 4c the React app and the API live behind the SAME CloudFront
+  # distribution (S3 origin + API Gateway origin under one hostname), so the
+  # browser sees them as same-origin and CORS becomes a no-op - we will tighten
+  # AllowOrigins down to that single hostname then.
+  # ---------------------------------------------------------------------------
+  HttpApi:
+    Type: AWS::ApiGatewayV2::Api
+    Properties:
+      Name: !Sub "${AWS::StackName}-http-api"
+      ProtocolType: HTTP
+      Description: Authenticated front door for the generate Lambda (slice 4a).
+      CorsConfiguration:
+        AllowOrigins:
+          - http://localhost:5173       # vite dev server
+        AllowMethods:
+          - POST
+          - OPTIONS
+        AllowHeaders:
+          - authorization
+          - content-type
+        MaxAge: 600
+      DisableExecuteApiEndpoint: false   # we want the default *.execute-api URL for smoke tests
+      Tags:
+        Environment: !Ref Environment
+        Project: ai-discharge-summary
+
+  # ---------------------------------------------------------------------------
+  # 14) JWT Authoriser - the whole point of slice 4a.
+  #
+  # API Gateway HTTP API verifies the Authorization: Bearer <token> header
+  # against this config:
+  #   - Issuer  = the Cognito User Pool's public OIDC issuer URL
+  #                (https://cognito-idp.<region>.amazonaws.com/<pool-id>)
+  #   - Audience = the App Client id  (Cognito puts this in the IdToken's 'aud'
+  #                claim, but NOT in the AccessToken - so the client MUST send
+  #                the IdToken here, not the access token.)
+  #
+  # API Gateway downloads the pool's JWKS, verifies the token signature,
+  # issuer, audience, and exp, then forwards the verified claims to Lambda
+  # under event.requestContext.authorizer.jwt.claims. If verification fails,
+  # the request is rejected with 401 - Lambda is never invoked.
+  # ---------------------------------------------------------------------------
+  JwtAuthorizer:
+    Type: AWS::ApiGatewayV2::Authorizer
+    Properties:
+      ApiId: !Ref HttpApi
+      Name: cognito-jwt
+      AuthorizerType: JWT
+      IdentitySource:
+        - "$request.header.Authorization"
+      JwtConfiguration:
+        Issuer: !Sub "https://cognito-idp.${AWS::Region}.amazonaws.com/${UserPool}"
+        Audience:
+          - !Ref UserPoolClient
+
+  # ---------------------------------------------------------------------------
+  # 15) Lambda integration + route.
+  #
+  # AWS_PROXY integration with PayloadFormatVersion 2.0:
+  #   - the request arrives at Lambda as {headers, body, requestContext, ...}
+  #     with requestContext.authorizer.jwt.claims populated by the authoriser,
+  #   - the response shape is {statusCode, headers, body} (we return JSON).
+  # The route is POST /generate, gated by the JWT authoriser declared above.
+  # ---------------------------------------------------------------------------
+  GenerateIntegration:
+    Type: AWS::ApiGatewayV2::Integration
+    Properties:
+      ApiId: !Ref HttpApi
+      IntegrationType: AWS_PROXY
+      IntegrationUri: !GetAtt GenerateFunction.Arn
+      IntegrationMethod: POST
+      PayloadFormatVersion: '2.0'
+      TimeoutInMillis: 29000        # API Gateway hard cap is 30s; Lambda has 60s but client gets 29s
+
+  GenerateRoute:
+    Type: AWS::ApiGatewayV2::Route
+    Properties:
+      ApiId: !Ref HttpApi
+      RouteKey: "POST /generate"
+      AuthorizationType: JWT
+      AuthorizerId: !Ref JwtAuthorizer
+      Target: !Sub "integrations/${GenerateIntegration}"
+
+  # ---------------------------------------------------------------------------
+  # 16) $default stage with AutoDeploy on.
+  #
+  # AutoDeploy means every Route/Integration change is published to the stage
+  # without an explicit Deployment resource - the right ergonomics for an
+  # actively iterating slice.
+  # ---------------------------------------------------------------------------
+  HttpApiStage:
+    Type: AWS::ApiGatewayV2::Stage
+    Properties:
+      ApiId: !Ref HttpApi
+      StageName: $default
+      AutoDeploy: true
+      Description: Default stage for the discharge HTTP API.
+
+  # ---------------------------------------------------------------------------
+  # 17) Lambda invoke permission.
+  #
+  # This is the resource-based policy on the FUNCTION (not the role) that lets
+  # API Gateway invoke it. SourceArn is locked to this API + this route, so a
+  # different API in the same account couldn't reuse the function.
+  # ---------------------------------------------------------------------------
+  GenerateInvokePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref GenerateFunction
+      Action: lambda:InvokeFunction
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub "arn:${AWS::Partition}:execute-api:${AWS::Region}:${AWS::AccountId}:${HttpApi}/*/*/generate"
+
 # -----------------------------------------------------------------------------
 # Outputs surface the identifiers each slice needs, and double as
 # residency/governance evidence.
@@ -573,3 +816,21 @@ Outputs:
   LedgerFunctionRoleArn:
     Description: Least-privilege ledger role ARN (stream-read + S3 PutObject + CMK-via-S3)
     Value: !GetAtt LedgerFunctionRole.Arn
+  UserPoolId:
+    Description: Cognito User Pool id (use with aws cognito-idp admin-create-user)
+    Value: !Ref UserPool
+  UserPoolArn:
+    Description: Cognito User Pool ARN
+    Value: !GetAtt UserPool.Arn
+  UserPoolClientId:
+    Description: Cognito App Client id - this is also the JWT 'aud' the authoriser checks
+    Value: !Ref UserPoolClient
+  JwtIssuerUrl:
+    Description: OIDC issuer URL the JWT authoriser uses to validate tokens
+    Value: !Sub "https://cognito-idp.${AWS::Region}.amazonaws.com/${UserPool}"
+  HttpApiId:
+    Description: HTTP API id
+    Value: !Ref HttpApi
+  HttpApiEndpoint:
+    Description: Default HTTP API endpoint - call POST {endpoint}/generate with Bearer IdToken
+    Value: !Sub "https://${HttpApi}.execute-api.${AWS::Region}.${AWS::URLSuffix}"

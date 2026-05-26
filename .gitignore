@@ -13,3 +13,7 @@ infra/packaged.yaml
 # local test/invoke artifacts
 infra/out.json
 out.json
+
+# python bytecode caches (Lambda src dirs)
+__pycache__/
+*.pyc

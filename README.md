@@ -28,18 +28,25 @@ Paste the ward-round notes into the box. Read the three drafts. Fix anything tha
 
 ```
 Clinician browser
-   │  (Cognito auth, TLS)
-CloudFront ── S3 (React frontend)
+   │  (IdToken: "Authorization: Bearer ...")
+CloudFront ── S3 (React frontend)                       ← slice 4c (planned)
    │
-API Gateway ── Lambda (Python)
-   │                 │
-   ▼                 ▼
-Bedrock          DynamoDB (audit log, KMS-CMK, hash-only — no PHI)
-(Claude Sonnet-class,
- eu-west-2 / EU profile)
+HTTP API (API Gateway v2)
    │
    ▼
-S3 (generated documents, KMS-encrypted, signed-URL only, lifecycle → Glacier @ 90d)
+JWT authoriser — validates Cognito IdToken (signature, iss, aud, exp)
+   │   ← if invalid: 401, Lambda never invoked
+   ▼
+generate Lambda (Python 3.13, arm64)
+   │  user_sub taken from verified JWT claim, never from body
+   ├──▶ Bedrock Converse  (Claude Sonnet 4.6, on-demand eu-west-2)
+   └──▶ DynamoDB audit table  (KMS-CMK, hash-only, write-once)
+                │  DynamoDB Streams (NEW_AND_OLD_IMAGES)
+                ▼
+            ledger Lambda
+                │  PutObject only — no Delete, no PutObjectRetention
+                ▼
+            S3 Object Lock (WORM) bucket  ← Governance/1d demo, Compliance/NHS-retention prod
 ```
 
 - **Single-region, eu-west-2 (London)** for all stateful resources. Model **pinned to `anthropic.claude-sonnet-4-6`, invoked on-demand in eu-west-2** (ADR-001/003 rule 1 — both data-at-rest *and* inference stay UK-only; the EU geographic inference profile is retained only as a documented fallback, never US/global). Region and inference path are logged on every generation as residency evidence.
@@ -57,7 +64,9 @@ The backend is being built in thin vertical slices, defined as infrastructure-as
 | 1 | KMS CMK + hash-only DynamoDB audit table (ADR-002) — stack `discharge-audit`, eu-west-2 | **Deployed** |
 | 2 | Bedrock-calling `generate` Lambda + least-privilege execution role | **Deployed** |
 | 3 | DynamoDB Streams → S3 Object Lock (WORM) tamper-evidence ledger | **Deployed** |
-| 4 | API Gateway + Cognito front door; React UI on CloudFront | Planned |
+| 4a | Cognito User Pool + HTTP API (v2) + native JWT authoriser in front of `generate` | **Deployed + verified 2026-05-26** |
+| 4b | React UI (Vite + Amplify Auth) wired to the deployed API | Planned |
+| 4c | S3 + CloudFront with single distribution (two origins: S3 SPA + API Gateway) | Planned |
 
 **Slice 2 detail.** A Python 3.13 Lambda ([`src/generate/`](src/generate/)) calls Bedrock Converse on the pinned model, splits the combined output into the three parts, and writes the hash-only audit item from ADR-002 (write-once; no PHI in the table or logs). Its execution role is scoped to exactly three resources and nothing else:
 
@@ -66,6 +75,17 @@ The backend is being built in thin vertical slices, defined as infrastructure-as
 - the **one pinned model ARN** — `bedrock:InvokeModel` on `…:foundation-model/anthropic.claude-sonnet-4-6` and no other model.
 
 **Slice 3 detail.** A second Python 3.13 Lambda ([`src/ledger/`](src/ledger/)) consumes the audit table's DynamoDB stream (via a managed `EventSourceMapping`, `TRIM_HORIZON`) and copies every change event into an **S3 Object Lock (WORM)** bucket — an append-only, immutable ledger that cannot be altered or deleted within its retention window (Governance mode + 1-day retention in demo; Compliance mode + NHS retention in prod, switched by an `IsProd` condition). This is the control that makes the THREAT_MODEL's "immutable audit log" claim *provable* rather than aspirational: PITR is operational recovery (a privileged principal can disable it), whereas an Object-Lock version cannot be rewritten or deleted. Its execution role can read only this one stream, `s3:PutObject` only (no delete, no `PutObjectRetention`, no `BypassGovernanceRetention` — so the writer itself cannot weaken a lock), and use the CMK only via the DynamoDB and S3 service contexts. The ledger objects are SSE-KMS-encrypted with the same CMK and carry only hashes — no PHI.
+
+**Slice 4a detail.** The authenticated front door. A **Cognito User Pool** (email login; MFA OPTIONAL + TOTP; no public self-signup; password policy at 12 chars with mixed case/number/symbol) holds the clinician directory. A public **SPA App Client** — `GenerateSecret: false`, because a browser can't keep secrets — exposes only the modern auth flows (SRP, USER_PASSWORD for smoke tests, refresh). An **HTTP API (API Gateway v2)** fronts a single `POST /generate` route, gated by API Gateway's native **JWT authoriser**: the authoriser holds the User Pool's OIDC issuer URL and the App Client id as the JWT `aud`, downloads the pool's JWKS, and verifies signature + issuer + audience + `exp` *before* Lambda is ever invoked. Failed verification → 401 from API Gateway, with no Lambda cold start spent.
+
+The handler ([`src/generate/app.py`](src/generate/app.py)) is the part where this decision pays off as a security control: when invoked through the HTTP API path it reads `user_sub` from `event.requestContext.authorizer.jwt.claims.sub` — the *verified* claim — and ignores any `user_sub` in the request body. That closes the obvious spoofing hole where an authenticated user could attribute their generation to someone else in the audit log. The direct-invoke path (slice 2/3 smoke tests) is preserved untouched. Full design rationale, including why HTTP API beat REST API here, is in [`docs/ADR-phase1.md` §ADR-004](docs/ADR-phase1.md). The deploy + verification recipe is in [`infra/SLICE_4A_SMOKE_TEST.md`](infra/SLICE_4A_SMOKE_TEST.md).
+
+**Verified end-to-end 2026-05-26.** A real curl through the HTTP API with a fresh IdToken returned 200 + three outputs in ~21s; the audit row for that generation records `user_sub = 1682f284-...-6528` — the verified Cognito `sub` from the JWT, **not** any value supplied in the request body — confirming the anti-spoof identity contract holds in production AWS, not just in unit tests. The DynamoDB stream → WORM ledger pipeline from slice 3 also continues to work post-deploy: every new generation event lands as an immutable ledger object within seconds.
+
+Two production findings from that smoke test, both addressed in slice 4b:
+
+1. **API Gateway HTTP API has a hard 30-second integration timeout.** Slice 2's `aws lambda invoke` smoke test ran with Lambda's own 60s budget; through HTTP API the cap is 30s and cannot be raised. With Bedrock Sonnet emitting three outputs at `MAX_TOKENS = 4096`, a cold start on a longer ward-round note brushes that ceiling, and the client gets `503 Service Unavailable` while Lambda is still working. This is a real architectural constraint, not a wiring bug.
+2. **Lambda completes server-side even when the client got a 5xx**, leaving a "ghost" audit row and ledger object behind. For an authenticated, idempotent-per-user-sub generation that is mostly fine, but a UI that lets the user "retry" a failed call risks double-billing the Bedrock invocation. Slice 4b's UI must either disable retry on 5xx until status is confirmed, or — better — slice 4b moves to an async `202 Accepted + poll` pattern that surfaces real backend status. See [`docs/ADR-phase1.md` §ADR-004 "Slice 4a findings"](docs/ADR-phase1.md) for both findings written up.
 
 Every slice deploys as **plain CloudFormation**. We attempted the AWS SAM transform for slice 2, but `cloudformation:CreateChangeSet` on the AWS-owned Serverless transform ARN was denied on every attempt — even with `AdministratorAccess` *plus* an explicit inline `Allow` for that exact action and ARN, and with no permissions boundary and no Organizations SCP. Both the IAM policy simulator and the live engine denied it, so rather than keep fighting an account-specific IAM anomaly, each Lambda is defined as a raw `AWS::Lambda::Function` and its code is uploaded with `aws cloudformation package` (no macro, so the transform permission is never exercised).
 

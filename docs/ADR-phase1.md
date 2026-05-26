@@ -198,6 +198,157 @@ case where on-demand capacity is unavailable at runtime. Every audit item record
 
 ---
 
+## ADR-004 — Front door: HTTP API (v2) + Cognito JWT authoriser
+
+**Status:** Accepted (2026-05-26, slice 4a).
+
+### Context
+
+The generate Lambda (slice 2) is currently invoked directly (CLI/console). To
+put it behind the React UI (slices 4b/4c) it needs a public, authenticated HTTP
+endpoint. Two AWS choices exist for "Lambda behind Cognito-authenticated HTTP":
+
+1. **API Gateway REST API (v1)** + **Cognito user-pool authoriser** (or a
+   Lambda authoriser that calls Cognito).
+2. **API Gateway HTTP API (v2)** + the **native JWT authoriser**.
+
+### Decision
+
+Use **API Gateway HTTP API (v2)** with the native **JWT authoriser**, configured
+against the Cognito User Pool's OIDC issuer URL and the SPA App Client id as
+the JWT `aud`. The route is a single `POST /generate` on the `$default` stage
+with `AutoDeploy: true`.
+
+### Rationale
+
+- **Cost.** HTTP API is ~70% cheaper per million requests than REST API. For a
+  portfolio demo this is small in absolute terms, but the right-size choice is
+  itself the SAA-credible answer — not picking the more expensive product
+  "because more features".
+- **Latency.** HTTP API has lower per-request overhead and skips the v1
+  request/response transformation pipeline we are not using anyway.
+- **Native JWT support.** API Gateway v2 validates the IdToken's signature,
+  issuer, audience, and `exp` *before* invoking the integration. A v1 REST API
+  achieves the equivalent only via either (a) the Cognito user-pool authoriser,
+  which is less flexible and ties us to v1, or (b) a custom Lambda authoriser,
+  which adds a second Lambda invocation (and a second cold start) on every
+  request. The v2 JWT authoriser removes that latency without removing the
+  control.
+- **Surface area we don't need.** REST API's bigger feature set — usage plans,
+  API keys, request validators, x-amz-mock integrations, EDGE endpoints — is
+  exam material but unrelated to this app's hot path. Keeping the front door
+  narrow keeps the threat model narrow.
+
+### Identity is asserted by the authoriser, never by the client
+
+The handler must take the clinician's Cognito `sub` from
+`event.requestContext.authorizer.jwt.claims.sub` — populated by API Gateway
+**after** the JWT is cryptographically verified — and must **never** trust a
+`user_sub` field in the request body. The body is client-controlled, so any
+authenticated user could otherwise attribute their generation to another user
+in the audit log. This is enforced in `src/generate/app.py`: the HTTP-API code
+path ignores body identity and reads only the verified claim; the direct-invoke
+path (slice 2/3 smoke tests) keeps the body-supplied `user_sub` because there
+is no JWT to verify against.
+
+### Cognito posture for the demo
+
+- **MFA OPTIONAL + TOTP (SOFTWARE_TOKEN_MFA).** Users *may* enrol TOTP MFA; the
+  pool does not force it for every sign-in. This is the honest middle ground:
+  the README can truthfully say "Cognito MFA supported" without making the
+  recorded demo painful. Flipping `MfaConfiguration` to `ON` in prod is a
+  one-property change.
+- **No self-signup.** `AllowAdminCreateUserOnly: true`. For synthetic-data
+  demos this prevents the public API from doubling as an account-creation
+  endpoint.
+- **Public SPA app client.** `GenerateSecret: false` — a browser cannot keep
+  secrets. Auth flows are SRP, USER_PASSWORD (smoke test), and refresh.
+- **`PreventUserExistenceErrors: ENABLED`** so the API does not differentiate
+  "user not found" from "wrong password" — a defensive default that costs
+  nothing.
+
+### Consequences
+
+- The hot path is now `Browser → CloudFront (slice 4c) → HTTP API → JWT
+  authoriser → generate Lambda → Bedrock + DynamoDB + S3 WORM ledger.` Every
+  step except the browser is in eu-west-2 (CloudFront is global by design).
+- The frontend (slice 4b) uses Amplify Auth (SRP), gets an IdToken, and
+  passes it as `Authorization: Bearer <IdToken>`. The IdToken (not the access
+  token) is required, because Cognito puts the App Client id in `aud` only on
+  the IdToken.
+- CORS is permissive (`http://localhost:5173`) for the dev loop in 4a/4b. In
+  4c the app and the API share a single CloudFront hostname, so the browser
+  sees them as same-origin and CORS becomes a no-op.
+
+### Alternatives considered
+
+- **REST API + Cognito user-pool authoriser.** Functionally fine, but slower
+  and more expensive with no benefit for this app. Kept as a documented
+  alternative in case a future requirement (e.g. usage plans for partner
+  organisations) forces it.
+- **REST API + Lambda authoriser.** Adds a Lambda invocation per request just
+  to do what the v2 native authoriser does for free. Rejected on latency.
+- **AppSync (GraphQL) + Cognito.** Overkill for a single mutation endpoint;
+  GraphQL caching/subscriptions are not in scope.
+
+### Slice 4a findings (2026-05-26 smoke test)
+
+Slice 4a was verified end-to-end against the live stack on 2026-05-26 using
+the recipe in `infra/SLICE_4A_SMOKE_TEST.md`: unauth call → 401, malformed
+token → 401, authed call → 200 + three outputs, audit row's `user_sub`
+matched the JWT's `sub` claim (not anything supplied in the request body),
+new WORM ledger object landed within seconds. The JWT-as-trusted-identity
+contract holds in real AWS, not just in unit tests.
+
+Two findings worth recording honestly before slice 4b begins:
+
+1. **HTTP API has a hard 30-second integration timeout.** Bedrock Sonnet
+   emitting three outputs at `MAX_TOKENS = 4096` runs ~20–25 s on warm
+   containers and longer on a cold start. The first smoke-test call (a
+   multi-line NSTEMI ward-round note on a cold container) hit the cap; the
+   client got `503 Service Unavailable` with no Lambda logs visible in the
+   first 30 s, because Lambda was still mid-Bedrock call when API Gateway
+   cut the integration. Warm + shorter input (a one-line UTI note) returned
+   200 in 20.7 s. Mitigations, in order of preference:
+
+   - **Async pattern (preferred for production).** `POST /generate` returns
+     `202 Accepted` with a job id; Lambda kicks off the Bedrock call via
+     `EventBridge` or a second `Invoke` (`InvocationType: Event`); the
+     client polls a second `GET /generations/{id}` endpoint that reads from
+     the audit table. Removes the timeout entirely and gives the UI an
+     honest progress indicator. This is what slice 4b will move to.
+   - **Reduce `MAX_TOKENS`** from 4096 to ~1500. Faster, but truncates
+     longer admissions — clinically suboptimal.
+   - **Lambda Function URL + response streaming**, fronted by CloudFront.
+     Bypasses API Gateway's 30 s cap. Trade-off: no built-in JWT
+     authoriser, so Cognito auth would have to move to CloudFront
+     functions / Lambda@Edge — heavier and a step away from the AWS
+     "default" stack for this shape of app.
+
+2. **Lambda completes server-side even when the client gets a 5xx**, so the
+   first failed call left behind a "ghost" audit row and a ghost WORM
+   ledger object. This is correct behaviour at the data layer — the
+   audit log should reflect *attempts*, not just *successes* — but it has
+   two consequences for the UI in slice 4b:
+
+   - A naïve "retry" button would re-invoke Bedrock and duplicate the
+     audit row. The UI must therefore either disable retry until status
+     is confirmed via a `GET` (the async pattern again), or compute a
+     client-side idempotency key sent with the request and refuse to
+     write a second row with the same key.
+   - When clinicians review the audit log they will see rows whose
+     `parse_ok` and `output_sha256` reflect a generation the *client*
+     never saw. The Model Card and UI copy should make this honest:
+     **"every attempt is logged, including ones the system failed to
+     deliver."**
+
+These are recorded here rather than as a separate ADR-005 because they are
+direct consequences of the ADR-004 architecture choice (HTTP API + sync
+Lambda) — anyone reviewing the architecture should encounter them at the
+same place they encounter the decision.
+
+---
+
 ## Open questions to close before Phase 3
 - ~~Confirm the exact Claude model + version available on-demand in eu-west-2~~ —
   **RESOLVED 2026-05-23:** pinned `anthropic.claude-sonnet-4-6`, **ON_DEMAND** in

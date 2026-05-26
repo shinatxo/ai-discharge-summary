@@ -108,9 +108,23 @@ def _split_outputs(text: str):
 
     Returns (outputs_dict, parse_ok). The combined prompt (ADR open-Q #3,
     Option A) emits PART A, PART B, PART C in order; we slice between the
-    markers. If the markers are missing/out-of-order we fail safe: hash the
-    whole text under 'summary', flag parse_ok=False so the audit record tells
-    the truth about what happened.
+    markers.
+
+    Two parse paths both count as parse_ok=True:
+
+    1. STRICT: all three markers present and ordered (A then B then C). This
+       is the model's intended behaviour and what the v0.5 prompt asks for.
+
+    2. FORGIVING: PART B and PART C markers are present and ordered, but the
+       PART A label is missing - the model dove straight into the discharge
+       summary and only labelled B and C. Observed on 2026-05-26 on a short
+       UTI input. We treat everything before PART B as the clinician
+       summary; the content is still cleanly separated, it just lacks an
+       explicit "PART A" heading.
+
+    If neither path matches (e.g. only one marker, or markers out of order),
+    we fail safe: hash the whole text under 'summary' and flag parse_ok=False
+    so the audit record tells the truth about what happened.
     """
     pos = {}
     for label in ("A", "B", "C"):
@@ -118,8 +132,17 @@ def _split_outputs(text: str):
         if m:
             pos[label] = m.start()
 
+    # Path 1: strict - all three markers, in order.
     if {"A", "B", "C"} <= pos.keys() and pos["A"] < pos["B"] < pos["C"]:
         summary = text[pos["A"]:pos["B"]].strip()
+        gp_letter = text[pos["B"]:pos["C"]].strip()
+        patient = text[pos["C"]:].strip()
+        return {"summary": summary, "gp_letter": gp_letter, "patient": patient}, True
+
+    # Path 2: forgiving - PART B and PART C in order, but no explicit PART A.
+    # Everything before PART B becomes the clinician summary.
+    if "B" in pos and "C" in pos and pos["B"] < pos["C"] and pos["B"] > 0:
+        summary = text[:pos["B"]].strip()
         gp_letter = text[pos["B"]:pos["C"]].strip()
         patient = text[pos["C"]:].strip()
         return {"summary": summary, "gp_letter": gp_letter, "patient": patient}, True
@@ -132,41 +155,107 @@ def _bad_request(message: str):
     return {"ok": False, "error": "bad_request", "message": message}
 
 
+def _is_http_api_event(event) -> bool:
+    """True iff this looks like an API Gateway HTTP API (v2) AWS_PROXY event.
+
+    HTTP API v2 always sets event['requestContext']['http']['method'] and
+    'version' = '2.0'. Direct console/CLI invokes never do.
+    """
+    if not isinstance(event, dict):
+        return False
+    rc = event.get("requestContext") or {}
+    return isinstance(rc, dict) and isinstance(rc.get("http"), dict)
+
+
+def _http_response(status: int, body: dict) -> dict:
+    """Wrap a JSON body in the {statusCode, headers, body} shape API Gateway
+    HTTP API v2 needs when PayloadFormatVersion is 2.0."""
+    return {
+        "statusCode": status,
+        "headers": {
+            "content-type": "application/json",
+            # Defensive: same-origin in prod (CloudFront), but if an
+            # unexpected origin shows up we don't want to leak responses to it.
+            "cache-control": "no-store",
+        },
+        "body": json.dumps(body),
+    }
+
+
 # -----------------------------------------------------------------------------
 # Handler
 # -----------------------------------------------------------------------------
 def lambda_handler(event, context):
-    """Direct-invoke contract (an API Gateway / Cognito front door comes in a
-    later slice). Expected event:
-        {
-          "notes": "<free-text ward-round notes>",   # required
-          "user_sub": "<cognito subject>",            # required (pseudonymous)
-          "output_type": "summary,gp_letter,patient"  # optional, default all
-        }
+    """Two invocation contracts share this handler:
+
+    (1) HTTP API v2 (slice 4a onwards) - the production path. The clinician's
+        IdToken is validated by API Gateway's JWT authoriser, so the verified
+        Cognito 'sub' arrives at
+            event['requestContext']['authorizer']['jwt']['claims']['sub']
+        We MUST take user_sub from there, never from the request body - the
+        body is client-controlled and could be spoofed; the claims map is
+        populated only after cryptographic verification by API Gateway.
+
+    (2) Direct invoke (slice 2/3 smoke tests, console "Test" button). Expected:
+            {
+              "notes": "<free-text ward-round notes>",   # required
+              "user_sub": "<cognito subject>",           # required for direct invoke
+              "output_type": "summary,gp_letter,patient" # optional
+            }
+
+    The response shape mirrors the contract: an HTTP response object for (1),
+    the bare {ok, ...} dict for (2), so existing smoke tests don't regress.
     """
     started = time.time()
+    is_http = _is_http_api_event(event)
 
-    # Accept either a raw dict (console/CLI test) or an API-GW-style body string,
-    # so this keeps working when the HTTP front door is added.
+    def fail(status: int, body: dict):
+        return _http_response(status, body) if is_http else body
+
+    # Accept either a raw dict (console/CLI test) or an API-GW-style body string.
     if isinstance(event, str):
         try:
             event = json.loads(event)
         except json.JSONDecodeError:
-            return _bad_request("event was a string but not valid JSON")
+            return fail(400, _bad_request("event was a string but not valid JSON"))
+
+    body_obj = {}
     if isinstance(event.get("body"), str):
         try:
-            event = {**event, **json.loads(event["body"])}
+            body_obj = json.loads(event["body"])
         except json.JSONDecodeError:
-            return _bad_request("body was a string but not valid JSON")
+            return fail(400, _bad_request("body was a string but not valid JSON"))
+    elif isinstance(event.get("body"), dict):
+        # Some test harnesses pass the body pre-parsed.
+        body_obj = event["body"]
 
-    notes = (event.get("notes") or "").strip()
-    user_sub = (event.get("user_sub") or "").strip()
-    output_type = (event.get("output_type") or "summary,gp_letter,patient").strip()
+    # Merge for direct-invoke convenience, but NEVER trust body for identity.
+    merged = {**event, **body_obj} if not is_http else body_obj
+
+    # --- Identity: JWT claims (HTTP) win over anything client-asserted -------
+    if is_http:
+        claims = (
+            (event.get("requestContext") or {})
+            .get("authorizer", {})
+            .get("jwt", {})
+            .get("claims", {})
+        )
+        user_sub = (claims.get("sub") or "").strip()
+        if not user_sub:
+            # Should be impossible if the JWT authoriser is wired correctly,
+            # but fail closed if it isn't.
+            return _http_response(401, {"ok": False, "error": "unauthenticated",
+                                         "message": "no verified sub claim on request"})
+    else:
+        user_sub = (merged.get("user_sub") or "").strip()
+        if not user_sub:
+            return _bad_request("'user_sub' is required (the Cognito subject)")
+
+    notes = (merged.get("notes") or "").strip()
+    output_type = (merged.get("output_type") or "summary,gp_letter,patient").strip()
 
     if not notes:
-        return _bad_request("'notes' is required and must be non-empty")
-    if not user_sub:
-        return _bad_request("'user_sub' is required (the Cognito subject)")
+        return fail(400, _bad_request("'notes' is required and must be non-empty"))
 
     # --- 1) Bedrock Converse call on the pinned model -------------------------
     try:
@@ -179,8 +268,9 @@ def lambda_handler(event, context):
     except ClientError as exc:
         # Log the error class/code, never the notes.
         logger.error("bedrock_converse_failed: %s", exc.response.get("Error", {}))
-        return {"ok": False, "error": "bedrock_error",
+        body = {"ok": False, "error": "bedrock_error",
                 "message": exc.response.get("Error", {}).get("Code", "Unknown")}
+        return fail(502, body)
 
     model_text = response["output"]["message"]["content"][0]["text"]
     usage = response.get("usage", {})
@@ -227,8 +317,9 @@ def lambda_handler(event, context):
         )
     except ClientError as exc:
         logger.error("audit_put_failed: %s", exc.response.get("Error", {}))
-        return {"ok": False, "error": "audit_write_error",
+        body = {"ok": False, "error": "audit_write_error",
                 "message": exc.response.get("Error", {}).get("Code", "Unknown")}
+        return fail(500, body)
 
     # --- 4) PHI-free operational log + response -------------------------------
     logger.info(json.dumps({
@@ -242,7 +333,7 @@ def lambda_handler(event, context):
         "latency_ms": int((time.time() - started) * 1000),
     }))
 
-    return {
+    body = {
         "ok": True,
         "generation_id": generation_id,
         "draft": True,
@@ -252,3 +343,4 @@ def lambda_handler(event, context):
         "input_sha256": input_hash,
         "output_sha256": output_hashes,
     }
+    return _http_response(200, body) if is_http else body

@@ -1175,9 +1175,25 @@ Outputs:
   HttpApiId:
     Description: HTTP API id
     Value: !Ref HttpApi
+    # Exported so the slice-4c `discharge-web` stack can wire CloudFront
+    # against this API. CFN Exports are unique per region+account; the stack
+    # name prefix is the standard disambiguator. The export safety lock
+    # prevents this stack from removing or changing the output value while
+    # another stack ImportValue's it - intentional, stops accidental breakage.
+    Export:
+      Name: !Sub "${AWS::StackName}-HttpApiId"
   HttpApiEndpoint:
     Description: Default HTTP API endpoint - call POST {endpoint}/generate with Bearer IdToken
     Value: !Sub "https://${HttpApi}.execute-api.${AWS::Region}.${AWS::URLSuffix}"
+  HttpApiDomain:
+    # Same as HttpApiEndpoint but WITHOUT the https:// scheme. CloudFront's
+    # Origin.DomainName wants a bare hostname; passing a URL gets you an
+    # opaque deploy-time error. Splitting the two outputs is cleaner than
+    # asking the web stack to string-strip the scheme via Fn::Join hacks.
+    Description: HTTP API hostname (no scheme) - used as the CloudFront origin DomainName
+    Value: !Sub "${HttpApi}.execute-api.${AWS::Region}.${AWS::URLSuffix}"
+    Export:
+      Name: !Sub "${AWS::StackName}-HttpApiDomain"
   # --- Slice 4b additions ---------------------------------------------------
   ResultsTableName:
     Description: Transient outputs table (slice 4b, 24h TTL). NOT part of the audit log.

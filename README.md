@@ -82,7 +82,7 @@ The backend is being built in thin vertical slices, defined as infrastructure-as
 | 3 | DynamoDB Streams → S3 Object Lock (WORM) tamper-evidence ledger | **Deployed** |
 | 4a | Cognito User Pool + HTTP API (v2) + native JWT authoriser in front of `generate` | **Deployed + verified 2026-05-26** |
 | 4b | Async `202 + poll` rework (dispatcher + status Lambdas, idempotency keys) + Vite + Amplify Auth SPA (local) | **Deployed + verified 2026-05-27** |
-| 4c | S3 + CloudFront with single distribution (two origins: S3 SPA + API Gateway) | Planned |
+| 4c | S3 + CloudFront with single distribution (two origins: S3 SPA + API Gateway) — separate `discharge-web` stack, default `*.cloudfront.net` host, OAC, security-headers policy | **Deployed + verified 2026-05-27** |
 
 **Slice 2 detail.** A Python 3.13 Lambda ([`src/generate/`](src/generate/)) calls Bedrock Converse on the pinned model, splits the combined output into the three parts, and writes the hash-only audit item from ADR-002 (write-once; no PHI in the table or logs). Its execution role is scoped to exactly three resources and nothing else:
 

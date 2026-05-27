@@ -556,3 +556,200 @@ pending ┼─ failed ────── (error_code + error_message; no outputs
   clinical safety (anchoring the leaflet to approved content), NOT by reading age. This
   ties to the human-in-the-loop control and the Model Card's "confidence in outputs"
   theme.
+
+---
+
+## ADR-006 — Static SPA delivery: single CloudFront distribution, two origins
+
+**Status:** Accepted (2026-05-27, slice 4c).
+
+### Context
+
+Slice 4b ended with a Vite + Amplify Auth SPA running locally against the
+deployed HTTP API, with API Gateway CORS allow-listing `localhost:5173`.
+For a portfolio demo the SPA must be reachable from a hosted URL, served
+over HTTPS, behind the same JWT-authenticated path the API uses. The
+constraints inherited from earlier ADRs:
+
+- ADR-002: no PHI may sit in static assets or in cache.
+- ADR-003: inference + data-at-rest remain in `eu-west-2`.
+- ADR-004 / ADR-005: the HTTP API + Cognito JWT authoriser stay as-is;
+  this slice must not weaken or re-architect them.
+
+### Decision
+
+A **single CloudFront distribution** with **two origins**:
+
+- **S3 (private, OAC-only)** — serves the Vite-built SPA. Default cache
+  behaviour, `CachingOptimized` policy, SPA-routing handled via
+  `CustomErrorResponses` (403/404 → `/index.html` 200).
+- **API Gateway HTTP API (eu-west-2, imported)** — serves `/generate` and
+  `/generations/*`. Path-pattern cache behaviours, `CachingDisabled`,
+  `AllViewerExceptHostHeader` origin-request policy.
+
+Lives in a **separate `discharge-web` CloudFormation stack** in the same
+region (eu-west-2), importing `HttpApiId` + `HttpApiDomain` via
+`Fn::ImportValue` from the existing `discharge-audit` stack.
+
+Default `*.cloudfront.net` hostname for now — no custom domain, no ACM cert
+in this slice. The us-east-1 ACM hooks are present as commented-out
+scaffolding in `infra/web-template.yaml` for a later cutover.
+
+### Why a single distribution, two origins (vs S3 and API on separate hostnames)
+
+The alternative is the classic SPA-on-S3-website + API-on-`*.execute-api.*`
+shape with CORS allow-listing the SPA's domain on the API.
+
+The single-distribution shape wins on three independent axes:
+
+1. **Eliminates CORS preflight for every API call.** Browsers only enforce
+   CORS for *cross-origin* requests. When the SPA at
+   `https://x.cloudfront.net/` calls `fetch('/generate')`, both the page
+   origin and the request destination are `https://x.cloudfront.net` —
+   same origin — so the browser skips preflight entirely. The
+   `idempotency-key` and `authorization` headers go in the actual POST,
+   not in a separate `OPTIONS` round-trip. One less request, one less
+   API Gateway invoice line item.
+2. **One TLS cert, one access-log story, one URL.** Cuts ops surface area
+   and removes "which domain is the API on?" from the demo narration.
+3. **No CORS configuration drift.** The CORS allow-list on the API still
+   contains only `http://localhost:5173` (for `npm run dev`); we
+   deliberately do NOT add the CloudFront hostname there because, by the
+   same-origin argument above, it would be dead config. Adding it would
+   invite a future engineer to assume the API was *meant* to be reachable
+   cross-origin and drop the allow-list when convenient. Same-origin =
+   no CORS = no allow-list entry needed.
+
+### Why OAC over OAI
+
+**Origin Access Identity (2009)** was the legacy mechanism: CloudFront
+authenticated to S3 as a special user-like principal listed in the bucket
+policy. It did not support SSE-KMS-encrypted buckets, struggled with newer
+S3 regions, and was permitted only on GET/HEAD.
+
+**Origin Access Control (2022)** uses **SigV4**: CloudFront signs each
+origin request with its own service credentials. Supports SSE-KMS, all
+regions, all HTTP methods, and removes the "special principal" footgun.
+AWS-recommended for all new work since 2023. There is no scenario in 2026
+where new OAI is the right answer.
+
+The bucket policy uses an `aws:SourceArn` condition pinning access to this
+specific distribution's ARN. Without that condition, *any* CloudFront
+distribution in *any* account that knew the bucket name could read the
+bucket — the classic confused-deputy hole. With it, only `discharge-web`'s
+distribution can. Same pattern as SNS→Lambda, EventBridge→target, SES→S3;
+once internalised it pays dividends across the SAA-C03 syllabus.
+
+### Why path-pattern behaviours with `AllViewerExceptHostHeader`
+
+CloudFront evaluates cache behaviours top-down by path pattern; the default
+behaviour runs only when nothing else matches. `/generate` (POST) and
+`/generations/*` (GET) sit above the default, routing to the API origin
+with `CachingDisabled` because per-user JWT-authenticated responses must
+never be shared across viewers.
+
+The AWS-managed origin-request policy `AllViewerExceptHostHeader`
+(ID `b689b0a8-53d0-40ab-baf2-68738e2966ac`) forwards every viewer header —
+Authorization, Idempotency-Key, Content-Type, cookies, query string — to
+the API origin **except** the `Host` header. CloudFront rewrites `Host` to
+the origin's hostname (`*.execute-api.eu-west-2.amazonaws.com`). Without
+this rewrite, API Gateway HTTP API responds 403 because the Host doesn't
+match its own DNS — a frustrating silent failure that's the first thing to
+suspect if a slice-4c smoke test returns 403 on `/generate` while the same
+call works against the API directly.
+
+### Why custom error responses 403/404 → /index.html 200
+
+The SPA does client-side routing. Reloading `/some/deep-link` hits S3,
+which returns 404 because no such object exists. Without intervention the
+viewer sees a CloudFront error page. With `CustomErrorResponses` rewriting
+both 403 (OAC-readable bucket, key missing) and 404 (any other missing key)
+to `/index.html` with status 200, the SPA's router takes over and renders
+the right view.
+
+This rewrite is *distribution-wide*, but the more specific cache
+behaviours for `/generate` and `/generations/*` intercept the path before
+the rewrite has a chance to fire — verified in §6.4 of
+`infra/SLICE_4C_DEPLOY_AND_SMOKE.md`.
+
+### The us-east-1 ACM rule (deferred, documented)
+
+CloudFront viewer certificates **must live in us-east-1**, regardless of
+where the distribution, origins, or any other resources are. CloudFront is
+a global service whose control plane reads ACM from one region only — a
+cert in eu-west-2 is invisible to it.
+
+This slice does not exercise the rule (no custom domain), but the future
+cutover is fully documented as a commented block at the bottom of
+`web-template.yaml`: a second stack in us-east-1 owns the cert, its ARN is
+passed into the eu-west-2 web stack as a parameter (cross-region
+`Fn::ImportValue` does not exist), and the existing `ViewerCertificate`
+block is swapped for `AcmCertificateArn` + `Aliases`. Same applies to WAFv2
+web ACLs for CloudFront (`SCOPE=CLOUDFRONT`, region us-east-1) and to any
+Lambda@Edge functions.
+
+### Why a separate `discharge-web` stack
+
+CloudFront distribution updates take 5–15 minutes to propagate to all edge
+PoPs; the stack does not return `UPDATE_COMPLETE` until propagation
+finishes. Bundling CloudFront into the existing `discharge-audit` stack
+would mean every backend iteration (a Lambda env-var bump, a CORS tweak)
+paid the full propagation cost. Splitting keeps the backend iteration
+loop sub-minute and confines the slow update path to genuine CloudFront
+changes, which are rare.
+
+Both stacks live in eu-west-2, so cross-stack values use the normal
+`Fn::ImportValue` against same-region exports. If we'd put CloudFront in
+its own region (which we briefly considered, since the resource itself is
+global), we'd need either an SSM Parameter Store cross-region read or a
+stack parameter — another reason to keep things in eu-west-2 for now.
+
+### Defence-in-depth response headers
+
+A `ResponseHeadersPolicy` is attached to both API path behaviours:
+HSTS (1 year, includeSubdomains), `X-Content-Type-Options: nosniff`,
+`X-Frame-Options: DENY`, `Referrer-Policy: strict-origin-when-cross-origin`,
+and a minimal CSP that allows same-origin scripts/styles, same-origin XHR
+(covering both SPA and API since they share the hostname), and Cognito IdP
+endpoints for the Amplify SRP exchange. Cheap to add, expected by any
+security reviewer, and a useful talking point for the demo.
+
+### Consequences
+
+- The SPA gets HTTPS, HTTP/2+HTTP/3, edge caching, and SPA routing for
+  free. First-byte latency from a UK viewer should be ~30-60 ms (UK edge
+  PoP) for static assets and dominated by Bedrock for `/generate`.
+- The HTTP API CORS allow-list keeps `http://localhost:5173` (for `npm
+  run dev`) and gains nothing else, because the production path is
+  same-origin.
+- The `discharge-audit` stack now has exports it can't change while
+  `discharge-web` is importing them. This is the export safety lock and
+  is intentional — it's the guard against accidentally bricking the web
+  stack via a backend edit.
+- CloudFront PriceClass_100 limits PoPs to NA + EU. Sufficient for a UK
+  NHS demo audience; bump to `_200` if the audience ever shifts.
+- The S3 bucket is `DeletionPolicy: Retain` with versioning on, so
+  accidental object deletes leave delete-markers (recoverable) and a
+  stack-delete leaves the bucket alive.
+
+### Alternatives considered
+
+- **CloudFront with the S3 *website* endpoint as origin.** Rejected: the
+  website endpoint is HTTP-only and bypasses bucket policy ACLs, so the
+  bucket would have to be public. Defeats the whole point of OAC and
+  fails any reasonable threat-model review.
+- **AWS Amplify Hosting.** Faster initial setup but bundles deploy +
+  CloudFront + auth into one product, opaquely. The portfolio learning
+  value is in seeing the explicit OAC + bucket policy + custom error
+  responses + cache behaviours wired by hand.
+- **S3 + CloudFront for the SPA, API kept on its `*.execute-api.*`
+  hostname with CORS.** Working, common, but adds a preflight to every
+  state-changing API call and means two TLS certs/two hostnames to
+  document. No upside over the chosen shape.
+- **Adding the CloudFront hostname to API Gateway CORS allow-list.**
+  Considered for completeness, rejected: it would be dead config (the
+  prod call is same-origin) and would invite future devs to assume the
+  API was meant to be cross-origin from the SPA — leading to the
+  drop-the-allow-list change that would silently break only the dev
+  workflow. Same-origin in prod means CORS is genuinely not in the
+  picture; the config should reflect that.

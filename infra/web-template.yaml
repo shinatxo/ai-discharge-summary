@@ -1,0 +1,470 @@
+AWSTemplateFormatVersion: '2010-09-09'
+
+# ============================================================================
+# discharge-web - Slice 4c
+#
+# Single CloudFront distribution, two origins:
+#   - S3 (private, OAC-only)             -> the Vite-built SPA
+#   - API Gateway HTTP API (eu-west-2)   -> existing slice-4b dispatcher/status
+#
+# Deployed AFTER infra/template.yaml (the `discharge-audit` stack) because we
+# Fn::ImportValue the HTTP API's id + hostname from there. CFN Exports are
+# scoped to a single region+account, so both stacks MUST be in eu-west-2 for
+# this to resolve. (CloudFront itself is global - the "region" the distribution
+# logically belongs to is just where the stack metadata lives.)
+#
+# Why split from discharge-audit?
+#   - CloudFront UPDATE-IN-PROGRESS is 5-15 min. Backend iteration shouldn't
+#     pay that cost. Splitting means a Lambda code change deploys in <1 min.
+#   - When we eventually add a custom domain, the ACM cert MUST live in
+#     us-east-1 (see THE us-east-1 ACM RULE below). That's already a separate
+#     stack, so we're already paying the multi-stack tax - we may as well get
+#     the iteration-speed benefit too.
+#
+# ----------------------------------------------------------------------------
+# THE us-east-1 ACM RULE (SAA-C03 must-know, deferred in this slice)
+#
+# CloudFront viewer certificates MUST live in us-east-1, regardless of where
+# the distribution, origins, or any other resources are. CloudFront is a
+# *global* service - its control plane reads ACM from one region only.
+#
+# Other CloudFront-region quirks worth knowing:
+#   - WAFv2 web ACLs for CloudFront also live in us-east-1 with SCOPE=CLOUDFRONT
+#     (REGIONAL scope is for ALB/API Gateway/AppSync; not interchangeable).
+#   - Shield Advanced protections for CloudFront are us-east-1.
+#   - Origins themselves can be anywhere (our HTTP API in eu-west-2 is fine).
+#   - Lambda@Edge functions must be authored in us-east-1 and replicate globally.
+#
+# We are NOT exercising the custom-domain path in this slice (Shina opted to
+# stick with the *.cloudfront.net default hostname). The hooks are present as
+# commented blocks below - search for "FUTURE CUSTOM DOMAIN".
+# ============================================================================
+
+Description: >
+  Slice 4c - Static SPA on private S3 fronted by CloudFront, with a second
+  origin proxying /generate and /generations/* to the slice-4b HTTP API.
+  Default *.cloudfront.net hostname; no custom domain yet (us-east-1 ACM
+  scaffolding is present as commented hooks for a later cutover).
+
+# ---------------------------------------------------------------------------
+# Parameters
+# ---------------------------------------------------------------------------
+Parameters:
+  Environment:
+    Type: String
+    Default: demo
+    AllowedValues: [demo, prod]
+    Description: Tag-only for now; informs Outputs naming if we extend later.
+
+  AuditStackName:
+    Type: String
+    Default: discharge-audit
+    Description: >
+      The slice-1..4b stack name. We Fn::ImportValue its
+      <stack>-HttpApiId and <stack>-HttpApiDomain exports.
+
+  PriceClass:
+    Type: String
+    Default: PriceClass_100
+    AllowedValues: [PriceClass_100, PriceClass_200, PriceClass_All]
+    Description: >
+      _100 = NA + EU (cheapest, sufficient for an NHS UK demo).
+      _200 = adds Asia/Africa/Oceania/SA (no Australia/NZ).
+      _All = every PoP. Increase only if the demo audience moves.
+
+Resources:
+  # ==========================================================================
+  # 1) S3 bucket for the SPA
+  #
+  # Private. Encrypted. Versioned. Retained on stack deletion (so we never
+  # nuke the static assets by accident). NO website endpoint - we serve via
+  # the CloudFront REST endpoint (s3.<region>.amazonaws.com), which respects
+  # bucket policy + OAC; the *website* endpoint is HTTP-only and bypasses
+  # bucket policy ACLs. Never use S3 website hosting when fronting with
+  # CloudFront + private content.
+  # ==========================================================================
+  SpaBucket:
+    Type: AWS::S3::Bucket
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
+    Properties:
+      # Let CloudFormation generate the bucket name. S3 bucket names are
+      # globally unique - hand-picking a name (e.g. "discharge-spa") would
+      # fail any time anyone else, anywhere, took it first.
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              # SSE-S3 is sufficient for static SPA assets - no PHI, no
+              # secrets, just minified JS/CSS/HTML. Using SSE-KMS here would
+              # add per-GET KMS API calls (charged) for no security benefit;
+              # the S3 audit-side bucket (LedgerBucket in the audit stack)
+              # DOES use SSE-KMS because it carries DynamoDB-stream events.
+              SSEAlgorithm: AES256
+            BucketKeyEnabled: false
+      VersioningConfiguration:
+        # Versioning gives us free rollback: if a bad SPA deploy ships, we can
+        # restore the prior object version without re-syncing. Cheap insurance.
+        Status: Enabled
+      PublicAccessBlockConfiguration:
+        # All four ON. This is non-negotiable - public access is the source of
+        # nearly every "S3 data leak" headline. CloudFront reads via OAC under
+        # an explicit bucket-policy allow; nothing else can.
+        # (The CFN property is `PublicAccessBlockConfiguration`, even though
+        #  the S3 console UI labels it "Block Public Access" - common gotcha.)
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+      OwnershipControls:
+        Rules:
+          # BucketOwnerEnforced disables ACLs entirely. Modern S3 best practice.
+          # Combined with PublicAccessBlock, the only access path is policy.
+          - ObjectOwnership: BucketOwnerEnforced
+      Tags:
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: Project
+          Value: ai-discharge-summary
+        - Key: Slice
+          Value: "4c"
+
+  # ==========================================================================
+  # 2) Origin Access Control (OAC) - the modern replacement for OAI
+  #
+  # OAI (Origin Access Identity, ~2009) was a special CloudFront principal
+  # listed in the bucket policy. It worked but didn't support SSE-KMS, S3
+  # outside us-east-1 in some old regions, or POST methods.
+  #
+  # OAC (2022) uses SigV4: CloudFront signs each origin request with its own
+  # service credentials, identified by the OAC id. Supports SSE-KMS, all
+  # regions, all methods. For any new work in 2024+, always OAC, never OAI.
+  #
+  # SigningBehavior: always - sign every origin request, including ones that
+  #   already have an Authorization header (we don't, but it's the safer
+  #   default; "no-override" can silently fail).
+  # SigningProtocol: sigv4 - the only supported value today; named for
+  #   forward-compat.
+  # OriginAccessControlOriginType: s3 - this OAC will only ever be attached
+  #   to S3 origins; CloudFront enforces this.
+  # ==========================================================================
+  OriginAccessControl:
+    Type: AWS::CloudFront::OriginAccessControl
+    Properties:
+      OriginAccessControlConfig:
+        Name: !Sub "${AWS::StackName}-spa-oac"
+        Description: SigV4 signing for the SPA bucket - CloudFront reads only.
+        OriginAccessControlOriginType: s3
+        SigningBehavior: always
+        SigningProtocol: sigv4
+
+  # ==========================================================================
+  # 3) S3 bucket policy - allow CloudFront (via OAC) to GetObject, nothing else.
+  #
+  # The aws:SourceArn condition is THE confused-deputy defence. Without it,
+  # the policy says "allow the cloudfront.amazonaws.com service to read this
+  # bucket" - which would let ANY CloudFront distribution in ANY account read
+  # the bucket if it knew the name. With the condition, only THIS distribution
+  # (by ARN) can. Same pattern shows up in SNS->Lambda, EventBridge->target,
+  # SES->S3; the lesson generalises.
+  #
+  # Note: we reference Distribution.Id below for the SourceArn. CloudFront
+  # distribution ARNs follow:
+  #   arn:aws:cloudfront::<account>:distribution/<id>
+  # Note the empty region segment - CloudFront is global.
+  # ==========================================================================
+  SpaBucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket: !Ref SpaBucket
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Sid: AllowCloudFrontOACGet
+            Effect: Allow
+            Principal:
+              Service: cloudfront.amazonaws.com
+            Action: s3:GetObject
+            Resource: !Sub "arn:${AWS::Partition}:s3:::${SpaBucket}/*"
+            Condition:
+              StringEquals:
+                # arn:aws:cloudfront::<account>:distribution/<id>
+                # - empty region segment because CloudFront is global.
+                AWS:SourceArn: !Sub "arn:${AWS::Partition}:cloudfront::${AWS::AccountId}:distribution/${Distribution}"
+
+  # ==========================================================================
+  # 4) (Optional but recommended) Response headers policy
+  #
+  # Adds defence-in-depth security headers (HSTS, X-Content-Type-Options,
+  # Referrer-Policy, basic CSP) to every CloudFront response. Cheap to enable,
+  # invisible if absent, painful if a reviewer asks "where's HSTS?".
+  #
+  # NOTE on CSP: this is a *minimal* policy that:
+  #   - allows the SPA's own scripts/styles (the bundled JS)
+  #   - permits XHR to the same origin (the API path goes through the same
+  #     CloudFront hostname, so 'self' covers it)
+  #   - permits Cognito (cognito-idp.eu-west-2.amazonaws.com) for sign-in
+  # Tighten further once the SPA build is fingerprinted.
+  # ==========================================================================
+  ResponseHeadersPolicy:
+    Type: AWS::CloudFront::ResponseHeadersPolicy
+    Properties:
+      ResponseHeadersPolicyConfig:
+        Name: !Sub "${AWS::StackName}-security-headers"
+        Comment: HSTS, anti-MIME-sniff, referrer, CSP, frame-deny.
+        SecurityHeadersConfig:
+          StrictTransportSecurity:
+            AccessControlMaxAgeSec: 31536000   # 1 year - the standard preload requirement
+            IncludeSubdomains: true
+            Preload: false                     # flip to true if you submit to hstspreload.org
+            Override: true
+          ContentTypeOptions:
+            Override: true                     # X-Content-Type-Options: nosniff
+          FrameOptions:
+            FrameOption: DENY                  # this app is never iframed; deny is safest
+            Override: true
+          ReferrerPolicy:
+            ReferrerPolicy: strict-origin-when-cross-origin
+            Override: true
+          ContentSecurityPolicy:
+            # 'self' covers same-origin XHR to /generate and /generations/*.
+            # Cognito IdP endpoint allowed for Amplify Auth's SRP exchange.
+            ContentSecurityPolicy: >-
+              default-src 'self';
+              script-src 'self';
+              style-src 'self' 'unsafe-inline';
+              img-src 'self' data:;
+              connect-src 'self' https://cognito-idp.eu-west-2.amazonaws.com https://cognito-identity.eu-west-2.amazonaws.com;
+              frame-ancestors 'none';
+              base-uri 'self';
+              form-action 'self'
+            Override: true
+
+  # ==========================================================================
+  # 5) The CloudFront distribution itself
+  #
+  # Two origins, three cache behaviours:
+  #   - Default behaviour       -> S3 (CachingOptimized policy)
+  #   - /generate (POST)        -> HTTP API (CachingDisabled + AllViewerExceptHostHeader)
+  #   - /generations/* (GET)    -> HTTP API (same)
+  #
+  # Cache behaviours are evaluated TOP-DOWN by path pattern. More specific
+  # patterns must come BEFORE less specific ones. The "default" behaviour is
+  # always last and matches anything not picked up above.
+  # ==========================================================================
+  Distribution:
+    Type: AWS::CloudFront::Distribution
+    Properties:
+      DistributionConfig:
+        Enabled: true
+        Comment: !Sub "${AWS::StackName} - SPA + HTTP API (slice 4c)"
+        # IPv6 free; some NHS networks are dual-stack.
+        IPV6Enabled: true
+        # http2+3 = modern viewer protocol negotiation; downgrades gracefully.
+        HttpVersion: http2and3
+        PriceClass: !Ref PriceClass
+
+        # ---- Origins ------------------------------------------------------
+        Origins:
+          # ---- Origin A: the SPA bucket (S3 REST endpoint, OAC-signed)
+          - Id: spa-s3-origin
+            # RegionalDomainName ensures S3 routes us-east-1 sigv4 vs the
+            # bucket's actual region correctly. Always prefer it over
+            # DomainName for S3 origins.
+            DomainName: !GetAtt SpaBucket.RegionalDomainName
+            S3OriginConfig:
+              # Empty OAI = "I'm not using legacy OAI". Required field even
+              # when OAC is configured; the OAC link itself is below.
+              OriginAccessIdentity: ""
+            OriginAccessControlId: !GetAtt OriginAccessControl.Id
+
+          # ---- Origin B: the HTTP API (custom HTTPS origin)
+          - Id: api-httpapi-origin
+            # Imported from the discharge-audit stack. We added the
+            # HttpApiDomain export specifically because CloudFront needs the
+            # bare hostname (no scheme).
+            DomainName:
+              Fn::ImportValue: !Sub "${AuditStackName}-HttpApiDomain"
+            CustomOriginConfig:
+              OriginProtocolPolicy: https-only   # never downgrade to HTTP
+              OriginSSLProtocols: [TLSv1.2]      # AWS-managed endpoints are TLS 1.2+
+              HTTPSPort: 443
+
+        # ---- Default cache behaviour: serve SPA from S3 -------------------
+        DefaultCacheBehavior:
+          TargetOriginId: spa-s3-origin
+          ViewerProtocolPolicy: redirect-to-https
+          AllowedMethods: [GET, HEAD, OPTIONS]
+          CachedMethods: [GET, HEAD]
+          Compress: true
+          # AWS-managed CachePolicy IDs:
+          #   CachingOptimized   = 658327ea-f89d-4fab-a63d-7e88639e58f6
+          #   CachingDisabled    = 4135ea2d-6df8-44a3-9df3-4b5a84be39ad
+          # Optimized = Gzip + Brotli, default TTL 1 day, max 1 year, honours
+          # Cache-Control headers from origin. Vite emits hashed filenames so
+          # long TTLs are safe.
+          CachePolicyId: 658327ea-f89d-4fab-a63d-7e88639e58f6
+
+        # ---- API cache behaviours: forward verbatim, no caching ----------
+        CacheBehaviors:
+          # POST /generate -> dispatcher Lambda
+          - PathPattern: /generate
+            TargetOriginId: api-httpapi-origin
+            ViewerProtocolPolicy: redirect-to-https
+            # OPTIONS included so any future cross-origin preflights work.
+            # Same-origin requests (SPA on the same CF hostname) don't
+            # preflight, but a curl from elsewhere might.
+            AllowedMethods: [GET, HEAD, OPTIONS, PUT, POST, PATCH, DELETE]
+            CachedMethods: [GET, HEAD]
+            Compress: true
+            # CachingDisabled - per-user auth'd responses, never share.
+            CachePolicyId: 4135ea2d-6df8-44a3-9df3-4b5a84be39ad
+            # OriginRequestPolicy: AllViewerExceptHostHeader
+            #   ID = b689b0a8-53d0-40ab-baf2-68738e2966ac
+            # Forwards every viewer header (Authorization, Idempotency-Key,
+            # Content-Type, cookies, query string) to the origin EXCEPT the
+            # Host header - which CloudFront rewrites to the origin's
+            # hostname. API Gateway HTTP API will 403 the request if Host
+            # is not its own *.execute-api.* hostname; this policy is the
+            # one-line fix.
+            OriginRequestPolicyId: b689b0a8-53d0-40ab-baf2-68738e2966ac
+            ResponseHeadersPolicyId: !Ref ResponseHeadersPolicy
+
+          # GET /generations/{id} -> status Lambda
+          - PathPattern: /generations/*
+            TargetOriginId: api-httpapi-origin
+            ViewerProtocolPolicy: redirect-to-https
+            AllowedMethods: [GET, HEAD, OPTIONS, PUT, POST, PATCH, DELETE]
+            CachedMethods: [GET, HEAD]
+            Compress: true
+            CachePolicyId: 4135ea2d-6df8-44a3-9df3-4b5a84be39ad
+            OriginRequestPolicyId: b689b0a8-53d0-40ab-baf2-68738e2966ac
+            ResponseHeadersPolicyId: !Ref ResponseHeadersPolicy
+
+        # ---- SPA-routing error responses ---------------------------------
+        # Both 403 and 404 from S3 get rewritten to /index.html with status
+        # 200, so the SPA's client-side router (or any deep-link reload)
+        # works without a server-side route table.
+        #
+        # 403: OAC could reach the bucket but the specific key didn't exist.
+        #      S3 returns 403 to avoid leaking object-existence info.
+        # 404: belt-and-braces for cases where 403 isn't returned.
+        #
+        # WARNING: this rewrite applies to the WHOLE distribution. /generate
+        # and /generations/* go to the API origin, and API responses (e.g. a
+        # 404 from cross-user GET) are NOT static-asset 404s - they come back
+        # as API JSON. CloudFront only triggers CustomErrorResponses on
+        # origin status codes; the more specific cache behaviours intercept
+        # the path before this kicks in. Verified in smoke test.
+        CustomErrorResponses:
+          - ErrorCode: 403
+            ResponseCode: 200
+            ResponsePagePath: /index.html
+            ErrorCachingMinTTL: 10
+          - ErrorCode: 404
+            ResponseCode: 200
+            ResponsePagePath: /index.html
+            ErrorCachingMinTTL: 10
+
+        # ---- The SPA's entry-point object inside the bucket --------------
+        DefaultRootObject: index.html
+
+        # ---- Viewer cert: default *.cloudfront.net for now ---------------
+        ViewerCertificate:
+          # CloudFrontDefaultCertificate = use the *.cloudfront.net wildcard.
+          # Sufficient for the default hostname. Mutually exclusive with
+          # AcmCertificateArn + Aliases (custom domain).
+          CloudFrontDefaultCertificate: true
+          MinimumProtocolVersion: TLSv1.2_2021
+          # SSLSupportMethod is unused with CloudFrontDefaultCertificate;
+          # noting it here for the future custom-domain swap-in.
+
+        # ====================================================================
+        # FUTURE CUSTOM DOMAIN (deferred - documented for the cutover):
+        #
+        # When you add a custom domain (say, discharge.example.co.uk):
+        #
+        # 1) Create a SECOND stack in us-east-1 that owns the ACM cert:
+        #
+        #    Resources:
+        #      ViewerCert:
+        #        Type: AWS::CertificateManager::Certificate
+        #        Properties:
+        #          DomainName: discharge.example.co.uk
+        #          ValidationMethod: DNS
+        #          DomainValidationOptions:
+        #            - DomainName: discharge.example.co.uk
+        #              HostedZoneId: !Ref HostedZoneId
+        #    Outputs:
+        #      ViewerCertArn:
+        #        Value: !Ref ViewerCert
+        #        # NOTE: cross-region Exports don't exist. Either pass the ARN
+        #        # in as a parameter to this stack, or read it via an SSM
+        #        # Parameter Store parameter (us-east-1 ACM stack writes it
+        #        # there, this eu-west-2 stack reads it via dynamic reference).
+        #
+        # 2) Replace the ViewerCertificate block above with:
+        #
+        #    ViewerCertificate:
+        #      AcmCertificateArn: !Ref ViewerCertArnParam
+        #      SslSupportMethod: sni-only
+        #      MinimumProtocolVersion: TLSv1.2_2021
+        #
+        # 3) Add:
+        #
+        #    Aliases:
+        #      - discharge.example.co.uk
+        #
+        # 4) Point Route 53 (or external DNS) at the distribution:
+        #
+        #    Type: AWS::Route53::RecordSet
+        #    Properties:
+        #      HostedZoneId: !Ref HostedZoneId
+        #      Name: discharge.example.co.uk
+        #      Type: A
+        #      AliasTarget:
+        #        DNSName: !GetAtt Distribution.DomainName
+        #        # Magic CloudFront-global hosted zone:
+        #        HostedZoneId: Z2FDTNDATAQYW2
+        # ====================================================================
+
+        # Logging deliberately omitted from this slice to keep the smoke
+        # test simple. Add Logging block later with a separate access-log
+        # bucket; standard CloudFront logging writes via S3 ACL, which means
+        # the bucket needs ObjectOwnership: BucketOwnerPreferred (NOT
+        # Enforced). Common gotcha.
+      Tags:
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: Project
+          Value: ai-discharge-summary
+        - Key: Slice
+          Value: "4c"
+
+# ---------------------------------------------------------------------------
+# Outputs
+# ---------------------------------------------------------------------------
+Outputs:
+  SpaBucketName:
+    Description: S3 bucket holding the built SPA. Sync `ui-spa/dist/` to s3://this.
+    Value: !Ref SpaBucket
+    Export:
+      Name: !Sub "${AWS::StackName}-SpaBucketName"
+  SpaBucketArn:
+    Description: SPA bucket ARN
+    Value: !GetAtt SpaBucket.Arn
+  DistributionId:
+    Description: CloudFront distribution id (use for `aws cloudfront create-invalidation`)
+    Value: !Ref Distribution
+    Export:
+      Name: !Sub "${AWS::StackName}-DistributionId"
+  DistributionDomain:
+    Description: >
+      The *.cloudfront.net hostname. Open https://this/ to load the SPA;
+      it will sign in via Cognito and call /generate + /generations/* on the
+      SAME origin (CloudFront routes them to the HTTP API behind the scenes).
+    Value: !GetAtt Distribution.DomainName
+    Export:
+      Name: !Sub "${AWS::StackName}-DistributionDomain"
+  DistributionArn:
+    Description: ARN of the distribution (matches the bucket policy SourceArn condition).
+    Value: !Sub "arn:${AWS::Partition}:cloudfront::${AWS::AccountId}:distribution/${Distribution}"

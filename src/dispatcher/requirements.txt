@@ -1,0 +1,3 @@
+# boto3 ships with the Python 3.13 Lambda runtime - no third-party deps needed.
+# This file exists so `aws cloudformation package` has a deterministic build
+# unit (and so a future requirement can be added without a code change).

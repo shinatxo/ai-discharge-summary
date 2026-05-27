@@ -27,26 +27,42 @@ Paste the ward-round notes into the box. Read the three drafts. Fix anything tha
 ## Architecture
 
 ```
-Clinician browser
-   │  (IdToken: "Authorization: Bearer ...")
-CloudFront ── S3 (React frontend)                       ← slice 4c (planned)
+Clinician browser  (Vite + Amplify Auth SPA)
+   │  (IdToken: "Authorization: Bearer ...", Idempotency-Key: <uuid>)
+CloudFront ── S3 (React frontend)                          ← slice 4c (planned)
    │
-HTTP API (API Gateway v2)
+HTTP API (API Gateway v2)            POST /generate    GET /generations/{id}
    │
    ▼
 JWT authoriser — validates Cognito IdToken (signature, iss, aud, exp)
    │   ← if invalid: 401, Lambda never invoked
-   ▼
-generate Lambda (Python 3.13, arm64)
-   │  user_sub taken from verified JWT claim, never from body
-   ├──▶ Bedrock Converse  (Claude Sonnet 4.6, on-demand eu-west-2)
-   └──▶ DynamoDB audit table  (KMS-CMK, hash-only, write-once)
-                │  DynamoDB Streams (NEW_AND_OLD_IMAGES)
-                ▼
-            ledger Lambda
-                │  PutObject only — no Delete, no PutObjectRetention
-                ▼
-            S3 Object Lock (WORM) bucket  ← Governance/1d demo, Compliance/NHS-retention prod
+   │
+   ├── POST /generate ─▶ dispatcher Lambda  (slice 4b)
+   │                       │  writes pending audit row + IDEM receipt
+   │                       │  (TransactWriteItems, attribute_not_exists)
+   │                       │  Lambda Invoke(Event) ─────────────┐
+   │                       │  returns 202 + {job_id, status:"pending"}
+   │                       │
+   │                       ▼                                    ▼
+   │                 DynamoDB audit table             generate Lambda (worker)
+   │                 (KMS-CMK, hash-only)               │  user_sub from JWT, never body
+   │                 PK=USER#<sub>                      ├──▶ Bedrock Converse (Sonnet 4.6, on-demand eu-west-2)
+   │                 SK=GEN#<job_id> | IDEM#<key>       ├──▶ ResultsTable PutItem  (transient, 24h TTL)
+   │                       │                            └──▶ audit row UpdateItem: pending → complete/failed
+   │                       │
+   └── GET /generations/{id} ─▶ status Lambda  (slice 4b)
+                                 │  GetItem audit row + (if complete) outputs
+                                 │  cross-user reads → 404 (don't leak existence)
+                                 ▼
+                              client polls until terminal
+
+DynamoDB Streams (NEW_AND_OLD_IMAGES) on the audit table
+      │
+      ▼
+   ledger Lambda
+      │  PutObject only — no Delete, no PutObjectRetention
+      ▼
+   S3 Object Lock (WORM) bucket  ← Governance/1d demo, Compliance/NHS-retention prod
 ```
 
 - **Single-region, eu-west-2 (London)** for all stateful resources. Model **pinned to `anthropic.claude-sonnet-4-6`, invoked on-demand in eu-west-2** (ADR-001/003 rule 1 — both data-at-rest *and* inference stay UK-only; the EU geographic inference profile is retained only as a documented fallback, never US/global). Region and inference path are logged on every generation as residency evidence.
@@ -65,7 +81,7 @@ The backend is being built in thin vertical slices, defined as infrastructure-as
 | 2 | Bedrock-calling `generate` Lambda + least-privilege execution role | **Deployed** |
 | 3 | DynamoDB Streams → S3 Object Lock (WORM) tamper-evidence ledger | **Deployed** |
 | 4a | Cognito User Pool + HTTP API (v2) + native JWT authoriser in front of `generate` | **Deployed + verified 2026-05-26** |
-| 4b | React UI (Vite + Amplify Auth) wired to the deployed API | Planned |
+| 4b | Async `202 + poll` rework (dispatcher + status Lambdas, idempotency keys) + Vite + Amplify Auth SPA (local) | **Deployed + verified 2026-05-27** |
 | 4c | S3 + CloudFront with single distribution (two origins: S3 SPA + API Gateway) | Planned |
 
 **Slice 2 detail.** A Python 3.13 Lambda ([`src/generate/`](src/generate/)) calls Bedrock Converse on the pinned model, splits the combined output into the three parts, and writes the hash-only audit item from ADR-002 (write-once; no PHI in the table or logs). Its execution role is scoped to exactly three resources and nothing else:
@@ -86,6 +102,14 @@ Two production findings from that smoke test, both addressed in slice 4b:
 
 1. **API Gateway HTTP API has a hard 30-second integration timeout.** Slice 2's `aws lambda invoke` smoke test ran with Lambda's own 60s budget; through HTTP API the cap is 30s and cannot be raised. With Bedrock Sonnet emitting three outputs at `MAX_TOKENS = 4096`, a cold start on a longer ward-round note brushes that ceiling, and the client gets `503 Service Unavailable` while Lambda is still working. This is a real architectural constraint, not a wiring bug.
 2. **Lambda completes server-side even when the client got a 5xx**, leaving a "ghost" audit row and ledger object behind. For an authenticated, idempotent-per-user-sub generation that is mostly fine, but a UI that lets the user "retry" a failed call risks double-billing the Bedrock invocation. Slice 4b's UI must either disable retry on 5xx until status is confirmed, or — better — slice 4b moves to an async `202 Accepted + poll` pattern that surfaces real backend status. See [`docs/ADR-phase1.md` §ADR-004 "Slice 4a findings"](docs/ADR-phase1.md) for both findings written up.
+
+**Slice 4b detail (deployed + verified 2026-05-27).** Both 4a findings are cured at the architecture layer rather than papered over in the UI. `POST /generate` is fronted by a new **dispatcher Lambda** ([`src/dispatcher/`](src/dispatcher/)) that writes a pending audit row + an idempotency receipt atomically (`TransactWriteItems` with `attribute_not_exists` guards), async-invokes the worker via `lambda:Invoke` with `InvocationType=Event`, and returns **`202 Accepted + {job_id, status: "pending"}` in under a second**. The 30s cap is no longer in the hot path. A new **status Lambda** ([`src/status/`](src/status/)) backs `GET /generations/{id}` on the same HTTP API behind the same JWT authoriser; the client polls it until the state is terminal. The ghost-record retry hazard closes via a Stripe-style **client-supplied `Idempotency-Key` header**: a retried POST with the same key returns the same `job_id` and 200 (not 202), without re-firing the worker, because the dispatcher's transaction fails on the existing `IDEM#<key>` row.
+
+The actual outputs (clinician summary / GP letter / patient version) live in a separate **transient `ResultsTable`** with a 24-hour TTL — the audit table stays hash-only (ADR-002 invariant intact). Anti-spoof from ADR-004 still holds end-to-end: every row's PK embeds the JWT-verified `user_sub`, so a cross-user `GET` returns 404 by schema, with no possible code path to expose another user's job. The full design — state machine, idempotency contract, schema, alternatives considered — is in [`docs/ADR-phase1.md` §ADR-005](docs/ADR-phase1.md), and the deploy + smoke-test recipe is in [`infra/SLICE_4B_SMOKE_TEST.md`](infra/SLICE_4B_SMOKE_TEST.md). Unit coverage for the three Lambdas — 28 tests across [`tests/`](tests/) covering idempotency-hit, anti-spoof, retry-safe Bedrock failure, cross-user 404, legacy direct-invoke compat, and the splitter's strict/forgiving/fail-safe paths — runs in ~0.1s.
+
+**Verified end-to-end against live AWS 2026-05-27.** All seven smoke-test checks passed: unauth POST and unauth GET both returned 401 from API Gateway with no Lambda invocation; authed POST returned **202 + `job_id` in 1.184 s total** (DNS + TLS + JWKS download included; the API itself was sub-second); polling saw `pending → complete` with `parse_ok=true`; the audit row's `user_sub` matched the JWT's verified `sub` claim (`1682f284-…-6528`), the outputs landed in `ResultsTable` (not the audit table), three new ledger objects landed in the WORM bucket from the single job's state transitions; **idempotency replay** with the same `Idempotency-Key` returned the **same `job_id`** with `idempotent_replay: true` and HTTP 200 (not 202), and a DynamoDB query confirmed **exactly one GEN# row** existed for the job — the slice-4a ghost-record hazard is cured; a cross-user GET with a second demo user's IdToken returned **404** with `error: not_found` — existence is not leaked across users. The headline number: the audit row showed `started_at: 17:20:51 → completed_at: 17:21:42` — **51 seconds of Bedrock generation**, well past API Gateway HTTP API's hard 30 s integration cap. Under slice 4a this would have 503'd and left a ghost row; under slice 4b the client saw a clean `pending → complete` flow. **The 30 s ceiling is empirically gone, on the exact workload that triggered the slice-4a finding.**
+
+The frontend half of slice 4b is a **Vite + React + TypeScript SPA** in [`ui-spa/`](ui-spa/), built around the Amplify Auth `Authenticator` (handles SRP, the new-password challenge, and optional TOTP MFA). It runs locally against the deployed API via `npm run dev`; slice 4c will lift it onto S3 + CloudFront.
 
 Every slice deploys as **plain CloudFormation**. We attempted the AWS SAM transform for slice 2, but `cloudformation:CreateChangeSet` on the AWS-owned Serverless transform ARN was denied on every attempt — even with `AdministratorAccess` *plus* an explicit inline `Allow` for that exact action and ARN, and with no permissions boundary and no Organizations SCP. Both the IAM policy simulator and the live engine denied it, so rather than keep fighting an account-specific IAM anomaly, each Lambda is defined as a raw `AWS::Lambda::Function` and its code is uploaded with `aws cloudformation package` (no macro, so the transform permission is never exercised).
 
@@ -125,7 +149,7 @@ This project treats governance as a first-class deliverable, not an afterthought
 ## Roadmap
 
 - **Phase 1:** problem definition, system prompt, evaluation harness, architecture decisions, governance — substantively complete; independent clinician review (Run 4) in progress (does not gate the build).
-- **Phase 2 (now):** build the backend in slices (see [Build status](#build-status-phase-2)) — audit foundation, Bedrock `generate` Lambda, and the WORM tamper-evidence ledger are all deployed; next is the API Gateway + Cognito front door and the React frontend behind CloudFront.
+- **Phase 2 (now):** build the backend in slices (see [Build status](#build-status-phase-2)) — audit foundation, Bedrock `generate` worker, WORM tamper-evidence ledger, Cognito + HTTP API + JWT authoriser are all deployed; slice 4b adds the async `202 + poll` rework + idempotency keys + the React SPA (built, pending deploy); slice 4c will lift the SPA onto S3 + CloudFront.
 - **Phase-1 open decisions — all resolved (2026-05-23):** model pinned to `anthropic.claude-sonnet-4-6` on-demand in eu-west-2; tamper-evidence = DynamoDB Streams → S3 Object Lock (WORM); single combined prompt for all three outputs. See [`ADR-phase1.md`](docs/ADR-phase1.md).
 
 ## Disclaimer

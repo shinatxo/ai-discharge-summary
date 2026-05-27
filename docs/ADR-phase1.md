@@ -345,7 +345,192 @@ Two findings worth recording honestly before slice 4b begins:
 These are recorded here rather than as a separate ADR-005 because they are
 direct consequences of the ADR-004 architecture choice (HTTP API + sync
 Lambda) — anyone reviewing the architecture should encounter them at the
-same place they encounter the decision.
+same place they encounter the decision. The **fix** to both of them — moving
+the hot path to an async `202 + poll` pattern with client-supplied
+idempotency — is recorded in ADR-005 below.
+
+---
+
+## ADR-005 — Async `202 + poll` pattern with client-supplied idempotency
+
+**Status:** Accepted (2026-05-26, slice 4b).
+
+### Context
+
+ADR-004 / slice 4a put the generate Lambda behind API Gateway HTTP API
+synchronously. The slice-4a smoke test surfaced two consequences that the
+production hot path cannot ship with:
+
+1. **API Gateway HTTP API has a hard 30 s integration timeout.** It cannot
+   be raised. Bedrock Sonnet emitting three outputs at `MAX_TOKENS = 4096`
+   runs ~20–25 s warm and longer on a cold start. Even shaving `MAX_TOKENS`
+   would truncate longer admissions — clinically the wrong trade. The cap is
+   load-bearing.
+2. **Lambda completes server-side even when API Gateway has 503'd the
+   client.** The first failed call left a "ghost" audit row + WORM ledger
+   object behind, and a naïve client "retry" would double-invoke Bedrock —
+   double-billing, double-logging, and (since the audit table is write-once)
+   visibly distinct rows that look like the user submitted twice.
+
+The same constraints apply to anything else in this app whose latency is
+naturally variable and uncapped (later: optional second-pass patient-version
+regeneration; future: longer Opus eval-grading runs).
+
+### Decision
+
+Move `POST /generate` to the **async `202 + poll` pattern**, with
+client-supplied **idempotency keys**:
+
+```
+client ──POST /generate──▶ Dispatcher Lambda  ──Invoke(Event)──▶ Generate (worker)
+                                │  writes pending audit row              │
+                                │  returns {job_id, status:"pending"}    │
+                                │  HTTP 202 in <1s                       │
+client ──GET /generations/{id}──▶ Status Lambda                          │
+                                │  reads audit row + (if complete) outputs
+                                │  returns {status, outputs?, error?}    │
+                                                                         │
+                  worker UpdateItem-s row to status=complete (with hashes,
+                  parse_ok, tokens) and PutItem-s outputs into ResultsTable
+```
+
+Three Lambdas — `DispatcherFunction`, `StatusFunction`, and the worker
+(`GenerateFunction`, slice-2 code refactored). Two routes on the same HTTP
+API, gated by the same JWT authoriser. One additional DynamoDB table for the
+transient outputs.
+
+### Rationale
+
+- **The 30 s ceiling stops being load-bearing.** The dispatcher does one DDB
+  transaction + one async invoke — sub-second. The worker runs for as long
+  as Bedrock needs (Lambda's own timeout is the only ceiling, set at 60 s
+  here). The status endpoint is two `GetItem`s — also sub-second.
+- **Ghost records are converted into honest pending rows.** The dispatcher
+  writes the row in `status=pending` BEFORE invoking the worker. If the
+  worker fails or the network drops mid-poll, the row tells you the truth:
+  there's a job in flight that you should expect to terminate. There is no
+  scenario where the client sees an error but the audit/ledger show a
+  completed generation, because completion is no longer how the client
+  finds out.
+- **Idempotency is enforced server-side.** Each `POST` carries an
+  `Idempotency-Key` (a client UUID). The dispatcher runs a
+  `TransactWriteItems` that puts the `IDEM#<key>` row AND the
+  `GEN#<job_id>` pending row atomically, with `attribute_not_exists` guards.
+  A retried POST with the same key fails the IDEM `ConditionCheck`, rolls
+  the transaction back, and the dispatcher returns the EXISTING `job_id`
+  with a `200` (not `202`). The worker is fired exactly once.
+- **JWT-as-identity contract from ADR-004 holds.** Both new Lambdas read
+  `user_sub` from `event.requestContext.authorizer.jwt.claims.sub`. The
+  status Lambda's `GetItem` uses `PK = USER#<jwt.sub>`, so a cross-user
+  read returns nothing — surfaced as 404 (uniform with "no such job"), not
+  403 (which would confirm existence).
+- **Hash-only audit invariant from ADR-002 holds.** The actual outputs are
+  not in the audit table — they live in a separate `ResultsTable` with
+  `PK = USER#<sub>, SK = RES#<job_id>` and a **24-hour TTL**. The audit
+  table continues to carry only hashes, who/when, and operational metadata.
+  ResultsTable is a delivery buffer; it can be wiped at any time and the
+  audit log is intact.
+
+### Data model changes
+
+The audit table (ADR-002) gains two SK prefixes (one new, one repurposed):
+
+| PK | SK | What |
+|----|----|------|
+| `USER#<sub>` | `GEN#<ulid>` | One row per generation. **slice 4b: SK uses the bare ULID** (was `GEN#<timestamp>#<ulid>` in slice 2). ULIDs are already time-sortable, so dropping the timestamp prefix lets the status Lambda do a direct `GetItem` by `job_id`. The legacy slice-2 direct-invoke path keeps writing the old SK shape for backwards compatibility. |
+| `USER#<sub>` | `IDEM#<key>` | Idempotency receipt. TTL ~24 h. Maps `(user_sub, idempotency_key) -> job_id`. The GEN# row it points to has NO TTL — only the receipt expires. |
+
+DynamoDB TTL is enabled at the table level on attribute `ttl`. GEN# rows
+omit the attribute → never expire. IDEM# rows carry it → expire after 24 h
+(best-effort, within 48 h of expiry per AWS docs).
+
+The new `ResultsTable`:
+
+| PK | SK | Attrs |
+|----|----|-------|
+| `USER#<sub>` | `RES#<job_id>` | `summary`, `gp_letter`, `patient`, `completed_at`, `ttl` |
+
+SSE-KMS with the same CMK as the audit table; NO Streams (it's not part of
+the audit trail); NO PITR (transient by design); 24 h TTL.
+
+### Idempotency contract
+
+- The header is `Idempotency-Key: <UUID>`. UUIDv4 is the expected shape; the
+  dispatcher validates the canonical 8-4-4-4-12 hex form and rejects
+  anything else with 400.
+- The header is **optional**. If absent, each POST is a fresh job (no
+  idempotency receipt is written).
+- If present and seen before for the same `user_sub`, the dispatcher returns
+  the **current** status of the existing job (not the status at first
+  submission). Status `pending` on replay is fine — the client polls anyway.
+- Idempotency keys are **scoped per user_sub**. Two different users using
+  the same UUID get different jobs.
+- The body sent on replay is **not** compared against the original — the
+  dispatcher records the input hash on the IDEM# row for forensics but does
+  not enforce equality, in line with the Stripe idempotency-key contract.
+
+### Status state machine
+
+```
+        ┌─ complete ──── (outputs available; draft=true, awaiting review)
+        │
+pending ┼─ failed ────── (error_code + error_message; no outputs)
+        │
+        └─ expired ──── (status=complete in audit, but ResultsTable TTL’d)
+```
+
+- `pending` is the only state the dispatcher writes. Only the worker flips
+  it (with `ConditionExpression: status = pending`, so a Lambda async retry
+  cannot clobber a finalized row).
+- `expired` is synthesised by the **status** Lambda when the audit row says
+  `complete` but the ResultsTable row is missing. The audit trail survives;
+  the outputs do not.
+
+### Anti-spoof
+
+- POST: `user_sub` comes from JWT claims. Body-supplied `user_sub` is
+  silently ignored (and not echoed in any response or log).
+- GET: the PK of the lookup embeds the JWT sub. A client cannot read
+  another user's job even if they know the `job_id`.
+- Cross-user reads return 404 (uniform with "no such job"), not 403 —
+  matching the User Pool's `PreventUserExistenceErrors` posture from
+  ADR-004.
+
+### Consequences
+
+- The hot path now spans **three Lambdas** instead of one. The dispatcher
+  and status functions are tiny (256 MB, ≤10 s timeouts, no third-party
+  deps), so the cost and cold-start surface area increase is modest.
+- The HTTP API surface grows by **one route** (`GET /generations/{id}`)
+  using the same JWT authoriser.
+- The slice-4a `aws lambda invoke` smoke test path is **preserved**. The
+  worker detects the dispatcher-event shape vs the legacy direct-invoke
+  shape and behaves correctly for both. An HTTP-API-shaped event arriving
+  at the worker by accident returns `410 Gone` rather than silently
+  regressing to the 30 s problem.
+- The model card / README copy from slice 4a ("every attempt is logged,
+  including ones the system failed to deliver") remains true and is now
+  **observable** through the status endpoint: a client that polls a
+  pending job and never sees `complete` knows precisely that the attempt
+  was logged.
+
+### Alternatives considered
+
+- **Lambda Function URL + response streaming.** Bypasses the 30 s cap, but
+  the JWT authoriser is API Gateway-only — Cognito auth would have to move
+  to CloudFront Functions / Lambda@Edge. A heavier, less standard stack
+  for a portfolio shape.
+- **Reduce `MAX_TOKENS` to 1500 to fit in 30 s.** Truncates longer
+  admissions (the late-stages NSTEMI / GI bleed / multi-co-morbidity cases)
+  — clinically the wrong direction.
+- **`input_sha256`-keyed dedupe instead of a client header.** Surprising
+  behaviour: two genuinely separate identical requests would collapse into
+  one job. Breaks the "every attempt is logged" invariant. Rejected.
+- **Separate "jobs" table.** Considered, but the audit table is already
+  the system of record for "did this generation happen and for whom".
+  Reusing it (with two SK prefixes) keeps the WORM ledger seeing state
+  transitions for free — the immutable evidence covers `pending →
+  complete/failed` without an extra stream.
 
 ---
 

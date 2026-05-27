@@ -15,20 +15,15 @@ AWSTemplateFormatVersion: '2010-09-09'
 # See the README "Build status" section for the full story.
 
 Description: >
-  AI Discharge Summary Assistant - Phase 2 build slices 1-4a.
-  Audit-log foundation (slice 1): a customer-managed KMS key (CMK) plus the
-  immutable, hash-only DynamoDB audit table from ADR-002. Slice 2 adds the
-  Bedrock-calling generate Lambda and its least-privilege execution role, scoped
-  to exactly the audit table, the CMK (via DynamoDB only), and the one pinned
-  Bedrock model. Slice 3 adds the tamper-evidence ledger: an S3 Object Lock
-  (WORM) bucket plus a stream-consumer Lambda that copies every audit-table
-  change event into it, immutably (Governance mode in demo, Compliance mode in
-  prod). Slice 4a adds the authenticated front door: a Cognito User Pool (email
-  login, MFA OPTIONAL + TOTP, admin-create only), a public SPA app client, an
-  HTTP API (API Gateway v2) with POST /generate, and a native JWT authoriser
-  that validates Cognito IdTokens *before* Lambda is invoked. No PHI is ever
-  stored or logged - only hashes of the input/outputs, who/when, and which
-  model version was used.
+  AI Discharge Summary Assistant - Phase 2 (slices 1-4b). Hash-only DynamoDB
+  audit + CMK (slice 1); Bedrock-calling generate worker with least-privilege
+  IAM (slice 2); DynamoDB Streams -> S3 Object Lock WORM tamper-evidence
+  ledger (slice 3); Cognito + HTTP API + native JWT authoriser (slice 4a);
+  async 202+poll pattern (slice 4b, ADR-005) - dispatcher Lambda + status
+  Lambda + transient ResultsTable (24h TTL) + client-supplied
+  Idempotency-Key, which removes the 30s API Gateway timeout and the slice-4a
+  ghost-record retry hazard. No PHI in the audit log or in CloudWatch -
+  hashes, ids, and operational metadata only. Full design in docs/ADR-phase1.md.
 
 # -----------------------------------------------------------------------------
 # Parameters let one template serve multiple environments without code changes.
@@ -164,6 +159,66 @@ Resources:
       # (or disable deletion protection on the table), otherwise the delete fails.
       DeletionProtectionEnabled: true
 
+      # TTL added in slice 4b for the IDEM# rows (the dispatcher's idempotency
+      # receipts). DynamoDB only deletes items that ACTUALLY carry the `ttl`
+      # attribute - the GEN# audit rows are written without it, so they never
+      # expire and the hash-only audit log retains its immutability. Only the
+      # idempotency receipts (which are pointers, not records of generations)
+      # are subject to TTL cleanup. (SAA: per-item TTL vs table-level expiry.)
+      TimeToLiveSpecification:
+        AttributeName: ttl
+        Enabled: true
+
+  # ---------------------------------------------------------------------------
+  # 2b) Transient results table (ADR-005, slice 4b).
+  #
+  # The audit table is hash-only by ADR-002 - it must never carry the actual
+  # output text. But the async pattern means the client POSTs, gets a 202, and
+  # later GETs to fetch the text it never received synchronously. We need
+  # somewhere to PARK that text between the worker finishing and the client
+  # polling. This table is that buffer:
+  #
+  #   - PK = USER#<cognito_sub>   (so a GET cannot cross users by schema)
+  #   - SK = RES#<job_id>         (one row per generation)
+  #   - attrs: summary, gp_letter, patient, completed_at, ttl
+  #   - 24h TTL (auto-cleanup)
+  #   - SSE with the SAME CMK as the audit table
+  #   - NO Streams (this is a delivery buffer, NOT part of the audit trail)
+  #   - NO PITR (transient by design)
+  #
+  # Crucially: the system of record for "did the model run, when, for whom,
+  # with what input hash" remains the AuditTable. ResultsTable can be wiped at
+  # any time without losing the audit story - it would just mean clients see
+  # status=expired and have to regenerate, which is the correct user-facing
+  # behaviour for a 24h-old draft.
+  # ---------------------------------------------------------------------------
+  ResultsTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: !Sub "${AWS::StackName}-results"
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: PK
+          AttributeType: S
+        - AttributeName: SK
+          AttributeType: S
+      KeySchema:
+        - AttributeName: PK
+          KeyType: HASH
+        - AttributeName: SK
+          KeyType: RANGE
+      SSESpecification:
+        SSEEnabled: true
+        SSEType: KMS
+        KMSMasterKeyId: !Ref AuditKey
+      TimeToLiveSpecification:
+        AttributeName: ttl
+        Enabled: true
+      # Deliberately NO StreamSpecification and NO PITR - this is a delivery
+      # buffer, not a record of truth. The audit table downstream of the
+      # ledger handles immutability.
+      DeletionProtectionEnabled: true
+
   # ===========================================================================
   # SLICE 2 - the Bedrock-calling Lambda + its least-privilege execution role.
   # ===========================================================================
@@ -214,20 +269,36 @@ Resources:
               Service: lambda.amazonaws.com
             Action: sts:AssumeRole
       Policies:
-        # (a) Audit table: append + the single review-transition update only.
+        # (a) Audit table: append + status-transition / review-transition update.
         #     Note the ABSENCE of DeleteItem / BatchWriteItem / Scan / Query -
         #     that is ADR-002's write-once-then-flip-the-review-flag contract,
-        #     enforced at the IAM layer, not just in code.
+        #     enforced at the IAM layer, not just in code. In slice 4b the
+        #     worker also UpdateItem-s the existing pending GEN# row from the
+        #     dispatcher (status=pending -> complete/failed); same action, same
+        #     resource - no new permission needed.
         - PolicyName: audit-table-write
           PolicyDocument:
             Version: '2012-10-17'
             Statement:
-              - Sid: PutAndReviewTransitionOnly
+              - Sid: PutAndStatusTransitionOnly
                 Effect: Allow
                 Action:
                   - dynamodb:PutItem
                   - dynamodb:UpdateItem
                 Resource: !GetAtt AuditTable.Arn
+        # (a2) Results table (slice 4b): PutItem only. The worker writes the
+        #      three outputs here for the polling client to fetch. Status
+        #      Lambda has the corresponding GetItem on this table; nobody has
+        #      Update/Delete - the row simply ages out via TTL after 24h.
+        - PolicyName: results-table-write
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Sid: PutResultsOnly
+                Effect: Allow
+                Action:
+                  - dynamodb:PutItem
+                Resource: !GetAtt ResultsTable.Arn
         # (b) CMK - usable ONLY when the call flows through DynamoDB.
         #     DynamoDB actually performs at-rest encryption via a grant on its
         #     own behalf, so the data-plane PutItem path does not strictly need
@@ -315,6 +386,10 @@ Resources:
       Environment:
         Variables:
           AUDIT_TABLE_NAME: !Ref AuditTable
+          # New in slice 4b: the worker writes the actual outputs here for the
+          # polling client to fetch. Hash-only audit invariant on AuditTable
+          # therefore holds (ADR-002 + ADR-005).
+          RESULTS_TABLE_NAME: !Ref ResultsTable
           BEDROCK_MODEL_ID: !Ref ModelId
           # Bumped only when the audit item shape changes (ADR-002 schema_version).
           SCHEMA_VERSION: '1'
@@ -534,6 +609,213 @@ Resources:
       BisectBatchOnFunctionError: true
 
   # ===========================================================================
+  # SLICE 4b - dispatcher + status Lambdas for the async 202+poll pattern.
+  #
+  # The dispatcher sits in front of the worker (the slice-2 generate Lambda).
+  # It writes a pending GEN# audit row, async-invokes the worker via
+  # lambda:Invoke (InvocationType='Event'), and returns 202 + job_id to the
+  # client - well under 1s, so API Gateway's 30s cap is no longer in play.
+  # The status Lambda backs GET /generations/{id}: it reads the GEN# row and
+  # (when complete) the ResultsTable row, returning a uniform 404 for unknown
+  # OR cross-user jobs (existence not leaked across users).
+  # ===========================================================================
+
+  # ---------------------------------------------------------------------------
+  # D1) Dispatcher log group + least-privilege role + function.
+  # ---------------------------------------------------------------------------
+  DispatcherFunctionLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub "/aws/lambda/${AWS::StackName}-dispatcher"
+      RetentionInDays: 30
+
+  DispatcherFunctionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub "${AWS::StackName}-dispatcher-fn-role"
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        # (a) AuditTable - PutItem (GEN# + IDEM# rows via TransactWriteItems),
+        #     GetItem (idempotency replay lookup), and UpdateItem (flip
+        #     pending -> failed if the async worker invoke itself fails before
+        #     the worker can mark its own row). Deliberately NO Delete, NO Scan.
+        #     The dispatcher only ever transitions pending -> failed, never
+        #     pending -> complete - the latter is the worker's job and is
+        #     enforced by a ConditionExpression in code.
+        - PolicyName: audit-table-dispatch
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Sid: PutGetAndFailedTransitionOnly
+                Effect: Allow
+                Action:
+                  - dynamodb:PutItem
+                  - dynamodb:GetItem
+                  - dynamodb:UpdateItem
+                Resource: !GetAtt AuditTable.Arn
+        # (b) Worker invocation - exactly ONE function, async only. SAA: this
+        #     is the function-to-function invocation pattern, scoped tightly
+        #     so the dispatcher can't accidentally call anything else in the
+        #     account. Async (InvocationType='Event') is what makes this an
+        #     async pattern, not a synchronous chain (which would just push
+        #     the 30s problem one Lambda deeper).
+        - PolicyName: invoke-worker-only
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Sid: InvokeGenerateWorkerOnly
+                Effect: Allow
+                Action: lambda:InvokeFunction
+                Resource: !GetAtt GenerateFunction.Arn
+        # (c) CMK - usable ONLY when the call flows through DynamoDB (same
+        #     pattern as the worker role; the dispatcher only touches the CMK
+        #     through table operations).
+        - PolicyName: cmk-via-dynamodb-only
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Sid: UseCmkViaDynamoDbOnly
+                Effect: Allow
+                Action:
+                  - kms:Decrypt
+                  - kms:GenerateDataKey
+                  - kms:DescribeKey
+                Resource: !GetAtt AuditKey.Arn
+                Condition:
+                  StringEquals:
+                    kms:ViaService: !Sub "dynamodb.${AWS::Region}.amazonaws.com"
+        # (d) Own log group only.
+        - PolicyName: own-log-group-only
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Sid: WriteOwnLogsOnly
+                Effect: Allow
+                Action:
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
+                Resource: !Sub "arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/${AWS::StackName}-dispatcher:*"
+
+  DispatcherFunction:
+    Type: AWS::Lambda::Function
+    DependsOn: DispatcherFunctionLogGroup
+    Properties:
+      FunctionName: !Sub "${AWS::StackName}-dispatcher"
+      Description: >-
+        Accepts POST /generate, writes a pending audit row, async-invokes the
+        generate worker, returns 202 + job_id. Idempotency-Key enforced via
+        TransactWriteItems (ADR-005).
+      Code: ../src/dispatcher
+      Handler: app.lambda_handler
+      Runtime: python3.13
+      Architectures:
+        - arm64
+      MemorySize: 256       # small - it's I/O only, no Bedrock here
+      # Tight timeout. The dispatcher does 1 GetItem (optional), 1 transaction,
+      # 1 async invoke - all sub-second. A 10s ceiling guards against a wedged
+      # DDB call hanging API Gateway. Comfortably under the 29s integration cap.
+      Timeout: 10
+      Role: !GetAtt DispatcherFunctionRole.Arn
+      LoggingConfig:
+        LogGroup: !Ref DispatcherFunctionLogGroup
+      Environment:
+        Variables:
+          AUDIT_TABLE_NAME: !Ref AuditTable
+          # Pass the worker name (NOT its ARN) - lambda:InvokeFunction works
+          # by function name and the role's Resource is the worker's ARN.
+          WORKER_FUNCTION_NAME: !Ref GenerateFunction
+          IDEM_TTL_HOURS: '24'
+          SCHEMA_VERSION: '2'
+
+  # ---------------------------------------------------------------------------
+  # D2) Status log group + role + function.
+  # ---------------------------------------------------------------------------
+  StatusFunctionLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub "/aws/lambda/${AWS::StackName}-status"
+      RetentionInDays: 30
+
+  StatusFunctionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub "${AWS::StackName}-status-fn-role"
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        # (a) READ-ONLY on both tables. The status endpoint is strictly a
+        #     reader; granting Put/Update/Delete here would be a regression.
+        - PolicyName: read-audit-and-results
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Sid: ReadAuditAndResults
+                Effect: Allow
+                Action:
+                  - dynamodb:GetItem
+                Resource:
+                  - !GetAtt AuditTable.Arn
+                  - !GetAtt ResultsTable.Arn
+        # (b) CMK via DynamoDB only.
+        - PolicyName: cmk-via-dynamodb-only
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Sid: DecryptViaDynamoDb
+                Effect: Allow
+                Action:
+                  - kms:Decrypt
+                Resource: !GetAtt AuditKey.Arn
+                Condition:
+                  StringEquals:
+                    kms:ViaService: !Sub "dynamodb.${AWS::Region}.amazonaws.com"
+        # (c) Own log group only.
+        - PolicyName: own-log-group-only
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Sid: WriteOwnLogsOnly
+                Effect: Allow
+                Action:
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
+                Resource: !Sub "arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/${AWS::StackName}-status:*"
+
+  StatusFunction:
+    Type: AWS::Lambda::Function
+    DependsOn: StatusFunctionLogGroup
+    Properties:
+      FunctionName: !Sub "${AWS::StackName}-status"
+      Description: >-
+        Backs GET /generations/{id}. Returns job status + (when complete) the
+        outputs from the transient ResultsTable. Cross-user reads return 404.
+      Code: ../src/status
+      Handler: app.lambda_handler
+      Runtime: python3.13
+      Architectures:
+        - arm64
+      MemorySize: 256
+      Timeout: 5             # two consistent GetItem calls; should be ~50ms warm
+      Role: !GetAtt StatusFunctionRole.Arn
+      LoggingConfig:
+        LogGroup: !Ref StatusFunctionLogGroup
+      Environment:
+        Variables:
+          AUDIT_TABLE_NAME: !Ref AuditTable
+          RESULTS_TABLE_NAME: !Ref ResultsTable
+
+  # ===========================================================================
   # SLICE 4a - the authenticated front door.
   #
   #   Clinician browser
@@ -672,13 +954,17 @@ Resources:
       Description: Authenticated front door for the generate Lambda (slice 4a).
       CorsConfiguration:
         AllowOrigins:
-          - http://localhost:5173       # vite dev server
+          - http://localhost:5173       # vite dev server (slice 4b)
         AllowMethods:
-          - POST
+          - POST                        # dispatcher (POST /generate)
+          - GET                         # status   (GET /generations/{id})
           - OPTIONS
         AllowHeaders:
           - authorization
           - content-type
+          # Idempotency-Key (slice 4b) - a client-supplied UUID the dispatcher
+          # uses to dedupe POST retries. Stripe-style API surface.
+          - idempotency-key
         MaxAge: 600
       DisableExecuteApiEndpoint: false   # we want the default *.execute-api URL for smoke tests
       Tags:
@@ -715,23 +1001,34 @@ Resources:
           - !Ref UserPoolClient
 
   # ---------------------------------------------------------------------------
-  # 15) Lambda integration + route.
+  # 15) Lambda integrations + routes.
   #
   # AWS_PROXY integration with PayloadFormatVersion 2.0:
   #   - the request arrives at Lambda as {headers, body, requestContext, ...}
   #     with requestContext.authorizer.jwt.claims populated by the authoriser,
   #   - the response shape is {statusCode, headers, body} (we return JSON).
-  # The route is POST /generate, gated by the JWT authoriser declared above.
+  # Both routes are gated by the same JWT authoriser.
+  #
+  # NOTE on logical IDs (slice 4b):
+  #   `GenerateIntegration` is kept as the logical ID even though the target
+  #   moved from the slice-4a sync worker to the slice-4b dispatcher. The
+  #   logical ID stays so CFN updates IntegrationUri in place rather than
+  #   replacing the resource (which would briefly leave POST /generate with no
+  #   integration during deploy). The same applies to `GenerateRoute` and
+  #   `GenerateInvokePermission` below - they refer to the dispatcher now.
   # ---------------------------------------------------------------------------
   GenerateIntegration:
     Type: AWS::ApiGatewayV2::Integration
     Properties:
       ApiId: !Ref HttpApi
       IntegrationType: AWS_PROXY
-      IntegrationUri: !GetAtt GenerateFunction.Arn
+      # SLICE 4b: re-pointed at the dispatcher. The dispatcher is sub-second
+      # (writes a row, fires the worker async, returns 202), so the 29s cap
+      # below is now slack rather than the binding constraint it was in 4a.
+      IntegrationUri: !GetAtt DispatcherFunction.Arn
       IntegrationMethod: POST
       PayloadFormatVersion: '2.0'
-      TimeoutInMillis: 29000        # API Gateway hard cap is 30s; Lambda has 60s but client gets 29s
+      TimeoutInMillis: 29000
 
   GenerateRoute:
     Type: AWS::ApiGatewayV2::Route
@@ -741,6 +1038,33 @@ Resources:
       AuthorizationType: JWT
       AuthorizerId: !Ref JwtAuthorizer
       Target: !Sub "integrations/${GenerateIntegration}"
+
+  # ---------------------------------------------------------------------------
+  # 15b) Status endpoint - GET /generations/{id} (slice 4b).
+  #
+  # Same JWT authoriser as POST. The status Lambda enforces scope to the
+  # caller's own jobs by reading PK=USER#<jwt.sub>, SK=GEN#<id>; a cross-user
+  # call returns 404 (uniform with "no such job") rather than 403 (which would
+  # leak that the job exists).
+  # ---------------------------------------------------------------------------
+  StatusIntegration:
+    Type: AWS::ApiGatewayV2::Integration
+    Properties:
+      ApiId: !Ref HttpApi
+      IntegrationType: AWS_PROXY
+      IntegrationUri: !GetAtt StatusFunction.Arn
+      IntegrationMethod: POST          # always POST for AWS_PROXY Lambda integrations
+      PayloadFormatVersion: '2.0'
+      TimeoutInMillis: 10000           # two consistent GetItems; 10s is generous
+
+  StatusRoute:
+    Type: AWS::ApiGatewayV2::Route
+    Properties:
+      ApiId: !Ref HttpApi
+      RouteKey: "GET /generations/{id}"
+      AuthorizationType: JWT
+      AuthorizerId: !Ref JwtAuthorizer
+      Target: !Sub "integrations/${StatusIntegration}"
 
   # ---------------------------------------------------------------------------
   # 16) $default stage with AutoDeploy on.
@@ -758,19 +1082,39 @@ Resources:
       Description: Default stage for the discharge HTTP API.
 
   # ---------------------------------------------------------------------------
-  # 17) Lambda invoke permission.
+  # 17) Lambda invoke permissions.
   #
-  # This is the resource-based policy on the FUNCTION (not the role) that lets
-  # API Gateway invoke it. SourceArn is locked to this API + this route, so a
-  # different API in the same account couldn't reuse the function.
+  # Resource-based policies on the FUNCTIONS (not on roles) that let API
+  # Gateway invoke them. SourceArn is locked to this API + the specific route
+  # path, so a different API in the same account couldn't reuse the function.
+  #
+  # In slice 4b the SourceArn on the POST /generate permission is unchanged
+  # (still `/*/*/generate`) but the target FunctionName moved from
+  # GenerateFunction (slice 4a) to DispatcherFunction (slice 4b). CFN will
+  # replace this permission (FunctionName change forces replacement); during
+  # that brief window POST /generate would 500, so we deploy outside business
+  # hours when iterating. The worker (GenerateFunction) is now invoked ONLY
+  # by the dispatcher's IAM role, not by API Gateway directly, so it no
+  # longer carries an API Gateway invoke permission of its own.
   # ---------------------------------------------------------------------------
   GenerateInvokePermission:
     Type: AWS::Lambda::Permission
     Properties:
-      FunctionName: !Ref GenerateFunction
+      FunctionName: !Ref DispatcherFunction
       Action: lambda:InvokeFunction
       Principal: apigateway.amazonaws.com
       SourceArn: !Sub "arn:${AWS::Partition}:execute-api:${AWS::Region}:${AWS::AccountId}:${HttpApi}/*/*/generate"
+
+  # GET /generations/{id} -> StatusFunction. The SourceArn path uses the
+  # literal `generations/*` segment (NOT `{id}`) because API Gateway resolves
+  # path parameters to wildcards in the permission's SourceArn check.
+  StatusInvokePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref StatusFunction
+      Action: lambda:InvokeFunction
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub "arn:${AWS::Partition}:execute-api:${AWS::Region}:${AWS::AccountId}:${HttpApi}/*/*/generations/*"
 
 # -----------------------------------------------------------------------------
 # Outputs surface the identifiers each slice needs, and double as
@@ -834,3 +1178,28 @@ Outputs:
   HttpApiEndpoint:
     Description: Default HTTP API endpoint - call POST {endpoint}/generate with Bearer IdToken
     Value: !Sub "https://${HttpApi}.execute-api.${AWS::Region}.${AWS::URLSuffix}"
+  # --- Slice 4b additions ---------------------------------------------------
+  ResultsTableName:
+    Description: Transient outputs table (slice 4b, 24h TTL). NOT part of the audit log.
+    Value: !Ref ResultsTable
+  ResultsTableArn:
+    Description: Results table ARN (scoped on the worker's PutItem + the status Lambda's GetItem)
+    Value: !GetAtt ResultsTable.Arn
+  DispatcherFunctionName:
+    Description: Name of the slice-4b dispatcher (POST /generate -> 202 + job_id)
+    Value: !Ref DispatcherFunction
+  DispatcherFunctionArn:
+    Description: ARN of the dispatcher Lambda
+    Value: !GetAtt DispatcherFunction.Arn
+  DispatcherFunctionRoleArn:
+    Description: Least-privilege dispatcher role (AuditTable PutItem/GetItem + InvokeFunction on worker + CMK via DDB)
+    Value: !GetAtt DispatcherFunctionRole.Arn
+  StatusFunctionName:
+    Description: Name of the slice-4b status Lambda (GET /generations/{id})
+    Value: !Ref StatusFunction
+  StatusFunctionArn:
+    Description: ARN of the status Lambda
+    Value: !GetAtt StatusFunction.Arn
+  StatusFunctionRoleArn:
+    Description: Least-privilege status role (GetItem only on both tables + CMK via DDB)
+    Value: !GetAtt StatusFunctionRole.Arn

@@ -48,6 +48,20 @@ Parameters:
       build the model ARN that scopes the bedrock:InvokeModel permission, so the
       function can invoke this model and no other.
 
+  PatientV2SecondPass:
+    Type: String
+    Default: 'off'
+    AllowedValues:
+      - 'off'
+      - 'on'
+    Description: >
+      Patient v2 (ADR-005 future-enhancement, see docs/PATIENT_V2_DESIGN.md). When
+      'on', the worker regenerates the patient version (PART C) in a SEPARATE Bedrock
+      pass whose only input is the curated PART A summary - architectural belt-and-braces
+      against model-added clinical advice (Run 4 / Ibrahim). Default 'off' keeps the
+      single combined-call v1 hot path bit-identical. The second pass uses the SAME
+      pinned ModelId, on-demand in eu-west-2 (ADR-003 rule 1 - UK-only inference).
+
   LedgerRetentionDays:
     Type: Number
     Default: 1
@@ -391,6 +405,11 @@ Resources:
           # therefore holds (ADR-002 + ADR-005).
           RESULTS_TABLE_NAME: !Ref ResultsTable
           BEDROCK_MODEL_ID: !Ref ModelId
+          # Patient v2 second-pass toggle (off by default; see Parameters +
+          # docs/PATIENT_V2_DESIGN.md). The patient prompt ships in the function
+          # bundle (src/generate/patient_system_prompt.md); no new IAM is needed
+          # because the second pass invokes the SAME pinned model already allowed.
+          PATIENT_V2_SECOND_PASS: !Ref PatientV2SecondPass
           # Bumped only when the audit item shape changes (ADR-002 schema_version).
           SCHEMA_VERSION: '1'
 

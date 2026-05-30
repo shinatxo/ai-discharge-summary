@@ -78,9 +78,13 @@ MODEL_ID = "anthropic.claude-sonnet-4-6"
 MAX_TOKENS = 4096
 TEMPERATURE = 0.0
 SYSTEM_PROMPT_MARKER = "## SYSTEM PROMPT"
+# Patient v2 second pass: shorter cap (leaflet only), mirrors the Lambda's
+# PATIENT_MAX_TOKENS default. See docs/PATIENT_V2_DESIGN.md.
+PATIENT_MAX_TOKENS = 1500
 
 REPO = Path(__file__).resolve().parent.parent
 DEFAULT_PROMPT_PATH = REPO / "prompts" / "discharge-summary-system-prompt.md"
+DEFAULT_PATIENT_PROMPT_PATH = REPO / "src" / "generate" / "patient_system_prompt.md"
 DEFAULT_SCENARIOS_PATH = REPO / "evals" / "scenarios" / "eval-scenarios-expansion.md"
 
 # Default v0.6 regression set: S16 is Ibrahim's flagged Gen Surg case;
@@ -130,8 +134,42 @@ def extract_scenario_input(scenarios_path: Path, scenario_id: str) -> str:
     return m.group(1).strip()
 
 
-def run_one(client, scenario_id: str, system_prompt: str, notes: str) -> dict:
-    """Single Bedrock Converse call — same shape as the Lambda's call."""
+_PART_MARKER = {
+    label: re.compile(rf"(?im)^[#*>\s]*PART\s+{label}\b.*$") for label in ("A", "B", "C")
+}
+
+
+def extract_part_a(combined: str) -> str:
+    """Pull the PART A (clinician summary) block out of a combined output, the
+    same way the Lambda's _split_outputs does: A..B if both present, else the
+    head up to B. Used to feed the v2 second pass with PART A alone."""
+    pos = {}
+    for label in ("A", "B", "C"):
+        m = _PART_MARKER[label].search(combined)
+        if m:
+            pos[label] = m.start()
+    if {"A", "B"} <= pos.keys() and pos["A"] < pos["B"]:
+        return combined[pos["A"]:pos["B"]].strip()
+    if "B" in pos and pos["B"] > 0:
+        return combined[:pos["B"]].strip()
+    return combined.strip()
+
+
+def _strip_part_c_marker(text: str) -> str:
+    m = _PART_MARKER["C"].match(text.lstrip())
+    if not m:
+        return text.strip()
+    return text.lstrip()[m.end():].strip()
+
+
+def run_one(client, scenario_id: str, system_prompt: str, notes: str,
+            patient_prompt: str | None = None) -> dict:
+    """Bedrock Converse call(s) — same shape as the Lambda's call.
+
+    If ``patient_prompt`` is given (the --patient-second-pass mode), a SECOND
+    call regenerates the patient version from PART A alone and the combined
+    output's PART C is replaced with it — mirroring src/generate/app.py's
+    Patient v2 path so the cold run is faithful to the deployed v2 behaviour."""
     t0 = time.time()
     response = client.converse(
         modelId=MODEL_ID,
@@ -139,15 +177,39 @@ def run_one(client, scenario_id: str, system_prompt: str, notes: str) -> dict:
         messages=[{"role": "user", "content": [{"text": notes}]}],
         inferenceConfig={"maxTokens": MAX_TOKENS, "temperature": TEMPERATURE},
     )
-    elapsed = time.time() - t0
     output_text = response["output"]["message"]["content"][0]["text"]
     usage = response.get("usage", {})
+
+    patient_version = "v1"
+    patient_out_tokens = None
+    if patient_prompt:
+        summary = extract_part_a(output_text)
+        if summary:
+            resp2 = client.converse(
+                modelId=MODEL_ID,
+                system=[{"text": patient_prompt}],
+                messages=[{"role": "user", "content": [{"text": summary}]}],
+                inferenceConfig={"maxTokens": PATIENT_MAX_TOKENS, "temperature": TEMPERATURE},
+            )
+            leaflet = _strip_part_c_marker(resp2["output"]["message"]["content"][0]["text"])
+            if leaflet:
+                # Replace PART C in the combined output with the v2 leaflet so the
+                # saved file shows the actual patient version that would be stored.
+                cpos = _PART_MARKER["C"].search(output_text)
+                head = output_text[:cpos.start()].rstrip() if cpos else output_text.rstrip()
+                output_text = f"{head}\n\nPART C - PATIENT VERSION (v2 second pass)\n\n{leaflet}\n"
+                patient_version = "v2"
+                patient_out_tokens = (resp2.get("usage", {}) or {}).get("outputTokens")
+
+    elapsed = time.time() - t0
     return {
         "scenario_id": scenario_id,
         "elapsed_s": elapsed,
         "stop_reason": response.get("stopReason"),
         "input_tokens": usage.get("inputTokens"),
         "output_tokens": usage.get("outputTokens"),
+        "patient_version": patient_version,
+        "patient_output_tokens": patient_out_tokens,
         "notes": notes,
         "output": output_text,
     }
@@ -162,7 +224,10 @@ def save_result(result: dict, out_dir: Path, prompt_path: Path) -> Path:
         f"- Inference: `maxTokens={MAX_TOKENS}`, `temperature={TEMPERATURE}`\n"
         f"- Elapsed: {result['elapsed_s']:.2f}s\n"
         f"- Tokens (in/out): {result['input_tokens']} / {result['output_tokens']}\n"
-        f"- Stop reason: `{result['stop_reason']}`\n"
+        f"- Patient version: `{result.get('patient_version', 'v1')}`"
+        + (f" (2nd-pass out tokens: {result['patient_output_tokens']})\n"
+           if result.get('patient_version') == 'v2' else "\n")
+        + f"- Stop reason: `{result['stop_reason']}`\n"
         f"- Prompt source: `{prompt_path.relative_to(REPO)}`\n"
         f"- Run at: {dt.datetime.now().isoformat(timespec='seconds')}\n\n"
         f"## INPUT (ward-round notes)\n\n"
@@ -236,6 +301,19 @@ def main():
         help=f"Path to scenarios markdown (default: {DEFAULT_SCENARIOS_PATH.relative_to(REPO)})",
     )
     parser.add_argument(
+        "--patient-second-pass",
+        action="store_true",
+        help="Patient v2: regenerate PART C in a second call from PART A alone "
+             "(mirrors the Lambda's PATIENT_V2_SECOND_PASS path).",
+    )
+    parser.add_argument(
+        "--patient-prompt",
+        type=Path,
+        default=DEFAULT_PATIENT_PROMPT_PATH,
+        help=f"Patient-version prompt for the second pass "
+             f"(default: {DEFAULT_PATIENT_PROMPT_PATH.relative_to(REPO)})",
+    )
+    parser.add_argument(
         "--out",
         type=Path,
         default=None,
@@ -260,6 +338,13 @@ def main():
     system_prompt = load_system_prompt(prompt_path)
     print(f"Loaded system prompt: {len(system_prompt)} chars\n")
 
+    patient_prompt = None
+    if args.patient_second_pass:
+        patient_prompt_path = args.patient_prompt.resolve()
+        patient_prompt = load_system_prompt(patient_prompt_path)
+        print(f"Patient v2 second pass ON — patient prompt: "
+              f"{patient_prompt_path.relative_to(REPO)} ({len(patient_prompt)} chars)\n")
+
     print(f"Connecting to Bedrock: region={REGION}, model={MODEL_ID}\n")
     client = boto3.client("bedrock-runtime", region_name=REGION)
 
@@ -274,7 +359,8 @@ def main():
             errors.append((scenario_id, str(exc)))
             continue
         try:
-            result = run_one(client, scenario_id, system_prompt, notes)
+            result = run_one(client, scenario_id, system_prompt, notes,
+                             patient_prompt=patient_prompt)
         except ClientError as exc:
             code = exc.response.get("Error", {}).get("Code", "Unknown")
             msg = exc.response.get("Error", {}).get("Message", str(exc))

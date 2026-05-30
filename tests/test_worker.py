@@ -179,3 +179,119 @@ def test_split_fail_safe_when_unparseable(load_worker, fake_ddb):
     assert out["summary"] == text
     assert out["gp_letter"] == ""
     assert out["patient"] == ""
+
+
+# ---------------------------------------------------------------------------
+# Patient v2 — optional second-pass patient-version generation
+# (docs/PATIENT_V2_DESIGN.md). Off by default; flag-gated on.
+# ---------------------------------------------------------------------------
+def _converse_resp(text, *, in_tok=100, out_tok=200):
+    return {
+        "output": {"message": {"content": [{"text": text}]}},
+        "usage": {"inputTokens": in_tok, "outputTokens": out_tok},
+    }
+
+
+# A combined v1 output whose PART C contains standard-of-care stoma red flags
+# that are NOT in PART A — the exact Run 4 / Ibrahim failure mode.
+_COMBINED_WITH_ADDED_ADVICE = (
+    "PART A - DISCHARGE SUMMARY\n\n"
+    "Emergency laparotomy, end colostomy formed. No safety-net advice documented.\n\n"
+    "PART B - GP LETTER\n\n"
+    "Dear GP, post-op as above.\n\n"
+    "PART C - PATIENT VERSION\n\n"
+    "You had an operation. Call 999 if you have high output, no output, or a blockage.\n"
+)
+
+# What the second pass returns when anchored to PART A alone: no invented red
+# flags, only the generic fall-back line.
+_CLEAN_LEAFLET = (
+    "Your discharge information\n\n"
+    "You had an operation on your tummy (laparotomy) and now have a stoma.\n"
+    "If you become unwell or are worried about anything, contact your GP or "
+    "call NHS 111. Call 999 if it is an emergency.\n"
+)
+
+
+def test_patient_v1_is_default_single_call(load_worker, fake_ddb):
+    """With the flag unset, the worker makes ONE Bedrock call and tags the row v1."""
+    _seed_pending(fake_ddb)
+    app = load_worker()  # PATIENT_V2_SECOND_PASS unset -> off
+    result = app.lambda_handler(_dispatcher_event(), None)
+
+    assert result["status"] == "complete"
+    assert result["patient_version"] == "v1"
+    assert app._bedrock.converse.call_count == 1  # no second pass
+
+    gen = fake_ddb.items[("discharge-audit-audit",
+                          f"USER#{USER_SUB}", f"GEN#{JOB_ID}")]
+    assert gen["patient_version"]["S"] == "v1"
+
+
+def test_patient_v2_regenerates_part_c_from_summary_only(load_worker, fake_ddb):
+    """Flag on: the patient version is produced by a SECOND call whose only input
+    is PART A. The added stoma red flags from the combined pass are gone, and the
+    second call is fed the summary (not the raw notes / PART C)."""
+    _seed_pending(fake_ddb)
+    app = load_worker(extra_env={"PATIENT_V2_SECOND_PASS": "on"})
+    app._bedrock.converse.side_effect = [
+        _converse_resp(_COMBINED_WITH_ADDED_ADVICE),
+        _converse_resp(_CLEAN_LEAFLET),
+    ]
+    result = app.lambda_handler(_dispatcher_event(), None)
+
+    assert result["status"] == "complete"
+    assert result["patient_version"] == "v2"
+    assert app._bedrock.converse.call_count == 2
+
+    # The stored patient version is the clean second-pass leaflet.
+    res = fake_ddb.items[("discharge-audit-results",
+                          f"USER#{USER_SUB}", f"RES#{JOB_ID}")]
+    assert "high output" not in res["patient"]["S"]
+    assert "no output" not in res["patient"]["S"]
+    assert "laparotomy" in res["patient"]["S"]
+
+    # Second call used the patient prompt and was fed PART A only (no PART C).
+    second = app._bedrock.converse.call_args_list[1].kwargs
+    assert second["system"][0]["text"] == app.PATIENT_SYSTEM_PROMPT
+    fed = second["messages"][0]["content"][0]["text"]
+    assert "Emergency laparotomy" in fed       # PART A content
+    assert "PART C" not in fed                  # the raw leaflet was NOT passed back in
+
+    # Audit row records the v2 provenance.
+    gen = fake_ddb.items[("discharge-audit-audit",
+                          f"USER#{USER_SUB}", f"GEN#{JOB_ID}")]
+    assert gen["patient_version"]["S"] == "v2"
+    assert gen["patient_parse_ok"]["BOOL"] is True
+
+
+def test_patient_v2_falls_back_to_v1_on_second_pass_error(load_worker, fake_ddb):
+    """If the second pass errors, the job still completes with the v1 leaflet and
+    the row is tagged v1_fallback — the optional pass never fails the generation."""
+    _seed_pending(fake_ddb)
+    app = load_worker(extra_env={"PATIENT_V2_SECOND_PASS": "on"})
+    app._bedrock.converse.side_effect = [
+        _converse_resp(_COMBINED_WITH_ADDED_ADVICE),
+        ClientError(
+            error_response={"Error": {"Code": "ThrottlingException", "Message": "slow down"}},
+            operation_name="Converse",
+        ),
+    ]
+    result = app.lambda_handler(_dispatcher_event(), None)
+
+    assert result["status"] == "complete"
+    assert result["patient_version"] == "v1_fallback"
+    # v1 combined-pass leaflet is preserved (job not failed).
+    res = fake_ddb.items[("discharge-audit-results",
+                          f"USER#{USER_SUB}", f"RES#{JOB_ID}")]
+    assert res["patient"]["S"].startswith("PART C")
+
+
+def test_maybe_second_pass_skips_when_no_summary(load_worker, fake_ddb):
+    """Belt-and-braces unit: flag on but an empty PART A -> no second call, v1."""
+    app = load_worker(extra_env={"PATIENT_V2_SECOND_PASS": "on"})
+    app._bedrock.converse.reset_mock(side_effect=True)
+    version, _mv, parse_ok, _usage = app._maybe_second_pass({"summary": "", "patient": "x"})
+    assert version == "v1"
+    assert parse_ok is True
+    assert app._bedrock.converse.call_count == 0

@@ -79,6 +79,22 @@ RESULTS_TTL_HOURS = int(os.environ.get("RESULTS_TTL_HOURS", "24"))
 MAX_TOKENS = int(os.environ.get("MAX_TOKENS", "4096"))
 TEMPERATURE = float(os.environ.get("TEMPERATURE", "0"))
 
+# --- Patient v2: optional second-pass patient-version generation -------------
+# When enabled, the patient version (PART C) is regenerated in a SEPARATE Bedrock
+# call whose only input is the curated PART A summary - never the raw notes. This
+# makes it structurally unable to reintroduce undocumented standard-of-care
+# advice (the Run 4 / Ibrahim "helpful hallucination" failure mode), independent
+# of the v0.6 prompt rule. See docs/PATIENT_V2_DESIGN.md. Off by default: flag
+# off => today's single combined call, bit-identical. The second pass stays on
+# the SAME pinned Sonnet model, on-demand in eu-west-2 (ADR-003 rule 1: UK-only
+# inference; deliberately NOT a Haiku/EU-profile pass).
+PATIENT_V2_SECOND_PASS = os.environ.get("PATIENT_V2_SECOND_PASS", "").strip().lower() in (
+    "1", "true", "yes", "on",
+)
+# The leaflet alone is short, so the second pass is capped tighter than the
+# combined call to keep the marginal token cost small.
+PATIENT_MAX_TOKENS = int(os.environ.get("PATIENT_MAX_TOKENS", "1500"))
+
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
@@ -104,6 +120,30 @@ def _load_system_prompt() -> str:
 
 
 SYSTEM_PROMPT = _load_system_prompt()
+
+
+_PATIENT_PROMPT_PATH = os.path.join(os.path.dirname(__file__), "patient_system_prompt.md")
+
+
+def _load_patient_prompt() -> str:
+    """Load the dedicated patient-version (PART C) prompt for the v2 second pass.
+
+    Returns "" if the file is absent so the worker can fall back to v1 cleanly
+    rather than crash at import time. The body after the '## SYSTEM PROMPT'
+    marker is used (same convention as the combined prompt)."""
+    try:
+        with open(_PATIENT_PROMPT_PATH, "r", encoding="utf-8") as fh:
+            raw = fh.read()
+    except FileNotFoundError:
+        return ""
+    marker = "## SYSTEM PROMPT"
+    idx = raw.find(marker)
+    body = raw[idx:] if idx != -1 else raw
+    body = body.split("\n", 1)[1] if "\n" in body else body
+    return body.strip()
+
+
+PATIENT_SYSTEM_PROMPT = _load_patient_prompt()
 
 
 # -----------------------------------------------------------------------------
@@ -162,6 +202,74 @@ def _split_outputs(text: str):
         }, True)
 
     return ({"summary": text.strip(), "gp_letter": "", "patient": ""}, False)
+
+
+def _converse(system_prompt: str, user_text: str, max_tokens: int):
+    """Single Bedrock Converse call on the pinned model. Centralised so the
+    combined pass and the patient second pass share one code path / config."""
+    return _bedrock.converse(
+        modelId=MODEL_ID,
+        system=[{"text": system_prompt}],
+        messages=[{"role": "user", "content": [{"text": user_text}]}],
+        inferenceConfig={"maxTokens": max_tokens, "temperature": TEMPERATURE},
+    )
+
+
+_PART_C_HEADER = re.compile(r"(?im)^[#*>\s]*PART\s+C\b.*$")
+
+
+def _strip_part_c_marker(text: str) -> str:
+    """The second-pass prompt asks for the leaflet body only, but if the model
+    still emits a 'PART C ...' header line, drop that one leading line so the
+    stored patient version is clean."""
+    m = _PART_C_HEADER.match(text.lstrip())
+    if not m:
+        return text.strip()
+    after = text.lstrip()[m.end():]
+    return after.strip()
+
+
+def _maybe_second_pass(outputs: dict):
+    """Patient v2: optionally regenerate the patient version from PART A alone.
+
+    Returns (patient_version, patient_model_version, patient_parse_ok,
+    patient_usage). Mutates ``outputs['patient']`` in place when the v2 pass
+    runs successfully. Degrades gracefully — any failure (flag off, no prompt,
+    empty summary, Bedrock error, empty result) leaves the v1 combined-pass
+    patient text untouched and is reflected in the returned status:
+
+      - "v1"          : second pass not attempted (flag off / no summary / no prompt)
+      - "v2"          : second pass produced the leaflet (outputs mutated)
+      - "v1_fallback" : second pass was attempted but failed; v1 text kept
+    """
+    base_mv = f"{MODEL_ID} ({REGION}, on-demand)"
+    if not PATIENT_V2_SECOND_PASS:
+        return ("v1", base_mv, True, {})
+    if not PATIENT_SYSTEM_PROMPT:
+        logger.warning(json.dumps({"event": "patient_v2_no_prompt"}))
+        return ("v1", base_mv, True, {})
+
+    summary = (outputs.get("summary") or "").strip()
+    if not summary:
+        # Parse failed upstream; there is no trustworthy PART A to anchor to.
+        logger.info(json.dumps({"event": "patient_v2_skipped_no_summary"}))
+        return ("v1", base_mv, True, {})
+
+    try:
+        resp = _converse(PATIENT_SYSTEM_PROMPT, summary, PATIENT_MAX_TOKENS)
+    except ClientError as exc:
+        code = exc.response.get("Error", {}).get("Code", "Unknown")
+        logger.error("patient_v2_bedrock_failed: %s", code)
+        return ("v1_fallback", base_mv, False, {})
+
+    text = _strip_part_c_marker(resp["output"]["message"]["content"][0]["text"])
+    if not text:
+        logger.warning(json.dumps({"event": "patient_v2_empty_result"}))
+        return ("v1_fallback", base_mv, False, {})
+
+    outputs["patient"] = text
+    logger.info(json.dumps({"event": "patient_v2_applied"}))
+    return ("v2", base_mv, True, resp.get("usage", {}))
 
 
 def _bad_request(message: str):
@@ -244,12 +352,7 @@ def _run_async_worker(event):
 
     # --- 1) Bedrock Converse on the pinned model -----------------------------
     try:
-        response = _bedrock.converse(
-            modelId=MODEL_ID,
-            system=[{"text": SYSTEM_PROMPT}],
-            messages=[{"role": "user", "content": [{"text": notes}]}],
-            inferenceConfig={"maxTokens": MAX_TOKENS, "temperature": TEMPERATURE},
-        )
+        response = _converse(SYSTEM_PROMPT, notes, MAX_TOKENS)
     except ClientError as exc:
         code = exc.response.get("Error", {}).get("Code", "Unknown")
         # PHI-free log: error class only, never the notes.
@@ -261,6 +364,11 @@ def _run_async_worker(event):
     model_text = response["output"]["message"]["content"][0]["text"]
     usage = response.get("usage", {})
     outputs, parse_ok = _split_outputs(model_text)
+
+    # --- 1b) Patient v2 (optional): regenerate PART C from PART A alone -------
+    # No-op unless PATIENT_V2_SECOND_PASS is enabled. Mutates outputs['patient']
+    # in place on success; never fails the job (graceful fallback to v1 text).
+    patient_version, patient_mv, patient_parse_ok, patient_usage = _maybe_second_pass(outputs)
 
     # --- 2) Hashes (the only representation we keep in the audit log) --------
     output_hashes = {k: _sha256(v) for k, v in outputs.items()}
@@ -312,7 +420,11 @@ def _run_async_worker(event):
                 "    output_sha256 = :hashes, "
                 "    parse_ok = :parse_ok, "
                 "    input_tokens = :in_tok, "
-                "    output_tokens = :out_tok"
+                "    output_tokens = :out_tok, "
+                "    patient_version = :pv, "
+                "    patient_model_version = :pmv, "
+                "    patient_parse_ok = :ppok, "
+                "    patient_output_tokens = :ptok"
             ),
             ExpressionAttributeNames={"#st": "status"},
             ExpressionAttributeValues={
@@ -323,6 +435,13 @@ def _run_async_worker(event):
                 ":parse_ok": {"BOOL": parse_ok},
                 ":in_tok":   _opt_number(usage.get("inputTokens")),
                 ":out_tok":  _opt_number(usage.get("outputTokens")),
+                # Patient v2 provenance: which path produced the leaflet, so the
+                # audit log distinguishes a combined-pass (v1) leaflet from a
+                # second-pass (v2) one. See docs/PATIENT_V2_DESIGN.md.
+                ":pv":       {"S": patient_version},
+                ":pmv":      {"S": patient_mv},
+                ":ppok":     {"BOOL": patient_parse_ok},
+                ":ptok":     _opt_number(patient_usage.get("outputTokens")),
                 ":pending":  {"S": "pending"},
             },
             # Only flip from pending; never overwrite a complete OR failed row.
@@ -349,12 +468,14 @@ def _run_async_worker(event):
         "job_id": job_id, "user_sub": user_sub,
         "model_version": model_version,
         "parse_ok": parse_ok,
+        "patient_version": patient_version,
         "input_tokens": usage.get("inputTokens"),
         "output_tokens": usage.get("outputTokens"),
+        "patient_output_tokens": patient_usage.get("outputTokens"),
         "latency_ms": int((time.time() - started) * 1000),
     }))
     return {"ok": True, "job_id": job_id, "status": "complete",
-            "parse_ok": parse_ok}
+            "parse_ok": parse_ok, "patient_version": patient_version}
 
 
 def _mark_failed(user_sub: str, job_id: str, error_code: str, error_message: str):
@@ -424,12 +545,7 @@ def _run_direct_invoke(event):
         return _bad_request("'notes' is required and must be non-empty")
 
     try:
-        response = _bedrock.converse(
-            modelId=MODEL_ID,
-            system=[{"text": SYSTEM_PROMPT}],
-            messages=[{"role": "user", "content": [{"text": notes}]}],
-            inferenceConfig={"maxTokens": MAX_TOKENS, "temperature": TEMPERATURE},
-        )
+        response = _converse(SYSTEM_PROMPT, notes, MAX_TOKENS)
     except ClientError as exc:
         logger.error("direct_bedrock_failed: %s", exc.response.get("Error", {}))
         return {"ok": False, "error": "bedrock_error",
@@ -438,6 +554,10 @@ def _run_direct_invoke(event):
     model_text = response["output"]["message"]["content"][0]["text"]
     usage = response.get("usage", {})
     outputs, parse_ok = _split_outputs(model_text)
+
+    # Patient v2 (optional): regenerate PART C from PART A alone. No-op unless
+    # PATIENT_V2_SECOND_PASS is enabled; mutates outputs['patient'] on success.
+    patient_version, patient_mv, patient_parse_ok, _patient_usage = _maybe_second_pass(outputs)
 
     input_hash = _sha256(notes)
     output_hashes = {k: _sha256(v) for k, v in outputs.items()}
@@ -463,6 +583,9 @@ def _run_direct_invoke(event):
         "request_region": REGION,
         "inference_profile": "n/a (on-demand)",
         "parse_ok": parse_ok,
+        "patient_version": patient_version,
+        "patient_model_version": patient_mv,
+        "patient_parse_ok": patient_parse_ok,
         "input_tokens": usage.get("inputTokens"),
         "output_tokens": usage.get("outputTokens"),
         "schema_version": SCHEMA_VERSION,

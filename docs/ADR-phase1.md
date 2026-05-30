@@ -551,11 +551,16 @@ pending ┼─ failed ────── (error_code + error_message; no outputs
   single combined v0.5 prompt — so a separate simplification pass is not needed to hit
   the reading-age bar. Combined-prompt also keeps the whole hot path UK-only on-demand
   (a Haiku second pass would be inference-profile-only in eu-west-2, leaving the
-  strict residency posture). **Documented future enhancement (v2):** a second pass that
+  strict residency posture). **Future enhancement (v2):** a second pass that
   regenerates the patient version from the *clinician-reviewed* summary — justified by
   clinical safety (anchoring the leaflet to approved content), NOT by reading age. This
   ties to the human-in-the-loop control and the Model Card's "confidence in outputs"
-  theme.
+  theme. **Built 2026-05-30 (v2a, flag-gated `PATIENT_V2_SECOND_PASS`, off by default):**
+  the worker now regenerates PART C in a separate Bedrock pass whose only input is the
+  curated PART A — architectural belt-and-braces over the v0.6 prompt rule, on the same
+  Sonnet on-demand model (residency unchanged). Anchoring to the *clinician-edited*
+  summary via a review-gated endpoint (v2b) remains the follow-on. See
+  `docs/PATIENT_V2_DESIGN.md`.
 
 ---
 

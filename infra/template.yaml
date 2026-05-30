@@ -1286,9 +1286,11 @@ Resources:
       Architectures:
         - arm64
       MemorySize: 256
-      # Fan-out POSTs return in <1s; the budget is the poll window for the
-      # slowest generation plus headroom. POLL_TIMEOUT_S (240) < this.
-      Timeout: 300
+      # Bounded-concurrency run: at most CANARY_MAX_CONCURRENCY generations in
+      # flight at once (avoids self-inflicted Bedrock throttling). Budget = poll
+      # window for ~4 waves of the 18 scenarios plus headroom. POLL_TIMEOUT_S
+      # (540) < this Lambda timeout.
+      Timeout: 600
       Role: !GetAtt CanaryFunctionRole.Arn
       LoggingConfig:
         LogGroup: !Ref CanaryFunctionLogGroup
@@ -1299,7 +1301,10 @@ Resources:
           CANARY_USERNAME: !Ref CanaryUsername
           CANARY_PASSWORD_PARAM: !Ref CanaryPasswordParamName
           METRIC_NAMESPACE: DischargeAssistant/Canary
-          POLL_TIMEOUT_S: '240'
+          POLL_TIMEOUT_S: '540'
+          # Keep concurrent Bedrock generations under the account's on-demand
+          # quota; tune up if quotas are raised.
+          CANARY_MAX_CONCURRENCY: '5'
 
   # Role the EventBridge Scheduler assumes to invoke the canary. Separate from
   # the function's own execution role (different trust principal).

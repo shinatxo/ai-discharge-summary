@@ -44,12 +44,17 @@ The deployed API contract (confirmed in `src/dispatcher`, `src/status`, `ui-spa/
 - `GET /generations/{job_id}` — header `authorization: Bearer <IdToken>` → `{status:
   pending|complete|failed|expired, parse_ok, model_version, outputs?, output_sha256?, ...}`.
 
-### 2a. Why fan-out-then-poll
-Because `/generate` is async (returns 202 in <1s), the canary fires **all** POSTs first,
-collects the job_ids, then polls them together. Wall-clock collapses to roughly the
-*slowest single* generation (~60–90 s) instead of the **sum** of 18 (~8–10 min). It also
-keeps the Lambda well under its timeout and doubles as a live demonstration that the
-202+poll architecture (ADR-005) actually parallelises. Idempotency keys are fresh per run.
+### 2a. Bounded-concurrency submit + poll
+Because `/generate` is async (202 in <1s), the canary doesn't block per job. But a naive
+"fire all 18 at once" **self-inflicts Bedrock on-demand throttling** — observed on the very
+first live run (2026-05-30): 1/18 succeeded, the rest throttled. So the canary uses a
+**sliding window**: at most `CANARY_MAX_CONCURRENCY` (default 5) generations in flight at a
+time; as each finishes it submits the next, with a small stagger between submissions. This
+keeps total Bedrock concurrency under the account quota, is more representative of real
+traffic (no user sends 18 simultaneous requests), and still parallelises (wall-clock ≈ a few
+waves, not the serial sum). Throttled jobs are **requeued once** (`CANARY_THROTTLE_RETRIES`)
+rather than scored as failures — but the throttle is always recorded as a metric, so the
+capacity signal for Wave 4 isn't lost. Idempotency keys are fresh per submission.
 
 ## 3. Auth + secret
 

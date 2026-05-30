@@ -49,9 +49,20 @@ METRIC_NAMESPACE = os.environ.get("METRIC_NAMESPACE", "DischargeAssistant/Canary
 # Optional comma-separated subset of scenario ids; empty = all 18.
 CANARY_SCENARIOS = os.environ.get("CANARY_SCENARIOS", "").strip()
 # Per-run poll budget and cadence.
-POLL_TIMEOUT_S = int(os.environ.get("POLL_TIMEOUT_S", "240"))
+POLL_TIMEOUT_S = int(os.environ.get("POLL_TIMEOUT_S", "540"))
 POLL_INTERVAL_S = float(os.environ.get("POLL_INTERVAL_S", "3"))
 HTTP_TIMEOUT_S = float(os.environ.get("HTTP_TIMEOUT_S", "15"))
+
+# Bound concurrent in-flight generations. Firing all 18 at once self-inflicts
+# Bedrock on-demand throttling (observed 2026-05-30: 1/18 succeeded, rest
+# throttled). A sliding window keeps the canary representative of real traffic
+# (no real user sends 18 simultaneous requests) and within account quotas.
+MAX_CONCURRENCY = int(os.environ.get("CANARY_MAX_CONCURRENCY", "5"))
+# Small stagger between submissions to smooth the request rate (seconds).
+SUBMIT_STAGGER_S = float(os.environ.get("SUBMIT_STAGGER_S", "1.0"))
+# Throttling is the canonical transient error - retry a throttled job this many
+# times before scoring it a failure (the throttle is still recorded as a metric).
+THROTTLE_RETRIES = int(os.environ.get("CANARY_THROTTLE_RETRIES", "1"))
 
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
@@ -218,50 +229,83 @@ def lambda_handler(event, context):
         _emit([_metric("CanaryRunOk", 0, "ALL")])
         return {"ok": False, "error": "auth_failed"}
 
-    # --- fan out: POST all scenarios, collect job_ids ------------------------
-    inflight = {}   # scenario_id -> {"job_id", "t_post", "title"}
-    results = {}    # scenario_id -> scored result
-    for s in scenarios:
+    # --- bounded-concurrency submit + poll -----------------------------------
+    # Sliding window: keep at most MAX_CONCURRENCY generations in flight; as each
+    # finishes, submit the next. Throttled jobs are requeued (up to THROTTLE_RETRIES)
+    # rather than scored as failures, but the throttle is still recorded.
+    deadline = run_started + POLL_TIMEOUT_S
+    queue = list(scenarios)                 # scenarios waiting to be submitted (FIFO)
+    by_id = {s["id"]: s for s in scenarios}
+    retries_left = {s["id"]: THROTTLE_RETRIES for s in scenarios}
+    inflight = {}                           # sid -> {"job_id", "t_post"}
+    results = {}                            # sid -> scored result
+    throttle_seen = set()                   # sids that hit a throttle on any attempt
+
+    def _submit_next():
+        if not queue:
+            return
+        s = queue.pop(0)
         job_id, http_status, err = _post_generate(id_token, s["notes"])
         if job_id:
-            inflight[s["id"]] = {"job_id": job_id, "t_post": time.time(), "title": s["title"]}
+            inflight[s["id"]] = {"job_id": job_id, "t_post": time.time()}
         else:
-            # Couldn't even dispatch - score immediately as a failure.
+            if str(http_status) == "429":
+                throttle_seen.add(s["id"])
             results[s["id"]] = {
-                "success": False, "failed": True, "throttled": str(http_status) == "429",
+                "success": False, "failed": True, "throttled": s["id"] in throttle_seen,
                 "structural_ok": False, "latency_ms": None, "status": f"dispatch_error:{err}",
             }
             logger.warning(json.dumps({"event": "canary_dispatch_failed",
                                         "scenario": s["id"], "http": http_status, "error": err}))
+        if SUBMIT_STAGGER_S:
+            time.sleep(SUBMIT_STAGGER_S)
 
-    # --- poll until terminal or timeout --------------------------------------
-    deadline = run_started + POLL_TIMEOUT_S
+    def _fill_window():
+        while queue and len(inflight) < MAX_CONCURRENCY and time.time() < deadline:
+            _submit_next()
+
+    _fill_window()
     while inflight and time.time() < deadline:
         time.sleep(POLL_INTERVAL_S)
         for sid in list(inflight.keys()):
             job = inflight[sid]
-            http_status, body = _get_status(id_token, job["job_id"])
+            _http_status, body = _get_status(id_token, job["job_id"])
             state = body.get("status")
-            if state in ("complete", "failed", "expired"):
-                latency_ms = int((time.time() - job["t_post"]) * 1000)
-                throttled = _is_throttle(body)
+            if state not in ("complete", "failed", "expired"):
+                continue
+            throttled = _is_throttle(body)
+            if throttled:
+                throttle_seen.add(sid)
+            # Retry a throttled failure instead of scoring it - requeue once.
+            if throttled and state in ("failed", "expired") and retries_left[sid] > 0:
+                retries_left[sid] -= 1
+                del inflight[sid]
+                queue.append(by_id[sid])
+                logger.info(json.dumps({"event": "canary_retry_throttled", "scenario": sid}))
+            else:
                 results[sid] = {
                     "success": state == "complete",
                     "failed": state in ("failed", "expired"),
-                    "throttled": throttled,
+                    "throttled": sid in throttle_seen,
                     "structural_ok": _structural_ok(body) if state == "complete" else False,
-                    "latency_ms": latency_ms,
+                    "latency_ms": int((time.time() - job["t_post"]) * 1000),
                     "status": state,
                 }
                 del inflight[sid]
+            _fill_window()
 
-    # --- anything still in-flight at timeout = a timeout failure -------------
+    # --- timeouts: anything still in-flight OR never submitted ---------------
     for sid, job in inflight.items():
         results[sid] = {
-            "success": False, "failed": True, "throttled": False,
+            "success": False, "failed": True, "throttled": sid in throttle_seen,
             "structural_ok": False, "latency_ms": int((time.time() - job["t_post"]) * 1000),
             "status": "poll_timeout",
         }
+    for s in queue:
+        results.setdefault(s["id"], {
+            "success": False, "failed": True, "throttled": s["id"] in throttle_seen,
+            "structural_ok": False, "latency_ms": None, "status": "not_submitted",
+        })
 
     # --- emit metrics (per scenario + ALL aggregate) -------------------------
     metric_data = []

@@ -24,6 +24,8 @@ BASE_ENV = {
     "CANARY_PASSWORD_PARAM": "/discharge/canary/password",
     "POLL_INTERVAL_S": "0",
     "POLL_TIMEOUT_S": "30",
+    "SUBMIT_STAGGER_S": "0",          # no real sleeps in tests
+    "CANARY_THROTTLE_RETRIES": "0",   # default off; retry path has its own test
 }
 
 
@@ -155,6 +157,39 @@ def test_canary_poll_timeout_marks_failure(monkeypatch):
 
     assert out["success"] == 0
     assert _metric_map(cw)[("JobFailed", "S1")] == 1.0
+
+
+def test_canary_retries_throttled_job_then_succeeds(monkeypatch):
+    """A throttled job is requeued (CANARY_THROTTLE_RETRIES=1) and, when the
+    retry completes, scored a success - but the throttle is still recorded so the
+    capacity signal isn't lost."""
+    cw = FakeCW()
+    app = _load_canary(monkeypatch,
+                       {"CANARY_SCENARIOS": "S1", "CANARY_THROTTLE_RETRIES": "1",
+                        "CANARY_MAX_CONCURRENCY": "1"},
+                       {"cognito-idp": FakeIdp(), "ssm": FakeSSM(), "cloudwatch": cw})
+
+    counter = {"n": 0}
+
+    def fake_http(method, url, id_token, body=None, idempotency_key=None):
+        if method == "POST":
+            counter["n"] += 1
+            return 202, {"job_id": f"job{counter['n']}"}
+        # First attempt (job1) is throttled; the retry (job2) completes.
+        if url.endswith("job1"):
+            return 200, {"status": "failed", "error_code": "bedrock_error",
+                         "error_message": "ThrottlingException"}
+        return 200, {"status": "complete", "parse_ok": True,
+                     "outputs": {"summary": "a", "gp_letter": "b", "patient": "c"}}
+
+    monkeypatch.setattr(app, "_http", fake_http)
+    out = app.lambda_handler({}, None)
+
+    assert out["success"] == 1            # recovered via retry
+    assert counter["n"] == 2             # original + one retry POST
+    m = _metric_map(cw)
+    assert m[("EndToEndSuccess", "S1")] == 1.0
+    assert m[("BedrockThrottle", "S1")] == 1.0   # throttle still recorded
 
 
 def test_canary_dispatch_failure_scored_without_polling(monkeypatch):

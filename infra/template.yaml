@@ -455,8 +455,14 @@ Resources:
       Architectures:
         - arm64
       MemorySize: 512
-      # Generating three outputs from one Bedrock call can take tens of seconds.
-      Timeout: 60
+      # Worker runs behind the async 202+poll path (ADR-005), so it has NO API
+      # Gateway 30s cap - it can take as long as a generation needs. Cold-eval
+      # latencies are 50-83s for the combined call, and Patient v2 adds a second
+      # Bedrock pass on top, so a 60s timeout was too tight: longer scenarios were
+      # killed mid-generation, leaving the GEN# row stuck 'pending' (surfaced by
+      # the Wave 3 canary, 2026-05-30). 240s gives generous headroom for both
+      # passes plus cold start, still well under the Lambda 900s ceiling.
+      Timeout: 240
       # Our hand-written least-privilege role (table + CMK-via-DDB + one model).
       Role: !GetAtt GenerateFunctionRole.Arn
       # Send logs to the explicit, retention-capped group declared above.

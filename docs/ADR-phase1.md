@@ -753,3 +753,81 @@ security reviewer, and a useful talking point for the demo.
   drop-the-allow-list change that would silently break only the dev
   workflow. Same-origin in prod means CORS is genuinely not in the
   picture; the config should reflect that.
+
+### Verification (post-deployment, 2026-05-27 12:17 UTC)
+
+The stack deployed clean and a representative generation job completed
+through the full new path. Live identifiers captured for reproducibility:
+
+| Resource | Value |
+|---|---|
+| CloudFront distribution domain | `d97dn8vzuz1u0.cloudfront.net` |
+| CloudFront distribution ID | `E1GQ7L05AVH8YI` |
+| Private SPA bucket | `discharge-web-spabucket-d5rb2e4ujkrd` |
+| Stack | `discharge-web` (eu-west-2) |
+
+Each of the three architectural payoffs of this design was verified
+directly in the browser via Chrome DevTools' Network panel, rather than
+taken on trust:
+
+1. **Same-origin routing.** The POST issued by the SPA showed its request
+   URL as `https://d97dn8vzuz1u0.cloudfront.net/generate` — the
+   CloudFront hostname, not `*.execute-api.eu-west-2.amazonaws.com`.
+   Confirms the SPA is calling the same origin it was served from, and
+   that the path-pattern cache behaviour routed `/generate` to the API
+   origin without exposing the API hostname to the browser.
+2. **Zero preflight.** No `OPTIONS` row immediately preceded the POST,
+   despite the request carrying the custom `Idempotency-Key` header.
+   Confirms the browser treated this as a same-origin request and
+   skipped CORS preflight entirely — the practical benefit on which the
+   single-distribution design rests.
+3. **Defence-in-depth headers attached to the API behaviour.** The POST
+   response headers included `content-security-policy: ...`,
+   `x-content-type-options: nosniff`, and
+   `strict-transport-security: max-age=31536000; includeSubDomains`.
+   Confirms the `ResponseHeadersPolicy` is attached to the `/generate`
+   cache behaviour, not only to the default S3 one — an easy thing to
+   miss when wiring multiple behaviours and worth specifically checking
+   in any future review.
+
+Data-layer evidence corroborated the network view. A `GEN#` row appeared
+in `AuditTable` for the test user (sub `1682f284-…-6528`) with
+`SK=GEN#01KSMNVNG9CMNKV8FZVAV34CSM` (ULID format = slice-4b async path,
+not legacy direct-invoke), `draft=true`, all three `output_sha256`
+populated, `completed_at=2026-05-27T12:17:54.941018+00:00`. The
+hash-only audit invariant held (no PHI in the row) and the corresponding
+ledger objects landed in the WORM bucket within seconds. The full chain
+SPA → CloudFront → API Gateway → JWT auth → Dispatcher → Worker →
+Bedrock → DynamoDB → Streams → S3 Object Lock therefore executed
+end-to-end through the new CloudFront perimeter without weakening any of
+the earlier slices.
+
+### Implementation notes (gotchas worth recording)
+
+These do not change the decision, but cost real time during the build
+and are easy to repeat. Recorded here so the next person — or a
+recruiter reading the source — sees what was learned:
+
+- **`PublicAccessBlock` is named `PublicAccessBlockConfiguration` in
+  CloudFormation.** The S3 web console labels the feature "Public access
+  block", which is the obvious property name to guess. CFN templates
+  fail validation if you guess.
+- **cfn-lint `E1029` on `${...}` inside Parameter `Description` fields.**
+  `Description` is not an `Fn::Sub` context, so `${ThingName}` in there
+  triggers the lint rule. Escape with placeholder notation like
+  `<ThingName>` in descriptions; reserve `${...}` for `Fn::Sub`
+  contexts.
+- **Zsh treats `<` and `>` as redirection.** Smoke-test recipes that
+  contain `<YOUR_THING>` placeholders break in zsh as soon as the user
+  copy-pastes the example. Use plain `YOUR_THING` (or quote the line)
+  in any pasted-in shell snippet.
+- **DynamoDB attribute names are case-sensitive.** A query against
+  `PK=...` fails with `ValidationException: Query condition missed key
+  schema element: PK` if the table actually declares `pk`. Mixing the
+  two cost a smoke-test round-trip. Stick to one convention and check it
+  against the table's actual schema, not the recipe.
+- **Stack `Description` has a hard 1024-character limit** (slice 4b
+  finding, still applies). A descriptive multi-line block can quickly
+  exceed it and is rejected at change-set creation with
+  `ValidationError: 'Description' length is greater than 1024`. Trim
+  before committing.

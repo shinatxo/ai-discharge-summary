@@ -73,6 +73,45 @@ Parameters:
       and note that in prod the lock is COMPLIANCE mode (see the IsProd condition),
       so objects are undeletable even by the account root until the period lapses.
 
+  # --- Wave 3: synthetic-traffic canary (docs/WAVE3_SYNTHETIC_TRAFFIC_DESIGN.md) -
+  CanaryEnabled:
+    Type: String
+    Default: 'off'
+    AllowedValues:
+      - 'off'
+      - 'on'
+    Description: >
+      Gates the EventBridge Scheduler that fires the canary nightly. Keep 'off'
+      until the synthetic Cognito user + SSM password parameter are bootstrapped
+      (see infra/CANARY_BOOTSTRAP.md), then redeploy with 'on'. The Lambda + role
+      are created either way so the function can be invoked manually for a smoke
+      test before the schedule is switched on.
+
+  CanaryUsername:
+    Type: String
+    Default: canary@synthetic.invalid
+    Description: >
+      Username (email) of the dedicated synthetic Cognito user the canary signs in
+      as. Admin-created, no MFA, permanent password - isolated from real demo users
+      so its traffic is taggable and its blast radius is nil.
+
+  CanaryPasswordParamName:
+    Type: String
+    Default: /discharge/canary/password
+    Description: >
+      Name of the SSM Parameter Store SecureString holding the synthetic user's
+      password. Created out-of-band (plain CloudFormation cannot author a
+      SecureString value) per the bootstrap runbook; the canary role is granted
+      GetParameter on exactly this parameter ARN.
+
+  CanaryScheduleExpression:
+    Type: String
+    Default: cron(0 2 * * ? *)
+    Description: >
+      EventBridge Scheduler expression for the nightly canary run (interpreted in
+      Europe/London - see the schedule's ScheduleExpressionTimezone). Default =
+      02:00 local.
+
 # -----------------------------------------------------------------------------
 # Conditions let one template behave differently per environment. Here the only
 # difference that matters for safety is the Object Lock MODE:
@@ -84,6 +123,8 @@ Parameters:
 # -----------------------------------------------------------------------------
 Conditions:
   IsProd: !Equals [!Ref Environment, prod]
+  # Create the nightly canary schedule only once the synthetic user is bootstrapped.
+  CanaryOn: !Equals [!Ref CanaryEnabled, 'on']
 
 Resources:
 
@@ -1135,6 +1176,174 @@ Resources:
       Principal: apigateway.amazonaws.com
       SourceArn: !Sub "arn:${AWS::Partition}:execute-api:${AWS::Region}:${AWS::AccountId}:${HttpApi}/*/*/generations/*"
 
+  # ===========================================================================
+  # WAVE 3 - synthetic-traffic canary.
+  #
+  #   EventBridge Scheduler (nightly) -> CanaryFunction -> drives the deployed
+  #   async API as the synthetic user -> CloudWatch custom metrics for the
+  #   Wave 4 alarms to watch. Design: docs/WAVE3_SYNTHETIC_TRAFFIC_DESIGN.md.
+  #
+  # The canary holds NO DynamoDB / Bedrock / S3 permissions - it talks only HTTP
+  # to the API as a normal signed-in user, so it inherits the same blast radius
+  # as any client. Its own permissions are just: read its password from SSM,
+  # decrypt that one SecureString, and publish metrics in one namespace.
+  # ===========================================================================
+  CanaryFunctionLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub "/aws/lambda/${AWS::StackName}-canary"
+      RetentionInDays: 30
+
+  CanaryFunctionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub "${AWS::StackName}-canary-fn-role"
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        # (a) Read the synthetic user's password from exactly one SSM parameter.
+        - PolicyName: read-canary-password-param
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Sid: GetCanaryPasswordOnly
+                Effect: Allow
+                Action:
+                  - ssm:GetParameter
+                Resource: !Sub "arn:${AWS::Partition}:ssm:${AWS::Region}:${AWS::AccountId}:parameter${CanaryPasswordParamName}"
+        # (b) Decrypt the SecureString - usable ONLY via SSM in this region. The
+        #     SecureString uses the account's aws/ssm managed key by default;
+        #     the kms:ViaService condition guarantees this role can never use a
+        #     key for a standalone KMS call, only as part of an SSM request.
+        - PolicyName: decrypt-securestring-via-ssm-only
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Sid: KmsDecryptViaSsmOnly
+                Effect: Allow
+                Action:
+                  - kms:Decrypt
+                Resource: "*"
+                Condition:
+                  StringEquals:
+                    kms:ViaService: !Sub "ssm.${AWS::Region}.amazonaws.com"
+        # (c) Publish metrics in ONLY the canary namespace. PutMetricData isn't
+        #     resource-scopable, so the cloudwatch:namespace condition is the
+        #     least-privilege lever. (SAA: condition keys narrow HOW, not WHAT.)
+        - PolicyName: put-canary-metrics-only
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Sid: PutMetricDataInNamespaceOnly
+                Effect: Allow
+                Action:
+                  - cloudwatch:PutMetricData
+                Resource: "*"
+                Condition:
+                  StringEquals:
+                    cloudwatch:namespace: DischargeAssistant/Canary
+        # (d) Sign in as the synthetic user. USER_PASSWORD_AUTH on a public app
+        #     client is an unauthenticated Cognito flow; InitiateAuth isn't
+        #     meaningfully resource-scopable, so it's granted on "*" - a documented
+        #     narrow exception, same posture as dynamodb:ListStreams elsewhere.
+        - PolicyName: cognito-initiate-auth
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Sid: InitiateAuthForCanary
+                Effect: Allow
+                Action:
+                  - cognito-idp:InitiateAuth
+                Resource: "*"
+        # (e) Logs - this function's own log group only.
+        - PolicyName: own-log-group-only
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Sid: WriteOwnLogsOnly
+                Effect: Allow
+                Action:
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
+                Resource: !Sub "arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/${AWS::StackName}-canary:*"
+
+  CanaryFunction:
+    Type: AWS::Lambda::Function
+    DependsOn: CanaryFunctionLogGroup
+    Properties:
+      FunctionName: !Sub "${AWS::StackName}-canary"
+      Description: >-
+        Wave 3 synthetic-traffic canary: replays the 18 eval scenarios through
+        the deployed API nightly and emits CloudWatch metrics. No PHI logged.
+      Code: ../src/canary
+      Handler: app.lambda_handler
+      Runtime: python3.13
+      Architectures:
+        - arm64
+      MemorySize: 256
+      # Fan-out POSTs return in <1s; the budget is the poll window for the
+      # slowest generation plus headroom. POLL_TIMEOUT_S (240) < this.
+      Timeout: 300
+      Role: !GetAtt CanaryFunctionRole.Arn
+      LoggingConfig:
+        LogGroup: !Ref CanaryFunctionLogGroup
+      Environment:
+        Variables:
+          API_BASE: !Sub "https://${HttpApi}.execute-api.${AWS::Region}.${AWS::URLSuffix}"
+          USER_POOL_CLIENT_ID: !Ref UserPoolClient
+          CANARY_USERNAME: !Ref CanaryUsername
+          CANARY_PASSWORD_PARAM: !Ref CanaryPasswordParamName
+          METRIC_NAMESPACE: DischargeAssistant/Canary
+          POLL_TIMEOUT_S: '240'
+
+  # Role the EventBridge Scheduler assumes to invoke the canary. Separate from
+  # the function's own execution role (different trust principal).
+  CanarySchedulerRole:
+    Type: AWS::IAM::Role
+    Condition: CanaryOn
+    Properties:
+      RoleName: !Sub "${AWS::StackName}-canary-scheduler-role"
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: scheduler.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: invoke-canary-only
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Sid: InvokeCanaryFunctionOnly
+                Effect: Allow
+                Action:
+                  - lambda:InvokeFunction
+                Resource: !GetAtt CanaryFunction.Arn
+
+  # The nightly schedule. EventBridge Scheduler (not a classic Events::Rule) so
+  # we get a native IANA timezone - the canary fires at 02:00 Europe/London
+  # regardless of BST/GMT, no UTC arithmetic. Created only when CanaryEnabled=on.
+  CanaryScheduleRule:
+    Type: AWS::Scheduler::Schedule
+    Condition: CanaryOn
+    Properties:
+      Name: !Sub "${AWS::StackName}-canary-nightly"
+      Description: Nightly synthetic-traffic run of the discharge-summary canary.
+      ScheduleExpression: !Ref CanaryScheduleExpression
+      ScheduleExpressionTimezone: Europe/London
+      FlexibleTimeWindow:
+        Mode: 'OFF'
+      State: ENABLED
+      Target:
+        Arn: !GetAtt CanaryFunction.Arn
+        RoleArn: !GetAtt CanarySchedulerRole.Arn
+
 # -----------------------------------------------------------------------------
 # Outputs surface the identifiers each slice needs, and double as
 # residency/governance evidence.
@@ -1238,3 +1447,12 @@ Outputs:
   StatusFunctionRoleArn:
     Description: Least-privilege status role (GetItem only on both tables + CMK via DDB)
     Value: !GetAtt StatusFunctionRole.Arn
+  CanaryFunctionName:
+    Description: Wave 3 synthetic-traffic canary (invoke manually to smoke-test before enabling the schedule)
+    Value: !Ref CanaryFunction
+  CanaryFunctionArn:
+    Description: ARN of the canary Lambda
+    Value: !GetAtt CanaryFunction.Arn
+  CanaryFunctionRoleArn:
+    Description: Least-privilege canary role (SSM GetParameter + KMS-via-SSM decrypt + PutMetricData in one namespace + InitiateAuth)
+    Value: !GetAtt CanaryFunctionRole.Arn

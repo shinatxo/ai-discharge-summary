@@ -112,6 +112,30 @@ Parameters:
       Europe/London - see the schedule's ScheduleExpressionTimezone). Default =
       02:00 local.
 
+  CanaryMaxConcurrency:
+    Type: String
+    Default: '2'
+    Description: >
+      Max in-flight generations the canary keeps open at once. Tuned DOWN to live
+      within the account's Bedrock Sonnet on-demand quota - the 2026-05-30 finding
+      was that 5+ concurrent (x2 Bedrock calls each under Patient v2) saturates the
+      quota and jobs crawl. Raise this once a Bedrock quota increase is granted.
+
+  CanaryScenarios:
+    Type: String
+    Default: ''
+    Description: >
+      Comma-separated scenario ids to run (e.g. "S1,S8,S14,S16,S17,A5"). Empty =
+      all 18. Use a rotating subset if the full set can't finish within the poll
+      budget under the current quota.
+
+  CanaryPollTimeoutS:
+    Type: String
+    Default: '840'
+    Description: >
+      Per-run poll budget in seconds (must be < the canary Lambda's 900s timeout).
+      Headroom for several waves of generations under bounded concurrency.
+
 # -----------------------------------------------------------------------------
 # Conditions let one template behave differently per environment. Here the only
 # difference that matters for safety is the Object Lock MODE:
@@ -1286,11 +1310,10 @@ Resources:
       Architectures:
         - arm64
       MemorySize: 256
-      # Bounded-concurrency run: at most CANARY_MAX_CONCURRENCY generations in
-      # flight at once (avoids self-inflicted Bedrock throttling). Budget = poll
-      # window for ~4 waves of the 18 scenarios plus headroom. POLL_TIMEOUT_S
-      # (540) < this Lambda timeout.
-      Timeout: 600
+      # Bounded-concurrency run: at most CanaryMaxConcurrency generations in flight
+      # at once (avoids saturating the Bedrock on-demand quota). 900s is the Lambda
+      # ceiling; CanaryPollTimeoutS (840) leaves shutdown headroom under it.
+      Timeout: 900
       Role: !GetAtt CanaryFunctionRole.Arn
       LoggingConfig:
         LogGroup: !Ref CanaryFunctionLogGroup
@@ -1301,10 +1324,10 @@ Resources:
           CANARY_USERNAME: !Ref CanaryUsername
           CANARY_PASSWORD_PARAM: !Ref CanaryPasswordParamName
           METRIC_NAMESPACE: DischargeAssistant/Canary
-          POLL_TIMEOUT_S: '540'
-          # Keep concurrent Bedrock generations under the account's on-demand
-          # quota; tune up if quotas are raised.
-          CANARY_MAX_CONCURRENCY: '5'
+          # Tunable (stack parameters) so quota tuning needs no code change.
+          POLL_TIMEOUT_S: !Ref CanaryPollTimeoutS
+          CANARY_MAX_CONCURRENCY: !Ref CanaryMaxConcurrency
+          CANARY_SCENARIOS: !Ref CanaryScenarios
 
   # Role the EventBridge Scheduler assumes to invoke the canary. Separate from
   # the function's own execution role (different trust principal).

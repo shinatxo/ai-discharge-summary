@@ -17,3 +17,4 @@ out.json
 # python bytecode caches (Lambda src dirs)
 __pycache__/
 *.pyc
+.venv/

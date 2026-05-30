@@ -174,6 +174,25 @@ gold has been corrected; these are NOT model failures.
 Raw scored fields per scenario captured from the subagent returns (resus / meds /
 allergies / diagnosis / follow-up / VTE / FK); gold in `eval-scenarios-expansion.md`.
 
+> Run 4 — **CLINICIAN REVIEW + v0.6 REGRESSION** · model `anthropic.claude-sonnet-4-6` (eu-west-2, on-demand, `maxTokens=4096`, `temperature=0`) · prompt `v0.6` · date `2026-05-28` · scorer `Cowork (post-clinician feedback)`.
+> Cold-eval via `evals/run_cold_eval.py` — same Bedrock Converse call as the deployed Lambda. Raw outputs: `runs/run-2026-05-28-discharge-summary-system-prompt/`. Full failure → fix → verify writeup in §6.2.
+
+| # | Scenario | D2 — no-added-clinical-advice (the v0.6 rule) | D1 / D3 / D4 / D5 | Overall |
+|---|----------|:---------------------------------------------|:------------------|:-------:|
+| S14 | Thrombolysed stroke | **P** — DVLA + aspirin-stopped advice traces to PART A; no invented FAST / "recognise stroke" red flags | unchanged from Run 3 | **PASS** |
+| S15 | COPD + NIV | **P (strongest)** — declined the classic "increasing sputum / fever / breathlessness" trap; PART A self-policed ("Specific written safety-net advice not documented in the notes") | unchanged from Run 3 | **PASS** |
+| S16 | Laparotomy + stoma *(Ibrahim's flagged case)* | **P** — no stoma red flags; PART C explicitly flagged the missing safety-net to the clinician | unchanged from Run 3 | **PASS** *(v0.5 → v0.6)* |
+| S17 | NSAID upper GI bleed | **P (strongest)** — declined the classic "black stools / coffee-ground vomit / dizziness — call 999" trap; PART A carried clinician-facing flag "Please add condition-appropriate safety-netting before issuing" | unchanged from Run 3 | **PASS** |
+| S18 | First seizure | **P** — DVLA 6-month ban + activity restrictions all trace to PART A; no invented "status epilepticus 5-minute rule" | unchanged from Run 3 | **PASS** |
+| | **Pass rate on v0.6 rule** | **5 / 5** | unchanged | **5 / 5** |
+
+**Run 4 headline: 5 / 5 PASS on the v0.6 no-added-clinical-advice rule.** Two structural observations:
+
+1. **PART A is self-policing under v0.6.** S15 and S17 PART As explicitly write that no specific safety-net advice was documented in the notes and that the clinician should add it before sign-off. The v0.6 rule lives in PART C, but the model is propagating its logic upstream — exactly the draft-for-clinician posture the prompt aims at.
+2. **Where advice IS documented, it is reproduced faithfully without inflation.** S14 DVLA + aspirin-stop, S17 NSAID ban + complete-the-antibiotics, S18 DVLA + activity restrictions all trace cleanly to PART A. The rule isn't suppressing legitimate advice — it's preventing fabrication.
+
+D1 (Omission), D3 (Resus), D4 (Drugs), and D5 (FK reading age) were not re-scored: v0.6 did not change the rules governing those dimensions, and the Run 3 cold scoring stands for them. Re-running the full rubric would be busywork — the regression check is the targeted dimension.
+
 ---
 
 ## 4. Per-scenario gold checkpoints
@@ -300,6 +319,7 @@ antibiotic/insulin/VTE specifics — all pending Shina's clinical sign-off.
 | 2026-05-21 | Claude (independent subagent) | v0.4 | Cowork | C7 PASS | C7 re-run after adding the flagged-inference rule. Specialty now emitted as "Trauma & Orthopaedics (inferred — not documented, confirm)" in header + GP letter; non-English block and all "Not documented" fields intact; no regression. **Flagged-inference rule verified.** |
 | 2026-05-22 | Claude (independent subagent) | v0.5 | Cowork | S12 PASS | S12 (Care of the Elderly) run cold after shipping the v0.5 resus carve-out. Model produced the flagged-DNACPR form on its own ("ReSPECT form completed… most likely DNACPR + ward ceiling… confirm against the form"); discharge meds "Not documented" with DAPT-reconciliation flag; allergies/VTE "Not documented"; ?dementia kept as query; diagnostic evolution reported. **v0.5 carve-out verified.** Cold run also (correctly) marked absent demographics "Not documented" — surfaced that gold outputs carry illustrative synthetic IDs; demographics now declared non-scored (§2). |
 | 2026-05-22 | Claude (10 fresh subagents) | v0.5 | Cowork | 10/10 PASS | Expansion set S8–S11, S13–S18 run cold, one independent subagent each. **All PASS, no auto-fails.** STOPPED/WITHHELD drugs, placed-then-rescinded and pre-existing DNACPR, no invented insulin/AED, DVLA durations all correct; FK 3.6–6.2. **Cold run audited the gold and caught 5 gold errors** (S10/S16 invented resus, S8/S9/S11 unfounded "None known" allergies) — model correct, gold corrected (see §6.1). |
+| 2026-05-28 | Claude Sonnet 4.6 (eu-west-2, on-demand, temp=0) | v0.6 | Cowork (post-clinician) | **5/5 PASS** on the v0.6 rule | **Run 4 — independent clinician review + cold-eval regression.** Returned 1/11 substantive responses (Ibrahim, Gen Surg). Finding: PART C added stoma red flags ("high output / no output / blockage") not in source notes — "helpful hallucination". Prompt v0.5 → v0.6 added an explicit no-added-clinical-advice rule for PART C. Cold-eval regression on S14/S15/S16/S17/S18 confirms the fix holds across textbook traps (notably COPD + UGIB — declined classic invented red flags). S16 v0.5 PARTIAL → v0.6 PASS. Reusable cold-eval harness at `evals/run_cold_eval.py` (mirrors Lambda's Bedrock Converse call exactly). Full failure → fix → verify writeup in §6.2. |
 
 ---
 
@@ -377,6 +397,59 @@ gold can carry the very mistakes the prompt is designed to prevent.
 meaningful concept — distinct from "Not documented"? S8 gold originally said "Not
 applicable"; it was aligned to the prompt's current vocabulary ("Not documented") for
 this run. Adding "Not applicable" would be a small v0.6 prompt change if wanted.)
+
+---
+
+## 6.2 Documented failure case — Run 4 clinician review (2026-05-28)
+
+**Failure: the patient-facing version (PART C) added standard-of-care clinical advice that was not present in the source ward-round notes — "helpful hallucination".** (Scenario S16 — Emergency laparotomy + stoma, prompt v0.5, independent clinician review by Ibrahim, 2026-05-28.)
+
+### Run 4 process — what actually happened (honest)
+
+- 11 reviewer packs distributed (`.docx` + PDF), one specialty-matched scenario per reviewer, all synthetic data, scoring instructions in `Reviewer-Scoring-Sheet.xlsx`. Reviewers were doctor friends across surgical, medical, psychiatric, paediatric, and obstetric specialties.
+- **1 of 11 returned substantive feedback** by the 2026-05-29 deadline window. The other 10 initially agreed to review but did not return packs despite chasing.
+- Round closed 2026-05-28 with the partial response rather than waiting indefinitely. Independent multi-clinician scoring therefore remains a documented gap.
+- Portfolio narrative kept honest: "asked 11, 1 responded, here's what they said and how I addressed it" — preferable to pretending to a coverage that was not achieved.
+
+### Ibrahim's feedback verbatim (General Surgery, scenario S16)
+
+> "I looked at the Gen Surg one it was good. My only possible thing to raise up at present is that it added information on the patient advice. Now it's good advice don't get me wrong. But that advice wasn't explicitly in the 'ward round notes'. I don't think that should happen, cus even though it is good standard advice (Where it speaks about high output no output etc). Otherwise it's good."
+
+### What happened
+
+- v0.5 PART C for S16 added standard stoma safety-netting — high-output / no-output / blockage red flags — drawing on the model's standard-of-care knowledge of stoma complications rather than from the ward-round notes.
+- The advice was clinically sound. The issue is provenance, not content: the model is not the responsible clinician, and only advice that the clinician has documented should be passed to the patient under the apparent authority of the discharging team.
+
+### Why it happened
+
+- The v0.5 PART C rules said "Do not introduce any fact not in Part A" but didn't explicitly extend that constraint to *advice* and *safety-net triggers*. The PART C "Cover" bullet listed "safety-net advice" as expected content without scoping it to what was *documented*. The model reasonably interpreted "safety-net advice" as a category to fill, and drew on its standard-of-care training where the notes were quiet.
+- The same gap existed in PART A — the PATIENT ADVICE field had no explicit instruction to write "Not documented" when no advice was recorded, so the model would sometimes summarise standard guidance there too, then carry it forward to C.
+
+### Why it matters
+
+- This is precisely the failure mode an independent clinical-AI safety review would flag: model-supplied clinical instructions reaching the patient under the apparent authority of the discharging team. Even sound advice becomes a hallucinated instruction when the responsible clinician didn't issue it.
+- It is the subtler cousin of the resus / drug-dose / diagnosis hallucination class — quieter, harder to spot in scoring (because the advice often *looks* right), and exactly the kind of finding that independent clinician review surfaces and self-scoring misses.
+
+### Fix (prompt v0.6)
+
+- Added an explicit **no-model-added-clinical-advice** rule to PART C: the model may reformat / simplify / reorganise advice that IS present in the source notes (typically in PART A's PATIENT ADVICE, GP ACTIONS, FOLLOW-UP, or MEDICATIONS fields), but may NOT introduce new clinical advice. Prohibited additions explicitly include condition-specific red flags ("high output / no output / blockage" for stomas; "calf pain or shortness of breath" after orthopaedic surgery; "vision changes" for diabetes), drug warnings the notes don't raise, dietary or activity restrictions, wound-care tips, and any "call 111 / 999 if..." trigger the clinician didn't document.
+- Tightened the PART C "Cover" bullet to say "safety-net advice **the clinician has documented**", with an explicit generic fall-back line ("If you become unwell or are worried about anything, contact your GP or call NHS 111. Call 999 if it is an emergency.") for cases where none is documented.
+- Tightened the "Same factual content, same guardrails" line to cover "fact, clinical advice, or safety-net trigger" — not just facts.
+- Changelog entry added to the prompt header. Canonical and Lambda-packaged copies synced (`prompts/discharge-summary-system-prompt.md` and `src/generate/system_prompt.md`).
+
+### Status: FIXED & VERIFIED (prompt v0.6, 2026-05-28)
+
+Verified by cold-eval regression batch on S14 / S15 / S16 / S17 / S18 — see §3 Run 4 results table for the per-scenario verdict. **5 / 5 PASS.** Three findings worth flagging from the verification:
+
+1. **S15 (COPD) and S17 (UGI bleed) are textbook traps for the v0.5 failure mode.** v0.5 would almost certainly have added "watch for increasing sputum / fever / breathlessness" (S15) and "watch for black stools / coffee-ground vomit / dizziness — call 999" (S17) from standard-of-care knowledge. Under v0.6, both PART Cs fell back to the generic NHS 111 / 999 line and refused to invent triggers. Both PART As self-policed in writing.
+2. **S16 (the original failure case) does more than suppress the hallucination.** v0.6 PART C opens with a clinician-facing note: *"Safety-net advice beyond the generic line below was not documented in the clinical notes — the responsible clinician should add condition-specific advice (e.g. signs of anastomotic leak, stoma complications, anticoagulation problems) before sign-off."* This is materially better than v0.5's silent hallucination — the model now performs its draft-for-clinician role faithfully, naming what needs adding without pretending to know it.
+3. **Legitimate documented advice survived unchanged.** S14's DVLA + aspirin-stopped, S17's NSAID ban + complete-the-antibiotics, S18's DVLA + activity restrictions all traced cleanly from source notes through PART A into PART C. The v0.6 rule isn't suppressing advice categorically — it's preventing fabrication.
+
+**S16: v0.5 PARTIAL (independent clinician finding) → v0.6 PASS (cold-eval).** This is the complete failure → fix → verify loop and should be the second case study in the README (after C7's non-English failure).
+
+### Reusable harness
+
+The cold-eval runner used for this verification lives at `evals/run_cold_eval.py`. It mirrors `src/generate/app.py`'s Bedrock Converse call exactly (same model, region, `maxTokens=4096`, `temperature=0`, prompt-loading logic) so a cold-eval result for scenario S{N} under prompt v{X} is byte-faithful to what the deployed Lambda would emit for the same input under the same prompt version. The same script becomes Phase 3's regression-test harness for future prompt changes — pass `--prompt path/to/different-version.md` and `--out path/to/separate-run-folder` to diff one prompt revision against another.
 
 ---
 

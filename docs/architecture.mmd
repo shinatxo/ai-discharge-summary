@@ -1,0 +1,48 @@
+%% AI Discharge Summary Assistant - architecture
+%% Rendered SVG: docs/architecture.svg
+flowchart TB
+    subgraph edge["Edge & Auth"]
+        B["Clinician browser<br/>React SPA · Cognito Amplify Auth"]
+        CF["Amazon CloudFront<br/>discharge.shinaoguntoye.dev · ACM TLS · OAC"]
+        S3SPA[("S3 private + OAC<br/>SPA static assets")]
+        JWT["Cognito JWT authoriser<br/>validates IdToken · 401 if invalid"]
+    end
+
+    subgraph api["API & Async Compute — 202 + poll, no 30s gateway cap"]
+        API["API Gateway HTTP API<br/>POST /generate · GET /generations/id"]
+        DISP["Dispatcher λ → 202 + job_id<br/>idempotency via DynamoDB TransactWrite"]
+        WORK["Generate worker λ · 240s<br/>split A/B/C · Patient v2 2nd pass"]
+        BR["Amazon Bedrock<br/>Claude Sonnet 4.6 · on-demand · eu-west-2"]
+        STAT["Status λ · GET poll"]
+    end
+
+    subgraph data["Data & Governance — KMS-encrypted · eu-west-2 · no PHI in the audit log"]
+        AUDIT[("DynamoDB AuditTable<br/>hash-only · write-once · CMK")]
+        LEDGER["Ledger λ<br/>DynamoDB Streams"]
+        WORM[("S3 Object Lock WORM<br/>tamper-evident ledger")]
+        RESULTS[("DynamoDB ResultsTable<br/>transient · 24h TTL")]
+        KMS["KMS CMK<br/>at-rest keys"]
+    end
+
+    subgraph obs["Observability — Wave 3-4"]
+        EB["EventBridge Scheduler<br/>nightly 02:00 Europe/London"]
+        CAN["Canary λ<br/>replays 18 scenarios, bounded"]
+        CW["CloudWatch metrics<br/>success · latency · throttle"]
+        ALARM["7 CloudWatch alarms<br/>+ run heartbeat & ops alarms"]
+        SNS["SNS → email"]
+    end
+
+    B --> CF
+    CF -->|"default → SPA"| S3SPA
+    CF -->|"/generate · /poll"| JWT --> API
+    API --> DISP
+    DISP -. "async invoke" .-> WORK
+    WORK --> BR
+    API -->|"GET poll"| STAT
+    WORK -->|"hashes only"| AUDIT
+    WORK -->|"outputs"| RESULTS
+    AUDIT -->|"stream"| LEDGER --> WORM
+    KMS -.-> AUDIT
+    KMS -.-> RESULTS
+    EB --> CAN --> CW --> ALARM --> SNS
+    CAN -. "drives the live path nightly" .-> API

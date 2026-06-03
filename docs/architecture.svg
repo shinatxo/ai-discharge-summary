@@ -1,0 +1,171 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1160 712" font-family="Segoe UI, Helvetica, Arial, sans-serif">
+  <defs>
+    <marker id="arrow" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#475569"/>
+    </marker>
+    <marker id="arrowDash" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#b45309"/>
+    </marker>
+  </defs>
+
+  <rect x="0" y="0" width="1160" height="712" fill="#f8fafc"/>
+
+  <!-- Title -->
+  <text x="40" y="44" font-size="23" font-weight="700" fill="#0f172a">AI Discharge Summary Assistant — architecture</text>
+  <text x="40" y="68" font-size="13" fill="#475569">Fully serverless clinical-AI draft generator on AWS · async 202/poll · hash-only audit + WORM ledger</text>
+  <!-- Region legend -->
+  <rect x="812" y="26" width="308" height="46" rx="8" fill="#eef2ff" stroke="#c7d2fe"/>
+  <text x="828" y="46" font-size="12" font-weight="700" fill="#3730a3">Region residency</text>
+  <text x="828" y="63" font-size="11" fill="#4338ca">ACM cert → us-east-1 · all else → eu-west-2 (UK)</text>
+
+  <!-- ================= EDGE &amp; AUTH band ================= -->
+  <rect x="36" y="84" width="1088" height="92" rx="12" fill="#ffffff" stroke="#e2e8f0"/>
+  <text x="52" y="104" font-size="12" font-weight="700" fill="#64748b" letter-spacing="1">EDGE &amp; AUTH</text>
+
+  <!-- Browser -->
+  <rect x="60" y="112" width="210" height="52" rx="10" fill="#eff6ff" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="165" y="134" text-anchor="middle" font-size="13" font-weight="600" fill="#0f172a">Clinician browser</text>
+  <text x="165" y="151" text-anchor="middle" font-size="11" fill="#475569">React SPA · Cognito Amplify Auth</text>
+
+  <!-- CloudFront -->
+  <rect x="322" y="112" width="232" height="52" rx="10" fill="#eff6ff" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="438" y="133" text-anchor="middle" font-size="13" font-weight="600" fill="#0f172a">Amazon CloudFront</text>
+  <text x="438" y="150" text-anchor="middle" font-size="11" fill="#475569">discharge.shinaoguntoye.dev · ACM TLS · OAC</text>
+
+  <!-- S3 SPA origin -->
+  <rect x="606" y="112" width="208" height="52" rx="10" fill="#f0fdf4" stroke="#16a34a" stroke-width="1.5"/>
+  <text x="710" y="133" text-anchor="middle" font-size="13" font-weight="600" fill="#0f172a">S3 (private, OAC)</text>
+  <text x="710" y="150" text-anchor="middle" font-size="11" fill="#475569">SPA static assets</text>
+
+  <!-- Cognito JWT -->
+  <rect x="866" y="112" width="234" height="52" rx="10" fill="#f5f3ff" stroke="#7c3aed" stroke-width="1.5"/>
+  <text x="983" y="133" text-anchor="middle" font-size="13" font-weight="600" fill="#0f172a">Cognito JWT authoriser</text>
+  <text x="983" y="150" text-anchor="middle" font-size="11" fill="#475569">validates IdToken · 401 if invalid</text>
+
+  <!-- ================= API + ASYNC COMPUTE band ================= -->
+  <rect x="36" y="196" width="1088" height="158" rx="12" fill="#ffffff" stroke="#e2e8f0"/>
+  <text x="52" y="216" font-size="12" font-weight="700" fill="#64748b" letter-spacing="1">API &amp; ASYNC COMPUTE (202 + poll — no 30s gateway cap)</text>
+
+  <!-- HTTP API -->
+  <rect x="60" y="232" width="250" height="52" rx="10" fill="#f0f9ff" stroke="#0ea5e9" stroke-width="1.5"/>
+  <text x="185" y="253" text-anchor="middle" font-size="13" font-weight="600" fill="#0f172a">API Gateway HTTP API</text>
+  <text x="185" y="270" text-anchor="middle" font-size="11" fill="#475569">POST /generate · GET /generations/{id}</text>
+
+  <!-- Dispatcher -->
+  <rect x="60" y="296" width="250" height="50" rx="10" fill="#fff7ed" stroke="#ea580c" stroke-width="1.5"/>
+  <text x="185" y="317" text-anchor="middle" font-size="13" font-weight="600" fill="#0f172a">Dispatcher λ → 202 + job_id</text>
+  <text x="185" y="333" text-anchor="middle" font-size="11" fill="#475569">idempotency (DynamoDB TransactWrite)</text>
+
+  <!-- Generate worker -->
+  <rect x="372" y="262" width="300" height="56" rx="10" fill="#fff7ed" stroke="#ea580c" stroke-width="1.5"/>
+  <text x="522" y="284" text-anchor="middle" font-size="13" font-weight="600" fill="#0f172a">Generate worker λ (240s)</text>
+  <text x="522" y="301" text-anchor="middle" font-size="11" fill="#475569">split A/B/C · Patient v2 2nd pass (PART A only)</text>
+
+  <!-- Bedrock -->
+  <rect x="724" y="262" width="248" height="56" rx="10" fill="#ecfdf5" stroke="#0d9488" stroke-width="1.5"/>
+  <text x="848" y="284" text-anchor="middle" font-size="13" font-weight="600" fill="#0f172a">Amazon Bedrock</text>
+  <text x="848" y="301" text-anchor="middle" font-size="11" fill="#475569">Claude Sonnet 4.6 · on-demand · eu-west-2</text>
+
+  <!-- Status -->
+  <rect x="60" y="232" width="0" height="0"/>
+  <rect x="1006" y="232" width="94" height="52" rx="10" fill="#fff7ed" stroke="#ea580c" stroke-width="1.5"/>
+  <text x="1053" y="253" text-anchor="middle" font-size="12.5" font-weight="600" fill="#0f172a">Status λ</text>
+  <text x="1053" y="270" text-anchor="middle" font-size="10.5" fill="#475569">GET poll</text>
+
+  <!-- ================= DATA &amp; GOVERNANCE band ================= -->
+  <rect x="36" y="374" width="1088" height="150" rx="12" fill="#ffffff" stroke="#e2e8f0"/>
+  <text x="52" y="394" font-size="12" font-weight="700" fill="#64748b" letter-spacing="1">DATA &amp; GOVERNANCE · all KMS-encrypted · eu-west-2 · no PHI in the audit log</text>
+
+  <!-- AuditTable -->
+  <rect x="60" y="410" width="206" height="56" rx="10" fill="#eef2ff" stroke="#4f46e5" stroke-width="1.5"/>
+  <text x="163" y="432" text-anchor="middle" font-size="13" font-weight="600" fill="#0f172a">DynamoDB AuditTable</text>
+  <text x="163" y="449" text-anchor="middle" font-size="11" fill="#475569">hash-only · write-once · CMK</text>
+
+  <!-- Ledger -->
+  <rect x="300" y="410" width="180" height="56" rx="10" fill="#fff7ed" stroke="#ea580c" stroke-width="1.5"/>
+  <text x="390" y="432" text-anchor="middle" font-size="12.5" font-weight="600" fill="#0f172a">Ledger λ</text>
+  <text x="390" y="449" text-anchor="middle" font-size="11" fill="#475569">DynamoDB Streams</text>
+
+  <!-- WORM -->
+  <rect x="514" y="410" width="216" height="56" rx="10" fill="#f0fdf4" stroke="#16a34a" stroke-width="1.5"/>
+  <text x="622" y="432" text-anchor="middle" font-size="13" font-weight="600" fill="#0f172a">S3 Object Lock (WORM)</text>
+  <text x="622" y="449" text-anchor="middle" font-size="11" fill="#475569">tamper-evident ledger</text>
+
+  <!-- ResultsTable -->
+  <rect x="764" y="410" width="196" height="56" rx="10" fill="#eef2ff" stroke="#4f46e5" stroke-width="1.5"/>
+  <text x="862" y="432" text-anchor="middle" font-size="13" font-weight="600" fill="#0f172a">DynamoDB ResultsTable</text>
+  <text x="862" y="449" text-anchor="middle" font-size="11" fill="#475569">transient outputs · 24h TTL</text>
+
+  <!-- KMS -->
+  <rect x="994" y="410" width="106" height="56" rx="10" fill="#eef2ff" stroke="#4f46e5" stroke-width="1.5"/>
+  <text x="1047" y="432" text-anchor="middle" font-size="12.5" font-weight="600" fill="#0f172a">KMS CMK</text>
+  <text x="1047" y="449" text-anchor="middle" font-size="10.5" fill="#475569">at-rest keys</text>
+
+  <!-- ================= OBSERVABILITY band ================= -->
+  <rect x="36" y="544" width="1088" height="140" rx="12" fill="#fffbeb" stroke="#fcd34d"/>
+  <text x="52" y="564" font-size="12" font-weight="700" fill="#b45309" letter-spacing="1">OBSERVABILITY (Wave 3–4) — synthetic traffic drives the live path nightly</text>
+
+  <!-- EventBridge -->
+  <rect x="60" y="584" width="190" height="54" rx="10" fill="#ffffff" stroke="#d97706" stroke-width="1.5"/>
+  <text x="155" y="606" text-anchor="middle" font-size="12.5" font-weight="600" fill="#0f172a">EventBridge Scheduler</text>
+  <text x="155" y="623" text-anchor="middle" font-size="11" fill="#475569">nightly 02:00 Europe/London</text>
+
+  <!-- Canary -->
+  <rect x="288" y="584" width="200" height="54" rx="10" fill="#ffffff" stroke="#d97706" stroke-width="1.5"/>
+  <text x="388" y="606" text-anchor="middle" font-size="12.5" font-weight="600" fill="#0f172a">Canary λ</text>
+  <text x="388" y="623" text-anchor="middle" font-size="11" fill="#475569">replays 18 scenarios (bounded)</text>
+
+  <!-- CloudWatch -->
+  <rect x="526" y="584" width="188" height="54" rx="10" fill="#ffffff" stroke="#d97706" stroke-width="1.5"/>
+  <text x="620" y="606" text-anchor="middle" font-size="12.5" font-weight="600" fill="#0f172a">CloudWatch metrics</text>
+  <text x="620" y="623" text-anchor="middle" font-size="11" fill="#475569">success · latency · throttle</text>
+
+  <!-- Alarms -->
+  <rect x="752" y="584" width="206" height="54" rx="10" fill="#ffffff" stroke="#d97706" stroke-width="1.5"/>
+  <text x="855" y="606" text-anchor="middle" font-size="12.5" font-weight="600" fill="#0f172a">7 CloudWatch alarms</text>
+  <text x="855" y="623" text-anchor="middle" font-size="11" fill="#475569">+ run heartbeat &amp; ops alarms</text>
+
+  <!-- SNS -->
+  <rect x="996" y="584" width="104" height="54" rx="10" fill="#ffffff" stroke="#d97706" stroke-width="1.5"/>
+  <text x="1048" y="606" text-anchor="middle" font-size="12.5" font-weight="600" fill="#0f172a">SNS</text>
+  <text x="1048" y="623" text-anchor="middle" font-size="11" fill="#475569">email alert</text>
+
+  <!-- ================= ARROWS ================= -->
+  <g stroke="#475569" stroke-width="1.6" fill="none">
+    <!-- browser -> cloudfront -->
+    <line x1="270" y1="138" x2="318" y2="138" marker-end="url(#arrow)"/>
+    <!-- cloudfront -> S3 -->
+    <line x1="554" y1="138" x2="602" y2="138" marker-end="url(#arrow)"/>
+    <!-- cloudfront -> cognito (api path) -->
+    <line x1="710" y1="138" x2="862" y2="138" marker-end="url(#arrow)"/>
+    <!-- cognito -> HTTP API (down into next band) -->
+    <path d="M983,164 L983,210 L312,210 L312,256 L313,256" marker-end="url(#arrow)"/>
+    <!-- HTTP API -> Dispatcher -->
+    <line x1="185" y1="284" x2="185" y2="294" marker-end="url(#arrow)"/>
+    <!-- Dispatcher -> worker (async, dashed) -->
+    <line x1="310" y1="305" x2="368" y2="295" stroke-dasharray="5 4" marker-end="url(#arrow)"/>
+    <!-- worker -> Bedrock -->
+    <line x1="672" y1="290" x2="720" y2="290" marker-end="url(#arrow)"/>
+    <!-- HTTP API -> Status (poll) -->
+    <path d="M310,250 L1000,250" marker-end="url(#arrow)"/>
+    <!-- worker -> AuditTable (hashes) -->
+    <path d="M430,318 L300,318 L230,406" marker-end="url(#arrow)"/>
+    <!-- worker -> ResultsTable (outputs) -->
+    <path d="M620,318 L780,406" marker-end="url(#arrow)"/>
+    <!-- AuditTable stream -> Ledger -->
+    <line x1="266" y1="438" x2="296" y2="438" marker-end="url(#arrow)"/>
+    <!-- Ledger -> WORM -->
+    <line x1="480" y1="438" x2="510" y2="438" marker-end="url(#arrow)"/>
+  </g>
+
+  <!-- observability arrows (amber) -->
+  <g stroke="#b45309" stroke-width="1.6" fill="none">
+    <line x1="250" y1="611" x2="284" y2="611" marker-end="url(#arrowDash)"/>
+    <line x1="488" y1="611" x2="522" y2="611" marker-end="url(#arrowDash)"/>
+    <line x1="714" y1="611" x2="748" y2="611" marker-end="url(#arrowDash)"/>
+    <line x1="958" y1="611" x2="992" y2="611" marker-end="url(#arrowDash)"/>
+  </g>
+
+  <!-- legend -->
+  <text x="40" y="702" font-size="10.5" fill="#64748b">Solid arrows = synchronous request flow   ·   dashed = asynchronous invoke (the 202 + poll pattern)</text>
+</svg>

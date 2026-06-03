@@ -72,6 +72,42 @@ Parameters:
       _200 = adds Asia/Africa/Oceania/SA (no Australia/NZ).
       _All = every PoP. Increase only if the demo audience moves.
 
+  # --- Wave 4: custom domain (docs/WAVE4_DESIGN.md) ---------------------------
+  # All three default empty so the stack still deploys on the *.cloudfront.net
+  # hostname (HasCustomDomain=false). Supply all three to go live on the domain.
+  ViewerCertArn:
+    Type: String
+    Default: ''
+    Description: >
+      ARN of the ACM viewer certificate for the custom domain. MUST be in
+      us-east-1 (CloudFront reads viewer certs only from us-east-1). Empty = keep
+      the default *.cloudfront.net certificate.
+
+  CustomDomain:
+    Type: String
+    Default: ''
+    Description: >
+      Custom domain to serve the app on, e.g. discharge.shinaoguntoye.dev. Empty =
+      no alias. Must be covered by ViewerCertArn's certificate.
+
+  HostedZoneId:
+    Type: String
+    Default: ''
+    Description: >
+      Route 53 hosted zone id for the parent domain (e.g. the zone for
+      shinaoguntoye.dev). Used to create the alias record. Empty = skip DNS
+      (e.g. if DNS is managed externally).
+
+Conditions:
+  # Go live on the custom domain only when the cert + domain are both supplied.
+  HasCustomDomain: !And
+    - !Not [!Equals [!Ref ViewerCertArn, '']]
+    - !Not [!Equals [!Ref CustomDomain, '']]
+  # Create the Route 53 alias only when we also have a hosted zone to write to.
+  HasRoute53: !And
+    - !Condition HasCustomDomain
+    - !Not [!Equals [!Ref HostedZoneId, '']]
+
 Resources:
   # ==========================================================================
   # 1) S3 bucket for the SPA
@@ -263,6 +299,14 @@ Resources:
         HttpVersion: http2and3
         PriceClass: !Ref PriceClass
 
+        # ---- Custom domain alias (Wave 4) ---------------------------------
+        # Only set when HasCustomDomain; otherwise AWS::NoValue leaves the
+        # distribution on its default *.cloudfront.net hostname.
+        Aliases: !If
+          - HasCustomDomain
+          - [ !Ref CustomDomain ]
+          - !Ref AWS::NoValue
+
         # ---- Origins ------------------------------------------------------
         Origins:
           # ---- Origin A: the SPA bucket (S3 REST endpoint, OAC-signed)
@@ -368,64 +412,23 @@ Resources:
         # ---- The SPA's entry-point object inside the bucket --------------
         DefaultRootObject: index.html
 
-        # ---- Viewer cert: default *.cloudfront.net for now ---------------
-        ViewerCertificate:
-          # CloudFrontDefaultCertificate = use the *.cloudfront.net wildcard.
-          # Sufficient for the default hostname. Mutually exclusive with
-          # AcmCertificateArn + Aliases (custom domain).
-          CloudFrontDefaultCertificate: true
-          MinimumProtocolVersion: TLSv1.2_2021
-          # SSLSupportMethod is unused with CloudFrontDefaultCertificate;
-          # noting it here for the future custom-domain swap-in.
+        # ---- Viewer cert: custom ACM cert when supplied, else default -----
+        # Wave 4: when HasCustomDomain, use the us-east-1 ACM cert with
+        # sni-only (SNI is free; dedicated-IP SSL is ~$600/mo and unnecessary).
+        # Otherwise fall back to the *.cloudfront.net wildcard.
+        ViewerCertificate: !If
+          - HasCustomDomain
+          - AcmCertificateArn: !Ref ViewerCertArn
+            SslSupportMethod: sni-only
+            MinimumProtocolVersion: TLSv1.2_2021
+          - CloudFrontDefaultCertificate: true
+            MinimumProtocolVersion: TLSv1.2_2021
 
-        # ====================================================================
-        # FUTURE CUSTOM DOMAIN (deferred - documented for the cutover):
-        #
-        # When you add a custom domain (say, discharge.example.co.uk):
-        #
-        # 1) Create a SECOND stack in us-east-1 that owns the ACM cert:
-        #
-        #    Resources:
-        #      ViewerCert:
-        #        Type: AWS::CertificateManager::Certificate
-        #        Properties:
-        #          DomainName: discharge.example.co.uk
-        #          ValidationMethod: DNS
-        #          DomainValidationOptions:
-        #            - DomainName: discharge.example.co.uk
-        #              HostedZoneId: !Ref HostedZoneId
-        #    Outputs:
-        #      ViewerCertArn:
-        #        Value: !Ref ViewerCert
-        #        # NOTE: cross-region Exports don't exist. Either pass the ARN
-        #        # in as a parameter to this stack, or read it via an SSM
-        #        # Parameter Store parameter (us-east-1 ACM stack writes it
-        #        # there, this eu-west-2 stack reads it via dynamic reference).
-        #
-        # 2) Replace the ViewerCertificate block above with:
-        #
-        #    ViewerCertificate:
-        #      AcmCertificateArn: !Ref ViewerCertArnParam
-        #      SslSupportMethod: sni-only
-        #      MinimumProtocolVersion: TLSv1.2_2021
-        #
-        # 3) Add:
-        #
-        #    Aliases:
-        #      - discharge.example.co.uk
-        #
-        # 4) Point Route 53 (or external DNS) at the distribution:
-        #
-        #    Type: AWS::Route53::RecordSet
-        #    Properties:
-        #      HostedZoneId: !Ref HostedZoneId
-        #      Name: discharge.example.co.uk
-        #      Type: A
-        #      AliasTarget:
-        #        DNSName: !GetAtt Distribution.DomainName
-        #        # Magic CloudFront-global hosted zone:
-        #        HostedZoneId: Z2FDTNDATAQYW2
-        # ====================================================================
+        # Custom domain: wired in Wave 4 above (Aliases + ViewerCertificate are
+        # now conditional on HasCustomDomain) and the Route 53 alias record is the
+        # DnsRecord resource below. The us-east-1 cert was created out-of-band and
+        # its ARN is passed in via the ViewerCertArn parameter (cross-region
+        # Exports don't exist, so a parameter is the clean hand-off).
 
         # Logging deliberately omitted from this slice to keep the smoke
         # test simple. Add Logging block later with a separate access-log
@@ -439,6 +442,34 @@ Resources:
           Value: ai-discharge-summary
         - Key: Slice
           Value: "4c"
+
+  # ==========================================================================
+  # Route 53 alias (Wave 4) - points the custom domain at the distribution.
+  #
+  # A + AAAA alias records (the distribution is dual-stack via IPV6Enabled).
+  # The AliasTarget HostedZoneId is the FIXED CloudFront-global zone
+  # Z2FDTNDATAQYW2 (the same for every distribution, in every account - it is
+  # NOT your hosted zone id). Alias records are free and resolve straight to the
+  # edge with no CNAME hop. Created only when HasRoute53 (cert + domain + zone).
+  # ==========================================================================
+  DnsRecord:
+    Type: AWS::Route53::RecordSetGroup
+    Condition: HasRoute53
+    Properties:
+      HostedZoneId: !Ref HostedZoneId
+      RecordSets:
+        - Name: !Ref CustomDomain
+          Type: A
+          AliasTarget:
+            DNSName: !GetAtt Distribution.DomainName
+            HostedZoneId: Z2FDTNDATAQYW2
+            EvaluateTargetHealth: false
+        - Name: !Ref CustomDomain
+          Type: AAAA
+          AliasTarget:
+            DNSName: !GetAtt Distribution.DomainName
+            HostedZoneId: Z2FDTNDATAQYW2
+            EvaluateTargetHealth: false
 
 # ---------------------------------------------------------------------------
 # Outputs
@@ -468,3 +499,9 @@ Outputs:
   DistributionArn:
     Description: ARN of the distribution (matches the bucket policy SourceArn condition).
     Value: !Sub "arn:${AWS::Partition}:cloudfront::${AWS::AccountId}:distribution/${Distribution}"
+  AppUrl:
+    Description: The URL to open the app - custom domain when configured, else the CloudFront default.
+    Value: !If
+      - HasCustomDomain
+      - !Sub "https://${CustomDomain}/"
+      - !Sub "https://${Distribution.DomainName}/"

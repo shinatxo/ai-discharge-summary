@@ -136,6 +136,29 @@ Parameters:
       Per-run poll budget in seconds (must be < the canary Lambda's 900s timeout).
       Headroom for several waves of generations under bounded concurrency.
 
+  # --- Wave 4: alarms + SNS (docs/WAVE4_DESIGN.md) ----------------------------
+  AlertEmail:
+    Type: String
+    Default: ''
+    Description: >
+      Email address for CloudWatch alarm notifications. Empty = create the SNS
+      topic + alarms but no subscription (you can subscribe later). When set, a
+      confirmation email is sent that you must click to activate.
+
+  CanarySuccessThresholdPct:
+    Type: Number
+    Default: 65
+    Description: >
+      Alarm when the canary's nightly SuccessRatePct drops below this. Set below
+      the observed ~85% baseline (83-89% range) so normal variation doesn't flap.
+
+  CanaryLatencyThresholdMs:
+    Type: Number
+    Default: 200000
+    Description: >
+      Alarm when the canary's p90 end-to-end latency (EndToEndLatencyMs, ALL)
+      exceeds this. ~200s leaves headroom over the baseline two-call v2 latency.
+
 # -----------------------------------------------------------------------------
 # Conditions let one template behave differently per environment. Here the only
 # difference that matters for safety is the Object Lock MODE:
@@ -149,6 +172,8 @@ Conditions:
   IsProd: !Equals [!Ref Environment, prod]
   # Create the nightly canary schedule only once the synthetic user is bootstrapped.
   CanaryOn: !Equals [!Ref CanaryEnabled, 'on']
+  # Subscribe an email to the alerts topic only when one is supplied.
+  HasAlertEmail: !Not [!Equals [!Ref AlertEmail, '']]
 
 Resources:
 
@@ -1378,6 +1403,181 @@ Resources:
         Arn: !GetAtt CanaryFunction.Arn
         RoleArn: !GetAtt CanarySchedulerRole.Arn
 
+  # ===========================================================================
+  # WAVE 4 - alarms + SNS (docs/WAVE4_DESIGN.md).
+  #
+  # An SNS topic + (optional) email subscription, and two tiers of alarms:
+  #   - SYNTHETIC: the Wave 3 canary metrics (DischargeAssistant/Canary, ALL) -
+  #     proves the whole path works, end to end, every night.
+  #   - OPERATIONAL: real-traffic Lambda + API metrics - catches problems the
+  #     synthetic run might miss between nightly fires.
+  # Thresholds track the OBSERVED ~85% baseline, not an idealised 100% - alarms
+  # catch deviation from normal. Lives in eu-west-2 because alarms must sit where
+  # the metrics are published (the canary's PutMetricData is here).
+  # ===========================================================================
+  AlertsTopic:
+    Type: AWS::SNS::Topic
+    Properties:
+      TopicName: !Sub "${AWS::StackName}-alerts"
+      DisplayName: Discharge Assistant alerts
+      # Encrypt at rest with the SNS-managed key (no PHI in alarm payloads, but
+      # encryption-by-default is good hygiene and free with the managed key).
+      KmsMasterKeyId: alias/aws/sns
+
+  AlertsEmailSubscription:
+    Type: AWS::SNS::Subscription
+    Condition: HasAlertEmail
+    Properties:
+      TopicArn: !Ref AlertsTopic
+      Protocol: email
+      Endpoint: !Ref AlertEmail
+
+  # --- Synthetic (canary) alarms --------------------------------------------
+  # Heartbeat: CanaryRunOk missing OR < 1 means the canary didn't run (or failed
+  # to authenticate). treatMissingData=breaching so SILENCE alarms, not hides.
+  CanaryHeartbeatAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: !Sub "${AWS::StackName}-canary-not-running"
+      AlarmDescription: The synthetic canary did not report a successful run in the last day.
+      Namespace: DischargeAssistant/Canary
+      MetricName: CanaryRunOk
+      Dimensions:
+        - Name: Scenario
+          Value: ALL
+      Statistic: Maximum
+      Period: 86400
+      EvaluationPeriods: 1
+      DatapointsToAlarm: 1
+      Threshold: 1
+      ComparisonOperator: LessThanThreshold
+      TreatMissingData: breaching
+      ActionsEnabled: true
+      AlarmActions: [!Ref AlertsTopic]
+      OKActions: [!Ref AlertsTopic]
+
+  CanarySuccessRateAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: !Sub "${AWS::StackName}-canary-success-low"
+      AlarmDescription: Nightly canary success rate fell below the baseline threshold.
+      Namespace: DischargeAssistant/Canary
+      MetricName: SuccessRatePct
+      Dimensions:
+        - Name: Scenario
+          Value: ALL
+      Statistic: Maximum
+      Period: 86400
+      EvaluationPeriods: 1
+      DatapointsToAlarm: 1
+      Threshold: !Ref CanarySuccessThresholdPct
+      ComparisonOperator: LessThanThreshold
+      # The heartbeat alarm already covers "didn't run"; don't double-fire here.
+      TreatMissingData: notBreaching
+      AlarmActions: [!Ref AlertsTopic]
+      OKActions: [!Ref AlertsTopic]
+
+  CanaryLatencyAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: !Sub "${AWS::StackName}-canary-latency-high"
+      AlarmDescription: Canary p90 end-to-end latency exceeded the threshold.
+      Namespace: DischargeAssistant/Canary
+      MetricName: EndToEndLatencyMs
+      Dimensions:
+        - Name: Scenario
+          Value: ALL
+      Statistic: Maximum
+      Period: 86400
+      EvaluationPeriods: 1
+      DatapointsToAlarm: 1
+      Threshold: !Ref CanaryLatencyThresholdMs
+      ComparisonOperator: GreaterThanThreshold
+      TreatMissingData: notBreaching
+      AlarmActions: [!Ref AlertsTopic]
+      OKActions: [!Ref AlertsTopic]
+
+  CanaryThrottleAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: !Sub "${AWS::StackName}-canary-throttle-high"
+      AlarmDescription: Canary saw sustained Bedrock throttling beyond the 0-3/night baseline.
+      Namespace: DischargeAssistant/Canary
+      MetricName: BedrockThrottle
+      Dimensions:
+        - Name: Scenario
+          Value: ALL
+      Statistic: Maximum
+      Period: 86400
+      EvaluationPeriods: 1
+      DatapointsToAlarm: 1
+      Threshold: 8
+      ComparisonOperator: GreaterThanThreshold
+      TreatMissingData: notBreaching
+      AlarmActions: [!Ref AlertsTopic]
+
+  # --- Operational (real-traffic) alarms ------------------------------------
+  # Lambda Errors are emitted automatically (no config). Any error on the write
+  # path in a 5-min window is worth a look for a low-traffic demo.
+  GenerateErrorsAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: !Sub "${AWS::StackName}-generate-errors"
+      AlarmDescription: The generate worker logged Lambda errors.
+      Namespace: AWS/Lambda
+      MetricName: Errors
+      Dimensions:
+        - Name: FunctionName
+          Value: !Ref GenerateFunction
+      Statistic: Sum
+      Period: 300
+      EvaluationPeriods: 1
+      DatapointsToAlarm: 1
+      Threshold: 0
+      ComparisonOperator: GreaterThanThreshold
+      TreatMissingData: notBreaching
+      AlarmActions: [!Ref AlertsTopic]
+
+  DispatcherErrorsAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: !Sub "${AWS::StackName}-dispatcher-errors"
+      AlarmDescription: The dispatcher logged Lambda errors (POST /generate front door).
+      Namespace: AWS/Lambda
+      MetricName: Errors
+      Dimensions:
+        - Name: FunctionName
+          Value: !Ref DispatcherFunction
+      Statistic: Sum
+      Period: 300
+      EvaluationPeriods: 1
+      DatapointsToAlarm: 1
+      Threshold: 0
+      ComparisonOperator: GreaterThanThreshold
+      TreatMissingData: notBreaching
+      AlarmActions: [!Ref AlertsTopic]
+
+  # API Gateway HTTP APIs emit 5xx at the API level by default (AWS/ApiGateway,
+  # ApiId dimension). A handful of 5xx in 5 min is the front-door red flag.
+  ApiServerErrorAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: !Sub "${AWS::StackName}-api-5xx"
+      AlarmDescription: The HTTP API returned server errors (5xx).
+      Namespace: AWS/ApiGateway
+      MetricName: 5xx
+      Dimensions:
+        - Name: ApiId
+          Value: !Ref HttpApi
+      Statistic: Sum
+      Period: 300
+      EvaluationPeriods: 1
+      DatapointsToAlarm: 1
+      Threshold: 4
+      ComparisonOperator: GreaterThanThreshold
+      TreatMissingData: notBreaching
+      AlarmActions: [!Ref AlertsTopic]
+
 # -----------------------------------------------------------------------------
 # Outputs surface the identifiers each slice needs, and double as
 # residency/governance evidence.
@@ -1490,3 +1690,6 @@ Outputs:
   CanaryFunctionRoleArn:
     Description: Least-privilege canary role (SSM GetParameter + KMS-via-SSM decrypt + PutMetricData in one namespace + InitiateAuth)
     Value: !GetAtt CanaryFunctionRole.Arn
+  AlertsTopicArn:
+    Description: SNS topic that all CloudWatch alarms publish to (subscribe more endpoints here)
+    Value: !Ref AlertsTopic

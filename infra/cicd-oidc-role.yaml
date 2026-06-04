@@ -1,0 +1,118 @@
+AWSTemplateFormatVersion: '2010-09-09'
+
+# GitHub Actions OIDC deploy role for the CI/CD pipeline (.github/workflows/ci-cd.yml).
+#
+# WHY OIDC: GitHub Actions mints a short-lived OpenID Connect token per run and
+# exchanges it for temporary AWS credentials via sts:AssumeRoleWithWebIdentity.
+# There are NO long-lived AWS access keys stored in GitHub - the only thing that
+# can assume this role is a workflow running in THIS repo (the sub condition).
+#
+# This is a DEPLOY role: CloudFormation needs broad management permissions to
+# create/update the ~20 resources in the discharge-audit stack across several
+# services. The controls that make that acceptable are (a) the OIDC trust scopes
+# assumption to this one repo, and (b) the permissions are bounded to eu-west-2 /
+# us-east-1 and IAM is scoped to the stack's own role-name prefix. Tightening to
+# per-resource least privilege is a documented future hardening (see docs/CICD.md).
+#
+# Deploy once:
+#   aws cloudformation deploy --template-file infra/cicd-oidc-role.yaml \
+#     --stack-name discharge-cicd --capabilities CAPABILITY_NAMED_IAM --region eu-west-2
+
+Description: GitHub Actions OIDC deploy role for ai-discharge-summary CD.
+
+Parameters:
+  GitHubOrg:
+    Type: String
+    Default: shinatxo
+  RepoName:
+    Type: String
+    Default: ai-discharge-summary
+  OidcProviderArn:
+    Type: String
+    Default: arn:aws:iam::061051247394:oidc-provider/token.actions.githubusercontent.com
+    Description: >
+      ARN of the existing GitHub Actions OIDC provider in this account (already
+      created for the portfolio-site pipeline). If it does not exist, create it
+      first (provider URL https://token.actions.githubusercontent.com, audience
+      sts.amazonaws.com).
+
+Resources:
+  DeployRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: GitHubActionsDischargeDeploy
+      MaxSessionDuration: 3600
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Federated: !Ref OidcProviderArn
+            Action: sts:AssumeRoleWithWebIdentity
+            Condition:
+              StringEquals:
+                token.actions.githubusercontent.com:aud: sts.amazonaws.com
+              # Only workflows in this repo may assume the role.
+              StringLike:
+                token.actions.githubusercontent.com:sub: !Sub "repo:${GitHubOrg}/${RepoName}:*"
+      Policies:
+        - PolicyName: deploy-discharge-audit
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              # Region-bounded management of every service the stack uses. The
+              # aws:RequestedRegion guard means this role can only ever touch
+              # eu-west-2 (the stack) and us-east-1 (CloudFront-adjacent).
+              - Sid: RegionBoundedStackServices
+                Effect: Allow
+                Action:
+                  - cloudformation:*
+                  - lambda:*
+                  - dynamodb:*
+                  - kms:*
+                  - s3:*
+                  - cognito-idp:*
+                  - apigateway:*
+                  - scheduler:*
+                  - events:*
+                  - sns:*
+                  - cloudwatch:*
+                  - logs:*
+                  - ssm:GetParameter
+                  - ssm:GetParameters
+                  - ssm:PutParameter
+                  - ssm:AddTagsToResource
+                  - ssm:DeleteParameter
+                Resource: '*'
+                Condition:
+                  StringEquals:
+                    aws:RequestedRegion:
+                      - eu-west-2
+                      - us-east-1
+              # IAM is global, so it can't use the region guard - scope it to the
+              # stack's own role-name prefix instead. CFN creates/updates the
+              # least-privilege execution roles named discharge-audit-*.
+              - Sid: ManageStackRolesOnly
+                Effect: Allow
+                Action:
+                  - iam:CreateRole
+                  - iam:DeleteRole
+                  - iam:GetRole
+                  - iam:PassRole
+                  - iam:PutRolePolicy
+                  - iam:DeleteRolePolicy
+                  - iam:GetRolePolicy
+                  - iam:AttachRolePolicy
+                  - iam:DetachRolePolicy
+                  - iam:ListRolePolicies
+                  - iam:ListAttachedRolePolicies
+                  - iam:TagRole
+                  - iam:UntagRole
+                  - iam:UpdateAssumeRolePolicy
+                Resource:
+                  - !Sub "arn:${AWS::Partition}:iam::${AWS::AccountId}:role/discharge-audit-*"
+
+Outputs:
+  DeployRoleArn:
+    Description: Put this in .github/workflows/ci-cd.yml as role-to-assume (it already matches the default name).
+    Value: !GetAtt DeployRole.Arn

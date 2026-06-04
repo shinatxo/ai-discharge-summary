@@ -1,5 +1,7 @@
 # 🩺 AI Discharge Summary Assistant
 
+[![CI/CD](https://github.com/shinatxo/ai-discharge-summary/actions/workflows/ci-cd.yml/badge.svg)](https://github.com/shinatxo/ai-discharge-summary/actions/workflows/ci-cd.yml)
+
 Turn a doctor's messy ward-round notes into a structured discharge summary, a GP letter, and a plain-English version for the patient — safely, with every output left as a **draft for a clinician to review and sign**.
 
 **Live:** [discharge.shinaoguntoye.dev](https://discharge.shinaoguntoye.dev) · **Status:** deployed on AWS, fully serverless · **All data synthetic** · **Not a medical device** (see [Disclaimer](#disclaimer)).
@@ -89,7 +91,9 @@ Governance is treated as a first-class deliverable, not an afterthought:
 
 ## Tech stack
 
-`Amazon Bedrock` (Claude Sonnet 4.6) · `Lambda` · `API Gateway (HTTP API)` · `Cognito` · `DynamoDB` (+ Streams) · `S3` (Object Lock / WORM, OAC) · `KMS` (CMK) · `CloudFront` · `Route 53` · `ACM` · `EventBridge Scheduler` · `CloudWatch` · `SNS` · `CloudFormation` (plain) · `Python 3.13` · `React + Vite + Amplify Auth`
+`Amazon Bedrock` (Claude Sonnet 4.6) · `Lambda` · `API Gateway (HTTP API)` · `Cognito` · `DynamoDB` (+ Streams) · `S3` (Object Lock / WORM, OAC) · `KMS` (CMK) · `CloudFront` · `Route 53` · `ACM` · `EventBridge Scheduler` · `CloudWatch` · `SNS` · `CloudFormation` (plain) · `GitHub Actions` (OIDC, no stored keys) · `Python 3.13` · `React + Vite + Amplify Auth`
+
+CI runs the 38 tests + `cfn-lint` on every push/PR; a push to `main` deploys via OIDC role-assumption. See [`docs/CICD.md`](docs/CICD.md).
 
 ## Repository layout
 

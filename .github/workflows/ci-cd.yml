@@ -1,0 +1,80 @@
+name: CI / CD
+
+# Tests + cfn-lint gate every push and PR. A push to main that passes the gate
+# then deploys the discharge-audit stack via short-lived OIDC credentials
+# (no long-lived AWS keys in GitHub). See docs/CICD.md for the one-time role setup.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: Tests + lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      - name: Install dev dependencies
+        run: pip install --quiet pytest boto3 cfn-lint
+
+      - name: Unit tests (mocked AWS — no credentials needed)
+        run: python -m pytest tests/ -q
+
+      - name: Canary scenario bundle is current
+        run: python src/canary/build_scenarios.py --check
+
+      - name: Lint CloudFormation templates
+        run: cfn-lint infra/template.yaml infra/web-template.yaml
+
+  deploy:
+    name: Deploy discharge-audit (OIDC)
+    needs: test
+    # Only on a direct push to main — never on PRs or manual test runs from forks.
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write   # mint the OIDC token
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure AWS credentials via OIDC (no stored keys)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::061051247394:role/GitHubActionsDischargeDeploy
+          aws-region: eu-west-2
+
+      - name: Package
+        working-directory: infra
+        run: |
+          aws cloudformation package \
+            --template-file template.yaml \
+            --s3-bucket aws-sam-cli-managed-default-samclisourcebucket-xufyv0yd8kla \
+            --output-template-file packaged.yaml
+
+      - name: Deploy
+        working-directory: infra
+        run: |
+          aws cloudformation deploy \
+            --template-file packaged.yaml \
+            --stack-name discharge-audit \
+            --capabilities CAPABILITY_NAMED_IAM \
+            --parameter-overrides \
+              Environment=demo \
+              PatientV2SecondPass=on \
+              CanaryEnabled=on \
+              CanaryMaxConcurrency=4 \
+              AlertEmail=${{ vars.ALERT_EMAIL }} \
+            --region eu-west-2 \
+            --no-fail-on-empty-changeset

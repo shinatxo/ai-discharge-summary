@@ -35,7 +35,10 @@ jobs:
         run: python src/canary/build_scenarios.py --check
 
       - name: Lint CloudFormation templates
-        run: cfn-lint infra/template.yaml infra/web-template.yaml
+        # Warnings (e.g. the deliberate DependsOn-on-log-group W3005, and the
+        # expected "needs package CLI" W3002) are printed but do not fail the
+        # build; only genuine errors break CI.
+        run: cfn-lint --non-zero-exit-code error infra/template.yaml infra/web-template.yaml
 
   deploy:
     name: Deploy discharge-audit (OIDC)

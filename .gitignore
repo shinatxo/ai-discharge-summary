@@ -18,3 +18,7 @@ out.json
 __pycache__/
 *.pyc
 .venv/
+
+# raw screen recordings (too large for git; commit only the generated GIF)
+*.mov
+*.mp4

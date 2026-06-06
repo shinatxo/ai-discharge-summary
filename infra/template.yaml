@@ -509,6 +509,20 @@ Resources:
           # Bumped only when the audit item shape changes (ADR-002 schema_version).
           SCHEMA_VERSION: '1'
 
+  # Async invoke config for the worker: NO automatic retries. The dispatcher
+  # invokes the worker with InvocationType=Event; a worker that errors or times
+  # out would otherwise be auto-retried up to 2x by Lambda, re-running Bedrock and
+  # amplifying load into a throttle storm (surfaced 2026-06-06). The worker now
+  # fails gracefully (marks the job failed, returns cleanly), and disabling async
+  # retries is belt-and-braces so a failure can never silently double-invoke.
+  GenerateFunctionAsyncConfig:
+    Type: AWS::Lambda::EventInvokeConfig
+    Properties:
+      FunctionName: !Ref GenerateFunction
+      Qualifier: $LATEST
+      MaximumRetryAttempts: 0
+      MaximumEventAgeInSeconds: 3600
+
   # ===========================================================================
   # SLICE 3 - the tamper-evidence ledger.
   #

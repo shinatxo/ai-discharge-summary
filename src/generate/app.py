@@ -59,7 +59,8 @@ import time
 from datetime import datetime, timezone
 
 import boto3
-from botocore.exceptions import ClientError
+from botocore.config import Config
+from botocore.exceptions import BotoCoreError, ClientError
 
 # --- configuration (all injected by the template; no hard-coded resource ids) -
 REGION = os.environ.get("AWS_REGION", "eu-west-2")
@@ -78,6 +79,25 @@ RESULTS_TTL_HOURS = int(os.environ.get("RESULTS_TTL_HOURS", "24"))
 # get "creative" with clinical facts. maxTokens sized for three full outputs.
 MAX_TOKENS = int(os.environ.get("MAX_TOKENS", "4096"))
 TEMPERATURE = float(os.environ.get("TEMPERATURE", "0"))
+
+# --- Bedrock client resilience (surfaced 2026-06-06) -------------------------
+# The worker runs behind the async 202+poll path, so it HAS time - but a Bedrock
+# call must FAIL FAST under a stalled/throttled endpoint rather than hang to the
+# Lambda timeout. botocore's DEFAULT read_timeout is 60s with silent retries;
+# real generations run up to ~83s, so a normal call could overrun 60s, get
+# silently retried (a fresh Bedrock request burning more of the tiny on-demand
+# quota), and stack up to the 240s Lambda kill - which Lambda then counts as a
+# function error and AUTO-RETRIES, amplifying load into a throttle storm.
+# Fix: an explicit read_timeout safely above the slowest real generation, and a
+# capped attempt count so a genuinely stalled call fails (and the job is marked
+# failed) well inside the Lambda budget, with no silent quota-burning retries.
+BEDROCK_READ_TIMEOUT = int(os.environ.get("BEDROCK_READ_TIMEOUT", "150"))
+BEDROCK_MAX_ATTEMPTS = int(os.environ.get("BEDROCK_MAX_ATTEMPTS", "1"))
+_BEDROCK_CONFIG = Config(
+    connect_timeout=10,
+    read_timeout=BEDROCK_READ_TIMEOUT,
+    retries={"mode": "standard", "max_attempts": BEDROCK_MAX_ATTEMPTS},
+)
 
 # --- Patient v2: optional second-pass patient-version generation -------------
 # When enabled, the patient version (PART C) is regenerated in a SEPARATE Bedrock
@@ -99,7 +119,7 @@ logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
 # Reuse clients across warm invocations.
-_bedrock = boto3.client("bedrock-runtime", region_name=REGION)
+_bedrock = boto3.client("bedrock-runtime", region_name=REGION, config=_BEDROCK_CONFIG)
 _ddb = boto3.client("dynamodb", region_name=REGION)
 _table = boto3.resource("dynamodb", region_name=REGION).Table(TABLE_NAME)
 
@@ -215,6 +235,15 @@ def _converse(system_prompt: str, user_text: str, max_tokens: int):
     )
 
 
+def _bedrock_err_code(exc) -> str:
+    """A clean error label for either a ClientError (the AWS error code, e.g.
+    ThrottlingException) or a BotoCoreError (e.g. ReadTimeoutError) - so a stalled
+    call logs a tidy code and is handled, never bubbling up as a Lambda timeout."""
+    if isinstance(exc, ClientError):
+        return exc.response.get("Error", {}).get("Code", "Unknown")
+    return type(exc).__name__
+
+
 _PART_C_HEADER = re.compile(r"(?im)^[#*>\s]*PART\s+C\b.*$")
 
 
@@ -257,8 +286,8 @@ def _maybe_second_pass(outputs: dict):
 
     try:
         resp = _converse(PATIENT_SYSTEM_PROMPT, summary, PATIENT_MAX_TOKENS)
-    except ClientError as exc:
-        code = exc.response.get("Error", {}).get("Code", "Unknown")
+    except (ClientError, BotoCoreError) as exc:
+        code = _bedrock_err_code(exc)
         logger.error("patient_v2_bedrock_failed: %s", code)
         return ("v1_fallback", base_mv, False, {})
 
@@ -353,9 +382,12 @@ def _run_async_worker(event):
     # --- 1) Bedrock Converse on the pinned model -----------------------------
     try:
         response = _converse(SYSTEM_PROMPT, notes, MAX_TOKENS)
-    except ClientError as exc:
-        code = exc.response.get("Error", {}).get("Code", "Unknown")
-        # PHI-free log: error class only, never the notes.
+    except (ClientError, BotoCoreError) as exc:
+        code = _bedrock_err_code(exc)
+        # PHI-free log: error class only, never the notes. Catching BotoCoreError
+        # too means a read-timeout / connection stall marks the job FAILED and
+        # returns cleanly - it does NOT bubble up as a Lambda timeout (which would
+        # trigger an async retry and amplify a throttle storm; see 2026-06-06).
         logger.error("worker_bedrock_failed: %s job=%s", code, job_id)
         _mark_failed(user_sub, job_id, "bedrock_error", code)
         return {"ok": False, "job_id": job_id, "status": "failed",
@@ -546,10 +578,10 @@ def _run_direct_invoke(event):
 
     try:
         response = _converse(SYSTEM_PROMPT, notes, MAX_TOKENS)
-    except ClientError as exc:
-        logger.error("direct_bedrock_failed: %s", exc.response.get("Error", {}))
-        return {"ok": False, "error": "bedrock_error",
-                "message": exc.response.get("Error", {}).get("Code", "Unknown")}
+    except (ClientError, BotoCoreError) as exc:
+        code = _bedrock_err_code(exc)
+        logger.error("direct_bedrock_failed: %s", code)
+        return {"ok": False, "error": "bedrock_error", "message": code}
 
     model_text = response["output"]["message"]["content"][0]["text"]
     usage = response.get("usage", {})

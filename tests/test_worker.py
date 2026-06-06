@@ -95,6 +95,26 @@ def test_worker_bedrock_failure_marks_row_failed(load_worker, fake_ddb):
     assert ("discharge-audit-results", f"USER#{USER_SUB}", f"RES#{JOB_ID}") not in fake_ddb.items
 
 
+def test_worker_bedrock_timeout_marks_row_failed(load_worker, fake_ddb):
+    """A read-timeout / connection stall is a BotoCoreError, NOT a ClientError.
+    It must be caught and mark the job failed - never bubble up as a Lambda error
+    (which Lambda would async-retry, amplifying a throttle storm). Regression for
+    the 2026-06-06 worker-hang fix."""
+    from botocore.exceptions import ReadTimeoutError
+    _seed_pending(fake_ddb)
+    app = load_worker(bedrock_error=ReadTimeoutError(endpoint_url="https://bedrock-runtime"))
+    result = app.lambda_handler(_dispatcher_event(), None)
+
+    assert result["ok"] is False
+    assert result["error_code"] == "bedrock_error"
+    assert result["error_message"] == "ReadTimeoutError"
+    gen = fake_ddb.items[("discharge-audit-audit",
+                          f"USER#{USER_SUB}", f"GEN#{JOB_ID}")]
+    assert gen["status"]["S"] == "failed"
+    # No results row was written (the call never returned outputs).
+    assert ("discharge-audit-results", f"USER#{USER_SUB}", f"RES#{JOB_ID}") not in fake_ddb.items
+
+
 def test_worker_idempotent_on_retry_via_conditional_check(load_worker, fake_ddb):
     """If a Lambda async retry fires the worker a second time on the SAME
     job_id, the UpdateItem ConditionExpression on status=pending should

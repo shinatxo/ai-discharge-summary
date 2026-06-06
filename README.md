@@ -111,7 +111,7 @@ CI runs the 38 tests + `cfn-lint` on every push/PR; a push to `main` deploys via
 
 ## Honest status — what's not done
 
-- **Bedrock on-demand quota is tight** on this account; the canary runs at bounded concurrency to stay under it. A quota increase is the next step to lift the nightly success baseline.
+- **Bedrock on-demand quota is tight** on this account; the canary runs at bounded concurrency to stay under it. A quota increase is the next step to lift the nightly success baseline — see the capacity plan in [`docs/BEDROCK_QUOTA.md`](docs/BEDROCK_QUOTA.md).
 - **Deferred hardening:** a CloudFront WAF and access logging are scoped but not yet deployed.
 - **Patient v2b** — regenerating the leaflet from the clinician-*edited* summary via a review-gated endpoint — is the documented follow-on to v2a.
 

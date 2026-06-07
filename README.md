@@ -10,6 +10,12 @@ Turn a doctor's messy ward-round notes into a structured discharge summary, a GP
 
 > ⚠️ The live link is Cognito-protected with no public self-signup (it's a clinical tool with an audit trail), so it shows a sign-in wall — demo access on request. The full system is in this repo and the [architecture](#architecture) below.
 
+## Demo
+
+![Demo — paste ward-round notes, get a structured discharge summary, GP letter, and patient version](docs/demo.gif)
+
+*Sign in → paste ward-round notes → asynchronous generation → three structured drafts (discharge summary, GP letter, patient version). The ~73-second generation wait is trimmed.*
+
 ---
 
 ## Architecture
@@ -36,7 +42,7 @@ From one block of free-text notes, three outputs:
 2. **GP letter** — a brief clinician-to-clinician handover mirroring the medication changes and GP actions (the highest-harm interface).
 3. **Patient-friendly version** — plain English at Flesch–Kincaid grade ≤ 8, with safety-net advice; audience-shifted for parents/carers in paediatrics, and flagged for translation when the patient does not speak English.
 
-Wherever the notes are silent, the tool writes **"Not documented"** rather than guessing — so the gaps are *visible* to the reviewing clinician, not invented. Every output is marked `draft = true` in the audit log until a clinician records a sign-off; the clinician remains the author of record throughout.
+Wherever the notes are silent, the tool writes **"Not documented"** rather than guessing — so the gaps are *visible* to the reviewing clinician, not invented. Every output is a **draft** (`draft = true` in the audit log) and the clinician remains the author of record. The human sign-off that would flip a draft to *reviewed* is the intended human-in-the-loop control; the SPA today renders the three drafts for review, and the explicit review-gate UI is a documented next step (see [what's not done](#honest-status--whats-not-done)).
 
 ## How it works
 
@@ -114,6 +120,7 @@ CI runs the 38 tests + `cfn-lint` on every push/PR; a push to `main` deploys via
 - **Bedrock on-demand quota is tight** on this account; the canary runs at bounded concurrency to stay under it. A quota increase is the next step to lift the nightly success baseline — see the capacity plan in [`docs/BEDROCK_QUOTA.md`](docs/BEDROCK_QUOTA.md).
 - **Deferred hardening:** a CloudFront WAF and access logging are scoped but not yet deployed.
 - **Patient v2b** — regenerating the leaflet from the clinician-*edited* summary via a review-gated endpoint — is the documented follow-on to v2a.
+- **The clinician review-gate UI** — an explicit sign-off that flips `draft → reviewed` (and a visible reading-level indicator) — is designed but not yet wired into the deployed SPA, which currently renders the three drafts for review without capturing the sign-off.
 
 ## Disclaimer
 

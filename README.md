@@ -16,6 +16,16 @@ Turn a doctor's messy ward-round notes into a structured discharge summary, a GP
 
 *Sign in → paste ward-round notes → asynchronous generation → three structured drafts (discharge summary, GP letter, patient version). The ~73-second generation wait is trimmed.*
 
+## Results
+
+- **18** synthetic evaluation scenarios (neonatal → elderly, including adversarial: prompt-injection, contradictory notes, missing data).
+- **39** automated tests, gating every push via CI.
+- **Cold-eval:** 11/11 (expansion set) + 5/5 (v0.6 safety regression) — **no auto-fails**.
+- **Patient-version reading age:** Flesch–Kincaid 2.3–6.2 (target ≤ 8).
+- **~73 s** average end-to-end generation (asynchronous — not bound by API Gateway's 30 s cap).
+- **Nightly synthetic canary:** ~85% success; the remainder is Bedrock on-demand quota throttling (5 req/min), *not* generation errors — by design, and watched by CloudWatch alarms.
+- **Cost:** ~£50–60/month at demo volume — almost entirely the canary's Bedrock calls + per-scenario CloudWatch metrics; the app at rest is essentially free-tier. Full breakdown + optimisation: [`docs/COST.md`](docs/COST.md).
+
 ---
 
 ## Architecture

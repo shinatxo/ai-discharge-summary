@@ -39,7 +39,7 @@ S3 (generated documents, KMS, signed-URL only, lifecycle → Glacier)
 
 - **Threat:** modification of the audit trail, of stored documents, or of the model's output in transit; injection content steering the output.
 - **Mitigations:** TLS in transit everywhere; KMS customer-managed-key encryption at rest for DynamoDB and S3; the audit log is **append-only by design** — no `DeleteItem` permission is granted, and the only mutable field is the `draft → reviewed_at` transition; point-in-time recovery enabled; a DynamoDB stream provides an append-only change feed. **Prompt injection** (notes attempting to alter behaviour) is mitigated in the prompt by treating notes as data, ignoring embedded instructions, and flagging them.
-- **Open decision:** tamper-evidence mechanism for the audit log — DynamoDB Streams → S3 with Object Lock (WORM) versus PITR-only. Tracked in ADR-002.
+- **Decided (ADR-002) and deployed (slice 3):** tamper-evidence is DynamoDB Streams → S3 **Object Lock (WORM)** — an append-only, immutable copy of every audit event that cannot be altered or deleted within its retention window. PITR is retained as operational recovery, not the immutability control.
 
 ### R — Repudiation (non-repudiation)
 

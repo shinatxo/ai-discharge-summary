@@ -23,8 +23,8 @@ Keep it under a minute. Cut or speed-up the generation wait (nobody watches a sp
 | 3 | 9–13s | Click **Generate**; brief "generating" state (trim the wait) | **…async generation (202 + poll, no 30s cap)** |
 | 4 | 13–22s | Three output tabs appear — click through: Discharge summary → GP letter → Patient version | **Three drafts: summary · GP letter · plain-English patient version** |
 | 5 | 22–32s | Scroll to a field the notes didn't cover; it reads **"Not documented"**. Hover/point. | **It writes "Not documented" instead of inventing — restraint is the point** |
-| 6 | 32–40s | Show the patient tab's plain-English reading level + the documented safety-net line | **Patient version at reading-age ≤ 8, safety advice only if the clinician documented it** |
-| 7 | 40–48s | Tick **"I have reviewed and edited this output"**, which unlocks download | **Every output is a draft — the clinician signs off and stays the author** |
+| 6 | 32–40s | On the patient tab, point out the plain-English wording and the documented safety-net line | **Patient version in plain English; safety advice only where the clinician documented it** |
+| 7 | 40–48s | Note that all three are drafts for the clinician to review before any use | **Every output is a draft — the clinician reviews and stays the author of record** |
 | 8 | 48–55s | End card (static): logo/title + URL + repo | **discharge.shinaoguntoye.dev · synthetic data · not a medical device · github.com/shinatxo/ai-discharge-summary** |
 
 ## Optional 6-second bonus (great for LinkedIn)

@@ -3,10 +3,12 @@
 ## Why this doc exists
 
 The Wave 3 synthetic canary surfaced a real platform limit: firing several generations at
-once throttled hard. Root cause is the **default on-demand quota for Claude Sonnet, which is
-very low (~2 requests/minute)** — so even a handful of concurrent calls saturates it. The
-canary now runs at bounded concurrency to live within that limit; this doc is the plan to
-raise it so the nightly success baseline can move toward 18/18 and concurrency can rise.
+once throttled hard. Root cause is the **low on-demand quota for Claude Sonnet** — confirmed
+2026-06-06 via Service Quotas: for the pinned **Claude Sonnet 4.6 in eu-west-2** it is
+**5 requests/minute** (quota `L-9B878FAE`) and 3M tokens/minute (`L-5F5A169C`), and both are
+marked **not adjustable** in the console. So even a handful of concurrent calls saturates it.
+The canary runs at bounded concurrency to live within that limit; this doc is the plan to try
+raising it (via a Support case) so the nightly success baseline can move toward 18/18.
 
 This is a deliberate capacity decision, not a bug — and it's worth keeping the residency
 posture (ADR-003) in mind while doing it (see below).

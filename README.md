@@ -24,7 +24,7 @@ Turn a doctor's messy ward-round notes into a structured discharge summary, a GP
 - **Patient-version reading age:** Flesch–Kincaid 2.3–6.2 (target ≤ 8).
 - **~73 s** average end-to-end generation (asynchronous — not bound by API Gateway's 30 s cap).
 - **Nightly synthetic canary:** ~85% success; the remainder is Bedrock on-demand quota throttling (5 req/min), *not* generation errors — by design, and watched by CloudWatch alarms.
-- **Cost:** ~£50–60/month at demo volume — almost entirely the canary's Bedrock calls + per-scenario CloudWatch metrics; the app at rest is essentially free-tier. Full breakdown + optimisation: [`docs/COST.md`](docs/COST.md).
+- **Cost:** ~£43/month at demo volume (AWS Cost Explorer actual) — **~99% Bedrock inference**; the rest of the stack runs within free tier. Full breakdown + optimisation: [`docs/COST.md`](docs/COST.md).
 
 ---
 

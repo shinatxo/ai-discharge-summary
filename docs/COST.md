@@ -1,8 +1,8 @@
 # Cost analysis
 
-A monthly cost estimate for the deployed system, and — more interesting — what drives it.
-These are **estimates**; the authoritative numbers are in AWS Cost Explorer (see
-[§ Getting the real numbers](#getting-the-real-numbers)).
+What the deployed system costs per month, and — more interesting — what drives it. Figures
+below are **actuals from AWS Cost Explorer** (last ~30 days), with the original estimate kept
+for the estimate-vs-actual comparison.
 
 ## Usage profile
 
@@ -14,41 +14,57 @@ live path (~540 generations/month), plus light manual/demo use. Pricing basis:
 - Per generation ≈ 5,000 input + 3,000 output tokens ≈ **$0.06**.
 - Converted at ≈ **£0.80 / $1** (approximate; FX moves).
 
-## Estimated monthly cost
+## Actual monthly cost (AWS Cost Explorer, ~30 days)
 
-| Service | ≈ £/month | Driver |
+Project services only (≈ £0.80/$, before 20% UK VAT):
+
+| Service | £/month (actual) | Notes |
 |---|---:|---|
-| **Bedrock** (Sonnet 4.6) | **~£26–36** | ~540 generations/mo × ~$0.06. The dominant cost. |
-| **CloudWatch** (custom metrics) | **~£23** | ~95 unique metrics (5 metrics × 18 scenarios + aggregates) at $0.30/metric/mo. |
-| **KMS** | ~£0.80 | $1/mo flat per customer-managed key. |
-| **Route 53** | ~£0 | Hosted zone shared with the portfolio domain — no incremental cost. |
-| **Lambda** | ~£0 | ~20k GB-s/mo vs the 400k GB-s free tier. |
-| **DynamoDB** | ~£0 | On-demand, hash-only rows — pennies. |
-| **S3 + Object Lock (WORM)** | ~£0.10 | Tiny static assets + small ledger objects. |
-| **CloudFront / API Gateway / Cognito / EventBridge / SNS / ACM** | ~£0 | Within free tier at this volume. |
-| **Total** | **~£50–60/month** | ~95% is Bedrock + CloudWatch metrics. |
+| **Bedrock** (Sonnet 4.6) | **~£43** ($53.65) | **~99% of the project's cost.** Slightly inflated in this window by throttle-retry tokens from the worker-hang bug before it was fixed. |
+| **KMS** | ~£0.38 ($0.47) | The customer-managed key. |
+| **API Gateway** | ~£0.01 | Negligible. |
+| **DynamoDB** | ~£0.003 | On-demand, hash-only rows. |
+| **S3 + Object Lock (WORM)** | ~£0.007 | Tiny static + ledger objects. |
+| **CloudWatch** | **£0** | Within free tier at this volume. |
+| **Lambda / CloudFront / Cognito / Route 53 / SNS / EventBridge / ACM** | ~£0 | Free tier. |
+| **Project total** | **≈ £43/month** (+ ~20% VAT ≈ £52 inc.) | Bedrock is essentially the entire bill. |
+
+**Excluded from the project total:**
+- A one-off **Amazon Registrar $17** (annual domain registration) — not a recurring cost.
+- **~$6/month of EC2 + ELB + VPC + EFS** that is **not part of this stack** — this project is
+  100% serverless (no compute instances, load balancers, NAT, or file systems). Those are
+  other/orphaned resources on the account, worth investigating and removing separately.
+
+### Estimate vs actual (validating a cost model)
+
+The first cut of this doc *estimated* ~£26–36 Bedrock and ~£23 CloudWatch. The bill says
+**Bedrock is higher (~£43) and CloudWatch is £0**. Two corrections worth recording: per-call
+token usage ran higher than assumed (and the debugging storms added some), and custom-metric
+charges sat inside the free tier at this volume rather than the ~95-metric × $0.30 I'd modelled.
+Cost Explorer is the source of truth; an estimate is a hypothesis to check against it.
 
 ## The headline insight
 
-**The application itself, at rest, is essentially free-tier.** Lambda, DynamoDB, S3,
-CloudFront, API Gateway, Cognito — all pennies or zero at demo volume. Almost the entire
-bill is the **observability that was added on top**: the canary's nightly Bedrock calls and
-its per-scenario CloudWatch metrics. That's a deliberate trade (continuous assurance costs
-money) — and it's fully optimisable.
+**The application itself, at rest, is essentially free-tier** — Lambda, DynamoDB, S3,
+CloudFront, API Gateway, Cognito all land at pennies or zero. Essentially the *entire* bill is
+**Bedrock inference**, driven by the nightly synthetic canary. The cost is the assurance: a
+fully-serverless clinical-AI stack — auth, hash-only audit, WORM ledger, and observability —
+runs for about the price of its model calls.
 
 ## Optimisation levers (in order of impact)
 
-1. **Prompt caching (Bedrock).** The ~18k-character system prompt is identical on every
-   call. Bedrock prompt caching reads cached tokens at 0.1× — caching the static prefix
-   would cut the input-token cost by most of its value. *Not yet implemented; the single
-   biggest Bedrock saving.*
-2. **CloudWatch metric cardinality.** The canary emits a metric per scenario (18×) per
-   dimension. Keeping only the `ALL` aggregate plus 2–3 canary scenarios would drop
-   CloudWatch from ~£23 to ~£3 — at the cost of per-scenario granularity.
-3. **Canary cadence.** A nightly *subset* + weekly *full* run, or every-other-night, cuts
+Since the bill is ~99% Bedrock, every meaningful lever is about Bedrock tokens:
+
+1. **Prompt caching (Bedrock) — the single biggest saving.** The ~18k-character system prompt
+   is identical on every call; Bedrock prompt caching reads cached tokens at 0.1×, so caching
+   the static prefix would cut input-token cost by most of its value. *Not yet implemented.*
+2. **Canary cadence.** A nightly *subset* + weekly *full* run (or every-other-night) cuts
    Bedrock spend proportionally while still providing a baseline.
-4. **Batch / off-peak.** Bedrock batch inference is ~50% cheaper for non-interactive work
-   like the canary (at the cost of latency) — a viable trade for a nightly regression run.
+3. **Batch / off-peak.** Bedrock batch inference is ~50% cheaper for non-interactive work like
+   the canary (at the cost of latency) — a reasonable trade for a nightly regression run.
+4. **CloudWatch metric cardinality** — *not currently a cost* (£0, free tier), but the canary's
+   ~95 per-scenario metrics would start to bite if traffic grew; collapsing to the `ALL`
+   aggregate + a few key scenarios is the lever if it ever does.
 
 At the floor (no canary, idle app) this deployment costs roughly the price of the KMS key
 (~£1/month). The cost *is* the assurance.

@@ -1,6 +1,6 @@
 # Model Card — AI Discharge Summary Assistant
 
-_Last updated: 2026-05-22 · Phase 1 (Discovery & Validation) · System prompt v0.5_
+_Last updated: 2026-09-11 · Phase 3 complete · System prompt v0.7_
 
 This is a portfolio / demonstration project. **It is not a medical device, it is not deployed in clinical care, and it must not be used to make clinical decisions.** Every output is a draft for a qualified clinician to review, edit, and sign.
 
@@ -14,7 +14,7 @@ The AI Discharge Summary Assistant turns a doctor's free-text, abbreviated ward-
 2. a **GP letter** (clinician-to-clinician handover), and
 3. a **patient-friendly version** written at a low reading age.
 
-It is built around a single, heavily-constrained system prompt (v0.5) running on a Claude Sonnet-class model via Amazon Bedrock. The design goal is not fluency — it is **safe restraint**: the assistant is engineered to report only what the notes support, to flag gaps and contradictions rather than resolve them, and to refuse to invent the fields that cause real harm (resuscitation status, medications, diagnoses).
+It is built around a single, heavily-constrained system prompt (v0.7) running on a Claude Sonnet-class model via Amazon Bedrock. The design goal is not fluency — it is **safe restraint**: the assistant is engineered to report only what the notes support, to flag gaps and contradictions rather than resolve them, and to refuse to invent the fields that cause real harm (resuscitation status, medications, diagnoses).
 
 ## 2. Intended use
 
@@ -39,9 +39,9 @@ It is built around a single, heavily-constrained system prompt (v0.5) running on
 | Access pattern | Bedrock inference profile; **on-demand in eu-west-2 (London)** where the model is available, otherwise the **EU geographic inference profile** (processing stays within the EU). Never US / global profiles. |
 | Fine-tuning | None. Behaviour is shaped entirely by the system prompt (prompt engineering), partly because fine-tuning is unavailable in eu-west-2 and partly because an auditable prompt is preferable to opaque weights for a safety-critical draft. |
 | Versioning | The exact model ID + version is pinned in configuration and **recorded on every generation in the audit log**, alongside the request region and inference profile used. |
-| Prompt version | v0.5 (see change history below). |
+| Prompt version | v0.7 (see change history below). |
 
-## 5. Safety behaviours encoded in the prompt (v0.5)
+## 5. Safety behaviours encoded in the prompt (v0.7)
 
 The prompt is the safety surface. Its load-bearing rules:
 
@@ -53,6 +53,7 @@ The prompt is the safety surface. Its load-bearing rules:
 - **Prompt-injection resistance.** The notes field is treated as data, never as instructions; embedded "ignore previous instructions" text is ignored and flagged.
 - **Permitted, flagged inference (low-stakes only).** Administrative fields such as specialty may be inferred when strongly implied, but must be tagged `(inferred — not documented, confirm)`. This never extends to resus, drugs, diagnoses, allergies, or investigations.
 - **Patient version.** Plain English at Flesch–Kincaid grade ≤ 8, audience-shifted to parents/carers for paediatrics, with safety-net advice. **Non-English-speaking patients:** the patient version must prominently flag that translation / an interpreter is required and not be handed over untranslated.
+- **No model-added clinical advice — in any part of the output (v0.6, corrected v0.7).** Red flags, "come back if…" triggers, expected symptom duration, wound care, activity restrictions and reassurance are clinical advice: the model reproduces what the clinician documented and adds none. Where none is documented, PART A's advice field reads "Not documented" and the patient version uses a single fixed, patient-independent fall-back line verbatim — a fall-back that varies with the diagnosis is condition-specific advice by another name. **v0.6 scoped this rule to the patient version only, which was not enough**: it defined the boundary as "not in Part A", so the model wrote invented advice into PART A and the patient version carried it faithfully. v0.7 moves the rule into the core principle covering PARTS A, B and C, and `evals/safety_net_gate.py` checks the output against the source notes on every cold-eval run.
 - **Every output is a draft for clinician sign-off.** This is stated to the model and recorded in the audit log (`draft = true`); the human review/sign-off control is described in §8.
 
 ## 6. Evaluation
@@ -99,9 +100,11 @@ Outputs are scored on five dimensions, three of which carry **auto-fail gates**:
 
 - **Audit log (DynamoDB):** hash-only. It stores `input_sha256`, a per-output `output_sha256`, the Cognito subject, timestamp, model version, output type, request region, and inference profile — **no patient-identifiable content**. The only mutable field is the `draft → reviewed_at` transition; there is no `DeleteItem`. KMS customer-managed-key encryption; point-in-time recovery and an append-only stream support tamper-evidence.
 - **No PHI in logs.** Inputs are sanitised before any CloudWatch logging; the system prompt is never echoed back.
-- **Generated documents (S3):** KMS-encrypted, signed-URL access only, lifecycle to Glacier after 90 days.
+- **Generated outputs (DynamoDB):** the summary, GP letter and patient version are written to a separate results table with a **24-hour TTL**, encrypted under the same customer-managed key. No stream and no point-in-time recovery — it is a delivery buffer between the worker and the client poll, not a record of truth. The clinician's copy of record is whatever they place in the EPR. *(Corrected 11 Sep 2026: this bullet previously described an S3 documents bucket with signed-URL access and a Glacier lifecycle. No such bucket exists; the design moved to the async 202-and-poll pattern at ADR-005 and this line was not updated.)*
 - **Residency:** all stateful resources single-region in eu-west-2; model inference constrained to the EU. Region and inference profile are recorded per generation as residency evidence.
 - Controls are aligned to the NHS Data Security and Protection Toolkit (DSPT) in spirit; this is a demonstration, not a formal DSPT submission.
+- **Retention (ADR-007):** outputs 24 hours; idempotency receipts TTL'd; audit rows retained in full for a period set by the deploying organisation (default 8 years), after which the clinician identifier is removed or forward-hashed and the de-identified integrity record is retained for the life of the system per DCB0129 §3.1.2.
+- **Whose personal data this is.** The audit trail holds no patient-identifiable content. The personal data it does hold is the **clinician's** — a record of who generated what, and when — which brings it within the ICO's guidance on monitoring workers. It is collected for clinical safety and non-repudiation only, and may not be repurposed for performance management or appraisal without a compatibility assessment. A real deployment owes the clinicians a privacy notice saying so.
 
 ## 10. Prompt change history
 
@@ -111,6 +114,8 @@ Outputs are scored on five dimensions, three of which carry **auto-fail gates**:
 | v0.3 | Non-English / interpreter rule in the patient version | C7 failure (English-only leaflet for a non-English speaker) |
 | v0.4 | "Permitted, flagged inference" rule for low-stakes fields (e.g. specialty) | Inconsistent specialty handling between scenarios |
 | v0.5 | Narrow resuscitation carve-out (form documented but recommendation not transcribed → flagged most-likely recommendation) | Care-of-the-Elderly scenario (ReSPECT form completed, recommendation not written down) |
+| v0.6 | No model-added clinical advice in the patient version; generic fall-back safety-net line where none is documented | Run 4 independent clinician review (S16 — invented stoma red flags) |
+| v0.7 | No-added-advice rule promoted from PART C into the core principle, covering PARTS A, B and C; PART A's advice field made documented-only; PART B's invented "review if [trigger]" removed; paediatric clause scoped to audience/register; fall-back line pinned as verbatim text | WS2a device-determination review, 11 Sep 2026. v0.6 had been fixing the symptom: the invention happens in PART A (whose field template said "[Wound care, safety-net advice, what to expect, when to seek help]") and the patient version copies it faithfully, as instructed. Half the saved corpus deviated. Now enforced against the source notes by `evals/safety_net_gate.py`. |
 
 ## 11. Maintainer
 

@@ -1,4 +1,4 @@
-# Patient-Version Second-Pass Prompt — v2.0
+# Patient-Version Second-Pass Prompt — v2.1
 
 > Used by the optional Patient v2 second pass (src/generate/app.py,
 > PATIENT_V2_SECOND_PASS). The model's ONLY input is the already-curated PART A
@@ -62,8 +62,22 @@ Then close with safety-net advice **exactly as scoped below**.
   for, when to seek help), reproduce it faithfully in plain words.
 - If the summary documents **no** condition-specific safety-net advice, use
   ONLY this generic fall-back line and stop — do not invent specific warnings:
-  > "If you become unwell or are worried about anything, contact your GP or call
-  > NHS 111. Call 999 if it is an emergency."
+
+  > If you become unwell or are worried about anything, contact your GP or call
+  > NHS 111. Call 999 if it is an emergency.
+
+- **That line is fixed text. Reproduce it word for word** (without the quotation
+  marks). Do not rewrite it, shorten it, drop the 999 sentence, or attach a
+  trigger to it. Adding a condition — "if your breathing gets worse", "if you have
+  another seizure", "if your phlegm changes" — turns a generic signpost into
+  condition-specific clinical advice the clinician did not give. (v2.1, matching
+  system prompt v0.7; checked by `evals/safety_net_gate.py`.)
+- **A caution about your only input.** The summary you are given is itself model
+  output. If it contains advice the clinician never documented, you will carry it
+  through faithfully and have no way to tell. Reproducing it is correct behaviour
+  and this prompt cannot prevent that failure — it is caught upstream, by the
+  system prompt's rule that PART A reproduces only documented advice, and by the
+  gate that checks PART A against the source notes.
 
 ### Output format
 Return the patient leaflet only — no clinician summary, no GP letter, no

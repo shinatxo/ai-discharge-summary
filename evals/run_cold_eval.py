@@ -57,6 +57,9 @@ import sys
 import time
 from pathlib import Path
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import safety_net_gate  # noqa: E402  (local module, same folder)
+
 try:
     import boto3
     from botocore.exceptions import ClientError
@@ -162,8 +165,19 @@ def _strip_part_c_marker(text: str) -> str:
     return text.lstrip()[m.end():].strip()
 
 
+def _system_blocks(system_prompt: str, prompt_caching: bool) -> list:
+    """Build the Converse `system` array, optionally appending a cachePoint after
+    the prompt block — mirrors src/generate/app.py's _converse so a cold run is
+    faithful to a cache-enabled deployment (cost optimisation, Lever 2)."""
+    blocks = [{"text": system_prompt}]
+    if prompt_caching:
+        blocks.append({"cachePoint": {"type": "default"}})
+    return blocks
+
+
 def run_one(client, scenario_id: str, system_prompt: str, notes: str,
-            patient_prompt: str | None = None) -> dict:
+            patient_prompt: str | None = None,
+            prompt_caching: bool = False) -> dict:
     """Bedrock Converse call(s) — same shape as the Lambda's call.
 
     If ``patient_prompt`` is given (the --patient-second-pass mode), a SECOND
@@ -173,7 +187,7 @@ def run_one(client, scenario_id: str, system_prompt: str, notes: str,
     t0 = time.time()
     response = client.converse(
         modelId=MODEL_ID,
-        system=[{"text": system_prompt}],
+        system=_system_blocks(system_prompt, prompt_caching),
         messages=[{"role": "user", "content": [{"text": notes}]}],
         inferenceConfig={"maxTokens": MAX_TOKENS, "temperature": TEMPERATURE},
     )
@@ -187,7 +201,7 @@ def run_one(client, scenario_id: str, system_prompt: str, notes: str,
         if summary:
             resp2 = client.converse(
                 modelId=MODEL_ID,
-                system=[{"text": patient_prompt}],
+                system=_system_blocks(patient_prompt, prompt_caching),
                 messages=[{"role": "user", "content": [{"text": summary}]}],
                 inferenceConfig={"maxTokens": PATIENT_MAX_TOKENS, "temperature": TEMPERATURE},
             )
@@ -208,6 +222,9 @@ def run_one(client, scenario_id: str, system_prompt: str, notes: str,
         "stop_reason": response.get("stopReason"),
         "input_tokens": usage.get("inputTokens"),
         "output_tokens": usage.get("outputTokens"),
+        # Cache telemetry — non-null only when caching engages (Lever 2 verify).
+        "cache_read_tokens": usage.get("cacheReadInputTokens"),
+        "cache_write_tokens": usage.get("cacheWriteInputTokens"),
         "patient_version": patient_version,
         "patient_output_tokens": patient_out_tokens,
         "notes": notes,
@@ -257,14 +274,29 @@ def write_summary(results: list, errors: list, out_dir: Path, prompt_path: Path)
         "",
         "## Per-scenario",
         "",
-        "| Scenario | Elapsed | In tokens | Out tokens | Stop reason |",
-        "| --- | --- | --- | --- | --- |",
+        "| Scenario | Safety-net gate | Elapsed | In tokens | Out tokens | Cache read | Cache write | Stop reason |",
+        "| --- | --- | --- | --- | --- | --- | --- | --- |",
     ]
     for r in results:
+        if "gate_status" in r:
+            gate_cell = ("PASS" if r.get("gate_ok") else "**FAIL**") + f" ({r['gate_status']})"
+        else:
+            gate_cell = "not run"
         lines.append(
-            f"| {r['scenario_id']} | {r['elapsed_s']:.2f}s | "
-            f"{r['input_tokens']} | {r['output_tokens']} | `{r['stop_reason']}` |"
+            f"| {r['scenario_id']} | {gate_cell} | {r['elapsed_s']:.2f}s | "
+            f"{r['input_tokens']} | {r['output_tokens']} | "
+            f"{r.get('cache_read_tokens')} | {r.get('cache_write_tokens')} | "
+            f"`{r['stop_reason']}` |"
         )
+    gate_failures = [r for r in results if r.get("gate_ok") is False]
+    if gate_failures:
+        lines += ["", "## Safety-net gate failures", "",
+                  "PART C carried urgent-help signposting that the clinician did not "
+                  "document. See `docs/WS2a-DEVICE-DETERMINATION.md` §5.2.", ""]
+        for r in gate_failures:
+            lines.append(f"- **{r['scenario_id']}** — `{r['gate_status']}`")
+            for finding in r.get("gate_findings", []):
+                lines.append(f"  - {finding}")
     if errors:
         lines += ["", "## Errors", ""]
         for scenario_id, exc in errors:
@@ -307,11 +339,26 @@ def main():
              "(mirrors the Lambda's PATIENT_V2_SECOND_PASS path).",
     )
     parser.add_argument(
+        "--prompt-caching",
+        action="store_true",
+        help="Append a Converse cachePoint after the system prompt (mirrors the "
+             "Lambda's PROMPT_CACHING path). Verify cache_read tokens in SUMMARY.md.",
+    )
+    parser.add_argument(
         "--patient-prompt",
         type=Path,
         default=DEFAULT_PATIENT_PROMPT_PATH,
         help=f"Patient-version prompt for the second pass "
              f"(default: {DEFAULT_PATIENT_PROMPT_PATH.relative_to(REPO)})",
+    )
+    parser.add_argument(
+        "--no-gate",
+        dest="gate",
+        action="store_false",
+        help="Skip the safety-net fall-back gate (evals/safety_net_gate.py). "
+             "The gate fails the run if PART C's urgent-help signposting is "
+             "anything other than the canonical fall-back line when PART A "
+             "documents no patient advice.",
     )
     parser.add_argument(
         "--out",
@@ -360,7 +407,8 @@ def main():
             continue
         try:
             result = run_one(client, scenario_id, system_prompt, notes,
-                             patient_prompt=patient_prompt)
+                             patient_prompt=patient_prompt,
+                             prompt_caching=args.prompt_caching)
         except ClientError as exc:
             code = exc.response.get("Error", {}).get("Code", "Unknown")
             msg = exc.response.get("Error", {}).get("Message", str(exc))
@@ -371,6 +419,11 @@ def main():
             print(f"  ERROR: {exc}\n")
             errors.append((scenario_id, str(exc)))
             continue
+        if args.gate:
+            gate = safety_net_gate.check_combined(result["notes"], result["output"])
+            result["gate_status"] = gate.status
+            result["gate_ok"] = gate.ok
+            result["gate_findings"] = gate.findings
         out_path = save_result(result, out_dir, prompt_path)
         results.append(result)
         print(
@@ -378,13 +431,27 @@ def main():
             f"tokens in/out={result['input_tokens']}/{result['output_tokens']}  "
             f"stop={result['stop_reason']}"
         )
+        if args.gate:
+            print(f"  safety-net gate: {gate.label} ({gate.status})")
+            if not gate.ok:
+                for line in gate.findings:
+                    print(f"    ! {line}")
         print(f"  saved -> {out_path.relative_to(REPO)}\n")
 
     summary_path = write_summary(results, errors, out_dir, prompt_path)
     print(f"Batch summary -> {summary_path.relative_to(REPO)}")
 
-    if errors:
-        print(f"\nFinished with {len(errors)} error(s). See {summary_path.name}.")
+    gate_failures = [r for r in results if r.get("gate_ok") is False]
+    if gate_failures:
+        print(f"\nSAFETY-NET GATE FAILED on {len(gate_failures)} scenario(s): "
+              f"{', '.join(r['scenario_id'] for r in gate_failures)}")
+        print("PART C carried urgent-help advice the clinician did not document. "
+              "See docs/WS2a-DEVICE-DETERMINATION.md §5.2 for why this is a hard "
+              "gate and not a style note.")
+
+    if errors or gate_failures:
+        if errors:
+            print(f"\nFinished with {len(errors)} error(s). See {summary_path.name}.")
         sys.exit(1)
 
 

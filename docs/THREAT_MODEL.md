@@ -4,21 +4,32 @@ _Last updated: 2026-05-22 · Phase 1 · STRIDE + AI-specific threats_
 
 This is a lightweight STRIDE-style threat model for a portfolio NHS-flavoured application. It is written against the Phase-1 architecture and is intended to be revisited as the build progresses. Scope: the web app, its AWS backend, the Bedrock model call, and the audit trail.
 
+> ⚠️ **Corrected 11 Sep 2026.** The diagram and the spoofing mitigations below previously described an **S3 documents bucket** holding generated outputs, reachable by short-lived signed URLs with a Glacier lifecycle. **No such bucket has ever existed** — outputs live in a 24-hour-TTL DynamoDB table, and the only S3 bucket in the stack is the WORM ledger. The signed-URL line was the more serious of the two: it credited this analysis with a control that was never deployed. Both are corrected in place; retention is now specified in **ADR-007**.
+
 ## System summary (what we are protecting)
 
 ```
 Clinician browser
    │  (Cognito auth, TLS)
-CloudFront ── S3 (React frontend, static)
-   │
-API Gateway ── Lambda (Python)
-   │                 │
-   ▼                 ▼
-Bedrock          DynamoDB (audit log, KMS-CMK, hash-only)
-(Claude)
+CloudFront ──► S3 (React SPA, private origin via OAC)
+   │  /generate, /generations/*  — same origin, no CORS
+   ▼
+API Gateway (HTTP API, native Cognito JWT authoriser)
    │
    ▼
-S3 (generated documents, KMS, signed-URL only, lifecycle → Glacier)
+Dispatcher Lambda ──► 202 + job_id
+   │   pending audit row + idempotency receipt, written atomically
+   ▼  (async invoke)
+Generate worker Lambda ──► Bedrock (Claude, eu-west-2)
+   │                              │
+   │                              ▼
+   │                    DynamoDB ResultsTable
+   │                    (outputs, KMS-CMK, 24h TTL — delivery buffer)
+   ▼
+DynamoDB AuditTable (hash-only, KMS-CMK, no DeleteItem, GEN# rows never expire)
+   │
+   ▼  DynamoDB Stream
+Ledger Lambda ──► S3 LedgerBucket (Object Lock / WORM, versioned, KMS-CMK)
 ```
 
 **Assets:** (1) the clinical notes pasted in (transient, sensitive); (2) the generated drafts (sensitive until reviewed); (3) the audit trail (integrity-critical, non-repudiation); (4) the model invocation (integrity of output); (5) user identities and access.
@@ -32,7 +43,7 @@ S3 (generated documents, KMS, signed-URL only, lifecycle → Glacier)
 ### S — Spoofing (identity)
 
 - **Threat:** an unauthenticated or impersonating user accesses the tool or another user's drafts.
-- **Mitigations:** Amazon Cognito user pools with MFA; no anonymous access; API Gateway authorises every request against the Cognito token; S3 documents reachable only via short-lived signed URLs (no public objects); IAM roles, not long-lived keys, for service-to-service calls.
+- **Mitigations:** Amazon Cognito user pools with MFA; no anonymous access; API Gateway's native Cognito JWT authoriser validates every request before any Lambda cold start; **generated outputs are never in S3** — they are held in DynamoDB and returned only through the authenticated `GET /generations/{id}` endpoint, with the caller's identity read from the verified JWT claim and never from the request body (ADR-004); the SPA's S3 origin is private, reachable only through CloudFront OAC; IAM roles, not long-lived keys, for service-to-service calls.
 - **Residual / to do:** enforce MFA at the pool policy level; consider device/session binding.
 
 ### T — Tampering (integrity)
@@ -50,7 +61,7 @@ S3 (generated documents, KMS, signed-URL only, lifecycle → Glacier)
 ### I — Information disclosure (confidentiality)
 
 - **Threat:** exposure of patient-identifiable data via the database, logs, model provider, or storage.
-- **Mitigations:** the audit log is **hash-only — no PHI is persisted**; inputs are sanitised before any CloudWatch logging and the system prompt is never echoed; encryption at rest (KMS CMK) and in transit (TLS); generated documents in S3 are KMS-encrypted and accessible only by signed URL; **data residency** is constrained to eu-west-2 with model inference pinned to the EU (never US/global profiles), recorded per generation; least-privilege IAM so a compromised component sees only what it needs.
+- **Mitigations:** the audit log is **hash-only — no PHI is persisted**; inputs are sanitised before any CloudWatch logging and the system prompt is never echoed; encryption at rest (KMS CMK) and in transit (TLS); generated outputs are held in DynamoDB under a KMS customer-managed key with a 24-hour TTL, retrievable only through the authenticated `GET /generations/{id}` endpoint; **data residency** is constrained to eu-west-2 with model inference pinned to the EU (never US/global profiles), recorded per generation; least-privilege IAM so a compromised component sees only what it needs.
 - **Residual:** the notes themselves are sent to Bedrock for inference (transient, in-EU, not retained by us); this is the unavoidable processing surface and is documented in the Model Card.
 
 ### D — Denial of service (availability)

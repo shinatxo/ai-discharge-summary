@@ -80,6 +80,18 @@ RESULTS_TTL_HOURS = int(os.environ.get("RESULTS_TTL_HOURS", "24"))
 MAX_TOKENS = int(os.environ.get("MAX_TOKENS", "4096"))
 TEMPERATURE = float(os.environ.get("TEMPERATURE", "0"))
 
+# --- Prompt caching (cost optimisation, 2026-06-16) --------------------------
+# The ~18k-char system prompt is byte-identical on every call. Bedrock prompt
+# caching reads a cached prefix at ~0.1x the normal input price, so under bursty
+# traffic (the nightly canary fires its scenarios back-to-back within the cache
+# TTL) the prompt is paid for once per window instead of once per call. Off by
+# default so behaviour is bit-identical until deliberately enabled AND verified
+# in-region (eu-west-2 Sonnet support + the usage block shows cacheRead tokens).
+# See docs/COST_OPTIMISATION_GUIDE.md, Lever 2.
+PROMPT_CACHING = os.environ.get("PROMPT_CACHING", "").strip().lower() in (
+    "1", "true", "yes", "on",
+)
+
 # --- Bedrock client resilience (surfaced 2026-06-06) -------------------------
 # The worker runs behind the async 202+poll path, so it HAS time - but a Bedrock
 # call must FAIL FAST under a stalled/throttled endpoint rather than hang to the
@@ -226,10 +238,19 @@ def _split_outputs(text: str):
 
 def _converse(system_prompt: str, user_text: str, max_tokens: int):
     """Single Bedrock Converse call on the pinned model. Centralised so the
-    combined pass and the patient second pass share one code path / config."""
+    combined pass and the patient second pass share one code path / config.
+
+    When PROMPT_CACHING is enabled a cachePoint is appended AFTER the system
+    prompt block, telling Bedrock to cache everything above it (the static
+    prompt). The user notes stay below the cache point so they are never cached
+    across calls. system[0] remains the prompt text block, so callers/tests that
+    read system[0]['text'] are unaffected."""
+    system_blocks = [{"text": system_prompt}]
+    if PROMPT_CACHING:
+        system_blocks.append({"cachePoint": {"type": "default"}})
     return _bedrock.converse(
         modelId=MODEL_ID,
-        system=[{"text": system_prompt}],
+        system=system_blocks,
         messages=[{"role": "user", "content": [{"text": user_text}]}],
         inferenceConfig={"maxTokens": max_tokens, "temperature": TEMPERATURE},
     )
@@ -258,18 +279,28 @@ def _strip_part_c_marker(text: str) -> str:
     return after.strip()
 
 
-def _maybe_second_pass(outputs: dict):
+def _maybe_second_pass(outputs: dict, parse_ok: bool):
     """Patient v2: optionally regenerate the patient version from PART A alone.
 
     Returns (patient_version, patient_model_version, patient_parse_ok,
     patient_usage). Mutates ``outputs['patient']`` in place when the v2 pass
     runs successfully. Degrades gracefully — any failure (flag off, no prompt,
-    empty summary, Bedrock error, empty result) leaves the v1 combined-pass
-    patient text untouched and is reflected in the returned status:
+    unparsed output, empty summary, Bedrock error, empty result) leaves the v1
+    combined-pass patient text untouched and is reflected in the returned status:
 
-      - "v1"          : second pass not attempted (flag off / no summary / no prompt)
+      - "v1"          : second pass not attempted (flag off / unparsed / no prompt)
       - "v2"          : second pass produced the leaflet (outputs mutated)
       - "v1_fallback" : second pass was attempted but failed; v1 text kept
+
+    ``parse_ok`` is the flag from :func:`_split_outputs`. It is deliberately a
+    required argument with no default: a default would let a future caller omit it
+    and silently get the pre-fix unsafe behaviour.
+    When the split fails, ``_split_outputs`` fails safe by returning the whole
+    A+B+C blob under ``summary`` — which is non-empty, so an emptiness check
+    alone does not catch it and the second pass would anchor to unparsed output
+    instead of to PART A. The whole point of v2 is that its only input is the
+    curated PART A, so an unparsed response must skip the pass, not feed it.
+    (Found by the WS2a determination review, 2026-09-11.)
     """
     base_mv = f"{MODEL_ID} ({REGION}, on-demand)"
     if not PATIENT_V2_SECOND_PASS:
@@ -277,10 +308,14 @@ def _maybe_second_pass(outputs: dict):
     if not PATIENT_SYSTEM_PROMPT:
         logger.warning(json.dumps({"event": "patient_v2_no_prompt"}))
         return ("v1", base_mv, True, {})
+    if not parse_ok:
+        # Split failed upstream; outputs['summary'] holds the whole unparsed
+        # response, not PART A. There is no trustworthy anchor — skip.
+        logger.info(json.dumps({"event": "patient_v2_skipped_parse_failed"}))
+        return ("v1", base_mv, True, {})
 
     summary = (outputs.get("summary") or "").strip()
     if not summary:
-        # Parse failed upstream; there is no trustworthy PART A to anchor to.
         logger.info(json.dumps({"event": "patient_v2_skipped_no_summary"}))
         return ("v1", base_mv, True, {})
 
@@ -400,7 +435,8 @@ def _run_async_worker(event):
     # --- 1b) Patient v2 (optional): regenerate PART C from PART A alone -------
     # No-op unless PATIENT_V2_SECOND_PASS is enabled. Mutates outputs['patient']
     # in place on success; never fails the job (graceful fallback to v1 text).
-    patient_version, patient_mv, patient_parse_ok, patient_usage = _maybe_second_pass(outputs)
+    patient_version, patient_mv, patient_parse_ok, patient_usage = _maybe_second_pass(
+        outputs, parse_ok)
 
     # --- 2) Hashes (the only representation we keep in the audit log) --------
     output_hashes = {k: _sha256(v) for k, v in outputs.items()}
@@ -504,6 +540,11 @@ def _run_async_worker(event):
         "input_tokens": usage.get("inputTokens"),
         "output_tokens": usage.get("outputTokens"),
         "patient_output_tokens": patient_usage.get("outputTokens"),
+        # Cache-usage telemetry (present only when PROMPT_CACHING is on and the
+        # region/model supports it). A cache WRITE on the first call of a window,
+        # READS on subsequent calls; both being None means caching isn't engaging.
+        "cache_read_tokens": usage.get("cacheReadInputTokens"),
+        "cache_write_tokens": usage.get("cacheWriteInputTokens"),
         "latency_ms": int((time.time() - started) * 1000),
     }))
     return {"ok": True, "job_id": job_id, "status": "complete",
@@ -589,7 +630,8 @@ def _run_direct_invoke(event):
 
     # Patient v2 (optional): regenerate PART C from PART A alone. No-op unless
     # PATIENT_V2_SECOND_PASS is enabled; mutates outputs['patient'] on success.
-    patient_version, patient_mv, patient_parse_ok, _patient_usage = _maybe_second_pass(outputs)
+    patient_version, patient_mv, patient_parse_ok, _patient_usage = _maybe_second_pass(
+        outputs, parse_ok)
 
     input_hash = _sha256(notes)
     output_hashes = {k: _sha256(v) for k, v in outputs.items()}

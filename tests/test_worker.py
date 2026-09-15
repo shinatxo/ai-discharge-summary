@@ -311,7 +311,46 @@ def test_maybe_second_pass_skips_when_no_summary(load_worker, fake_ddb):
     """Belt-and-braces unit: flag on but an empty PART A -> no second call, v1."""
     app = load_worker(extra_env={"PATIENT_V2_SECOND_PASS": "on"})
     app._bedrock.converse.reset_mock(side_effect=True)
-    version, _mv, parse_ok, _usage = app._maybe_second_pass({"summary": "", "patient": "x"})
+    version, _mv, parse_ok, _usage = app._maybe_second_pass(
+        {"summary": "", "patient": "x"}, True)
     assert version == "v1"
     assert parse_ok is True
     assert app._bedrock.converse.call_count == 0
+
+
+def test_maybe_second_pass_skips_when_split_failed(load_worker, fake_ddb):
+    """parse_ok=False must skip the second pass, even though summary is non-empty.
+
+    Regression for the guard bug found by the WS2a determination review
+    (docs/WS2a-DEVICE-DETERMINATION.md §5.2). _split_outputs fails SAFE by
+    returning the whole PART A+B+C blob under 'summary'. That blob is non-empty,
+    so the old emptiness-only guard did not fire and the second pass anchored to
+    unparsed output — defeating the entire point of v2, which is that its only
+    input is the curated PART A."""
+    app = load_worker(extra_env={"PATIENT_V2_SECOND_PASS": "on"})
+    app._bedrock.converse.reset_mock(side_effect=True)
+    unparsed_blob = "Some header\n\nPART B - GP LETTER\n\nDear GP\n"
+    outputs = {"summary": unparsed_blob, "gp_letter": "", "patient": "v1 leaflet"}
+
+    version, _mv, parse_ok, _usage = app._maybe_second_pass(outputs, False)
+
+    assert version == "v1"
+    assert parse_ok is True
+    assert app._bedrock.converse.call_count == 0
+    assert outputs["patient"] == "v1 leaflet"   # untouched
+
+
+def test_maybe_second_pass_runs_when_split_succeeded(load_worker, fake_ddb):
+    """The positive half of the guard: parse_ok=True still runs, PART A only."""
+    app = load_worker(extra_env={"PATIENT_V2_SECOND_PASS": "on"})
+    app._bedrock.converse.reset_mock(side_effect=True)
+    app._bedrock.converse.return_value = _converse_resp("PLAIN ENGLISH LEAFLET")
+    outputs = {"summary": "PART A CONTENT", "gp_letter": "", "patient": "v1 leaflet"}
+
+    version, _mv, _parse_ok, _usage = app._maybe_second_pass(outputs, True)
+
+    assert version == "v2"
+    assert outputs["patient"] == "PLAIN ENGLISH LEAFLET"
+    # The second pass sees the curated PART A and nothing else.
+    sent = app._bedrock.converse.call_args.kwargs["messages"][0]["content"][0]["text"]
+    assert sent == "PART A CONTENT"

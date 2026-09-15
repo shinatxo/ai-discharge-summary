@@ -30,7 +30,7 @@ Studying for AWS SAA-C03. Build + writeup in the comments. 👇
 
 ### From the ward to the cloud
 
-I'm a medical doctor who started teaching myself to code at the end of 2024. The discharge summary is a piece of paperwork I wrote hundreds of times as a junior doctor — and watched delay GP follow-up and contribute to readmissions when it was done badly. It's the perfect problem for a healthcare-flavoured cloud portfolio: a real clinical pain point, a genuine safety bar, and a reason to do the engineering properly.
+I'm a medical doctor who started teaching myself to code at the end of 2024. The discharge summary is a piece of paperwork I wrote hundreds of times as a junior doctor — and watched delay GP follow-up, and get blamed for readmissions, when it was done badly. (That's the problem I started from, not a claim about what this tool achieves; nothing here has outcome evidence behind it.) It's the perfect problem for a healthcare-flavoured cloud portfolio: a real clinical pain point, a genuine safety bar, and a reason to do the engineering properly.
 
 ### The actual hard problem: restraint, not fluency
 

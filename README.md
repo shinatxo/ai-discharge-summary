@@ -42,7 +42,9 @@ Everything is **serverless** and — except the one component AWS forces into us
 
 ## Why this exists
 
-Junior doctors spend a large share of their day on discharge paperwork, and poor summaries delay GP follow-up and contribute to readmissions. This tool drafts a structured summary, a GP letter, and a patient explanation from clinical notes in seconds — but its real point is to do so **without making things up**. It is built with NHS-flavoured, DSPT-aligned controls: Cognito auth, KMS customer-managed-key encryption, and an immutable, **hash-only** audit log that never stores patient-identifiable data.
+Junior doctors spend a large share of their day on discharge paperwork, and poor summaries are a well-recognised handover risk — they delay GP follow-up and are associated with readmissions. That is a description of *the problem*, and deliberately not a claim about this tool: there is no outcome evidence for it and there won't be without a real-world study ([Model Card](docs/MODEL_CARD.md) §7).
+
+What the tool does is draft a structured summary, a GP letter, and a patient explanation from clinical notes in seconds — and its real point is to do so **without making things up**. It is built with NHS-flavoured, DSPT-aligned controls: Cognito auth, KMS customer-managed-key encryption, and an immutable, **hash-only** audit log that never stores patient-identifiable data.
 
 ## What it produces
 

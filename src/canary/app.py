@@ -78,11 +78,30 @@ _SCENARIOS_PATH = Path(__file__).resolve().parent / "scenarios.json"
 # -----------------------------------------------------------------------------
 # Scenarios
 # -----------------------------------------------------------------------------
-def _load_scenarios():
+def _load_scenarios(event=None):
+    """Resolve which scenarios to run, in precedence order:
+       1. a per-run override in the schedule's Input payload (event["scenarios"],
+          a comma-string or a list) — lets ONE Lambda serve a nightly SMOKE subset
+          AND a weekly FULL run via two EventBridge schedules (cost optimisation,
+          see docs/COST_OPTIMISATION_GUIDE.md, Lever 1);
+       2. the deploy-time CANARY_SCENARIOS env var;
+       3. all scenarios (empty selector).
+    An empty/absent override falls through to the env, so a manual invoke with no
+    payload behaves exactly as before."""
     data = json.loads(_SCENARIOS_PATH.read_text(encoding="utf-8"))
     scenarios = data["scenarios"]
-    if CANARY_SCENARIOS:
-        wanted = {s.strip() for s in CANARY_SCENARIOS.split(",") if s.strip()}
+
+    override = ""
+    if isinstance(event, dict):
+        raw = event.get("scenarios")
+        if isinstance(raw, list):
+            override = ",".join(str(x) for x in raw)
+        elif isinstance(raw, str):
+            override = raw
+
+    selector = override.strip() or CANARY_SCENARIOS
+    if selector:
+        wanted = {s.strip() for s in selector.split(",") if s.strip()}
         scenarios = [s for s in scenarios if s["id"] in wanted]
     return scenarios
 
@@ -217,7 +236,7 @@ def _scenario_metrics(scenario_id, res):
 # -----------------------------------------------------------------------------
 def lambda_handler(event, context):
     run_started = time.time()
-    scenarios = _load_scenarios()
+    scenarios = _load_scenarios(event)
 
     # --- auth (a failure here fails the whole run) ---------------------------
     try:

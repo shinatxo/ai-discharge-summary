@@ -62,6 +62,21 @@ Parameters:
       single combined-call v1 hot path bit-identical. The second pass uses the SAME
       pinned ModelId, on-demand in eu-west-2 (ADR-003 rule 1 - UK-only inference).
 
+  PromptCaching:
+    Type: String
+    Default: 'off'
+    AllowedValues:
+      - 'off'
+      - 'on'
+    Description: >
+      Cost optimisation (docs/COST_OPTIMISATION_GUIDE.md, Lever 2). When 'on', the
+      worker appends a Bedrock Converse cachePoint after the static system prompt
+      so the ~18k-char prompt is read from cache (~0.1x input price) on calls that
+      share the prefix within the cache TTL - a large saving on the back-to-back
+      canary batch. Default 'off' keeps every call bit-identical. Enable only after
+      confirming Sonnet prompt caching is supported in eu-west-2 and the worker_complete
+      log shows cache_read_tokens > 0. Stays on the SAME pinned ModelId (ADR-003).
+
   LedgerRetentionDays:
     Type: Number
     Default: 1
@@ -111,6 +126,26 @@ Parameters:
       EventBridge Scheduler expression for the nightly canary run (interpreted in
       Europe/London - see the schedule's ScheduleExpressionTimezone). Default =
       02:00 local.
+
+  CanaryNightlyScenarios:
+    Type: String
+    Default: 'S14,S16,S18'
+    Description: >
+      Cost optimisation (docs/COST_OPTIMISATION_GUIDE.md, Lever 1). Scenario ids the
+      NIGHTLY schedule runs as a smoke set - kept deliberately to the known failure
+      modes (S16 = Ibrahim's flagged Gen Surg case; S14/S18 = post-discharge
+      added-advice cases). Passed to the canary via the schedule's Input payload, so
+      one Lambda serves both the nightly smoke run and the weekly full run. Set to ''
+      to make the nightly run all 18 (the pre-optimisation behaviour).
+
+  CanaryWeeklyScheduleExpression:
+    Type: String
+    Default: cron(0 3 ? * MON *)
+    Description: >
+      EventBridge Scheduler expression for the WEEKLY full-regression run (all 18
+      scenarios), Europe/London. Default = 03:00 local every Monday (an hour after
+      the nightly slot so they never overlap). The weekly run passes scenarios=''
+      (all) in its Input payload.
 
   CanaryMaxConcurrency:
     Type: String
@@ -506,6 +541,9 @@ Resources:
           # bundle (src/generate/patient_system_prompt.md); no new IAM is needed
           # because the second pass invokes the SAME pinned model already allowed.
           PATIENT_V2_SECOND_PASS: !Ref PatientV2SecondPass
+          # Prompt caching toggle (off by default; cost optimisation Lever 2).
+          # No new IAM: caching is a parameter of the same bedrock:InvokeModel call.
+          PROMPT_CACHING: !Ref PromptCaching
           # Bumped only when the audit item shape changes (ADR-002 schema_version).
           SCHEMA_VERSION: '1'
 
@@ -1402,12 +1440,19 @@ Resources:
   # The nightly schedule. EventBridge Scheduler (not a classic Events::Rule) so
   # we get a native IANA timezone - the canary fires at 02:00 Europe/London
   # regardless of BST/GMT, no UTC arithmetic. Created only when CanaryEnabled=on.
+  #
+  # Cost optimisation (Lever 1): the nightly run is now a SMOKE subset
+  # (CanaryNightlyScenarios) passed in the Scheduler Input payload, not the full
+  # 18. The full regression runs WEEKLY (CanaryWeeklyScheduleRule below). The
+  # canary reads event["scenarios"] first, falling back to the CANARY_SCENARIOS
+  # env - so a manual invoke with no payload is unchanged. To restore nightly-full,
+  # set CanaryNightlyScenarios='' (empty selector = all 18).
   CanaryScheduleRule:
     Type: AWS::Scheduler::Schedule
     Condition: CanaryOn
     Properties:
       Name: !Sub "${AWS::StackName}-canary-nightly"
-      Description: Nightly synthetic-traffic run of the discharge-summary canary.
+      Description: Nightly synthetic-traffic SMOKE run (subset) of the discharge-summary canary.
       ScheduleExpression: !Ref CanaryScheduleExpression
       ScheduleExpressionTimezone: Europe/London
       FlexibleTimeWindow:
@@ -1416,6 +1461,27 @@ Resources:
       Target:
         Arn: !GetAtt CanaryFunction.Arn
         RoleArn: !GetAtt CanarySchedulerRole.Arn
+        # Static JSON payload selecting the nightly smoke scenarios. The canary's
+        # _load_scenarios() reads this over the env var.
+        Input: !Sub '{"scenarios": "${CanaryNightlyScenarios}"}'
+
+  # The weekly FULL-regression schedule. Same Lambda, same scheduler role; an
+  # empty scenarios payload means "run all 18". Created only when CanaryEnabled=on.
+  CanaryWeeklyScheduleRule:
+    Type: AWS::Scheduler::Schedule
+    Condition: CanaryOn
+    Properties:
+      Name: !Sub "${AWS::StackName}-canary-weekly-full"
+      Description: Weekly full-regression run (all 18 scenarios) of the discharge-summary canary.
+      ScheduleExpression: !Ref CanaryWeeklyScheduleExpression
+      ScheduleExpressionTimezone: Europe/London
+      FlexibleTimeWindow:
+        Mode: 'OFF'
+      State: ENABLED
+      Target:
+        Arn: !GetAtt CanaryFunction.Arn
+        RoleArn: !GetAtt CanarySchedulerRole.Arn
+        Input: '{"scenarios": ""}'
 
   # ===========================================================================
   # WAVE 4 - alarms + SNS (docs/WAVE4_DESIGN.md).

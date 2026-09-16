@@ -21,6 +21,15 @@ It is worth doing as *architectural* belt-and-braces: a structural guarantee tha
 not depend on the model obeying a prompt rule, plus it realises the human-in-the-loop
 story already promised in the ADRs.
 
+**Scope of that guarantee, corrected 15 Sep 2026.** It guarantees only that the leaflet
+cannot invent *beyond PART A*. It does nothing about advice invented *into* PART A — and
+that is where the WS2a review found the invention actually happening
+(`docs/WS2a-DEVICE-DETERMINATION.md` §5.2). With the second pass on, PART A becomes the
+leaflet's sole input, so a bad PART A is propagated with nothing left to contradict it.
+The real control for that boundary is prompt v0.7 plus `evals/safety_net_gate.py`, which
+checks PART A against the source notes. Read this section as a guarantee about one
+boundary, not about added advice in general.
+
 The single-combined-prompt design (resolved 2026-05-23, "Option A") was the right v1
 call — it hits the Flesch–Kincaid ≤ 8 reading-age bar and keeps the hot path UK-only
 on-demand. v2 was always recorded as the **safety** successor: *"a second pass that
@@ -61,6 +70,8 @@ change, fully backward-compatible (flag off = today's single call).
   202+poll path; gives the structural guarantee immediately. A clean, reviewable increment.
 - **Cons:** anchors to the *draft* A, not a clinician-*reviewed* A — so it delivers the
   architectural belt-and-braces but only the first half of the human-in-the-loop story.
+  And because the draft A is its only input, any advice invented into PART A is carried
+  through unopposed (see the scope note above).
 - **Latency/cost:** +1 Bedrock call (~15–20 s, absorbed by async). Call 2 only emits the
   leaflet, so cap it lower (e.g. `MAX_TOKENS≈1500`) — the marginal cost is small.
 

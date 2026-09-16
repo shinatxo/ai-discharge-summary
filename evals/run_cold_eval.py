@@ -372,9 +372,16 @@ def main():
     scenarios_path = args.scenarios_file.resolve()
 
     if args.out is None:
-        # Auto-name: evals/runs/run-YYYY-MM-DD-<prompt-stem>
+        # Auto-name: evals/runs/run-YYYY-MM-DD-<prompt-stem>[-patient-v2]
+        #
+        # The patient-pass mode is part of the folder name because it changes the
+        # OUTPUT, not just the timing: v1 writes PART C from the combined pass, v2
+        # regenerates it from PART A alone. Without the suffix a v2 run silently
+        # overwrote a v1 run from the same day, destroying the v1 evidence
+        # (15 Sep 2026 - recovered from git, but only because it had been committed).
         today = dt.date.today().isoformat()
-        out_dir = REPO / "evals" / "runs" / f"run-{today}-{prompt_path.stem}"
+        suffix = "-patient-v2" if args.patient_second_pass else ""
+        out_dir = REPO / "evals" / "runs" / f"run-{today}-{prompt_path.stem}{suffix}"
     else:
         out_dir = args.out if args.out.is_absolute() else REPO / args.out
 

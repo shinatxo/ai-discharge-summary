@@ -1,7 +1,7 @@
 # WS2a — Intended Purpose and Medical Device Determination
 
 **AI Discharge Summary Assistant**
-Document version 1.2 · Written 11 September 2026 · Author: Shina Oguntoye
+Document version 1.5 · Written 11 September 2026, verified 15–16 September 2026 · Author: Shina Oguntoye
 
 | Field | Value |
 |---|---|
@@ -240,12 +240,21 @@ Verified against the source notes, not inferred:
   "Parental safety-net advice given". No paediatric or neonatal scenario had been run under
   v0.6, so nothing caught it.
 
-**Patient v2 was never a control against this.** Its only input is the curated PART A, so it
-propagates whatever PART A invented and has no way to know. The design document's claim that it
-is "architectural belt-and-braces over the v0.6 prompt rule" is true only for inventions that
-originate in PART C — which, as it turns out, is not where they originate. `PatientV2SecondPass`
-also defaults to `off` and is off in the deployed demo stack, so it is not a control in the
-configuration this memo assesses either way.
+**Patient v2 was never a control against this — and it made the failure mode worse.** Its only
+input is the curated PART A, so it propagates whatever PART A invented and has no way to know.
+The design document's claim that it is "architectural belt-and-braces over the v0.6 prompt rule"
+holds only for inventions originating in PART C — which, as it turns out, is not where they
+originate. Worse than neutral: with the second pass **on**, PART A is the *sole* input to the
+patient leaflet, so an invented trigger in PART A is laundered into the patient version with
+nothing left to contradict it. The v1 combined pass at least had the raw notes in context. The
+structural guarantee was real; it was guaranteeing the wrong boundary.
+
+**And it is on.** `PatientV2SecondPass` defaults to `off` in `infra/template.yaml`, but the CI
+pipeline pins it `PatientV2SecondPass=on` on every deploy to `main`, and the deployed stack was
+confirmed `on` on 15 Sep 2026. Versions 1.0–1.3 of this memo stated it was off in the deployed
+stack, reasoning from the template default and `samconfig.toml` without checking the live
+parameter. That was wrong, and it is the kind of error this memo warns about elsewhere: the
+deployed configuration is a fact to be queried, not inferred from source.
 
 > **Fixed 11 Sep 2026 — prompt v0.7.** The no-added-advice rule is promoted out of PART C into
 > the CORE PRINCIPLE and now covers PARTS A, B and C, with inventing a safety-net trigger named
@@ -274,9 +283,27 @@ configuration this memo assesses either way.
 > list, or a prognostic claim like "the cough can last 2–3 weeks". Those stay with the eval
 > rubric (D2, hallucination). It is a floor, not a proof.
 >
-> **Outstanding:** S8 (neonatal) and S9 (paediatric) still need a cold-eval run under v0.7 —
-> they have not been run since v0.5. Until that is green the paediatric path is fixed in the
-> prompt but unverified in behaviour, and §1.2 rests on the rule rather than on evidence.
+> **Verified in behaviour 15 Sep 2026.** Cold eval of S8, S9, S15 and S18 under v0.7: all four
+> pass the gate, and the two scenarios that were failing — S15 and S18 — return `clean` rather
+> than `advisory`, meaning the gate actively inspected PART A's advice field and found no
+> invented trigger. The breathlessness/sputum and "another seizure" lines are gone.
+>
+> **S8 is the case that matters**, because it is the shape that produced a wholly invented
+> paediatric red-flag set under v0.6. Its notes record only *"Safety-net advice to parents re
+> fever/feeding/breathing"* — that advice was given, but not what it was. Under v0.7, PART A
+> reads: *"The notes record that safety-net advice was given to parents regarding fever,
+> feeding, and breathing. The specific content, thresholds, and triggers were not documented.
+> The reviewing clinician should confirm and document the advice given before this summary is
+> finalised."* It surfaces the gap instead of filling it, which is the behaviour §1.2 claims and
+> now the behaviour on record.
+>
+> **One residual found by that run, and not a blocker.** S8's patient version rendered the
+> fall-back as "If you become **worried about your baby**, contact your GP or call NHS 111" — a
+> sensible audience adaptation, since "if you become unwell" is wrong when the reader is the
+> parent and the patient is the neonate. But it is an unprompted rewrite of text v0.7 pins as
+> verbatim, and the gate cannot see it: S8's notes do record a trigger, so the gate goes
+> advisory and stops checking. The prompt should *specify* a paediatric variant of the fixed line
+> rather than leave the model to improvise one. Logged for WS4; the hazard is the same one.
 
 A secondary code defect on the same path, **fixed 11 Sep 2026**: `_maybe_second_pass` guarded
 only on the summary being non-empty, but `_split_outputs` fails *safe* by returning the whole
@@ -454,20 +481,27 @@ a UK Responsible Person — none of which exist for a portfolio project with no 
    the same hazard as §5.3 on a different field, with the gate as their control. Note for the
    hazard log that the control sits at PART A, not PART C — the patient version was the symptom.
 3b. **~~Fix the `_maybe_second_pass` parse guard~~ — done 11 Sep 2026.**
-3c. **Outstanding: cold-eval S8 (neonatal) + S9 (paediatric) under v0.7.** Needs Bedrock
-   credentials, so it runs on the dev machine:
-   `python evals/run_cold_eval.py --scenarios S8 S9`. The gate runs automatically and the batch
-   exits non-zero if it fails. Until this is green the paediatric path is fixed but unverified.
-3d. **Outstanding: run the unit suite.** The sandbox this memo was written from has neither
-   `pytest` nor `boto3` (no package-index egress), so the unit tests were not executed here. The
-   `_maybe_second_pass` change was verified directly against the real module with a stubbed
-   boto3, and the gate's 13 tests were executed with a minimal runner — but `pytest` on the dev
-   machine is the check that counts.
+3c. **~~Cold-eval S8 + S9 under v0.7~~ — done 15 Sep 2026.** Ran S8, S9, S15 and S18; 4/4 pass
+   the gate. Outputs at `evals/runs/run-2026-09-15-discharge-summary-system-prompt/`. See §5.2.
+3d. **~~Run the unit suite~~ — done 15 Sep 2026.** 65 passed, plus the canary scenario-bundle
+   check and cfn-lint (five W3005 and five W3002, both deliberate, no errors).
+3e. **Outstanding: specify a paediatric variant of the fall-back line** (§5.2 residual). The
+   model currently improvises one, correctly but unprompted, and the gate cannot see it because
+   paediatric scenarios tend to document a trigger and so route to the advisory path.
 4. **The claims audit (§7) gates WS2b** — the DTAC form asks for the intended purpose and will
    be read against the published material.
-5. **`PatientV2SecondPass` flag state does not change this determination.** The restatement-only
-   rule holds on both paths — by prompt rule on v1, by prompt rule *and* architecture on v2.
-   Confirm the deployed flag state before quoting behaviour in WS2b.
+5. **`PatientV2SecondPass` is ON in the deployed stack** (confirmed 15 Sep 2026; CI pins it on
+   every deploy). It does not change the determination — the restatement-only rule governs both
+   paths. **Both paths are now verified under v0.7:** S8, S9, S15 and S18 pass the gate on the v1
+   combined path (`evals/runs/run-2026-09-15-discharge-summary-system-prompt/`) and again on the
+   deployed v2 path (`…-patient-v2/`). The v2 result is the one that counts for deployed
+   behaviour, because with the second pass on PART A is the leaflet's only input (§5.2) — the v2
+   path is where a PART A invention would reach the patient unopposed.
+
+   *Harness defect found in the process, now fixed:* the cold-eval runner auto-named its output
+   folder from the date and prompt stem only, so the v2 run silently overwrote the v1 run of the
+   same day. The v1 evidence survived only because it had already been committed. The patient-pass
+   mode is now part of the folder name, and both runs are retained side by side.
 
 ---
 
@@ -509,6 +543,9 @@ All accessed and verified 10–11 September 2026. Dates are the publisher's own.
 
 | Version | Date | Change |
 |---|---|---|
+| 1.5 | 16 Sep 2026 | Deployed path verified: the cold eval re-run with `--patient-second-pass` passes the gate on all four scenarios, so v0.7 holds on both the v1 combined path and the v2 path the stack actually runs. Cold-eval harness fixed — it was auto-naming output folders without the patient-pass mode, so the v2 run overwrote the v1 run; the v1 evidence survived only because it had been committed first. Both runs now retained side by side. |
+| 1.4 | 15 Sep 2026 | Corrected a factual error the memo had carried since v1.0: `PatientV2SecondPass` is **on** in the deployed stack — CI pins it on every deploy — where versions 1.0–1.3 said it was off, reasoning from the template default instead of querying the live parameter. The correction sharpens §5.2 rather than softening it: with the second pass on, PART A is the patient leaflet's *only* input, so an invention in PART A reaches the patient unopposed. Patient v2 was not merely a non-control against this class; it removed the one remaining contradicting input. Scope corrections applied in place to `PATIENT_V2_DESIGN.md`, `ADR-phase1.md` and the patient-pass prompt header. New outstanding item: re-run the cold eval with `--patient-second-pass`, since the 15 Sep run exercised the v1 path. |
+| 1.3 | 15 Sep 2026 | Behaviour verified, not just asserted: cold eval S8/S9/S15/S18 under v0.7 all pass the gate, unit suite green at 65, both commits pushed. §5.2's outstanding note replaced with the S8 result. One residual logged — the paediatric fall-back line is adapted by the model rather than specified by the prompt. |
 | 1.2 | 11 Sep 2026 | §5.2 rewritten after a second verification pass. The first fix was aimed at PART C; the invention actually happens in PART A, whose field template instructed the model to author advice, and v0.6's "not in Part A" boundary then blessed it. Prompt v0.7 now covers PARTS A, B and C; the gate re-anchored from PART A to the source notes; Patient v2 recorded as never having been a control against this class. 24 tests. |
 | 1.1 | 11 Sep 2026 | Both §5.2 holes fixed and the `_maybe_second_pass` parse guard corrected. Claims fixes applied to README, case study and portfolio site. Outstanding: cold-eval S8/S9 under v0.7, and a `pytest` run on the dev machine. |
 | 1.0 | 11 Sep 2026 | Initial determination. Intended purpose stated; tested against MHRA Examples 5, 6, 8, 9; resuscitation carve-out identified as the residual and retained with four stated conditions. Verification pass against the repo found two previously unrecorded safety-netting gaps (§5.2) and one code defect; all carried forward to §9 rather than written out. |

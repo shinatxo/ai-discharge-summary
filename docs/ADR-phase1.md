@@ -558,7 +558,10 @@ pending ┼─ failed ────── (error_code + error_message; no outputs
   theme. **Built 2026-05-30 (v2a, flag-gated `PATIENT_V2_SECOND_PASS`, off by default):**
   the worker now regenerates PART C in a separate Bedrock pass whose only input is the
   curated PART A — architectural belt-and-braces over the v0.6 prompt rule, on the same
-  Sonnet on-demand model (residency unchanged). Anchoring to the *clinician-edited*
+  Sonnet on-demand model (residency unchanged). *Scope corrected 15 Sep 2026: that
+  guarantee covers only invention beyond PART A, not advice invented into PART A, which
+  is where WS2a found it happening. Deployed state is `on` — CI pins it — despite the
+  template default of `off`.* Anchoring to the *clinician-edited*
   summary via a review-gated endpoint (v2b) remains the follow-on. See
   `docs/PATIENT_V2_DESIGN.md`.
 

@@ -4,8 +4,9 @@
 > PATIENT_V2_SECOND_PASS). The model's ONLY input is the already-curated PART A
 > clinician summary — never the raw ward-round notes. Its sole job is to render
 > that summary into a patient-friendly leaflet, transforming language without
-> adding clinical content. This is the architectural belt-and-braces over the
-> v0.6 prompt rule (Run 4 / Ibrahim S16). Residency: runs on the same pinned
+> adding clinical content. This guards one boundary only — invention beyond PART A —
+> and not advice invented INTO PART A, which is where WS2a found it happening; the
+> control for that is system prompt v0.7 plus evals/safety_net_gate.py. Residency: runs on the same pinned
 > Sonnet model, on-demand in eu-west-2 (ADR-003 rule 1). See
 > docs/PATIENT_V2_DESIGN.md.
 

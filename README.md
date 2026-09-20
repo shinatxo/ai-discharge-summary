@@ -137,6 +137,10 @@ CI runs the 65 tests + `cfn-lint` on every push/PR; a push to `main` deploys via
 - **Write-once is not yet enforced at the IAM layer** — the Lambda roles can still `UpdateItem` the audit table, and the WORM ledger's demo retention is 1 day, so the immutability described above holds for 24 hours. An IAM attribute whitelist is scheduled for Oct 2026; the demo retention period is still to be chosen ([`docs/WS3-DPIA.md`](docs/WS3-DPIA.md) Annex C.3).
 - **Cognito MFA is optional, not enforced**; enforcing it needs a canary sign-in redesign (Jan 2027).
 
+## Privacy notice for clinicians
+
+If you sign in and generate drafts, your use is recorded against your account (never your notes). What is recorded, why, for how long, what it will not be used for, and where this demonstration still falls short: [**`PRIVACY-NOTICE.md`**](PRIVACY-NOTICE.md).
+
 ## Disclaimer
 
 This is a portfolio demonstration. It is **not a medical device**, carries no CE/UKCA marking, has no regulatory clearance, and must not be used in clinical care or with real patient data. Every output is a draft requiring review and sign-off by a qualified clinician who remains responsible for the discharge summary.

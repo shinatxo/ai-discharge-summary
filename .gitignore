@@ -22,3 +22,6 @@ __pycache__/
 # raw screen recordings (too large for git; commit only the generated GIF)
 *.mov
 *.mp4
+
+# personal screenshots and scratch files - never committed
+docs/_local/

@@ -14,7 +14,7 @@ I'm a doctor teaching myself cloud engineering, and my flagship build is an **AI
 
 So I wrapped it in real engineering: a fully serverless stack (Bedrock, Lambda, Cognito, an async 202/poll API so generation isn't bound by API Gateway's 30s cap), a **hash-only audit log** that never stores patient data, and a **tamper-evident WORM ledger** so the audit trail is provable, not aspirational.
 
-Then I added a canary: a scheduled Lambda that replays all 18 test scenarios through the *live* system every night and alarms on the results.
+Then I added a canary: a scheduled Lambda that replays test scenarios through the *live* system — a 3-scenario smoke set nightly, all 18 as a weekly regression — and alarms on the results.
 
 Night one, it failed — only 1–2 of 18 succeeded. Not a model problem: jobs were silently stuck. The canary had surfaced that my generate worker's Lambda timeout (60s) was shorter than a real generation (50–80s once I'd added a second safety pass). The fix was one line. But my unit tests, which mock Bedrock, would *never* have caught it — only synthetic traffic against the real path did.
 
@@ -54,7 +54,7 @@ I fixed it twice. At the prompt level, an explicit "no model-added clinical advi
 
 ### The canary that earned its keep on night one
 
-The piece I'm proudest of is the least glamorous: a **synthetic-traffic canary**. A scheduled Lambda signs in as a dedicated test user and replays all 18 scenarios through the live, deployed system every night — the same Cognito → API → worker → Bedrock path a real clinician hits — and publishes success-rate, latency, and throttle metrics that CloudWatch alarms watch, with an SNS email if something drifts.
+The piece I'm proudest of is the least glamorous: a **synthetic-traffic canary**. A scheduled Lambda signs in as a dedicated test user and replays scenarios through the live, deployed system — a 3-scenario smoke set every night and the full 18 weekly — on the same Cognito → API → worker → Bedrock path a real clinician hits, and publishes success-rate, latency, and throttle metrics that CloudWatch alarms watch, with an SNS email if something drifts.
 
 The first time it ran, it failed: 1–2 of 18 succeeded, the rest stuck. It wasn't the model. The canary had exposed two things my unit tests structurally could not:
 

@@ -19,11 +19,11 @@ Turn a doctor's messy ward-round notes into a structured discharge summary, a GP
 ## Results
 
 - **18** synthetic evaluation scenarios (neonatal → elderly, including adversarial: prompt-injection, contradictory notes, missing data).
-- **39** automated tests, gating every push via CI.
+- **65** automated tests, gating every push via CI.
 - **Cold-eval:** 11/11 (expansion set) + 5/5 (v0.6 safety regression) — **no auto-fails**.
 - **Patient-version reading age:** Flesch–Kincaid 2.3–6.2 (target ≤ 8).
 - **~73 s** average end-to-end generation (asynchronous — not bound by API Gateway's 30 s cap).
-- **Nightly synthetic canary:** ~85% success; the remainder is Bedrock on-demand quota throttling (5 req/min), *not* generation errors — by design, and watched by CloudWatch alarms.
+- **Synthetic canary:** a 3-scenario smoke run nightly, all 18 as a weekly regression. ~85% success on the full run; the remainder is Bedrock on-demand quota throttling (5 req/min), *not* generation errors — by design, and watched by CloudWatch alarms.
 - **Cost:** ~£43/month at demo volume (AWS Cost Explorer actual) — **~99% Bedrock inference**; the rest of the stack runs within free tier. Full breakdown + optimisation: [`docs/COST.md`](docs/COST.md).
 
 ---
@@ -64,7 +64,7 @@ Wherever the notes are silent, the tool writes **"Not documented"** rather than 
 
 **Generation + Patient v2.** The worker calls **Bedrock** (Claude Sonnet 4.6, on-demand in eu-west-2), splits the output into the three parts, and — under a flag — regenerates the patient leaflet in a **second pass whose only input is the curated clinician summary** (see [Patient v2](#patient-v2--defence-in-depth-against-helpful-hallucination)). Outputs land in a transient `ResultsTable` (24h TTL); the audit table stays hash-only.
 
-**Tamper-evident audit.** The **AuditTable** is write-once, KMS-CMK-encrypted, and stores only **SHA-256 hashes** of inputs/outputs plus metadata — never PHI. Its DynamoDB stream feeds a **ledger Lambda** that copies every change event into an **S3 Object Lock (WORM)** bucket, where it cannot be altered or deleted within its retention window — making the "immutable audit log" claim provable, not aspirational.
+**Tamper-evident audit.** The **AuditTable** is write-once, KMS-CMK-encrypted, and stores only **SHA-256 hashes** of inputs/outputs plus metadata — never PHI. Its DynamoDB stream feeds a **ledger Lambda** that copies every change event into an **S3 Object Lock (WORM)** bucket, where it cannot be altered or deleted within its retention window — making the "immutable audit log" claim provable, not aspirational. *(Two gaps in that claim today — see [what's not done](#honest-status--whats-not-done).)*
 
 ## Patient v2 — defence in depth against "helpful hallucination"
 
@@ -76,7 +76,7 @@ This was fixed two ways:
 
 ## Observability — a canary that caught a real bug
 
-A scheduled **canary Lambda** ([`src/canary/`](src/canary/)) replays all 18 evaluation scenarios through the *live, deployed path* every night (EventBridge Scheduler, 02:00), authenticating as a dedicated synthetic user and driving the same Cognito → API → worker → Bedrock flow a clinician would. It emits **CloudWatch custom metrics** (success rate, latency, throttles, plus a "did the canary even run" heartbeat) that **7 CloudWatch alarms** watch, notifying an **SNS** email topic. Thresholds track the *observed* baseline (~15–16/18 nightly), so alarms catch deviation rather than an idealised 100%.
+A scheduled **canary Lambda** ([`src/canary/`](src/canary/)) replays evaluation scenarios through the *live, deployed path* on two EventBridge schedules: a **3-scenario smoke set nightly at 02:00** (`S14,S16,S18` — the known failure modes) and the **full 18-scenario regression weekly, Mondays at 03:00** (Europe/London). Running the full set nightly was the pre-optimisation behaviour; the split is Lever 1 of [`docs/COST_OPTIMISATION_GUIDE.md`](docs/COST_OPTIMISATION_GUIDE.md) and is restored by setting `CanaryNightlyScenarios=''`. It authenticates as a dedicated synthetic user and drives the same Cognito → API → worker → Bedrock flow a clinician would. It emits **CloudWatch custom metrics** (success rate, latency, throttles, plus a "did the canary even run" heartbeat) that **7 CloudWatch alarms** watch, notifying an **SNS** email topic. The success-rate alarm is a **percentage** threshold (`CanarySuccessThresholdPct`), so it tracks the observed baseline — roughly 15–16/18 on the weekly full run — rather than an idealised 100%, and survives the change in nightly scenario count.
 
 It earned its keep on night one. Two findings the synthetic traffic surfaced that ordinary unit tests could not:
 
@@ -111,7 +111,7 @@ Governance is treated as a first-class deliverable, not an afterthought:
 
 `Amazon Bedrock` (Claude Sonnet 4.6) · `Lambda` · `API Gateway (HTTP API)` · `Cognito` · `DynamoDB` (+ Streams) · `S3` (Object Lock / WORM, OAC) · `KMS` (CMK) · `CloudFront` · `Route 53` · `ACM` · `EventBridge Scheduler` · `CloudWatch` · `SNS` · `CloudFormation` (plain) · `GitHub Actions` (OIDC, no stored keys) · `Python 3.13` · `React + Vite + Amplify Auth`
 
-CI runs the 38 tests + `cfn-lint` on every push/PR; a push to `main` deploys via OIDC role-assumption. See [`docs/CICD.md`](docs/CICD.md).
+CI runs the 65 tests + `cfn-lint` on every push/PR; a push to `main` deploys via OIDC role-assumption. See [`docs/CICD.md`](docs/CICD.md).
 
 ## Repository layout
 
@@ -124,15 +124,18 @@ CI runs the 38 tests + `cfn-lint` on every push/PR; a push to `main` deploys via
 | [`src/canary/`](src/canary/) | The synthetic-traffic canary + bundled scenarios |
 | [`docs/`](docs/) | ADRs, model card, threat model, design notes, and this diagram (`architecture.svg` / `.mmd`) |
 | [`evals/`](evals/) | Synthetic scenarios, run log (`EVAL_RESULTS.md`), and the cold-eval harness |
-| [`tests/`](tests/) | 38 unit tests across the Lambdas (idempotency, anti-spoof, retry-safety, cross-user 404, the canary scorer) — run in ~0.1s |
+| [`tests/`](tests/) | 65 unit tests across the Lambdas (idempotency, anti-spoof, retry-safety, cross-user 404, the canary scorer) — run in ~0.1s |
 | [`ui-spa/`](ui-spa/) | The React + Vite SPA (Amplify Auth) |
 
 ## Honest status — what's not done
 
-- **Bedrock on-demand quota is tight** on this account; the canary runs at bounded concurrency to stay under it. A quota increase is the next step to lift the nightly success baseline — see the capacity plan in [`docs/BEDROCK_QUOTA.md`](docs/BEDROCK_QUOTA.md).
+- **Bedrock on-demand quota is tight** on this account; the canary runs at bounded concurrency to stay under it. A quota increase is the next step to lift the full-run success baseline — see the capacity plan in [`docs/BEDROCK_QUOTA.md`](docs/BEDROCK_QUOTA.md).
 - **Deferred hardening:** a CloudFront WAF and access logging are scoped but not yet deployed.
 - **Patient v2b** — regenerating the leaflet from the clinician-*edited* summary via a review-gated endpoint — is the documented follow-on to v2a.
 - **The clinician review-gate UI** — an explicit sign-off that flips `draft → reviewed` (and a visible reading-level indicator) — is designed but not yet wired into the deployed SPA, which currently renders the three drafts for review without capturing the sign-off.
+- **Clinical safety position** *(added 18 Sep 2026)*: the DCB0129 safety case ([`docs/WS4-SAFETY-CASE.md`](docs/WS4-SAFETY-CASE.md)) finds the system **safe as a synthetic-data demonstration and NOT released for clinical use** — two residuals at Unacceptable, 19 of 24 hazards Open, four non-conformances against the standard. The review gate above is the main reason; it is scheduled after the agentic rebuild (Dec 2026).
+- **Write-once is not yet enforced at the IAM layer** — the Lambda roles can still `UpdateItem` the audit table, and the WORM ledger's demo retention is 1 day, so the immutability described above holds for 24 hours. An IAM attribute whitelist is scheduled for Oct 2026; the demo retention period is still to be chosen ([`docs/WS3-DPIA.md`](docs/WS3-DPIA.md) Annex C.3).
+- **Cognito MFA is optional, not enforced**; enforcing it needs a canary sign-in redesign (Jan 2027).
 
 ## Disclaimer
 

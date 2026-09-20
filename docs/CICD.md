@@ -2,7 +2,7 @@
 
 `.github/workflows/ci-cd.yml` runs on every push and pull request:
 
-- **`test` job** (always) — installs `pytest` + `boto3` + `cfn-lint`, runs the 38 unit
+- **`test` job** (always) — installs `pytest` + `boto3` + `cfn-lint`, runs the 65 unit
   tests (they mock AWS, so no credentials needed), checks the canary scenario bundle is
   current, and lints both CloudFormation templates. This is the gate.
 - **`deploy` job** (only on a push to `main`, and only if `test` passed) — assumes an AWS

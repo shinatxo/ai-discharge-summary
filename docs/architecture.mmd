@@ -25,8 +25,8 @@ flowchart TB
     end
 
     subgraph obs["Observability — Wave 3-4"]
-        EB["EventBridge Scheduler<br/>nightly 02:00 Europe/London"]
-        CAN["Canary λ<br/>replays 18 scenarios, bounded"]
+        EB["EventBridge Scheduler<br/>nightly smoke 02:00 · weekly full Mon 03:00<br/>Europe/London"]
+        CAN["Canary λ<br/>3-scenario smoke nightly · all 18 weekly<br/>bounded concurrency"]
         CW["CloudWatch metrics<br/>success · latency · throttle"]
         ALARM["7 CloudWatch alarms<br/>+ run heartbeat & ops alarms"]
         SNS["SNS → email"]
@@ -45,4 +45,4 @@ flowchart TB
     KMS -.-> AUDIT
     KMS -.-> RESULTS
     EB --> CAN --> CW --> ALARM --> SNS
-    CAN -. "drives the live path nightly" .-> API
+    CAN -. "drives the live path on both schedules" .-> API

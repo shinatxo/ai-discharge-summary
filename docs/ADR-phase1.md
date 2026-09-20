@@ -844,7 +844,7 @@ recruiter reading the source — sees what was learned:
 
 ## ADR-007 — Retention and expiry of generation records
 
-> **DRAFT — 11 Sep 2026.** Awaiting author approval; not yet folded into `ADR-phase1.md`. Regulatory positions below were verified against primary sources on 11 Sep 2026 and are dated accordingly — re-verify before quoting them in the DPIA.
+> **Accepted 11 Sep 2026.** Regulatory positions below were verified against primary sources on 11 Sep 2026 and are dated accordingly — re-verify before quoting them. *(The "DRAFT — awaiting author approval" banner that stood here contradicted the "Accepted" status line immediately below it; it survived the fold into this file and was removed 17 Sep 2026 during WS4.)*
 
 ### Status
 

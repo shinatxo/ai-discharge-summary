@@ -48,11 +48,13 @@ aws service-quotas list-service-quotas --service-code bedrock --region eu-west-2
   (Claude Sonnet 4.6), and the target RPM/TPM. Support handles these and often offers to bump
   related quotas at the same time.
 
-**What to ask for:** the workload is tiny — a nightly 18-scenario replay plus interactive demo
-use — so a modest, easily-justified ask is enough. Something like **~100 requests/minute** and
+**What to ask for:** the workload is tiny — a 3-scenario smoke replay nightly, all 18 as a weekly
+regression, plus interactive demo use — so a modest, easily-justified ask is enough. Something like **~100 requests/minute** and
 **a few hundred thousand–1M tokens/minute** comfortably lifts the canary to a clean 18/18 and
 lets `CanaryMaxConcurrency` rise. Justify it with exactly that: a synthetic canary that replays
-18 scenarios nightly for regression + alarm baselining.
+18 scenarios weekly (3 nightly) for regression + alarm baselining. *(The ask is sized on the peak,
+which is the weekly full run — the nightly smoke set is well inside it, so the figures above are
+unchanged by the cadence split.)*
 
 ## 3. Residency note (ADR-003)
 

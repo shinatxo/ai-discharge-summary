@@ -165,6 +165,21 @@ def _read_outputs(user_sub: str, job_id: str):
     item = resp.get("Item")
     if not item:
         return None
+    # An expired row is treated as gone. DynamoDB TTL deletion is best-effort -
+    # AWS: expired items are deleted "within a few days of their expiration
+    # time" - so without this check a draft stayed retrievable for days after
+    # its 24-hour window. That window is a stated control (HAZ-19, the privacy
+    # notice), so it is enforced here rather than left to the platform.
+    # Fails closed: a ttl that is present but not an integer is treated as
+    # expired. A row with no ttl at all is served - the worker always writes
+    # one as type N (src/generate/app.py), so that case is legacy data only.
+    ttl_raw = (item.get("ttl") or {}).get("N")
+    if ttl_raw is not None:
+        try:
+            if int(ttl_raw) <= int(time.time()):
+                return None
+        except ValueError:
+            return None
     return {
         "summary":   (item.get("summary")   or {}).get("S", ""),
         "gp_letter": (item.get("gp_letter") or {}).get("S", ""),

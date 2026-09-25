@@ -104,6 +104,39 @@ def test_complete_but_results_ttl_expired_returns_status_expired(load_status, fa
     assert body["error"] == "outputs_unavailable"
 
 
+def test_results_row_past_its_ttl_is_treated_as_expired(load_status, fake_ddb):
+    # DynamoDB deletes expired items only "within a few days", so the row can
+    # still be there. The status endpoint must not serve it (HAZ-19).
+    import time as _time
+    _seed_complete(fake_ddb, with_outputs=True)
+    key = ("discharge-audit-results", f"USER#{JWT_SUB}", f"RES#{JOB_ID}")
+    fake_ddb.items[key]["ttl"] = {"N": str(int(_time.time()) - 60)}
+    app = load_status()
+    body = json.loads(app.lambda_handler(_get(), None)["body"])
+    assert body["status"] == "expired"
+    assert "outputs" not in body
+
+
+def test_results_row_inside_its_ttl_is_served(load_status, fake_ddb):
+    import time as _time
+    _seed_complete(fake_ddb, with_outputs=True)
+    key = ("discharge-audit-results", f"USER#{JWT_SUB}", f"RES#{JOB_ID}")
+    fake_ddb.items[key]["ttl"] = {"N": str(int(_time.time()) + 3600)}
+    app = load_status()
+    body = json.loads(app.lambda_handler(_get(), None)["body"])
+    assert body["status"] == "complete"
+    assert body["outputs"]["summary"].startswith("DISCHARGE SUMMARY")
+
+
+def test_unreadable_ttl_fails_closed(load_status, fake_ddb):
+    _seed_complete(fake_ddb, with_outputs=True)
+    key = ("discharge-audit-results", f"USER#{JWT_SUB}", f"RES#{JOB_ID}")
+    fake_ddb.items[key]["ttl"] = {"N": "not-a-number"}
+    app = load_status()
+    body = json.loads(app.lambda_handler(_get(), None)["body"])
+    assert body["status"] == "expired"
+
+
 def test_failed_returns_error_code_and_message_no_outputs(load_status, fake_ddb):
     _seed_failed(fake_ddb)
     app = load_status()

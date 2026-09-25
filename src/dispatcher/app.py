@@ -393,7 +393,9 @@ def _idem_receipt_item(*, user_sub, idempotency_key, job_id, now, ttl_epoch,
         "input_sha256":    {"S": input_hash},
         "created_at":      {"S": now},
         # DynamoDB TTL attribute (epoch seconds). Items past this epoch are
-        # deleted by DynamoDB (best-effort, within ~48h of expiry per AWS docs).
+        # deleted by DynamoDB best-effort - AWS: "within a few days of their
+        # expiration time" (DynamoDB TTL docs, re-read 24 Sep 2026; this comment
+        # said ~48h until then).
         "ttl":             {"N": str(ttl_epoch)},
     }
 

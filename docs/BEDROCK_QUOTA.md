@@ -1,5 +1,16 @@
 # Bedrock on-demand quota — capacity plan
 
+> **Correction, 24 Sep 2026 — the live quota is 25 requests/minute, not 5.** Service Quotas,
+> queried live: `L-9B878FAE` (on-demand requests/min, Sonnet 4.6, eu-west-2) = **25**, still marked
+> not adjustable; `L-5F5A169C` (tokens/min) = 3,000,000. The figure of 5 below was read on 6 Jun 2026.
+> Nothing in the repository records why it changed — AWS raising the default, or a granted Support
+> case — so treat the history as unknown. The practical consequence: a four-call generation
+> (ADR-009) uses ~3–4 requests/min, so about six can run at once, and the weekly 18-scenario canary
+> run fits its Lambda at `CanaryMaxConcurrency=4`. The rest of this document is kept as written on
+> 6 Jun 2026; §2's increase request is no longer needed, and **§4 is superseded — do not run it**:
+> `CanaryMaxConcurrency=8` with four calls per generation would throttle at 25 requests/min, and CI
+> pins the value at 4 anyway (ADR-009 keeps it at 4 or below).
+
 ## Why this doc exists
 
 The Wave 3 synthetic canary surfaced a real platform limit: firing several generations at

@@ -1,12 +1,12 @@
 # WS3 — Data Protection Impact Assessment
 
 **AI Discharge Summary Assistant**
-Document version **2.4** · Written 16 September 2026 · Transposed onto the NHS England template and verified 17 September 2026 · Action-plan dates re-aligned 18 September 2026 · Annex B published 20 September 2026
+Document version **2.5 — draft for review** · Written 16 September 2026 · Transposed onto the NHS England template and verified 17 September 2026 · Action-plan dates re-aligned 18 September 2026 · Annex B published 20 September 2026 · Step-trace store (ADR-009) assessed 24 September 2026
 Author: Shina Oguntoye · IG sources verified from primary sources **16 September 2026** (§12)
 
 | Field | Value |
 |---|---|
-| Subject of assessment | AI Discharge Summary Assistant — system prompt **v0.7**, infrastructure as deployed 16 Sep 2026, stack `discharge-audit` (eu-west-2) |
+| Subject of assessment | AI Discharge Summary Assistant — system prompt **v0.7**, infrastructure as deployed 16 Sep 2026, stack `discharge-audit` (eu-west-2). **Also assessed ahead of release (v2.5): the ADR-009 agentic pipeline and its step-trace store**, live only from the W11 cut-over (14 Dec 2026) — §3.3, §3.6, §4.1, §7.1–7.3, Annex A.2, R-01, R-13, R-23. Until then it runs only in hand-deployed development stacks (`discharge-eph-*`) on synthetic notes |
 | Assessment type | **Manufacturer's DPIA.** Written by the supplier for a deploying organisation to adopt, extend and complete as controller |
 | Template | **NHS England, *Health and care: Template data protection impact assessment (DPIA)*, March 2026 master.** Local copy: `docs/NHSE_Template_DPIA_March_2026.docx`. Sections 1–11 below are the template's own sections, in its own order and wording |
 | Data status | **Fully synthetic patient data.** No real patient personal data has ever been processed. Clinician (worker) personal data *is* real and *is* being processed now — §1.3 |
@@ -178,7 +178,10 @@ log line contains them. What *is* stored is (a) the three generated outputs, in 
 where they expire after 24 hours, and (b) an audit row containing **SHA-256 hashes** of the input
 and outputs — never the text itself — attributed to the clinician who made the request. The
 hash-only design is documented at **ADR-002**: the log proves *who generated what, when, with
-which model, and whether it was reviewed* without ever holding the clinical content.
+which model, and whether it was reviewed* without ever holding the clinical content. *(v2.5 —
+from the W11 cut-over, ADR-009 adds (c): step traces holding what was extracted from the notes,
+including identifiers and short quotes, and the drafts, for 30 days. The notes themselves stay
+unstored — §3.3, §7.2, R-23.)*
 
 **Data is shared with no one.** There is no integration surface, no export, no reporting feed, no
 third-party analytics and no onward disclosure. The only other organisation in the chain is AWS,
@@ -199,7 +202,7 @@ carried from **ADR-007**, where it was first identified, and it drives the whole
 | Identifiability | **Directly identifiable** in deployment (names, NHS number, DOB inside the notes) | **Directly identifiable** — the Cognito username *is* the email. `user_sub` in the audit table is pseudonymised and resolves to that email in one query |
 | Category | Special category (Art. 9) in deployment | Ordinary personal data — an access-and-activity record, not health data about the clinician |
 | **Currently real?** | **No — fully synthetic** | **Yes** |
-| Stored at rest? | Outputs only, 24 h; input never | Indefinitely today (§7.2) |
+| Stored at rest? | Outputs only, 24 h; input never. *From W11 (ADR-009): also step traces of extracted content, 30 days; input as typed still never* | Indefinitely today (§7.2) |
 | Regime | Health/care processing + common-law confidentiality | Worker monitoring |
 | Controller in deployment | The deploying trust | Split — §9 |
 
@@ -234,6 +237,14 @@ document that must be written by someone. The product does not create a new proc
 changes the means by which an existing, necessary document is produced, using **exactly the data
 the clinician has already recorded and nothing else** — no EPR integration, no external lookup, no
 enrichment. That is the strongest necessity argument available to a product of this kind.
+
+*v2.5 — step traces (ADR-009, from W11) do not add a purpose, and are limited so that they cannot.*
+On real patient data a trace may be used **only to investigate the generation it records** — a
+reported problem with that draft, or a fault in the service that produced it. That is P3 (clinical
+safety, DCB0129) and the operation of the service that P1 relies on. **Evaluation, step-level
+scoring and regression testing use synthetic data only.** Using real patients' traces to measure or
+improve the product would be a new purpose — secondary use outside direct care, engaging §5.3's
+confidentiality analysis and §8.5's opt-out answer afresh — and is not done.
 
 ## 2.2 What are the benefits of using or sharing the data?
 
@@ -302,7 +313,10 @@ Specifically: presenting complaint, diagnoses, past medical history, examination
 findings, medications and changes to them, procedures, and follow-up arrangements — i.e. the
 substance of the notes. It is needed because the discharge summary *is* a restatement of it.
 
-**☐ Biometric · ☐ Genetic · ☐ Sexual life or orientation · ☐ Racial or ethnic origin · ☐ Political opinions · ☐ Religious or philosophical beliefs · ☐ Trade union membership · ☐ Criminal offences** — none is sought. Any could appear incidentally in free text where clinically relevant; the product neither extracts nor indexes it, and the notes are not retained.
+**☐ Biometric · ☐ Genetic · ☐ Sexual life or orientation · ☐ Racial or ethnic origin · ☐ Political opinions · ☐ Religious or philosophical beliefs · ☐ Trade union membership · ☐ Criminal offences** — none is sought. Any could appear incidentally in free text where clinically relevant; the product neither extracts nor indexes it, and the notes are not retained. *(v2.5 — from W11,
+ADR-009's extraction step does extract clinical content into a facts object, line-indexes the notes
+in memory, and keeps the facts in 30-day step traces. Special-category content that appears in the
+notes can therefore appear in a trace; nothing is sought or indexed by category.)*
 
 > **In the current demonstration all of the above is synthetic.** The eighteen evaluation scenarios
 > and all traffic use invented patients. `README.md` states *"All data synthetic"*, and the
@@ -314,10 +328,11 @@ substance of the notes. It is needed because the discharge summary *is* a restat
 
 | Field | Where it exists | Persisted? |
 |---|---|---|
-| Free-text ward-round notes | `POST /generate` body; worker Lambda memory; Bedrock inference request | **No** — never written to DynamoDB, S3 or CloudWatch; log statements sanitised |
-| Patient identifiers (name, DOB, NHS number, hospital number) | Only as they appear inside those notes | **No** — not parsed into fields, not indexed, not validated |
+| Free-text ward-round notes | `POST /generate` body; worker Lambda memory; Bedrock inference requests | **No** — never written to DynamoDB, S3 or CloudWatch; log statements sanitised. **Stays true under ADR-009:** step traces refer to the notes by `notes_sha256` and line IDs, never store them |
+| Patient identifiers (name, DOB, NHS number, hospital number) | Inside the notes; and, where the notes contain them, in the PART A header of the generated drafts | **In the notes: no.** *Corrected v2.5:* where documented they are reproduced in the drafts, so they are held in `ResultsTable` for 24 hours — this row previously said only "No". **From the W11 cut-over (ADR-009) they are also parsed into the facts object and held in `TraceTable` for 30 days** (next row). Not indexed, not validated |
 | Generated discharge summary, GP letter, patient version | DynamoDB `ResultsTable` | **Yes — 24 hours** (`RESULTS_TTL_HOURS` default 24), KMS CMK-encrypted |
 | `input_sha256`, `output_sha256` | DynamoDB `AuditTable` (`GEN#` rows) | **Yes** — one-way; not reversible to the note, cannot identify a patient |
+| **Step traces** (ADR-009, from W11): the facts extracted from the notes **including patient identifiers**, **verbatim quotes of at most 200 characters** (enforced in code) with line references, the medication reconciliation, the safety-net selection, the three drafts; per step the model, token counts, latency and status | DynamoDB `TraceTable` — `PK = GEN#<generation_id>`; **no `user_sub`** | **Yes — 30 days**, per-item TTL (AWS deletes *"within a few days"* after). Same KMS CMK; no stream, no PITR, no WORM; the worker can only `PutItem`; **never returned to the browser**. Before W11: only in development stacks, synthetic notes. **This is patient clinical content held by the manufacturer for the first time beyond the 24-hour delivery buffer** — R-23 |
 
 ### Clinician (worker) data — real
 
@@ -331,6 +346,7 @@ substance of the notes. It is needed because the discharge summary *is* a restat
 | `draft`, `reviewed_at` | `AuditTable` | Yes — whether and when the clinician signed off |
 | `input_tokens`, `output_tokens`, `patient_output_tokens` | `AuditTable` | Yes — **a proxy for the length of the notes a named clinician entered.** The closest thing in the log to a measure of an individual's work, which is why §7.5's purpose limitation matters |
 | `idempotency_key`, `parse_ok`, `patient_version`, `patient_model_version`, `patient_parse_ok` | `AuditTable` | Yes — operational and provenance |
+| `pipeline_version`, `model_calls`, `failed_step`, `safety_net_gate` (`pass`/`fail`) *(ADR-009, from W11)* | `AuditTable` | Yes — operational and provenance. **The safety-net route (documented / fall-back) is deliberately not on this row**: keyed by `user_sub`, it would measure whether a named clinician documented safety-netting. It lives in the trace, which carries no `user_sub` |
 | `error_code`, `error_message`, `failed_at` | `AuditTable` | Yes — `error_message` carries the AWS error code only; verified that no input text reaches it (`_mark_failed`) |
 | Ledger copy of every audit change event | S3 WORM (Object Lock) | **Yes — `LedgerRetentionDays`, default 1 in demo** |
 
@@ -356,9 +372,10 @@ holding. Clinician account data comes from the administrator who creates the acc
 
 ## 3.6 Will you be linking any data together?
 
-**☒ No**
+**☒ No** — *no external linking. From W11 there is one internal link between the product's own
+stores, described below.*
 
-Nothing is linked. The only inbound data is the clinician's own typed notes, and the product
+Nothing is linked to any outside source. The only inbound data is the clinician's own typed notes, and the product
 consults no other source — no EPR lookup, no demographics service, no reference dataset, no prior
 generation. Each request is evaluated against its own content alone.
 
@@ -368,6 +385,16 @@ answering directly: the audit trail holds `input_sha256` and `user_sub`, and joi
 principle group generations by clinician — which it is designed to do, and which is the processing
 described at §2.1 P3, not a re-identification side-effect. **The hashes cannot be joined to any
 patient**, because nothing anywhere holds the pre-image.
+
+**From the W11 cut-over (ADR-009) there is one internal link, with two keys.** A step trace
+carries no `user_sub` but shares `generation_id` with the `GEN#` audit row, and its
+`notes_sha256` equals the row's `input_sha256`, so joining the two attributes a trace's
+clinical content to the clinician who generated it. That is the same attribution the audit row
+already makes; it creates no link to any other source. The fingerprint also matches the traces of
+**identical** notes across generations and clinicians — which is what a hash is for, and is stated
+in the notice. The trace itself identifies the **patient**
+where the notes did (§3.3), and that is assessed at R-23 rather than here, because it is holding,
+not linking.
 
 ---
 
@@ -384,7 +411,7 @@ repository maintains, not a copy. The narrative below is written against it.
 | F2 Generate request | Clinician browser | CloudFront edge PoP → API Gateway HTTP API → dispatcher Lambda | **Free-text clinical notes**, IdToken as bearer. TLS throughout. **The edge hop is the "transfer through" point — §4.3** |
 | F3 Job acceptance | Dispatcher Lambda | DynamoDB `AuditTable` | Idempotency receipt + pending `GEN#` row (no clinical content) |
 | F4 Async invoke | Dispatcher Lambda | Generate worker Lambda | Notes, in the invoke payload. `MaximumRetryAttempts: 0`, no DLQ or failure destination, so the payload is never captured |
-| F5 Inference | Generate worker Lambda | Amazon Bedrock, `anthropic.claude-sonnet-4-6`, on-demand, eu-west-2 | Notes as prompt; generated text returned. With `PatientV2SecondPass=on` (pinned by CI), a second call generates the patient version from PART A |
+| F5 Inference | Generate worker Lambda | Amazon Bedrock, `anthropic.claude-sonnet-4-6`, on-demand, eu-west-2 | Notes as prompt; generated text returned. *Prompt caching is **on** in the live stack (found 24 Sep 2026; v2.5): Bedrock caches the prompt prefix up to the cache point, which the worker places **after the static system prompt and before the notes**, so no clinical content is cached (`src/generate/app.py`, `_converse`).* With `PatientV2SecondPass=on` (pinned by CI), a second call generates the patient version from PART A. **From W11 (ADR-009): four calls per generation, same model and region** — two with the notes in context (extraction, medication reconciliation), two without (composition from the verified facts and from PART A) |
 | F6 Outputs | Generate worker Lambda | DynamoDB `ResultsTable` | Three generated documents. 24 h TTL |
 | F7 Audit | Generate worker Lambda | DynamoDB `AuditTable` | **Hashes only**, plus `user_sub`, timestamps, model version, token counts |
 | F8 Integrity ledger | `AuditTable` DynamoDB stream | Ledger Lambda → S3 Object Lock bucket | Audit change events — the tamper-evidence control |
@@ -393,6 +420,7 @@ repository maintains, not a copy. The narrative below is written against it.
 | F11 Execution logs | All five Lambdas | CloudWatch Logs (30-day retention) | Operational logs, **sanitised of clinical content** |
 | F12 Alerting | CloudWatch alarms | SNS → operator email | Metrics only. No personal data |
 | F13 Canary | EventBridge Scheduler → canary Lambda | The live API path | Synthetic scenarios. Signs in as a dedicated synthetic Cognito user, so it writes real `USER#<sub>` audit rows |
+| **F14 Step traces** *(ADR-009 — from W11; development stacks only before)* | Generate worker Lambda | DynamoDB `TraceTable` (eu-west-2, CMK) | One item per step: inputs **with the notes by reference only**, outputs verbatim — extracted facts incl. identifiers and quotes (≤ 200 characters each), reconciliation, drafts; model, tokens, latency. 30-day TTL. **No outbound flow**: no stream, no API route; read by the operator only |
 
 **Flows that do not exist:** no data flows to any party other than AWS. No export, no reporting
 feed, no third-party analytics, no email of content, no backup outside the account, no
@@ -531,12 +559,15 @@ system is the ACM certificate in us-east-1, which holds no personal data (§4.3)
 |---|---|---|
 | DynamoDB `AuditTable` | Audit rows (hashes + `user_sub`), idempotency receipts | **Customer-managed KMS CMK**, tight key policy; PITR 35 days |
 | DynamoDB `ResultsTable` | The three generated outputs, 24 h TTL | Customer-managed KMS CMK; no PITR, deliberately — it is a buffer, not storage |
+| DynamoDB `TraceTable` *(ADR-009, from W11)* | Step traces — extracted facts incl. identifiers, short quotes, drafts; notes by hash only. 30-day TTL | Same customer-managed CMK; no stream, no PITR; worker `PutItem` only, no API read path (R-23) |
 | S3 WORM ledger | Audit change events | KMS CMK with Bucket Key; **Object Lock** — Governance in demo, **Compliance in prod**; versioning; `DeletionPolicy: Retain` |
 | S3 SPA origin | Static assets, **no personal data** | Default encryption; OAC-only access |
 | Amazon Cognito | Clinician email, password hash, TOTP secret | AWS-managed |
 | CloudWatch Logs | Execution logs, **sanitised**, 30-day retention on all five log groups | AWS-managed |
 
 **Nothing stores the clinical notes.** That is the single most important line in this section.
+*v2.5:* it stays true under ADR-009 for the notes as typed; from W11 `TraceTable` stores what is
+extracted from them for 30 days (§7.1, R-23).
 
 ## 6.2 Are you transferring information?
 
@@ -650,7 +681,10 @@ an identified legal basis for doing so".)*
 
 The sole developer holds AWS console and CLI access to account `061051247394`, which runs the
 product. That access reaches the Cognito user pool (clinician emails), the `AuditTable` and the
-`ResultsTable` (hashes, and outputs within their 24-hour window).
+`ResultsTable` (hashes, and outputs within their 24-hour window) — and, **from the W11 cut-over,
+`TraceTable`** (ADR-009): extracted clinical content, identifiers and drafts for 30 days. Operator
+reads of it are the **only** read path, and they are not audited until CloudTrail data events
+cover the table (control 2 below; R-23).
 
 - It **cannot** reach clinical notes at rest, because there are none.
 - It **can** reach generated outputs during the 24-hour window. In deployment this is the most
@@ -667,7 +701,7 @@ below are then prerequisites, and none is built:
 |---|---|---|
 | 1 | Named support roles with least-privilege IAM, separate from the deploy role | Not built — the deploy role is acknowledged as deliberately broad (`CICD.md`) |
 | 2 | **CloudTrail** on the account, with data events on the tables | **Not configured in either template** — it appears only in a KMS comment |
-| 3 | Break-glass procedure: support access to `ResultsTable` contents time-boxed, justified and logged | Not built |
+| 3 | Break-glass procedure: support access to `ResultsTable` — and, from W11, `TraceTable` — contents time-boxed, justified and logged | Not built |
 | 4 | Contractual confirmation to the controller of who may access what, with a named legal basis | Not written — no entity |
 | 5 | MFA enforced on all privileged access | **Verified for console access**: root MFA enabled, the single IAM user MFA-enabled (queried live 16 Sep 2026). Does **not** extend to the CLI access key — below |
 
@@ -709,7 +743,11 @@ Two different answers, because there are two kinds of data.
 
 - **Clinical notes: for the duration of one request.** Seconds. Held in Lambda memory and in the
   Bedrock inference call, then gone. **This is the strongest data-minimisation control in the
-  system and it is architectural, not procedural.**
+  system and it is architectural, not procedural.** *Narrowed at v2.5, effective at the W11
+  cut-over:* the notes as typed stay unstored, but **what is extracted from them** — facts,
+  identifiers, short quotes, and the drafts — is held for **30 days** in step traces (§7.2, R-23).
+  The claim becomes "the notes themselves are never stored", no longer "nothing derived from them
+  outlives the 24-hour buffer".
 - **The clinician audit record: for as long as the system runs**, in two phases — §7.2.
 
 ## 7.2 How long do you intend to keep the data?
@@ -726,6 +764,8 @@ load-bearing and is routinely got wrong:
 |---|---|---|---|
 | Clinical notes (input) | — | **Not retained at all** | Never written to durable storage |
 | Generated outputs | `ResultsTable` | **24 hours**, per-item TTL | A delivery buffer between the async worker and the clinician's poll. The clinician's copy of record is what they put in the EPR |
+| **Incident exports of step traces** *(ADR-009, from W11)* | The Safety Incident Management Log / Clinical Risk Management File | **Life of the Health IT System** (DCB0129 §3.1.2), as part of the file | Only when an incident is logged; exported by the operator, the export itself logged. **De-identified on export** — patient identifiers removed, clinical content kept — unless the investigation needs them, in which case the incident record says why. Access: the CSO. **[Controller to complete]** in deployment — where the file sits and who may read it |
+| **Step traces** *(ADR-009, from W11)* | `TraceTable` | **30 days**, per-item TTL on every item | Step-level diagnosis and evaluation, and incident investigation. **Long enough** for a reported problem to reach the CSO and for the trace to be exported into the Safety Incident Management Log before it expires; **short** because the content has no clinical-record purpose. Incident hold is a manual, logged **export** into the Clinical Risk Management File (then retained under DCB0129 §3.1.2) — no code path removes a `ttl`. ADR-009 (b) |
 | Idempotency receipts (`IDEM#`) | `AuditTable` | TTL'd | Operational only |
 | Audit rows (`GEN#`) — **attribution phase** | `AuditTable` | **Set by the deploying organisation. Default 8 years** | See the caveat below |
 | Audit rows — **integrity phase** | `AuditTable` | **Life of the Health IT System**, `user_sub` removed or salted-forward-hashed | DCB0129 v4.2 §3.1.2: *"The Clinical Risk Management File MUST be maintained for the life of the Health IT System."* No destruction date appears anywhere in the standard |
@@ -761,9 +801,13 @@ controller(s) will manage as it is held by them · ☐ Other
 
 **Two options are ticked because the answer is a two-stage lifecycle, not a single disposal.**
 
-1. **Generated outputs** expire by DynamoDB TTL and are deleted by the platform. *(TTL deletion is
-   best-effort — AWS documents it as typically within 48 hours of expiry, and the repo records the
-   same at `src/dispatcher/app.py`. Stated precisely because a retention answer should not promise
+1. **Generated outputs** — and, from W11, **step traces** — expire by DynamoDB TTL and are deleted by the platform. *(TTL deletion is
+   best-effort — AWS documents it as *"within a few days of their expiration time"* (DynamoDB TTL
+   documentation, re-read 24 Sep 2026; this said "typically within 48 hours" until v2.4, as do
+   `src/dispatcher/app.py` and ADR-005). Until the W1 change set, **an expired draft was still returned by the status endpoint**
+   until deletion, because it did not check `ttl`. **From the W1 change set, the status endpoint
+   checks `ttl` itself** and returns `expired` once 24 hours are up, failing closed
+   (`src/status/app.py`). It ships in the same release as this version. Stated precisely because a retention answer should not promise
    a guarantee the platform does not give.)*
 2. **Audit rows** are **not deleted**. At the end of the attribution phase, `user_sub` is removed
    or replaced with a salted forward-hash, and the de-identified row is retained for the life of
@@ -843,7 +887,13 @@ document closes C2.2.2 and C2.2.3 together.)*
 
 **Patients:** within 24 hours, outputs are retrievable by `generation_id`. After that **nothing
 about the patient exists in the product** — the input was never stored and the hashes are not
-reversible. The disclosure obligation sits with the EPR as system of record.
+reversible. The disclosure obligation sits with the EPR as system of record. *v2.5 — from the W11
+cut-over this becomes 30 days, not 24 hours:* step traces hold extracted facts, identifiers and the
+drafts, retrievable by the operator by `generation_id` but not by patient, because nothing in the
+trace table is indexed on a patient identifier. A patient request would have to be answered via
+the EPR record's generation reference — a procedure that does not exist (R-16). *Until the W1 change set, the 24-hour bound was a minimum rather than a maximum: expired drafts
+stayed retrievable until DynamoDB deleted them, within a few days. The status endpoint now enforces
+it (§7.3).*
 
 **Clinicians: well supported.** All `GEN#` rows for a `user_sub` are retrievable by a single
 partition-key query. The schema was designed for per-clinician history, and that is exactly a
@@ -856,7 +906,9 @@ processor obligation in deployment.
 ## 8.3 The right to rectification
 
 **Patients:** the product holds no patient record to correct. The clinician corrects the draft
-before signing; the EPR holds the record.
+before signing; the EPR holds the record. *(v2.5 — from W11 a step trace is a 30-day working record
+of what was generated, not a patient record; like the audit row, it records what happened and is
+not rectified.)*
 
 **Clinicians:** the audit row records what happened. A factual record of an event is not
 rectifiable in the Article 16 sense; a dispute about its accuracy is handled by the controller's
@@ -867,9 +919,9 @@ reliable record of what happened either.
 
 | Right | Position |
 |---|---|
-| **Erasure** — patients | Automatic and unconditional via TTL: outputs expire at 24 h and are deleted shortly afterwards. No manual erasure path is needed, and none exists |
+| **Erasure** — patients | Automatic and unconditional via TTL: outputs expire at 24 h and are deleted within a few days. No manual erasure path is needed, and none exists. *From W11: step traces expire at 30 days by the same mechanism; an incident export (§7.2) is retained with the clinical safety file under Art. 17(3)(b) and (e), as for the audit row and is de-identified where the investigation allows* |
 | **Erasure** — clinicians | **Constrained, and the constraint is declared.** `GEN#` rows are deliberately not deletable by the write path. The manufacturer's position is that erasure is restricted under **Art. 17(3)(b) and (e)** — compliance with a legal obligation (DCB0129 §3.1.2) and the establishment or defence of legal claims. **ADR-007's de-identification transition is the answer to a clinician who leaves and wants their attribution removed, and it is not built (R-03)** |
-| **Restriction** | Patients: not applicable in practice within the 24-hour window. Clinicians: achievable operationally by account disablement; there is no per-row restriction flag |
+| **Restriction** | Patients: not applicable in practice within the 24-hour window (30 days for step traces, from W11). Clinicians: achievable operationally by account disablement; there is no per-row restriction flag |
 | **Portability** | **Not engaged** for either population — the basis is 6(1)(e)/9(2)(h) and 6(1)(f), not consent or contract |
 | **Objection** | Patients: direct-care processing under 6(1)(e); handled by the controller. Clinicians: a controller matter; the substantive answer is the purpose limitation at §7.5 — the log is not used for anything beyond safety and non-repudiation |
 
@@ -886,7 +938,9 @@ reliable record of what happened either.
 The national data opt-out applies to the use of confidential patient information **for purposes
 beyond individual care** — planning and research. Producing a patient's own discharge summary is
 direct individual care, so the opt-out does not apply. **[Controller to complete]** — the trust
-confirms this in its own DPIA.
+confirms this in its own DPIA. *(v2.5 — this answer holds for ADR-009's step traces only because
+their use on real patient data is limited to investigating that generation, §2.1. If traces were
+ever used for evaluation or product improvement, the opt-out question re-opens.)*
 
 ## 8.6 Automated decision-making
 
@@ -1136,10 +1190,10 @@ risk to the project.
 
 | Ref | Description | C/I/A | L | I | **L×I** | Mitigations | **Residual** | Owner |
 |---|---|---|---|---|---|---|---|---|
-| **R-01** | Clinical notes disclosed from storage | C | 3 | 4 | **12** | **The notes are never stored.** No database row, object or log line holds them; log statements sanitised; no DLQ or failure destination captures the invoke payload | **1×4 = 4** | Manufacturer |
+| **R-01** | Clinical notes disclosed from storage | C | 3 | 4 | **12** | **The notes are never stored.** No database row, object or log line holds them; log statements sanitised; no DLQ or failure destination captures the invoke payload. *v2.5:* ADR-009's step traces keep this true — notes by hash and line ID only. **What is extracted from the notes is a different risk, assessed at R-23** | **1×4 = 4** | Manufacturer |
 | **R-02** | One clinician reads another's generated outputs | C | 3 | 4 | **12** | Partition key `USER#<sub>`; cross-user `GET` returns 404 not 403; identity from the authoriser only; anti-spoof and cross-user tests in CI | **1×4 = 4** | Manufacturer |
 | **R-03** | Clinician activity record retained beyond any defined period | C | 4 | 3 | **12** | ADR-007 schedule **declared** (§7.2); split attribution/integrity phases | **4×3 = 12 — unchanged. The de-identification lifecycle is NOT BUILT; the schedule exists on paper only** | Manufacturer |
-| **R-04** | Audit trail altered, defeating non-repudiation | I | 3 | 4 | **12** | No `DeleteItem`/`BatchWriteItem` in either role's policy, so rows cannot be destroyed; DynamoDB stream → S3 Object Lock WORM; PITR as recovery | **3×4 = 12 — unchanged in the demo.** Two compounding defects (Annex C.3): write-once is **not IAM-enforced**, and the WORM copy expires after 1 day. Closing both → 1×4 = 4 | Manufacturer |
+| **R-04** | Audit trail altered, defeating non-repudiation | I | 3 | 4 | **12** | No `DeleteItem`/`BatchWriteItem` in either role's policy, so rows cannot be destroyed; DynamoDB stream → S3 Object Lock WORM; PITR as recovery. *v2.5 — W1 change set, once deployed:* `UpdateItem` attribute whitelists on both roles, and on the worker's legacy `PutItem`; ledger retention **183 days**, pinned in CI | **3×4 = 12 — unchanged in the demo.** Two compounding defects (Annex C.3): write-once is **not IAM-enforced**, and the WORM copy expires after 1 day. Closing both → 1×4 = 4. *v2.5: after the W1 deploys the second defect is closed for 183 days and the first narrowed — but `PutItem` still lets both roles overwrite a whole row, which IAM cannot prevent, so alteration becomes **detectable** rather than impossible. Proposed residual **2×4 = 8** on deployment; 1×4 = 4 needs the worker's `PutItem` removed (W11) and CloudTrail (W11)* | Manufacturer |
 | **R-05** | Clinical notes processed at a non-UK CloudFront edge PoP | C | 2 | 3 | **6** | UK intended use environment; `PriceClass_100`; transient only; no edge access logging | **2×3 = 6 — geo-restriction not deployed** (Annex C.1) | Manufacturer |
 | **R-06** | Clinicians unaware their generations are attributed and retained | C | 5 | 2 | **10** | **None today.** Nothing in the product or its documentation tells them | **5×2 = 10 → 1×2 = 2 on publishing Annex B.** ICO transparency here is a *must*; a line in a threat model does not satisfy it | Manufacturer |
 | **R-07** | Monitoring record repurposed for performance management | C | 3 | 3 | **9** | Purpose limitation at §7.5 and Annex B; flat access model — no supervisor view exists to make it easy | **2×3 = 6** until it is in binding terms | Controller + manufacturer |
@@ -1148,16 +1202,17 @@ risk to the project.
 | **R-10** | Account persists after the clinician leaves the role | C | 3 | 3 | **9** | Admin-only account creation | **3×3 = 9** — no offboarding procedure, no access review, no CIS2 federation | Controller |
 | **R-11** | Clinician credential compromise | C | 3 | 4 | **12** | 12-character policy with complexity; `PreventUserExistenceErrors`; SRP; TOTP available | **2×4 = 8** — **`MfaConfiguration: OPTIONAL`.** The template states MFA *must* be used for any system with patient data, so this is a prerequisite, not an improvement. `ON` is one property; `ALLOW_USER_PASSWORD_AUTH` should also be disabled | Manufacturer |
 | **R-12** | Developer static credential compromised | C, I | 2 | 4 | **8** | Console MFA enforced; CI uses OIDC with no stored keys; deploy only from `main` | **2×4 = 8** — one long-lived access key remains; swap to IAM Identity Center | Manufacturer |
-| **R-13** | Prompt injection in the notes causes disclosure or unsafe output | C, I | 3 | 3 | **9** | Notes treated as an untrusted boundary (`THREAT_MODEL.md`); no tool use; no retrieval; no outbound action surface; output returned only to the requesting user | **1×2 = 2** — the absence of an action surface is what makes this small. **Any future EPR write-back re-opens it at a much higher inherent score** | Manufacturer |
+| **R-13** | Prompt injection in the notes causes disclosure or unsafe output | C, I | 3 | 3 | **9** | Notes treated as an untrusted boundary (`THREAT_MODEL.md`); no outbound action surface; output returned only to the requesting user. *v2.5 — from W11:* **no model-selectable or side-effecting tool and no retrieval beyond the request's own notes.** ADR-009 adds one forced, read-only, code-executed tool (`record_facts`) and line-addressed citation lookup into the same notes; nothing from outside the request enters any context. Re-analysed with HAZ-08 — score unchanged | **1×2 = 2** — the absence of an action surface is what makes this small. **Any future EPR write-back re-opens it at a much higher inherent score** | Manufacturer |
 | **R-14** | Service unavailable at the point of discharge | A | 3 | 1 | **3** | Serverless managed services; async 202+poll; 7 alarms; canary; **the clinician can always write the document themselves** | **2×1 = 2** — not time-critical by design. No multi-region DR, no business continuity plan, no availability SLI | Manufacturer |
 | **R-15** | Outputs lost before the clinician retrieves them | A, I | 2 | 2 | **4** | 24 h window; idempotency lets a request be safely retried | **1×1 = 1** — `ResultsTable` has no PITR, deliberately; it is a buffer | Manufacturer |
-| **R-16** | A data-subject request cannot be answered within the statutory period | C | 3 | 2 | **6** | The schema makes retrieval trivial: one partition-key query returns everything held about a clinician; nothing is held about a patient after 24 h | **3×2 = 6** — no documented procedure, no timescales, no export tooling, no named contact | Manufacturer |
+| **R-16** | A data-subject request cannot be answered within the statutory period | C | 3 | 2 | **6** | The schema makes retrieval trivial: one partition-key query returns everything held about a clinician; nothing is held about a patient after 24 h *(v2.5: expired drafts persist in storage until TTL deletion, within a few days, but from the W1 change set are no longer served; from W11, step traces hold patient content for 30 days and cannot be found by patient, §8.2)* | **3×2 = 6** — no documented procedure, no timescales, no export tooling, no named contact | Manufacturer |
 | **R-17** | A personal-data breach is not notified to the controller in time | C, I | 3 | 4 | **12** | Detection would rely on alarms that watch availability and errors, not disclosure. Compounded by R-09 | **3×4 = 12** — **no incident-response or breach procedure, and no Article 33(2) notification route.** The most conspicuous organisational gap | Manufacturer |
 | **R-18** | The audit trail is used for a purpose the clinician did not expect, because nothing binds its use | C | 3 | 3 | **9** | Purpose limitation stated at §7.5 and Annex B — in a DPIA and an ADR, not in terms | **3×3 = 9** — **DTAC C2.2.4 asks for exactly those terms and they do not exist.** Distinct from R-07: R-07 is the repurposing event, R-18 is the absence of the instrument that would prevent it | Controller + manufacturer |
 | **R-19** | **Unfairness or bias in model outputs affecting particular groups** *(from the template's checklist — not previously in this register)* | C, I | 3 | 4 | **12** | Thin, and stated as such. `THREAT_MODEL.md` carries **one** "Accessibility / equity" bullet among eight AI-specific threats, and its content is *readability and language*, not group bias; reading age is a scored eval dimension (D5, Flesch–Kincaid ≤ 8), which is an accessibility measure and **not** an equity assessment; the restatement-only rule limits how far the model can editorialise | **3×4 = 12 — unchanged. No bias evaluation has been performed.** The eval set is not stratified by age, sex, ethnicity, first language or condition, and reading-age measurement is not the same as an equity assessment. **Named as a WS4 and evaluation-backlog item** | Manufacturer |
 | **R-20** | **Users employ the tool outside its defined acceptable use** *(from the template's checklist)* | C, I | 3 | 3 | **9** | README disclaimer; intended purpose at `WS2a` §1; no self-signup; the product refuses nothing technically | **3×3 = 9** — nothing enforces scope at run time, and **there is no EULA or acceptable-use term** (R-18). The realistic case is pasting content the tool was never intended for, or using it for a document type outside the three | Controller + manufacturer |
 | **R-21** | **Transparency limited by the model's opacity** *(from the template's checklist)* | C | 3 | 2 | **6** | Model card; per-generation provenance (model version, region, output hashes); the restatement-only design means outputs are traceable to the source notes in a way a predictive model's would not be | **2×2 = 4** — the product can say *what* was produced, by which model, from which input, but not *why* a particular phrasing was chosen. Mitigated more by architecture than by explanation | Manufacturer |
 | **R-22** | **No record of processing activities (ROPA / IAR) exists** *(surfaced by the template's Section 4)* | C | 5 | 2 | **10** | **None.** No Article 30 record has been created | **5×2 = 10** — the §4.1 flows table is the raw material for one. **[Controller to complete]** for its own register | Manufacturer |
+| **R-23** | **Step traces — patient clinical content and identifiers held for 30 days — are disclosed, or kept or used beyond their purpose** *(new at v2.5; ADR-009, effective W11)* | C | 3 | 4 | **12** | Same CMK as the other tables; the worker holds `PutItem` only; **no read path from the API or SPA**; no `user_sub`; notes by reference only; 30-day TTL on every item; incident hold only by logged export; purpose stated in the notice (v1.4) and §7.2 | **2×4 = 8.** Operator reads are **not audited** until CloudTrail data events cover the table (R-09, W11), and a TTL is best-effort — so not lower. **→ 1×4 = 4** once CloudTrail data events include `TraceTable` | Manufacturer |
 
 ## 10.2 The residuals that matter
 *(Not a template question — a reading aid for the table above.)*
@@ -1186,6 +1241,7 @@ An twenty-two-row table lets a reviewer's eye slide past the important rows, so 
 | R-06 | Publish the worker-facing privacy notice (Annex B) in the product and the repo | Author | Author | Repo: **done 20 Sep 2026** (`PRIVACY-NOTICE.md` v1.3) · Product: **W10, 7 Dec 2026** | **Partly closed** |
 | R-08 | Build the clinician review-gate UI; capture `draft → reviewed`, `reviewed_at`, and what was changed | Author (CSO role) | Author | **W10, 7 Dec 2026** *(was W1)* | Outstanding — **blocking for real-data deployment** |
 | R-09 | Add CloudTrail to the template with data events on both tables; enable API Gateway and CloudFront access logs (`WAVE4_DESIGN.md` §6) | Author | Author | W11, 14 Dec 2026, with WS6 *(was W1–W2)* | Outstanding |
+| R-23 | Include `TraceTable` in the R-09 CloudTrail data events — **three tables, not two**; confirm the worker role holds `PutItem` only on it and the status role nothing; publish `PRIVACY-NOTICE.md` v1.4 before the first W2 commit and re-issue it at the cut-over | Author | Author | Notice: **before W2 (12 Oct)** · CloudTrail: **W11**, with R-09 | Outstanding |
 | R-04 | Set `LedgerRetentionDays` and Compliance mode for non-demo; constrain the `UpdateItem` grant to the review transition; correct the template comment and ADR-002 | Author | Author | W1, 5 Oct 2026 — IAM `dynamodb:Attributes` whitelist on both roles (IAM cannot express a value transition; that stays in code, and the comment and ADR-002 must say so); choose a demo retention period (the demo already runs GOVERNANCE via `IsProd`) | Outstanding |
 | R-11 | `MfaConfiguration: ON`; disable `ALLOW_USER_PASSWORD_AUTH` | Author | Author | Jan 2027 *(was W1; WS6 trimmed 18 Sep 2026)* | Outstanding — **not one property each** (corrected 18 Sep 2026): the synthetic canary signs in with `USER_PASSWORD_AUTH` (`src/canary/app.py`), so both changes break it without a canary auth redesign; and CloudFormation has historically refused `MfaConfiguration: ON` on an existing pool (`SetUserPoolMfaConfig` route — test on a scratch stack first). ~4h |
 | R-05 | CloudFront geo-restriction allow-list (GB, + EU as needed) | Author | Author | W11, 14 Dec 2026, with the WAF *(was W1 — geo-restriction lives in `web-template.yaml`, which CI does not deploy)* | Outstanding — one property, manual web-stack deploy |
@@ -1255,7 +1311,9 @@ The residual risk **splits by population, and a single verdict would be misleadi
   unreduced, and both named below as pre-deployment blockers. What the design *does* achieve is
   narrower and still substantial: because **the clinical notes are never stored** and **the audit
   trail holds hashes rather than content**, the two rows about the clinical content itself — R-01
-  and R-02 — drop from 12 to 4. Those are not mitigations bolted on afterwards; they are
+  and R-02 — drop from 12 to 4 *(v2.5: from the W11 cut-over, R-23 — 30-day step traces of
+  extracted clinical content — adds a third content row at residual 8, which this conclusion must
+  carry once the traces are live)*. Those are not mitigations bolted on afterwards; they are
   architecture. They do not reach the accuracy and fairness risks, which is precisely the point.
 - **To clinicians: moderate, and not yet acceptable even at demonstration scale.** Their data is
   real and is being processed now, and **nine residuals sit unreduced against them** — R-03 (12),
@@ -1290,6 +1348,9 @@ relied on after one has occurred** without re-verification:
 - Publication of **Article 22D regulations** or the ICO's draft ADM and profiling guidance.
 - Any update to the ICO guidance currently marked as under review post-DUAA (§5, §7).
 - Any request to use the audit trail for a new purpose (§7.5).
+- Any change to what the step traces hold, who can read them, or how long they are kept
+  (ADR-009) — and **the W11 cut-over itself**, at which §7.1's narrowed claim, Annex A.2 and R-23
+  become the deployed position and must be re-verified against the stack as deployed.
 - Any update to the NHS England DPIA template itself — this document is written to the March 2026
   master.
 
@@ -1399,8 +1460,37 @@ flowchart TB
 | **A gap the diagram cannot show** | The **clinician review gate** (R-08) would sit between `STAT` and the EPR, flipping `draft → reviewed` on `AUDIT`. It is designed, schema-ready and **not built** — correctly absent from a diagram of what exists |
 | **A second gap** | There is no CloudTrail node and no access-log node (R-09). The diagram shows generations being audited and access not being audited |
 | **A caption corrected at source, 17 Sep 2026** | The `CAN` and `EB` nodes previously read "replays 18 scenarios" and "nightly 02:00" — the nightly run is a **3-scenario smoke subset** and the full 18 runs weekly. Fixed in `architecture.mmd`, `architecture.svg` (hand-authored, not generated — it had to be edited separately) and `README.md`, and this annex re-synced from the corrected source |
+# Annex A.2 — Data flow as specified by ADR-009 (not yet deployed)
+*Added v2.5, 24 Sep 2026. Annex A above stays a verbatim copy of `docs/architecture.mmd`, which
+describes the deployed system; `architecture.mmd` gains the trace store at the W11 cut-over, when
+this annex is folded back into Annex A.*
+
+Only the worker's data flows change. Everything upstream of the worker and downstream of
+`ResultsTable` / `AuditTable` is as Annex A.
+
+```mermaid
+flowchart LR
+    DISP["Dispatcher λ"] -. "async invoke — notes in payload" .-> WORK["Generate worker λ<br/>8 steps · 4 model calls"]
+    WORK -->|"extraction + reconciliation<br/>(notes in context)"| BR["Amazon Bedrock<br/>Sonnet 4.6 · on-demand · eu-west-2"]
+    WORK -->|"composition ×2<br/>(verified facts / PART A — no notes)"| BR
+    WORK -->|"drafts · 24 h"| RESULTS[("ResultsTable")]
+    WORK -->|"hashes + pipeline_version"| AUDIT[("AuditTable")]
+    WORK -->|"per-step inputs (notes by hash) + outputs<br/>facts · identifiers · quotes · drafts · 30 d"| TRACES[("TraceTable<br/>CMK · no stream · PutItem only")]
+    OP["Operator (console / CLI)"] -. "read, incident export" .-> TRACES
+    STAT["Status λ"] -->|"GetItem"| RESULTS
+    STAT -. "no access" .- TRACES
+```
+
+| What to look for | Where |
+|---|---|
+| **Where the notes exist** | `WORK` and `BR` only — unchanged. `TraceTable` holds `notes_sha256` and line IDs, not the notes |
+| **What is newly stored** | `TRACES` — patient-derived clinical content including identifiers, 30 days (§3.3, §7.2, R-23) |
+| **What does not change** | `AUDIT` stays hash-only (ADR-002); `STAT` cannot read `TRACES`, so **no trace content** is ever returned to a browser — clinical content reaches a browser only from `RESULTS`, and only within its 24 hours (§7.3) |
+
 # Annex B — Worker-facing privacy notice
 
+> **v2.5 note (24 Sep 2026): `PRIVACY-NOTICE.md` is now at v1.4, which describes the ADR-009 step record ahead of its release. The text below is not updated — it is the record of what was assessed at v1.2.**
+>
 > **Status: published 20 September 2026 as [`PRIVACY-NOTICE.md`](../PRIVACY-NOTICE.md) (notice v1.3), which is now canonical — the text below is the v1.2 draft as assessed, kept for the record.** Publishing it checked every statement against the code and changed four things: token counts and run status added to "what is recorded" (the v1.2 list omitted `input_tokens`/`output_tokens`, which this DPIA's own §3.3 flags as a proxy for note length); Amazon Bedrock named as where the notes are processed (Bedrock position re-verified 20 Sep 2026 — `anthropic.claude-sonnet-4-6` still not on AWS's retention list); and a *Where this demonstration differs* section stating that there is no sign-off step yet, no identifier removal after retention (`GEN#` rows carry no TTL — R-03), no deploying organisation, and no in-product display. R-06 is **partly closed**: published, not yet shown to the clinician in the product (W10). Original status line: *drafted, not yet published.* This closes **R-06** on adoption. It should be shown to
 > the clinician at first sign-in and be reachable from the application at all times, and it should
 > be included in the transparency materials offered at **DTAC C2.2.3**. It is written to be read
@@ -1630,6 +1720,20 @@ inherent and 12 residual.
 inaccurate assurance in infrastructure-as-code is worse than none — it is what this DPIA nearly
 inherited, and what every document downstream of it had already believed.
 
+**v2.5 — what the W1 change set does, and the limit it found (24 Sep 2026).** Steps 1–3 are
+drafted: `LedgerRetentionDays` 183 (Governance mode, demo), pinned in CI; `dynamodb:Attributes`
+whitelists on both roles' `UpdateItem` and on the worker's legacy `PutItem`, with `ReturnValues`
+pinned to `NONE`; the template comment
+and ADR-002 corrected. Drafting step 2 established something this annex had not said: **AWS
+documents that `PutItem` replaces an entire item, and that a role limited to specific attributes
+should therefore not hold `PutItem` at all.** Both roles need `PutItem` — the dispatcher to create
+rows, the worker for its legacy smoke-test path — so either can still overwrite a whole row. Step 2
+therefore **narrows** the alteration route rather than closing it, and the closing control is
+**detection**: the stream carries old and new images to the WORM ledger, which from W1 keeps them
+for 183 days. The worker loses `PutItem` at the W11 cut-over (ADR-009); the dispatcher's
+transactional `PutItem` is left unconditioned until the ephemeral stack shows how
+`dynamodb:Attributes` behaves inside `TransactWriteItems`, which AWS does not document.
+
 ---
 
 # Annex D — Change control
@@ -1638,6 +1742,7 @@ inherited, and what every document downstream of it had already believed.
 |---|---|---|
 | 1.0 | 16 Sep 2026 | First issue. Written to DTAC C2.2.2's twelve must-cover items, transcribed verbatim from `docs/DTAC_Form_2.0_February_2026.docx`. IG sources verified from primary sources the same day per the standing rule on the Notion working page. Carried the eleven→twelve correction and the `user_sub`/Cognito-email correction. **Blocked on the NHS England DPIA template `.docx` for section transposition** — structured on the ICO's seven-step process as an interim spine |
 | 1.1 | 16 Sep 2026 | **Adversarial verification pass by a separate agent, 22 findings, all applied.** Four substantive: (a) the v1.0 §0 correction was itself wrong — WS2b enumerated all twelve items correctly and merely labelled the list "eleven"; (b) **Annex C.3 added** — write-once on the audit table is not IAM-enforced as ADR-002 and the template comment both assert; (c) risk-register integrity — R-16/R-17 were cited with no rows, R-13 was double-booked, and R-08/R-09 had residual scores *above* their inherent scores; (d) the overall "low" conclusion contradicted the register and was split by population. Also corrected: the canary schedule, the alarm list, the canary's synthetic Cognito identity, `safety_net_gate.py` as an offline rather than runtime control, best-effort TTL, nine unnamed audit attributes, `ALLOW_USER_PASSWORD_AUTH`, the C3.5.1 overclaim, the ambient-scribing analogy caveat, and three broken cross-references |
+| **2.5** | **24 Sep 2026** | **Draft for review — the ADR-009 step-trace store assessed ahead of its release (live from the W11 cut-over, 14 Dec 2026), and the W1 change set recorded.** **Traces:** §1.2, §1.3, §2.1 (trace use on real data limited to investigating that generation; evaluation on synthetic data only), §3.2, §3.3 (trace row; the four new `GEN#` attributes, with the safety-net route kept off the clinician-keyed row; the patient-identifier row **corrected** — where the notes contain identifiers they appear in the 24-hour drafts, and from W11 in 30-day traces), §3.6 (the internal link by `generation_id` and `notes_sha256`), §4.1 (F5 amended, **F14** added), §6.1, §6.6, §7.1 ("notes never stored" **narrowed** to the notes as typed), §7.2 (trace retention 30 days; incident exports kept for the life of the system, de-identified on export), §7.3 ("48 hours" corrected to AWS's "within a few days"; the status endpoint's failure to check `ttl` declared), §8.2–§8.5, §11.2 note, §11.3 (review triggers for trace changes and the cut-over), **Annex A.2** (Annex A stays a verbatim copy of `architecture.mmd`), Annex B note → notice v1.4; register R-01, R-13 and R-16 amended with scores unchanged, **R-23 added** (3×4 = 12 → 2×4 = 8), action plan R-23; quotes capped at 200 characters. An independent verification pass the same day found 28 issues across the ADR, this DPIA and the notice; all were applied. **Live re-verification and the W1 change set (24 Sep 2026):** F5 records that prompt caching is on and caches no clinical content; R-04 and Annex C.3 record the W1 change set and its limit — `PutItem` replaces a whole item, so alteration becomes detectable rather than impossible; **proposed R-04 residual 2×4 = 8 once deployed**, the only score this version moves. |
 | **2.4** | **20 Sep 2026** | **Annex B published** as `PRIVACY-NOTICE.md` v1.3 at the repo root and linked from the README; §10.3 R-06 marked partly closed (repo done; in-product display W10). Publication checked each statement against `src/dispatcher/app.py`, `src/generate/app.py` and `infra/template.yaml` and found four inaccuracies in the v1.2 draft, corrected in the published version and recorded in Annex B's status line. No risk score changed: R-06's residual of 2 is reached only when the notice is shown in the product. |
 | **2.3** | **18 Sep 2026** | **Header version corrected** — it read 2.1 while this Annex already carried the 2.2 row below (found on the Notion working page 17 Sep; fixed here). **§10.3 due dates and the two "W1, 5 October" statements (the Section 8 ADM requirement box and §10.2 item 1) re-aligned to The Window re-plan, 18 Sep 2026**: R-08 → W10; R-09 and R-05 → W11 (web stack, with the WAF); R-11, R-12, R-19, R-22 → Jan 2027; R-04 stays W1 as an IAM attribute whitelist plus a retention-period choice. WS2b cross-references → v1.3. *(Dates revised the same day after an independent verification pass.)* **R-11's "one property each" corrected** — the canary authenticates with `USER_PASSWORD_AUTH`, so enforcing MFA and removing that flow both break it. No risk score, section structure or conclusion changed. *(Note: rows 1.0–1.1 run oldest-first and 2.0 onward newest-first; left as issued.)* |
 | **2.2** | **17 Sep 2026** | Annex A re-synced after the stale canary caption was fixed at source. `architecture.mmd`, `architecture.svg` and `README.md` had described the canary as replaying all 18 scenarios nightly — the pre-optimisation behaviour, superseded in June by Lever 1 of `COST_OPTIMISATION_GUIDE.md` (3-scenario smoke nightly, full 18 weekly). **Two things the fix turned up:** `architecture.svg` is **hand-authored, not generated from the `.mmd`**, so the two can drift silently and both had to be edited — worth knowing before anyone assumes a re-render keeps them in step; and `README.md`'s canary paragraph carried a second stale figure, "thresholds track the observed baseline (~15–16/18 nightly)", when the alarm is a **percentage** threshold (`CanarySuccessThresholdPct`) and so was never tied to the scenario count. No change to any section, risk score or conclusion. |

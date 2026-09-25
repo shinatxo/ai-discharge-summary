@@ -23,7 +23,7 @@ Turn a doctor's messy ward-round notes into a structured discharge summary, a GP
 - **Cold-eval:** 11/11 (expansion set) + 5/5 (v0.6 safety regression) — **no auto-fails**.
 - **Patient-version reading age:** Flesch–Kincaid 2.3–6.2 (target ≤ 8).
 - **~73 s** average end-to-end generation (asynchronous — not bound by API Gateway's 30 s cap).
-- **Synthetic canary:** a 3-scenario smoke run nightly, all 18 as a weekly regression. ~85% success on the full run; the remainder is Bedrock on-demand quota throttling (5 req/min), *not* generation errors — by design, and watched by CloudWatch alarms.
+- **Synthetic canary:** a 3-scenario smoke run nightly, all 18 as a weekly regression. ~85% success on the full run; the remainder was Bedrock on-demand quota throttling (recorded at 5 req/min in June; the quota reads **25 req/min** as of 24 Sep 2026 — baseline to be re-measured), *not* generation errors — by design, and watched by CloudWatch alarms.
 - **Cost:** ~£43/month at demo volume (AWS Cost Explorer actual) — **~99% Bedrock inference**; the rest of the stack runs within free tier. Full breakdown + optimisation: [`docs/COST.md`](docs/COST.md).
 
 ---
@@ -111,7 +111,7 @@ Governance is treated as a first-class deliverable, not an afterthought:
 
 `Amazon Bedrock` (Claude Sonnet 4.6) · `Lambda` · `API Gateway (HTTP API)` · `Cognito` · `DynamoDB` (+ Streams) · `S3` (Object Lock / WORM, OAC) · `KMS` (CMK) · `CloudFront` · `Route 53` · `ACM` · `EventBridge Scheduler` · `CloudWatch` · `SNS` · `CloudFormation` (plain) · `GitHub Actions` (OIDC, no stored keys) · `Python 3.13` · `React + Vite + Amplify Auth`
 
-CI runs the 65 tests + `cfn-lint` on every push/PR; a push to `main` deploys via OIDC role-assumption. See [`docs/CICD.md`](docs/CICD.md).
+CI runs the 68 tests + `cfn-lint` on every push/PR; a push to `main` deploys via OIDC role-assumption. See [`docs/CICD.md`](docs/CICD.md).
 
 ## Repository layout
 
@@ -124,12 +124,12 @@ CI runs the 65 tests + `cfn-lint` on every push/PR; a push to `main` deploys via
 | [`src/canary/`](src/canary/) | The synthetic-traffic canary + bundled scenarios |
 | [`docs/`](docs/) | ADRs, model card, threat model, design notes, and this diagram (`architecture.svg` / `.mmd`) |
 | [`evals/`](evals/) | Synthetic scenarios, run log (`EVAL_RESULTS.md`), and the cold-eval harness |
-| [`tests/`](tests/) | 65 unit tests across the Lambdas (idempotency, anti-spoof, retry-safety, cross-user 404, the canary scorer) — run in ~0.1s |
+| [`tests/`](tests/) | 68 unit tests across the Lambdas (idempotency, anti-spoof, retry-safety, cross-user 404, the canary scorer) — run in ~0.1s |
 | [`ui-spa/`](ui-spa/) | The React + Vite SPA (Amplify Auth) |
 
 ## Honest status — what's not done
 
-- **Bedrock on-demand quota is tight** on this account; the canary runs at bounded concurrency to stay under it. A quota increase is the next step to lift the full-run success baseline — see the capacity plan in [`docs/BEDROCK_QUOTA.md`](docs/BEDROCK_QUOTA.md).
+- **Bedrock on-demand quota** reads 25 requests/min (24 Sep 2026; it was 5 in June). The canary still runs at bounded concurrency (4); its success baseline needs re-measuring at the new quota — see [`docs/BEDROCK_QUOTA.md`](docs/BEDROCK_QUOTA.md).
 - **Deferred hardening:** a CloudFront WAF and access logging are scoped but not yet deployed.
 - **Patient v2b** — regenerating the leaflet from the clinician-*edited* summary via a review-gated endpoint — is the documented follow-on to v2a.
 - **The clinician review-gate UI** — an explicit sign-off that flips `draft → reviewed` (and a visible reading-level indicator) — is designed but not yet wired into the deployed SPA, which currently renders the three drafts for review without capturing the sign-off.
@@ -140,6 +140,22 @@ CI runs the 65 tests + `cfn-lint` on every push/PR; a push to `main` deploys via
 ## Privacy notice for clinicians
 
 If you sign in and generate drafts, your use is recorded against your account (never your notes). What is recorded, why, for how long, what it will not be used for, and where this demonstration still falls short: [**`PRIVACY-NOTICE.md`**](PRIVACY-NOTICE.md).
+
+## Reporting a safety concern
+
+If you think an output of this system could have harmed, or could harm, a patient — or you have
+found a way it can produce unsafe content — report it. Every report is logged in the
+[Safety Incident Management Log](docs/WS4-SAFETY-INCIDENT-LOG.md) and assessed by the Clinical
+Safety Officer against the [hazard log](docs/WS4-HAZARD-LOG.md).
+
+- **No personal information in the report:** open a [safety incident issue](https://github.com/shinatxo/ai-discharge-summary/issues/new?template=safety-incident.md).
+- **Anything that might identify a person, or that should not be public:** email
+  **shinaoguntoye@hotmail.co.uk** with "Safety incident" in the subject.
+
+This system must only ever receive synthetic notes. **If real patient information has been entered,
+that is itself a reportable incident** — email, do not open an issue, and do not paste the notes.
+Reports are acknowledged within two working days; this is a one-person project, and that is the
+honest commitment.
 
 ## Disclaimer
 

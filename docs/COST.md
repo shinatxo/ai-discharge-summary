@@ -58,6 +58,9 @@ Since the bill is ~99% Bedrock, every meaningful lever is about Bedrock tokens:
 1. **Prompt caching (Bedrock) — the single biggest saving.** The ~18k-character system prompt
    is identical on every call; Bedrock prompt caching reads cached tokens at 0.1×, so caching
    the static prefix would cut input-token cost by most of its value. *Not yet implemented.*
+   **Correction, 24 Sep 2026: implemented and live.** The live stack runs `PromptCaching=on`
+   (queried 24 Sep 2026) — set by hand at some point, not by CI, and from W1 pinned in CI. The
+   actuals above predate it; re-read Cost Explorer before quoting them.
 2. **Canary cadence.** A nightly *subset* + weekly *full* run (or every-other-night) cuts
    Bedrock spend proportionally while still providing a baseline.
 3. **Batch / off-peak.** Bedrock batch inference is ~50% cheaper for non-interactive work like

@@ -1,13 +1,13 @@
 # WS4 — Safety Incident Management Log
 
 **AI Discharge Summary Assistant**
-Document version **1.0 — DRAFT for CSO approval** · 24 September 2026 · Author: Shina Oguntoye
+Document version **1.0** · drafted 24 September 2026 · **approved by the CSO 27 September 2026** · Author: Shina Oguntoye
 Produced under **DCB0129 v4.2** §3.6.1 (*"The Manufacturer MUST maintain a Safety Incident
 Management Log"*) and §7.2.5 (*"A record of safety incidents, including their resolution, MUST be
 maintained by the Manufacturer in a Safety Incident Management Log"*), with the fields prescribed
 by **DCB0129 Implementation Guidance v3.2 §3.6** (`docs/DCB0129-Implementation-Guidance-v3.2.pdf`,
-p. 31). Closes safety-case non-conformance **NC-2** (`WS4-SAFETY-CASE.md` §10.3) once approved and
-published. Part of the Clinical Risk Management File; referenced from `WS4-SAFETY-CASE.md` and
+p. 31). Closes safety-case non-conformance **NC-2** (`WS4-SAFETY-CASE.md` §10.3) — **closed 27 Sep 2026**, on
+approval with WS4 v1.4 and publication. Part of the Clinical Risk Management File; referenced from `WS4-SAFETY-CASE.md` and
 `WS4-HAZARD-LOG.md`.
 
 > **Read this first.** This log is **public**, because the repository is. It therefore never holds
@@ -93,7 +93,7 @@ log and the hazard log cross-reference each other.
 
 | Reference | Reported by | Reported date | Incident summary | Clinical risk assessment | System release | Journal | Made safe date | Closed date | Cause | Hazard link |
 |---|---|---|---|---|---|---|---|---|---|---|
-| — | — | — | *No incidents reported as at 24 Sep 2026.* | — | — | — | — | — | — | — |
+| — | — | — | *No incidents reported as at 27 Sep 2026.* | — | — | — | — | — | — | — |
 
 **Field notes:**
 - **System release** is the configuration as `WS4-SAFETY-CASE.md` states it — prompt version (from
@@ -174,7 +174,7 @@ Reported in the *Journal* of each incident, and summarised here at each safety-c
 - time to close;
 - open incidents by risk level.
 
-*No incidents to summarise as at 24 Sep 2026.*
+*No incidents to summarise as at 27 Sep 2026.*
 
 ---
 
@@ -182,4 +182,4 @@ Reported in the *Journal* of each incident, and summarised here at each safety-c
 
 | Version | Date | CSO approval | Change |
 |---|---|---|---|
-| **1.0 — DRAFT** | 24 Sep 2026 | Pending, with `WS4-HAZARD-LOG.md` / `WS4-SAFETY-CASE.md` v1.4 | First issue. IG v3.2 §3.6's ten fields, plus a hazard link. Published contact: GitHub issue template + email. Process follows IG v3.2 §7.2. Evidence-capture table covers every store's expiry. ADR-009 trace-export procedure, de-identified on export by default. The private evidence store is declared as not yet existing. Checked by an independent verification pass the same day: made-safe steps now go through CI where CI pins the value; the trace export runs in CloudShell straight to the store; category E captures nothing |
+| **1.0** | 24 Sep 2026 (drafted) · 27 Sep 2026 (approved) | **Approved 27 Sep 2026**, with `WS4-HAZARD-LOG.md` / `WS4-SAFETY-CASE.md` v1.4 (§13.1) | First issue. IG v3.2 §3.6's ten fields, plus a hazard link. Published contact: GitHub issue template + email. Process follows IG v3.2 §7.2. Evidence-capture table covers every store's expiry. ADR-009 trace-export procedure, de-identified on export by default. The private evidence store is declared as not yet existing. Checked by an independent verification pass the same day: made-safe steps now go through CI where CI pins the value; the trace export runs in CloudShell straight to the store; category E captures nothing |

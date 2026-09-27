@@ -33,9 +33,9 @@ Tick each row as it finishes. Record the result where the *Record* column says.
 | 3 | Record the CloudTrail answer | 0c | 5 min | ADR-009 *Live-state reconciliation*, "Stack as deployed" row; WS4 §13.1 precondition 3 | ✅ 24 Sep — CI |
 | 4 | D1 — OIDC trust | D1 | 15 min | — || ✅ 25 Sep 13:15 — `StringEquals` on `…:ref:refs/heads/main`, no `StringLike` |
 | 5 | Push 1 + smoke tests; record the no-op answer | Push 1 | 30 min | ADR-009 (d), the *Unverified* paragraph | ✅ 25 Sep — `9bcd798`, run 36134417966 green (68 passed; OIDC assumed on `main`); all 5 `CodeSha256` changed; SPA generation OK; README section + issue template with label live |
-| 6 | Push 2 + smoke tests (daytime, clear of the canary windows) | Push 2 | 45–60 min | — | |
-| 7 | Create `feat/agentic-pipeline` | After 1 | 5 min | — | |
-| 8 | Re-check live state; tick the §13.1 preconditions; decide HAZ-11's score; sign v1.4 | After 3 | 30–45 min | WS4 configuration lines (dates); §13.1 | |
+| 6 | Push 2 + smoke tests (daytime, clear of the canary windows) | Push 2 | 45–60 min | — | ✅ 27 Sep — `3186da4`, run 36301509633 green; no replacements; 183 d GOVERNANCE; `AuditKey` Retain; live roles simulate as expected; SPA job `01M3GWJA504BCHQPVCCG3XYQ3K` complete; canary S14 1/1; direct invoke `True None` |
+| 7 | Create `feat/agentic-pipeline` | After 1 | 5 min | — | ✅ 27 Sep — from `3186da4`; no workflow ran |
+| 8 | Re-check live state; tick the §13.1 preconditions; decide HAZ-11's score; sign v1.4 | After 3 | 30–45 min | WS4 configuration lines (dates); §13.1 | ✅ 27 Sep — HAZ-11 → 2; WS4 v1.4 and incident log v1.0 approved 09:21 BST |
 | 9 | *(Optional, next day)* live proof of the expiry fix | After 2 | 15 min | — | |
 
 ---

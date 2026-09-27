@@ -1666,10 +1666,7 @@ it, A→C *is* the pipeline and the parameter would describe nothing.
 (FHIR from the facts object) and W10 (review gate on the steps) all build on it. Rule for
 W2–W10: **pull requests to `main` may change `evals/`, `docs/`, `tests/` and the workflow; they
 may not change `src/`, `infra/template.yaml` or the deploy job's `--parameter-overrides`** (which
-change live configuration directly). *Unverified:* whether a merge that touches neither deploys an
-empty change set — `aws cloudformation package` hashes a fresh zip whose file timestamps change on
-every checkout, so expect Lambda code updates on every push to `main`. The code is identical either
-way; test it on the first such merge and record the result here. Rebase the branch
+change live configuration directly). **Verified 25 Sep 2026 (W1 Push 1, commit `9bcd798`, CI run 36134417966):** a push redeploys **every** function with a **byte-different package**. All five functions' `CodeSha256` changed and `LastModified` moved to 12:22 UTC, including `generate`, `ledger` and `canary`, whose source the push did not touch (it changed `status` and a comment in `dispatcher`). `aws cloudformation package` zips each function afresh from the checkout, so the bytes, and the hash, differ on every run even when the code does not. **Consequences:** a merge to `main` that touches only `docs/`, `evals/` or `tests/` is still a deploy of all five Lambdas; and `CodeSha256` cannot identify a release, so the commit and its CI run are the release record. (Rows before/after: `~/w1-rollback/code-before.txt`, `code-after-push1.txt`, author's machine.) Rebase the branch
 weekly. The W7 CI release gate lands on `main` and must key on `pipeline_version`, so it is ready
 to judge the W11 merge.
 
@@ -1923,25 +1920,29 @@ control, which the author approves after the deploys.
 
 ### Owed — status after the W1 close-out (24 Sep 2026)
 
-"Closed" means drafted in the working tree and closed once committed and deployed.
+"Closed" means drafted in the working tree and closed once committed and deployed. **Deployed 25–27 Sep 2026:** D1 (25 Sep), Push 1 `9bcd798` (25 Sep), Push 2 `3186da4` (27 Sep); every smoke test passed, no rollback. WS4 v1.4 and the incident log v1.0 approved 27 Sep 2026.
 
 | Item | Where | Status |
 |---|---|---|
-| OIDC trust narrowed (F10) | `infra/cicd-oidc-role.yaml` | **Closed — W1 change set (a)** |
-| `AuditKey` Retain | `infra/template.yaml` | **Closed — (b)** |
-| Attribute whitelist incl. ADR-009's `GEN#` attributes | `infra/template.yaml` | **Closed — (c)**, worker and dispatcher `UpdateItem`, worker `PutItem` |
-| Dispatcher `PutItem` inside `TransactWriteItems` — does `dynamodb:Attributes` apply? | `infra/template.yaml` | **Scheduled W2** — test on the first ephemeral stack; tighten at W11 if it works |
+| OIDC trust narrowed (F10) | `infra/cicd-oidc-role.yaml` | **Closed — W1 change set (a)**; deployed 25 Sep 2026 (D1), verified both ways — `main` assumes the role (CI run 36134417966) |
+| `AuditKey` Retain | `infra/template.yaml` | **Closed — (b)**; deployed 27 Sep 2026 (`3186da4`), `DeletionPolicy: Retain` read back live |
+| Attribute whitelist incl. ADR-009's `GEN#` attributes | `infra/template.yaml` | **Closed — (c)**, worker and dispatcher `UpdateItem`, worker `PutItem`; deployed 27 Sep 2026 — live roles simulated, and a real generation and a direct invoke both wrote under them |
+| Dispatcher `PutItem` inside `TransactWriteItems` — does `dynamodb:Attributes` apply? | `infra/template.yaml` | **Scheduled W2** — test on the first ephemeral stack (`discharge-eph-<date>`); tighten at W11 if it works |
+| No-op merge — does a push that changes no code redeploy? | (d) | **Closed — answered 25 Sep 2026**: yes, every function, with a new `CodeSha256` (Push 1). Recorded in (d) |
+| 20 Sep deploy — CI or by hand? `PromptCaching=on` origin | *Live-state reconciliation* | **Closed — 24 Sep 2026**: CI (CloudTrail); `PromptCaching=on` from a hand deploy of 17 Jun 2026, outside CloudTrail's 90 days |
+| `WS3-DPIA.md` R-04 still reads 12 (proposes 8); HAZ-11 is now 2 | DPIA | **Scheduled W2** — adopt R-04 = 2×4 = 8 at the next DPIA revision |
+| CI hygiene: actions on Node 20 (forced to 24); `ubuntu-latest` → Ubuntu 26 from 19 Oct 2026 | `.github/workflows/ci-cd.yml` | **Scheduled W2** — bump `checkout`, `setup-python`, `configure-aws-credentials`; pin `ubuntu-24.04`. Only via a PR that changes the workflow alone |
 | Worker loses `PutItem` on the audit table | `infra/template.yaml`, `src/generate/app.py` | **Scheduled W11** — the legacy direct-invoke path goes with the agentic worker |
 | `REV#` attribute whitelist | W10 review-function role | **Scheduled W10** — attributes listed in (c) of this ADR |
 | OIDC `sub` changes when the deploy job gains a GitHub `environment:` | `infra/cicd-oidc-role.yaml` | **Scheduled W7** — same change as the CSO release gate |
 | Branch protection on `main` | GitHub | **Scheduled W7** — with the CSO release gate |
 | Live parameters invisible to the repo | CI | **Closed — `ModelId`, `PromptCaching`, `LedgerRetentionDays` pinned**; the rest match their template defaults |
-| Status endpoint ignores `ttl` | `src/status/app.py` | **Closed — (f)** |
+| Status endpoint ignores `ttl` | `src/status/app.py` | **Closed — (f)**; deployed 25 Sep 2026 (`9bcd798`). Live proof on an expired-but-undeleted row: optional, runbook *After both pushes* 2 |
 | "48 hours" → "within a few days" | ADR-005, `src/dispatcher/app.py`, DPIA §7.3 | **Closed — (f)** / DPIA v2.5 |
 | ADR-002 and template comment overclaim | this file, `infra/template.yaml` | **Closed — (d)** |
 | `BEDROCK_QUOTA.md` quota figure | `docs/BEDROCK_QUOTA.md` | **Closed** — correction note (25/min) |
 | `COST.md` "caching not implemented" | `docs/COST.md` | **Closed** — correction note. Pricing basis and per-generation cost: **scheduled W11** |
-| Safety Incident Management Log + published contact (NC-2) | `docs/WS4-SAFETY-INCIDENT-LOG.md`, `README.md`, `.github/ISSUE_TEMPLATE/` | **Closed on approval** — drafted 24 Sep 2026 |
+| Safety Incident Management Log + published contact (NC-2) | `docs/WS4-SAFETY-INCIDENT-LOG.md`, `README.md`, `.github/ISSUE_TEMPLATE/` | **Closed — approved 27 Sep 2026** with WS4 v1.4; contact live since Push 1, label `safety-incident` created 25 Sep |
 | Private incident-evidence store | S3, same account | **Scheduled W11**, or the first incident that needs it — design in the incident log §4 |
 | Notion: spec item 1 → ADR-008; DoD 4 substitution; Stocktake; The Window; tracker | Notion | **Closed** — applied 24 Sep 2026 |
 | Paediatric fall-back wording | (e), HAZ-03 | **Closed** — decided by the CSO 24 Sep 2026 |

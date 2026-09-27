@@ -1,17 +1,17 @@
 # WS4 — Clinical Safety Case Report
 
 **AI Discharge Summary Assistant**
-Document version **1.4 — DRAFT for CSO approval** · 24 September 2026 *(v1.3 issued 18 September 2026 remains the approved issue until this is approved)* · Author: Shina Oguntoye
+Document version **1.4** · drafted 24 September 2026 · **approved by the CSO 27 September 2026** (supersedes v1.3 of 18 September 2026) · Author: Shina Oguntoye
 Produced under **DCB0129 v4.2** (Clinical Risk Management: its Application in the Manufacture of
 Health IT Systems) as the **Manufacturer**.
 
 | Field | Value |
 |---|---|
 | Health IT System | AI Discharge Summary Assistant |
-| Configuration | **Released configuration:** system prompt **v0.7**; stack `discharge-audit` as deployed **16 Sep 2026** (commit `f7af758`) with `PatientV2SecondPass=on`; SPA **without** the clinician review gate. *Development stacks `discharge-eph-*` (W2–W10, synthetic notes, from `feat/agentic-pipeline`) are not released configurations and are not covered by this Report — §18* **Re-verified live 24 Sep 2026** *(v1.4)*: stack `UPDATE_COMPLETE`, **last updated 20 Sep 2026 11:24 UTC** — after four docs-only commits following `f7af758`, so a CI redeploy of unchanged code (**confirmed from CloudTrail 24 Sep 2026**: both 20 Sep change sets were created by `assumed-role/GitHubActionsDischargeDeploy` — CI); live parameters include `PatientV2SecondPass=on`, `ModelId=anthropic.claude-sonnet-4-6`, `LedgerRetentionDays=1`, `CanaryMaxConcurrency=4` and **`PromptCaching=on`** (set by a hand deploy recorded in `docs/COST_OPTIMISATION_GUIDE.md` *Verified live (2026-06-17)*, before the parameter was committed on 15 Sep; carried forward by every CI deploy since); worker `Timeout` 240 s. The W1 infrastructure change set (ADR-009, *W1 change set*) changes this configuration and is recorded at §19 |
+| Configuration | **Released configuration:** system prompt **v0.7**; stack `discharge-audit` as deployed **16 Sep 2026** (commit `f7af758`; the v1.3 baseline — the W1 state this version approves is at the end of this row) with `PatientV2SecondPass=on`; SPA **without** the clinician review gate. *Development stacks `discharge-eph-*` (W2–W10, synthetic notes, from `feat/agentic-pipeline`) are not released configurations and are not covered by this Report — §18* **Re-verified live 24 Sep 2026** *(v1.4)*: stack `UPDATE_COMPLETE`, **last updated 20 Sep 2026 11:24 UTC** — after four docs-only commits following `f7af758`, so a CI redeploy of unchanged code (**confirmed from CloudTrail 24 Sep 2026**: both 20 Sep change sets were created by `assumed-role/GitHubActionsDischargeDeploy` — CI); live parameters include `PatientV2SecondPass=on`, `ModelId=anthropic.claude-sonnet-4-6`, `LedgerRetentionDays=1`, `CanaryMaxConcurrency=4` and **`PromptCaching=on`** (set by a hand deploy recorded in `docs/COST_OPTIMISATION_GUIDE.md` *Verified live (2026-06-17)*, before the parameter was committed on 15 Sep; carried forward by every CI deploy since); worker `Timeout` 240 s. **After the W1 change set — re-verified live 27 Sep 2026, the configuration this version approves:** OIDC trust `repo:shinatxo/ai-discharge-summary:ref:refs/heads/main` (D1, 25 Sep); Push 1 `9bcd798` (25 Sep); Push 2 `3186da4`, stack `UPDATE_COMPLETE` **27 Sep 2026 06:57 UTC**, with `LedgerRetentionDays=183` (Object Lock GOVERNANCE, 183 days), `AuditKey` `Retain`, `dynamodb:Attributes` whitelists on both roles' `UpdateItem` and the worker's `PutItem`, and `ModelId`, `PromptCaching=on` and `LedgerRetentionDays` pinned in CI; other parameters as above. Recorded at §19 |
 | Lifecycle phase (§3.5.1) | **Pre-deployment / demonstration.** First Clinical Safety Case Report for this system |
 | Standard | **DCB0129 v4.2** (document date 02.05.2018, published 07.06.2018) |
-| Companion | `docs/WS4-HAZARD-LOG.md` **v1.3** (v1.4 draft, 24 Sep 2026) — **24 hazards, 19 Open · 4 Transferred · 1 Closed** — issued with this Report per **§3.3.3** |
+| Companion | `docs/WS4-HAZARD-LOG.md` **v1.4** (approved 27 Sep 2026) — **24 hazards, 19 Open · 4 Transferred · 1 Closed** — issued with this Report per **§3.3.3** |
 | Risk-scoring scheme | **Declared at §6**, and **verified cell-for-cell against DCB0129 Implementation Guidance v3.2 Tables 7–10 on 18 Sep 2026**. It is in the Guidance — explicitly as an *example* — and **not** in the Specification; **not** the NHS England DPIA 5×5 — §6.1, §6.5 |
 | Clinical Safety Officer | Shina Oguntoye, **GMC 7646070** — `docs/WS4-CSO-APPOINTMENT.md` v1.3 |
 | **Safety statement** | **§12.** Safe in its current use as a **synthetic-data demonstration**; **NOT released for clinical use** |
@@ -55,12 +55,13 @@ enforced release gate. A residual of 4 carries the rule *"mandatory elimination 
 reduce risk to an acceptable level"*. **A Clinical Safety Officer cannot accept it**, and this
 Report does not.
 
-Sixteen further hazards sit at level 3 (Undesirable), whose rule is that they *"shall only be
-acceptable when further risk reduction is impractical"*. **Eight of the twenty-four are
+Fifteen further hazards sit at level 3 (Undesirable), whose rule is that they *"shall only be
+acceptable when further risk reduction is impractical"*. **Seven of the twenty-four are
 uncontrolled** — residual equal to initial, no effective control — and for eleven of the twenty-four
 a specific, costed, practicable control exists and has not been built. §7.5 states the ALARP
 position formally: these hazards are not ALARP, and the Undesirable band's rule therefore does not
-authorise accepting them.
+authorise accepting them. *(v1.4: HAZ-11 moved from 3 to 2 on the deployed W1 controls — decided by the
+CSO on 27 Sep 2026 — and is still not ALARP; §7.5.)*
 
 ### 1.3 What this Report found that the preceding documents did not
 
@@ -77,7 +78,9 @@ authorise accepting them.
    *qualification* question, and the wrong one under DCB0129 §6.1, where the first-choice control
    is elimination by design and re-work cost is not a ground for a lesser control at Major
    severity. §7.2.
-4. **Four further non-conformances against the standard, invisible from the DTAC criterion.** No
+4. **Four further non-conformances against the standard, invisible from the DTAC criterion** *(v1.4: three
+   remain — the second closed on 27 Sep 2026 by `WS4-SAFETY-INCIDENT-LOG.md` v1.0 and the published
+   contact; §10.3)*. No
    Clinical Risk Management Plan (§3.2); no Safety Incident Management Log (§3.6.1, and §7.2.5); no
    Clinical Safety Case Report issued for any of six prompt changes that altered clinical risk
    (§7.3.3); no release and patch audit trail (§7.3.4). §10.3.
@@ -371,7 +374,8 @@ Stated because §4.3.1's *"known and foreseeable"* is a claim this Report must b
   Hazard identification by a single clinician who is also the developer is the weakest link in this
   section.
 - **No real-world incident data**, because there has been no real-world use — and, per §10.3, no
-  route by which an incident could be reported even if there were.
+  route by which an incident could be reported even if there were *(v1.4: a route now exists —
+  `WS4-SAFETY-INCIDENT-LOG.md` §1)*.
 
 ---
 
@@ -573,13 +577,13 @@ hazards**, HAZ-01 to HAZ-24.
 |:---:|---|:---:|---|
 | 5 | Unacceptable | 0 | — |
 | **4** | **Unacceptable** | **2** | **HAZ-04**, **HAZ-10** |
-| 3 | Undesirable | 16 | HAZ-01, 02, 03, 05, 06, 09, 11, 13, 15, 16, 17, 18, 19, 20, 22, 23 |
-| 2 | **Acceptable** *(conditional — see §6.4)* | 5 | HAZ-07, HAZ-08, HAZ-12, HAZ-21, HAZ-24 |
+| 3 | Undesirable | 15 | HAZ-01, 02, 03, 05, 06, 09, 13, 15, 16, 17, 18, 19, 20, 22, 23 |
+| 2 | **Acceptable** *(conditional — see §6.4)* | 6 | HAZ-07, HAZ-08, **HAZ-11** *(v1.4)*, HAZ-12, HAZ-21, HAZ-24 |
 | 1 | Acceptable | 1 | HAZ-14 |
 | | | **24** | |
 
-**Eight are uncontrolled** — residual equals initial, no effective control: HAZ-03, 05, 11, 15, 16,
-17, 20, 22. **Twelve carry a common-mode dependency on HAZ-04.**
+**Seven are uncontrolled** — residual equals initial, no effective control: HAZ-03, 05, 15, 16,
+17, 20, 22. *(v1.4: HAZ-11 left this list — partially controlled by the deployed W1 change set.)* **Twelve carry a common-mode dependency on HAZ-04.**
 
 ### 7.2 The hazards that decide this Report
 
@@ -645,7 +649,7 @@ project against it:
 |:---:|---|---|
 | **1** | *"changes to the design or the inclusion of protective measures in the Health IT System"* | **Strong.** No tool use, no retrieval, no outbound action surface (HAZ-08 → 2) *(v1.4: true of the released configuration; from the W11 cut-over ADR-009 adds one forced, read-only, code-executed tool and citation lookup into the request's own notes — HAZ-08 re-analysed, score unchanged)*. No EPR write-back, so manual copy-across is an unavoidable read (HAZ-04). No fine-tuning: the safety surface is an auditable text file. Hash-only audit schema. Prompt v0.7's CORE PRINCIPLE. **Recommended for HAZ-02 and not yet taken**; eight further Design controls outstanding (log §4.8) |
 | **2** | *"product verification and validation (for example, testing). **A testing programme should address each of the hazards** and thus provide a practicable demonstration that the claimed risk reduction has been achieved"* | **Strong in depth, incomplete in coverage.** 65 unit tests, ten eval runs, the safety-net gate, the CI gate, the canary. **But it does not address each of the hazards — §9.8 shows thirteen of twenty-four with no test at all**, which is a direct failure against this sentence |
-| **3** | *"administrative and implementation procedures"* | **Absent on the manufacturer side.** There is no incident procedure, no release procedure with a safety gate, no rights-request or breach procedure. §10.3 non-conformances 2 and 4 |
+| **3** | *"administrative and implementation procedures"* | **Absent on the manufacturer side**, except incident handling from v1.4 (`WS4-SAFETY-INCIDENT-LOG.md` v1.0). There is no release procedure with a safety gate, no rights-request or breach procedure. §10.3 non-conformance 4 *(and 2, until v1.4)* |
 | **4** | *"user, operator and other stakeholder training and briefing"* | **None, and none possible** — there are no users. Wholly a DCB0160 item (log §4.8: zero manufacturer-owned Training controls) |
 | **5** | *"information for patient safety, including warnings"* | **Good.** "Not documented" discipline; inference flags; the draft marker; the translation flag; the model card; §11's deployer actions |
 
@@ -705,19 +709,22 @@ cost for each is at log **§4.6**; eight of the eleven cost hours or days.
 have) and **HAZ-23** (no manufacturer-side control exists; it is a post-deployment monitoring item).
 
 **This is the reasoning that decides §12.** The Undesirable band's rule is that a level-3 residual
-*"shall only be acceptable when further risk reduction is impractical"*. On eleven of the sixteen
-level-3 hazards further reduction is entirely practical. **The band's own rule therefore does not
+*"shall only be acceptable when further risk reduction is impractical"*. On ten of the fifteen
+level-3 hazards further reduction is entirely practical *(v1.4 — the eleventh not-ALARP hazard, HAZ-11,
+now sits at level 2; below)*. **The band's own rule therefore does not
 authorise accepting them**, independently of the two Unacceptable residuals.
 
 > **And the same test reaches down to level 2**, which v1.1 did not appreciate. The real Table 10
 > makes level 2 *"Acceptable where cost of further reduction outweighs benefits gained **or where
 > further risk reduction is impractical**"* — a conditional acceptance on the same two grounds, not
-> a free pass. Checked against the five level-2 hazards: **HAZ-08 and HAZ-14 are ALARP** (no
+> a free pass. Checked against the six level-2 hazards: **HAZ-08 and HAZ-14 are ALARP** (no
 > practicable further control; HAZ-08 is the log's one `Closed` hazard). **HAZ-24 has a cheap
 > outstanding control** — surface a parse failure to the user — so it is accepted on cost, not on
 > impracticability, and should simply be done. **HAZ-12 and HAZ-21 are `Transferred`**: the
-> manufacturer's side is ALARP and the remaining reduction is the deployer's. No level-2 residual
-> changes, but the reasoning is now the standard's rather than an assumed "tolerable means fine".
+> manufacturer's side is ALARP and the remaining reduction is the deployer's. **HAZ-11** *(v1.4, residual 2
+> from 27 Sep 2026)* **is not ALARP**: CloudTrail and removing the worker's `PutItem` are practicable (W11)
+> and not yet done, so it is accepted for the demonstration only and stays Open. No level-2 residual
+> changed at v1.2 (HAZ-11 entered level 2 at v1.4), but the reasoning is now the standard's rather than an assumed "tolerable means fine".
 
 ### 7.6 Residual risks with their operational constraints and limitations (DTAC C1.2.4)
 
@@ -850,8 +857,8 @@ that **decisions influencing clinical risk management activities be recorded in 
 | Safety-critical component under version control | `prompts/discharge-summary-system-prompt.md` |
 
 Version control provides the maintenance mechanism §3.1.2 requires. **Missing from the File and
-owed:** the Clinical Risk Management Plan, the Safety Incident Management Log, and the release and
-patch audit trail required by §7.3.4. §10.3.
+owed:** the Clinical Risk Management Plan and the release and patch audit trail required by §7.3.4.
+§10.3. *(v1.4: the Safety Incident Management Log is now in the File — `docs/WS4-SAFETY-INCIDENT-LOG.md` v1.0.)*
 
 ### 8.5 Third-party products (DCB0129 §2.5)
 
@@ -988,7 +995,7 @@ highest initial score rests on.
 | 7 | **The cold-eval runner named output folders from date and prompt stem only**, so the v2 run silently overwrote the v1 run of the same day | Noticed during the 15 Sep re-run | **FIXED** — patient-pass mode in the folder name; both runs retained |
 | 8 | **Five errors in the hand-drafted gold reference** — two invented resus statuses, three unfounded "None known" allergy lines | The cold run itself: the model right, the reference wrong | **FIXED** — gold corrected |
 | 9 | `PatientV2SecondPass` believed `off` in the deployed stack; **it is `on`** — CI pins it | Querying the live parameter instead of reading the template default | **CORRECTED** in four documents. Sharpens HAZ-01 rather than softening it |
-| 10 | `infra/template.yaml` asserts the write-once contract is *"enforced at the IAM layer, not just in code"*. **It is not** — both roles hold unconditioned `PutItem` + `UpdateItem` | WS3 DPIA verification pass reading the IaC | **OPEN** → HAZ-11. W1, Oct 2026 |
+| 10 | `infra/template.yaml` asserts the write-once contract is *"enforced at the IAM layer, not just in code"*. **It is not** — both roles hold unconditioned `PutItem` + `UpdateItem` | WS3 DPIA verification pass reading the IaC | **FIXED** 27 Sep 2026 — W1 change set, `3186da4` (comment corrected; `UpdateItem` whitelisted). CloudTrail remains → HAZ-11, W11 |
 | 11 | `docs/CICD.md` states 38 unit tests; the figure is **65** | Verifying §9.1 | **FIXED** 17 Sep 2026 |
 | 12 | `evals/EVAL_RESULTS.md` §5 run log missing the two September v0.7 runs | Compiling §9.3 | **FIXED** 17 Sep 2026 |
 | 13 | `docs/ADR-phase1.md` ADR-007 carried a *"DRAFT — awaiting author approval"* banner above its *"Accepted"* status line | WS2b verification pass | **FIXED** 17 Sep 2026 |
@@ -1094,7 +1101,7 @@ expose omissions, and a group row is where an omission hides. Expanded in full a
 | **2.6.1** | Formally review the process at planned, regular intervals | **Met** | **Interval set at six months or any lifecycle-phase transition, whichever is sooner; first review 17 Mar 2027** (`WS4-CSO-APPOINTMENT.md` §4.5). *v1.0 said "not met" in the matrix, "no interval is planned" at §10.2 and "proposes six months" at §14, while the CSO record set it — three documents, one signature, three answers. Resolved: it is set* |
 | **3.1.1** | Clinical Risk Management File established at the start of a project | **Not met** | Declared as a File for the first time here. §8.4 |
 | **3.1.2** | File maintained for the life of the system | **Met** | Version control |
-| **3.1.3** | All formal documents and compliance evidence recorded in the File | **Partial** | §8.4 — the Plan, the Incident Log and the §7.3.4 release trail are missing from it |
+| **3.1.3** | All formal documents and compliance evidence recorded in the File | **Partial** | §8.4 — the Plan and the §7.3.4 release trail are missing from it *(v1.4: Incident Log added)* |
 | **3.1.4** | Decisions influencing CRM activities recorded in the File | **Met** | ADR-001 … ADR-007; §8.2 |
 | **3.2.1** | **CRM Plan at the start of a project, including risk acceptability criteria** | **NOT MET** | **§10.3 non-conformance 1** |
 | **3.2.2** | CSO approves the Plan | **Not met** | No Plan |
@@ -1107,7 +1114,7 @@ expose omissions, and a group row is where an omission hides. Expanded in full a
 | **3.5.1** | A CSCR at each lifecycle phase defined in the Plan | **Partial** | This Report. Phases defined at §4.4 in the absence of a Plan |
 | **3.5.2** | CSO approves each CSCR | **Met** | §13 |
 | **3.5.3** | Make each CSCR available to a receiving organisation | **Partial** | Public repository is the mechanism; **the pack at §11.5 contains a CSO record that carries a placeholder GMC number and is not yet fit to supply** |
-| **3.6.1** | **Maintain a Safety Incident Management Log** | **NOT MET** | **§10.3 non-conformance 2** |
+| **3.6.1** | **Maintain a Safety Incident Management Log** | **Met** *(v1.4)* | `docs/WS4-SAFETY-INCIDENT-LOG.md` v1.0, with the IG v3.2 §3.6 fields, approved with this Report. Was **NOT MET** — §10.3 non-conformance 2 |
 | **4.1.1** | Implement the clinical risk analysis activities **defined in the Plan** | **Not met** | Same Plan dependency as 4.4.1 and 5.1.2. Missed at v1.0 |
 | **4.1.2** | Clinical risk analysis **SHOULD** be carried out by a multi-disciplinary group including a CSO | **Declared departure** | §5.2. A SHOULD, departed from with stated reason and compensating measure — *not* "Met", which is what v1.0's group row implied while §5.2 said the opposite two sections earlier |
 | **4.1.3** | Clinical risk analysis results recorded | **Met** | `WS4-HAZARD-LOG.md` |
@@ -1124,18 +1131,18 @@ expose omissions, and a group row is where an omission hides. Expanded in full a
 | **6.1.5** | Record that evaluation | **N/A** | As 6.1.4 |
 | **6.1.6** | Where no suitable control is possible, document and proceed to clinical risk benefit analysis | **N/A** | As 6.1.4 |
 | **6.2.1–6.2.2** | Clinical risk benefit analysis and its recording | **N/A** | Only required where no suitable control is possible. *v1.0 scored this "Partial", inventing a non-conformance while the real ones at 6.1.2 and 6.3.2/6.3.3 went unscored* |
-| **6.3.1** | Implement clinical risk control measures | **Partial** | Controls built for 16 of 24 hazards; **eight uncontrolled**; **two Unacceptable residuals** |
+| **6.3.1** | Implement clinical risk control measures | **Partial** | Controls built for 17 of 24 hazards; **seven uncontrolled** *(v1.4: HAZ-11 partially controlled)*; **two Unacceptable residuals** |
 | **6.3.2** | **Verify each control measure** | **Partial** | The log's `(built and verified)` versus `(built)` distinction does this work informally and is now declared as the mechanism. **Unverified controls remain**: HAZ-04 controls 1–5, HAZ-11 controls 1–5, HAZ-14 controls 1–6. **Unscored at v1.0.** IG v3.2 §6.1 supplies the measure: *"a testing programme should address each of the hazards"* — **§9.8 shows 9 of 24 addressed** |
 | **6.3.3** | **Verify the effectiveness of each control measure** | **Partial** | Effectiveness is verified behaviourally for HAZ-01, 02, 06, 08, 09, 12 and 24 and asserted for the rest. **Unscored at v1.0** |
 | **6.4.1** | Completeness of clinical risk control | **NOT MET** | Two Unacceptable residuals; eleven hazards not ALARP (§7.5). **This is the clause §12 answers** |
 | **7.1.1** | Pre-delivery formal review that all requirements are addressed | **N/A at this phase** | Owed at the next lifecycle phase |
 | **7.1.2** | Results of that review recorded | **N/A at this phase** | |
-| **7.1.3** | **The system configuration for the release recorded in the CSCR** | **Met** | The header records prompt v0.7, stack `discharge-audit` as deployed 16 Sep 2026, `PatientV2SecondPass=on`, SPA without the review gate. *v1.0's group row marked all of 7.1 "N/A", discarding a conformance actually earned* |
-| **7.2.1** | **Establish, document and maintain a process to collect and review reported safety concerns and incidents** | **NOT MET** | Alarms and a canary monitor the *system*; neither collects *reported concerns*. §12.2: *there is no route by which a safety incident could be reported to this project at all*. *v1.0 scored the 7.2 group "Partial" on that evidence, which softened it* |
+| **7.1.3** | **The system configuration for the release recorded in the CSCR** | **Met** | The header records prompt v0.7, stack `discharge-audit` as deployed 16 Sep 2026 and, from v1.4, as it stands after the W1 change set (`3186da4`, 27 Sep 2026), `PatientV2SecondPass=on`, SPA without the review gate. *v1.0's group row marked all of 7.1 "N/A", discarding a conformance actually earned* |
+| **7.2.1** | **Establish, document and maintain a process to collect and review reported safety concerns and incidents** | **Met** *(v1.4)* | Incident log §1 (three reporting routes, published in `README.md` and a GitHub issue template) and §2 (log, assess, make safe, close). *Was NOT MET at v1.3:* Alarms and a canary monitor the *system*; neither collects *reported concerns*. §12.2: *there is no route by which a safety incident could be reported to this project at all*. *v1.0 scored the 7.2 group "Partial" on that evidence, which softened it* |
 | **7.2.2** | Assess the impact of reported concerns on the **ongoing validity of the Clinical Safety Case** | **Not met** | Nothing to assess with; and §3.4.1 leaves no distinct Case to assess |
 | **7.2.3** | Corrective action in accordance with the Plan | **Not met** | Plan dependency |
-| **7.2.4** | Timely reporting and resolution of safety incidents | **Not met** | No route, no timescales |
-| **7.2.5** | Maintain a record of incidents **including their resolution** | **NOT MET** | The second limb of non-conformance 2 — *v1.0 called the Incident Log "a one-clause, unconditional MUST"; it is two* |
+| **7.2.4** | Timely reporting and resolution of safety incidents | **Not met** | *v1.4:* a route and target timescales now exist (incident log §1: acknowledge in 2 working days, assess in 5, made safe the same day for level ≥ 3) — **not yet demonstrated**, and resolution depends on the Plan (non-conformance 1). *v1.3:* no route, no timescales |
+| **7.2.5** | Maintain a record of incidents **including their resolution** | **Met** *(v1.4)* | `WS4-SAFETY-INCIDENT-LOG.md` carries *Made safe date*, *Closed date*, *Cause* and a *Journal* per IG v3.2 §3.6. *v1.3: NOT MET — the second limb of non-conformance 2; v1.0 called the Incident Log "a one-clause, unconditional MUST"; it is two* |
 | **7.3.1** | Apply the CRM process to any modification | **Met** | §8.2 |
 | **7.3.2** | Assess the impact of a modification on clinical risk | **Met** | §8.2 — each row names its triggering hazard, and v0.5's row records that it *introduced* one |
 | **7.3.3** | **Issue a CSCR for any modification that changes clinical risk** | **NOT MET** | **§10.3 non-conformance 3.** Six prompt versions changed clinical risk; **no CSCR was issued for any of them** |
@@ -1147,7 +1154,7 @@ expose omissions, and a group row is where an omission hides. Expanded in full a
 compensating measure at §5.2 and §8.6. Declared rather than scored as met, which is what a SHOULD
 requires.
 
-### 10.3 The four substantive non-conformances
+### 10.3 The four substantive non-conformances *(three open from v1.4)*
 
 **1. No Clinical Risk Management Plan (§3.2).** §3.2.1 requires one *at the start of a project*,
 *including risk acceptability criteria*; §4.1.1, §4.4.1, §5.1.2, §7.2.3 and §2.2.2 all point back to
@@ -1159,7 +1166,10 @@ cite it. A few hours, and it converts eight clause statuses. *The single cheapes
 improvement available.*
 
 **2. No Safety Incident Management Log — and no incident process at all (§3.6.1, §7.2.1, §7.2.2,
-§7.2.4, §7.2.5).** Five clauses, not one. Nothing exists: no log, no collection and review process,
+§7.2.4, §7.2.5).** **✅ Closed 27 Sep 2026 (v1.4)** by `docs/WS4-SAFETY-INCIDENT-LOG.md` v1.0 and the published
+contact (`README.md` → *Reporting a safety concern*; the *Safety incident* issue template, label
+`safety-incident`). §3.6.1 and §7.2.1 move to Met; §7.2.2–§7.2.5 stay as scored, because they also
+depend on the Plan (non-conformance 1). *The v1.3 finding follows, kept as the record.* Five clauses, not one. Nothing exists: no log, no collection and review process,
 no reporting route, no timescales, no security or safety contact. `WS3-DPIA.md` R-17 records the
 data-protection half of the same gap (no breach procedure, no Article 33(2) route) at residual 12.
 **Closure, now fully specified by IG v3.2 §3.6**, which gives the field list: *Reference Number ·
@@ -1206,7 +1216,7 @@ Safety Case Reports **to aid the Health Organisation's own risk analysis**"*.
 | DCB0160 v3.2 clause | Obligation on the Health Organisation | Why it cannot be ours |
 |---|---|---|
 | **2.2.2** | *"Top Management MUST authorise the deployment of the Health IT System **accepting any residual clinical risk on behalf of the Health Organisation**"* | **The decisive clause.** The manufacturer's CSO accepts residual risk for the product; only the deployer's Top Management can accept it for its own patients. §13 does the former and cannot do the latter |
-| **2.5.1** | *"In the procurement… MUST ensure that the Manufacturer and the Health IT System complies with DCB0129"* | An assurance duty the deployer owes itself. **§10 is written to be read as evidence against it — including its four non-conformances** |
+| **2.5.1** | *"In the procurement… MUST ensure that the Manufacturer and the Health IT System complies with DCB0129"* | An assurance duty the deployer owes itself. **§10 is written to be read as evidence against it — including its four non-conformances** *(three open from v1.4)* |
 | **3.2.1** | Its **own** Clinical Risk Management Plan covering the deployment | Deployment- and organisation-specific |
 | **3.3.1** | Its **own** Hazard Log | Ours is an input, not a replacement |
 | **3.5.1** | A CSCR **for each lifecycle phase — deployment, use, maintenance and decommissioning** | Four Reports the manufacturer cannot write |
@@ -1282,11 +1292,11 @@ sign that statement.**
 ### 12.1 The question, stated exactly
 
 Two residuals stand at **level 4 — Unacceptable**: *"mandatory elimination or control to reduce risk
-to an acceptable level"*. Sixteen stand at **level 3 — Undesirable**: *"shall only be acceptable
-when further risk reduction is impractical"*. **Eight hazards are uncontrolled.**
+to an acceptable level"*. Fifteen stand at **level 3 — Undesirable**: *"shall only be acceptable
+when further risk reduction is impractical"*. **Seven hazards are uncontrolled.** *(v1.4: HAZ-11 3 → 2.)*
 
-**On eleven of the sixteen level-3 hazards, further risk reduction is not impractical — it has
-simply not been done** (§7.5, log §4.6). Eight of those eleven cost hours or days. The Undesirable
+**On ten of the fifteen level-3 hazards — and on HAZ-11, now at level 2 — further risk reduction is
+not impractical; it has simply not been done** (§7.5, log §4.6). Eight of those eleven cost hours or days. The Undesirable
 band's own rule therefore does not authorise accepting them, independently of the two Unacceptable
 residuals. Only two hazards in the register — HAZ-20 and HAZ-23 — are genuinely ALARP for this
 project as constituted.
@@ -1313,7 +1323,7 @@ plainly is the difference between an honest safety case and a flattering one.**
    acceptance.
 2. **HAZ-10 at residual 4.** A change to the pinned model would pass CI green and deploy. Every
    behavioural guarantee in §9 is a guarantee about one model version.
-3. **Eight uncontrolled hazards, five of them because nothing in the evaluation instrument looks for
+3. **Seven uncontrolled hazards, five of them because nothing in the evaluation instrument looks for
    them.** HAZ-05 (equity), HAZ-16 (sensitive disclosure), HAZ-17 (distorting simplification),
    HAZ-20 (real input), HAZ-22 (off-population use) share one cause: the rubric has five dimensions
    and none of them covers these mechanisms. **A system cannot be represented as safe against
@@ -1322,12 +1332,12 @@ plainly is the difference between an honest safety case and a flattering one.**
 5. **HAZ-15 — wrong-patient association is uncontrolled and undetectable**, because the system holds
    no patient identifier to compare against. For a documentation tool this is close to a baseline
    expectation and it is unmet.
-6. **Four non-conformances against the standard itself** (§10.3): no Clinical Risk Management Plan;
-   no Safety Incident Management Log or incident process at all; no CSCR issued for six
-   risk-changing modifications; no release and patch audit trail. The second matters most in
-   practice — **there is no route by which a safety incident could be reported to this project.**
+6. **Three non-conformances against the standard itself** (§10.3): no Clinical Risk Management Plan;
+   no CSCR issued for six risk-changing modifications; no release and patch audit trail. *(v1.4: the
+   fourth — no Safety Incident Management Log, and no route by which a safety incident could be
+   reported — closed on 27 Sep 2026 by `WS4-SAFETY-INCIDENT-LOG.md` v1.0 and the published contact.)*
 
-**What is deliberately *not* claimed:** that the system is unsafe. Sixteen of twenty-four hazards
+**What is deliberately *not* claimed:** that the system is unsafe. Seventeen of twenty-four hazards *(v1.4)*
 carry real controls, several verified behaviourally and cold; the highest initial risks (HAZ-04 at
 5, and HAZ-01, 06, 10, 12, 18 at 4) have all been reduced or are explicitly recorded as not; and
 §8.2 shows a risk-management process that has actually operated, found real defects and corrected
@@ -1349,7 +1359,7 @@ stays no.
 | 4 | **Run the stratified evaluation** at log §6, pass criterion set in advance | HAZ-05 | A written result in `MODEL_CARD.md`, the log and `WS3-DPIA.md` R-19 — all three | Author / Jan 2027 *(was Nov)* |
 | 5 | **Re-run the full 18-scenario corpus under v0.7**, and extend it to mental health and oncology | HAZ-01 residual, HAZ-22 | A `SUMMARY.md` with ≥18 scenarios, gate PASS on all, entered in the run log | Author / W4 (18-scenario re-run as the v1 baseline) · Jan 2027 (MH/oncology) |
 | 6 | **Surface a patient identifier on every output**; expire or flag stale polls | HAZ-15 | A generated output displays the identifier from its own notes | Author / W10, 7 Dec 2026 *(was Oct)* |
-| 7 | **Write the Clinical Risk Management Plan (§3.2), the Safety Incident Management Log and its reporting route (§3.6.1, §7.2.1–7.2.5), and the release audit trail (§7.3.4)** | The four §10.3 non-conformances | The files exist, CSO-approved; a published incident-reporting contact; a release register | Author (CSO role) / **W1** incident log + published contact · **W7** release register · **Jan 2027** CRM Plan *(was all Oct)* |
+| 7 | **Write the Clinical Risk Management Plan (§3.2), the Safety Incident Management Log and its reporting route (§3.6.1, §7.2.1–7.2.5), and the release audit trail (§7.3.4)** | The four §10.3 non-conformances | The files exist, CSO-approved; a published incident-reporting contact; a release register | Author (CSO role) / **W1** incident log + published contact · **W7** release register · **Jan 2027** CRM Plan *(was all Oct)*. **v1.4: incident log and published contact done, 27 Sep 2026** |
 
 **Tier 2 — required, cheaper than Tier 1, no reason to wait.**
 
@@ -1358,7 +1368,7 @@ stays no.
 | 8 | **Narrow prompt §2a** so the model states that a form exists and its content is not transcribed, without inferring the recommendation | HAZ-02 → 2 |
 | 9 | **Specify the paediatric variant of the fall-back line**; extend the gate to check it on the advisory path | HAZ-03 |
 | 10 | **Extend the safety-net gate beyond urgency tokens** | HAZ-01, HAZ-03 |
-| 11 | **Constrain the `UpdateItem` grant; set `LedgerRetentionDays` and COMPLIANCE mode; add the CloudTrail ADR-002 already claims; correct the `infra/template.yaml` comment and ADR-002's CloudTrail line regardless** | HAZ-11 |
+| 11 | **Constrain the `UpdateItem` grant; set `LedgerRetentionDays` and COMPLIANCE mode; add the CloudTrail ADR-002 already claims; correct the `infra/template.yaml` comment and ADR-002's CloudTrail line regardless** *(v1.4: `UpdateItem` whitelist, `LedgerRetentionDays` 183 and both corrections done 27 Sep 2026; CloudTrail, the worker's `PutItem` and COMPLIANCE mode remain)* | HAZ-11 |
 | 12 | **Display generation age and warn on staleness** | HAZ-19 |
 | 13 | Add contradiction cases to the expansion corpus | HAZ-09 |
 
@@ -1395,17 +1405,17 @@ require this Report to be re-issued before, not after:**
 | **Authority limitation (§2.3.4)** | **The CSO has accepted the duty to ensure the process is followed and has no mechanism by which to do it.** CI deploys on any push to `main` with no clinical-safety approval step, and prompt v0.7 was deployed on 16 September — *before this appointment existed*. Recorded as a Partial at §10.1 clause 2.3.4 and as Tier 1 condition 7's companion: **adding a CSO approval gate to the release process is the act that makes this appointment real** |
 | **Next review** | On any §12.3 condition being met; on any hazard-log update trigger; on publication of a revised DCB0129; **on completion of the NHS England CSO Practitioner workshop (booked 16 March 2027), when this Report and the Hazard Log are re-approved as a new issue by a CSO who has completed it**; and in any case by **17 March 2027** (the §2.6.1 interval) |
 
-### 13.1 Approval of v1.4 — DRAFT, not signed *(to be completed after the W1 deploys)*
+### 13.1 Approval of v1.4 — signed 27 September 2026
 
 | | |
 |---|---|
 | **Approves** | `docs/WS4-SAFETY-CASE.md` **v1.4** (§3.5.2), `docs/WS4-HAZARD-LOG.md` **v1.4** (§3.3.2) and `docs/WS4-SAFETY-INCIDENT-LOG.md` **v1.0** (§3.6.1) |
-| **Date** | *[date of signature]* |
+| **Date** | **27 September 2026** — approved by **Shina Oguntoye, MBBS, GMC 7646070, Clinical Safety Officer** (*"I approve v1.4"*, 09:21 BST), against the stack as re-verified live that morning |
 | **Scope of approval** | Unchanged from v1.3: **the residual risk for the system in its current configuration and current use — a demonstration on fully synthetic data**. The configuration is `discharge-audit` **as it stands after the W1 change set** (`docs/ADR-phase1.md` ADR-009, *The W1 change set*), re-verified live on the date of signature. Development stacks `discharge-eph-*` are not approved configurations |
-| **What this version changes** | No hazard score, status or band. The configuration line (last deploy; `PromptCaching=on`); branch isolation in place of the withdrawn pipeline parameter; HAZ-08 re-analysed (late — recorded as a process deviation); HAZ-10 dated to the model's AWS end-of-life floor; HAZ-11 controls 6–8; HAZ-19's corrected control; HAZ-24 met; the paediatric fall-back wording decided; NC-2 closed by the Safety Incident Management Log and a published contact |
+| **What this version changes** | **One hazard score: HAZ-11's residual 3 → 2** (Considerable (multiple) × Medium → × Low; band Undesirable → Acceptable-where; control state Uncontrolled → Partially controlled; status stays **Open**), decided by the CSO on 27 Sep 2026 against controls 6–8 as deployed and verified live — an alteration within 183 days is now detectable, and an update can no longer rewrite `input_sha256` or `user_sub`; severity unchanged; not ALARP until CloudTrail and the removal of the worker's `PutItem` (W11). No other score, status or band. The configuration line (last deploy; `PromptCaching=on`); branch isolation in place of the withdrawn pipeline parameter; HAZ-08 re-analysed (late — recorded as a process deviation); HAZ-10 dated to the model's AWS end-of-life floor; HAZ-11 controls 6–8; HAZ-19's corrected control; HAZ-24 met; the paediatric fall-back wording decided; NC-2 closed by the Safety Incident Management Log and a published contact (clauses 3.6.1, 7.2.1 and 7.2.5 → Met; 7.2.4 stays Not met, with a route and timescales now defined but not yet demonstrated) |
 | **Explicitly withheld** | As v1.3. And **the ADR-009 agentic pipeline is not approved** by this signature. It is approved, or not, at the W11 cut-over as v2.0 |
-| **Preconditions — do not sign until each is true** | 1. All W1 deploys done, and each smoke test in the runbook passed. 2. Live re-verification on the day: the parameters, the ledger lock of 183 days, the whitelisted policies and the OIDC trust all match the change set. 3. The 20 Sep deploy explained — CI or by hand — from CloudTrail (runbook Step 0c). **✅ Met 24 Sep 2026: CI** (`assumed-role/GitHubActionsDischargeDeploy`, change sets 08:48:53 and 11:24:18 UTC; ADR-009 *Live-state reconciliation*). 4. The unit suite green at 68 in CI on `main`. 5. `README.md`'s safety-concern section and the issue template live on GitHub, so the published contact actually works. 6. HAZ-11's residual decided by the CSO against controls 6–8 — the draft leaves it unchanged; the DPIA proposes R-04 at 8 |
-| **Declared conflict / authority limitation** | Unchanged from v1.3. **The approval gate still does not exist** — the W1 deploys will be made by the same person who signs, through a pipeline with no approval step. That stays true until W7 |
+| **Preconditions — do not sign until each is true** | 1. All W1 deploys done, and each smoke test in the runbook passed. **✅ Met 27 Sep 2026:** D1 (25 Sep), Push 1 `9bcd798` (25 Sep) and Push 2 `3186da4` (27 Sep, CI run 36301509633); every smoke test passed, no rollback. 2. Live re-verification on the day: the parameters, the ledger lock of 183 days, the whitelisted policies and the OIDC trust all match the change set. **✅ Met 27 Sep 2026:** parameters, 183-day GOVERNANCE lock, `AuditKey` Retain and the live-role simulations at 08:00 BST; OIDC trust at 08:52 BST. 3. The 20 Sep deploy explained — CI or by hand — from CloudTrail (runbook Step 0c). **✅ Met 24 Sep 2026: CI** (`assumed-role/GitHubActionsDischargeDeploy`, change sets 08:48:53 and 11:24:18 UTC; ADR-009 *Live-state reconciliation*). 4. The unit suite green at 68 in CI on `main`. **✅ Met 25 Sep 2026:** `68 passed` in CI run 36134417966 (commit `9bcd798`). 5. `README.md`'s safety-concern section and the issue template live on GitHub, so the published contact actually works. **✅ Met 25 Sep 2026:** both on `main` from `1328c1f`; *New issue* offers *Safety incident* with the `safety-incident` label (created 25 Sep). 6. HAZ-11's residual decided by the CSO against controls 6–8 — the draft leaves it unchanged; the DPIA proposes R-04 at 8. **✅ Decided 27 Sep 2026: residual 2** (Considerable (multiple) × Low), consistent with the DPIA v2.5's *proposed* R-04 of 8; the DPIA adopts it at its next revision |
+| **Declared conflict / authority limitation** | Unchanged from v1.3. **The approval gate still does not exist** — the W1 deploys were made by the same person who signs, through a pipeline with no approval step. That stays true until W7 |
 
 ---
 
@@ -1605,7 +1615,8 @@ Risk Management File. The deployed stack is built from a commit by CI, so a depl
 to a tree state.
 
 **The configuration this Report is issued against**, per §7.1.3: **system prompt v0.7; stack
-`discharge-audit` as deployed 16 Sep 2026 at commit `f7af758`; `PatientV2SecondPass=on`; SPA without
+`discharge-audit` as it stands after the W1 change set — commit `3186da4`, re-verified live 27 Sep 2026
+(v1.3: as deployed 16 Sep 2026 at commit `f7af758`); `PatientV2SecondPass=on`; SPA without
 the clinician review gate.** Model pin `anthropic.claude-sonnet-4-6`, eu-west-2 on-demand,
 temperature 0. Every generation records its own model version, request region and inference profile
 in the audit row, so a given output is attributable to a configuration after the fact.
@@ -1639,6 +1650,7 @@ other directions:**
    is a diff. It does not make a model change fail CI; that is still W7.)*
 3. **Two documented assurances do not match the configuration they describe** — the
    `infra/template.yaml` write-once comment and ADR-002's CloudTrail line (HAZ-11, §9.6 item 10).
+   *(v1.4: both corrected by the W1 change set, 27 Sep 2026.)*
    **Configuration control that does not extend to the accuracy of what the configuration claims
    about itself is the failure mode this project has now hit five times** (HAZ-13).
 
@@ -1648,7 +1660,7 @@ other directions:**
 
 | Version | Date | CSO approval | Change |
 |---|---|---|---|
-| **1.4 — DRAFT** | **24 Sep 2026** | **Pending** (§13) | **Drafted with `docs/ADR-phase1.md` ADR-008 and ADR-009 — no hazard, score, status, band or safety-statement change.** (1) Header and §18: the released configuration is `discharge-audit` alone; development stacks `discharge-eph-*` are named as not released. (2) **Supersedes v1.3 item (2) below** — the agentic pipeline is **not** built behind a pipeline parameter; it is built on a branch and released by the W11 merge (§8.3). (3) §7.3 mechanism 1 and its structural statement note what ADR-009 changes at the cut-over (tool use; the gate at the point of use). (4) §8.3 records the CI isolation as verified and the OIDC trust as a convention, not a boundary. (5) **Live re-verification, 24 Sep 2026** — header configuration corrected (last deploy 20 Sep; `PromptCaching=on`); §18 gap 2 shown to be worse than stated. (6) **W1 infrastructure change set**, deployed by the author before approval: OIDC trust narrowed to `main`; `AuditKey` retained; `UpdateItem` attribute whitelists; ledger retention 183 days; parameters pinned in CI; status endpoint enforces `ttl` (§9.1: 68 tests). **Approved once, after those deploys.** The Report is re-issued as **v2.0** at the W11 cut-over, per v1.3 item (2). |
+| **1.4** | **24 Sep 2026** (drafted) · **27 Sep 2026** (approved) | **Approved 27 Sep 2026** (§13.1) | **Drafted with `docs/ADR-phase1.md` ADR-008 and ADR-009; approved after the W1 deploys. One score change — HAZ-11 residual 3 → 2 (CSO, 27 Sep 2026, on the deployed W1 controls); NC-2 closed; no other hazard, score, status, band or safety-statement change.** (1) Header and §18: the released configuration is `discharge-audit` alone; development stacks `discharge-eph-*` are named as not released. (2) **Supersedes v1.3 item (2) below** — the agentic pipeline is **not** built behind a pipeline parameter; it is built on a branch and released by the W11 merge (§8.3). (3) §7.3 mechanism 1 and its structural statement note what ADR-009 changes at the cut-over (tool use; the gate at the point of use). (4) §8.3 records the CI isolation as verified and the OIDC trust as a convention, not a boundary. (5) **Live re-verification, 24 Sep 2026** — header configuration corrected (last deploy 20 Sep; `PromptCaching=on`); §18 gap 2 shown to be worse than stated. (6) **W1 infrastructure change set**, deployed by the author before approval: OIDC trust narrowed to `main`; `AuditKey` retained; `UpdateItem` attribute whitelists; ledger retention 183 days; parameters pinned in CI; status endpoint enforces `ttl` (§9.1: 68 tests). **Approved once, after those deploys.** The Report is re-issued as **v2.0** at the W11 cut-over, per v1.3 item (2). |
 | **1.3** | **18 Sep 2026** | §13 | **Co-issue with `WS4-CSO-APPOINTMENT.md` v1.3 (training record corrected) — no hazard, score, status, band or safety-statement change.** (1) §12.3 Tier 1 owner/dates re-aligned to The Window's schedule v2026-09-18 (revised the same day after an independent verification pass), which is now the single schedule: #1 review gate W1 → **W10**; #2 release-gate eval W1–W2 → **W7**; #3 dimensions **W5**, scenarios **Jan 2027**; #4 → **Jan 2027**; #5 18-scenario baseline **W4**, MH/oncology **Jan 2027**; #6 → **W10**; #7 split — incident log + contact **W1**, release register **W7**, CRM Plan **Jan 2027**. Tier 2 #8 and #9 are built into the W3 agentic steps. The previous dates were written independently of The Window and, with the WS3 DPIA's and the WS2 + WS3 page's W1 lists, put ~100–110h of work into a 60h October. (2) **Release discipline for the rebuild:** the agentic pipeline is built behind a pipeline parameter and changes nothing live until the **W11 cut-over**, which passes the W7 CSO release gate and **re-issues this Report (v2.0)** — so October's build does not repeat the v0.7 sequence of §13's authority limitation. (3) §13 next-review trigger added for the Practitioner workshop. (4) Cross-references to v1.3. **The approval stands** — reasoning on the Notion stocktake page, 18 Sep 2026. |
 | **1.2** | **18 Sep 2026** | §13 | **DCB0129 Implementation Guidance v3.2 and DCB0160 Implementation Guidance v4.2 obtained and applied** (now in `docs/`). **The scheme held: Tables 7, 8 and 9 are correct cell-for-cell and no hazard score moved.** Corrections and additions: acceptability level 2 re-stated verbatim — *"Acceptable where cost of further reduction outweighs benefits gained or where further risk reduction is impractical"*, so "Tolerable" is dropped and the **ALARP test now reaches level 2** (§6.4, §7.5); **§2.4 maps this Report onto the Guidance's Table 6 eleven-section CSCR contents list**, and the two sections it was missing are written as **§17 Quality Assurance and Document Approval** and **§18 Configuration Control and Management**; **§7.3 replaced** with the Guidance's five-mechanism order of preference in place of an ISO 14971 three-tier framing; **new §9.8** measures the testing programme against *"a testing programme should address each of the hazards"* and finds **9 of 24 addressed, 2 partial, 13 untested**; **§4.4** re-stated against the Guidance's named lifecycle phases, showing three passed through with no Report issued; **§5.2** gains the *"strongly recommended"* hazard workshop, the three key areas and Appendix B's techniques; **clause 3.4.1 upgraded Partial → Met** on the Guidance's filing-cabinet framing, which shows v1.1 was scoring against a requirement that does not exist; **§10.3 non-conformance 2** now carries the Guidance's ten-field Safety Incident Management Log specification. **Guidance version numbers corrected** — they are the opposite way round from the Specifications and v1.0–v1.1 had them wrong. GMC number inserted, so the §11.4 pack is now fit to issue. Companion log at **v1.2**: Hazard Status vocabulary applied (**19 Open · 4 Transferred · 1 Closed**), Table 2 / Table 5 column mapping, control categorisation by Design / Test / Training / Business Process Change |
 | **1.1** | 17 Sep 2026 | §13 | **Two independent adversarial verification passes applied in full** (§16). Compliance matrix expanded from 36 rows to the full **61 sub-clauses** — v1.0's nine group rows concealed 29 sub-clauses and six wrong verdicts. **Four non-conformances now stated, not three**: §7.3.3 (no CSCR for six risk-changing modifications), §7.3.4 (no release audit trail), the §7.2 incident-process group, and §3.2 (the Plan). New **§7.4** (§6.1.2 — do the proposed controls introduce new hazards? Applied to the review gate, and it does: four of them). New **§7.5** ALARP and **§7.6** operational constraints, plus **§11.3** transferred hazards — three C1.2.4 requirements absent from v1.0. Companion log at v1.1 with **24 hazards**, ten added. Corrections: corpus **18** not 19; deployment **16 Sep** not 15; ten eval runs not nine, and run 8 was missing from the project's own record; "hazard appeared four times" not once; §2.6.1 resolved as **Met**; §6.2 re-scored **N/A**; the §2.4.2 plural honoured; eleven cross-references fixed. Four new §9.6 defects, three of them defects in v1.0 of this Report |

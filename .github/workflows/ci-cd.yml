@@ -66,6 +66,14 @@ jobs:
             --s3-bucket aws-sam-cli-managed-default-samclisourcebucket-xufyv0yd8kla \
             --output-template-file packaged.yaml
 
+      # Every parameter whose live value matters is pinned here, not left to
+      # the stack. `aws cloudformation deploy` KEEPS a parameter's previous
+      # value when it is not overridden - so a value set once by hand
+      # (PromptCaching=on was, found 24 Sep 2026) persists invisibly, and a
+      # changed template Default never reaches the live stack. Pinning makes
+      # the live configuration readable from this file. ModelId is pinned so
+      # a model change is a visible diff here (HAZ-10). LedgerRetentionDays:
+      # 183 days - see docs/ADR-phase1.md ADR-009, W1 change set.
       - name: Deploy
         working-directory: infra
         run: |
@@ -75,7 +83,10 @@ jobs:
             --capabilities CAPABILITY_NAMED_IAM \
             --parameter-overrides \
               Environment=demo \
+              ModelId=anthropic.claude-sonnet-4-6 \
               PatientV2SecondPass=on \
+              PromptCaching=on \
+              LedgerRetentionDays=183 \
               CanaryEnabled=on \
               CanaryMaxConcurrency=4 \
               AlertEmail=${{ vars.ALERT_EMAIL }} \

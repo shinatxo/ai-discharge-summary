@@ -222,6 +222,16 @@ Resources:
   # ---------------------------------------------------------------------------
   AuditKey:
     Type: AWS::KMS::Key
+    # Retain (W1, ADR-009 (d)): the audit and results tables, the WORM ledger
+    # bucket and (from W11) the trace table are encrypted with this key, so
+    # losing it makes all of them unreadable. Without
+    # Retain, removing the resource from the stack - a stack delete, or a
+    # future `Condition` evaluating false - schedules the key for deletion.
+    # With Retain, CloudFormation forgets the key but KMS keeps it.
+    # (SAA: DeletionPolicy / UpdateReplacePolicy protect a resource from the
+    # stack's lifecycle; they are instructions to CloudFormation, not to KMS.)
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
     Properties:
       Description: !Sub "CMK for the discharge-summary audit log (${Environment})"
       EnableKeyRotation: true
@@ -408,23 +418,100 @@ Resources:
               Service: lambda.amazonaws.com
             Action: sts:AssumeRole
       Policies:
-        # (a) Audit table: append + status-transition / review-transition update.
-        #     Note the ABSENCE of DeleteItem / BatchWriteItem / Scan / Query -
-        #     that is ADR-002's write-once-then-flip-the-review-flag contract,
-        #     enforced at the IAM layer, not just in code. In slice 4b the
-        #     worker also UpdateItem-s the existing pending GEN# row from the
-        #     dispatcher (status=pending -> complete/failed); same action, same
-        #     resource - no new permission needed.
+        # (a) Audit table. What IAM enforces here, and what it cannot
+        #     (corrected W1, 24 Sep 2026 - this comment used to claim the
+        #     write-once contract was "enforced at the IAM layer, not just in
+        #     code", which was not true; docs/WS3-DPIA.md Annex C.3):
+        #   - IAM enforces: no DeleteItem / BatchWriteItem / Scan / Query, so
+        #     rows cannot be destroyed or read in bulk by this role; and, via
+        #     the dynamodb:Attributes whitelists below, WHICH attribute NAMES
+        #     an UpdateItem may touch - so an update cannot rewrite
+        #     input_sha256, user_sub or started_at. (PK and SK are listed only
+        #     because AWS requires key attributes in the list; DynamoDB never
+        #     lets an update change a key anyway.)
+        #   - IAM cannot enforce: VALUE transitions (only pending -> complete
+        #     or failed). Those are ConditionExpressions in code - the same
+        #     code that writes the row. And PutItem replaces a WHOLE item, so
+        #     a role holding PutItem can overwrite any row regardless of any
+        #     attribute whitelist. The worker keeps PutItem only for the legacy
+        #     direct-invoke smoke-test path; it is removed at the W11 cut-over
+        #     (ADR-009). Overwrites are DETECTED, not prevented: the stream
+        #     copies old and new images to the WORM ledger (LedgerRetentionDays).
+        #   - ReturnValues is pinned to NONE, which limits using a write to
+        #     read a row back (ReturnValuesOnConditionCheckFailure has no IAM
+        #     condition key; no code sets it).
+        #   The UpdateItem list includes ADR-009's future attributes
+        #   (pipeline_version, failed_step, model_calls, safety_net_gate) so
+        #   the W11 worker is not denied at the audit flip. PK and SK must be
+        #   listed: AWS requires every key attribute in a dynamodb:Attributes
+        #   condition. (SAA: fine-grained access control for DynamoDB.)
         - PolicyName: audit-table-write
           PolicyDocument:
             Version: '2012-10-17'
             Statement:
-              - Sid: PutAndStatusTransitionOnly
+              - Sid: StatusTransitionUpdateWhitelisted
+                Effect: Allow
+                Action:
+                  - dynamodb:UpdateItem
+                Resource: !GetAtt AuditTable.Arn
+                Condition:
+                  ForAllValues:StringEquals:
+                    dynamodb:Attributes:
+                      - PK
+                      - SK
+                      - status
+                      - completed_at
+                      - model_version
+                      - output_sha256
+                      - parse_ok
+                      - input_tokens
+                      - output_tokens
+                      - patient_version
+                      - patient_model_version
+                      - patient_parse_ok
+                      - patient_output_tokens
+                      - error_code
+                      - error_message
+                      - failed_at
+                      - pipeline_version
+                      - failed_step
+                      - model_calls
+                      - safety_net_gate
+                  StringEqualsIfExists:
+                    dynamodb:ReturnValues: NONE
+              - Sid: LegacyDirectInvokePutWhitelisted
                 Effect: Allow
                 Action:
                   - dynamodb:PutItem
-                  - dynamodb:UpdateItem
                 Resource: !GetAtt AuditTable.Arn
+                Condition:
+                  ForAllValues:StringEquals:
+                    dynamodb:Attributes:
+                      - PK
+                      - SK
+                      - generation_id
+                      - user_sub
+                      - timestamp
+                      - input_sha256
+                      - output_sha256
+                      - model_version
+                      - output_type
+                      - draft
+                      - reviewed_at
+                      - request_region
+                      - inference_profile
+                      - parse_ok
+                      - patient_version
+                      - patient_model_version
+                      - patient_parse_ok
+                      - input_tokens
+                      - output_tokens
+                      - schema_version
+                      - status
+                      - started_at
+                      - completed_at
+                  StringEqualsIfExists:
+                    dynamodb:ReturnValues: NONE
         # (a2) Results table (slice 4b): PutItem only. The worker writes the
         #      three outputs here for the polling client to fetch. Status
         #      Lambda has the corresponding GetItem on this table; nobody has
@@ -814,18 +901,42 @@ Resources:
         #     the worker can mark its own row). Deliberately NO Delete, NO Scan.
         #     The dispatcher only ever transitions pending -> failed, never
         #     pending -> complete - the latter is the worker's job and is
-        #     enforced by a ConditionExpression in code.
+        #     enforced by a ConditionExpression in code, not by IAM.
+        #   W1 (24 Sep 2026): UpdateItem is whitelisted to the failed-
+        #   transition attributes. PutItem and GetItem are deliberately NOT
+        #   conditioned yet: the dispatcher's PutItems run inside
+        #   TransactWriteItems, and AWS does not document whether
+        #   dynamodb:Attributes is evaluated per operation inside a
+        #   transaction. Getting that wrong would deny every generation on the
+        #   live path. It is tested on the W2 ephemeral stack first (ADR-009).
+        #   PutItem is needed to create rows, so this role can overwrite a row
+        #   whatever IAM says - detected by the ledger, not prevented.
         - PolicyName: audit-table-dispatch
           PolicyDocument:
             Version: '2012-10-17'
             Statement:
-              - Sid: PutGetAndFailedTransitionOnly
+              - Sid: CreateAndReplayLookup
                 Effect: Allow
                 Action:
                   - dynamodb:PutItem
                   - dynamodb:GetItem
+                Resource: !GetAtt AuditTable.Arn
+              - Sid: FailedTransitionUpdateWhitelisted
+                Effect: Allow
+                Action:
                   - dynamodb:UpdateItem
                 Resource: !GetAtt AuditTable.Arn
+                Condition:
+                  ForAllValues:StringEquals:
+                    dynamodb:Attributes:
+                      - PK
+                      - SK
+                      - status
+                      - error_code
+                      - error_message
+                      - failed_at
+                  StringEqualsIfExists:
+                    dynamodb:ReturnValues: NONE
         # (b) Worker invocation - exactly ONE function, async only. SAA: this
         #     is the function-to-function invocation pattern, scoped tightly
         #     so the dispatcher can't accidentally call anything else in the

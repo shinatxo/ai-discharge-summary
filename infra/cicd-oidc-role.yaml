@@ -50,11 +50,20 @@ Resources:
               Federated: !Ref OidcProviderArn
             Action: sts:AssumeRoleWithWebIdentity
             Condition:
+              # Only a workflow running on the main branch of this repo may
+              # assume the role (W1, 24 Sep 2026 - was `repo:<org>/<repo>:*`,
+              # which let ANY branch or pull request assume it: a branch could
+              # edit its own copy of the workflow and deploy to the live stack).
+              # StringEquals, not StringLike: no wildcard is needed any more.
+              # NOTE for W7: adding a GitHub `environment:` to the deploy job
+              # changes the token's sub to
+              # `repo:<org>/<repo>:environment:<name>` - update this condition
+              # in the same change, or the deploy job can no longer assume the
+              # role. (SAA: a role's trust policy is its resource-based policy -
+              # it says WHO may assume it; the permissions policy says WHAT.)
               StringEquals:
                 token.actions.githubusercontent.com:aud: sts.amazonaws.com
-              # Only workflows in this repo may assume the role.
-              StringLike:
-                token.actions.githubusercontent.com:sub: !Sub "repo:${GitHubOrg}/${RepoName}:*"
+                token.actions.githubusercontent.com:sub: !Sub "repo:${GitHubOrg}/${RepoName}:ref:refs/heads/main"
       Policies:
         - PolicyName: deploy-discharge-audit
           PolicyDocument:

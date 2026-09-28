@@ -17,11 +17,15 @@ permissions:
 jobs:
   test:
     name: Tests + lint
-    runs-on: ubuntu-latest
+    # Runner image pinned, not ubuntu-latest: -latest moves to Ubuntu 26 from
+    # 19 Oct 2026, and an image change is a build-environment change nobody
+    # reviewed. Actions on node24 majors: GitHub forces Node 20 actions onto
+    # Node 24 anyway; these majors are built for it (ADR-009 Owed, W2).
+    runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v7
         with:
           python-version: "3.13"
 
@@ -45,15 +49,15 @@ jobs:
     needs: test
     # Only on a direct push to main — never on PRs or manual test runs from forks.
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     permissions:
       id-token: write   # mint the OIDC token
       contents: read
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Configure AWS credentials via OIDC (no stored keys)
-        uses: aws-actions/configure-aws-credentials@v4
+        uses: aws-actions/configure-aws-credentials@v6
         with:
           role-to-assume: arn:aws:iam::061051247394:role/GitHubActionsDischargeDeploy
           aws-region: eu-west-2

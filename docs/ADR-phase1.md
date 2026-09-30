@@ -1104,8 +1104,9 @@ canary run could not fit its Lambda; that rested on a stale 5 requests/min quota
 
 ## ADR-009 — The agentic pipeline: named steps, step traces, a review-gate seam, and a branch-isolated build
 
-> **Version 1.1 · 24 Sep 2026.** *(v1.1, same day: accepted with the author's rulings; reconciled
-> against the live account — see "Live-state reconciliation" below.)* Records the author's design of 23 Sep 2026, pressure-tested
+> **Version 1.2 · 30 Sep 2026.** *(v1.1, 24 Sep: accepted with the author's rulings; reconciled
+> against the live account — see "Live-state reconciliation" below. v1.2, 30 Sep: the W2 part-1
+> build decisions — see "Build record — W2 part 1".)* Records the author's design of 23 Sep 2026, pressure-tested
 > against the repository on 24 Sep 2026, then checked by an independent verification pass the same
 > day (findings applied; see *Verification* at the end). Where the test found that part of the
 > design cannot work as written, the evidence is shown and the amendment is marked **[A1]–[A7]**
@@ -2024,6 +2025,102 @@ issues. **Applied:**
 **Applied differently:** the verifier suggested generating the simulator JSON from the template;
 instead the runbook now also simulates against the *deployed* roles after Push 2, which tests the
 real policy rather than any copy of it. **Rejected:** none.
+
+### Build record — W2 part 1 (30 Sep 2026)
+
+Steps 1 and 3 and the step-2 tool schema, built on `feat/agentic-pipeline` from `923097e`, synthetic
+notes only, no AWS. 120 new unit tests; the suite is 188 green (the 68 existing unchanged), run on
+Python 3.14 locally and 3.10 as a cross-check — Lambda and CI are 3.13. These decisions fill what (f)
+left open ("the facts schema's field list") and settle three implementation choices the step table
+did not. Each was put to the author as options and a recommendation, and accepted.
+
+**Where the code lives — `src/generate/pipeline/`.** A package inside the worker's `CodeUri`, so it
+ships in the worker zip with no template change and the W11 worker imports it as
+`from pipeline import run_step`. *Rejected:* a Lambda layer (a template change and a separately
+versioned artefact for a single consumer — the `PatientV2SecondPass` class of configuration drift);
+a shared `src/pipeline/` copied in at build time (a build step CI does not have, and two copies,
+against [A3]'s one-copy rule). **Rule:** no module in the package creates an AWS client at import;
+model steps receive their Bedrock client as an argument. The safety-net gate moves into this package
+at 8b (W3).
+
+**The step registry — an explicit tuple of `Step(name, seq, kind, fn)`.** `seq` (`"01"`, `"03b"`…)
+and `kind` (code / model) are what the trace's `SK` and `kind` need. *Rejected:* a bare name→function
+dict (carries neither); a self-registering decorator (a step exists only if its module happened to
+be imported — a silent "unknown step"). `run_step(name, input)` round-trips input and output through
+JSON (`allow_nan=False`), so a step sees exactly what a fixture would give it; every fail-closed error
+is `StepError(code)` with a fixed code, never note text. The line index travels under the reserved
+key `lines`, which `trace_view()` strips — one key to redact.
+
+**Step 1 — `guard_input`.**
+- `notes_sha256` is SHA-256 of the exact string received, before any processing, so it equals the
+  dispatcher's `input_sha256` (the dispatcher strips, then hashes, then passes the stripped string).
+- Split with `splitlines()`; **every physical line gets an ID, blanks included**, so `L012` is the
+  twelfth line a clinician counts. Empty or whitespace-only notes → `empty_notes`.
+- **More than 999 lines → `too_many_lines`, fail closed.** The ID is `L` + three digits; the
+  dispatcher's 50,000-character ceiling could exceed 999 short lines, and `L1000` would sort before
+  `L200`.
+- Flags: four named rules (`override_instructions`, `role_claim`, `output_control`,
+  `delimiter_markup`), case-insensitive, run on each line **and on each adjacent pair joined by a
+  space, keeping only matches that cross the join** — A5's injection is spread over three lines, and a
+  phrase split by a wrap exists whole only in the pair. A flag is `{line, rule}`; the matched text is
+  never kept. On the 18 canary scenarios A5 flags exactly **L014–L016** and no other scenario flags
+  anything; clinical near-misses ("sats >94%", "only responds to pain", "do not attempt CPR") are
+  pinned as non-flags.
+
+**Step 2 — the `record_facts` schema (`pipeline/schemas.py`).**
+- **Shape.** Each PART A field is `{status, items: [{value, cites}]}` rather than the step table's
+  `{value, status, cites}`, so multi-entry fields (investigations, secondary diagnoses) need no second
+  shape. A citation is `{lines: [...], quote}` — a **list** of line IDs, because notes wrap
+  mid-phrase (A5: "IV" / "clarithromycin"). Top level: `fields` (16 fields), `medications`
+  (`pre_admission[]`, `discharge[]`, `discharge_status` ∈ listed / referenced_not_listed /
+  not_documented — the middle value is A5's "continue regular medications"), `resus`,
+  `documented_advice[]`, `age_group`, `contradictions[]`, `suspicious_text[]`.
+- **Every property required; no union or nullable types.** Absence is data: an undocumented field is
+  `status: not_documented` with no items, never a missing key. This also keeps the schema under
+  Anthropic's compiler caps (24 optional parameters, 16 union-typed parameters across a request —
+  from Anthropic's API documentation; Bedrock's page does not state them, so part 2's first real call
+  is the actual test).
+- **Annex C.2 as a test.** Only six keywords are allowed (`type`, `properties`, `required`,
+  `additionalProperties`, `items`, `enum`), and **every string anywhere in the schema must be a
+  snake_case identifier** — no description, title, example or default can carry a sentence or a note
+  fragment into the AWS-managed grammar cache. Field meanings live in the step-2 prompt, which is not
+  grammar-cached. Thirteen mutation tests prove the checker fails on each forbidden construct.
+- **No patient identifiers in the schema** (name, DOB, NHS or hospital number). In the facts object
+  they would sit in every trace for 30 days, and the canary notes contain none. How PART A's header
+  lines are filled is **open** — decided before step 6's prompt is split, not by default.
+- `fact_id`s are assigned by step 3 from the item's path (`diagnosis_primary.0`,
+  `medications.discharge.2`, `resus`); the model never chooses one.
+- The tool wrapper (`strict: true`, `toolChoice` forced) is part 2.
+
+**Step 3 — `validate_facts`: what "verbatim" means.** Equal after a **narrow** normalisation applied
+identically to quote and cited text: Unicode NFC; curly quotes → straight; every whitespace run
+(including NBSP, tab and the join between cited lines) → one space; trim. **Case-sensitive** ("Mg"
+is magnesium). Nothing else; a rule is added only when a real run shows a false flag it would fix.
+*Rejected:* exact bytes (false flags on typography → alarm fatigue); the safety-net gate's
+`_normalise` (lowercases and strips markdown — built for comparing prose with a canonical line, not
+for evidence); fuzzy similarity (the dangerous errors are one-character edits, 5mg → 50mg).
+- Checks run in order, the first failure giving a fixed reason: `missing_lines`,
+  `malformed_line_id` (`^L\d{3}$`), `line_out_of_range`, `cite_too_many_lines` (> 3),
+  `non_consecutive_lines` (also duplicates and reversed order), `quote_too_long` (> 200 characters,
+  counted on the raw quote; **the quote is dropped, not truncated** — truncating and then passing
+  would be a repair), `empty_quote` (the empty string is a substring of everything),
+  `quote_not_found`.
+- An item is `verified` only if it has at least one citation and **all** of them verify; otherwise
+  `citation_unverified` with the first reason (`missing_cites` if none). A contradiction must cite
+  at least two distinct lines (`contradiction_one_side`). A resuscitation claim with no verified
+  citation is unverified, which step 4 turns into `documented_but_absent` [A2]. A field whose status
+  and items disagree is flagged in `field_check`, not fixed. Failed quotes are left exactly as the
+  model wrote them.
+- **Coverage** (`uncited_lines`): non-blank lines that no **verified** citation touches — an
+  unverified citation does not show the line was read.
+- **Honest limit, pinned as a test:** a correctly cited "no penicillin allergy" with the value
+  "Penicillin allergy" verifies (Q4; HAZ-18 not closed). If that test ever fails, something has
+  started checking values, and this ADR changes with it. Short quotes ("OD") verify when found —
+  located, but weak evidence.
+- `verify_cite` is public: step 5a's citations are re-verified with the same function.
+
+**Hours:** ~2 of the W2–W3 budget's 8 for these rows (schema and extraction prompt 4, guard +
+validator 4). The extraction-prompt half of the first row is part 2.
 
 ### Ephemeral stack log
 

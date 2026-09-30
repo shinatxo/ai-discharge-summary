@@ -1710,6 +1710,11 @@ day, empty and delete the retained ledger bucket → if the stack created its ow
 that key for deletion. "Deleted" in this ADR means every step, not the first two. Log each stack in the table
 at the end of this ADR.
 
+*28 Sep 2026 — the procedure is `infra/EPHEMERAL_STACK_RUNBOOK.md`. The first stack took cut-order item (1): **no
+`ExistingCmkArn`; the stack creates its own key** (author's decision — none of the first run's goals needed the live
+key, the template under test is the one that merges at W11, and unreleased code gets no grants on the live audit
+key). Until `TraceTable` exists the stack has two protected tables, not three.*
+
 **How WS4 names two stacks.** The Safety Case and hazard log currently say *"stack
 `discharge-audit` as deployed"*. From v1.4 (drafted in TASK 3): the **released configuration** is
 `discharge-audit` alone, built from `main`; stacks named `discharge-eph-*` are **development
@@ -1920,6 +1925,8 @@ control, which the author approves after the deploys.
 
 ### Owed — status after the W1 close-out (24 Sep 2026)
 
+**W2 update, 28–30 Sep 2026:** first ephemeral stack run and fully deleted (log below; live canary 100% on 29 and 30 Sep after the CI redeploy); CI hygiene merged to `main` as `0faeb69` (PR #1, run 36436432090, live parameters and template unchanged apart from the functions' `S3Key`s); DPIA v2.6.
+
 "Closed" means drafted in the working tree and closed once committed and deployed. **Deployed 25–27 Sep 2026:** D1 (25 Sep), Push 1 `9bcd798` (25 Sep), Push 2 `3186da4` (27 Sep); every smoke test passed, no rollback. WS4 v1.4 and the incident log v1.0 approved 27 Sep 2026.
 
 | Item | Where | Status |
@@ -1927,11 +1934,11 @@ control, which the author approves after the deploys.
 | OIDC trust narrowed (F10) | `infra/cicd-oidc-role.yaml` | **Closed — W1 change set (a)**; deployed 25 Sep 2026 (D1), verified both ways — `main` assumes the role (CI run 36134417966) |
 | `AuditKey` Retain | `infra/template.yaml` | **Closed — (b)**; deployed 27 Sep 2026 (`3186da4`), `DeletionPolicy: Retain` read back live |
 | Attribute whitelist incl. ADR-009's `GEN#` attributes | `infra/template.yaml` | **Closed — (c)**, worker and dispatcher `UpdateItem`, worker `PutItem`; deployed 27 Sep 2026 — live roles simulated, and a real generation and a direct invoke both wrote under them |
-| Dispatcher `PutItem` inside `TransactWriteItems` — does `dynamodb:Attributes` apply? | `infra/template.yaml` | **Scheduled W2** — test on the first ephemeral stack (`discharge-eph-<date>`); tighten at W11 if it works |
+| Dispatcher `PutItem` inside `TransactWriteItems` — does `dynamodb:Attributes` apply? | `infra/template.yaml` | **Answered 28 Sep 2026 — yes, it applies.** On `discharge-eph-20260928`: a whitelist of the 17 names the dispatcher writes passed (6a); the same list minus `inference_profile` was denied — `AccessDeniedException`, and the whole transaction was cancelled, the `IDEM#` receipt included (6b; item count unchanged at 4). The simulator agreed both times. **Tighten at W11** with the 17-name list in `infra/EPHEMERAL_STACK_RUNBOOK.md` Step 6 |
 | No-op merge — does a push that changes no code redeploy? | (d) | **Closed — answered 25 Sep 2026**: yes, every function, with a new `CodeSha256` (Push 1). Recorded in (d) |
 | 20 Sep deploy — CI or by hand? `PromptCaching=on` origin | *Live-state reconciliation* | **Closed — 24 Sep 2026**: CI (CloudTrail); `PromptCaching=on` from a hand deploy of 17 Jun 2026, outside CloudTrail's 90 days |
-| `WS3-DPIA.md` R-04 still reads 12 (proposes 8); HAZ-11 is now 2 | DPIA | **Scheduled W2** — adopt R-04 = 2×4 = 8 at the next DPIA revision |
-| CI hygiene: actions on Node 20 (forced to 24); `ubuntu-latest` → Ubuntu 26 from 19 Oct 2026 | `.github/workflows/ci-cd.yml` | **Scheduled W2** — bump `checkout`, `setup-python`, `configure-aws-credentials`; pin `ubuntu-24.04`. Only via a PR that changes the workflow alone |
+| `WS3-DPIA.md` R-04 still reads 12 (proposes 8); HAZ-11 is now 2 | DPIA | **Closed — DPIA v2.6, 28 Sep 2026**: R-04 = 2×4 = 8 |
+| CI hygiene: actions on Node 20 (forced to 24); `ubuntu-latest` → Ubuntu 26 from 19 Oct 2026 | `.github/workflows/ci-cd.yml` | **Scheduled W2** — bump `checkout`, `setup-python`, `configure-aws-credentials`; pin `ubuntu-24.04`. Only via a PR that changes the workflow alone. **Closed 28 Sep 2026** — PR #1, `0faeb69`: checkout v7, setup-python v7, configure-aws-credentials v6 (all `node24`), `ubuntu-24.04`; test and deploy green; live parameters identical, template differs only in the five `S3Key`s |
 | Worker loses `PutItem` on the audit table | `infra/template.yaml`, `src/generate/app.py` | **Scheduled W11** — the legacy direct-invoke path goes with the agentic worker |
 | `REV#` attribute whitelist | W10 review-function role | **Scheduled W10** — attributes listed in (c) of this ADR |
 | OIDC `sub` changes when the deploy job gains a GitHub `environment:` | `infra/cicd-oidc-role.yaml` | **Scheduled W7** — same change as the CSO release gate |
@@ -1948,7 +1955,7 @@ control, which the author approves after the deploys.
 | Paediatric fall-back wording | (e), HAZ-03 | **Closed** — decided by the CSO 24 Sep 2026 |
 | `PRIVACY-NOTICE.md` re-issue confirming the step record as built | notice | **Scheduled W11** |
 | Annex A / `architecture.mmd` / `.svg` gain `TraceTable` | DPIA, `docs/` | **Scheduled W11** — both files, the `.svg` is hand-authored |
-| DPIA Annex C.2 — structured-output grammar cache holds schema only; model retention list | DPIA | **Scheduled W2** (verify on the ephemeral stack), re-check at W11 |
+| DPIA Annex C.2 — structured-output grammar cache holds schema only; model retention list | DPIA | **Checked 28 Sep 2026 against AWS documentation — DPIA v2.6 Annex C.2**: the cache holds compiled grammars (AWS-managed keys), not prompts or completions; Sonnet 4.6 not on the retention list. **Not observable yet** — the ephemeral stack ran the v1 path, which compiles no grammar. Re-check at W11, and keep note content out of every schema |
 | Patient access to traces cannot be done by patient | DPIA §8.2, R-16 | **Deferred — pre-deployment**: no real patient data exists, and the procedure needs a controller |
 | HAZ-01, 02, 03 re-score | hazard log | **Scheduled W11 (v2.0)** — on evidence, not design |
 | New hazards: A/B divergence (F9); extraction as a single point of failure (F8) | hazard log | **Scheduled W11 (v2.0)** |
@@ -2022,4 +2029,4 @@ real policy rather than any copy of it. **Rejected:** none.
 
 | Stack | Built from (commit) | Created | Deleted | Ledger bucket removed | Own key scheduled for deletion (or `ExistingCmkArn`) | Purpose |
 |---|---|---|---|---|---|---|
-| — | — | — | — | — | — | *(none yet)* |
+| `discharge-eph-20260928` | `213417a` (`feat/agentic-pipeline`, fast-forwarded to `main`) | 28 Sep 2026 ~11:45 BST, by hand (`user/Shina`) | 28 Sep 2026 15:13 BST — `DELETE_COMPLETE`; `DELETE_SKIPPED` only for `AuditKey` and `LedgerBucket` | 30 Sep 2026 07:54 BST — 6 versions (2 generations × 3 stream events; nothing from 6b), bucket deleted, no bypass needed | Own key `f5f74659-1331-4b93-9c20-09f3bfc5e383` scheduled 30 Sep 2026 07:55 BST, 7-day window (deletes 7 Oct); guarded against the live key `47c3272b-…` | (a) create and delete; (b) `dynamodb:Attributes` inside `TransactWriteItems` — **enforced** (Owed); (c) Annex C.2 — documentation check. Three generations: baseline and 6a `complete` (42 s, 41 s), 6b denied |

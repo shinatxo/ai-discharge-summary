@@ -1,7 +1,7 @@
 # WS3 — Data Protection Impact Assessment
 
 **AI Discharge Summary Assistant**
-Document version **2.5 — draft for review** · Written 16 September 2026 · Transposed onto the NHS England template and verified 17 September 2026 · Action-plan dates re-aligned 18 September 2026 · Annex B published 20 September 2026 · Step-trace store (ADR-009) assessed 24 September 2026
+Document version **2.6 — draft for review** · Written 16 September 2026 · Transposed onto the NHS England template and verified 17 September 2026 · Action-plan dates re-aligned 18 September 2026 · Annex B published 20 September 2026 · Step-trace store (ADR-009) assessed 24 September 2026 · R-04 residual adopted and Annex C.2 grammar cache checked 28 September 2026
 Author: Shina Oguntoye · IG sources verified from primary sources **16 September 2026** (§12)
 
 | Field | Value |
@@ -769,7 +769,7 @@ load-bearing and is routinely got wrong:
 | Idempotency receipts (`IDEM#`) | `AuditTable` | TTL'd | Operational only |
 | Audit rows (`GEN#`) — **attribution phase** | `AuditTable` | **Set by the deploying organisation. Default 8 years** | See the caveat below |
 | Audit rows — **integrity phase** | `AuditTable` | **Life of the Health IT System**, `user_sub` removed or salted-forward-hashed | DCB0129 v4.2 §3.1.2: *"The Clinical Risk Management File MUST be maintained for the life of the Health IT System."* No destruction date appears anywhere in the standard |
-| WORM ledger | S3 Object Lock | **`LedgerRetentionDays` — default 1 in demo**; must be ≥ the attribution period, in Compliance mode, for any real deployment | R-04 |
+| WORM ledger | S3 Object Lock | **`LedgerRetentionDays` — template default 1; live stack 183 days (Governance), pinned in CI since 27 Sep 2026**; must be ≥ the attribution period, in Compliance mode, for any real deployment | R-04 |
 | Lambda execution logs | CloudWatch | 30 days, all five log groups | Contains no clinical content |
 
 > **The 8-year default is an analogy, not a citation.** It matches the adult health-record period
@@ -1193,7 +1193,7 @@ risk to the project.
 | **R-01** | Clinical notes disclosed from storage | C | 3 | 4 | **12** | **The notes are never stored.** No database row, object or log line holds them; log statements sanitised; no DLQ or failure destination captures the invoke payload. *v2.5:* ADR-009's step traces keep this true — notes by hash and line ID only. **What is extracted from the notes is a different risk, assessed at R-23** | **1×4 = 4** | Manufacturer |
 | **R-02** | One clinician reads another's generated outputs | C | 3 | 4 | **12** | Partition key `USER#<sub>`; cross-user `GET` returns 404 not 403; identity from the authoriser only; anti-spoof and cross-user tests in CI | **1×4 = 4** | Manufacturer |
 | **R-03** | Clinician activity record retained beyond any defined period | C | 4 | 3 | **12** | ADR-007 schedule **declared** (§7.2); split attribution/integrity phases | **4×3 = 12 — unchanged. The de-identification lifecycle is NOT BUILT; the schedule exists on paper only** | Manufacturer |
-| **R-04** | Audit trail altered, defeating non-repudiation | I | 3 | 4 | **12** | No `DeleteItem`/`BatchWriteItem` in either role's policy, so rows cannot be destroyed; DynamoDB stream → S3 Object Lock WORM; PITR as recovery. *v2.5 — W1 change set, once deployed:* `UpdateItem` attribute whitelists on both roles, and on the worker's legacy `PutItem`; ledger retention **183 days**, pinned in CI | **3×4 = 12 — unchanged in the demo.** Two compounding defects (Annex C.3): write-once is **not IAM-enforced**, and the WORM copy expires after 1 day. Closing both → 1×4 = 4. *v2.5: after the W1 deploys the second defect is closed for 183 days and the first narrowed — but `PutItem` still lets both roles overwrite a whole row, which IAM cannot prevent, so alteration becomes **detectable** rather than impossible. Proposed residual **2×4 = 8** on deployment; 1×4 = 4 needs the worker's `PutItem` removed (W11) and CloudTrail (W11)* | Manufacturer |
+| **R-04** | Audit trail altered, defeating non-repudiation | I | 3 | 4 | **12** | No `DeleteItem`/`BatchWriteItem` in either role's policy, so rows cannot be destroyed; DynamoDB stream → S3 Object Lock WORM; PITR as recovery. *W1 change set, deployed 25–27 Sep 2026:* `UpdateItem` attribute whitelists on both roles, and on the worker's legacy `PutItem`; ledger retention **183 days**, pinned in CI. *28 Sep 2026: a `dynamodb:Attributes` whitelist on the dispatcher's `PutItem` was shown on an ephemeral stack to be enforced inside `TransactWriteItems` (ADR-009); it goes live at W11* | **2×4 = 8** *(adopted v2.6, 28 Sep 2026, matching HAZ-11 = 2 in WS4 v1.4; was 3×4 = 12)*. Of the two compounding defects (Annex C.3), the second — a WORM copy that expired after 1 day — is closed for 183 days; the first is narrowed: `PutItem` still lets both roles overwrite a whole row, which IAM cannot prevent, so alteration is **detectable** rather than impossible. 1×4 = 4 needs the worker's `PutItem` removed (W11) and CloudTrail (W11) | Manufacturer |
 | **R-05** | Clinical notes processed at a non-UK CloudFront edge PoP | C | 2 | 3 | **6** | UK intended use environment; `PriceClass_100`; transient only; no edge access logging | **2×3 = 6 — geo-restriction not deployed** (Annex C.1) | Manufacturer |
 | **R-06** | Clinicians unaware their generations are attributed and retained | C | 5 | 2 | **10** | **None today.** Nothing in the product or its documentation tells them | **5×2 = 10 → 1×2 = 2 on publishing Annex B.** ICO transparency here is a *must*; a line in a threat model does not satisfy it | Manufacturer |
 | **R-07** | Monitoring record repurposed for performance management | C | 3 | 3 | **9** | Purpose limitation at §7.5 and Annex B; flat access model — no supervisor view exists to make it easy | **2×3 = 6** until it is in binding terms | Controller + manufacturer |
@@ -1228,7 +1228,8 @@ An twenty-two-row table lets a reviewer's eye slide past the important rows, so 
    found.** No CloudTrail is configured in either template; no breach-notification route exists.
    These compound: undetected plus unreportable.
 3. **R-03 (12) and R-04 (12) — the record's lifetime and its integrity both rest on things that
-   are declared rather than built.** See Annex C.3 for the write-once finding.
+   are declared rather than built.** *(v2.6: R-04's residual is now 8 — integrity narrowed by the W1
+   deploys, not closed.)* See Annex C.3 for the write-once finding.
 4. **R-19 (12) — no bias evaluation has been done.** This risk was not in the register until the
    template's checklist named it. That is worth recording as a finding about the process, not only
    about the product.
@@ -1242,7 +1243,7 @@ An twenty-two-row table lets a reviewer's eye slide past the important rows, so 
 | R-08 | Build the clinician review-gate UI; capture `draft → reviewed`, `reviewed_at`, and what was changed | Author (CSO role) | Author | **W10, 7 Dec 2026** *(was W1)* | Outstanding — **blocking for real-data deployment** |
 | R-09 | Add CloudTrail to the template with data events on both tables; enable API Gateway and CloudFront access logs (`WAVE4_DESIGN.md` §6) | Author | Author | W11, 14 Dec 2026, with WS6 *(was W1–W2)* | Outstanding |
 | R-23 | Include `TraceTable` in the R-09 CloudTrail data events — **three tables, not two**; confirm the worker role holds `PutItem` only on it and the status role nothing; publish `PRIVACY-NOTICE.md` v1.4 before the first W2 commit and re-issue it at the cut-over | Author | Author | Notice: **before W2 (12 Oct)** · CloudTrail: **W11**, with R-09 | Outstanding |
-| R-04 | Set `LedgerRetentionDays` and Compliance mode for non-demo; constrain the `UpdateItem` grant to the review transition; correct the template comment and ADR-002 | Author | Author | W1, 5 Oct 2026 — IAM `dynamodb:Attributes` whitelist on both roles (IAM cannot express a value transition; that stays in code, and the comment and ADR-002 must say so); choose a demo retention period (the demo already runs GOVERNANCE via `IsProd`) | Outstanding |
+| R-04 | Set `LedgerRetentionDays` and Compliance mode for non-demo; constrain the `UpdateItem` grant to the review transition; correct the template comment and ADR-002 | Author | Author | W1, 5 Oct 2026 — IAM `dynamodb:Attributes` whitelist on both roles (IAM cannot express a value transition; that stays in code, and the comment and ADR-002 must say so); choose a demo retention period (the demo already runs GOVERNANCE via `IsProd`) | **Done** — W1 change set deployed 25–27 Sep 2026 (183 days); residual 8 adopted v2.6. Compliance mode for non-demo and the W11 items above remain |
 | R-11 | `MfaConfiguration: ON`; disable `ALLOW_USER_PASSWORD_AUTH` | Author | Author | Jan 2027 *(was W1; WS6 trimmed 18 Sep 2026)* | Outstanding — **not one property each** (corrected 18 Sep 2026): the synthetic canary signs in with `USER_PASSWORD_AUTH` (`src/canary/app.py`), so both changes break it without a canary auth redesign; and CloudFormation has historically refused `MfaConfiguration: ON` on an existing pool (`SetUserPoolMfaConfig` route — test on a scratch stack first). ~4h |
 | R-05 | CloudFront geo-restriction allow-list (GB, + EU as needed) | Author | Author | W11, 14 Dec 2026, with the WAF *(was W1 — geo-restriction lives in `web-template.yaml`, which CI does not deploy)* | Outstanding — one property, manual web-stack deploy |
 | R-19 | Stratify the evaluation set and run a documented bias/equity assessment; record it in the model card and the WS4 hazard log | Author | Author | Jan 2027 *(was Nov)* | Outstanding — **newly identified** |
@@ -1316,11 +1317,11 @@ The residual risk **splits by population, and a single verdict would be misleadi
   carry once the traces are live)*. Those are not mitigations bolted on afterwards; they are
   architecture. They do not reach the accuracy and fairness risks, which is precisely the point.
 - **To clinicians: moderate, and not yet acceptable even at demonstration scale.** Their data is
-  real and is being processed now, and **nine residuals sit unreduced against them** — R-03 (12),
-  R-04 (12), R-06 (10), R-22 (10), R-10 (9), R-18 (9), R-20 (9), R-12 (8) and R-16 (6). The three
+  real and is being processed now, and **nine residuals sit against them** — R-03 (12),
+  R-06 (10), R-22 (10), R-10 (9), R-18 (9), R-20 (9), R-04 (8, reduced from 12 in v2.6), R-12 (8) and R-16 (6). The three
   that matter most: they are **not told the processing happens** (R-06), the retention schedule
   **exists on paper only** (R-03), and the record's integrity rests on application code plus a
-  ledger copy that expires after a day (R-04).
+  ledger copy (R-04) — 183 days since 27 Sep 2026, so alteration is now detectable, not prevented.
 
 **For any deployment processing real patient data the residual risk is not acceptable**, and the
 blocking items are specific:
@@ -1677,6 +1678,20 @@ the model within the customer's chosen region under the AWS GDPR Data Processing
    in the destination region.** Cross-region inference is **not** enabled here (ADR-003, rule 1), and
    this is a further reason it must not be enabled without revisiting §4.3 and this annex together.
 
+**Re-checked 28 September 2026, for the ADR-009 pipeline's structured output** (from the W11 cut-over):
+
+- **The grammar cache holds compiled schemas, not content.** AWS: *"Successfully compiled grammars
+  are cached for 24 hours from first access. Cached grammars are encrypted with AWS-managed keys."*
+  and *"Identical schemas from the same account use cached grammars"* ([structured output](https://docs.aws.amazon.com/bedrock/latest/userguide/structured-output.html)).
+  The page says nothing of caching prompts or completions. The cache is under **AWS-managed keys,
+  not this product's CMK** — acceptable only because a schema carries no patient data. **That is
+  the control: step schemas hold field names and fixed enums only, never note content or examples
+  drawn from notes.** Checked against documentation, not observed: no stack yet runs the step
+  prompts (the 28 Sep ephemeral stack ran the v1 path). Re-check at W11.
+- **The retention-exception list** ([abuse detection](https://docs.aws.amazon.com/bedrock/latest/userguide/abuse-detection.html))
+  now names OpenAI GPT models and Anthropic **Claude Fable 5 and 5.1**; **Claude Sonnet 4.6 is
+  still not named** — limit 2 above, applied.
+
 ## C.3 Write-once is not enforced where it is documented to be
 *Referenced from §10.1 R-04, §10.2 and §10.3*
 
@@ -1707,7 +1722,8 @@ non-repudiation record, and a clinician told that their generations are attribut
 entitled to a record that cannot be edited to say something else. With `LedgerRetentionDays: 1`, the
 WORM ledger — the only remaining integrity control — expires after twenty-four hours, so **in the
 demo configuration there is a window in which neither control holds.** That is why R-04 scores 12
-inherent and 12 residual.
+inherent and scored 12 residual until v2.6. *(v2.6, 28 Sep 2026: the live ledger has held
+183 days since 27 Sep 2026, so the window is closed for that period; residual 8 — §10.1.)*
 
 **Route to closure, in order of cost:**
 
@@ -1742,6 +1758,7 @@ transactional `PutItem` is left unconditioned until the ephemeral stack shows ho
 |---|---|---|
 | 1.0 | 16 Sep 2026 | First issue. Written to DTAC C2.2.2's twelve must-cover items, transcribed verbatim from `docs/DTAC_Form_2.0_February_2026.docx`. IG sources verified from primary sources the same day per the standing rule on the Notion working page. Carried the eleven→twelve correction and the `user_sub`/Cognito-email correction. **Blocked on the NHS England DPIA template `.docx` for section transposition** — structured on the ICO's seven-step process as an interim spine |
 | 1.1 | 16 Sep 2026 | **Adversarial verification pass by a separate agent, 22 findings, all applied.** Four substantive: (a) the v1.0 §0 correction was itself wrong — WS2b enumerated all twelve items correctly and merely labelled the list "eleven"; (b) **Annex C.3 added** — write-once on the audit table is not IAM-enforced as ADR-002 and the template comment both assert; (c) risk-register integrity — R-16/R-17 were cited with no rows, R-13 was double-booked, and R-08/R-09 had residual scores *above* their inherent scores; (d) the overall "low" conclusion contradicted the register and was split by population. Also corrected: the canary schedule, the alarm list, the canary's synthetic Cognito identity, `safety_net_gate.py` as an offline rather than runtime control, best-effort TTL, nine unnamed audit attributes, `ALLOW_USER_PASSWORD_AUTH`, the C3.5.1 overclaim, the ambient-scribing analogy caveat, and three broken cross-references |
+| **2.6** | **28 Sep 2026** | **R-04 residual adopted at 2×4 = 8**, matching HAZ-11 = 2 (WS4 v1.4, approved 27 Sep 2026), now that the W1 change set is deployed (25–27 Sep): §10.1 R-04 (mitigation and residual), §10.3 action R-04 → Done, §7 ledger row (live 183 days), §11 top-risks note and clinician-residual list, Annex C.3's closing sentence. The ephemeral-stack test of 28 Sep 2026 (ADR-009) is recorded against R-04: the `dynamodb:Attributes` condition **is** enforced for `PutItem` inside `TransactWriteItems`, so the dispatcher's whitelist can go live at W11. **Annex C.2 re-checked** for the ADR-009 structured output: the grammar cache holds compiled schemas under AWS-managed keys; Sonnet 4.6 is still not on the retention-exception list, which now names Claude Fable 5/5.1. The only score this version moves is R-04. |
 | **2.5** | **24 Sep 2026** | **Draft for review — the ADR-009 step-trace store assessed ahead of its release (live from the W11 cut-over, 14 Dec 2026), and the W1 change set recorded.** **Traces:** §1.2, §1.3, §2.1 (trace use on real data limited to investigating that generation; evaluation on synthetic data only), §3.2, §3.3 (trace row; the four new `GEN#` attributes, with the safety-net route kept off the clinician-keyed row; the patient-identifier row **corrected** — where the notes contain identifiers they appear in the 24-hour drafts, and from W11 in 30-day traces), §3.6 (the internal link by `generation_id` and `notes_sha256`), §4.1 (F5 amended, **F14** added), §6.1, §6.6, §7.1 ("notes never stored" **narrowed** to the notes as typed), §7.2 (trace retention 30 days; incident exports kept for the life of the system, de-identified on export), §7.3 ("48 hours" corrected to AWS's "within a few days"; the status endpoint's failure to check `ttl` declared), §8.2–§8.5, §11.2 note, §11.3 (review triggers for trace changes and the cut-over), **Annex A.2** (Annex A stays a verbatim copy of `architecture.mmd`), Annex B note → notice v1.4; register R-01, R-13 and R-16 amended with scores unchanged, **R-23 added** (3×4 = 12 → 2×4 = 8), action plan R-23; quotes capped at 200 characters. An independent verification pass the same day found 28 issues across the ADR, this DPIA and the notice; all were applied. **Live re-verification and the W1 change set (24 Sep 2026):** F5 records that prompt caching is on and caches no clinical content; R-04 and Annex C.3 record the W1 change set and its limit — `PutItem` replaces a whole item, so alteration becomes detectable rather than impossible; **proposed R-04 residual 2×4 = 8 once deployed**, the only score this version moves. |
 | **2.4** | **20 Sep 2026** | **Annex B published** as `PRIVACY-NOTICE.md` v1.3 at the repo root and linked from the README; §10.3 R-06 marked partly closed (repo done; in-product display W10). Publication checked each statement against `src/dispatcher/app.py`, `src/generate/app.py` and `infra/template.yaml` and found four inaccuracies in the v1.2 draft, corrected in the published version and recorded in Annex B's status line. No risk score changed: R-06's residual of 2 is reached only when the notice is shown in the product. |
 | **2.3** | **18 Sep 2026** | **Header version corrected** — it read 2.1 while this Annex already carried the 2.2 row below (found on the Notion working page 17 Sep; fixed here). **§10.3 due dates and the two "W1, 5 October" statements (the Section 8 ADM requirement box and §10.2 item 1) re-aligned to The Window re-plan, 18 Sep 2026**: R-08 → W10; R-09 and R-05 → W11 (web stack, with the WAF); R-11, R-12, R-19, R-22 → Jan 2027; R-04 stays W1 as an IAM attribute whitelist plus a retention-period choice. WS2b cross-references → v1.3. *(Dates revised the same day after an independent verification pass.)* **R-11's "one property each" corrected** — the canary authenticates with `USER_PASSWORD_AUTH`, so enforcing MFA and removing that flow both break it. No risk score, section structure or conclusion changed. *(Note: rows 1.0–1.1 run oldest-first and 2.0 onward newest-first; left as issued.)* |

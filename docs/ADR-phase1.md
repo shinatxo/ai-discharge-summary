@@ -1104,9 +1104,10 @@ canary run could not fit its Lambda; that rested on a stale 5 requests/min quota
 
 ## ADR-009 — The agentic pipeline: named steps, step traces, a review-gate seam, and a branch-isolated build
 
-> **Version 1.2 · 30 Sep 2026.** *(v1.1, 24 Sep: accepted with the author's rulings; reconciled
+> **Version 1.3 · 1 Oct 2026.** *(v1.1, 24 Sep: accepted with the author's rulings; reconciled
 > against the live account — see "Live-state reconciliation" below. v1.2, 30 Sep: the W2 part-1
-> build decisions — see "Build record — W2 part 1".)* Records the author's design of 23 Sep 2026, pressure-tested
+> build decisions — see "Build record — W2 part 1". v1.3, 1 Oct: the W2 part-2 build decisions
+> and first live measurements — see "Build record — W2 part 2".)* Records the author's design of 23 Sep 2026, pressure-tested
 > against the repository on 24 Sep 2026, then checked by an independent verification pass the same
 > day (findings applied; see *Verification* at the end). Where the test found that part of the
 > design cannot work as written, the evidence is shown and the amendment is marked **[A1]–[A7]**
@@ -2300,7 +2301,7 @@ behaviour matches it.
 - **Uncited-line coverage is noisy:** S12 leaves 12 lines uncited, mostly progress observations the
   schema has no field for. A W5 scoring matter.
 
-**Hours:** ~4 of the W2–W3 budget's 8 (author to confirm on The Window). Next: W3 — `retrieve_evidence`,
+**Hours:** ~4 (W2 part 2), logged on The Window. With part 1's ~2, W2–W3 stands at ~6 of 8 — ~2 left for W3. Next: W3 — `retrieve_evidence`,
 `route_resus`, `select_safety_net`.
 
 ### Ephemeral stack log

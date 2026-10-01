@@ -12,7 +12,9 @@ import json
 from dataclasses import dataclass
 from typing import Callable
 
+from .context import StepContext
 from .errors import StepError
+from .extract import extract_facts
 from .guard import guard_input
 from .validate import validate_facts
 
@@ -26,11 +28,12 @@ class Step:
     name: str
     seq: str    # zero-padded, sorts in step order: "01", "02", "03", "03b", ... (trace SK)
     kind: str   # "code" or "model" (trace attribute)
-    fn: Callable[[dict], dict]
+    fn: Callable[..., dict]   # code: fn(input); model: fn(input, ctx)
 
 
 _ALL_STEPS = (
     Step("guard_input", "01", "code", guard_input),
+    Step("extract_facts", "02", "model", extract_facts),
     Step("validate_facts", "03", "code", validate_facts),
 )
 
@@ -46,18 +49,26 @@ def _json_round_trip(value, code: str):
         raise StepError(code) from None
 
 
-def run_step(name: str, input: dict) -> dict:
+def run_step(name: str, input: dict, *, ctx: StepContext | None = None) -> dict:
     """Run one named step on a JSON-shaped input; return its JSON-shaped output.
 
     The round trips make "JSON in, JSON out" true rather than aspirational: a
     step sees exactly what it would see if its input came from a fixture file,
     and tuples/sets/datetimes are caught here, not in the W4 harness.
+
+    `ctx` carries what a model step needs besides data (its Bedrock client);
+    code steps never receive it, and a model step without it fails closed.
     """
     step = STEPS.get(name)
     if step is None:
         raise StepError("unknown_step")
     payload = _json_round_trip(input, "input_not_json")
-    output = step.fn(payload)
+    if step.kind == "model":
+        if ctx is None:
+            raise StepError("no_client")
+        output = step.fn(payload, ctx)
+    else:
+        output = step.fn(payload)
     return _json_round_trip(output, "output_not_json")
 
 

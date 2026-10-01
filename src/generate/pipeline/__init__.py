@@ -6,7 +6,8 @@ argument — because the test loaders re-import the worker per test and a
 module-level client would be created once, under whichever patch was active.
 """
 
+from .context import StepContext
 from .errors import StepError
 from .registry import NOTES_KEY, STEPS, run_step, trace_view
 
-__all__ = ["NOTES_KEY", "STEPS", "StepError", "run_step", "trace_view"]
+__all__ = ["NOTES_KEY", "STEPS", "StepContext", "StepError", "run_step", "trace_view"]

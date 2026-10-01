@@ -19,6 +19,26 @@ below (the helpers make a violation hard to write; the test catches a hand edit)
 
 Every property is required. Absence is data: a field the notes do not document
 comes back with status "not_documented" and no items, never as a missing key.
+
+WIRE FORM vs GROUPED FORM. What the model emits (the "wire form", this schema):
+    field_status: [{field, status}]            one per FIELD_NAMES name
+    facts:        [{section, value, cites}]    every extracted statement, tagged
+    discharge_status, resus, age_group, suspicious_text
+validate_facts (step 3) regroups it into the "grouped form" every later step
+and every fixture uses — fields{name: {status, items}}, medications{...},
+documented_advice[], contradictions[] — exactly the ADR-009 step-table shape.
+wire_facts() below converts grouped -> wire, for fixtures and tests.
+
+Why the wire form is flat — measured, 30-01 Oct 2026 (docs/_local/schema_ladder.py):
+Bedrock rejected the grouped schema ("The compiled grammar is too large", 13.5 KB)
+and a 3.9 KB list-of-fields version of it. Each part compiled alone (fields list
+3.8 s; everything else 12.5 s); together they did not, nor with one citation per
+item. The grammar appears to grow with the number of PLACES the item shape
+occurs (five in the grouped form). The wire form has it once and compiled in
+7.4 s (2.6 KB). What the grammar no longer enforces — each field exactly once,
+and a statement in the right group — step 3 checks (fields_incomplete) or the
+prompt asks for (section). Keep the schema under ~3 KB: test_pipeline_schema
+guards it, and growing past it needs a real call to prove it still compiles.
 """
 
 from __future__ import annotations
@@ -63,29 +83,15 @@ CITE = _obj({
     "quote": _str(),
 })
 
-# One extracted statement and its evidence. validate_facts gives every item a
-# fact_id derived from its path (e.g. "diagnosis_primary.0") — the model does not
-# choose IDs, so they cannot collide or be invented.
-ITEM = _obj({
-    "value": _str(),
-    "cites": _arr(CITE),
-})
-
 STATUS = _enum("documented", "not_documented", "inferred_flagged")
 
-# A PART A field. documented -> items with cites; not_documented -> no items;
-# inferred_flagged -> the low-stakes contextual inference v0.7 permits (e.g.
-# specialty), still citing the lines it was inferred from.
-FIELD = _obj({
-    "status": STATUS,
-    "items": _arr(ITEM),
-})
 
 # PART A fields other than medications, resuscitation and advice, which have
 # their own objects below because code renders them (ADR-009 [A1]-[A3]).
 # Patient identifiers (name, DOB, NHS/hospital number) are deliberately absent —
 # see the note in the W2 session: they would put identifiers into every trace.
 FIELD_NAMES = (
+    "age_sex",       # first: the model fills the schema in order (30 Sep, W2 part 2)
     "specialty",
     "legal_status",
     "weight",
@@ -104,14 +110,36 @@ FIELD_NAMES = (
     "vte_assessment",
 )
 
-MEDICATIONS = _obj({
-    "pre_admission": _arr(ITEM),
-    "discharge": _arr(ITEM),
+# The groups a statement can belong to: a PART A field, or one of the four
+# lists that code renders or checks separately (ADR-009 [A1]-[A3]).
+LIST_SECTIONS = ("pre_admission", "discharge", "documented_advice", "contradictions")
+SECTIONS = FIELD_NAMES + LIST_SECTIONS
+
+# A field's status. documented -> statements with cites; not_documented -> none;
+# inferred_flagged -> the low-stakes contextual inference v0.7 permits (e.g.
+# specialty), still citing the lines it was inferred from.
+FIELD_STATUS = _obj({
+    "field": _enum(*FIELD_NAMES),
+    "status": STATUS,
+})
+
+# One extracted statement, tagged with its section, and its evidence. Step 3
+# gives every statement a fact_id from its grouped path ("diagnosis_primary.0",
+# "medications.discharge.2") — the model does not choose IDs.
+FACT = _obj({
+    "section": _enum(*SECTIONS),
+    "value": _str(),
+    "cites": _arr(CITE),
+})
+
     # listed: the discharge drugs are written out; referenced_not_listed: the
     # notes say e.g. "continue regular medications" without listing them (A5);
-    # not_documented: nothing about discharge medication.
-    "discharge_status": _enum("listed", "referenced_not_listed", "not_documented"),
-})
+    # none_required: the notes say no medication is needed on discharge (v0.7's
+    # "None", distinct from "Not documented"); not_documented: nothing about
+    # discharge medication. For referenced_not_listed and none_required the
+    # step-2 prompt puts the statement itself in `discharge` as one cited item,
+    # so the status has evidence code can verify (no separate cites field).
+DISCHARGE_STATUS = _enum("listed", "referenced_not_listed", "none_required", "not_documented")
 
 RESUS = _obj({
     "form_or_discussion_documented": _bool(),
@@ -125,19 +153,38 @@ AGE_GROUP = _enum("neonate", "infant", "child", "adult", "not_documented")
 
 def _build() -> dict:
     return _obj({
-        "fields": _obj({name: FIELD for name in FIELD_NAMES}),
-        "medications": MEDICATIONS,
+        "field_status": _arr(FIELD_STATUS),    # one per FIELD_NAMES name; checked in step 3
+        "facts": _arr(FACT),                   # every statement, tagged with its section
+        "discharge_status": DISCHARGE_STATUS,
         "resus": RESUS,
-        "documented_advice": _arr(ITEM),   # verbatim advice/safety-netting; feeds step 5b
-        "age_group": AGE_GROUP,             # selects the pinned paediatric fall-back in 5b
-        "contradictions": _arr(ITEM),       # each should cite both sides; checked in step 3
-        "suspicious_text": _arr(CITE),      # model-reported instruction-like text (HAZ-08)
+        "age_group": AGE_GROUP,                # selects the pinned paediatric fall-back in 5b
+        "suspicious_text": _arr(CITE),         # model-reported instruction-like text (HAZ-08)
     })
 
 
 def record_facts_schema() -> dict:
     """A fresh copy each call, so no caller can mutate the schema another caller sees."""
     return copy.deepcopy(_build())
+
+
+def wire_facts(grouped: dict) -> dict:
+    """Grouped form -> wire form, for fixtures and tests. Statements keep their
+    order within each section; sections are emitted in SECTIONS order."""
+    facts = []
+    for name in FIELD_NAMES:
+        facts += [{"section": name, **i} for i in grouped["fields"][name]["items"]]
+    for sec in ("pre_admission", "discharge"):
+        facts += [{"section": sec, **i} for i in grouped["medications"][sec]]
+    for sec in ("documented_advice", "contradictions"):
+        facts += [{"section": sec, **i} for i in grouped[sec]]
+    return {
+        "field_status": [{"field": n, "status": grouped["fields"][n]["status"]} for n in FIELD_NAMES],
+        "facts": facts,
+        "discharge_status": grouped["medications"]["discharge_status"],
+        "resus": grouped["resus"],
+        "age_group": grouped["age_group"],
+        "suspicious_text": grouped["suspicious_text"],
+    }
 
 
 # --- structural check used by validate_facts (step 3) on fixture inputs -------

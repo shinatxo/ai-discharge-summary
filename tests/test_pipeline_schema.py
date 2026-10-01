@@ -23,7 +23,7 @@ import pytest
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "src" / "generate"))
 
-from pipeline.schemas import FIELD_NAMES, record_facts_schema, shape_errors  # noqa: E402
+from pipeline.schemas import FIELD_NAMES, SECTIONS, record_facts_schema, shape_errors, wire_facts  # noqa: E402
 
 ALLOWED_KEYWORDS = {"type", "properties", "required", "additionalProperties", "items", "enum"}
 ALLOWED_TYPES = {"object", "array", "string", "boolean"}
@@ -118,12 +118,23 @@ def test_every_string_in_the_schema_is_an_identifier():
 
 def test_top_level_shape_matches_adr_009():
     s = record_facts_schema()
+    # The wire form (schemas.py); step 3 regroups it into the ADR-009 shape.
     assert list(s["properties"]) == [
-        "fields", "medications", "resus", "documented_advice",
-        "age_group", "contradictions", "suspicious_text"]
-    assert list(s["properties"]["fields"]["properties"]) == list(FIELD_NAMES)
+        "field_status", "facts", "discharge_status", "resus", "age_group", "suspicious_text"]
+    fs = s["properties"]["field_status"]["items"]
+    assert list(fs["properties"]) == ["field", "status"]
+    assert fs["properties"]["field"]["enum"] == list(FIELD_NAMES)
+    fact = s["properties"]["facts"]["items"]
+    assert list(fact["properties"]) == ["section", "value", "cites"]
+    assert fact["properties"]["section"]["enum"] == list(SECTIONS) == list(FIELD_NAMES) + [
+        "pre_admission", "discharge", "documented_advice", "contradictions"]
     assert s["properties"]["resus"]["properties"]["status_documented"]["enum"][-1] == "not_documented"
     assert "child" in s["properties"]["age_group"]["enum"]
+    # Added W2 part 2 (30 Sep): pinned, because the other tests read FIELD_NAMES
+    # and would pass unchanged if either addition were reverted.
+    assert FIELD_NAMES[0] == "age_sex"
+    assert s["properties"]["discharge_status"]["enum"] == [
+        "listed", "referenced_not_listed", "none_required", "not_documented"]
 
 
 def test_no_patient_identifier_fields():
@@ -161,24 +172,23 @@ def _mutate(fn):
     ("additionalProperties true",
      lambda s: s["properties"]["resus"].__setitem__("additionalProperties", True)),
     ("additionalProperties missing",
-     lambda s: s["properties"]["medications"].pop("additionalProperties")),
+     lambda s: s["properties"]["resus"].pop("additionalProperties")),
     ("optional property",
      lambda s: s["properties"]["resus"]["required"].remove("changed")),
     ("minLength",
-     lambda s: s["properties"]["fields"]["properties"]["allergies"]["properties"]["items"]["items"]
-               ["properties"]["value"].__setitem__("minLength", 1)),
+     lambda s: s["properties"]["facts"]["items"]["properties"]["value"].__setitem__("minLength", 1)),
     ("maxItems",
-     lambda s: s["properties"]["documented_advice"].__setitem__("maxItems", 10)),
+     lambda s: s["properties"]["facts"].__setitem__("maxItems", 10)),
     ("nullable union type",
      lambda s: s["properties"]["age_group"].__setitem__("type", ["string", "null"])),
     ("anyOf",
      lambda s: s["properties"].__setitem__("age_group", {"anyOf": [{"type": "string"}]})),
     ("$ref (recursion)",
-     lambda s: s["properties"]["contradictions"].__setitem__("items", {"$ref": "#"})),
+     lambda s: s["properties"]["suspicious_text"].__setitem__("items", {"$ref": "#"})),
     ("prose enum value",
      lambda s: s["properties"]["age_group"]["enum"].append("Aged 76, frail")),
     ("prose property name",
-     lambda s: s["properties"]["fields"]["properties"].__setitem__("Day 3 DNACPR", {"type": "string"})),
+     lambda s: s["properties"]["facts"]["items"]["properties"].__setitem__("Day 3 DNACPR", {"type": "string"})),
     ("integer type",
      lambda s: s["properties"]["age_group"].__setitem__("type", "integer")),
 ])
@@ -193,7 +203,7 @@ def _empty_field():
 
 
 def minimal_facts():
-    return {
+    grouped = {
         "fields": {name: _empty_field() for name in FIELD_NAMES},
         "medications": {"pre_admission": [], "discharge": [], "discharge_status": "not_documented"},
         "resus": {"form_or_discussion_documented": False, "status_documented": "not_documented",
@@ -203,6 +213,7 @@ def minimal_facts():
         "contradictions": [],
         "suspicious_text": [],
     }
+    return wire_facts(grouped)
 
 
 def test_minimal_facts_object_conforms():
@@ -212,13 +223,26 @@ def test_minimal_facts_object_conforms():
 def test_shape_errors_report_paths_never_values():
     f = minimal_facts()
     f["age_group"] = "76-year-old man, DNACPR"          # not in enum
-    f["fields"]["allergies"]["items"] = [{"value": 5, "cites": []}]   # wrong type
+    f["facts"] = [{"section": "allergies", "value": 5, "cites": []}]   # wrong type
     del f["resus"]["changed"]                            # missing
     f["resus"]["Patient Smith"] = True                   # unexpected key
     errors = shape_errors(f)
     assert "$.age_group: not in enum" in errors
-    assert "$.fields.allergies.items[0].value: expected string" in errors
+    assert "$.facts[0].value: expected string" in errors
     assert "$.resus.changed: missing" in errors
     assert "$.resus: unexpected key" in errors
     joined = " ".join(errors)
     assert "76-year-old" not in joined and "Smith" not in joined
+
+
+def test_schema_stays_small_enough_to_compile():
+    # Measured 30 Sep - 1 Oct 2026 (ADR-009 build record): Bedrock rejected a
+    # 3.9 KB and a 3.3 KB schema that repeated the statement shape in several
+    # places ("The compiled grammar is too large") and accepted the 2.6 KB wire
+    # form, which has it once (7.4 s compile). Growing past these bounds needs a
+    # real call to prove it still compiles, so it should fail here first.
+    s = record_facts_schema()
+    assert len(json.dumps(s)) <= 3000
+    dumped = json.dumps(s)
+    # the statement shape {section, value, cites} occurs exactly once
+    assert dumped.count('"section": {') == 1 and dumped.count('"value": {') == 1

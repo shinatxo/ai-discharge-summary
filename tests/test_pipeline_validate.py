@@ -17,7 +17,7 @@ ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "src" / "generate"))
 
 from pipeline import StepError, run_step, trace_view  # noqa: E402
-from pipeline.schemas import FIELD_NAMES  # noqa: E402
+from pipeline.schemas import FIELD_NAMES, wire_facts  # noqa: E402
 from pipeline.validate import QUOTE_MAX_CHARS, normalise, verify_cite  # noqa: E402
 
 _SCENARIOS = {
@@ -59,8 +59,14 @@ def with_field(name, status, *items):
     return f
 
 
+def wire(f):
+    """Test helpers build facts in the grouped form (the ADR-009 shape, easiest to
+    read); record_facts sends the wire form. Convert (schemas.wire_facts)."""
+    return wire_facts(copy.deepcopy(f))
+
+
 def validate(f, lines=A5):
-    return run_step("validate_facts", {"facts": f, "lines": lines})
+    return run_step("validate_facts", {"facts": wire(f), "lines": lines})
 
 
 # --- verify_cite: the happy path and normalisation -------------------------
@@ -272,14 +278,15 @@ def test_counts_add_up():
     f = with_field("allergies", "documented",
                    item("None known", cite(["L003"], "NKDA.")), item("x", cite(["L099"], "y")))
     c = validate(f)["counts"]
-    assert c == {"cites_total": 2, "cites_verified": 1, "items_unverified": 1, "fields_inconsistent": 0}
+    assert c == {"cites_total": 2, "cites_verified": 1, "items_unverified": 1, "fields_inconsistent": 0,
+                 "medications_inconsistent": 0}
 
 
 def test_malformed_facts_fail_closed():
-    f = facts()
-    del f["resus"]
+    w = wire(facts())
+    del w["resus"]
     with pytest.raises(StepError) as exc:
-        validate(f)
+        run_step("validate_facts", {"facts": w, "lines": A5})
     assert exc.value.code == "facts_shape_invalid"
 
 
@@ -305,5 +312,88 @@ def test_steps_1_and_3_chain_through_run_step():
                      "changed": "yes",
                      "cites": [cite(["L011", "L012"],
                                     "DNACPR form completed by Dr Singh 10/05 after discussion with the patient")]})
-    out = run_step("validate_facts", {"facts": f, "lines": g["lines"]})
+    out = run_step("validate_facts", {"facts": wire(f), "lines": g["lines"]})
     assert out["facts"]["resus"]["citation_status"] == "verified"
+
+
+# --- wire form -> grouped form (30 Sep - 1 Oct 2026) --------------------------
+
+def test_fields_come_back_as_a_dict_in_field_names_order():
+    w = wire(facts())
+    w["field_status"].reverse()                            # model order is not checked
+    out = run_step("validate_facts", {"facts": w, "lines": A5})
+    assert list(out["facts"]["fields"]) == list(FIELD_NAMES)
+
+
+@pytest.mark.parametrize("change", ["drop", "duplicate", "drop_and_duplicate"])
+def test_missing_or_repeated_field_fails_closed(change):
+    w = wire(facts())
+    if change in ("drop", "drop_and_duplicate"):
+        w["field_status"].pop()
+    if change in ("duplicate", "drop_and_duplicate"):
+        w["field_status"].append(copy.deepcopy(w["field_status"][0]))
+    with pytest.raises(StepError) as exc:
+        run_step("validate_facts", {"facts": w, "lines": A5})
+    assert exc.value.code == "fields_incomplete"
+
+
+def test_unknown_field_name_is_a_shape_error():
+    w = wire(facts())
+    w["field_status"][0]["field"] = "patient_name"
+    with pytest.raises(StepError) as exc:
+        run_step("validate_facts", {"facts": w, "lines": A5})
+    assert exc.value.code == "facts_shape_invalid"
+
+
+def test_grouped_form_is_rejected_as_wire_input():
+    # A facts object in the grouped form must not slip through as model output.
+    with pytest.raises(StepError) as exc:
+        run_step("validate_facts", {"facts": facts(), "lines": A5})
+    assert exc.value.code == "facts_shape_invalid"
+
+
+def test_statements_are_routed_to_their_section_in_order():
+    w = wire(facts())
+    w["facts"] = [
+        {"section": "discharge", "value": "d1", "cites": [cite(["L002"], "apixaban 5mg BD")]},
+        {"section": "allergies", "value": "None known", "cites": [cite(["L003"], "NKDA.")]},
+        {"section": "discharge", "value": "d2", "cites": []},
+        {"section": "documented_advice", "value": "a", "cites": []},
+    ]
+    w["field_status"][FIELD_NAMES.index("allergies")]["status"] = "documented"
+    out = run_step("validate_facts", {"facts": w, "lines": A5})["facts"]
+    assert [i["value"] for i in out["medications"]["discharge"]] == ["d1", "d2"]
+    assert [i["fact_id"] for i in out["medications"]["discharge"]] == [
+        "medications.discharge.0", "medications.discharge.1"]
+    assert out["fields"]["allergies"]["items"][0]["citation_status"] == "verified"
+    assert out["documented_advice"][0]["fact_id"] == "documented_advice.0"
+    assert out["medications"]["pre_admission"] == [] and out["contradictions"] == []
+    assert all("section" not in i for i in out["medications"]["discharge"])
+
+
+def test_wire_then_group_round_trips_the_grouped_form():
+    from pipeline.validate import group_facts
+    f = with_field("allergies", "documented", item("None known", cite(["L003"], "NKDA.")))
+    f["medications"]["discharge"] = [item("x", cite(["L002"], "apixaban"))]
+    f["contradictions"] = [item("c", cite(["L006"], "For resus."))]
+    assert group_facts(wire(f)) == f
+
+
+@pytest.mark.parametrize("status,n,check", [
+    ("not_documented", 0, "ok"),
+    ("not_documented", 1, "items_on_not_documented"),     # S12, 1 Oct 2026
+    ("listed", 0, "status_without_items"),
+    ("listed", 2, "ok"),
+    ("referenced_not_listed", 0, "status_without_items"),
+    ("referenced_not_listed", 2, "ok"),                    # A5: one written drug + the statement
+    ("none_required", 1, "ok"),
+    ("none_required", 0, "status_without_items"),
+    ("none_required", 2, "drugs_with_none_required"),
+])
+def test_discharge_status_and_facts_must_agree(status, n, check):
+    f = facts()
+    f["medications"]["discharge_status"] = status
+    f["medications"]["discharge"] = [item(f"d{i}", cite(["L002"], "apixaban")) for i in range(n)]
+    out = validate(f)
+    assert out["facts"]["medications"]["medications_check"] == check
+    assert out["counts"]["medications_inconsistent"] == (0 if check == "ok" else 1)

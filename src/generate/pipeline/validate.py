@@ -40,6 +40,8 @@ _QUOTES = str.maketrans({"‘": "'", "’": "'", "‚": "'", "‛": "'",
 _WS = re.compile(r"\s+")
 
 # Fixed reasons — safe to trace, safe to log.
+FIELDS_INCOMPLETE = "fields_incomplete"   # a field missing from, or repeated in, field_status
+
 REASONS = (
     "missing_lines", "malformed_line_id", "line_out_of_range", "cite_too_many_lines",
     "non_consecutive_lines", "quote_too_long", "empty_quote", "quote_not_found",
@@ -116,9 +118,53 @@ def _check_item(item: dict, fact_id: str, lines: dict, covered: set, counts: dic
         counts["items_unverified"] += 1
 
 
+def _medications_check(meds: dict) -> str:
+    """listed / referenced_not_listed / none_required need at least one discharge
+    fact (the drugs, or the cited statement); not_documented needs none;
+    none_required is a single statement — anything beside it contradicts it."""
+    n, status = len(meds["discharge"]), meds["discharge_status"]
+    if status == "not_documented":
+        return "items_on_not_documented" if n else "ok"
+    if n == 0:
+        return "status_without_items"
+    if status == "none_required" and n > 1:
+        return "drugs_with_none_required"
+    return "ok"
+
+
+def group_facts(wire: dict) -> dict:
+    """The record_facts wire form -> the grouped form every later step uses
+    (schemas.py explains both). Each FIELD_NAMES name must appear exactly once in
+    field_status; otherwise fail closed — a missing field would render as "Not
+    documented" and hide an omission (HAZ-07), a repeated one is ambiguous. The
+    model's order of field_status is not checked; statements keep their order
+    within a section, which is what gives them stable fact_ids."""
+    names = [e["field"] for e in wire["field_status"]]
+    if sorted(names) != sorted(FIELD_NAMES):
+        raise StepError(FIELDS_INCOMPLETE)
+    status = {e["field"]: e["status"] for e in wire["field_status"]}
+    by_section: dict[str, list] = {}
+    for f in wire["facts"]:
+        by_section.setdefault(f["section"], []).append({"value": f["value"], "cites": f["cites"]})
+    return {
+        "fields": {n: {"status": status[n], "items": by_section.get(n, [])} for n in FIELD_NAMES},
+        "medications": {"pre_admission": by_section.get("pre_admission", []),
+                        "discharge": by_section.get("discharge", []),
+                        "discharge_status": wire["discharge_status"]},
+        "resus": wire["resus"],
+        "documented_advice": by_section.get("documented_advice", []),
+        "age_group": wire["age_group"],
+        "contradictions": by_section.get("contradictions", []),
+        "suspicious_text": wire["suspicious_text"],
+    }
+
+
 def validate_facts(inp: dict) -> dict:
     """{"facts": <record_facts object>, "lines": <line index>} ->
-    {"facts": annotated copy, "uncited_lines": [...], "counts": {...}}"""
+    {"facts": annotated copy, "uncited_lines": [...], "counts": {...}}
+
+    The input facts are the record_facts wire form; the output facts are the
+    grouped form (schemas.py)."""
     if not isinstance(inp, dict) or not isinstance(inp.get("lines"), dict) or "facts" not in inp:
         raise StepError("bad_input")
     lines = inp["lines"]
@@ -127,9 +173,10 @@ def validate_facts(inp: dict) -> dict:
         # (which fails step 2 first). Here it guards fixture inputs. Fail closed.
         raise StepError("facts_shape_invalid")
 
-    facts = copy.deepcopy(inp["facts"])   # never mutate the caller's object
+    facts = group_facts(copy.deepcopy(inp["facts"]))   # never mutate the caller's object
     covered: set[str] = set()
-    counts = {"cites_total": 0, "cites_verified": 0, "items_unverified": 0, "fields_inconsistent": 0}
+    counts = {"cites_total": 0, "cites_verified": 0, "items_unverified": 0, "fields_inconsistent": 0,
+              "medications_inconsistent": 0}
 
     for name in FIELD_NAMES:
         field = facts["fields"][name]
@@ -149,6 +196,12 @@ def validate_facts(inp: dict) -> dict:
     for group in ("pre_admission", "discharge"):
         for i, item in enumerate(meds[group]):
             _check_item(item, f"medications.{group}.{i}", lines, covered, counts)
+    # discharge_status and the discharge facts must agree. Flag, don't fix —
+    # like field_check. (1 Oct 2026: S12 recorded "medically fit for discharge"
+    # as a discharge fact under not_documented.)
+    meds["medications_check"] = _medications_check(meds)
+    if meds["medications_check"] != "ok":
+        counts["medications_inconsistent"] += 1
 
     for i, item in enumerate(facts["documented_advice"]):
         _check_item(item, f"documented_advice.{i}", lines, covered, counts)

@@ -16,6 +16,8 @@ from .context import StepContext
 from .errors import StepError
 from .extract import extract_facts
 from .guard import guard_input
+from .retrieve import retrieve_evidence
+from .route import route_resus
 from .validate import validate_facts
 
 # The line-indexed notes travel under this key in step inputs and outputs. It is
@@ -35,6 +37,8 @@ _ALL_STEPS = (
     Step("guard_input", "01", "code", guard_input),
     Step("extract_facts", "02", "model", extract_facts),
     Step("validate_facts", "03", "code", validate_facts),
+    Step("retrieve_evidence", "03b", "code", retrieve_evidence),
+    Step("route_resus", "04", "code", route_resus),
 )
 
 STEPS: dict[str, Step] = {s.name: s for s in _ALL_STEPS}

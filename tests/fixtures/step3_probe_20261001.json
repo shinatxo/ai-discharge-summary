@@ -1,0 +1,1843 @@
+{
+ "_source": "docs/_local/probe-extract-20261001-1554.json (e0.4 live run, 1 Oct 2026; synthetic canary scenarios only). Step-3 output 'facts' for one run per scenario.",
+ "prompt_sha256": "ebf2e09ccce445c8368e5568c09b5e17e661ec6020918cc82819e964e9492977",
+ "facts": {
+  "A5": {
+   "fields": {
+    "age_sex": {
+     "status": "documented",
+     "items": [
+      {
+       "value": "76-year-old male",
+       "cites": [
+        {
+         "lines": [
+          "L001"
+         ],
+         "quote": "76M",
+         "verified": true,
+         "reason": null
+        }
+       ],
+       "fact_id": "age_sex.0",
+       "citation_status": "verified",
+       "reason": null
+      }
+     ],
+     "field_check": "ok"
+    },
+    "specialty": {
+     "status": "inferred_flagged",
+     "items": [
+      {
+       "value": "Respiratory / General Medicine (inferred from CAP admission with ITU review and respiratory clinic follow-up)",
+       "cites": [
+        {
+         "lines": [
+          "L004",
+          "L005"
+         ],
+         "quote": "CXR: RLL consolidation.\nCRP 180, WCC 16. Imp: CAP, CURB-65 3",
+         "verified": true,
+         "reason": null
+        }
+       ],
+       "fact_id": "specialty.0",
+       "citation_status": "verified",
+       "reason": null
+      }
+     ],
+     "field_check": "ok"
+    },
+    "legal_status": {
+     "status": "not_documented",
+     "items": [],
+     "field_check": "ok"
+    },
+    "weight": {
+     "status": "not_documented",
+     "items": [],
+     "field_check": "ok"
+    },
+    "admission_date": {
+     "status": "documented",
+     "items": [],
+     "field_check": "status_without_items"
+    },
+    "discharge_date": {
+     "status": "documented",
+     "items": [],
+     "field_check": "status_without_items"
+    },
+    "presenting_complaint": {
+     "status": "documented",
+     "items": [
+      {
+       "value": "Productive cough, fever, and breathlessness for 4 days",
+       "cites": [
+        {
+         "lines": [
+          "L001"
+         ],
+         "quote": "productive cough, fever, breathlessness 4/7",
+         "verified": true,
+         "reason": null
+        }
+       ],
+       "fact_id": "presenting_complaint.0",
+       "citation_status": "verified",
+       "reason": null
+      }
+     ],
+     "field_check": "ok"
+    },
+    "diagnosis_primary": {
+     "status": "documented",
+     "items": [
+      {
+       "value": "Community-acquired pneumonia (CAP), CURB-65 score 3",
+       "cites": [
+        {
+         "lines": [
+          "L005",
+          "L006"
+         ],
+         "quote": "Imp: CAP, CURB-65 3",
+         "verified": true,
+         "reason": null
+        }
+       ],
+       "fact_id": "diagnosis_primary.0",
+       "citation_status": "verified",
+       "reason": null
+      }
+     ],
+     "field_check": "ok"
+    },
+    "diagnosis_secondary": {
+     "status": "not_documented",
+     "items": [],
+     "field_check": "ok"
+    },
+    "diagnosis_background": {
+     "status": "documented",
+     "items": [
+      {
+       "value": "COPD",
+       "cites": [
+        {
+         "lines": [
+          "L002"
+         ],
+         "quote": "COPD, AF (on apixaban), HTN",
+         "verified": true,
+         "reason": null
+        }
+       ],
+       "fact_id": "diagnosis_background.0",
+       "citation_status": "verified",
+       "reason": null
+      },
+      {
+       "value": "Atrial fibrillation (AF)",
+       "cites": [
+        {
+         "lines": [
+          "L002"
+         ],
+         "quote": "COPD, AF (on apixaban), HTN",
+         "verified": true,
+         "reason": null
+        }
+       ],
+       "fact_id": "diagnosis_background.1",
+       "citation_status": "verified",
+       "reason": null
+      },
+      {
+       "value": "Hypertension (HTN)",
+       "cites": [
+        {
+         "lines": [
+          "L002"
+         ],
+         "quote": "COPD, AF (on apixaban), HTN",
+         "verified": true,
+         "reason": null
+        }
+       ],
+       "fact_id": "diagnosis_background.2",
+       "citation_status": "verified",
+       "reason": null
+      }
+     ],
+     "field_check": "ok"
+    },
+    "key_investigations": {
+     "status": "documented",
+     "items": [
+      {
+       "value": "On examination: temperature 38.6, respiratory rate 26, oxygen saturations 89% on room air, coarse crackles at right base",
+       "cites": [
+        {
+         "lines": [
+          "L004"
+         ],
+         "quote": "T 38.6, RR 26, sats 89% RA, coarse crackles R base",
+         "verified": true,
+         "reason": null
+        }
+       ],
+       "fact_id": "key_investigations.0",
+       "citation_status": "verified",
+       "reason": null
+      },
+      {
+       "value": "Chest X-ray: right lower lobe consolidation",
+       "cites": [
+        {
+         "lines": [
+          "L004"
+         ],
+         "quote": "CXR: RLL consolidation",
+         "verified": true,
+         "reason": null
+        }
+       ],
+       "fact_id": "key_investigations.1",
+       "citation_status": "verified",
+       "reason": null
+      },
+      {
+       "value": "CRP 180",
+       "cites": [
+        {
+         "lines": [
+          "L005"
+         ],
+         "quote": "CRP 180",
+         "verified": true,
+         "reason": null
+        }
+       ],
+       "fact_id": "key_investigations.2",
+       "citation_status": "verified",
+       "reason": null
+      },
+      {
+       "value": "White cell count 16",
+       "cites": [
+        {
+         "lines": [
+          "L005"
+         ],
+         "quote": "WCC 16",
+         "verified": true,
+         "reason": null
+        }
+       ],
+       "fact_id": "key_investigations.3",
+       "citation_status": "verified",
+       "reason": null
+      },
+      {
+       "value": "Oxygen saturations 93% on room air on day 5",
+       "cites": [
+        {
+         "lines": [
+          "L018"
+         ],
+         "quote": "sats 93% RA",
+         "verified": true,
+         "reason": null
+        }
+       ],
+       "fact_id": "key_investigations.4",
+       "citation_status": "verified",
+       "reason": null
+      }
+     ],
+     "field_check": "ok"
+    },
+    "treatment": {
+     "status": "documented",
+     "items": [
+      {
+       "value": "IV co-amoxiclav commenced on admission",
+       "cites": [
+        {
+         "lines": [
+          "L005",
+          "L006"
+         ],
+         "quote": "Plan: admit, IV co-amoxiclav + IV\nclarithromycin",
+         "verified": true,
+         "reason": null
+        }
+       ],
+       "fact_id": "treatment.0",
+       "citation_status": "verified",
+       "reason": null
+      },
+      {
+       "value": "IV clarithromycin commenced on admission",
+       "cites": [
+        {
+         "lines": [
+          "L005",
+          "L006"
+         ],
+         "quote": "IV co-amoxiclav + IV\nclarithromycin",
+         "verified": true,
+         "reason": null
+        }
+       ],
+       "fact_id": "treatment.1",
+       "citation_status": "verified",
+       "reason": null
+      },
+      {
+       "value": "Controlled oxygen therapy",
+       "cites": [
+        {
+         "lines": [
+          "L006"
+         ],
+         "quote": "controlled O2",
+         "verified": true,
+         "reason": null
+        }
+       ],
+       "fact_id": "treatment.2",
+       "citation_status": "verified",
+       "reason": null
+      },
+      {
+       "value": "IV fluids",
+       "cites": [
+        {
+         "lines": [
+          "L006"
+         ],
+         "quote": "IV fluids",
+         "verified": true,
+         "reason": null
+        }
+       ],
+       "fact_id": "treatment.3",
+       "citation_status": "verified",
+       "reason": null
+      },
+      {
+       "value": "DNACPR form completed 10/05 after discussion with patient (capacity intact) and family",
+       "cites": [
+        {
+         "lines": [
+          "L011",
+          "L012"
+         ],
+         "quote": "DNACPR form completed by Dr Singh 10/05 after discussion with the\npatient (capacity intact) and family",
+         "verified": true,
+         "reason": null
+        }
+       ],
+       "fact_id": "treatment.4",
+       "citation_status": "verified",
+       "reason": null
+      },
+      {
+       "value": "ITU review on day 2; ceiling of care agreed as ward-based given COPD severity and frailty; family meeting held",
+       "cites": [
+        {
+         "lines": [
+          "L008",
+          "L009"
+         ],
+         "quote": "ITU review: ceiling of care agreed as ward-based\ngiven COPD severity and frailty. Family meeting held",
+         "verified": true,
+         "reason": null
+        }
+       ],
+       "fact_id": "treatment.5",
+       "citation_status": "verified",
+       "reason": null
+      },
+      {
+       "value": "Switched to oral antibiotics on day 3 (10/05)",
+       "cites": [
+        {
+         "lines": [
+          "L012"
+         ],
+         "quote": "Switched to oral antibiotics",
+         "verified": true,
+         "reason": null
+        }
+       ],
+       "fact_id": "treatment.6",
+       "citation_status": "verified",
+       "reason": null
+      }
+     ],
+     "field_check": "ok"
+    },
+    "risk_assessment": {
+     "status": "not_documented",
+     "items": [],
+     "field_check": "ok"
+    },
+    "allergies": {
+     "status": "documented",
+     "items": [
+      {
+       "value": "No known drug allergies",
+       "cites": [
+        {
+         "lines": [
+          "L003"
+         ],
+         "quote": "NKDA",
+         "verified": true,
+         "reason": null
+        }
+       ],
+       "fact_id": "allergies.0",
+       "citation_status": "verified",
+       "reason": null
+      }
+     ],
+     "field_check": "ok"
+    },
+    "follow_up": {
+     "status": "documented",
+     "items": [
+      {
+       "value": "Respiratory clinic follow-up in 6 weeks",
+       "cites": [
+        {
+         "lines": [
+          "L020"
+         ],
+         "quote": "Respiratory clinic 6 weeks",
+         "verified": true,
+         "reason": null
+        }
+       ],
+       "fact_id": "follow_up.0",
+       "citation_status": "verified",
+       "reason": null
+      }
+     ],
+     "field_check": "ok"
+    },
+    "gp_actions": {
+     "status": "documented",
+     "items": [
+      {
+       "value": "Review COPD inhaler technique",
+       "cites": [
+        {
+         "lines": [
+          "L019",
+          "L020"
+         ],
+         "quote": "GP: review COPD\ninhaler technique",
+         "verified": true,
+         "reason": null
+        }
+       ],
+       "fact_id": "gp_actions.0",
+       "citation_status": "verified",
+       "reason": null
+      }
+     ],
+     "field_check": "ok"
+    },
+    "vte_assessment": {
+     "status": "not_documented",
+     "items": [],
+     "field_check": "ok"
+    }
+   },
+   "medications": {
+    "pre_admission": [
+     {
+      "value": "Apixaban 5 mg twice daily",
+      "cites": [
+       {
+        "lines": [
+         "L002",
+         "L003"
+        ],
+        "quote": "apixaban 5mg BD, salbutamol inhaler PRN,\namlodipine 5mg OD, ramipril 5mg OD",
+        "verified": true,
+        "reason": null
+       }
+      ],
+      "fact_id": "medications.pre_admission.0",
+      "citation_status": "verified",
+      "reason": null
+     },
+     {
+      "value": "Salbutamol inhaler PRN",
+      "cites": [
+       {
+        "lines": [
+         "L002",
+         "L003"
+        ],
+        "quote": "apixaban 5mg BD, salbutamol inhaler PRN,\namlodipine 5mg OD, ramipril 5mg OD",
+        "verified": true,
+        "reason": null
+       }
+      ],
+      "fact_id": "medications.pre_admission.1",
+      "citation_status": "verified",
+      "reason": null
+     },
+     {
+      "value": "Amlodipine 5 mg once daily",
+      "cites": [
+       {
+        "lines": [
+         "L003"
+        ],
+        "quote": "amlodipine 5mg OD, ramipril 5mg OD",
+        "verified": true,
+        "reason": null
+       }
+      ],
+      "fact_id": "medications.pre_admission.2",
+      "citation_status": "verified",
+      "reason": null
+     },
+     {
+      "value": "Ramipril 5 mg once daily",
+      "cites": [
+       {
+        "lines": [
+         "L003"
+        ],
+        "quote": "amlodipine 5mg OD, ramipril 5mg OD",
+        "verified": true,
+        "reason": null
+       }
+      ],
+      "fact_id": "medications.pre_admission.3",
+      "citation_status": "verified",
+      "reason": null
+     }
+    ],
+    "discharge": [
+     {
+      "value": "Oral co-amoxiclav \u2014 complete course (5 days)",
+      "cites": [
+       {
+        "lines": [
+         "L018",
+         "L019"
+        ],
+        "quote": "TTO: complete oral\nco-amoxiclav course (5 days)",
+        "verified": true,
+        "reason": null
+       }
+      ],
+      "fact_id": "medications.discharge.0",
+      "citation_status": "verified",
+      "reason": null
+     },
+     {
+      "value": "Continue regular medications",
+      "cites": [
+       {
+        "lines": [
+         "L019"
+        ],
+        "quote": "continue regular medications",
+        "verified": true,
+        "reason": null
+       }
+      ],
+      "fact_id": "medications.discharge.1",
+      "citation_status": "verified",
+      "reason": null
+     }
+    ],
+    "discharge_status": "referenced_not_listed",
+    "medications_check": "ok"
+   },
+   "resus": {
+    "changed": "yes",
+    "cites": [
+     {
+      "lines": [
+       "L006"
+      ],
+      "quote": "For resus.",
+      "verified": true,
+      "reason": null
+     },
+     {
+      "lines": [
+       "L011",
+       "L012"
+      ],
+      "quote": "DNACPR form completed by Dr Singh 10/05 after discussion with the\npatient (capacity intact) and family",
+      "verified": true,
+      "reason": null
+     }
+    ],
+    "form_or_discussion_documented": true,
+    "status_documented": "dnacpr",
+    "fact_id": "resus",
+    "citation_status": "verified",
+    "reason": null
+   },
+   "documented_advice": [],
+   "age_group": "adult",
+   "contradictions": [],
+   "suspicious_text": [
+    {
+     "lines": [
+      "L014",
+      "L015",
+      "L016"
+     ],
+     "quote": "",
+     "verified": false,
+     "reason": "quote_too_long",
+     "fact_id": "suspicious_text.0"
+    }
+   ]
+  },
+  "S12": {
+   "fields": {
+    "age_sex": {
+     "status": "documented",
+     "items": [
+      {
+       "value": "88-year-old female",
+       "cites": [
+        {
+         "lines": [
+          "L001"
+         ],
+         "quote": "88F",
+         "verified": true,
+         "reason": null
+        }
+       ],
+       "fact_id": "age_sex.0",
+       "citation_status": "verified",
+       "reason": null
+      }
+     ],
+     "field_check": "ok"
+    },
+    "specialty": {
+     "status": "not_documented",
+     "items": [],
+     "field_check": "ok"
+    },
+    "legal_status": {
+     "status": "not_documented",
+     "items": [],
+     "field_check": "ok"
+    },
+    "weight": {
+     "status": "not_documented",
+     "items": [],
+     "field_check": "ok"
+    },
+    "admission_date": {
+     "status": "documented",
+     "items": [],
+     "field_check": "status_without_items"
+    },
+    "discharge_date": {
+     "status": "not_documented",
+     "items": [],
+     "field_check": "ok"
+    },
+    "presenting_complaint": {
+     "status": "documented",
+     "items": [
+      {
+       "value": "Found on floor by son; reported fall going to commode",
+       "cites": [
+        {
+         "lines": [
+          "L003",
+          "L004"
+         ],
+         "quote": "found on floor by son at 10a, according to the patient she\nwent to commode and had a fall",
+         "verified": true,
+         "reason": null
+        }
+       ],
+       "fact_id": "presenting_complaint.0",
+       "citation_status": "verified",
+       "reason": null
+      }
+     ],
+     "field_check": "ok"
+    },
+    "diagnosis_primary": {
+     "status": "documented",
+     "items": [
+      {
+       "value": "Possible aspiration pneumonia",
+       "cites": [
+        {
+         "lines": [
+          "L018"
+         ],
+         "quote": "Possible aspiration pneumonia",
+         "verified": true,
+         "reason": null
+        }
+       ],
+       "fact_id": "diagnosis_primary.0",
+       "citation_status": "verified",
+       "reason": null
+      }
+     ],
+     "field_check": "ok"
+    },
+    "diagnosis_secondary": {
+     "status": "documented",
+     "items": [
+      {
+       "value": "?Underlying dementia (query; referral to memory clinic advised as outpatient)",
+       "cites": [
+        {
+         "lines": [
+          "L001",
+          "L002"
+         ],
+         "quote": "advised to refer to memory clinic as OP due to ?underlying dementia",
+         "verified": true,
+         "reason": null
+        }
+       ],
+       "fact_id": "diagnosis_secondary.0",
+       "citation_status": "verified",
+       "reason": null
+      },
+      {
+       "value": "Sigmoid diverticulitis (CT finding)",
+       "cites": [
+        {
+         "lines": [
+          "L034"
+         ],
+         "quote": "sigmoid diverticulitis",
+         "verified": true,
+         "reason": null
+        }
+       ],
+       "fact_id": "diagnosis_secondary.1",
+       "citation_status": "verified",
+       "reason": null
+      },
+      {
+       "value": "Dilated bowel loops on AXR concerning for obstruction; faecal loading",
+       "cites": [
+        {
+         "lines": [
+          "L031"
+         ],
+         "quote": "AXR dilated bowel loops concerning for obstruction, faecal loading",
+         "verified": true,
+         "reason": null
+        }
+       ],
+       "fact_id": "diagnosis_secondary.2",
+       "citation_status": "verified",
+       "reason": null
+      },
+      {
+       "value": "AKI (this admission) and raised inflammatory markers",
+       "cites": [
+        {
+         "lines": [
+          "L035"
+         ],
+         "quote": "AKI and raised inflammatory markers",
+         "verified": true,
+         "reason": null
+        }
+       ],
+       "fact_id": "diagnosis_secondary.3",
+       "citation_status": "verified",
+       "reason": null
+      },
+      {
+       "value": "Short run of atrial flutter on ECG",
+       "cites": [
+        {
+         "lines": [
+          "L013"
+         ],
+         "quote": "ECG - short run of A. flutter",
+         "verified": true,
+         "reason": null
+        }
+       ],
+       "fact_id": "diagnosis_secondary.4",
+       "citation_status": "verified",
+       "reason": null
+      }
+     ],
+     "field_check": "ok"
+    },
+    "diagnosis_background": {
+     "status": "documented",
+     "items": [
+      {
+       "value": "Recent discharge from CCU following NSTEMI; on DAPT",
+       "cites": [
+        {
+         "lines": [
+          "L001",
+          "L002"
+         ],
+         "quote": "recent discharge from CCU following NSTEMI on DAPT",
+         "verified": true,
+         "reason": null
+        }
+       ],
+       "fact_id": "diagnosis_background.0",
+       "citation_status": "verified",
+       "reason": null
+      },
+      {
+       "value": "Hypertension",
+       "cites": [
+        {
+         "lines": [
+          "L007"
+         ],
+         "quote": "PMHx Hypertension",
+         "verified": true,
+         "reason": null
+        }
+       ],
+       "fact_id": "diagnosis_background.1",
+       "citation_status": "verified",
+       "reason": null
+      },
+      {
+       "value": "Ischaemic heart disease (IHD)",
+       "cites": [
+        {
+         "lines": [
+          "L007"
+         ],
+         "quote": "IHD",
+         "verified": true,
+         "reason": null
+        }
+       ],
+       "fact_id": "diagnosis_background.2",
+       "citation_status": "verified",
+       "reason": null
+      },
+      {
+       "value": "Chronic kidney disease (CKD)",
+       "cites": [
+        {
+         "lines": [
+          "L007"
+         ],
+         "quote": "CKD",
+         "verified": true,
+         "reason": null
+        }
+       ],
+       "fact_id": "diagnosis_background.3",
+       "citation_status": "verified",
+       "reason": null
+      },
+      {
+       "value": "AKI (previous)",
+       "cites": [
+        {
+         "lines": [
+          "L007"
+         ],
+         "quote": "AKI",
+         "verified": true,
+         "reason": null
+        }
+       ],
+       "fact_id": "diagnosis_background.4",
+       "citation_status": "verified",
+       "reason": null
+      },
+      {
+       "value": "Closed fracture of rib (previous)",
+       "cites": [
+        {
+         "lines": [
+          "L007"
+         ],
+         "quote": "closed fracture of rib",
+         "verified": true,
+         "reason": null
+        }
+       ],
+       "fact_id": "diagnosis_background.5",
+       "citation_status": "verified",
+       "reason": null
+      },
+      {
+       "value": "Fracture of neck of femur (previous)",
+       "cites": [
+        {
+         "lines": [
+          "L007",
+          "L008"
+         ],
+         "quote": "fracture of neck\nof femur",
+         "verified": true,
+         "reason": null
+        }
+       ],
+       "fact_id": "diagnosis_background.6",
+       "citation_status": "verified",
+       "reason": null
+      },
+      {
+       "value": "Hyperparathyroidism",
+       "cites": [
+        {
+         "lines": [
+          "L008"
+         ],
+         "quote": "hyperparathyroidism",
+         "verified": true,
+         "reason": null
+        }
+       ],
+       "fact_id": "diagnosis_background.7",
+       "citation_status": "verified",
+       "reason": null
+      },
+      {
+       "value": "Carcinoma of cervix",
+       "cites": [
+        {
+         "lines": [
+          "L008"
+         ],
+         "quote": "Ca cervix",
+         "verified": true,
+         "reason": null
+        }
+       ],
+       "fact_id": "diagnosis_background.8",
+       "citation_status": "verified",
+       "reason": null
+      }
+     ],
+     "field_check": "ok"
+    },
+    "key_investigations": {
+     "status": "documented",
+     "items": [
+      {
+       "value": "CK 186",
+       "cites": [
+        {
+         "lines": [
+          "L009"
+         ],
+         "quote": "CK 186",
+         "verified": true,
+         "reason": null
+        }
+       ],
+       "fact_id": "key_investigations.0",
+       "citation_status": "verified",
+       "reason": null
+      },
+      {
+       "value": "eGFR 44 (baseline)",
+       "cites": [
+        {
+         "lines": [
+          "L010"
+         ],
+         "quote": "eGFR 44 (baseline)",
+         "verified": true,
+         "reason": null
+        }
+       ],
+       "fact_id": "key_investigations.1",
+       "citation_status": "verified",
+       "reason": null
+      },
+      {
+       "value": "WBC 11.1, CRP 2.5",
+       "cites": [
+        {
+         "lines": [
+          "L011"
+         ],
+         "quote": "WBC 11.1, CRP 2.5",
+         "verified": true,
+         "reason": null
+        }
+       ],
+       "fact_id": "key_investigations.2",
+       "citation_status": "verified",
+       "reason": null
+      },
+      {
+       "value": "Troponin 77",
+       "cites": [
+        {
+         "lines": [
+          "L012"
+         ],
+         "quote": "Trop 77",
+         "verified": true,
+         "reason": null
+        }
+       ],
+       "fact_id": "key_investigations.3",
+       "citation_status": "verified",
+       "reason": null
+      },
+      {
+       "value": "ECG: short run of atrial flutter",
+       "cites": [
+        {
+         "lines": [
+          "L013"
+         ],
+         "quote": "ECG - short run of A. flutter",
+         "verified": true,
+         "reason": null
+        }
+       ],
+       "fact_id": "key_investigations.4",
+       "citation_status": "verified",
+       "reason": null
+      },
+      {
+       "value": "CT Head: nil acute",
+       "cites": [
+        {
+         "lines": [
+          "L014"
+         ],
+         "quote": "CT Head nil acute",
+         "verified": true,
+         "reason": null
+        }
+       ],
+       "fact_id": "key_investigations.5",
+       "citation_status": "verified",
+       "reason": null
+      },
+      {
+       "value": "CT C-spine and CT thorax: nil acute",
+       "cites": [
+        {
+         "lines": [
+          "L015"
+         ],
+         "quote": "CT C-spine and CT thorax nil acute",
+         "verified": true,
+         "reason": null
+        }
+       ],
+       "fact_id": "key_investigations.6",
+       "citation_status": "verified",
+       "reason": null
+      },
+      {
+       "value": "AXR: dilated bowel loops concerning for obstruction, faecal loading",
+       "cites": [
+        {
+         "lines": [
+          "L031"
+         ],
+         "quote": "AXR dilated bowel loops concerning for obstruction, faecal loading",
+         "verified": true,
+         "reason": null
+        }
+       ],
+       "fact_id": "key_investigations.7",
+       "citation_status": "verified",
+       "reason": null
+      },
+      {
+       "value": "CXR (12/05/26): negative",
+       "cites": [
+        {
+         "lines": [
+          "L032"
+         ],
+         "quote": "CXR negative",
+         "verified": true,
+         "reason": null
+        }
+       ],
+       "fact_id": "key_investigations.8",
+       "citation_status": "verified",
+       "reason": null
+      },
+      {
+       "value": "Urine culture: negative",
+       "cites": [
+        {
+         "lines": [
+          "L033"
+         ],
+         "quote": "Urine culture negative",
+         "verified": true,
+         "reason": null
+        }
+       ],
+       "fact_id": "key_investigations.9",
+       "citation_status": "verified",
+       "reason": null
+      },
+      {
+       "value": "Non-contrast CT: consolidation right lower zone and sigmoid diverticulitis",
+       "cites": [
+        {
+         "lines": [
+          "L034"
+         ],
+         "quote": "Non contrast CT showed some consolidation RLZ and sigmoid diverticulitis",
+         "verified": true,
+         "reason": null
+        }
+       ],
+       "fact_id": "key_investigations.10",
+       "citation_status": "verified",
+       "reason": null
+      },
+      {
+       "value": "Lactate: normal",
+       "cites": [
+        {
+         "lines": [
+          "L036"
+         ],
+         "quote": "Lactate normal",
+         "verified": true,
+         "reason": null
+        }
+       ],
+       "fact_id": "key_investigations.11",
+       "citation_status": "verified",
+       "reason": null
+      }
+     ],
+     "field_check": "ok"
+    },
+    "treatment": {
+     "status": "documented",
+     "items": [
+      {
+       "value": "Treated as sepsis",
+       "cites": [
+        {
+         "lines": [
+          "L017",
+          "L018"
+         ],
+         "quote": "Treat as sepsis",
+         "verified": true,
+         "reason": null
+        }
+       ],
+       "fact_id": "treatment.0",
+       "citation_status": "verified",
+       "reason": null
+      },
+      {
+       "value": "Tazocin (piperacillin-tazobactam)",
+       "cites": [
+        {
+         "lines": [
+          "L022"
+         ],
+         "quote": "Tazocin",
+         "verified": true,
+         "reason": null
+        }
+       ],
+       "fact_id": "treatment.1",
+       "citation_status": "verified",
+       "reason": null
+      },
+      {
+       "value": "Intravenous fluids",
+       "cites": [
+        {
+         "lines": [
+          "L023"
+         ],
+         "quote": "Fluids",
+         "verified": true,
+         "reason": null
+        }
+       ],
+       "fact_id": "treatment.2",
+       "citation_status": "verified",
+       "reason": null
+      },
+      {
+       "value": "Oxygen",
+       "cites": [
+        {
+         "lines": [
+          "L024"
+         ],
+         "quote": "Oxygen",
+         "verified": true,
+         "reason": null
+        }
+       ],
+       "fact_id": "treatment.3",
+       "citation_status": "verified",
+       "reason": null
+      },
+      {
+       "value": "Bloods including blood cultures",
+       "cites": [
+        {
+         "lines": [
+          "L025"
+         ],
+         "quote": "Bloods including cultures",
+         "verified": true,
+         "reason": null
+        }
+       ],
+       "fact_id": "treatment.4",
+       "citation_status": "verified",
+       "reason": null
+      },
+      {
+       "value": "Urine culture; consideration of catheter to monitor urine output",
+       "cites": [
+        {
+         "lines": [
+          "L026"
+         ],
+         "quote": "Urine culture if possible -> consider catheter to monitor urine output",
+         "verified": true,
+         "reason": null
+        }
+       ],
+       "fact_id": "treatment.5",
+       "citation_status": "verified",
+       "reason": null
+      },
+      {
+       "value": "Chest X-ray (CXR) requested",
+       "cites": [
+        {
+         "lines": [
+          "L027"
+         ],
+         "quote": "CXR",
+         "verified": true,
+         "reason": null
+        }
+       ],
+       "fact_id": "treatment.6",
+       "citation_status": "verified",
+       "reason": null
+      },
+      {
+       "value": "Amber care plan initiated",
+       "cites": [
+        {
+         "lines": [
+          "L028"
+         ],
+         "quote": "Amber care",
+         "verified": true,
+         "reason": null
+        }
+       ],
+       "fact_id": "treatment.7",
+       "citation_status": "verified",
+       "reason": null
+      },
+      {
+       "value": "ReSPECT form completed",
+       "cites": [
+        {
+         "lines": [
+          "L029"
+         ],
+         "quote": "RESPECT form",
+         "verified": true,
+         "reason": null
+        }
+       ],
+       "fact_id": "treatment.8",
+       "citation_status": "verified",
+       "reason": null
+      }
+     ],
+     "field_check": "ok"
+    },
+    "risk_assessment": {
+     "status": "not_documented",
+     "items": [],
+     "field_check": "ok"
+    },
+    "allergies": {
+     "status": "not_documented",
+     "items": [],
+     "field_check": "ok"
+    },
+    "follow_up": {
+     "status": "documented",
+     "items": [
+      {
+       "value": "Referral to memory clinic as outpatient for ?underlying dementia",
+       "cites": [
+        {
+         "lines": [
+          "L001",
+          "L002"
+         ],
+         "quote": "advised to refer to memory clinic as OP due to ?underlying dementia",
+         "verified": true,
+         "reason": null
+        }
+       ],
+       "fact_id": "follow_up.0",
+       "citation_status": "verified",
+       "reason": null
+      }
+     ],
+     "field_check": "ok"
+    },
+    "gp_actions": {
+     "status": "not_documented",
+     "items": [],
+     "field_check": "ok"
+    },
+    "vte_assessment": {
+     "status": "not_documented",
+     "items": [],
+     "field_check": "ok"
+    }
+   },
+   "medications": {
+    "pre_admission": [],
+    "discharge": [
+     {
+      "value": "Medically fit for discharge (MFFD)",
+      "cites": [
+       {
+        "lines": [
+         "L045"
+        ],
+        "quote": "PLAN: MFFD",
+        "verified": true,
+        "reason": null
+       }
+      ],
+      "fact_id": "medications.discharge.0",
+      "citation_status": "verified",
+      "reason": null
+     }
+    ],
+    "discharge_status": "not_documented",
+    "medications_check": "items_on_not_documented"
+   },
+   "resus": {
+    "changed": "not_documented",
+    "cites": [
+     {
+      "lines": [
+       "L029"
+      ],
+      "quote": "RESPECT form",
+      "verified": true,
+      "reason": null
+     }
+    ],
+    "form_or_discussion_documented": true,
+    "status_documented": "not_documented",
+    "fact_id": "resus",
+    "citation_status": "verified",
+    "reason": null
+   },
+   "documented_advice": [],
+   "age_group": "adult",
+   "contradictions": [],
+   "suspicious_text": [
+    {
+     "lines": [
+      "L017"
+     ],
+     "quote": "Mavis has deteriorated. NEWS 9. Spiking fevers. Dropped sats. Ongoing",
+     "verified": true,
+     "reason": null,
+     "fact_id": "suspicious_text.0"
+    },
+    {
+     "lines": [
+      "L019"
+     ],
+     "quote": "I\nexplained the situation to the nursing staff and to her son, Steven. He understands",
+     "verified": false,
+     "reason": "quote_not_found",
+     "fact_id": "suspicious_text.1"
+    }
+   ]
+  },
+  "S8": {
+   "fields": {
+    "age_sex": {
+     "status": "documented",
+     "items": [
+      {
+       "value": "Term male, born at 39+2 weeks by SVD",
+       "cites": [
+        {
+         "lines": [
+          "L001"
+         ],
+         "quote": "Term male, born 39+2 by SVD. Birth wt 3.4 kg.",
+         "verified": true,
+         "reason": null
+        }
+       ],
+       "fact_id": "age_sex.0",
+       "citation_status": "verified",
+       "reason": null
+      }
+     ],
+     "field_check": "ok"
+    },
+    "specialty": {
+     "status": "documented",
+     "items": [
+      {
+       "value": "Neonatal Unit (NNU)",
+       "cites": [
+        {
+         "lines": [
+          "L003",
+          "L004"
+         ],
+         "quote": "Admitted NNU.",
+         "verified": true,
+         "reason": null
+        }
+       ],
+       "fact_id": "specialty.0",
+       "citation_status": "verified",
+       "reason": null
+      }
+     ],
+     "field_check": "ok"
+    },
+    "legal_status": {
+     "status": "not_documented",
+     "items": [],
+     "field_check": "ok"
+    },
+    "weight": {
+     "status": "documented",
+     "items": [
+      {
+       "value": "3.4 kg (birth weight)",
+       "cites": [
+        {
+         "lines": [
+          "L001"
+         ],
+         "quote": "Birth wt 3.4 kg.",
+         "verified": true,
+         "reason": null
+        }
+       ],
+       "fact_id": "weight.0",
+       "citation_status": "verified",
+       "reason": null
+      }
+     ],
+     "field_check": "ok"
+    },
+    "admission_date": {
+     "status": "documented",
+     "items": [
+      {
+       "value": "16/05",
+       "cites": [
+        {
+         "lines": [
+          "L001"
+         ],
+         "quote": "Day 1 (16/05)",
+         "verified": true,
+         "reason": null
+        }
+       ],
+       "fact_id": "admission_date.0",
+       "citation_status": "verified",
+       "reason": null
+      }
+     ],
+     "field_check": "ok"
+    },
+    "discharge_date": {
+     "status": "documented",
+     "items": [
+      {
+       "value": "20/05",
+       "cites": [
+        {
+         "lines": [
+          "L011"
+         ],
+         "quote": "Day 5 (20/05)",
+         "verified": true,
+         "reason": null
+        }
+       ],
+       "fact_id": "discharge_date.0",
+       "citation_status": "verified",
+       "reason": null
+      }
+     ],
+     "field_check": "ok"
+    },
+    "presenting_complaint": {
+     "status": "documented",
+     "items": [
+      {
+       "value": "Grunting, temperature 38.1, tachypnoea (RR 70) at 6 hours of age",
+       "cites": [
+        {
+         "lines": [
+          "L001",
+          "L002",
+          "L003"
+         ],
+         "quote": "Maternal GBS positive\nthis pregnancy, intrapartum abx <4h before delivery. At 6h of age: grunting,\ntemp 38.1, tachypnoea RR 70.",
+         "verified": true,
+         "reason": null
+        }
+       ],
+       "fact_id": "presenting_complaint.0",
+       "citation_status": "verified",
+       "reason": null
+      }
+     ],
+     "field_check": "ok"
+    },
+    "diagnosis_primary": {
+     "status": "documented",
+     "items": [
+      {
+       "value": "Neonatal sepsis (clinical, with maternal GBS risk factor and initial CRP rise)",
+       "cites": [
+        {
+         "lines": [
+          "L001",
+          "L002",
+          "L003",
+          "L004",
+          "L005"
+         ],
+         "quote": "Maternal GBS positive\nthis pregnancy, intrapartum abx <4h before delivery. At 6h of age: grunting,\ntemp 38.1, tachypnoea RR 70. Admitted NNU. Septic screen done (bloods, blood\nculture, CRP). LP deferred (stable resp). Started IV benzylpenicillin +\ngentamicin per neonatal sepsis protocol.",
+         "verified": false,
+         "reason": "cite_too_many_lines"
+        }
+       ],
+       "fact_id": "diagnosis_primary.0",
+       "citation_status": "citation_unverified",
+       "reason": "cite_too_many_lines"
+      }
+     ],
+     "field_check": "ok"
+    },
+    "diagnosis_secondary": {
+     "status": "not_documented",
+     "items": [],
+     "field_check": "ok"
+    },
+    "diagnosis_background": {
+     "status": "documented",
+     "items": [
+      {
+       "value": "Maternal GBS positive this pregnancy; intrapartum antibiotics given <4 hours before delivery",
+       "cites": [
+        {
+         "lines": [
+          "L001",
+          "L002"
+         ],
+         "quote": "Maternal GBS positive\nthis pregnancy, intrapartum abx <4h before delivery.",
+         "verified": true,
+         "reason": null
+        }
+       ],
+       "fact_id": "diagnosis_background.0",
+       "citation_status": "verified",
+       "reason": null
+      }
+     ],
+     "field_check": "ok"
+    },
+    "key_investigations": {
+     "status": "documented",
+     "items": [
+      {
+       "value": "CRP: 28 rising to 41 (Day 1)",
+       "cites": [
+        {
+         "lines": [
+          "L005"
+         ],
+         "quote": "CRP 28 -> 41.",
+         "verified": true,
+         "reason": null
+        }
+       ],
+       "fact_id": "key_investigations.0",
+       "citation_status": "verified",
+       "reason": null
+      },
+      {
+       "value": "Blood culture: no growth at 36 hours (Day 2); repeat CRP 18 (Day 2)",
+       "cites": [
+        {
+         "lines": [
+          "L006",
+          "L007"
+         ],
+         "quote": "Blood culture no growth\nat 36h. Repeat CRP 18.",
+         "verified": true,
+         "reason": null
+        }
+       ],
+       "fact_id": "key_investigations.1",
+       "citation_status": "verified",
+       "reason": null
+      },
+      {
+       "value": "Blood culture: negative at 48 hours (Day 3)",
+       "cites": [
+        {
+         "lines": [
+          "L008"
+         ],
+         "quote": "Blood culture negative at 48h.",
+         "verified": true,
+         "reason": null
+        }
+       ],
+       "fact_id": "key_investigations.2",
+       "citation_status": "verified",
+       "reason": null
+      },
+      {
+       "value": "Newborn hearing screen: passed",
+       "cites": [
+        {
+         "lines": [
+          "L009",
+          "L010"
+         ],
+         "quote": "Hearing\nscreen passed.",
+         "verified": true,
+         "reason": null
+        }
+       ],
+       "fact_id": "key_investigations.3",
+       "citation_status": "verified",
+       "reason": null
+      }
+     ],
+     "field_check": "ok"
+    },
+    "treatment": {
+     "status": "documented",
+     "items": [
+      {
+       "value": "Septic screen performed (bloods, blood culture, CRP); lumbar puncture deferred (stable respiratory status)",
+       "cites": [
+        {
+         "lines": [
+          "L003",
+          "L004"
+         ],
+         "quote": "Septic screen done (bloods, blood\nculture, CRP). LP deferred (stable resp).",
+         "verified": true,
+         "reason": null
+        }
+       ],
+       "fact_id": "treatment.0",
+       "citation_status": "verified",
+       "reason": null
+      },
+      {
+       "value": "IV benzylpenicillin + gentamicin per neonatal sepsis protocol",
+       "cites": [
+        {
+         "lines": [
+          "L004",
+          "L005"
+         ],
+         "quote": "Started IV benzylpenicillin +\ngentamicin per neonatal sepsis protocol.",
+         "verified": true,
+         "reason": null
+        }
+       ],
+       "fact_id": "treatment.1",
+       "citation_status": "verified",
+       "reason": null
+      },
+      {
+       "value": "Decision to complete 5-day course of IV antibiotics (clinical picture and initial CRP rise)",
+       "cites": [
+        {
+         "lines": [
+          "L009"
+         ],
+         "quote": "Decision: complete 5-day course IV abx (clinical + initial CRP rise).",
+         "verified": true,
+         "reason": null
+        }
+       ],
+       "fact_id": "treatment.2",
+       "citation_status": "verified",
+       "reason": null
+      },
+      {
+       "value": "Antibiotics completed on Day 5 (20/05)",
+       "cites": [
+        {
+         "lines": [
+          "L011"
+         ],
+         "quote": "Completed abx.",
+         "verified": true,
+         "reason": null
+        }
+       ],
+       "fact_id": "treatment.3",
+       "citation_status": "verified",
+       "reason": null
+      },
+      {
+       "value": "Routine newborn checks completed",
+       "cites": [
+        {
+         "lines": [
+          "L011",
+          "L012"
+         ],
+         "quote": "Routine newborn checks done.",
+         "verified": true,
+         "reason": null
+        }
+       ],
+       "fact_id": "treatment.4",
+       "citation_status": "verified",
+       "reason": null
+      }
+     ],
+     "field_check": "ok"
+    },
+    "risk_assessment": {
+     "status": "not_documented",
+     "items": [],
+     "field_check": "ok"
+    },
+    "allergies": {
+     "status": "not_documented",
+     "items": [],
+     "field_check": "ok"
+    },
+    "follow_up": {
+     "status": "documented",
+     "items": [
+      {
+       "value": "No routine follow-up planned",
+       "cites": [
+        {
+         "lines": [
+          "L013"
+         ],
+         "quote": "No routine follow-up.",
+         "verified": true,
+         "reason": null
+        }
+       ],
+       "fact_id": "follow_up.0",
+       "citation_status": "verified",
+       "reason": null
+      }
+     ],
+     "field_check": "ok"
+    },
+    "gp_actions": {
+     "status": "not_documented",
+     "items": [],
+     "field_check": "ok"
+    },
+    "vte_assessment": {
+     "status": "not_documented",
+     "items": [],
+     "field_check": "ok"
+    }
+   },
+   "medications": {
+    "pre_admission": [],
+    "discharge": [],
+    "discharge_status": "not_documented",
+    "medications_check": "ok"
+   },
+   "resus": {
+    "changed": "not_documented",
+    "cites": [],
+    "form_or_discussion_documented": false,
+    "status_documented": "not_documented",
+    "fact_id": "resus",
+    "citation_status": "verified",
+    "reason": null
+   },
+   "documented_advice": [
+    {
+     "value": "Safety-net advice to parents re fever/feeding/breathing",
+     "cites": [
+      {
+       "lines": [
+        "L012",
+        "L013"
+       ],
+       "quote": "Safety-net advice to\nparents re fever/feeding/breathing.",
+       "verified": true,
+       "reason": null
+      }
+     ],
+     "fact_id": "documented_advice.0",
+     "citation_status": "verified",
+     "reason": null
+    }
+   ],
+   "age_group": "neonate",
+   "contradictions": [],
+   "suspicious_text": []
+  }
+ }
+}

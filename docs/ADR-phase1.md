@@ -2304,6 +2304,149 @@ behaviour matches it.
 **Hours:** ~4 (W2 part 2), logged on The Window. With part 1's ~2, W2–W3 stands at ~6 of 8 — ~2 left for W3. Next: W3 — `retrieve_evidence`,
 `route_resus`, `select_safety_net`.
 
+### Build record — W3 (1–2 Oct 2026)
+
+**Step 5b and documented advice — decided 1 Oct 2026 by the author as CSO (amends (e)).**
+The problem: under (e), 5b selects documented advice verbatim *or* a pinned fall-back, and code renders
+the one choice into PART A, B and C. After the 1 Oct ruling that a record of advice given counts as
+documented advice ("Safety-net advice to parents re fever/feeding/breathing", S8), the parent leaflet
+would carry that third-person record — nothing a parent can act on — and lose the pinned paediatric line
+it would have had if nothing were documented.
+**Decision.** 5b returns two renderings. **PART A and B: unchanged from (e)** — documented advice
+verbatim with citations, or the pinned line. **PART C: the pinned line always**, with any documented
+advice above it, verbatim. The pinned lines are reworded to defer to a contact the team has given:
+> Adult: *If you have been given a number to call, use that first. Otherwise, if you are worried,
+> contact your GP or call NHS 111. Call 999 if it is an emergency.*
+> Paediatric (age_group neonate / infant / child): *If you have been given a number to call, use that
+> first. Otherwise, if you are worried about your child, contact your GP or call NHS 111. Call 999 if
+> it is an emergency.*
+These replace both pinned strings everywhere they are used (A/B fall-back route and C), so 5b, the gate
+and the tests carry one adult and one paediatric string. This **supersedes the paediatric wording
+decided 24 Sep** (which lacked the first sentence).
+**Why.** (1) It fixes the actual defect — the signpost disappearing exactly when safety-netting was
+discussed. (2) *Rejected — pinned line always added, old wording:* a generic "GP or NHS 111" beside a
+documented specific route (an acute oncology hotline for a patient on chemotherapy; a surgical
+assessment unit) could send a neutropenic patient through 111 and delay treatment — the HAZ-22
+population. The deferring first sentence removes that conflict without code having to detect it.
+(3) *Rejected — a model label separating instructions from records of advice:* a schema change (a
+recompile, with grammar-size risk) and a new misclassification failure, to produce a nicer sentence; it
+would still need the deferring wording. (4) *Rejected — leave (e) as is:* the leaflet regresses.
+**Still outside WS2a §6 item 3:** the lines name no symptom, threshold or diagnosis and are
+patient-independent within an audience; "use the number you were given first" is a contact-routing
+instruction, not clinical advice. The CSO's sign-off on the wording confirms it contains no clinical
+trigger.
+**Consequences.** `safety_net_gate.py` replaces its canonical lines with the two new strings (+ tests).
+The DoD 5 metric's PART C assertion becomes: the pinned line is present verbatim on every route, plus
+the documented advice on the documented route; route correctness and documented-route support are
+scored on 5b's A/B rendering as before. HAZ-01 and HAZ-03 controls change wording — carried into the
+hazard log at the W11 re-issue (WS4 v2.0), not as a new document now (standing rule: no new compliance
+documents before Jan 2027). ~0.5 h inside the W3 5b build.
+
+**What was built.** Steps 3b `retrieve_evidence`, 4 `route_resus` and 5b `select_safety_net` — all code,
+no model call, no AWS — registered in `run_step` as `03b`, `04`, `05b`; and the safety-net gate's pinned
+lines. Synthetic notes only. No schema change, so no grammar recompile and no live check. The suite is
+**370 green on Python 3.13** (238 at the start; 132 new). Commits on `feat/agentic-pipeline`, pushed
+`575bc6e..13d1e9f`: `e67a2f1` (3b **and** 4 — the message names 3b only), `5c4e679` (5b — the message
+names all three; the steps were committed as they were reviewed, the messages drafted for a split that
+had already happened), `13d1e9f` (the gate). Recorded here rather than rewriting pushed history.
+Each decision below was put to the author as options and a recommendation, and accepted. **The step code
+and tests were drafted by Claude and reviewed and accepted by the author; the two wording decisions
+(step 4's forced route, the gate's accepted lines) were made by the author as CSO.**
+
+**Step 3b — what code matches on its own (decided 2 Oct).** Narrow, with every match on the 18 canary
+scenarios pinned in a test (the guard's approach): a resus match extraction did not cite forces step 4
+to `documented_but_absent` [A2], so a loose pattern costs a correct route, not just noise.
+- Resus: `DNACPR` (also `DNA CPR`, `DNA-CPR`), `DNAR`, `CPR`, `resus` / `resuscitation` — but not
+  "resus bay / room / area" (a place in ED); `ReSPECT` / `RESPECT` **case-sensitive** (lower-case
+  "respect" is prose). *Not* "ceiling of care": escalation, not resuscitation status, and extraction may
+  correctly leave it uncited.
+- Medication: `DH`, `TTO`/`TTA` (case-sensitive); "drug history", "discharge medication(s)",
+  "medication(s) on discharge", "continue regular/usual medications", "no meds/medication" (S4's
+  none-required statement). A header pulls in **at most 2** following lines while the previous line does
+  not end in "." and the next is not blank, a "Day N" entry or another header — drug lists wrap
+  (S1, S10, A5). A recall aid, not completeness: 5a also receives the full line index. Accepted
+  over-reach, pinned: S13 L016, S14 L013, A5 L020 (follow-up lines after a wrapped list).
+- Output: line ID, fixed rule names (`cited`, `resus_term`, `med_header`, `med_continuation`), citing
+  `fact_id`s and the guard flag — **never note text**; a test checks every string in the output is a
+  line ID, a rule word or a fact_id. Only **verified** citations count as cited. `flags` is a required
+  input, so a caller cannot silently drop step 1's flags.
+- The 1 Oct e0.4 step-3 output for A5, S12 and S8 is copied to `tests/fixtures/` — `docs/_local/` is
+  gitignored, so CI could never read the original.
+
+**Step 4 — routes, forcing, and two decisions.**
+- `documented` needs a status with verified citations and no uncited resus line; `documented_but_absent`
+  is the narrowed §2a (S12: form documented, recommendation not transcribed) or **forced**; `absent`
+  renders "Not documented." Forcing reasons, fixed words: `resus_citation_unverified` (a claim whose
+  citation failed step 3), `resus_lines_uncited` (3b matched a resus line no verified citation touches),
+  `resus_claim_inconsistent` (citations with no claim, or "changed" with neither a status nor a form).
+  On a forced route **no status is printed** — not even one extraction verified.
+- **Guard-flagged lines never force the route and are never quoted** (decided 2 Oct). A5's injection
+  (L015) names DNACPR, and extraction correctly does not cite it; strict [A2] would force
+  `documented_but_absent` — handing the attacker exactly what the injection asks for (the status not
+  transcribed) and copying its text into the block. The line is still retrieved by 3b and still shown
+  as a flag. Residual: real resus content on a flagged line does not force; the flag is shown to the
+  clinician. A5 on real output routes `documented` (DNACPR, changed).
+- **Changed status — rendered from the enums plus quotes, no model wording** (option (a), decided
+  2 Oct): `DNACPR. *** CHANGED DURING ADMISSION ***` / `For resuscitation. No change during admission.`
+  / no change line when `changed` is not documented; then `Source:` with each verified quote and its
+  line span. `other_documented` renders "Documented (see source)." and never names a status. v0.7's
+  narrative (date, who, why) is not reproduced — it needs a model or a schema change; the quotes carry it.
+- **Forced-route wording — approved by the author as CSO, 2 Oct 2026.** [A2]'s sentence *"Its
+  recommendation is not transcribed in these notes"* is false on the forced route when the notes do
+  state a status (S1 with one "For resus." left uncited). The forced route renders: *"Resuscitation is
+  recorded in these notes ([sources]), but the status could not be confirmed from them. Check the notes
+  and any completed form before relying on any resuscitation decision."* The unforced
+  `documented_but_absent` route (S12) keeps [A2]'s text verbatim. Like the pinned lines, it names no
+  status, symptom or diagnosis.
+- Quotes are a verified citation's quote or, for a line code found, the line's own text — never model
+  wording; over 200 characters, only the line ID is printed. Sources are listed in note order.
+- Tested on every resus scenario through the real steps 1 → 3 → 3b → 4 (S1, S2, S11, S13, S14, S15,
+  S17, B6 from hand-written gold resus objects that the real step 3 must verify first; A5 and S12 from
+  real output), all 8 scenarios with no resus content, and each forcing reason.
+
+**Step 5b — as decided 1 Oct, plus two rules.** "Verbatim" is the citation's **quote**, never the
+model's `value`. Advice counts only if every citation verified and none touches a guard-flagged line;
+anything else is excluded, counted (`advice_excluded`) and never printed — unverified model text in a
+leaflet is the HAZ-01 failure. On S8's real output the parent leaflet now carries the documented advice
+record and the paediatric pinned line. Both pinned strings are pinned character for character in a test.
+
+**The gate — accepted lines as a parameter (option (a), decided 2 Oct).** The live v1 prompts on main
+(`src/generate/system_prompt.md`, `patient_system_prompt.md`) still pin the old line, and
+`run_cold_eval.py` scores v1 with this gate — replacing the string outright would fail every v1
+fall-back scenario in the W4 baseline for following its own prompt. `check()` / `check_combined()` now
+take `canonical`: default `PIPELINE_LINES` (the two 1 Oct lines, either accepted — the gate cannot tell
+the audience; 5b's tests check it); `V1_LINES` (the old line), used only by `run_cold_eval.py` and
+removed with v1 at the W11 cut-over. *Rejected:* accept old and new everywhere (a pipeline output with
+the old line would pass); replace outright (the W4 v1 gate becomes meaningless).
+**A comparison bug fixed with it:** PART C's signposting is compared with the canonical line's
+*signposting sentences* only. The new lines open with *"If you have been given a number to call, use
+that first."*, which carries no 111/999 token, so comparing against the whole line would have failed
+every correct output. The 24 real-output tests now score v1 explicitly and pass unchanged; 13 new tests
+cover the pipeline lines (incl. both lines in one leaflet fails; S15/S18 inventions still fail).
+**Where the gate lives — with 8b, not W3** (decided 2 Oct): moving it now changes `run_cold_eval.py`'s
+and the tests' imports for a caller that does not exist yet. It cannot import the pipeline's strings
+meanwhile (importing the package loads botocore; the gate is pure stdlib), so the two strings exist in
+both places with a test that fails if they differ — one string in effect until the move [A3].
+
+**Watch item (W5, not decided here):** strict [A2] forcing may fire often — S1 has five resus lines, and
+leaving either "For resus." uncited forces the route. Fail-safe, but if it fires on most real runs the
+`documented` route rarely shows. 3b's `resus_matched_not_cited` count and step 4's `forced` are the
+metrics; scored on the 18 scenarios in W5.
+
+**Open for W4+:**
+- The gate's notes regex and 5b disagree on "documented" by design: S4's bare "Parental safety-net
+  advice given" makes the gate advisory, while under the 1 Oct ruling it is not documented advice and 5b
+  uses the pinned line. Both are safe; the W4–W5 scorer should use 5b's definition.
+- Carried from W2 part 2, untouched: `suspicious_text` handling, `StepError` provider detail, the Lambda
+  runtime's botocore and `toolSpec.strict`, uncited-line coverage noise.
+
+**Hours:** estimated at the start of W3 as 3–4 h against ~2 h left of W2–W3's 8 — the author chose a
+**recorded overrun** over the W12 buffer (W12 protects the W11 cut-over's external dependencies).
+Actual: **~2.5 h** (logged on The Window) — a **0.5 h overrun**, recorded; W2–W3 total ~8.5 h of 8. The
+3–4 h estimate was pessimistic: code steps with fixed contracts and fixtures already in place went faster
+than the model step had. Next: W4 — eval harness I, the
+18-scenario v0.7 baseline (`run_cold_eval.py` with `V1_LINES`).
+
 ### Ephemeral stack log
 
 | Stack | Built from (commit) | Created | Deleted | Ledger bucket removed | Own key scheduled for deletion (or `ExistingCmkArn`) | Purpose |

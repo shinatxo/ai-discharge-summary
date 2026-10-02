@@ -62,7 +62,7 @@ FORM_NOT_TRANSCRIBED = (
     "is not transcribed in these notes. Confirm against the completed form before "
     "relying on any resuscitation decision."
 )
-# DRAFT for CSO sign-off (2 Oct 2026) — the FORCED route. [A2]'s sentence "its
+# Approved by the author as CSO, 2 Oct 2026 — the FORCED route. [A2]'s sentence "its
 # recommendation is not transcribed" is false when the notes do state a status
 # but the evidence for it did not verify (S1 with "For resus." uncited), so the
 # forced route says what is actually true: the status could not be confirmed.

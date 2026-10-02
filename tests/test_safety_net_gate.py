@@ -16,6 +16,10 @@ ground truth and mis-parsed its advice block, which made it report the wrong
 answer on the whole real corpus while its unit tests stayed green. The fixtures
 below therefore use the real PART A shape — including the `FIELD: value` line
 that follows the advice block and broke the parser.
+
+Since 2 Oct 2026 (ADR-009 W3) the gate takes the accepted pinned lines as a
+parameter. The real-output tests score v1 with V1_LINES; the section at the end
+tests the pipeline's two lines (CSO, 1 Oct 2026), the default.
 """
 
 from __future__ import annotations
@@ -28,7 +32,11 @@ import pytest
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "evals"))
 
 from safety_net_gate import (  # noqa: E402
-    CANONICAL_FALLBACK,
+    CANONICAL_ADULT,
+    CANONICAL_PAEDIATRIC,
+    PIPELINE_LINES,
+    V1_CANONICAL,
+    V1_LINES,
     advice_block,
     advice_documented,
     check,
@@ -37,6 +45,13 @@ from safety_net_gate import (  # noqa: E402
     signpost_sentences,
     split_parts,
 )
+
+
+def check_v1(notes, part_a, part_c):
+    """The tests down to the pipeline section below score v1 output against the
+    line the live v1 prompts pin — what evals/run_cold_eval.py does for W4."""
+    return check(notes, part_a, part_c, V1_LINES)
+
 
 # --- real source notes ------------------------------------------------------
 # S15, verbatim tail. No safety-netting anywhere in the notes.
@@ -74,7 +89,7 @@ ALLERGIES: NKDA
 PART_A_CANONICAL_ONLY = PART_A_NO_ADVICE.replace(
     "PATIENT ADVICE\nNot documented",
     "PATIENT ADVICE\n- Complete the full course of prednisolone as directed.\n"
-    "- " + CANONICAL_FALLBACK,
+    "- " + V1_CANONICAL,
 )
 
 # run-2026-05-30-patient-v2/S15.md, verbatim — invented into PART A.
@@ -101,7 +116,7 @@ def _part_c(body: str) -> str:
 # --- passes -----------------------------------------------------------------
 
 def test_canonical_line_passes():
-    res = check(NOTES_NO_TRIGGER, PART_A_NO_ADVICE, _part_c(CANONICAL_FALLBACK))
+    res = check_v1(NOTES_NO_TRIGGER, PART_A_NO_ADVICE, _part_c(V1_CANONICAL))
     assert res.ok and res.status == "clean", res.findings
 
 
@@ -109,13 +124,13 @@ def test_soft_wrapped_canonical_passes():
     """The model wraps at ~75 chars, so the line straddles two lines."""
     wrapped = ("If you become unwell or are worried about anything, contact your GP or\n"
                "call NHS 111. Call 999 if it is an emergency.")
-    assert check(NOTES_NO_TRIGGER, PART_A_NO_ADVICE, _part_c(wrapped)).ok
+    assert check_v1(NOTES_NO_TRIGGER, PART_A_NO_ADVICE, _part_c(wrapped)).ok
 
 
 def test_markdown_emphasis_passes():
     bolded = ("If you become unwell or are worried about anything, contact your GP "
               "or call **NHS 111**. Call **999** if it is an emergency.")
-    assert check(NOTES_NO_TRIGGER, PART_A_NO_ADVICE, _part_c(bolded)).ok
+    assert check_v1(NOTES_NO_TRIGGER, PART_A_NO_ADVICE, _part_c(bolded)).ok
 
 
 @pytest.mark.parametrize("heading", [
@@ -125,40 +140,40 @@ def test_markdown_emphasis_passes():
     "─────────────────────────",
 ])
 def test_section_headings_and_rules_do_not_pollute_the_sentence(heading):
-    body = f"{heading}\n{CANONICAL_FALLBACK}"
-    res = check(NOTES_NO_TRIGGER, PART_A_NO_ADVICE, _part_c(body))
+    body = f"{heading}\n{V1_CANONICAL}"
+    res = check_v1(NOTES_NO_TRIGGER, PART_A_NO_ADVICE, _part_c(body))
     assert res.ok, f"{heading!r} -> {res.findings}"
 
 
 def test_quoted_canonical_passes():
     """The patient-version prompt shows the line in quotes; models copy them."""
-    assert check(NOTES_NO_TRIGGER, PART_A_NO_ADVICE,
-                 _part_c(f'"{CANONICAL_FALLBACK}"')).ok
+    assert check_v1(NOTES_NO_TRIGGER, PART_A_NO_ADVICE,
+                 _part_c(f'"{V1_CANONICAL}"')).ok
 
 
 def test_canonical_repeated_twice_passes():
-    body = f"{CANONICAL_FALLBACK}\n\nAnd again:\n\n{CANONICAL_FALLBACK}"
-    assert check(NOTES_NO_TRIGGER, PART_A_NO_ADVICE, _part_c(body)).ok
+    body = f"{V1_CANONICAL}\n\nAnd again:\n\n{V1_CANONICAL}"
+    assert check_v1(NOTES_NO_TRIGGER, PART_A_NO_ADVICE, _part_c(body)).ok
 
 
 def test_routine_follow_up_is_not_urgent_signposting():
     body = ("- **See your GP in about 2 weeks.** They will check your blood count.\n\n"
-            + CANONICAL_FALLBACK)
-    res = check(NOTES_NO_TRIGGER, PART_A_NO_ADVICE, _part_c(body))
+            + V1_CANONICAL)
+    res = check_v1(NOTES_NO_TRIGGER, PART_A_NO_ADVICE, _part_c(body))
     assert res.ok, res.findings
     assert all("2 weeks" not in s for s in signpost_sentences(_part_c(body)))
 
 
 def test_canonical_line_in_part_a_is_exempt():
     """Putting the patient-independent fall-back in PART A invents nothing."""
-    res = check(NOTES_NO_TRIGGER, PART_A_CANONICAL_ONLY, _part_c(CANONICAL_FALLBACK))
+    res = check_v1(NOTES_NO_TRIGGER, PART_A_CANONICAL_ONLY, _part_c(V1_CANONICAL))
     assert res.ok and res.status == "clean", res.findings
 
 
 def test_documented_trigger_makes_the_gate_advisory():
     body = ("If your stoma stops working for 12 hours, or produces more than 1.5 "
             "litres in a day, call the ward or NHS 111.")
-    res = check(NOTES_WITH_TRIGGER, PART_A_NO_ADVICE, _part_c(body))
+    res = check_v1(NOTES_WITH_TRIGGER, PART_A_NO_ADVICE, _part_c(body))
     assert res.ok and res.status == "documented_advice"
 
 
@@ -170,7 +185,7 @@ def test_documented_trigger_makes_the_gate_advisory():
 ])
 def test_invented_trigger_in_part_a_fails(label, part_a):
     notes = (NOTES_NO_TRIGGER if "S15" in label else NOTES_ACTIVITY_ADVICE_ONLY)
-    res = check(notes, part_a, _part_c(CANONICAL_FALLBACK))
+    res = check_v1(notes, part_a, _part_c(V1_CANONICAL))
     assert not res.ok, f"{label} should fail"
     assert res.status == "added_advice_part_a"
     assert "PART A:" in res.findings[-1]
@@ -190,7 +205,7 @@ def test_invented_trigger_in_part_a_fails(label, part_a):
      "call **NHS 111**. Call **999** if it is an emergency."),
 ])
 def test_part_c_drift_fails(label, body):
-    res = check(NOTES_NO_TRIGGER, PART_A_NO_ADVICE, _part_c(body))
+    res = check_v1(NOTES_NO_TRIGGER, PART_A_NO_ADVICE, _part_c(body))
     assert not res.ok, f"{label} should fail"
     assert res.status == "added_advice"
     assert any("expected:" in f for f in res.findings)
@@ -199,13 +214,13 @@ def test_part_c_drift_fails(label, body):
 @pytest.mark.parametrize("extra", ["Call 999 if worse", "Go to A&E if worse"])
 def test_short_unpunctuated_escalation_line_still_fails(extra):
     """A heading-shaped line must not be discarded if it carries a signpost."""
-    res = check(NOTES_NO_TRIGGER, PART_A_NO_ADVICE,
-                _part_c(f"{CANONICAL_FALLBACK}\n{extra}"))
+    res = check_v1(NOTES_NO_TRIGGER, PART_A_NO_ADVICE,
+                _part_c(f"{V1_CANONICAL}\n{extra}"))
     assert not res.ok, f"{extra!r} slipped through as a heading"
 
 
 def test_absent_fallback_fails():
-    res = check(NOTES_NO_TRIGGER, PART_A_NO_ADVICE,
+    res = check_v1(NOTES_NO_TRIGGER, PART_A_NO_ADVICE,
                 _part_c("Take your tablets as written."))
     assert not res.ok and res.status == "missing_fallback"
 
@@ -248,9 +263,86 @@ def test_split_parts_of_a_combined_response():
     combined = (
         "PART A - DISCHARGE SUMMARY\n\nPATIENT ADVICE\nNot documented\n\n"
         "PART B - GP LETTER\n\nDear GP,\n\n"
-        f"PART C - PATIENT VERSION\n\n{CANONICAL_FALLBACK}\n"
+        f"PART C - PATIENT VERSION\n\n{V1_CANONICAL}\n"
     )
     part_a, part_c = split_parts(combined)
     assert "PATIENT ADVICE" in part_a and "Dear GP" not in part_a
-    assert CANONICAL_FALLBACK in part_c
-    assert check_combined(NOTES_NO_TRIGGER, combined).ok
+    assert V1_CANONICAL in part_c
+    assert check_combined(NOTES_NO_TRIGGER, combined, V1_LINES).ok
+
+
+# --- the pipeline's pinned lines (CSO, 1 Oct 2026) — the default ------------
+
+def test_gate_lines_equal_the_pipeline_step_5b_lines():
+    # Two copies until the gate moves into the pipeline package at 8b ([A3]);
+    # this test is what keeps them one string.
+    sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "src" / "generate"))
+    from pipeline.safety_net import ADULT_LINE, PAEDIATRIC_LINE
+    assert (CANONICAL_ADULT, CANONICAL_PAEDIATRIC) == (ADULT_LINE, PAEDIATRIC_LINE)
+    assert PIPELINE_LINES == (ADULT_LINE, PAEDIATRIC_LINE)
+
+
+@pytest.mark.parametrize("line", [CANONICAL_ADULT, CANONICAL_PAEDIATRIC])
+def test_pipeline_line_passes_by_default(line):
+    # Regression: the 1 Oct lines open with a sentence that carries no 111/999
+    # token, so comparing PART C's signposting with the WHOLE line failed
+    # correct output. The gate compares the signposting sentences only.
+    res = check(NOTES_NO_TRIGGER, PART_A_NO_ADVICE, _part_c(line))
+    assert res.ok and res.status == "clean", res.findings
+
+
+def test_pipeline_line_soft_wrapped_passes():
+    wrapped = ("If you have been given a number to call, use that first. Otherwise, if\n"
+               "you are worried, contact your GP or call NHS 111. Call 999 if it is an\n"
+               "emergency.")
+    assert check(NOTES_NO_TRIGGER, PART_A_NO_ADVICE, _part_c(wrapped)).ok
+
+
+def test_documented_advice_above_the_pinned_line_passes():
+    # 5b's PART C on the documented route: advice quote(s), then the pinned line.
+    body = f"Wound care advice given.\n\n{CANONICAL_ADULT}"
+    res = check(NOTES_NO_TRIGGER, PART_A_NO_ADVICE, _part_c(body))
+    assert res.ok and res.status == "clean", res.findings
+
+
+def test_pipeline_line_in_part_a_is_exempt():
+    part_a = PART_A_NO_ADVICE.replace("PATIENT ADVICE\nNot documented",
+                                      "PATIENT ADVICE\n" + CANONICAL_PAEDIATRIC)
+    res = check(NOTES_NO_TRIGGER, part_a, _part_c(CANONICAL_PAEDIATRIC))
+    assert res.ok and res.status == "clean", res.findings
+
+
+def test_v1_line_fails_against_the_pipeline_default():
+    res = check(NOTES_NO_TRIGGER, PART_A_NO_ADVICE, _part_c(V1_CANONICAL))
+    assert not res.ok and res.status == "added_advice"
+    assert sum(f.startswith("expected:") for f in res.findings) == 2
+
+
+def test_pipeline_line_fails_when_scoring_v1():
+    assert not check_v1(NOTES_NO_TRIGGER, PART_A_NO_ADVICE, _part_c(CANONICAL_ADULT)).ok
+
+
+def test_both_pinned_lines_in_one_part_c_fails():
+    # One audience per document: adult AND paediatric signposting is drift.
+    body = f"{CANONICAL_ADULT}\n\n{CANONICAL_PAEDIATRIC}"
+    assert not check(NOTES_NO_TRIGGER, PART_A_NO_ADVICE, _part_c(body)).ok
+
+
+@pytest.mark.parametrize("label,part_a", [
+    ("S15 phlegm/breathlessness", PART_A_S15_INVENTED),
+    ("S18 another seizure", PART_A_S18_INVENTED),
+])
+def test_invented_trigger_in_part_a_still_fails_under_the_pipeline_lines(label, part_a):
+    notes = NOTES_NO_TRIGGER if "S15" in label else NOTES_ACTIVITY_ADVICE_ONLY
+    res = check(notes, part_a, _part_c(CANONICAL_ADULT))
+    assert not res.ok and res.status == "added_advice_part_a"
+
+
+def test_extra_route_after_the_pipeline_line_fails():
+    res = check(NOTES_NO_TRIGGER, PART_A_NO_ADVICE, _part_c(f"{CANONICAL_ADULT}\nGo to A&E if worse"))
+    assert not res.ok
+
+
+def test_empty_canonical_is_refused():
+    with pytest.raises(ValueError):
+        check(NOTES_NO_TRIGGER, PART_A_NO_ADVICE, _part_c(CANONICAL_ADULT), ())

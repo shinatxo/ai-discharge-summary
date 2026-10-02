@@ -427,7 +427,9 @@ def main():
             errors.append((scenario_id, str(exc)))
             continue
         if args.gate:
-            gate = safety_net_gate.check_combined(result["notes"], result["output"])
+            # This harness scores v1 (the live prompts), which pin the v1 line.
+            gate = safety_net_gate.check_combined(result["notes"], result["output"],
+                                                  safety_net_gate.V1_LINES)
             result["gate_status"] = gate.status
             result["gate_ok"] = gate.ok
             result["gate_findings"] = gate.findings

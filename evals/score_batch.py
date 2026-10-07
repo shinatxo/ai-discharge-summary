@@ -28,7 +28,7 @@ import run_cold_eval as rce  # noqa: E402
 import score_meds as MD  # noqa: E402
 import score_safety_net as SN  # noqa: E402
 
-SCORER_VERSION = 1
+SCORER_VERSION = 2
 ADJUDICATIONS_DIR = G.GOLD_DIR / "adjudications"
 
 
@@ -109,6 +109,13 @@ def score_batch(batch_dir: Path, gold_dir: Path = G.GOLD_DIR,
         ids = {"generation_id": rec["generation_id"], "scenario_id": sid, "run": rec["run"]}
         r = SN.score(view_for(rec), golds[sid], lines[sid], adj[sid][0])
         r.update(ids)
+        if rec["generator"] == "v1":
+            # The gate as it ran at generation, and the CURRENT gate re-run on the same
+            # output — so a gate fix is visible as a change, never a silent re-grade.
+            now = SN.gate.check_combined(by_id[sid].notes, rec["output"], SN.gate.V1_LINES)
+            r["gate"] = {"at_generation": (rec.get("gate") or {}).get("status"),
+                         "at_generation_ok": (rec.get("gate") or {}).get("ok"),
+                         "now": now.status, "now_ok": now.ok}
         results.append(r)
         m = MD.score(med_view_for(rec), golds[sid], adj[sid][1])
         m.update(ids)
@@ -162,6 +169,8 @@ def write_reports(batch_dir: Path, scored: dict, corpus_path: Path = rce.DEFAULT
         f"| (ii) Gold advice items carried (recall) | {sum(r['advice']['gold_items_carried'] for r in res)} of {sum(r['advice']['gold_items'] for r in res)} |",
         f"| (iii) **Invented seek-help triggers** (HAZ-01) | {sum(r['seek_help']['n_invented'] for r in res)} sentences in {count(lambda r: r['seek_help']['n_invented'] > 0)} generations |",
         f"| (iii) Pinned line missing where required | {count(lambda r: 'pinned_line_missing' in r['failures'])} |",
+        f"| Safety-net gate PASS — as run at generation | {count(lambda r: r.get('gate', {}).get('at_generation_ok') is True)} of {count(lambda r: 'gate' in r)} |",
+        f"| Safety-net gate PASS — current gate re-run | {count(lambda r: r.get('gate', {}).get('now_ok') is True)} of {count(lambda r: 'gate' in r)} |",
         "", "## Per scenario", "",
         "| Scenario | Gold route | Seek-help documented | Gold | Pass | Review | Fail | Route correct | Invented | Pinned missing |",
         "| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |"]

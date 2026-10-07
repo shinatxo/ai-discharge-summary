@@ -61,8 +61,12 @@ _WORD = re.compile(r"[a-z0-9]+(?:[\-.][a-z0-9]+)*")   # "/" splits: "fever/feedi
 _META = re.compile(
     r"(not documented|not recorded|not transcribed|none documented|nothing documented|"
     r"please (?:add|document|confirm)|to be added|before issuing|clinician action|"
-    r"(?:responsible )?clinician (?:should|to) (?:add|confirm|document)|can only reflect|"
-    r"\bno (?:further|specific|other)\b.*\b(?:documented|recorded)\b)", re.I)
+    r"(?:responsible |reviewing )?clinician (?:should|to|must) (?:add|confirm|document|complete)|"
+    r"can only reflect|cannot be reproduced|fall-?back (?:line )?applies|see part c|"
+    r"consider documenting|clinician to ensure|reflects only the documented|"
+    r"not further (?:detailed|transcribed|specified)|no specific (?:thresholds|triggers)|have been added|"
+    r"\bno (?:further|specific|other)\b.*\b(?:documented|recorded)\b|"
+    r"\bno\b[^.]{0,80}\b(?:were|was|is|are|have been|has been)\s+(?:documented|recorded)\b)", re.I)
 _LIST_MARKER = re.compile(r"^\s*(?:[-*•>]|\(?\d{1,2}[.)])\s*")
 
 
@@ -92,25 +96,54 @@ def _pinned_sentences(lines: tuple[str, ...]) -> set[str]:
     return {gate._normalise(s) for line in lines for s in gate._sentences(line)}
 
 
+_BULLET = re.compile(r"^\s*(?:[-*•▪◦>]|\(?\d{1,2}[.)])\s+")
+_CAPS_LABEL = re.compile(r"^\(?[A-Z][A-Z /&\-]+\)?:?$")
+# A sentence ends at . ! or ?, optionally followed by a closing quote or bracket
+# ('Notes record: "Parental safety-net advice given." The specific …').
+_SENTENCE_END = re.compile(r"(?<=[.!?])\s+|(?<=[.!?][\"'”’)\]])\s+")
+
+
 def _units(text: str) -> list[str]:
-    """Sentences of the advice content, list markers stripped ("1. No swimming"
-    is one unit, not "1." and "No swimming")."""
-    out = []
-    for unit in gate._text_units(text):
-        unit = _LIST_MARKER.sub("", unit)
-        for piece in re.split(r"(?<=[.!?])\s+(?!\d{1,2}[.)]\s)", unit):
-            piece = _LIST_MARKER.sub("", piece).strip()
-            if piece and content_words(piece):
-                out.append(piece)
-    return out
+    """Advice sentences. Scorer v2 (W4, 7 Oct 2026): its own splitter, not the
+    gate's — the gate drops short unpunctuated lines as headings, which silently
+    lost real advice bullets ("• Sepsis") and quoted records. Here every bullet is
+    a unit, wrapped lines are joined, and an all-caps label or a lead-in ending
+    in ":" stands alone (both are then clinician-facing, not advice)."""
+    blocks: list[list[str]] = []
+    for raw in (text or "").splitlines():
+        s = raw.strip()
+        if not s or not re.search(r"[A-Za-z0-9]", s):
+            blocks.append(["break", ""])
+            continue
+        standalone = s.endswith(":") or bool(_CAPS_LABEL.match(s))
+        if _BULLET.match(s):
+            blocks.append(["bullet", _BULLET.sub("", s).strip()])
+        elif (not standalone and blocks and blocks[-1][0] in ("para", "bullet")
+              and not blocks[-1][1].endswith(":") and not _CAPS_LABEL.match(blocks[-1][1])):
+            blocks[-1][1] += " " + s          # a wrapped line
+        else:
+            blocks.append(["para", s])
+    units: list[str] = []
+    for kind, body in blocks:
+        if kind == "break":
+            continue
+        if kind == "bullet" or body.endswith(":") or _CAPS_LABEL.match(body) or body.startswith("["):
+            units.append(body)            # a bracketed note stays whole — it is one clinician note
+        else:
+            units.extend(x.strip() for x in _SENTENCE_END.split(body) if x.strip())
+    return [u for u in units if content_words(u)]
 
 
 def _is_meta(unit: str) -> bool:
     """A clinician-facing statement about the documentation, or a lead-in line
     ("The following advice was documented:") — not advice."""
     u = unit.strip().lstrip("-*• ").strip()
+    if not u.startswith("["):
+        # A parenthetical aside is the output annotating its own advice ("Crisis team
+        # number given (number not documented in notes)") — test what is outside it.
+        u = re.sub(r"\s*\([^()]*\)", "", u).strip() or u
     return bool(_META.search(u) or gate._NOT_DOCUMENTED.match(u) or u.endswith(":")
-                or u.startswith(("⚠", "NOTE", "Note:")))
+                or u.startswith(("⚠", "NOTE", "Note:", "[")) or _CAPS_LABEL.match(u))
 
 
 def view_from_v1(combined: str, accepted_lines: tuple[str, ...] = gate.V1_LINES) -> View:

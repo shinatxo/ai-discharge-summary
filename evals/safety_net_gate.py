@@ -127,8 +127,12 @@ _NOTES_SEEK_HELP = re.compile(
     re.I,
 )
 
+# Any "/"-joined combination of PATIENT, PARENT, CARER before ADVICE. The W4
+# baseline (7 Oct 2026) found v1 writing "PATIENT / PARENT / CARER ADVICE",
+# which the earlier pattern missed — leaving the PART A check blind on those
+# outputs (ADR-009 W4 build record).
 _ADVICE_HEADING = re.compile(
-    r"^[\s#*>\-]*((?:PATIENT|PARENT\s*/?\s*CARER|PARENT|CARER)\s+ADVICE"
+    r"^[\s#*>\-]*((?:(?:PATIENT|PARENT|CARER)\s*(?:/|&|AND)?\s*)+ADVICE"
     r"|SAFETY[- ]NET(?:TING)?(?:\s+ADVICE)?)\s*:?[ \t]*(?P<inline>.*)$",
     re.I | re.M,
 )
@@ -136,7 +140,9 @@ _ADVICE_HEADING = re.compile(
 # ("VTE ASSESSMENT: Not documented" must terminate the block — an earlier
 # version required the line to end after the colon, so the block ran to the end
 # of PART A and picked up somebody else's "Not documented").
-_NEXT_HEADING = re.compile(r"^[\s#*>\-]*[A-Z][A-Z &/'\-]{3,}\s*(?::|$)", re.M)
+# Markdown emphasis is allowed around the label ("**VTE ASSESSMENT**", "**Author:**"):
+# the W4 baseline found the advice block running on past a bold heading.
+_NEXT_HEADING = re.compile(r"^[\s#*>\-]*(?:[A-Z][A-Z &/'\-]{3,}|Author)[*_]*\s*(?::[*_]*|$)", re.M)
 
 _NOT_DOCUMENTED = re.compile(
     r"^(not documented|none documented|none recorded|not recorded|none|nil|n/?a|"

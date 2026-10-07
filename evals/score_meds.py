@@ -39,7 +39,10 @@ from dataclasses import dataclass, field
 # ---------------------------------------------------------------------------
 # Tokens
 # ---------------------------------------------------------------------------
-_DOSE = re.compile(r"(?<![\w/])(\d+(?:\.\d+)?)\s*(mg|mcg|micrograms?|g|units?|ml|iu)\b", re.I)
+_DOSE = re.compile(r"(?<![\w/])(\d+(?:\.\d+)?)\s*(mg|mcg|micrograms?|g|units?|ml|iu)(?![/\w])", re.I)
+# "dose not documented", "OD/BD not documented": the tokens just before a "not
+# documented" are what the output says it does NOT have — never a claimed value.
+_NEGATED = re.compile(r"(?:[\w/\[\]]+[ ,/]*){1,3}\bnot (?:documented|recorded|stated|specified)\b", re.I)
 _UNIT = {"micrograms": "mcg", "microgram": "mcg", "units": "unit", "iu": "unit"}
 
 # frequency surface forms -> canonical code
@@ -69,9 +72,9 @@ _TAGS = [
     (re.compile(r"\bchanged\b|\bCHANGED\b|\bswitched\b"), "changed"),
 ]
 _CONFIRM = re.compile(r"\b(confirm|check|verify|reconcil\w*|clarif\w*)\b", re.I)
-_CONFLICT = re.compile(r"\b(discrepan\w*|conflict\w*|contradict\w*|differ\w*|disagree\w*|"
+_CONFLICT = re.compile(r"\b(discrepan\w*|conflict\w*|contradict\w*|differ\w*|disagree\w*|disput\w*|"
                        r"inconsisten\w*|two different|query|clarif\w*)\b", re.I)
-_INPATIENT = re.compile(r"\b(inpatient|completed|course complete|not (?:for|on) discharge|"
+_INPATIENT = re.compile(r"\b(inpatient|completed?|course (?:is )?complete|not (?:for|on) discharge|not to continue|"
                         r"stopped|STOPPED|discontinued|not continued)\b", re.I)
 _SECTION_CONFIRM = re.compile(r"(confirm|check|reconcile|verify)[^.\n]{0,60}\b(TTO|TTA|discharge "
                               r"(?:medication|prescription|list)|regular medication|remaining)", re.I)
@@ -79,7 +82,12 @@ _NONE = re.compile(r"^\W*(none|nil|no (?:discharge )?medications?(?: required| n
 _NOT_DOC = re.compile(r"\bnot documented\b|\bnot recorded\b", re.I)
 
 
+def _positive(text: str) -> str:
+    return _NEGATED.sub(" ", text)
+
+
 def dose_tokens(text: str) -> set[str]:
+    text = _positive(text)
     out = set()
     for num, unit in _DOSE.findall(text):
         n = num.rstrip("0").rstrip(".") if "." in num else num
@@ -95,6 +103,7 @@ def norm_dose(dose: str | None) -> str | None:
 
 
 def freq_tokens(text: str) -> set[str]:
+    text = _positive(text)
     return {code for rx, code in _FREQ if rx.search(text)}
 
 
@@ -137,14 +146,20 @@ def _entry(text: str) -> Entry:
 
 
 _SECTION_HEAD = re.compile(r"^[\s#*>]*MEDICATIONS ON DISCHARGE\b.*$", re.I | re.M)
-_NEXT_HEAD = re.compile(r"^[\s#*>]*(?:[A-Z][A-Z &/()'\-]{3,}:?)\s*(?:$|:)", re.M)
-_WARN = re.compile(r"^\s*(?:⚠|\*\*⚠|CLINICIAN (?:REVIEW|ACTION|NOTE)|NOTE\b|Note:)", re.I)
+# The section ends at the v0.7 template's next field heading (system_prompt.md
+# PART A template), at the start of a line — never at an all-caps line inside the
+# section ("SUMMARY IS FINALISED:", "*** PRESCRIBER NOTE:"), which scorer v1 did.
+_NEXT_FIELD = re.compile(
+    r"^[#*>]{0,4}\s{0,2}(?:ALLERGIES|FOLLOW[- ]?UP|GP ACTIONS|(?:(?:PATIENT|PARENT|CARER)\s*/?\s*)+ADVICE|"
+    r"VTE ASSESSMENT|RESUSCITATION STATUS|RISK ASSESSMENT|KEY INVESTIGATIONS|TREATMENT DURING ADMISSION|"
+    r"DIAGNOSIS|PRESENTING COMPLAINT|PART\s+[ABC])\b", re.M)
+_WARN = re.compile(r"^\s*(?:⚠|\*\*⚠|\*{3}|CLINICIAN (?:REVIEW|ACTION|NOTE)|PRESCRIBER NOTE|NOTE\b|Note:)", re.I)
 _SUBHEAD_SKIP = re.compile(r"^\s*(pre-?admission|drugs? accounted|previous|admission medication|"
-                           r"inpatient)", re.I)
+                           r"inpatient|medications? (?:prescribed |given |used )?during admission)", re.I)
 _SUBHEAD = re.compile(r"^\s*[A-Za-z][^:|│]{2,60}:\s*$")
-_ITEM = re.compile(r"^\s*(?:\d{1,2}[.)]|[-*•])\s+")
+_ITEM = re.compile(r"^\s*(?:\d{1,2}[.)]|[-*•▪])\s+")
 _BOX = re.compile(r"[│┃┆|]")
-_RULE_ROW = re.compile(r"^[\s|│┌┐└┘├┤┬┴┼─━=:\-+]*$")
+_TABLE_HEADER = re.compile(r"^\W*(drug|medication)s?\b.{0,40}\b(dose|frequency|change|tag)\b", re.I)
 
 
 def med_section(part_a: str) -> str | None:
@@ -152,19 +167,19 @@ def med_section(part_a: str) -> str | None:
     if not m:
         return None
     rest = part_a[m.end():]
-    # The section ends at the next ALL-CAPS field heading (ALLERGIES, FOLLOW-UP, …),
-    # but not at a warning line, which stays inside it.
-    for h in _NEXT_HEAD.finditer(rest):
-        line = h.group(0).strip()
-        if not line.startswith(("⚠", "CLINICIAN", "NOTE")) and not _BOX.search(line):
-            return rest[:h.start()]
-    return rest
+    nxt = _NEXT_FIELD.search(rest)
+    return rest[:nxt.start()] if nxt else rest
 
 
-_STATEMENT = re.compile(r"^\W*(?:none|nil|n/a)\b|^\W*no (?:discharge |regular )?(?:medications?|meds|drugs)\b|"
-                        r"^\W*(?:discharge medications?:?\s*)?not documented\b", re.I)
+_STATEMENT = re.compile(
+    r"^\W*(?:discharge medications?\s*:?\s*)?(?:none|nil|n/a|not documented|none documented)\b|"
+    r"^\W*no (?:discharge |regular |new |pre-?admission |ongoing )?(?:medications?|meds|drugs)\b|"
+    r"^\W*no medications? (?:started|prescribed|required|needed)\b|"
+    r"^\W*no pre-?admission (?:medications?|drugs)\b|"
+    r"\bno (?:pre-?admission )?(?:drugs?|medications?) (?:have been |were |was )?(?:stopped|silently)", re.I)
 _INLINE_SKIP = re.compile(r"^\s*(?:pre-?admission[^:]{0,40}|drugs? accounted[^:]{0,20}|"
-                          r"admission medications?)\s*:", re.I)
+                          r"admission medications?|inpatient medications?|"
+                          r"medications? (?:prescribed |given |used )?during admission)\s*:", re.I)
 _BOX_ONLY = re.compile(r"^[\s|│┃┌┐└┘├┤┬┴┼─━═║╔╗╚╝╠╣╦╩╬=:\-+]*$")
 
 
@@ -177,62 +192,103 @@ def _cells(s: str) -> list[str]:
     return [c.strip() for c in _BOX.split(s)]
 
 
+def _indent(raw: str) -> int:
+    return len(raw) - len(raw.lstrip())
+
+
 def _split_entries(section: str) -> tuple[list[str], list[str], str]:
-    """(entry texts, statement texts, warning text). Table rows, list items and
-    their wrapped continuation lines become entries. Pre-admission sub-lists and
-    clinician-warning blocks do not; "None." / "Not documented" lines are
-    statements about the list, not entries."""
+    """(entry texts, statement texts, warning text).
+
+    Scorer v2 (W4, 7 Oct 2026). A line indented DEEPER than the line that
+    started the current entry continues that entry, whatever it says — a
+    wrapped drug line, an indented "⚠ Note", "*** PRESCRIBER NOTE ***",
+    "Pre-admission dose: 3 mg OD". Scorer v1 classified such lines on their own
+    and so swallowed later items, deleted conflict values and split entries.
+    A line starting in lower case also continues. Only lines at the entry's own
+    indent or shallower are classified: a new item, a statement about the list
+    ("None.", "No pre-admission medications"), a sub-heading, a warning block,
+    or a table row."""
     entries: list[str] = []
     statements: list[str] = []
     warn: list[str] = []
     mode = "entries"
+    last = None                 # (kind, indent, text of the last line) — kind: entry | statement | warn | skip
     for raw in section.splitlines():
-        line = raw.rstrip()
-        s = line.strip()
+        s = raw.strip()
         if not s:
             if mode in ("warn", "skip", "skip_line"):
                 mode = "entries"
+            last = None                      # nothing continues across a blank line
             continue
         if _BOX_ONLY.match(s):
             continue
-        if _WARN.match(s):
-            mode = "warn"
-        if mode == "warn":
-            warn.append(s)
-            continue
-        if _INLINE_SKIP.match(s):
-            mode = "skip_line"            # this line and its wrapped continuation only
+        ind = _indent(raw)
+        unfinished = last is not None and not re.search(r"[.!?:;)\]]\W*$", last[2])
+        continuing = last is not None and (
+            ind > last[1] or s[:1].islower()
+            or (unfinished and ind >= last[1] and not _ITEM.match(s) and not _BOX.search(s)))
+        if continuing:
+            last = (last[0], last[1], s)
+            if last[0] == "entry" and entries:
+                entries[-1] += " " + s
+            elif last[0] == "statement" and statements:
+                statements[-1] += " " + s
+            elif last[0] == "warn":
+                warn.append(s)
             continue
         if mode == "skip_line":
-            if raw[:1].isspace() or s[:1].islower():
-                continue
             mode = "entries"
+        if mode == "skip":
+            if _SUBHEAD.match(s) or _ITEM.match(s) and ind == 0 and not _SUBHEAD_SKIP.match(s):
+                mode = "entries"
+            else:
+                continue
+        if _WARN.match(s):
+            mode = "warn"
+            warn.append(s)
+            last = ("warn", ind, s)
+            continue
+        if mode == "warn":
+            if _ITEM.match(s):
+                mode = "entries"
+            else:
+                warn.append(s)
+                continue
+        if _INLINE_SKIP.match(s):
+            mode, last = "skip_line", ("skip", ind, s)
+            continue
         if _SUBHEAD.match(s) and not _BOX.search(s):
             mode = "skip" if _SUBHEAD_SKIP.match(s) else "entries"
+            last = None
             continue
-        if mode == "skip":                # a pre-admission sub-list, to the next blank line
+        if _TABLE_HEADER.match(s):
+            last = None
             continue
         if _BOX.search(s):
+            inner = s[1:] if s[:1] in "|│┃" else s
+            if entries and len(inner) - len(inner.lstrip()) >= 4:
+                # A row whose first column is blank continues the entry above — the
+                # case when the table has an outer border but no inner dividers.
+                entries[-1] += " " + " ".join(c for c in _cells(s) if c)
+                continue
             cells = _cells(s)
             if any(c.lower() in ("drug", "medication") for c in cells) and len(cells) > 1:
-                continue                                     # header row
+                continue
             if cells and not cells[0] and entries:          # wrapped box row
                 entries[-1] += " " + " ".join(c for c in cells if c)
             else:
                 entries.append(" ".join(c for c in cells if c))
+                last = ("entry", ind, s)
             continue
         body = _ITEM.sub("", s) if _ITEM.match(s) else s
         # A plain line saying "confirm against the TTO" is about the list; a numbered
         # item that says it is still that drug's entry.
         if _STATEMENT.match(body) or (_SECTION_CONFIRM.search(body) and not _ITEM.match(s)):
             statements.append(body)
+            last = ("statement", ind, s)
             continue
-        if _ITEM.match(s):
-            entries.append(body)
-        elif entries and raw[:1].isspace():
-            entries[-1] += " " + s                              # wrapped list item
-        else:
-            entries.append(s)
+        entries.append(body)
+        last = ("entry", ind, s)
     return [e for e in entries if e.strip()], statements, "\n".join(warn)
 
 
@@ -338,7 +394,10 @@ def score(view: MedView, gold: dict, adjudications: dict | None = None) -> dict:
             vals = {norm_dose(v) for v in d["conflict"]["values"]}
             shown = vals & doses
             flagged = any(e.conflict_flag for e in entries)
-            if len(shown) < len(vals) and not flagged:
+            in_warning = (_first_pos(view.warning_text, names) is not None
+                          and bool(_CONFLICT.search(view.warning_text))
+                          and vals <= dose_tokens(view.warning_text))
+            if len(shown) < len(vals) and not flagged and not in_warning:
                 find("fail", "conflict_resolved", name)
             continue_dose_check = False
         else:
@@ -367,6 +426,13 @@ def score(view: MedView, gold: dict, adjudications: dict | None = None) -> dict:
                 find("fail", "frequency_invented", name)
 
         gt = d["tag"]
+        if "conflict" in d and d["conflict"]["field"] == "dose":
+            # With the dose itself unresolved, no change tag can be asserted cleanly;
+            # flagging the conflict is the correct output (B6). Only "shown stopped /
+            # continuing unchanged" would be wrong.
+            if tag in ("stopped", "withheld"):
+                find("fail", "tag_wrong_on_conflict", name)
+            continue
         if d["basis"] == "inferred_from_dh":
             if tag not in (None, "continued") and not any(e.confirm_flag for e in entries):
                 find("fail", "inferred_changed", name)
@@ -406,11 +472,18 @@ def score(view: MedView, gold: dict, adjudications: dict | None = None) -> dict:
                     find("fail", "must_not_appear", m["drug"])
 
     if status in ("none_required", "not_documented"):
-        active = [i for i, e in enumerate(view.entries)
-                  if i not in used or e.tag not in ("stopped", "withheld")]
+        # Scorer v2: a reconstruction is an entry that ASSERTS a discharge drug with a
+        # dose or a frequency, and is not a must-not drug (judged above) or a stopped
+        # gold drug. Prose about the list ("whether DAPT is to continue") is not one;
+        # a bare drug name with no dose goes to CSO review as an extra entry instead.
         listed_gold = [d for d in meds["drugs"] if d["tag"] != "stopped"]
+        active = [i for i, e in enumerate(view.entries)
+                  if owner.get(i, ("", ""))[0] != "must_not"
+                  and (e.doses or e.freqs)
+                  and e.tag not in ("stopped", "withheld")]
         if active and not listed_gold:
             find("fail", "drugs_where_none_documented")
+            used.update(active)
 
     extras = []
     for i, e in enumerate(view.entries):

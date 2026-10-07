@@ -1,4 +1,4 @@
-# Step 2 — extract_facts — System Prompt (e0.5)
+# Step 2 — extract_facts — System Prompt (e0.6)
 
 > e0.1 (2026-09-30): split from the Phase 1 prompt v0.7
 > (`prompts/discharge-summary-system-prompt.md`) for ADR-009 step 2. Drafted by
@@ -38,6 +38,11 @@
 > bare "advice given" that says nothing about what was covered is still not
 > recorded. Only this rule changed from e0.4 (measured run: prompt_sha256
 > ebf2e09ccce4); the CSO's consequence for step 5b is open for W3.
+> e0.6 (2026-10-07): CSO ruling of 6 Oct 2026. A bare record that advice was
+> given ("safety-netting advice given", S2 and S4) IS documented advice, as a
+> record with its scope already was. The record documents no trigger content,
+> so what it covered is never inferred (gold: seek_help not documented). Only
+> this rule changed from e0.5 (prompt_sha256 4989645d92e0).
 > Only the text below the SYSTEM PROMPT marker is sent; its SHA-256 is the
 > step's prompt_sha256. Editing this header does not change it.
 
@@ -230,11 +235,10 @@ Medications:
 `documented_advice` — one fact for each piece of advice the notes record for
 the patient or their carer about after discharge: what to do, what to avoid,
 what to expect, when and where to seek help. A record that such advice was
-given, saying roughly what it covered, counts ("advice given re diet and
-exercise"): record it as written. The value is the clinician's own words, not a
-paraphrase. Not advice, so not recorded here:
-- a note that advice was given that says nothing about what it covered
-  ("safety-netting advice given");
+given counts, whether or not it says what the advice covered ("advice given re
+diet and exercise", "safety-netting advice given"): record it as written. The
+value is the clinician's own words, not a paraphrase. Not advice, so not
+recorded here:
 - conversations about the admission, prognosis or decisions, with the patient
   or with relatives ("ceiling of care discussed with daughter");
 - instructions to staff, and plans for the hospital or GP.

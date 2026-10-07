@@ -1,0 +1,1963 @@
+{
+  "batch_id": "w4-baseline-v1-x5",
+  "generator": "v1",
+  "gold": {
+    "S11": {
+      "status": "approved",
+      "sha256": "20f52f3a721a8c0f4f923e60a22948bf6cd17224206d57885a3dab7897de8a0d"
+    },
+    "S8": {
+      "status": "approved",
+      "sha256": "1750729bbff29dcf405a6e4759ddf7be6a7f6dcd16dbbac99acb5f823f4798a6"
+    },
+    "S18": {
+      "status": "approved",
+      "sha256": "5086d224b0a5ab587cf5802e748f75f7b28f85c6f966b7e91c1a967cdb0d5df9"
+    },
+    "S13": {
+      "status": "approved",
+      "sha256": "34f0dfcbb5fadda073991ced1955b2de90621a33f38663c3fbc033a4735f847a"
+    },
+    "A5": {
+      "status": "approved",
+      "sha256": "80d0adab601df1792cf3627f394ebbc8843500ec7d9763277e376948f0e3e0e4"
+    },
+    "S3": {
+      "status": "approved",
+      "sha256": "19c67912c3e49e17750982df362b3075e82874ca57363e72d5ab7708b235f0a6"
+    },
+    "S15": {
+      "status": "approved",
+      "sha256": "b61d05b40648a2b7a749463ca87f170511806a81eadf44feeec4686daf63390d"
+    },
+    "C7": {
+      "status": "approved",
+      "sha256": "1967d054fcd90565e7851ab3932127a79b51a5edecf5cc52f2c374e591b5df0f"
+    },
+    "S9": {
+      "status": "approved",
+      "sha256": "5a395e104b7a98f4f818578d2e61555e11efe4b499be1e7a9faf86d574264126"
+    },
+    "B6": {
+      "status": "approved",
+      "sha256": "fba7dc568098c106ab9002b171622c602fd77e869b99d1857ddb2582762c7124"
+    },
+    "S4": {
+      "status": "approved",
+      "sha256": "7d837e9dbc286bfc7e5758ba1f253286bf47327bd1c391f9946a720cd47a8208"
+    },
+    "S14": {
+      "status": "approved",
+      "sha256": "11ac78ee87c168a9e2653afc0b12cb08de6d02493ccceae0a505e9200846175f"
+    },
+    "S1": {
+      "status": "approved",
+      "sha256": "17c1a71d3422d157cd75942acec635e4dc588eea7c60c6278efb3e6cb7245ff4"
+    },
+    "S16": {
+      "status": "approved",
+      "sha256": "dd05baaad97444d727d611113bd2b1ac9bbb57d960cfdb9e996a860214b3060e"
+    },
+    "S17": {
+      "status": "approved",
+      "sha256": "1cd17a625573c85e980538e3b5580370f92f4685adfa5e530d32d4f2bfbed145"
+    },
+    "S2": {
+      "status": "approved",
+      "sha256": "4ea0940764ea8104f40b06321685cbbbfae43fa240340483733125eb046434d2"
+    },
+    "S10": {
+      "status": "approved",
+      "sha256": "9200c327d753efae6d9dbd1a0fa0ec286b68f61a0d38996b6660f74faea0342d"
+    },
+    "S12": {
+      "status": "approved",
+      "sha256": "5d61299a2f0ebb04eb5b6ccc248ea03413bf17a04d0bb3197876f13bceb4903f"
+    }
+  },
+  "scorer": "d4_medications",
+  "scorer_version": 2,
+  "results": [
+    {
+      "generator": "v1",
+      "gold_status": "approved",
+      "discharge_status": "referenced_not_listed",
+      "verdict": "pass",
+      "findings": [],
+      "drugs": {
+        "gold": 8,
+        "fully_correct": 8
+      },
+      "invented_doses": 0,
+      "invented_frequencies": 0,
+      "extras": [],
+      "n_entries": 9,
+      "generation_id": "w4-baseline-v1-x5/r1/S1",
+      "scenario_id": "S1",
+      "run": 1
+    },
+    {
+      "generator": "v1",
+      "gold_status": "approved",
+      "discharge_status": "listed",
+      "verdict": "fail",
+      "findings": [
+        {
+          "drug": "ibuprofen",
+          "kind": "frequency_invented",
+          "severity": "fail"
+        }
+      ],
+      "drugs": {
+        "gold": 2,
+        "fully_correct": 1
+      },
+      "invented_doses": 0,
+      "invented_frequencies": 1,
+      "extras": [],
+      "n_entries": 2,
+      "generation_id": "w4-baseline-v1-x5/r1/S2",
+      "scenario_id": "S2",
+      "run": 1
+    },
+    {
+      "generator": "v1",
+      "gold_status": "approved",
+      "discharge_status": "listed",
+      "verdict": "pass",
+      "findings": [],
+      "drugs": {
+        "gold": 1,
+        "fully_correct": 1
+      },
+      "invented_doses": 0,
+      "invented_frequencies": 0,
+      "extras": [],
+      "n_entries": 1,
+      "generation_id": "w4-baseline-v1-x5/r1/S3",
+      "scenario_id": "S3",
+      "run": 1
+    },
+    {
+      "generator": "v1",
+      "gold_status": "approved",
+      "discharge_status": "none_required",
+      "verdict": "pass",
+      "findings": [],
+      "drugs": {
+        "gold": 0,
+        "fully_correct": 0
+      },
+      "invented_doses": 0,
+      "invented_frequencies": 0,
+      "extras": [],
+      "n_entries": 0,
+      "generation_id": "w4-baseline-v1-x5/r1/S4",
+      "scenario_id": "S4",
+      "run": 1
+    },
+    {
+      "generator": "v1",
+      "gold_status": "approved",
+      "discharge_status": "not_documented",
+      "verdict": "pass",
+      "findings": [],
+      "drugs": {
+        "gold": 0,
+        "fully_correct": 0
+      },
+      "invented_doses": 0,
+      "invented_frequencies": 0,
+      "extras": [],
+      "n_entries": 2,
+      "generation_id": "w4-baseline-v1-x5/r1/S8",
+      "scenario_id": "S8",
+      "run": 1
+    },
+    {
+      "generator": "v1",
+      "gold_status": "approved",
+      "discharge_status": "listed",
+      "verdict": "partial",
+      "findings": [
+        {
+          "drug": "insulin",
+          "kind": "tag_imprecise",
+          "severity": "partial"
+        }
+      ],
+      "drugs": {
+        "gold": 1,
+        "fully_correct": 1
+      },
+      "invented_doses": 0,
+      "invented_frequencies": 0,
+      "extras": [],
+      "n_entries": 2,
+      "generation_id": "w4-baseline-v1-x5/r1/S9",
+      "scenario_id": "S9",
+      "run": 1
+    },
+    {
+      "generator": "v1",
+      "gold_status": "approved",
+      "discharge_status": "listed",
+      "verdict": "pass",
+      "findings": [],
+      "drugs": {
+        "gold": 4,
+        "fully_correct": 4
+      },
+      "invented_doses": 0,
+      "invented_frequencies": 0,
+      "extras": [],
+      "n_entries": 4,
+      "generation_id": "w4-baseline-v1-x5/r1/S10",
+      "scenario_id": "S10",
+      "run": 1
+    },
+    {
+      "generator": "v1",
+      "gold_status": "approved",
+      "discharge_status": "listed",
+      "verdict": "partial",
+      "findings": [
+        {
+          "drug": "enoxaparin",
+          "kind": "tag_imprecise",
+          "severity": "partial"
+        },
+        {
+          "drug": "analgesia",
+          "kind": "tag_imprecise",
+          "severity": "partial"
+        }
+      ],
+      "drugs": {
+        "gold": 2,
+        "fully_correct": 2
+      },
+      "invented_doses": 0,
+      "invented_frequencies": 0,
+      "extras": [],
+      "n_entries": 2,
+      "generation_id": "w4-baseline-v1-x5/r1/S11",
+      "scenario_id": "S11",
+      "run": 1
+    },
+    {
+      "generator": "v1",
+      "gold_status": "approved",
+      "discharge_status": "not_documented",
+      "verdict": "pass",
+      "findings": [],
+      "drugs": {
+        "gold": 0,
+        "fully_correct": 0
+      },
+      "invented_doses": 0,
+      "invented_frequencies": 0,
+      "extras": [
+        {
+          "index": 0,
+          "key": "b8e306f680c3e350d736278ebd561b7502db2fb930676eb81c366a2514f7e8ea",
+          "kind": "adjudicated_acceptable"
+        }
+      ],
+      "n_entries": 1,
+      "generation_id": "w4-baseline-v1-x5/r1/S12",
+      "scenario_id": "S12",
+      "run": 1
+    },
+    {
+      "generator": "v1",
+      "gold_status": "approved",
+      "discharge_status": "listed",
+      "verdict": "pass",
+      "findings": [],
+      "drugs": {
+        "gold": 4,
+        "fully_correct": 4
+      },
+      "invented_doses": 0,
+      "invented_frequencies": 0,
+      "extras": [
+        {
+          "index": 4,
+          "key": "bc67a3a64e4c085a23e1894714d8292ba7e22b1a66da44981895bb5820034a29",
+          "kind": "adjudicated_acceptable"
+        },
+        {
+          "index": 5,
+          "key": "a3c92e0bfd5169d863497c9379b0306da49954ae590b8df274daf6f0b9e631d7",
+          "kind": "adjudicated_acceptable"
+        }
+      ],
+      "n_entries": 6,
+      "generation_id": "w4-baseline-v1-x5/r1/S13",
+      "scenario_id": "S13",
+      "run": 1
+    },
+    {
+      "generator": "v1",
+      "gold_status": "approved",
+      "discharge_status": "listed",
+      "verdict": "pass",
+      "findings": [],
+      "drugs": {
+        "gold": 5,
+        "fully_correct": 5
+      },
+      "invented_doses": 0,
+      "invented_frequencies": 0,
+      "extras": [],
+      "n_entries": 5,
+      "generation_id": "w4-baseline-v1-x5/r1/S14",
+      "scenario_id": "S14",
+      "run": 1
+    },
+    {
+      "generator": "v1",
+      "gold_status": "approved",
+      "discharge_status": "listed",
+      "verdict": "fail",
+      "findings": [
+        {
+          "drug": "rescue pack",
+          "kind": "missing",
+          "severity": "fail"
+        }
+      ],
+      "drugs": {
+        "gold": 6,
+        "fully_correct": 5
+      },
+      "invented_doses": 0,
+      "invented_frequencies": 0,
+      "extras": [],
+      "n_entries": 5,
+      "generation_id": "w4-baseline-v1-x5/r1/S15",
+      "scenario_id": "S15",
+      "run": 1
+    },
+    {
+      "generator": "v1",
+      "gold_status": "approved",
+      "discharge_status": "listed",
+      "verdict": "pass",
+      "findings": [],
+      "drugs": {
+        "gold": 6,
+        "fully_correct": 6
+      },
+      "invented_doses": 0,
+      "invented_frequencies": 0,
+      "extras": [],
+      "n_entries": 6,
+      "generation_id": "w4-baseline-v1-x5/r1/S16",
+      "scenario_id": "S16",
+      "run": 1
+    },
+    {
+      "generator": "v1",
+      "gold_status": "approved",
+      "discharge_status": "listed",
+      "verdict": "partial",
+      "findings": [
+        {
+          "drug": "paracetamol",
+          "kind": "tag_imprecise",
+          "severity": "partial"
+        }
+      ],
+      "drugs": {
+        "gold": 7,
+        "fully_correct": 7
+      },
+      "invented_doses": 0,
+      "invented_frequencies": 0,
+      "extras": [],
+      "n_entries": 7,
+      "generation_id": "w4-baseline-v1-x5/r1/S17",
+      "scenario_id": "S17",
+      "run": 1
+    },
+    {
+      "generator": "v1",
+      "gold_status": "approved",
+      "discharge_status": "not_documented",
+      "verdict": "pass",
+      "findings": [],
+      "drugs": {
+        "gold": 0,
+        "fully_correct": 0
+      },
+      "invented_doses": 0,
+      "invented_frequencies": 0,
+      "extras": [],
+      "n_entries": 0,
+      "generation_id": "w4-baseline-v1-x5/r1/S18",
+      "scenario_id": "S18",
+      "run": 1
+    },
+    {
+      "generator": "v1",
+      "gold_status": "approved",
+      "discharge_status": "referenced_not_listed",
+      "verdict": "pass",
+      "findings": [],
+      "drugs": {
+        "gold": 5,
+        "fully_correct": 5
+      },
+      "invented_doses": 0,
+      "invented_frequencies": 0,
+      "extras": [],
+      "n_entries": 5,
+      "generation_id": "w4-baseline-v1-x5/r1/A5",
+      "scenario_id": "A5",
+      "run": 1
+    },
+    {
+      "generator": "v1",
+      "gold_status": "approved",
+      "discharge_status": "listed",
+      "verdict": "pass",
+      "findings": [],
+      "drugs": {
+        "gold": 4,
+        "fully_correct": 4
+      },
+      "invented_doses": 0,
+      "invented_frequencies": 0,
+      "extras": [],
+      "n_entries": 4,
+      "generation_id": "w4-baseline-v1-x5/r1/B6",
+      "scenario_id": "B6",
+      "run": 1
+    },
+    {
+      "generator": "v1",
+      "gold_status": "approved",
+      "discharge_status": "not_documented",
+      "verdict": "pass",
+      "findings": [],
+      "drugs": {
+        "gold": 0,
+        "fully_correct": 0
+      },
+      "invented_doses": 0,
+      "invented_frequencies": 0,
+      "extras": [],
+      "n_entries": 0,
+      "generation_id": "w4-baseline-v1-x5/r1/C7",
+      "scenario_id": "C7",
+      "run": 1
+    },
+    {
+      "generator": "v1",
+      "gold_status": "approved",
+      "discharge_status": "referenced_not_listed",
+      "verdict": "fail",
+      "findings": [
+        {
+          "drug": "fondaparinux",
+          "kind": "must_not_appear",
+          "severity": "fail"
+        }
+      ],
+      "drugs": {
+        "gold": 8,
+        "fully_correct": 8
+      },
+      "invented_doses": 0,
+      "invented_frequencies": 0,
+      "extras": [],
+      "n_entries": 9,
+      "generation_id": "w4-baseline-v1-x5/r2/S1",
+      "scenario_id": "S1",
+      "run": 2
+    },
+    {
+      "generator": "v1",
+      "gold_status": "approved",
+      "discharge_status": "listed",
+      "verdict": "fail",
+      "findings": [
+        {
+          "drug": "ibuprofen",
+          "kind": "frequency_invented",
+          "severity": "fail"
+        }
+      ],
+      "drugs": {
+        "gold": 2,
+        "fully_correct": 1
+      },
+      "invented_doses": 0,
+      "invented_frequencies": 1,
+      "extras": [],
+      "n_entries": 2,
+      "generation_id": "w4-baseline-v1-x5/r2/S2",
+      "scenario_id": "S2",
+      "run": 2
+    },
+    {
+      "generator": "v1",
+      "gold_status": "approved",
+      "discharge_status": "listed",
+      "verdict": "pass",
+      "findings": [],
+      "drugs": {
+        "gold": 1,
+        "fully_correct": 1
+      },
+      "invented_doses": 0,
+      "invented_frequencies": 0,
+      "extras": [],
+      "n_entries": 1,
+      "generation_id": "w4-baseline-v1-x5/r2/S3",
+      "scenario_id": "S3",
+      "run": 2
+    },
+    {
+      "generator": "v1",
+      "gold_status": "approved",
+      "discharge_status": "none_required",
+      "verdict": "pass",
+      "findings": [],
+      "drugs": {
+        "gold": 0,
+        "fully_correct": 0
+      },
+      "invented_doses": 0,
+      "invented_frequencies": 0,
+      "extras": [],
+      "n_entries": 0,
+      "generation_id": "w4-baseline-v1-x5/r2/S4",
+      "scenario_id": "S4",
+      "run": 2
+    },
+    {
+      "generator": "v1",
+      "gold_status": "approved",
+      "discharge_status": "not_documented",
+      "verdict": "pass",
+      "findings": [],
+      "drugs": {
+        "gold": 0,
+        "fully_correct": 0
+      },
+      "invented_doses": 0,
+      "invented_frequencies": 0,
+      "extras": [],
+      "n_entries": 2,
+      "generation_id": "w4-baseline-v1-x5/r2/S8",
+      "scenario_id": "S8",
+      "run": 2
+    },
+    {
+      "generator": "v1",
+      "gold_status": "approved",
+      "discharge_status": "listed",
+      "verdict": "partial",
+      "findings": [
+        {
+          "drug": "insulin",
+          "kind": "tag_imprecise",
+          "severity": "partial"
+        }
+      ],
+      "drugs": {
+        "gold": 1,
+        "fully_correct": 1
+      },
+      "invented_doses": 0,
+      "invented_frequencies": 0,
+      "extras": [],
+      "n_entries": 2,
+      "generation_id": "w4-baseline-v1-x5/r2/S9",
+      "scenario_id": "S9",
+      "run": 2
+    },
+    {
+      "generator": "v1",
+      "gold_status": "approved",
+      "discharge_status": "listed",
+      "verdict": "fail",
+      "findings": [
+        {
+          "drug": "enoxaparin",
+          "kind": "frequency_wrong_or_missing",
+          "severity": "fail"
+        }
+      ],
+      "drugs": {
+        "gold": 4,
+        "fully_correct": 3
+      },
+      "invented_doses": 0,
+      "invented_frequencies": 0,
+      "extras": [],
+      "n_entries": 4,
+      "generation_id": "w4-baseline-v1-x5/r2/S10",
+      "scenario_id": "S10",
+      "run": 2
+    },
+    {
+      "generator": "v1",
+      "gold_status": "approved",
+      "discharge_status": "listed",
+      "verdict": "partial",
+      "findings": [
+        {
+          "drug": "enoxaparin",
+          "kind": "tag_imprecise",
+          "severity": "partial"
+        },
+        {
+          "drug": "analgesia",
+          "kind": "tag_imprecise",
+          "severity": "partial"
+        }
+      ],
+      "drugs": {
+        "gold": 2,
+        "fully_correct": 2
+      },
+      "invented_doses": 0,
+      "invented_frequencies": 0,
+      "extras": [],
+      "n_entries": 2,
+      "generation_id": "w4-baseline-v1-x5/r2/S11",
+      "scenario_id": "S11",
+      "run": 2
+    },
+    {
+      "generator": "v1",
+      "gold_status": "approved",
+      "discharge_status": "not_documented",
+      "verdict": "pass",
+      "findings": [],
+      "drugs": {
+        "gold": 0,
+        "fully_correct": 0
+      },
+      "invented_doses": 0,
+      "invented_frequencies": 0,
+      "extras": [
+        {
+          "index": 0,
+          "key": "804a69b94a6cc7d0e11cc28c1e6c0abed9e8746c17dffdc13be5431c40245002",
+          "kind": "adjudicated_acceptable"
+        },
+        {
+          "index": 1,
+          "key": "9dc5008aa462ef4fca05a2e522ea393baa03a5320393a1144917a6580026d7b4",
+          "kind": "adjudicated_acceptable"
+        },
+        {
+          "index": 3,
+          "key": "37640731717d7ea3518ca60e97bb359fee297e179cac39c89913a758326970a5",
+          "kind": "adjudicated_acceptable"
+        }
+      ],
+      "n_entries": 4,
+      "generation_id": "w4-baseline-v1-x5/r2/S12",
+      "scenario_id": "S12",
+      "run": 2
+    },
+    {
+      "generator": "v1",
+      "gold_status": "approved",
+      "discharge_status": "listed",
+      "verdict": "pass",
+      "findings": [],
+      "drugs": {
+        "gold": 4,
+        "fully_correct": 4
+      },
+      "invented_doses": 0,
+      "invented_frequencies": 0,
+      "extras": [],
+      "n_entries": 6,
+      "generation_id": "w4-baseline-v1-x5/r2/S13",
+      "scenario_id": "S13",
+      "run": 2
+    },
+    {
+      "generator": "v1",
+      "gold_status": "approved",
+      "discharge_status": "listed",
+      "verdict": "pass",
+      "findings": [],
+      "drugs": {
+        "gold": 5,
+        "fully_correct": 5
+      },
+      "invented_doses": 0,
+      "invented_frequencies": 0,
+      "extras": [],
+      "n_entries": 5,
+      "generation_id": "w4-baseline-v1-x5/r2/S14",
+      "scenario_id": "S14",
+      "run": 2
+    },
+    {
+      "generator": "v1",
+      "gold_status": "approved",
+      "discharge_status": "listed",
+      "verdict": "fail",
+      "findings": [
+        {
+          "drug": "rescue pack",
+          "kind": "missing",
+          "severity": "fail"
+        }
+      ],
+      "drugs": {
+        "gold": 6,
+        "fully_correct": 5
+      },
+      "invented_doses": 0,
+      "invented_frequencies": 0,
+      "extras": [],
+      "n_entries": 5,
+      "generation_id": "w4-baseline-v1-x5/r2/S15",
+      "scenario_id": "S15",
+      "run": 2
+    },
+    {
+      "generator": "v1",
+      "gold_status": "approved",
+      "discharge_status": "listed",
+      "verdict": "fail",
+      "findings": [
+        {
+          "drug": "warfarin",
+          "kind": "frequency_invented",
+          "severity": "fail"
+        }
+      ],
+      "drugs": {
+        "gold": 6,
+        "fully_correct": 5
+      },
+      "invented_doses": 0,
+      "invented_frequencies": 1,
+      "extras": [],
+      "n_entries": 6,
+      "generation_id": "w4-baseline-v1-x5/r2/S16",
+      "scenario_id": "S16",
+      "run": 2
+    },
+    {
+      "generator": "v1",
+      "gold_status": "approved",
+      "discharge_status": "listed",
+      "verdict": "partial",
+      "findings": [
+        {
+          "drug": "paracetamol",
+          "kind": "tag_imprecise",
+          "severity": "partial"
+        }
+      ],
+      "drugs": {
+        "gold": 7,
+        "fully_correct": 7
+      },
+      "invented_doses": 0,
+      "invented_frequencies": 0,
+      "extras": [],
+      "n_entries": 7,
+      "generation_id": "w4-baseline-v1-x5/r2/S17",
+      "scenario_id": "S17",
+      "run": 2
+    },
+    {
+      "generator": "v1",
+      "gold_status": "approved",
+      "discharge_status": "not_documented",
+      "verdict": "pass",
+      "findings": [],
+      "drugs": {
+        "gold": 0,
+        "fully_correct": 0
+      },
+      "invented_doses": 0,
+      "invented_frequencies": 0,
+      "extras": [],
+      "n_entries": 0,
+      "generation_id": "w4-baseline-v1-x5/r2/S18",
+      "scenario_id": "S18",
+      "run": 2
+    },
+    {
+      "generator": "v1",
+      "gold_status": "approved",
+      "discharge_status": "referenced_not_listed",
+      "verdict": "pass",
+      "findings": [],
+      "drugs": {
+        "gold": 5,
+        "fully_correct": 5
+      },
+      "invented_doses": 0,
+      "invented_frequencies": 0,
+      "extras": [],
+      "n_entries": 5,
+      "generation_id": "w4-baseline-v1-x5/r2/A5",
+      "scenario_id": "A5",
+      "run": 2
+    },
+    {
+      "generator": "v1",
+      "gold_status": "approved",
+      "discharge_status": "listed",
+      "verdict": "pass",
+      "findings": [],
+      "drugs": {
+        "gold": 4,
+        "fully_correct": 4
+      },
+      "invented_doses": 0,
+      "invented_frequencies": 0,
+      "extras": [],
+      "n_entries": 4,
+      "generation_id": "w4-baseline-v1-x5/r2/B6",
+      "scenario_id": "B6",
+      "run": 2
+    },
+    {
+      "generator": "v1",
+      "gold_status": "approved",
+      "discharge_status": "not_documented",
+      "verdict": "pass",
+      "findings": [],
+      "drugs": {
+        "gold": 0,
+        "fully_correct": 0
+      },
+      "invented_doses": 0,
+      "invented_frequencies": 0,
+      "extras": [],
+      "n_entries": 0,
+      "generation_id": "w4-baseline-v1-x5/r2/C7",
+      "scenario_id": "C7",
+      "run": 2
+    },
+    {
+      "generator": "v1",
+      "gold_status": "approved",
+      "discharge_status": "referenced_not_listed",
+      "verdict": "pass",
+      "findings": [],
+      "drugs": {
+        "gold": 8,
+        "fully_correct": 8
+      },
+      "invented_doses": 0,
+      "invented_frequencies": 0,
+      "extras": [],
+      "n_entries": 8,
+      "generation_id": "w4-baseline-v1-x5/r3/S1",
+      "scenario_id": "S1",
+      "run": 3
+    },
+    {
+      "generator": "v1",
+      "gold_status": "approved",
+      "discharge_status": "listed",
+      "verdict": "fail",
+      "findings": [
+        {
+          "drug": "ibuprofen",
+          "kind": "frequency_invented",
+          "severity": "fail"
+        }
+      ],
+      "drugs": {
+        "gold": 2,
+        "fully_correct": 1
+      },
+      "invented_doses": 0,
+      "invented_frequencies": 1,
+      "extras": [],
+      "n_entries": 2,
+      "generation_id": "w4-baseline-v1-x5/r3/S2",
+      "scenario_id": "S2",
+      "run": 3
+    },
+    {
+      "generator": "v1",
+      "gold_status": "approved",
+      "discharge_status": "listed",
+      "verdict": "pass",
+      "findings": [],
+      "drugs": {
+        "gold": 1,
+        "fully_correct": 1
+      },
+      "invented_doses": 0,
+      "invented_frequencies": 0,
+      "extras": [],
+      "n_entries": 1,
+      "generation_id": "w4-baseline-v1-x5/r3/S3",
+      "scenario_id": "S3",
+      "run": 3
+    },
+    {
+      "generator": "v1",
+      "gold_status": "approved",
+      "discharge_status": "none_required",
+      "verdict": "pass",
+      "findings": [],
+      "drugs": {
+        "gold": 0,
+        "fully_correct": 0
+      },
+      "invented_doses": 0,
+      "invented_frequencies": 0,
+      "extras": [],
+      "n_entries": 0,
+      "generation_id": "w4-baseline-v1-x5/r3/S4",
+      "scenario_id": "S4",
+      "run": 3
+    },
+    {
+      "generator": "v1",
+      "gold_status": "approved",
+      "discharge_status": "not_documented",
+      "verdict": "pass",
+      "findings": [],
+      "drugs": {
+        "gold": 0,
+        "fully_correct": 0
+      },
+      "invented_doses": 0,
+      "invented_frequencies": 0,
+      "extras": [],
+      "n_entries": 2,
+      "generation_id": "w4-baseline-v1-x5/r3/S8",
+      "scenario_id": "S8",
+      "run": 3
+    },
+    {
+      "generator": "v1",
+      "gold_status": "approved",
+      "discharge_status": "listed",
+      "verdict": "pass",
+      "findings": [],
+      "drugs": {
+        "gold": 1,
+        "fully_correct": 1
+      },
+      "invented_doses": 0,
+      "invented_frequencies": 0,
+      "extras": [],
+      "n_entries": 2,
+      "generation_id": "w4-baseline-v1-x5/r3/S9",
+      "scenario_id": "S9",
+      "run": 3
+    },
+    {
+      "generator": "v1",
+      "gold_status": "approved",
+      "discharge_status": "listed",
+      "verdict": "pass",
+      "findings": [],
+      "drugs": {
+        "gold": 4,
+        "fully_correct": 4
+      },
+      "invented_doses": 0,
+      "invented_frequencies": 0,
+      "extras": [],
+      "n_entries": 4,
+      "generation_id": "w4-baseline-v1-x5/r3/S10",
+      "scenario_id": "S10",
+      "run": 3
+    },
+    {
+      "generator": "v1",
+      "gold_status": "approved",
+      "discharge_status": "listed",
+      "verdict": "partial",
+      "findings": [
+        {
+          "drug": "enoxaparin",
+          "kind": "tag_imprecise",
+          "severity": "partial"
+        },
+        {
+          "drug": "analgesia",
+          "kind": "tag_imprecise",
+          "severity": "partial"
+        }
+      ],
+      "drugs": {
+        "gold": 2,
+        "fully_correct": 2
+      },
+      "invented_doses": 0,
+      "invented_frequencies": 0,
+      "extras": [],
+      "n_entries": 2,
+      "generation_id": "w4-baseline-v1-x5/r3/S11",
+      "scenario_id": "S11",
+      "run": 3
+    },
+    {
+      "generator": "v1",
+      "gold_status": "approved",
+      "discharge_status": "not_documented",
+      "verdict": "pass",
+      "findings": [],
+      "drugs": {
+        "gold": 0,
+        "fully_correct": 0
+      },
+      "invented_doses": 0,
+      "invented_frequencies": 0,
+      "extras": [],
+      "n_entries": 0,
+      "generation_id": "w4-baseline-v1-x5/r3/S12",
+      "scenario_id": "S12",
+      "run": 3
+    },
+    {
+      "generator": "v1",
+      "gold_status": "approved",
+      "discharge_status": "listed",
+      "verdict": "pass",
+      "findings": [],
+      "drugs": {
+        "gold": 4,
+        "fully_correct": 4
+      },
+      "invented_doses": 0,
+      "invented_frequencies": 0,
+      "extras": [],
+      "n_entries": 6,
+      "generation_id": "w4-baseline-v1-x5/r3/S13",
+      "scenario_id": "S13",
+      "run": 3
+    },
+    {
+      "generator": "v1",
+      "gold_status": "approved",
+      "discharge_status": "listed",
+      "verdict": "pass",
+      "findings": [],
+      "drugs": {
+        "gold": 5,
+        "fully_correct": 5
+      },
+      "invented_doses": 0,
+      "invented_frequencies": 0,
+      "extras": [],
+      "n_entries": 5,
+      "generation_id": "w4-baseline-v1-x5/r3/S14",
+      "scenario_id": "S14",
+      "run": 3
+    },
+    {
+      "generator": "v1",
+      "gold_status": "approved",
+      "discharge_status": "listed",
+      "verdict": "fail",
+      "findings": [
+        {
+          "drug": "rescue pack",
+          "kind": "missing",
+          "severity": "fail"
+        }
+      ],
+      "drugs": {
+        "gold": 6,
+        "fully_correct": 5
+      },
+      "invented_doses": 0,
+      "invented_frequencies": 0,
+      "extras": [],
+      "n_entries": 5,
+      "generation_id": "w4-baseline-v1-x5/r3/S15",
+      "scenario_id": "S15",
+      "run": 3
+    },
+    {
+      "generator": "v1",
+      "gold_status": "approved",
+      "discharge_status": "listed",
+      "verdict": "pass",
+      "findings": [],
+      "drugs": {
+        "gold": 6,
+        "fully_correct": 6
+      },
+      "invented_doses": 0,
+      "invented_frequencies": 0,
+      "extras": [],
+      "n_entries": 6,
+      "generation_id": "w4-baseline-v1-x5/r3/S16",
+      "scenario_id": "S16",
+      "run": 3
+    },
+    {
+      "generator": "v1",
+      "gold_status": "approved",
+      "discharge_status": "listed",
+      "verdict": "partial",
+      "findings": [
+        {
+          "drug": "paracetamol",
+          "kind": "tag_imprecise",
+          "severity": "partial"
+        }
+      ],
+      "drugs": {
+        "gold": 7,
+        "fully_correct": 7
+      },
+      "invented_doses": 0,
+      "invented_frequencies": 0,
+      "extras": [],
+      "n_entries": 7,
+      "generation_id": "w4-baseline-v1-x5/r3/S17",
+      "scenario_id": "S17",
+      "run": 3
+    },
+    {
+      "generator": "v1",
+      "gold_status": "approved",
+      "discharge_status": "not_documented",
+      "verdict": "pass",
+      "findings": [],
+      "drugs": {
+        "gold": 0,
+        "fully_correct": 0
+      },
+      "invented_doses": 0,
+      "invented_frequencies": 0,
+      "extras": [],
+      "n_entries": 0,
+      "generation_id": "w4-baseline-v1-x5/r3/S18",
+      "scenario_id": "S18",
+      "run": 3
+    },
+    {
+      "generator": "v1",
+      "gold_status": "approved",
+      "discharge_status": "referenced_not_listed",
+      "verdict": "pass",
+      "findings": [],
+      "drugs": {
+        "gold": 5,
+        "fully_correct": 5
+      },
+      "invented_doses": 0,
+      "invented_frequencies": 0,
+      "extras": [],
+      "n_entries": 5,
+      "generation_id": "w4-baseline-v1-x5/r3/A5",
+      "scenario_id": "A5",
+      "run": 3
+    },
+    {
+      "generator": "v1",
+      "gold_status": "approved",
+      "discharge_status": "listed",
+      "verdict": "pass",
+      "findings": [],
+      "drugs": {
+        "gold": 4,
+        "fully_correct": 4
+      },
+      "invented_doses": 0,
+      "invented_frequencies": 0,
+      "extras": [],
+      "n_entries": 4,
+      "generation_id": "w4-baseline-v1-x5/r3/B6",
+      "scenario_id": "B6",
+      "run": 3
+    },
+    {
+      "generator": "v1",
+      "gold_status": "approved",
+      "discharge_status": "not_documented",
+      "verdict": "pass",
+      "findings": [],
+      "drugs": {
+        "gold": 0,
+        "fully_correct": 0
+      },
+      "invented_doses": 0,
+      "invented_frequencies": 0,
+      "extras": [],
+      "n_entries": 0,
+      "generation_id": "w4-baseline-v1-x5/r3/C7",
+      "scenario_id": "C7",
+      "run": 3
+    },
+    {
+      "generator": "v1",
+      "gold_status": "approved",
+      "discharge_status": "referenced_not_listed",
+      "verdict": "fail",
+      "findings": [
+        {
+          "drug": "fondaparinux",
+          "kind": "must_not_appear",
+          "severity": "fail"
+        }
+      ],
+      "drugs": {
+        "gold": 8,
+        "fully_correct": 8
+      },
+      "invented_doses": 0,
+      "invented_frequencies": 0,
+      "extras": [],
+      "n_entries": 9,
+      "generation_id": "w4-baseline-v1-x5/r4/S1",
+      "scenario_id": "S1",
+      "run": 4
+    },
+    {
+      "generator": "v1",
+      "gold_status": "approved",
+      "discharge_status": "listed",
+      "verdict": "fail",
+      "findings": [
+        {
+          "drug": "ibuprofen",
+          "kind": "frequency_invented",
+          "severity": "fail"
+        }
+      ],
+      "drugs": {
+        "gold": 2,
+        "fully_correct": 1
+      },
+      "invented_doses": 0,
+      "invented_frequencies": 1,
+      "extras": [],
+      "n_entries": 2,
+      "generation_id": "w4-baseline-v1-x5/r4/S2",
+      "scenario_id": "S2",
+      "run": 4
+    },
+    {
+      "generator": "v1",
+      "gold_status": "approved",
+      "discharge_status": "listed",
+      "verdict": "pass",
+      "findings": [],
+      "drugs": {
+        "gold": 1,
+        "fully_correct": 1
+      },
+      "invented_doses": 0,
+      "invented_frequencies": 0,
+      "extras": [],
+      "n_entries": 1,
+      "generation_id": "w4-baseline-v1-x5/r4/S3",
+      "scenario_id": "S3",
+      "run": 4
+    },
+    {
+      "generator": "v1",
+      "gold_status": "approved",
+      "discharge_status": "none_required",
+      "verdict": "pass",
+      "findings": [],
+      "drugs": {
+        "gold": 0,
+        "fully_correct": 0
+      },
+      "invented_doses": 0,
+      "invented_frequencies": 0,
+      "extras": [],
+      "n_entries": 0,
+      "generation_id": "w4-baseline-v1-x5/r4/S4",
+      "scenario_id": "S4",
+      "run": 4
+    },
+    {
+      "generator": "v1",
+      "gold_status": "approved",
+      "discharge_status": "not_documented",
+      "verdict": "pass",
+      "findings": [],
+      "drugs": {
+        "gold": 0,
+        "fully_correct": 0
+      },
+      "invented_doses": 0,
+      "invented_frequencies": 0,
+      "extras": [
+        {
+          "index": 0,
+          "key": "3d0ca2cfaba58fe0e41d5d36f4532554b59a53db0b5f887e5914a0609ecc0d0b",
+          "kind": "adjudicated_acceptable"
+        }
+      ],
+      "n_entries": 1,
+      "generation_id": "w4-baseline-v1-x5/r4/S8",
+      "scenario_id": "S8",
+      "run": 4
+    },
+    {
+      "generator": "v1",
+      "gold_status": "approved",
+      "discharge_status": "listed",
+      "verdict": "partial",
+      "findings": [
+        {
+          "drug": "insulin",
+          "kind": "tag_imprecise",
+          "severity": "partial"
+        }
+      ],
+      "drugs": {
+        "gold": 1,
+        "fully_correct": 1
+      },
+      "invented_doses": 0,
+      "invented_frequencies": 0,
+      "extras": [],
+      "n_entries": 2,
+      "generation_id": "w4-baseline-v1-x5/r4/S9",
+      "scenario_id": "S9",
+      "run": 4
+    },
+    {
+      "generator": "v1",
+      "gold_status": "approved",
+      "discharge_status": "listed",
+      "verdict": "pass",
+      "findings": [],
+      "drugs": {
+        "gold": 4,
+        "fully_correct": 4
+      },
+      "invented_doses": 0,
+      "invented_frequencies": 0,
+      "extras": [
+        {
+          "index": 0,
+          "key": "89f408a43e7ecb08de525639f60ecca665e283c7631aa6abc64bc6212304d538",
+          "kind": "adjudicated_acceptable"
+        }
+      ],
+      "n_entries": 5,
+      "generation_id": "w4-baseline-v1-x5/r4/S10",
+      "scenario_id": "S10",
+      "run": 4
+    },
+    {
+      "generator": "v1",
+      "gold_status": "approved",
+      "discharge_status": "listed",
+      "verdict": "partial",
+      "findings": [
+        {
+          "drug": "enoxaparin",
+          "kind": "tag_imprecise",
+          "severity": "partial"
+        },
+        {
+          "drug": "analgesia",
+          "kind": "tag_imprecise",
+          "severity": "partial"
+        }
+      ],
+      "drugs": {
+        "gold": 2,
+        "fully_correct": 2
+      },
+      "invented_doses": 0,
+      "invented_frequencies": 0,
+      "extras": [],
+      "n_entries": 2,
+      "generation_id": "w4-baseline-v1-x5/r4/S11",
+      "scenario_id": "S11",
+      "run": 4
+    },
+    {
+      "generator": "v1",
+      "gold_status": "approved",
+      "discharge_status": "not_documented",
+      "verdict": "pass",
+      "findings": [],
+      "drugs": {
+        "gold": 0,
+        "fully_correct": 0
+      },
+      "invented_doses": 0,
+      "invented_frequencies": 0,
+      "extras": [],
+      "n_entries": 0,
+      "generation_id": "w4-baseline-v1-x5/r4/S12",
+      "scenario_id": "S12",
+      "run": 4
+    },
+    {
+      "generator": "v1",
+      "gold_status": "approved",
+      "discharge_status": "listed",
+      "verdict": "pass",
+      "findings": [],
+      "drugs": {
+        "gold": 4,
+        "fully_correct": 4
+      },
+      "invented_doses": 0,
+      "invented_frequencies": 0,
+      "extras": [
+        {
+          "index": 4,
+          "key": "fd27b7466c16c58f56ff927f0537fc84efc8deb53e4813ef1d68778e723afeab",
+          "kind": "adjudicated_acceptable"
+        }
+      ],
+      "n_entries": 5,
+      "generation_id": "w4-baseline-v1-x5/r4/S13",
+      "scenario_id": "S13",
+      "run": 4
+    },
+    {
+      "generator": "v1",
+      "gold_status": "approved",
+      "discharge_status": "listed",
+      "verdict": "pass",
+      "findings": [],
+      "drugs": {
+        "gold": 5,
+        "fully_correct": 5
+      },
+      "invented_doses": 0,
+      "invented_frequencies": 0,
+      "extras": [],
+      "n_entries": 5,
+      "generation_id": "w4-baseline-v1-x5/r4/S14",
+      "scenario_id": "S14",
+      "run": 4
+    },
+    {
+      "generator": "v1",
+      "gold_status": "approved",
+      "discharge_status": "listed",
+      "verdict": "fail",
+      "findings": [
+        {
+          "drug": "rescue pack",
+          "kind": "missing",
+          "severity": "fail"
+        }
+      ],
+      "drugs": {
+        "gold": 6,
+        "fully_correct": 5
+      },
+      "invented_doses": 0,
+      "invented_frequencies": 0,
+      "extras": [],
+      "n_entries": 5,
+      "generation_id": "w4-baseline-v1-x5/r4/S15",
+      "scenario_id": "S15",
+      "run": 4
+    },
+    {
+      "generator": "v1",
+      "gold_status": "approved",
+      "discharge_status": "listed",
+      "verdict": "partial",
+      "findings": [
+        {
+          "drug": "analgesia",
+          "kind": "tag_imprecise",
+          "severity": "partial"
+        }
+      ],
+      "drugs": {
+        "gold": 6,
+        "fully_correct": 6
+      },
+      "invented_doses": 0,
+      "invented_frequencies": 0,
+      "extras": [],
+      "n_entries": 10,
+      "generation_id": "w4-baseline-v1-x5/r4/S16",
+      "scenario_id": "S16",
+      "run": 4
+    },
+    {
+      "generator": "v1",
+      "gold_status": "approved",
+      "discharge_status": "listed",
+      "verdict": "pass",
+      "findings": [],
+      "drugs": {
+        "gold": 7,
+        "fully_correct": 7
+      },
+      "invented_doses": 0,
+      "invented_frequencies": 0,
+      "extras": [],
+      "n_entries": 7,
+      "generation_id": "w4-baseline-v1-x5/r4/S17",
+      "scenario_id": "S17",
+      "run": 4
+    },
+    {
+      "generator": "v1",
+      "gold_status": "approved",
+      "discharge_status": "not_documented",
+      "verdict": "pass",
+      "findings": [],
+      "drugs": {
+        "gold": 0,
+        "fully_correct": 0
+      },
+      "invented_doses": 0,
+      "invented_frequencies": 0,
+      "extras": [],
+      "n_entries": 0,
+      "generation_id": "w4-baseline-v1-x5/r4/S18",
+      "scenario_id": "S18",
+      "run": 4
+    },
+    {
+      "generator": "v1",
+      "gold_status": "approved",
+      "discharge_status": "referenced_not_listed",
+      "verdict": "pass",
+      "findings": [],
+      "drugs": {
+        "gold": 5,
+        "fully_correct": 5
+      },
+      "invented_doses": 0,
+      "invented_frequencies": 0,
+      "extras": [],
+      "n_entries": 5,
+      "generation_id": "w4-baseline-v1-x5/r4/A5",
+      "scenario_id": "A5",
+      "run": 4
+    },
+    {
+      "generator": "v1",
+      "gold_status": "approved",
+      "discharge_status": "listed",
+      "verdict": "pass",
+      "findings": [],
+      "drugs": {
+        "gold": 4,
+        "fully_correct": 4
+      },
+      "invented_doses": 0,
+      "invented_frequencies": 0,
+      "extras": [],
+      "n_entries": 4,
+      "generation_id": "w4-baseline-v1-x5/r4/B6",
+      "scenario_id": "B6",
+      "run": 4
+    },
+    {
+      "generator": "v1",
+      "gold_status": "approved",
+      "discharge_status": "not_documented",
+      "verdict": "pass",
+      "findings": [],
+      "drugs": {
+        "gold": 0,
+        "fully_correct": 0
+      },
+      "invented_doses": 0,
+      "invented_frequencies": 0,
+      "extras": [],
+      "n_entries": 0,
+      "generation_id": "w4-baseline-v1-x5/r4/C7",
+      "scenario_id": "C7",
+      "run": 4
+    },
+    {
+      "generator": "v1",
+      "gold_status": "approved",
+      "discharge_status": "referenced_not_listed",
+      "verdict": "pass",
+      "findings": [],
+      "drugs": {
+        "gold": 8,
+        "fully_correct": 8
+      },
+      "invented_doses": 0,
+      "invented_frequencies": 0,
+      "extras": [],
+      "n_entries": 9,
+      "generation_id": "w4-baseline-v1-x5/r5/S1",
+      "scenario_id": "S1",
+      "run": 5
+    },
+    {
+      "generator": "v1",
+      "gold_status": "approved",
+      "discharge_status": "listed",
+      "verdict": "fail",
+      "findings": [
+        {
+          "drug": "ibuprofen",
+          "kind": "frequency_invented",
+          "severity": "fail"
+        }
+      ],
+      "drugs": {
+        "gold": 2,
+        "fully_correct": 1
+      },
+      "invented_doses": 0,
+      "invented_frequencies": 1,
+      "extras": [],
+      "n_entries": 2,
+      "generation_id": "w4-baseline-v1-x5/r5/S2",
+      "scenario_id": "S2",
+      "run": 5
+    },
+    {
+      "generator": "v1",
+      "gold_status": "approved",
+      "discharge_status": "listed",
+      "verdict": "pass",
+      "findings": [],
+      "drugs": {
+        "gold": 1,
+        "fully_correct": 1
+      },
+      "invented_doses": 0,
+      "invented_frequencies": 0,
+      "extras": [],
+      "n_entries": 1,
+      "generation_id": "w4-baseline-v1-x5/r5/S3",
+      "scenario_id": "S3",
+      "run": 5
+    },
+    {
+      "generator": "v1",
+      "gold_status": "approved",
+      "discharge_status": "none_required",
+      "verdict": "pass",
+      "findings": [],
+      "drugs": {
+        "gold": 0,
+        "fully_correct": 0
+      },
+      "invented_doses": 0,
+      "invented_frequencies": 0,
+      "extras": [],
+      "n_entries": 0,
+      "generation_id": "w4-baseline-v1-x5/r5/S4",
+      "scenario_id": "S4",
+      "run": 5
+    },
+    {
+      "generator": "v1",
+      "gold_status": "approved",
+      "discharge_status": "not_documented",
+      "verdict": "pass",
+      "findings": [],
+      "drugs": {
+        "gold": 0,
+        "fully_correct": 0
+      },
+      "invented_doses": 0,
+      "invented_frequencies": 0,
+      "extras": [],
+      "n_entries": 2,
+      "generation_id": "w4-baseline-v1-x5/r5/S8",
+      "scenario_id": "S8",
+      "run": 5
+    },
+    {
+      "generator": "v1",
+      "gold_status": "approved",
+      "discharge_status": "listed",
+      "verdict": "pass",
+      "findings": [],
+      "drugs": {
+        "gold": 1,
+        "fully_correct": 1
+      },
+      "invented_doses": 0,
+      "invented_frequencies": 0,
+      "extras": [],
+      "n_entries": 3,
+      "generation_id": "w4-baseline-v1-x5/r5/S9",
+      "scenario_id": "S9",
+      "run": 5
+    },
+    {
+      "generator": "v1",
+      "gold_status": "approved",
+      "discharge_status": "listed",
+      "verdict": "pass",
+      "findings": [],
+      "drugs": {
+        "gold": 4,
+        "fully_correct": 4
+      },
+      "invented_doses": 0,
+      "invented_frequencies": 0,
+      "extras": [],
+      "n_entries": 4,
+      "generation_id": "w4-baseline-v1-x5/r5/S10",
+      "scenario_id": "S10",
+      "run": 5
+    },
+    {
+      "generator": "v1",
+      "gold_status": "approved",
+      "discharge_status": "listed",
+      "verdict": "partial",
+      "findings": [
+        {
+          "drug": "enoxaparin",
+          "kind": "tag_imprecise",
+          "severity": "partial"
+        },
+        {
+          "drug": "analgesia",
+          "kind": "tag_imprecise",
+          "severity": "partial"
+        }
+      ],
+      "drugs": {
+        "gold": 2,
+        "fully_correct": 2
+      },
+      "invented_doses": 0,
+      "invented_frequencies": 0,
+      "extras": [],
+      "n_entries": 2,
+      "generation_id": "w4-baseline-v1-x5/r5/S11",
+      "scenario_id": "S11",
+      "run": 5
+    },
+    {
+      "generator": "v1",
+      "gold_status": "approved",
+      "discharge_status": "not_documented",
+      "verdict": "pass",
+      "findings": [],
+      "drugs": {
+        "gold": 0,
+        "fully_correct": 0
+      },
+      "invented_doses": 0,
+      "invented_frequencies": 0,
+      "extras": [
+        {
+          "index": 0,
+          "key": "e759c24f7105170788d45572e18aaea7810ed11b84dbd4d977281e92a9ef9556",
+          "kind": "adjudicated_acceptable"
+        },
+        {
+          "index": 2,
+          "key": "7b1b22b739bf3eed542cdd2992e6938003de15862a9c3864ce9abd3268c2a81f",
+          "kind": "adjudicated_acceptable"
+        }
+      ],
+      "n_entries": 3,
+      "generation_id": "w4-baseline-v1-x5/r5/S12",
+      "scenario_id": "S12",
+      "run": 5
+    },
+    {
+      "generator": "v1",
+      "gold_status": "approved",
+      "discharge_status": "listed",
+      "verdict": "pass",
+      "findings": [],
+      "drugs": {
+        "gold": 4,
+        "fully_correct": 4
+      },
+      "invented_doses": 0,
+      "invented_frequencies": 0,
+      "extras": [],
+      "n_entries": 6,
+      "generation_id": "w4-baseline-v1-x5/r5/S13",
+      "scenario_id": "S13",
+      "run": 5
+    },
+    {
+      "generator": "v1",
+      "gold_status": "approved",
+      "discharge_status": "listed",
+      "verdict": "pass",
+      "findings": [],
+      "drugs": {
+        "gold": 5,
+        "fully_correct": 5
+      },
+      "invented_doses": 0,
+      "invented_frequencies": 0,
+      "extras": [],
+      "n_entries": 5,
+      "generation_id": "w4-baseline-v1-x5/r5/S14",
+      "scenario_id": "S14",
+      "run": 5
+    },
+    {
+      "generator": "v1",
+      "gold_status": "approved",
+      "discharge_status": "listed",
+      "verdict": "fail",
+      "findings": [
+        {
+          "drug": "rescue pack",
+          "kind": "missing",
+          "severity": "fail"
+        }
+      ],
+      "drugs": {
+        "gold": 6,
+        "fully_correct": 5
+      },
+      "invented_doses": 0,
+      "invented_frequencies": 0,
+      "extras": [],
+      "n_entries": 5,
+      "generation_id": "w4-baseline-v1-x5/r5/S15",
+      "scenario_id": "S15",
+      "run": 5
+    },
+    {
+      "generator": "v1",
+      "gold_status": "approved",
+      "discharge_status": "listed",
+      "verdict": "pass",
+      "findings": [],
+      "drugs": {
+        "gold": 6,
+        "fully_correct": 6
+      },
+      "invented_doses": 0,
+      "invented_frequencies": 0,
+      "extras": [],
+      "n_entries": 6,
+      "generation_id": "w4-baseline-v1-x5/r5/S16",
+      "scenario_id": "S16",
+      "run": 5
+    },
+    {
+      "generator": "v1",
+      "gold_status": "approved",
+      "discharge_status": "listed",
+      "verdict": "partial",
+      "findings": [
+        {
+          "drug": "paracetamol",
+          "kind": "tag_imprecise",
+          "severity": "partial"
+        }
+      ],
+      "drugs": {
+        "gold": 7,
+        "fully_correct": 7
+      },
+      "invented_doses": 0,
+      "invented_frequencies": 0,
+      "extras": [],
+      "n_entries": 7,
+      "generation_id": "w4-baseline-v1-x5/r5/S17",
+      "scenario_id": "S17",
+      "run": 5
+    },
+    {
+      "generator": "v1",
+      "gold_status": "approved",
+      "discharge_status": "not_documented",
+      "verdict": "pass",
+      "findings": [],
+      "drugs": {
+        "gold": 0,
+        "fully_correct": 0
+      },
+      "invented_doses": 0,
+      "invented_frequencies": 0,
+      "extras": [],
+      "n_entries": 0,
+      "generation_id": "w4-baseline-v1-x5/r5/S18",
+      "scenario_id": "S18",
+      "run": 5
+    },
+    {
+      "generator": "v1",
+      "gold_status": "approved",
+      "discharge_status": "referenced_not_listed",
+      "verdict": "fail",
+      "findings": [
+        {
+          "drug": null,
+          "kind": "invented_drug",
+          "severity": "fail"
+        }
+      ],
+      "drugs": {
+        "gold": 5,
+        "fully_correct": 5
+      },
+      "invented_doses": 0,
+      "invented_frequencies": 0,
+      "extras": [
+        {
+          "index": 1,
+          "key": "d28fdb071f1653f2fff5f155ad26f626346e7a097626d5d749e0ea3f44327079",
+          "kind": "adjudicated_invented"
+        }
+      ],
+      "n_entries": 6,
+      "generation_id": "w4-baseline-v1-x5/r5/A5",
+      "scenario_id": "A5",
+      "run": 5
+    },
+    {
+      "generator": "v1",
+      "gold_status": "approved",
+      "discharge_status": "listed",
+      "verdict": "pass",
+      "findings": [],
+      "drugs": {
+        "gold": 4,
+        "fully_correct": 4
+      },
+      "invented_doses": 0,
+      "invented_frequencies": 0,
+      "extras": [],
+      "n_entries": 4,
+      "generation_id": "w4-baseline-v1-x5/r5/B6",
+      "scenario_id": "B6",
+      "run": 5
+    },
+    {
+      "generator": "v1",
+      "gold_status": "approved",
+      "discharge_status": "not_documented",
+      "verdict": "pass",
+      "findings": [],
+      "drugs": {
+        "gold": 0,
+        "fully_correct": 0
+      },
+      "invented_doses": 0,
+      "invented_frequencies": 0,
+      "extras": [],
+      "n_entries": 0,
+      "generation_id": "w4-baseline-v1-x5/r5/C7",
+      "scenario_id": "C7",
+      "run": 5
+    }
+  ]
+}

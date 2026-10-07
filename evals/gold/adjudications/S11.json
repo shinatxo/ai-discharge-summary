@@ -1,0 +1,24 @@
+{
+  "scenario_id": "S11",
+  "rulings": {
+    "ebd9c6e7fd2f1db6e5236734739d76fbba3b23a3783b235641a9a7c0c6307229": {
+      "text": "Partial weight-bearing on left leg as instructed by Orthopaedics",
+      "verdict": "supported",
+      "lines": "L010",
+      "reason": "'partial weight-bear left leg per ortho'",
+      "by": "Shina Oguntoye (CSO)",
+      "on": "2026-10-07",
+      "source": "w4-baseline-v1-x5 (proposed by Claude, approved by the CSO)"
+    },
+    "c29127810461b503ac5e60082a12ea4a458d1dcc9405ca32306dd6978071212d": {
+      "text": "Prophylaxis advice for splenic injury documented as given during admission.",
+      "verdict": "supported",
+      "lines": "L015",
+      "reason": "the L015 record of prophylaxis advice",
+      "by": "Shina Oguntoye (CSO)",
+      "on": "2026-10-07",
+      "source": "w4-baseline-v1-x5 (proposed by Claude, approved by the CSO)"
+    }
+  },
+  "med_rulings": {}
+}

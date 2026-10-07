@@ -1,0 +1,30 @@
+{
+  "scenario_id": "S13",
+  "rulings": {},
+  "med_rulings": {
+    "bc67a3a64e4c085a23e1894714d8292ba7e22b1a66da44981895bb5820034a29": {
+      "text": "Wound care: documented as prescribed at discharge — specific products, dressings, and frequency not documented; to be managed by district nursing and tissue viability team.",
+      "verdict": "acceptable",
+      "reason": "prose about the list, not a drug",
+      "by": "Shina Oguntoye (CSO)",
+      "on": "2026-10-07",
+      "source": "w4-baseline-v1-x5 (proposed by Claude, approved by the CSO)"
+    },
+    "a3c92e0bfd5169d863497c9379b0306da49954ae590b8df274daf6f0b9e631d7": {
+      "text": "Pre-admission drugs — no drugs stopped (both pre-admission drugs continued).",
+      "verdict": "acceptable",
+      "reason": "prose about the list, not a drug",
+      "by": "Shina Oguntoye (CSO)",
+      "on": "2026-10-07",
+      "source": "w4-baseline-v1-x5 (proposed by Claude, approved by the CSO)"
+    },
+    "fd27b7466c16c58f56ff927f0537fc84efc8deb53e4813ef1d68778e723afeab": {
+      "text": "Wound care: documented as part of discharge plan; specific dressing regimen and instructions: Not documented — to be confirmed with tissue viability / district nursing team.",
+      "verdict": "acceptable",
+      "reason": "prose about the list, not a drug",
+      "by": "Shina Oguntoye (CSO)",
+      "on": "2026-10-07",
+      "source": "w4-baseline-v1-x5 (proposed by Claude, approved by the CSO)"
+    }
+  }
+}

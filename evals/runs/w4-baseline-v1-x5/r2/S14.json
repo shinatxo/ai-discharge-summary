@@ -1,0 +1,65 @@
+{
+  "record_version": 1,
+  "generation_id": "w4-baseline-v1-x5/r2/S14",
+  "batch_id": "w4-baseline-v1-x5",
+  "run": 2,
+  "scenario_id": "S14",
+  "generator": "v1",
+  "path": "deployed",
+  "model_id": "anthropic.claude-sonnet-4-6",
+  "region": "eu-west-2",
+  "inference": {
+    "max_tokens": 4096,
+    "temperature": 0.0,
+    "patient_max_tokens": 1500
+  },
+  "prompts": {
+    "system": {
+      "path": "src/generate/system_prompt.md",
+      "file_sha256": "a7ec8a5661007b0a69231dd68a1f286013cf23a2192ed7ec16770bc07f3c1e3a",
+      "body_sha256": "de46dda1e90bdb1380e077bf7119a2d0d537b7f1f53199b3aeaa2c41aa645ee6"
+    },
+    "patient": {
+      "path": "src/generate/patient_system_prompt.md",
+      "file_sha256": "32f9767baf648dbe2ca1ad5e46d40ea75ff51890bca0b66ef1c44b96166f8e1b",
+      "body_sha256": "7fea4b502d0b9a8b983bcbcac353bc7763845ed0a3eaf0d39edfd80650d23435"
+    }
+  },
+  "prompt_caching": true,
+  "notes_sha256": "20c5042a7bbfa0a841857197d01c69abf4b0abe852955048535cbba89c736340",
+  "started_at": "2026-10-07T13:24:47+01:00",
+  "elapsed_s": 46.381,
+  "calls": [
+    {
+      "name": "combined",
+      "input_tokens": 371,
+      "output_tokens": 2650,
+      "cache_read_tokens": 5192,
+      "cache_write_tokens": 0,
+      "stop_reason": "end_turn",
+      "latency_s": 34.099,
+      "throttle_retries": 0
+    },
+    {
+      "name": "patient_v2",
+      "input_tokens": 875,
+      "output_tokens": 896,
+      "cache_read_tokens": 1038,
+      "cache_write_tokens": 0,
+      "stop_reason": "end_turn",
+      "latency_s": 12.28,
+      "throttle_retries": 0
+    }
+  ],
+  "patient_version": "v2",
+  "output": "I'll now produce all three parts of the discharge summary.\n\n---\n\n# PART A — STRUCTURED CLINICAL DISCHARGE SUMMARY\n\n```\nDISCHARGE SUMMARY\n\nPatient: Not documented (full name not provided) | DOB: Not documented |\nNHS No: Not documented | Hosp No: Not documented\nAdmitted: 14/05/2025 | Discharged: 18/05/2025\nSpecialty: Stroke Medicine (inferred — not documented, confirm)\n\nPRESENTING COMPLAINT\nA 74-year-old male presented with sudden-onset right facial droop, right arm\nweakness, and dysphasia of approximately one hour's duration.\n\nDIAGNOSIS\nPrimary:   Acute ischaemic stroke (left hemisphere, clinically), treated with\n           IV thrombolysis.\nSecondary: Atrial fibrillation (known, previously untreated with\n           anticoagulation — on aspirin only prior to admission).\nBackground: Hypertension, type 2 diabetes mellitus.\n\nKEY INVESTIGATIONS\n- CT head on admission (14/05): No haemorrhage. Thrombolysis proceeded.\n- Post-thrombolysis CT head (15/05): No haemorrhage.\n- NIHSS on admission: 9.\n- NIHSS day 2 (15/05): 4 (improving).\n- Swallowing assessment (SALT): Unsafe on day 1–2; recovered by day 3.\n\nTREATMENT DURING ADMISSION\n- IV alteplase (thrombolysis) administered within treatment window on 14/05.\n- Nasogastric (NG) feeding commenced while swallow unsafe; discontinued\n  following swallow recovery on day 3.\n- Anticoagulation initiated on day 4 (17/05) with apixaban per stroke\n  protocol timing for AF-related stroke.\n- Aspirin stopped on commencement of anticoagulation (17/05).\n- Atorvastatin 80 mg commenced for secondary prevention.\n- Early Supported Discharge (ESD) team accepted patient for community\n  stroke rehabilitation.\n- Multidisciplinary input: SALT, ESD team.\n\nRESUSCITATION STATUS\nFor resuscitation. *** CHANGED DURING ADMISSION *** Resuscitation was\ndiscussed with the patient on 15/05 (day 2). The patient had capacity at\nthe time of discussion and expressed a wish to remain for resuscitation.\nNo change from this decision documented prior to discharge.\n\nMEDICATIONS ON DISCHARGE\n1. Apixaban 5 mg oral BD                    (NEW)\n2. Amlodipine 10 mg oral OD                 (continued)\n3. Atorvastatin 80 mg oral ON               (NEW — secondary prevention)\n4. Metformin 1 g oral BD                    (continued)\n5. Aspirin 75 mg OD — STOPPED (anticoagulation commenced; aspirin no\n   longer indicated per stroke protocol)\n\nALLERGIES: None known (NKDA documented).\n\nFOLLOW-UP\n- Early Supported Discharge / community stroke rehabilitation team: accepted,\n  arrangements in place.\n- Stroke clinic: 6 weeks post-discharge.\n- Pending results / ongoing monitoring: Not documented.\n\nGP ACTIONS\n1. Monitor blood pressure and optimise antihypertensive management as\n   appropriate.\n2. Check HbA1c.\n(No further specific actions documented.)\n\nPATIENT ADVICE\n- Patient advised not to drive.\n- Patient advised they must inform the DVLA; a minimum of one month off\n  driving applies per DVLA rules.\n(No further patient advice documented in the notes.)\n\nVTE ASSESSMENT: Not documented.\n\nAuthor: [Name, Grade, Date — to be completed by responsible clinician]\n```\n\n---\n\n# PART B — GP LETTER\n\n```\n18/05/2025\n\nDear Colleague,\n\nRe: [Patient full name not documented], DOB: Not documented,\nNHS No: Not documented\nAdmitted: 14/05/2025, Discharged: 18/05/2025\nUnder: Stroke Medicine (inferred — not documented, confirm)\n\nThis 74-year-old gentleman with known atrial fibrillation (previously on\naspirin only, not anticoagulated) and a background of hypertension and type\n2 diabetes was admitted on 14/05 with a sudden-onset right facial droop,\nright arm weakness, and dysphasia (NIHSS 9), consistent with an acute\nischaemic stroke. CT head excluded haemorrhage and he received IV alteplase\nwithin the treatment window.\n\nPost-thrombolysis CT on day 2 confirmed no haemorrhage; NIHSS improved to 4.\nSwallowing was initially unsafe, requiring nasogastric feeding and SALT\nreview; swallow recovered by day 3. Anticoagulation with apixaban was\ncommenced on day 4 per stroke protocol timing for AF-related stroke, at\nwhich point aspirin was stopped. Atorvastatin 80 mg was started for\nsecondary prevention. He was accepted by the Early Supported Discharge team\nfor community stroke rehabilitation and is being discharged with mild\nresidual right arm weakness.\n\nResuscitation status: The patient (capacity intact) expressed a wish to\nremain for resuscitation following discussion on 15/05.\n\nDiagnosis: Acute ischaemic stroke; atrial fibrillation.\n\nMedication changes (full list in attached summary):\n- Apixaban 5 mg BD — NEW (anticoagulation for AF-related stroke)\n- Atorvastatin 80 mg ON — NEW (secondary prevention)\n- Aspirin 75 mg OD — STOPPED (anticoagulation commenced)\n- Amlodipine 10 mg OD and metformin 1 g BD — unchanged.\n\nActions for you (GP):\n1. Monitor blood pressure and review antihypertensive management.\n2. Check HbA1c.\n\nFollow-up arranged:\n- Early Supported Discharge / community stroke rehabilitation: in place.\n- Stroke clinic: 6 weeks post-discharge.\n\nNo pending results documented.\n\nYours sincerely,\n[Name, Grade — to be completed by responsible clinician]\n```\n\n---\n\nPART C - PATIENT VERSION (v2 second pass)\n\n# Your Discharge Information\n\n**Ward: Stroke Medicine | Discharged: 18 May 2025**\n\n---\n\n## What happened and why you were in hospital\n\nYou came into hospital on 14 May 2025 with sudden weakness on the right side of your face and arm, and difficulty speaking. These were signs of a stroke (acute ischaemic stroke). A stroke happens when the blood supply to part of the brain is blocked.\n\nA scan of your brain showed there was no bleeding, so the team were able to give you a clot-busting medicine (IV alteplase) quickly to help restore blood flow.\n\nThe team also found that your heart was beating in an irregular rhythm (atrial fibrillation, or AF). This is something you already knew about. AF can increase the risk of stroke, and before this admission you were not taking a blood-thinning medicine for it.\n\nYou also have high blood pressure (hypertension) and type 2 diabetes, which are noted in your records.\n\n---\n\n## What was done while you were in hospital\n\n- You were given a clot-busting treatment (IV alteplase) on the day you arrived.\n- Because swallowing was not safe at first, a thin tube was passed through your nose into your stomach (nasogastric tube) so you could receive nutrition safely. Once your swallowing recovered on day 3, the tube was removed.\n- A speech and language therapist (SALT) checked your swallowing and supported your recovery.\n- A blood-thinning medicine (apixaban) was started on day 4 to help protect you from another stroke related to your AF.\n- A cholesterol-lowering medicine (atorvastatin) was started to help reduce the risk of another stroke.\n- The community stroke rehabilitation team (Early Supported Discharge team) have accepted you and will continue to support your recovery at home.\n\n---\n\n## Your medicines — please read carefully\n\nThere are some important changes to your medicines.\n\n**New medicines:**\n\n- **Apixaban 5 mg** — take **twice a day**. This is a blood-thinning medicine to help prevent another stroke linked to your irregular heart rhythm (AF).\n- **Atorvastatin 80 mg** — take **once at night**. This helps lower cholesterol and reduces the risk of another stroke.\n\n**Medicines that continue as before:**\n\n- **Amlodipine 10 mg** — take once a day (for blood pressure).\n- **Metformin 1 g** — take twice a day (for your diabetes).\n\n**Medicine that has been stopped:**\n\n- **Aspirin 75 mg** — this has been **stopped** because you are now taking apixaban. You should **not** take aspirin any more unless a doctor tells you to restart it.\n\nIf you are unsure about any of your medicines, speak to your pharmacist or GP.\n\n---\n\n## What happens next\n\n**Community stroke rehabilitation (Early Supported Discharge team)**\nThe team has already accepted you and arrangements are in place. They will support your recovery at home.\n\n**Stroke clinic appointment**\nYou have an appointment at the stroke clinic **6 weeks after you left hospital**.\n\n**Your GP**\nYour GP will check your blood pressure and may make changes to help keep it well controlled. Your GP will also check your diabetes with a blood test (HbA1c).\n\n---\n\n## Driving\n\nYou have been advised **not to drive**. You must tell the DVLA about your stroke. There is a minimum of **one month** when you cannot drive. Your doctor or the DVLA can give you more information about when it may be safe to drive again.\n\n---\n\n## If you feel unwell\n\nIf you become unwell or are worried about anything, contact your GP or call NHS 111. Call 999 if it is an emergency.\n\n---\n\n*This leaflet is a draft for review and sign-off by your responsible clinician before it is given to you.*\n",
+  "gate": {
+    "canonical": "V1_LINES",
+    "status": "clean",
+    "ok": true,
+    "label": "PASS",
+    "findings": []
+  },
+  "cost_usd_est": 0.064677,
+  "error": null
+}

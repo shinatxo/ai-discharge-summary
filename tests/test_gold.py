@@ -165,3 +165,22 @@ def test_seek_help_and_kind_rules(label, sid, fn, expect):
     g = copy.deepcopy(G.load(sid))
     fn(g)
     assert any(expect in e for e in _errors(g, sid)), label
+
+
+# --- CSO adjudications (evals/gold/adjudications/) ------------------------------
+
+ADJ = sorted(p for p in (G.GOLD_DIR / "adjudications").glob("*.json"))
+
+
+@pytest.mark.parametrize("path", ADJ, ids=[p.stem for p in ADJ])
+def test_adjudication_files_are_well_formed_and_signed(path):
+    import json
+    import score_meds as M
+    import score_safety_net as S
+    data = json.loads(path.read_text(encoding="utf-8"))
+    assert data["scenario_id"] == path.stem and path.stem in CORPUS
+    for section, verdicts, keyfn in (("rulings", {"supported", "unsupported"}, S.unit_key),
+                                     ("med_rulings", {"acceptable", "invented"}, M.entry_key)):
+        for key, r in data.get(section, {}).items():
+            assert r["verdict"] in verdicts and r["by"] and r["on"]
+            assert keyfn(r["text"]) == key          # the key really is this sentence's

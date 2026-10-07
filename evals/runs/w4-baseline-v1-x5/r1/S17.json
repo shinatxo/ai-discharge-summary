@@ -1,0 +1,65 @@
+{
+  "record_version": 1,
+  "generation_id": "w4-baseline-v1-x5/r1/S17",
+  "batch_id": "w4-baseline-v1-x5",
+  "run": 1,
+  "scenario_id": "S17",
+  "generator": "v1",
+  "path": "deployed",
+  "model_id": "anthropic.claude-sonnet-4-6",
+  "region": "eu-west-2",
+  "inference": {
+    "max_tokens": 4096,
+    "temperature": 0.0,
+    "patient_max_tokens": 1500
+  },
+  "prompts": {
+    "system": {
+      "path": "src/generate/system_prompt.md",
+      "file_sha256": "a7ec8a5661007b0a69231dd68a1f286013cf23a2192ed7ec16770bc07f3c1e3a",
+      "body_sha256": "de46dda1e90bdb1380e077bf7119a2d0d537b7f1f53199b3aeaa2c41aa645ee6"
+    },
+    "patient": {
+      "path": "src/generate/patient_system_prompt.md",
+      "file_sha256": "32f9767baf648dbe2ca1ad5e46d40ea75ff51890bca0b66ef1c44b96166f8e1b",
+      "body_sha256": "7fea4b502d0b9a8b983bcbcac353bc7763845ed0a3eaf0d39edfd80650d23435"
+    }
+  },
+  "prompt_caching": true,
+  "notes_sha256": "e3e6093b1af13ac9ae86dfab84056ca00f418c7112b956aba9373d9a8d8e40b4",
+  "started_at": "2026-10-07T13:13:02+01:00",
+  "elapsed_s": 52.679,
+  "calls": [
+    {
+      "name": "combined",
+      "input_tokens": 397,
+      "output_tokens": 3116,
+      "cache_read_tokens": 5192,
+      "cache_write_tokens": 0,
+      "stop_reason": "end_turn",
+      "latency_s": 39.023,
+      "throttle_retries": 0
+    },
+    {
+      "name": "patient_v2",
+      "input_tokens": 1165,
+      "output_tokens": 941,
+      "cache_read_tokens": 1038,
+      "cache_write_tokens": 0,
+      "stop_reason": "end_turn",
+      "latency_s": 13.653,
+      "throttle_retries": 0
+    }
+  ],
+  "patient_version": "v2",
+  "output": "I'll now produce all three parts of the discharge summary. One issue to flag first:\n\n> ⚠️ **Clinician review required — incomplete medication details:** The notes specify \"oral PPI high dose (new)\" and \"paracetamol regular for OA instead\" but do not document the specific drug name, dose, or frequency for either. These are reproduced as given, with missing elements flagged. Please complete before issuing.\n\n---\n\n# PART A — STRUCTURED CLINICAL DISCHARGE SUMMARY\n\n```\nDISCHARGE SUMMARY\n\nPatient: Not documented | DOB: Not documented (70F) | NHS No: Not documented |\nHosp No: Not documented\nAdmitted: 15/05/2025 | Discharged: 17/05/2025\nSpecialty: Gastroenterology (inferred — not documented, confirm)\n\nPRESENTING COMPLAINT\nTwo-day history of melaena and one episode of coffee-ground vomiting, with\nassociated dizziness.\n\nDIAGNOSIS\nPrimary:   Bleeding duodenal ulcer (Forrest IIa), treated endoscopically;\n           haemostasis achieved.\nSecondary: Helicobacter pylori infection (CLO test positive).\nBackground: Atrial fibrillation (AF) on anticoagulation.\n           Hypertension.\n           Osteoarthritis (OA) — regular NSAID use (ibuprofen) identified as\n           contributory cause of ulcer.\n\nKEY INVESTIGATIONS\n- Haemoglobin (Hb): 78 g/L on admission → 92 g/L post-transfusion (Day 2).\n- Heart rate: 104 bpm on admission.\n- Blood pressure: 104/64 mmHg on admission.\n- OGD (Day 1, 15/05): Bleeding duodenal ulcer, Forrest IIa. Adrenaline\n  injection and endoscopic clipping performed; haemostasis achieved.\n- CLO test (Day 1, 15/05): Positive for H. pylori.\n\nTREATMENT DURING ADMISSION\n- Blood transfusion: 2 units packed red cells.\n- IV proton pump inhibitor (PPI) infusion commenced.\n- Apixaban withheld from Day 1.\n- OGD Day 1: Adrenaline injection and endoscopic clipping to bleeding\n  duodenal ulcer; haemostasis achieved.\n- Ibuprofen permanently discontinued (identified as causative agent).\n- Transitioned to oral high-dose PPI on discharge.\n- H. pylori eradication therapy prescribed on discharge.\n\nRESUSCITATION STATUS\nFor resuscitation. No change during admission.\n\nMEDICATIONS ON DISCHARGE\n\n| Drug                          | Dose / Frequency                    | Tag                          |\n|-------------------------------|-------------------------------------|------------------------------|\n| PPI (oral, high dose)         | Drug name, dose and frequency NOT   | (NEW)                        |\n|                               | documented — requires completion    |                              |\n| Amoxicillin                   | Dose and frequency NOT documented   | (NEW — H. pylori eradication,|\n|                               | — requires completion               | 7-day course)                |\n| Clarithromycin                | Dose and frequency NOT documented   | (NEW — H. pylori eradication,|\n|                               | — requires completion               | 7-day course)                |\n| Paracetamol                   | Dose and frequency NOT documented   | (NEW — regular, for OA,      |\n|                               | — requires completion               | replacing ibuprofen)         |\n| Amlodipine                    | 5 mg once daily                     | (continued)                  |\n| Ibuprofen 400 mg TDS          | — STOPPED (identified as cause of   |                              |\n|                               | duodenal ulcer — permanently        |                              |\n|                               | discontinued)                       |                              |\n| Apixaban 5 mg BD              | — WITHHELD ON DISCHARGE (bleeding   |                              |\n|                               | risk post-ulcer). To be reviewed    |                              |\n|                               | and restarted by GP or cardiology   |                              |\n|                               | in approximately 2 weeks, once      |                              |\n|                               | ulcer healing confirmed.            |                              |\n\nALLERGIES: None known (NKDA documented).\n\nFOLLOW-UP\n1. Gastroenterology outpatient clinic with repeat OGD in 6–8 weeks to confirm\n   ulcer healing.\n2. GP review in approximately 2 weeks: repeat Hb, confirm H. pylori\n   eradication, and decision on resuming apixaban (in liaison with\n   cardiology as appropriate).\n\nGP ACTIONS\n1. Repeat Hb at approximately 2 weeks.\n2. Confirm H. pylori eradication (method and timing not specified in notes —\n   requires clarification).\n3. Review and decide on restarting apixaban at approximately 2 weeks, in\n   liaison with cardiology as appropriate, once ulcer healing is confirmed.\n\nPATIENT ADVICE\nNot documented.\n\nVTE ASSESSMENT: Not documented.\n\nAuthor: [Name, grade, date — to be completed by responsible clinician]\n```\n\n---\n\n# PART B — GP LETTER\n\n```\n17/05/2025\n\nDear Colleague,\n\nRe: [Patient name not documented], DOB: not documented (70-year-old female),\nNHS No: not documented.\nAdmitted: 15/05/2025. Discharged: 17/05/2025 under Gastroenterology\n(inferred — confirm).\n\nThis 70-year-old woman with known atrial fibrillation, hypertension, and\nosteoarthritis was admitted as an emergency with a two-day history of melaena\nand a single episode of coffee-ground vomiting. She was haemodynamically\ncompromised on arrival (Hb 78 g/L, HR 104, BP 104/64 mmHg).\n\nUrgent OGD on Day 1 identified a Forrest IIa bleeding duodenal ulcer, treated\nsuccessfully with adrenaline injection and endoscopic clipping; haemostasis was\nachieved. CLO testing was positive for H. pylori. She was transfused 2 units of\npacked red cells and commenced on an IV PPI infusion. By Day 2 she was\nhaemodynamically stable with Hb 92 g/L, tolerating oral intake, and was\ndischarged on Day 3.\n\nDiagnosis: Bleeding duodenal ulcer (Forrest IIa); H. pylori infection.\n\nMedication changes (please see attached full medication list):\n\n- PPI (oral, high dose) — STARTED (drug name, dose and frequency not fully\n  documented in notes; please confirm on the attached prescription).\n- Amoxicillin + Clarithromycin — STARTED (7-day H. pylori eradication course;\n  doses not documented in notes — please confirm on attached prescription).\n- Paracetamol (regular) — STARTED for OA pain management, replacing ibuprofen.\n- Ibuprofen 400 mg TDS — PERMANENTLY STOPPED. Identified as the causative\n  agent for the duodenal ulcer. Please ensure this is updated on your records\n  and not restarted.\n- Apixaban 5 mg BD — WITHHELD ON DISCHARGE. Please review and restart in\n  approximately 2 weeks once ulcer healing is confirmed, in liaison with\n  cardiology as appropriate.\n\nActions for you (GP):\n1. Repeat Hb at approximately 2 weeks post-discharge.\n2. Confirm H. pylori eradication (method and timing not specified in the\n   discharge notes — please clarify with the gastroenterology team if needed).\n3. Review and decide on restarting apixaban at approximately 2 weeks, in\n   liaison with cardiology as appropriate, once ulcer healing is confirmed.\n\nFollow-up already arranged: Gastroenterology outpatient clinic with repeat OGD\nin 6–8 weeks to confirm ulcer healing.\n\nPending results: None documented. Please note that H. pylori eradication\nconfirmation will require a test at an appropriate interval post-completion of\neradication therapy — timing and method not specified in the notes.\n\nYours sincerely,\n[Name, grade — to be completed by responsible clinician]\n```\n\n---\n\nPART C - PATIENT VERSION (v2 second pass)\n\n# Your Discharge Letter\n\n**From the team at [Hospital name — to be added]**\n**Date of discharge: 17 May 2025**\n\n---\n\n## What brought you into hospital\n\nYou came in because you had been passing very dark, tarry stools (melaena) and had vomited something that looked like coffee grounds. These are signs of bleeding in your digestive system. You also felt dizzy.\n\n---\n\n## What we found\n\nYou had a bleeding ulcer in the first part of your small bowel, just after your stomach (a **duodenal ulcer**). We also found a germ called **Helicobacter pylori** (H. pylori) in your stomach lining, which can cause ulcers.\n\nA medicine you were taking for your joint pain — **ibuprofen** — was found to be a cause of the ulcer. It has been stopped permanently.\n\n---\n\n## What we did\n\n- We passed a thin, flexible camera into your stomach (a procedure called an **OGD** or endoscopy) to find the ulcer and stop the bleeding. We used an injection and small clips to seal it.\n- You were given **2 bags of blood (a blood transfusion)** because your blood count was low.\n- You were given a drip, then tablets, to protect your stomach lining (a **proton pump inhibitor**, or PPI).\n- Your blood-thinning tablet (**apixaban**), which you take for your irregular heart rhythm (**atrial fibrillation**), was paused because of the bleeding risk.\n\n---\n\n## Your medicines when you go home\n\nPlease check the details on your prescription, as some doses still need to be confirmed by your doctor before you leave.\n\n**New medicines:**\n\n- **A stomach-protecting tablet (PPI)** — the name, dose, and how often to take it will be on your prescription. This protects the lining of your stomach while the ulcer heals.\n- **Amoxicillin** — an antibiotic to clear the H. pylori germ. Take it for **7 days**. The dose and timing will be on your prescription.\n- **Clarithromycin** — a second antibiotic, also to clear H. pylori. Take it for **7 days**. The dose and timing will be on your prescription.\n- **Paracetamol** — for your joint pain (**osteoarthritis**), to replace ibuprofen. The dose and timing will be on your prescription.\n\n**Continued medicine:**\n\n- **Amlodipine 5 mg** — one tablet once a day, as before (for your blood pressure).\n\n**Medicines that have changed:**\n\n- **Ibuprofen — STOPPED permanently.** This medicine caused your ulcer. Please do not take it again.\n- **Apixaban (5 mg twice a day) — PAUSED for now.** This is your blood-thinning tablet for your heart rhythm. It has been paused because of the bleeding. Your GP, working with your heart specialist (cardiology) if needed, will decide when it is safe to restart it — this is expected to be in about **2 weeks**, once your ulcer has had time to heal.\n\n---\n\n## What happens next\n\n**In about 2 weeks — see your GP**\nYour GP will:\n- Check your blood count (a blood test called **Hb**).\n- Check whether the H. pylori germ has been cleared.\n- Decide, with your heart specialist if needed, whether it is safe to restart your apixaban.\n\n**In 6–8 weeks — hospital outpatient appointment**\nYou will come back to the gastroenterology (stomach and bowel) clinic for another camera test (OGD). This is to check that your ulcer has fully healed.\n\n---\n\n## If you feel unwell\n\nIf you become unwell or are worried about anything, contact your GP or call NHS 111. Call 999 if it is an emergency.\n\n---\n\n*This letter is a draft for review and sign-off by your responsible clinician before it is given to you.*\n",
+  "gate": {
+    "canonical": "V1_LINES",
+    "status": "clean",
+    "ok": true,
+    "label": "PASS",
+    "findings": []
+  },
+  "cost_usd_est": 0.074151,
+  "error": null
+}

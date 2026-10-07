@@ -1,0 +1,65 @@
+{
+  "record_version": 1,
+  "generation_id": "w4-baseline-v1-x5/r5/S15",
+  "batch_id": "w4-baseline-v1-x5",
+  "run": 5,
+  "scenario_id": "S15",
+  "generator": "v1",
+  "path": "deployed",
+  "model_id": "anthropic.claude-sonnet-4-6",
+  "region": "eu-west-2",
+  "inference": {
+    "max_tokens": 4096,
+    "temperature": 0.0,
+    "patient_max_tokens": 1500
+  },
+  "prompts": {
+    "system": {
+      "path": "src/generate/system_prompt.md",
+      "file_sha256": "a7ec8a5661007b0a69231dd68a1f286013cf23a2192ed7ec16770bc07f3c1e3a",
+      "body_sha256": "de46dda1e90bdb1380e077bf7119a2d0d537b7f1f53199b3aeaa2c41aa645ee6"
+    },
+    "patient": {
+      "path": "src/generate/patient_system_prompt.md",
+      "file_sha256": "32f9767baf648dbe2ca1ad5e46d40ea75ff51890bca0b66ef1c44b96166f8e1b",
+      "body_sha256": "7fea4b502d0b9a8b983bcbcac353bc7763845ed0a3eaf0d39edfd80650d23435"
+    }
+  },
+  "prompt_caching": true,
+  "notes_sha256": "f54e5b4b248523c38c755c7e4eb587fa65b3ae478aec2c9d77ef94ba96f278d3",
+  "started_at": "2026-10-07T14:09:21+01:00",
+  "elapsed_s": 51.203,
+  "calls": [
+    {
+      "name": "combined",
+      "input_tokens": 377,
+      "output_tokens": 3031,
+      "cache_read_tokens": 5192,
+      "cache_write_tokens": 0,
+      "stop_reason": "end_turn",
+      "latency_s": 36.896,
+      "throttle_retries": 0
+    },
+    {
+      "name": "patient_v2",
+      "input_tokens": 1061,
+      "output_tokens": 908,
+      "cache_read_tokens": 1038,
+      "cache_write_tokens": 0,
+      "stop_reason": "end_turn",
+      "latency_s": 14.304,
+      "throttle_retries": 0
+    }
+  ],
+  "patient_version": "v2",
+  "output": "I'll now produce all three parts of the discharge summary.\n\n---\n\n# PART A — STRUCTURED CLINICAL DISCHARGE SUMMARY\n\n```\nDISCHARGE SUMMARY\n\nPatient: Not documented | DOB: Not documented (79F) | NHS No: Not documented | Hosp No: Not documented\nAdmitted: 16/05/YYYY | Discharged: 20/05/YYYY\nSpecialty: Respiratory Medicine (inferred — not documented, confirm)\n\nPRESENTING COMPLAINT\nFour-day history of increasing shortness of breath, green sputum, and wheeze\nin a patient with known severe COPD on home oxygen.\n\nDIAGNOSIS\nPrimary:   Acute infective exacerbation of COPD with type 2 respiratory failure\n           (pH 7.30, PaCO2 8.1 kPa on admission)\nSecondary: Not documented\nBackground: Severe COPD (FEV1 30% predicted, home oxygen, previous ITU\n            admission — ITU declined by patient choice)\n\nKEY INVESTIGATIONS\nArterial blood gas (Day 1, 16/05): pH 7.30, PaCO2 8.1 kPa — type 2\nrespiratory failure.\nOxygen saturations: 84% on home O2 on admission; improved to 88–90% on home\nO2 by Day 5 (documented as back to baseline).\nNo further investigation results documented.\n\nTREATMENT DURING ADMISSION\n- Controlled oxygen therapy commenced on admission.\n- Non-invasive ventilation (NIV) started Day 1; weaned and discontinued by\n  Day 3 (18/05).\n- Nebulised bronchodilators (specific agents not documented).\n- IV hydrocortisone, subsequently converted to oral prednisolone 30 mg OD\n  (total course 5 days — course to be completed at home).\n- IV amoxicillin (per local protocol), subsequently converted to oral\n  amoxicillin (dose and frequency not documented — see medication section).\n- Inhaler technique reviewed prior to discharge.\n- Rescue pack supplied on discharge.\n- Smoking cessation discussed (patient is an ex-smoker).\n- Ceiling of care: ward-based NIV; not for intubation — in keeping with\n  pre-existing ReSPECT form and documented patient wishes.\n\nRESUSCITATION STATUS\nDNACPR. Pre-existing community DNACPR (ReSPECT form) in place prior to this\nadmission, on the basis of advanced COPD and documented patient wishes. Status\nconfirmed and not changed during this admission. No change during admission.\nCeiling of care documented as ward-based NIV; not for intubation (per ReSPECT\nform and patient).\n\nMEDICATIONS ON DISCHARGE\n1. Trelegy inhaler — OD (continued)\n2. Salbutamol inhaler — PRN (continued)\n3. Amlodipine 5 mg — OD (continued)\n4. Prednisolone 30 mg — OD (NEW — to complete 5-day total course; days\n   remaining to be confirmed at discharge)\n5. Amoxicillin — oral, dose and frequency not documented (NEW — to complete\n   course; duration/days remaining not documented — REQUIRES CLARIFICATION\n   before discharge letter is finalised)\n\n⚠ CLINICIAN ACTION REQUIRED: The oral amoxicillin dose, frequency, and\nremaining course length are not documented in the notes. Please confirm and\nadd before sign-off.\n\nPre-admission medications accounted for: Trelegy OD ✓, salbutamol PRN ✓,\namlodipine 5 mg OD ✓. No pre-admission medications stopped.\n\nALLERGIES: NKDA (No Known Drug Allergies — documented)\n\nFOLLOW-UP\n1. Respiratory outpatient clinic — 6 weeks post-discharge.\n2. Community respiratory team referral made.\n3. GP review following exacerbation (see GP ACTIONS).\n\nGP ACTIONS\n1. Review patient following this exacerbation of COPD.\n2. Confirm completion of prednisolone and amoxicillin courses.\n\nPATIENT ADVICE\nRescue pack supplied on discharge.\nInhaler technique reviewed prior to discharge.\nSmoking cessation discussed.\nNo further specific patient advice or safety-netting documented.\n\nVTE ASSESSMENT: Not documented\n\nAuthor: [Name, Grade] — DRAFT — requires clinician review and sign-off\n        Date: [DD/MM/YYYY]\n```\n\n---\n\n# PART B — GP LETTER\n\n```\n20/05/YYYY\n\nDear Colleague,\n\nRe: [Patient name — not documented], DOB: not documented (79-year-old female),\nNHS No: not documented\nAdmitted: 16/05/YYYY | Discharged: 20/05/YYYY\nSpecialty: Respiratory Medicine (inferred — confirm)\n\nThis 79-year-old woman with known severe COPD (FEV1 30% predicted, home\noxygen) was admitted with a four-day history of worsening dyspnoea, green\nsputum, and wheeze, in keeping with an acute infective exacerbation complicated\nby type 2 respiratory failure (pH 7.30, PaCO2 8.1 kPa on admission).\n\nShe was managed with controlled oxygen, NIV (commenced Day 1, weaned by Day\n3), nebulised bronchodilators, IV hydrocortisone converted to oral\nprednisolone, and IV amoxicillin converted to oral amoxicillin (per local\nprotocol). By Day 5 she had returned to her baseline saturations of 88–90% on\nhome oxygen and was fit for discharge. Inhaler technique was reviewed and a\nrescue pack was supplied. Smoking cessation was discussed (she is an\nex-smoker).\n\nDiagnosis: Acute infective exacerbation of COPD with type 2 respiratory\nfailure.\n\nResuscitation status: A pre-existing community DNACPR (ReSPECT form) was in\nplace prior to this admission, based on advanced COPD and documented patient\nwishes. Ceiling of care is ward-based NIV; not for intubation. This was\nconfirmed and unchanged during the admission. Please ensure this is reflected\nin your records.\n\nMedication changes:\n- Prednisolone 30 mg OD — NEW, short course; to complete 5-day total course\n  at home (days remaining to be confirmed).\n- Amoxicillin (oral) — NEW, to complete course at home. ⚠ Dose, frequency,\n  and remaining course length were not documented in the inpatient notes —\n  please clarify with the discharging team if not clear on the discharge\n  prescription.\n- Trelegy inhaler OD, salbutamol PRN, and amlodipine 5 mg OD — all\n  unchanged; not re-listed here (see attached summary for full list).\n- No pre-admission medications stopped.\n\nActions for you (GP):\n1. Review this patient following her exacerbation of COPD.\n2. Confirm completion of prednisolone and amoxicillin courses.\n\nFollow-up arranged:\n- Respiratory outpatient clinic in 6 weeks.\n- Referral made to community respiratory team.\n\nPending results: None documented. No pending results flagged for GP action.\n\nYours sincerely,\n[Name, Grade] — DRAFT — requires clinician review and sign-off\n```\n\n---\n\nPART C - PATIENT VERSION (v2 second pass)\n\n# Your Discharge Letter\n\n**From the Respiratory Team — Draft for clinician sign-off before it is given to you**\n\n---\n\n## Welcome home\n\nThis letter explains what happened during your stay in hospital, what treatment you had, and what happens next. Please read it carefully and keep it somewhere safe.\n\n---\n\n## Why you came into hospital\n\nYou came in because your breathing had been getting worse over four days. You also had green phlegm and wheezing. You have severe chronic lung disease (COPD) and use oxygen at home. When you arrived, the tests showed that your lungs were not removing enough carbon dioxide from your blood. This is called type 2 respiratory failure.\n\n---\n\n## What we did to help you\n\n- We gave you carefully controlled oxygen to keep your levels safe.\n- On the first day, we started a machine to help you breathe more easily through a mask (non-invasive ventilation, or NIV). By day three, your breathing had improved enough that you no longer needed it.\n- You were given medicines through a drip to open your airways and reduce inflammation. These were then swapped to tablets and inhalers as you got better.\n- You were also given an antibiotic through the drip, which was later swapped to antibiotic tablets.\n- A nurse checked that you were using your inhalers in the right way before you went home.\n- We gave you a rescue pack to take home with you.\n- We talked with you about smoking.\n\n---\n\n## Your treatment plan and wishes\n\nBefore this admission, you had already spoken with doctors about the care you would want if you became very unwell. Those wishes are written down on a form called a ReSPECT form. Your wishes were respected throughout your stay and nothing was changed. This means that if you became very unwell, the team would focus on keeping you comfortable and supported, using the breathing mask (NIV) if needed, but not a breathing machine in intensive care. This is what you have said you want, and we will always follow your wishes.\n\n---\n\n## Your medicines when you go home\n\nYou are going home with the following medicines. **Please check the details on your prescription bag, as your doctor needs to confirm the antibiotic dose before this letter is finished.**\n\n| Medicine | What it is for | How to take it |\n|---|---|---|\n| **Trelegy inhaler** | Your regular COPD inhaler | Once a day — no change |\n| **Salbutamol inhaler** | Reliever inhaler when needed | As needed — no change |\n| **Amlodipine 5 mg** | A tablet for blood pressure | Once a day — no change |\n| **Prednisolone 30 mg** | A steroid tablet to reduce inflammation in your lungs | Once a day — **new, short course only. Check your prescription for how many days are left to take.** |\n| **Amoxicillin** | An antibiotic to treat the chest infection | ⚠ **The dose and how many days are left have not yet been confirmed. Your doctor will add this before you receive this letter. Please check your prescription bag carefully.** |\n\nYou have no known drug allergies on record.\n\n---\n\n## What happens next\n\n- **Your GP** will be in touch to check how you are getting on after this admission and to make sure you have finished your steroid and antibiotic courses.\n- **Community respiratory team** — a referral has been made so that a specialist team can support you at home.\n- **Outpatient clinic** — you have an appointment with the respiratory clinic in about six weeks' time. You will receive details of this in the post.\n\n---\n\n## If you feel unwell\n\nIf you become unwell or are worried about anything, contact your GP or call NHS 111. Call 999 if it is an emergency.\n\n---\n\n*This is a draft letter. It must be checked and signed off by your doctor before it is given to you. The antibiotic dose and course length must be confirmed and added before sign-off.*\n",
+  "gate": {
+    "canonical": "V1_LINES",
+    "status": "clean",
+    "ok": true,
+    "label": "PASS",
+    "findings": []
+  },
+  "cost_usd_est": 0.071795,
+  "error": null
+}

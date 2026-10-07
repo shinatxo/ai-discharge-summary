@@ -1,0 +1,65 @@
+{
+  "record_version": 1,
+  "generation_id": "w4-baseline-v1-x5/r2/S9",
+  "batch_id": "w4-baseline-v1-x5",
+  "run": 2,
+  "scenario_id": "S9",
+  "generator": "v1",
+  "path": "deployed",
+  "model_id": "anthropic.claude-sonnet-4-6",
+  "region": "eu-west-2",
+  "inference": {
+    "max_tokens": 4096,
+    "temperature": 0.0,
+    "patient_max_tokens": 1500
+  },
+  "prompts": {
+    "system": {
+      "path": "src/generate/system_prompt.md",
+      "file_sha256": "a7ec8a5661007b0a69231dd68a1f286013cf23a2192ed7ec16770bc07f3c1e3a",
+      "body_sha256": "de46dda1e90bdb1380e077bf7119a2d0d537b7f1f53199b3aeaa2c41aa645ee6"
+    },
+    "patient": {
+      "path": "src/generate/patient_system_prompt.md",
+      "file_sha256": "32f9767baf648dbe2ca1ad5e46d40ea75ff51890bca0b66ef1c44b96166f8e1b",
+      "body_sha256": "7fea4b502d0b9a8b983bcbcac353bc7763845ed0a3eaf0d39edfd80650d23435"
+    }
+  },
+  "prompt_caching": true,
+  "notes_sha256": "fff6b2a27043c88393b3a44a1c2074ccc86e3d61eb2be9262fc6d67ca0a4aa4a",
+  "started_at": "2026-10-07T13:19:59+01:00",
+  "elapsed_s": 45.313,
+  "calls": [
+    {
+      "name": "combined",
+      "input_tokens": 310,
+      "output_tokens": 2566,
+      "cache_read_tokens": 5192,
+      "cache_write_tokens": 0,
+      "stop_reason": "end_turn",
+      "latency_s": 34.053,
+      "throttle_retries": 0
+    },
+    {
+      "name": "patient_v2",
+      "input_tokens": 937,
+      "output_tokens": 736,
+      "cache_read_tokens": 1038,
+      "cache_write_tokens": 0,
+      "stop_reason": "end_turn",
+      "latency_s": 11.258,
+      "throttle_retries": 0
+    }
+  ],
+  "patient_version": "v2",
+  "output": "I'll produce all three parts. A few notes on gaps I've flagged inline.\n\n---\n\n# PART A — STRUCTURED CLINICAL DISCHARGE SUMMARY\n\n```\nDISCHARGE SUMMARY\n\nPatient: Not documented | DOB: Not documented (9 years old) | NHS No: Not documented | Hosp No: Not documented\nAdmitted: 17/05/2025 | Discharged: 20/05/2025\nSpecialty: Paediatrics (inferred — not documented, confirm)\nWeight: 28 kg (recorded on admission)\n\nPRESENTING COMPLAINT\nA 9-year-old girl presenting with a 2-week history of polyuria and polydipsia,\n3 kg weight loss, 2 days of vomiting and abdominal pain, and drowsiness.\n\nDIAGNOSIS\nPrimary:   Diabetic ketoacidosis (DKA)\nSecondary: New presentation of Type 1 Diabetes Mellitus (T1DM)\n\nKEY INVESTIGATIONS\n- Blood glucose: >HI on bedside meter; laboratory glucose 34 mmol/L (Day 1)\n- Ketones: 5.2 mmol/L (Day 1) → 0.8 mmol/L (Day 2)\n- pH: 7.18 (Day 1) → 7.34 (Day 2)\n- Bicarbonate (HCO3): 11 mmol/L (Day 1)\n- Potassium: replacement required (level not documented)\n- Further investigation results: Not documented\n\nTREATMENT DURING ADMISSION\n- DKA protocol initiated Day 1: cautious IV fluid resuscitation, fixed-rate\n  insulin infusion, potassium replacement, hourly clinical and biochemical\n  monitoring.\n- PICU informed; patient managed on ward HDU.\n- Transitioned to subcutaneous basal-bolus insulin regimen on Day 2 once\n  acidosis resolving.\n- Diabetes specialist nurse and dietician input commenced Day 2.\n- Structured diabetes education delivered over Days 2–4: carbohydrate counting,\n  hypoglycaemia management, sick-day rules.\n- By Day 4: patient and parents confident with insulin injections and blood\n  glucose monitoring.\n\nRESUSCITATION STATUS\nNot documented — no resuscitation discussion documented for this admission.\n\nMEDICATIONS ON DISCHARGE\nPre-admission drug history: Not documented (no prior medications expected for\nnew-onset T1DM, but pre-admission DH was not explicitly recorded — confirm).\n\nDischarge medications:\n- Basal insulin: (drug name, dose, and frequency not documented — confirm\n  with prescribing team)\n- Bolus insulin: (drug name, dose, and frequency not documented — confirm\n  with prescribing team)\n\n⚠ CLINICIAN ACTION REQUIRED: The notes confirm a basal-bolus subcutaneous\ninsulin regimen was established but do not specify the insulin preparations,\ndoses, or frequencies. These must be completed before this summary is finalised\nand before the patient is discharged. Insulin prescribing errors are a\nrecognised patient-safety risk.\n\nALLERGIES: Not documented\n\nFOLLOW-UP\n1. Diabetes team review: 1 week post-discharge (approximately 27/05/2025).\n2. Telephone support from diabetes team available in the interim.\n3. Dietician follow-up: arranged (date not documented).\n\nGP ACTIONS\nGP informed. No acute actions documented.\n\nPATIENT ADVICE          (PARENT / CARER ADVICE)\nNot documented.\n\n⚠ CLINICIAN NOTE: No specific safety-netting, sick-day rule instructions,\nhypoglycaemia management guidance, or other discharge advice has been\ntranscribed into these notes. The notes record that education on these topics\nwas delivered during the admission. The responsible clinician should confirm\nwhat written advice and/or information leaflets were provided to the family at\ndischarge, and document accordingly before sign-off.\n\nVTE ASSESSMENT: Not applicable (paediatric)\n\nAuthor: [Name, Grade, Date — to be completed by responsible clinician]\n```\n\n---\n\n# PART B — GP LETTER\n\n```\n20/05/2025\n\nDear Colleague,\n\nRe: [Patient full name], DOB: Not documented (9 years old), NHS No: Not documented\nAdmitted: 17/05/2025 | Discharged: 20/05/2025\nUnder: Paediatrics (inferred — confirm)\n\nThis 9-year-old girl was admitted on 17/05/2025 with diabetic ketoacidosis\n(DKA) representing a new diagnosis of Type 1 Diabetes Mellitus (T1DM).\n\nShe presented with a 2-week history of polyuria, polydipsia, and 3 kg weight\nloss, with 2 days of vomiting, abdominal pain, and drowsiness. On admission:\nblood glucose 34 mmol/L, ketones 5.2 mmol/L, pH 7.18, bicarbonate 11 mmol/L.\nShe was managed on the ward HDU under the DKA protocol (cautious IV fluids,\nfixed-rate insulin infusion, potassium replacement, hourly monitoring); PICU\nwas informed. Biochemistry improved satisfactorily: by Day 2, pH 7.34 and\nketones 0.8 mmol/L.\n\nShe was transitioned to a subcutaneous basal-bolus insulin regimen on Day 2.\nDiabetes specialist nurse and dietician input commenced, with structured\neducation in carbohydrate counting, hypoglycaemia management, and sick-day\nrules delivered over the remaining admission. By Day 4, both the patient and\nher parents were confident with injections and blood glucose monitoring.\n\nDiagnosis: Diabetic ketoacidosis; new-onset Type 1 Diabetes Mellitus.\n\nMedication changes:\n- Basal-bolus subcutaneous insulin commenced (NEW) — specific preparations,\n  doses, and frequencies not transcribed in the source notes; please refer to\n  the discharge prescription. ⚠ Confirm details with the discharging team if\n  not received.\n- Pre-admission medication history not documented; no prior medications\n  expected for new-onset T1DM, but please verify.\n\nActions for you (GP): No acute actions were specified. You have been noted as\ninformed of this admission.\n\nFollow-up arranged:\n- Diabetes team review in 1 week (approx. 27/05/2025), with telephone support\n  available in the interim.\n- Dietician follow-up arranged (date not documented).\n\nNo pending investigation results were documented.\n\nYours sincerely,\n[Name, Grade — to be completed by responsible clinician]\n```\n\n---\n\nPART C - PATIENT VERSION (v2 second pass)\n\n> ⚠ **DRAFT ONLY — for clinician review and sign-off before giving to the family.**\n> The insulin names, doses, and times are not yet filled in (see highlighted gaps below). This leaflet must not be handed to the patient until those details are confirmed and added by the prescribing team.\n\n---\n\n# Your Child's Discharge Letter\n\n## What happened\n\nYour daughter came into hospital feeling very unwell. She had been very thirsty and going to the toilet a lot, lost some weight, and then started being sick and feeling drowsy.\n\nThe team found that her blood sugar (glucose) was very high and her body had built up harmful substances called ketones. This is called **diabetic ketoacidosis (DKA)**. It happened because she has been diagnosed with **Type 1 Diabetes (T1DM)** — this means her body does not make insulin on its own.\n\n---\n\n## What we did in hospital\n\nWhen she arrived, the team started treatment straight away. This included:\n\n- A drip (a tube into a vein) to give her fluids and insulin slowly and safely.\n- Careful checks of her blood sugar and other levels every hour.\n- Replacing a salt called **potassium** that her body needed.\n\nBy the second day she was much better. The team then moved her on to insulin injections under the skin, which is how she will manage her diabetes at home.\n\nA **diabetes specialist nurse** and a **dietician** also spent time with her and your family over the next couple of days. By the time she went home, she and you were confident with giving insulin injections and checking her blood sugar.\n\n---\n\n## Medicines to take at home\n\nYour daughter now needs **two types of insulin** given as injections under the skin every day.\n\n> ⚠ **The names, doses, and times for both insulins still need to be filled in by the prescribing team before this leaflet is given to you. Please make sure you have a completed medicines list before you leave hospital.**\n\n| Insulin | Name | Dose | When to give |\n|---|---|---|---|\n| **Background (basal) insulin** | *To be confirmed* | *To be confirmed* | *To be confirmed* |\n| **Mealtime (bolus) insulin** | *To be confirmed* | *To be confirmed* | *To be confirmed* |\n\nIf you are unsure about any of her medicines, contact the diabetes team (see below).\n\n---\n\n## What happens next\n\n- **Diabetes team appointment:** in about 1 week (around **27 May 2025**). You will be contacted with the details.\n- **Dietician appointment:** arranged — the date will be confirmed with you.\n- **Telephone support:** the diabetes team can be contacted by phone between now and your first appointment if you have any questions or concerns.\n- **Your GP** has been told about this admission.\n\n---\n\n## If you are worried\n\nIf you become unwell or are worried about anything, contact your GP or call NHS 111. Call 999 if it is an emergency.\n\n---\n\n*This leaflet is a draft. It must be checked and signed off by the responsible clinician, and the insulin details must be completed, before it is given to the family.*\n",
+  "gate": {
+    "canonical": "V1_LINES",
+    "status": "clean",
+    "ok": true,
+    "label": "PASS",
+    "findings": []
+  },
+  "cost_usd_est": 0.060654,
+  "error": null
+}

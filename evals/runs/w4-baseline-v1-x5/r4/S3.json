@@ -1,0 +1,67 @@
+{
+  "record_version": 1,
+  "generation_id": "w4-baseline-v1-x5/r4/S3",
+  "batch_id": "w4-baseline-v1-x5",
+  "run": 4,
+  "scenario_id": "S3",
+  "generator": "v1",
+  "path": "deployed",
+  "model_id": "anthropic.claude-sonnet-4-6",
+  "region": "eu-west-2",
+  "inference": {
+    "max_tokens": 4096,
+    "temperature": 0.0,
+    "patient_max_tokens": 1500
+  },
+  "prompts": {
+    "system": {
+      "path": "src/generate/system_prompt.md",
+      "file_sha256": "a7ec8a5661007b0a69231dd68a1f286013cf23a2192ed7ec16770bc07f3c1e3a",
+      "body_sha256": "de46dda1e90bdb1380e077bf7119a2d0d537b7f1f53199b3aeaa2c41aa645ee6"
+    },
+    "patient": {
+      "path": "src/generate/patient_system_prompt.md",
+      "file_sha256": "32f9767baf648dbe2ca1ad5e46d40ea75ff51890bca0b66ef1c44b96166f8e1b",
+      "body_sha256": "7fea4b502d0b9a8b983bcbcac353bc7763845ed0a3eaf0d39edfd80650d23435"
+    }
+  },
+  "prompt_caching": true,
+  "notes_sha256": "c8882fcefb7f24fb39b45a7bb32cb6bfeb5481df37eff450606bec809ab51ef1",
+  "started_at": "2026-10-07T13:46:31+01:00",
+  "elapsed_s": 41.956,
+  "calls": [
+    {
+      "name": "combined",
+      "input_tokens": 432,
+      "output_tokens": 2555,
+      "cache_read_tokens": 5192,
+      "cache_write_tokens": 0,
+      "stop_reason": "end_turn",
+      "latency_s": 31.299,
+      "throttle_retries": 0
+    },
+    {
+      "name": "patient_v2",
+      "input_tokens": 913,
+      "output_tokens": 734,
+      "cache_read_tokens": 1038,
+      "cache_write_tokens": 0,
+      "stop_reason": "end_turn",
+      "latency_s": 10.656,
+      "throttle_retries": 0
+    }
+  ],
+  "patient_version": "v2",
+  "output": "I'll now produce all three parts of the discharge summary.\n\n---\n\n# PART A — STRUCTURED CLINICAL DISCHARGE SUMMARY\n\n```\nDISCHARGE SUMMARY\n\nPatient: Not documented (full name not provided) | DOB: Not documented |\nNHS No: Not documented | Hosp No: Not documented\nAdmitted: 18/05/2025 | Discharged: 23/05/2025\nSpecialty: Psychiatry / Acute Mental Health (inferred — not documented, confirm)\nLegal status: Informal (voluntary) — NOT detained under the Mental Health Act\n\nPRESENTING COMPLAINT\nA 45-year-old woman self-presented to A&E with a six-week history of worsening\nlow mood, anhedonia, early-morning waking, reduced appetite with approximately\n4 kg weight loss, and poor concentration. She reported active suicidal ideation\nwith thoughts of overdose; no formed plan or intent was present at assessment,\nbut ideation was described as escalating. Identified triggers included a recent\nrelationship breakdown and work stress.\n\nDIAGNOSIS\nPrimary:   Depressive episode — moderate to severe (active suicidal ideation\n           at presentation, no psychotic features)\nBackground: One previous depressive episode (2018), GP-managed with sertraline,\n           stopped after approximately nine months when well.\n\nKEY INVESTIGATIONS\nNot documented.\n\nTREATMENT DURING ADMISSION\n- Informal admission to acute mental health unit agreed with patient following\n  liaison psychiatry assessment in A&E.\n- Sertraline 50 mg once daily commenced on Day 3 (20/05/2025).\n- Psychoeducation provided.\n- Collaborative safety plan completed with patient on Day 5 (22/05/2025).\n- MDT review on Day 5 confirmed improving mood, passive/fleeting suicidal\n  ideation with no intent, and future-oriented thinking.\n- Crisis team contact number given to patient at discharge.\n\nRESUSCITATION STATUS\nNot documented — no resuscitation discussion indicated for this admission.\n\nRISK ASSESSMENT\nAt presentation (Day 1):\n  Suicide / self-harm risk: Moderate-high. Active suicidal ideation with\n  thoughts of overdose; no formed plan or intent at that time, but ideation\n  escalating.\n  Risk to others: None identified.\n  Protective factors: Two dependent children (ages 8 and 11); help-seeking\n  behaviour; future-oriented thinking.\n  Safeguarding: Two children at home. Social context noted for exploration;\n  no immediate safeguarding concerns flagged at admission.\n\nAt discharge (Day 6):\n  Suicidal ideation: Passive and fleeting; no intent; patient future-oriented\n  (discussing children).\n  Collaborative safety plan in place.\n  Crisis team number provided.\n\nMEDICATIONS ON DISCHARGE\nSertraline 50 mg orally once daily (NEW — commenced Day 3 of this admission).\n  Note: Dose review documented at four weeks post-discharge.\n\nPre-admission drug history: Nil regular medications.\nNo pre-admission medications to reconcile.\n\nALLERGIES: No known drug allergies (NKDA — documented).\n\nFOLLOW-UP\n1. CMHT (Community Mental Health Team) follow-up: one week post-discharge\n   (approximately 30/05/2025 — confirm exact appointment).\n2. GP review: monitor mood and sertraline tolerability; dose review at\n   four weeks (approximately 20/06/2025).\n3. Crisis team contact number given to patient.\n\nGP ACTIONS\n1. Monitor mood and tolerability of sertraline 50 mg OD.\n2. Review sertraline dose at four weeks post-discharge.\n\nPATIENT ADVICE\nCrisis team contact number given to patient at discharge.\nCollaborative safety plan completed with patient prior to discharge.\nNo further specific patient advice documented.\n\nVTE ASSESSMENT\nNot documented.\n\nAuthor: [Name, Grade, Date] ← To be completed by responsible clinician\n```\n\n---\n\n# PART B — GP LETTER\n\n```\n23/05/2025\n\nDear Colleague,\n\nRe: [Patient full name — not documented], DOB: Not documented,\nNHS No: Not documented\nAdmitted: 18/05/2025, Discharged: 23/05/2025\nSpecialty: Psychiatry / Acute Mental Health (inferred — confirm)\n\nThis 45-year-old woman self-presented to A&E on 18/05/2025 with a six-week\nhistory of worsening low mood and escalating suicidal ideation, and was\nadmitted informally (voluntarily) to the acute mental health unit — she was\nNOT detained under the Mental Health Act.\n\nShe presented with a moderate-to-severe depressive episode: low mood,\nanhedonia, early-morning waking, reduced appetite (~4 kg weight loss), poor\nconcentration, and active suicidal ideation with thoughts of overdose (no\nformed plan or intent at assessment). Identified psychosocial triggers were\na recent relationship breakdown and work stress. There was no psychotic\ncomponent. She has one previous depressive episode (2018), managed in primary\ncare with sertraline for approximately nine months.\n\nDuring admission she engaged well with the ward. Sertraline 50 mg OD was\ncommenced on Day 3. Psychoeducation was provided. By Day 5, MDT review\nconfirmed improving mood, passive and fleeting suicidal ideation with no\nintent, and future-oriented thinking. A collaborative safety plan was\ncompleted with the patient. She was discharged on Day 6 with CMHT follow-up\nand crisis team contact details.\n\nDiagnosis: Depressive episode (moderate-to-severe), no psychotic features.\n\nMedication changes:\n- Sertraline 50 mg OD — NEW (commenced this admission; pre-admission drug\n  history was nil regular medications).\n\nActions for you (GP):\n1. Monitor mood and tolerability of sertraline 50 mg OD.\n2. Review sertraline dose at four weeks post-discharge (approximately\n   20/06/2025).\n\nFollow-up arranged:\n- CMHT follow-up in one week (approximately 30/05/2025 — confirm exact date).\n- Crisis team contact number given to patient.\n\nNo investigations were documented during this admission. No pending results\nto action.\n\nPlease note: two dependent children (ages 8 and 11) are at home. Social\ncontext was noted for exploration at admission; no immediate safeguarding\nconcerns were flagged. You may wish to satisfy yourself that this has been\nadequately addressed through the CMHT follow-up.\n\nYours sincerely,\n[Name, Grade]\n```\n\n---\n\nPART C - PATIENT VERSION (v2 second pass)\n\n# Your Discharge Letter\n\n**From the Mental Health Team — May 2025**\n\n---\n\n## Why you came in\n\nYou came to hospital because you had been feeling very low for several weeks. You were having trouble sleeping, had lost your appetite, and were finding it hard to concentrate. You were also having thoughts of harming yourself. The team assessed you and agreed with you that a short stay in the mental health unit was the right thing to do.\n\n---\n\n## What happened during your stay\n\nYou stayed with us for six days as a voluntary patient — you were not detained, and you chose to be here.\n\nDuring your stay, the team worked with you to help you feel safer and more supported. Here is what happened:\n\n- **A new medicine was started.** You began taking sertraline 50 mg once a day on the third day of your stay (20 May 2025). This medicine helps with low mood and depression.\n- **The team talked with you** about your feelings and what has been going on — this is called psychoeducation.\n- **A safety plan was made with you** on day five (22 May 2025). This is a personal plan that you helped to write. It sets out what to do and who to contact if you start to feel worse.\n- **The whole care team reviewed your progress** on day five. They noted that your mood was improving, that any thoughts of harming yourself had become much less frequent, and that you were thinking about the future.\n\nBy the time you left, you were feeling more settled and were looking ahead.\n\n---\n\n## Your medicine at home\n\n| Medicine | Dose | When to take it |\n|---|---|---|\n| Sertraline 50 mg | 1 tablet | Once a day |\n\nThis is a **new** medicine that was started during your stay. You were not taking any regular medicines before you came in.\n\nYou have no known drug allergies on record.\n\nYour GP will check how you are getting on with sertraline and will review the dose at around **four weeks after you left hospital (approximately 20 June 2025)**.\n\n---\n\n## What happens next\n\n**1. Community Mental Health Team (CMHT)**\nYou have a follow-up appointment with the community mental health team at around **one week after leaving hospital (approximately 30 May 2025)**. Please confirm the exact date and time for this appointment.\n\n**2. Your GP**\nYour GP will keep an eye on how your mood is and how you are getting on with sertraline. There will be a dose review at around **four weeks (approximately 20 June 2025)**.\n\n**3. Crisis team**\nYou were given the crisis team's contact number before you left. Please keep this somewhere easy to find. If you are struggling, you can call them.\n\n**4. Your safety plan**\nYou have a copy of the safety plan that you made with the team. Please keep it somewhere you can get to it easily.\n\n---\n\n## If you are worried\n\nYou have the crisis team number — please use it if you need to.\n\nIf you become unwell or are worried about anything, contact your GP or call NHS 111. Call 999 if it is an emergency.\n\n---\n\n*This letter is a draft for your care team to check and sign off before it is given to you.*\n",
+  "gate": {
+    "canonical": "V1_LINES",
+    "status": "documented_advice",
+    "ok": true,
+    "label": "PASS (advisory)",
+    "findings": [
+      "The source notes record a seek-help trigger, so the fall-back rule is not engaged. Whether the rephrasing is faithful is a rubric judgement (EVAL_RESULTS.md D2), not checked here."
+    ]
+  },
+  "cost_usd_est": 0.060763,
+  "error": null
+}

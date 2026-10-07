@@ -1,0 +1,67 @@
+{
+  "record_version": 1,
+  "generation_id": "w4-baseline-v1-x5/r5/S4",
+  "batch_id": "w4-baseline-v1-x5",
+  "run": 5,
+  "scenario_id": "S4",
+  "generator": "v1",
+  "path": "deployed",
+  "model_id": "anthropic.claude-sonnet-4-6",
+  "region": "eu-west-2",
+  "inference": {
+    "max_tokens": 4096,
+    "temperature": 0.0,
+    "patient_max_tokens": 1500
+  },
+  "prompts": {
+    "system": {
+      "path": "src/generate/system_prompt.md",
+      "file_sha256": "a7ec8a5661007b0a69231dd68a1f286013cf23a2192ed7ec16770bc07f3c1e3a",
+      "body_sha256": "de46dda1e90bdb1380e077bf7119a2d0d537b7f1f53199b3aeaa2c41aa645ee6"
+    },
+    "patient": {
+      "path": "src/generate/patient_system_prompt.md",
+      "file_sha256": "32f9767baf648dbe2ca1ad5e46d40ea75ff51890bca0b66ef1c44b96166f8e1b",
+      "body_sha256": "7fea4b502d0b9a8b983bcbcac353bc7763845ed0a3eaf0d39edfd80650d23435"
+    }
+  },
+  "prompt_caching": true,
+  "notes_sha256": "647dbf1787d657773d262b81e9df534fdf54b57d06d61b8fa585b26bbcd9a6cc",
+  "started_at": "2026-10-07T14:01:54+01:00",
+  "elapsed_s": 29.614,
+  "calls": [
+    {
+      "name": "combined",
+      "input_tokens": 349,
+      "output_tokens": 1642,
+      "cache_read_tokens": 5192,
+      "cache_write_tokens": 0,
+      "stop_reason": "end_turn",
+      "latency_s": 21.619,
+      "throttle_retries": 0
+    },
+    {
+      "name": "patient_v2",
+      "input_tokens": 665,
+      "output_tokens": 451,
+      "cache_read_tokens": 1038,
+      "cache_write_tokens": 0,
+      "stop_reason": "end_turn",
+      "latency_s": 7.993,
+      "throttle_retries": 0
+    }
+  ],
+  "patient_version": "v2",
+  "output": "I'll now produce all three parts of the discharge summary.\n\n---\n\n# PART A — STRUCTURED CLINICAL DISCHARGE SUMMARY\n\n```\nDISCHARGE SUMMARY\n\nPatient: Not documented | DOB: Not documented (10 months) | NHS No: Not documented | Hosp No: Not documented\nAdmitted: 19/05/[YYYY] | Discharged: 20/05/[YYYY]\nSpecialty: Paediatrics (inferred — not documented, confirm)\nWeight: 9 kg (recorded on admission)\n\nPRESENTING COMPLAINT\nTen-month-old male presented with a three-day history of coryzal symptoms,\nworsening cough, noisy breathing, and poor feeding (approximately 50% of\nnormal intake), with reduced wet nappies. Referred in by GP.\n\nDIAGNOSIS\nPrimary: Bronchiolitis (clinical diagnosis; RSV confirmed on nasopharyngeal\n         aspirate)\nBackground: Born at term. No significant past medical history. Immunisations\n            up to date. No family history of atopy documented.\n\nKEY INVESTIGATIONS\n- Nasopharyngeal aspirate (NPA): RSV positive (result Day 2, 20/05)\n- Observations on admission: Temperature 37.6 °C, RR 58, SpO₂ 90% on room air,\n  mild-to-moderate subcostal recession, widespread fine crackles and wheeze\n- Observations at discharge: RR 44, SpO₂ 93–95% on room air, minimal work of\n  breathing\n\nTREATMENT DURING ADMISSION\n- Supplemental oxygen commenced to maintain saturations ≥90%\n- Nasogastric (NG) feeds commenced for poor oral intake\n- Oxygen weaned overnight Day 1–2; NG feeds removed Day 2 as oral intake\n  improved to approximately 75% and subsequently full feeds\n- Antibiotics not given (viral aetiology)\n- Salbutamol not given (not indicated in bronchiolitis)\n- Supportive care throughout\n\nRESUSCITATION STATUS\nNot documented — no resuscitation discussion indicated for this admission.\n\nMEDICATIONS ON DISCHARGE\nNone. (Notes state \"no meds needed\".)\n\nALLERGIES: No known drug allergies (NKDA documented)\n\nFOLLOW-UP\nNo routine follow-up arranged. (Notes state \"no routine f/u\".)\n\nGP ACTIONS\nNone specific. (No specific GP actions documented.)\n\nPATIENT ADVICE          (PARENT / CARER ADVICE)\nNotes record: \"Parental safety-net advice given.\"\nThe specific content of that advice is not transcribed in the notes and\ncannot be reproduced here. The reviewing clinician should confirm that the\nadvice given is documented in the clinical record.\n\nVTE ASSESSMENT: Not applicable (paediatric)\n\nAuthor: [Name, grade, date — to be completed by responsible clinician]\n```\n\n---\n\n# PART B — GP LETTER\n\n```\n20/05/[YYYY]\n\nDear Colleague,\n\nRe: [Patient name — not documented], DOB: not documented (10-month-old male),\nNHS No: not documented\n\nAdmitted: 19/05/[YYYY]   Discharged: 20/05/[YYYY]\nUnder: Paediatrics (inferred — confirm)\n\nThis 10-month-old male was admitted via GP referral with a three-day history\nof coryza, worsening cough, noisy breathing, and poor feeding, and was\ndiagnosed with bronchiolitis.\n\nOn admission he had an oxygen saturation of 90% on room air, a respiratory\nrate of 58, and mild-to-moderate subcostal recession with widespread fine\ncrackles and wheeze. He was afebrile (37.6 °C), alert, and not clinically\ndehydrated, though intake was reduced. Weight was 9 kg. A nasopharyngeal\naspirate confirmed RSV. He was managed supportively with supplemental oxygen\n(target saturations ≥90%) and nasogastric feeds. Antibiotics and salbutamol\nwere appropriately withheld. He improved steadily: oxygen was weaned\novernight, nasogastric feeds were removed on Day 2 as oral intake recovered,\nand he was discharged tolerating full oral feeds with saturations of 93–95%\non room air and minimal work of breathing.\n\nDiagnosis: Bronchiolitis (RSV-confirmed).\n\nMedication changes: None. No medications were prescribed on discharge.\n\nActions for you (GP): No specific actions documented.\n\nFollow-up arranged: None. No routine follow-up was arranged.\n\nPending results: None documented.\n\nPlease note: the notes record that parental safety-net advice was given at\ndischarge, but the specific content is not transcribed. If you need to\nreinforce this advice at a subsequent contact, please refer to the inpatient\nclinical record.\n\nYours sincerely,\n[Name, grade — to be completed by responsible clinician]\n```\n\n---\n\nPART C - PATIENT VERSION (v2 second pass)\n\n# Your Child's Discharge Letter\n\n**Ward: Paediatrics | Date of discharge: 20/05**\n\n---\n\n## What was wrong\n\nYour baby boy (10 months old) was admitted to hospital because he had a chest infection called **bronchiolitis**. This is caused by a virus called **RSV (respiratory syncytial virus)**. It made his breathing fast and noisy, and he was not feeding well.\n\n---\n\n## What we did\n\nWhen he came in, his breathing was working hard and his oxygen levels were a little low. We gave him:\n\n- **Extra oxygen** through a small tube near his nose, to keep his oxygen levels safe\n- **Tube feeds (nasogastric feeds)** — a small, soft tube passed through his nose into his tummy — to make sure he got enough milk while feeding was difficult\n\nOver the course of his stay, he improved. His oxygen was slowly reduced and then stopped. The feeding tube was removed once he was taking around three-quarters of his normal feeds by mouth, and by the time he went home he was feeding fully again.\n\nHe did **not** need antibiotics, because bronchiolitis is caused by a virus, not bacteria. He did not need any other medicines either.\n\n---\n\n## Medicines to take at home\n\nYour child has been sent home with **no medicines**. He does not need any.\n\nHe has **no known drug allergies**.\n\n---\n\n## What happens next\n\nNo follow-up appointments have been arranged. If you have any concerns, please see the information below.\n\n---\n\n## When to get help\n\nThe team gave you safety-net advice before you left hospital. If you are unsure what you were told, or if you have any questions, please speak to your GP or call NHS 111.\n\nIf you become unwell or are worried about anything, contact your GP or call NHS 111. Call 999 if it is an emergency.\n\n---\n\n*This letter is a draft for review and sign-off by the responsible clinician before it is given to the family.*\n",
+  "gate": {
+    "canonical": "V1_LINES",
+    "status": "documented_advice",
+    "ok": true,
+    "label": "PASS (advisory)",
+    "findings": [
+      "The source notes record a seek-help trigger, so the fall-back rule is not engaged. Whether the rephrasing is faithful is a rubric judgement (EVAL_RESULTS.md D2), not checked here."
+    ]
+  },
+  "cost_usd_est": 0.039937,
+  "error": null
+}

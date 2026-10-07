@@ -1,0 +1,67 @@
+{
+  "record_version": 1,
+  "generation_id": "w4-baseline-v1-x5/r5/S2",
+  "batch_id": "w4-baseline-v1-x5",
+  "run": 5,
+  "scenario_id": "S2",
+  "generator": "v1",
+  "path": "deployed",
+  "model_id": "anthropic.claude-sonnet-4-6",
+  "region": "eu-west-2",
+  "inference": {
+    "max_tokens": 4096,
+    "temperature": 0.0,
+    "patient_max_tokens": 1500
+  },
+  "prompts": {
+    "system": {
+      "path": "src/generate/system_prompt.md",
+      "file_sha256": "a7ec8a5661007b0a69231dd68a1f286013cf23a2192ed7ec16770bc07f3c1e3a",
+      "body_sha256": "de46dda1e90bdb1380e077bf7119a2d0d537b7f1f53199b3aeaa2c41aa645ee6"
+    },
+    "patient": {
+      "path": "src/generate/patient_system_prompt.md",
+      "file_sha256": "32f9767baf648dbe2ca1ad5e46d40ea75ff51890bca0b66ef1c44b96166f8e1b",
+      "body_sha256": "7fea4b502d0b9a8b983bcbcac353bc7763845ed0a3eaf0d39edfd80650d23435"
+    }
+  },
+  "prompt_caching": true,
+  "notes_sha256": "1b138eb44a03c3ac42c22625b36982e32d8a0eece4c7e63daa91a2aa836d3ed6",
+  "started_at": "2026-10-07T14:00:26+01:00",
+  "elapsed_s": 43.857,
+  "calls": [
+    {
+      "name": "combined",
+      "input_tokens": 289,
+      "output_tokens": 2227,
+      "cache_read_tokens": 5192,
+      "cache_write_tokens": 0,
+      "stop_reason": "end_turn",
+      "latency_s": 31.704,
+      "throttle_retries": 0
+    },
+    {
+      "name": "patient_v2",
+      "input_tokens": 990,
+      "output_tokens": 742,
+      "cache_read_tokens": 1038,
+      "cache_write_tokens": 0,
+      "stop_reason": "end_turn",
+      "latency_s": 12.15,
+      "throttle_retries": 0
+    }
+  ],
+  "patient_version": "v2",
+  "output": "I'll now produce all three parts of the discharge summary draft.\n\n---\n\n# PART A — STRUCTURED CLINICAL DISCHARGE SUMMARY\n\n```\nDISCHARGE SUMMARY\n\nPatient: Not documented | DOB: Not documented (28 years) | NHS No: Not documented | Hosp No: Not documented\nAdmitted: 20/05/YYYY | Discharged: 21/05/YYYY\nSpecialty: General Surgery (inferred — not documented, confirm)\n\nPRESENTING COMPLAINT\nRight iliac fossa pain of 18 hours' duration, initially periumbilical then\nmigrating to the right iliac fossa, associated with nausea, vomiting, and\nanorexia.\n\nDIAGNOSIS\nPrimary: Acute appendicitis (non-perforated, confirmed intra-operatively)\n\nKEY INVESTIGATIONS\n- WCC: 14.2 (raised)\n- CRP: 68 (raised)\n- Urine dipstick: negative\n- Ultrasound abdomen/pelvis: appendix not well visualised; free fluid in\n  right iliac fossa\n- Histology: PENDING (appendix specimen sent at time of surgery)\n\nTREATMENT DURING ADMISSION\n- Nil by mouth on admission\n- IV fluid resuscitation commenced\n- IV co-amoxiclav commenced pre-operatively\n- Laparoscopic appendicectomy performed 20/05/YYYY: acutely inflamed\n  appendix identified and removed; no perforation; uncomplicated procedure;\n  estimated blood loss minimal\n- Post-operatively: tolerating diet, pain controlled, apyrexial, mobilising\n  on day 1 post-op; wounds clean\n\nRESUSCITATION STATUS\nFor resuscitation. No change during admission.\n\nMEDICATIONS ON DISCHARGE\nPre-admission drug history: None\n\n- Co-codamol — dose not documented — oral — PRN (NEW)\n- Ibuprofen — dose not documented — oral — PRN (NEW)\n\n⚠ Doses and frequencies for both discharge medications are not documented\nin the notes. Clinician must confirm and complete before issuing.\n\nALLERGIES: NKDA (no known drug allergies)\n\nFOLLOW-UP\n- Histology result pending — see GP ACTIONS below\n- No further follow-up appointments documented\n\nGP ACTIONS\n- Histology result is pending from this admission. Please chase result and\n  review with patient when available. Notes do not specify who is responsible\n  for actioning this result — clinician to clarify before discharge.\n\nPATIENT ADVICE\nWound care and safety-net advice documented as given to patient. The specific\ncontent of this advice is not transcribed in the notes.\nSutures are absorbable — no removal required.\n\nVTE ASSESSMENT: Not documented\n\nAuthor: [Name, grade, date — to be completed by responsible clinician]\n```\n\n---\n\n> ⚠ **Flags for reviewing clinician — please address before sign-off:**\n>\n> 1. **Patient identifiers** — Full name, DOB, NHS number, and hospital number\n>    are not present in the notes. These must be completed before the summary\n>    is issued.\n> 2. **Discharge year** — The admission/discharge dates record day and month\n>    only (20/05, 21/05). Please confirm the year.\n> 3. **Medication doses and frequencies** — Co-codamol and ibuprofen are listed\n>    without doses or frequencies. These must be specified on the TTO before\n>    issue.\n> 4. **Histology result — responsible clinician** — The notes do not state who\n>    will chase and action the pending histology. Please clarify and document\n>    this before discharge.\n> 5. **Patient advice content** — The notes record that wound care and\n>    safety-net advice were given but do not transcribe what was said. The\n>    specific advice cannot be reproduced in this summary or in the\n>    patient-friendly version. If a written advice sheet was provided, consider\n>    attaching it or summarising it here.\n> 6. **VTE assessment** — Not documented. Please confirm whether a formal\n>    assessment was completed.\n> 7. **Specialty** — Inferred as General Surgery from clinical context; please\n>    confirm.\n\n---\n\n---\n\n# PART B — GP LETTER\n\n```\n[Date: to be completed]\n\nDear Colleague,\n\nRe: [Patient name — not documented], DOB: not documented, NHS No: not documented\nAdmitted: 20/05/YYYY, discharged: 21/05/YYYY under General Surgery\n(specialty inferred — confirm).\n\nThis 28-year-old male was admitted as an emergency referral with an 18-hour\nhistory of right iliac fossa pain (initially periumbilical, then migrating),\nnausea, vomiting, and anorexia, and was diagnosed with acute appendicitis.\n\nOn examination he was pyrexial at 37.9°C with right iliac fossa tenderness,\nguarding, and a positive Rovsing's sign. Bloods showed a raised WCC of 14.2\nand CRP of 68. Urine dipstick was negative. Ultrasound did not clearly\nvisualise the appendix but demonstrated free fluid in the right iliac fossa.\nHe was commenced on IV co-amoxiclav and IV fluids, and proceeded to\nlaparoscopic appendicectomy on the day of admission. Intra-operative findings\nconfirmed an acutely inflamed, non-perforated appendix; the procedure was\nuncomplicated with minimal blood loss. He recovered well post-operatively,\nwas tolerating diet, mobilising, and apyrexial by day 1, and was discharged\non day 1 post-operatively.\n\nDiagnosis: Acute appendicitis (non-perforated).\n\nMedication changes:\n- Co-codamol PRN — NEW (dose not documented — please confirm with patient's\n  discharge prescription)\n- Ibuprofen PRN — NEW (dose not documented — please confirm with patient's\n  discharge prescription)\nNo pre-admission medications. No medications stopped.\n\nActions for you (GP):\n1. Histology from the appendix specimen is pending. Please chase this result\n   and review with the patient when available. Note: the responsible clinician\n   for actioning this result has not been specified in the notes — please\n   liaise with the discharging team if needed.\n\nFollow-up arranged: None documented.\n\nPending results: Appendix histology — pending at time of discharge. Responsible\nclinician not specified — requires clarification.\n\nYours sincerely,\n[Name, grade — to be completed by responsible clinician]\n```\n\n---\n\n---\n\nPART C - PATIENT VERSION (v2 second pass)\n\n# Your Discharge Letter\n\n**A note before you read on:** Some details in your medical notes were not fully filled in. Your care team will need to complete these before this letter is finalised. These gaps are flagged below so nothing is missed.\n\n---\n\n## What Was Wrong\n\nYou came into hospital with pain in your tummy that had been there for about 18 hours. The pain started around your belly button and then moved to the lower right side of your tummy. You also felt sick, were vomiting, and had no appetite.\n\nAfter tests and a scan, the team found that you had an inflamed appendix (acute appendicitis). This was confirmed during your operation.\n\n---\n\n## What Was Done\n\nWhen you arrived, you were not allowed to eat or drink, and you were given fluids through a drip (IV fluid resuscitation) to keep you well hydrated.\n\nYou were also given an antibiotic through the drip (IV co-amoxiclav) before your operation.\n\nYou then had an operation called a laparoscopic appendicectomy. This means your appendix was removed using keyhole surgery. The surgeon found that your appendix was inflamed but had not burst. The operation went smoothly. The blood loss was very small.\n\nAfter the operation, you were able to eat and drink, your pain was well controlled, you had no temperature, and you were up and moving around. Your wounds looked clean. You went home the next day.\n\nYour appendix was sent to the laboratory to be checked (histology). **This result is still being waited for** — see the \"What Happens Next\" section below.\n\n---\n\n## Your Medicines\n\nYou have been sent home with two pain-relief medicines. Both are to be taken when you need them (PRN means \"as needed\").\n\n- **Co-codamol** (a painkiller) — taken by mouth when needed\n- **Ibuprofen** (an anti-inflammatory painkiller) — taken by mouth when needed\n\n⚠ **Important — doses not yet confirmed:** The exact doses and how often to take these medicines were not recorded in your notes. Your care team must fill this in before you are given these medicines. **Please do not take them until you have been told the correct dose and how often to take them.**\n\nYou had no regular medicines before coming in, and you have no known drug allergies.\n\n---\n\n## Your Stitches\n\nYour stitches will dissolve on their own. You do not need to have them removed.\n\n---\n\n## What Happens Next\n\n**Laboratory result (histology):** The sample taken during your operation is still being tested. Your GP will be asked to check this result and to go through it with you once it is ready.\n\n⚠ **A note for your care team:** It has not yet been decided who will be responsible for following up this result. This needs to be sorted out before you leave hospital.\n\nNo other follow-up appointments have been arranged at this stage.\n\n---\n\n## When to Get Help\n\nIf you become unwell or are worried about anything, contact your GP or call NHS 111. Call 999 if it is an emergency.\n\n---\n\n*This letter is a draft and must be checked and signed off by your responsible clinician before it is given to you. Patient name, date of birth, and hospital details also need to be added.*\n",
+  "gate": {
+    "canonical": "V1_LINES",
+    "status": "documented_advice",
+    "ok": true,
+    "label": "PASS (advisory)",
+    "findings": [
+      "The source notes record a seek-help trigger, so the fall-back rule is not engaged. Whether the rephrasing is faithful is a rubric judgement (EVAL_RESULTS.md D2), not checked here."
+    ]
+  },
+  "cost_usd_est": 0.055265,
+  "error": null
+}

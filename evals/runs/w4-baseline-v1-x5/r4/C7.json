@@ -1,0 +1,65 @@
+{
+  "record_version": 1,
+  "generation_id": "w4-baseline-v1-x5/r4/C7",
+  "batch_id": "w4-baseline-v1-x5",
+  "run": 4,
+  "scenario_id": "C7",
+  "generator": "v1",
+  "path": "deployed",
+  "model_id": "anthropic.claude-sonnet-4-6",
+  "region": "eu-west-2",
+  "inference": {
+    "max_tokens": 4096,
+    "temperature": 0.0,
+    "patient_max_tokens": 1500
+  },
+  "prompts": {
+    "system": {
+      "path": "src/generate/system_prompt.md",
+      "file_sha256": "a7ec8a5661007b0a69231dd68a1f286013cf23a2192ed7ec16770bc07f3c1e3a",
+      "body_sha256": "de46dda1e90bdb1380e077bf7119a2d0d537b7f1f53199b3aeaa2c41aa645ee6"
+    },
+    "patient": {
+      "path": "src/generate/patient_system_prompt.md",
+      "file_sha256": "32f9767baf648dbe2ca1ad5e46d40ea75ff51890bca0b66ef1c44b96166f8e1b",
+      "body_sha256": "7fea4b502d0b9a8b983bcbcac353bc7763845ed0a3eaf0d39edfd80650d23435"
+    }
+  },
+  "prompt_caching": true,
+  "notes_sha256": "d15719c10172a3c9a85deae46695411eb27d652215d6152078b33ea2487a91ca",
+  "started_at": "2026-10-07T13:58:57+01:00",
+  "elapsed_s": 36.448,
+  "calls": [
+    {
+      "name": "combined",
+      "input_tokens": 117,
+      "output_tokens": 2240,
+      "cache_read_tokens": 5192,
+      "cache_write_tokens": 0,
+      "stop_reason": "end_turn",
+      "latency_s": 28.999,
+      "throttle_retries": 0
+    },
+    {
+      "name": "patient_v2",
+      "input_tokens": 635,
+      "output_tokens": 423,
+      "cache_read_tokens": 1038,
+      "cache_write_tokens": 0,
+      "stop_reason": "end_turn",
+      "latency_s": 7.447,
+      "throttle_retries": 0
+    }
+  ],
+  "patient_version": "v2",
+  "output": "I'll produce all three parts. Note that the patient version must be flagged for translation and produced in Polish (with an English copy for staff), as the patient has limited English.\n\n---\n\n# PART A — STRUCTURED CLINICAL DISCHARGE SUMMARY\n\n```\nDISCHARGE SUMMARY\n\nPatient: Not documented | DOB: Not documented (54F) | NHS No: Not documented | Hosp No: Not documented\nAdmitted: 19/05/2025 | Discharged: 20/05/2025\nSpecialty: Trauma & Orthopaedics (inferred — not documented, confirm)\n\nPRESENTING COMPLAINT\nMechanical fall resulting in right wrist injury.\n\nDIAGNOSIS\nPrimary: Closed displaced distal radius fracture (Colles'), right wrist.\nBackground: Not documented.\n\nKEY INVESTIGATIONS\nNot documented.\n\nTREATMENT DURING ADMISSION\nOpen reduction and internal fixation (ORIF) of right distal radius fracture,\nperformed 19/05/2025. Reported as uncomplicated. Backslab applied post-operatively.\nNeurovascular status of the right hand confirmed intact on day 2.\n\nRESUSCITATION STATUS\nNot documented — no resuscitation discussion indicated for this admission.\n\nMEDICATIONS ON DISCHARGE\nNot documented. (No pre-admission drug history or discharge medication list\nprovided in the notes — requires clinician completion before issue.)\n\nALLERGIES: Not documented.\n\nFOLLOW-UP\nFracture clinic appointment in 1 week (approximately 27/05/2025 — confirm exact\ndate/time).\n\nGP ACTIONS\nNone documented.\n\nPATIENT ADVICE\nNot documented. (No specific safety-netting, wound-care, activity, or other\npatient instructions were recorded in the notes.)\n\nVTE ASSESSMENT: Not documented.\n\n⚠️ CLINICIAN FLAGS — REQUIRES ATTENTION BEFORE SIGN-OFF:\n1. Patient demographics (full name, DOB, NHS number, hospital number) not\n   supplied — must be completed.\n2. Medications on discharge not documented — pre-admission drug history and\n   discharge prescription must be reconciled and added.\n3. Allergy status not documented — must be confirmed and recorded.\n4. VTE assessment not documented — must be completed or confirmed as done.\n5. Patient advice / safety-netting not documented — clinician should add any\n   instructions given verbally (wound care, elevation, when to seek help, etc.)\n   so they can be carried through to the patient-friendly version.\n6. Interpreter note: patient is Polish-speaking with limited English. A telephone\n   interpreter was used for consent. Ensure translated written information and\n   interpreter access are arranged for follow-up.\n7. Specialty confirmed as Trauma & Orthopaedics by inference — please confirm.\n\nAuthor: [Name, Grade] — DRAFT FOR CLINICIAN REVIEW AND SIGN-OFF\nDate: [DD/MM/YYYY]\n```\n\n---\n\n# PART B — GP LETTER\n\n```\n20/05/2025\n\nDear Colleague,\n\nRe: [Patient full name], DOB: [Not documented], NHS No: [Not documented]\nAdmitted: 19/05/2025 | Discharged: 20/05/2025\nUnder: Trauma & Orthopaedics (inferred — confirm)\n\nThis 54-year-old woman was admitted on 19/05/2025 following a mechanical fall,\nsustaining a closed displaced distal radius fracture (Colles') of the right wrist.\n\nShe underwent uncomplicated open reduction and internal fixation (ORIF) of the\nright distal radius on the day of admission. Post-operatively she was comfortable,\nwith the right hand neurovascularly intact and a backslab in situ. She was fit for\ndischarge on day 2.\n\nDiagnosis: Closed displaced distal radius fracture (Colles'), right wrist —\ntreated with ORIF.\n\nMedication changes: Not documented. No pre-admission drug history was provided;\na discharge medication list has not been supplied in the notes. Please reconcile\nwith your own records and contact the discharging team if clarification is needed.\n\nAllergy status: Not documented — please check with patient.\n\nActions for you (GP): None documented.\n\nFollow-up arranged: Fracture clinic in 1 week (approximately 27/05/2025 —\nexact appointment to be confirmed).\n\nPending results: None documented.\n\nPlease note: this patient is Polish-speaking with limited English. A telephone\ninterpreter was used during this admission. You may wish to arrange interpreter\nsupport for any consultations.\n\nYours sincerely,\n[Name, Grade] — DRAFT FOR CLINICIAN REVIEW AND SIGN-OFF\n```\n\n---\n\nPART C - PATIENT VERSION (v2 second pass)\n\n# Your Discharge Letter — Right Wrist Operation\n\n**Please note: This is a draft. Your doctor needs to check and sign it before it is final. Some details still need to be filled in.**\n\n---\n\n## What Happened\n\nYou came to hospital on 19 May 2025 after a fall. You had broken a bone in your right wrist. This is called a **displaced distal radius fracture (Colles' fracture)**.\n\n---\n\n## What We Did\n\nOn the same day you came in, you had an operation to fix the broken bone. The operation is called **open reduction and internal fixation (ORIF)**. This means the surgeon moved the bone back into the right place and held it there with metal fixings inside your wrist.\n\nThe operation went well. After the operation, a plaster support (called a **backslab**) was put on your wrist.\n\nBefore you went home, the team checked the feeling and blood supply in your right hand. Everything was found to be normal.\n\n---\n\n## Your Medicines\n\n**This section has not been completed yet.** Your doctor needs to add details of any medicines you should take at home before this letter is finished. Please ask your doctor or nurse about your medicines before you leave, or contact the hospital if you are unsure.\n\n---\n\n## What Happens Next\n\nYou have an appointment at the **fracture clinic** in about one week. This is likely to be around **27 May 2025**, but the exact date and time still needs to be confirmed. You will be told when and where to go.\n\n---\n\n## If You Are Worried\n\nIf you become unwell or are worried about anything, contact your GP or call NHS 111. Call 999 if it is an emergency.\n\n---\n\n*This letter is a draft for clinician sign-off. It has been written based only on the information recorded in your notes at the time of discharge.*\n",
+  "gate": {
+    "canonical": "V1_LINES",
+    "status": "clean",
+    "ok": true,
+    "label": "PASS",
+    "findings": []
+  },
+  "cost_usd_est": 0.048477,
+  "error": null
+}

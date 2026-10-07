@@ -1,0 +1,65 @@
+{
+  "record_version": 1,
+  "generation_id": "w4-baseline-v1-x5/r4/S11",
+  "batch_id": "w4-baseline-v1-x5",
+  "run": 4,
+  "scenario_id": "S11",
+  "generator": "v1",
+  "path": "deployed",
+  "model_id": "anthropic.claude-sonnet-4-6",
+  "region": "eu-west-2",
+  "inference": {
+    "max_tokens": 4096,
+    "temperature": 0.0,
+    "patient_max_tokens": 1500
+  },
+  "prompts": {
+    "system": {
+      "path": "src/generate/system_prompt.md",
+      "file_sha256": "a7ec8a5661007b0a69231dd68a1f286013cf23a2192ed7ec16770bc07f3c1e3a",
+      "body_sha256": "de46dda1e90bdb1380e077bf7119a2d0d537b7f1f53199b3aeaa2c41aa645ee6"
+    },
+    "patient": {
+      "path": "src/generate/patient_system_prompt.md",
+      "file_sha256": "32f9767baf648dbe2ca1ad5e46d40ea75ff51890bca0b66ef1c44b96166f8e1b",
+      "body_sha256": "7fea4b502d0b9a8b983bcbcac353bc7763845ed0a3eaf0d39edfd80650d23435"
+    }
+  },
+  "prompt_caching": true,
+  "notes_sha256": "ed2e3ee49d11c4bfb7eb6ca95f90d402685abec1913adce3b032619831a2a7d6",
+  "started_at": "2026-10-07T13:50:11+01:00",
+  "elapsed_s": 50.38,
+  "calls": [
+    {
+      "name": "combined",
+      "input_tokens": 370,
+      "output_tokens": 3000,
+      "cache_read_tokens": 5192,
+      "cache_write_tokens": 0,
+      "stop_reason": "end_turn",
+      "latency_s": 37.75,
+      "throttle_retries": 0
+    },
+    {
+      "name": "patient_v2",
+      "input_tokens": 1226,
+      "output_tokens": 840,
+      "cache_read_tokens": 1038,
+      "cache_write_tokens": 0,
+      "stop_reason": "end_turn",
+      "latency_s": 12.627,
+      "throttle_retries": 0
+    }
+  ],
+  "patient_version": "v2",
+  "output": "I'll now produce all three parts of the discharge summary draft.\n\n---\n\n# PART A — STRUCTURED CLINICAL DISCHARGE SUMMARY\n\n```\nDISCHARGE SUMMARY\n\nPatient: Not documented | DOB: Not documented | NHS No: Not documented | Hosp No: Not documented\nAdmitted: 12/05/2025 | Discharged: 17/05/2025\nSpecialty: Trauma & Orthopaedics / General Surgery / Respiratory & Thoracics\n           (multiple teams — inferred from documented clinical context; confirm\n           admitting/lead team)\n\nPRESENTING COMPLAINT\n47-year-old male restrained driver involved in a road traffic collision at\napproximately 40 mph. Trauma call activated.\n\nDIAGNOSIS\nPrimary:\n  - Closed left tibial shaft fracture (treated with intramedullary nail, 13/05)\n  - Grade II splenic laceration (CT-confirmed, managed non-operatively)\n  - Left-sided rib fractures (ribs 7–9) with small left haemothorax\n    (chest drain inserted, removed 15/05)\n  - Undisplaced L1 transverse process fractures\n\nSecondary: Not documented\nBackground: Not documented\n\nKEY INVESTIGATIONS\n  - CT trauma series (Day 1, 12/05): confirmed grade II splenic laceration,\n    left rib fractures 7–9 with small haemothorax, L1 transverse process\n    fractures; pelvis and remainder of spine clear\n  - Serial Hb monitoring: documented as stable throughout admission\n  - Repeat CT abdomen (Day 4, 15/05): splenic injury improving\n  - CXR (Day 4, 15/05): satisfactory following chest drain removal,\n    lung re-expanding\n\nTREATMENT DURING ADMISSION\n  - Trauma call activation on arrival (12/05); GCS 15 throughout\n  - Left tibial shaft fracture: intramedullary nailing performed 13/05\n    by Orthopaedics\n  - Splenic laceration: non-operative management with serial observations\n    and Hb monitoring by General Surgery\n  - Haemothorax: chest drain inserted by Respiratory/Thoracics (12/05);\n    removed 15/05 following satisfactory CXR and lung re-expansion\n  - L1 transverse process fractures: managed conservatively\n  - Physiotherapy: mobilisation commenced, partial weight-bearing left leg\n    per Orthopaedic instruction\n  - VTE prophylaxis: enoxaparin given throughout inpatient stay\n  - Splenic injury vaccinations administered prior to discharge:\n    Pneumococcal, Hib, MenACWY; prophylaxis advice given\n\nRESUSCITATION STATUS\nFor resuscitation. No change during admission.\n\nMEDICATIONS ON DISCHARGE\n⚠ Pre-admission drug history not documented. Change-tagging against\npre-admission medications is therefore not possible. The following\ndischarge medications are recorded; all are marked (NEW — pre-admission\nDH unknown):\n\n  1. Analgesia — drug(s), dose(s), route(s), and frequency NOT documented;\n     requires clarification before issue\n  2. Enoxaparin — dose and frequency NOT documented; requires clarification\n     before issue (Orthopaedics to specify dose and duration)\n\n⚠ Clinician action required: please document full analgesia regimen\n(drug, dose, route, frequency) and enoxaparin dose/frequency/intended\nduration before signing this summary.\n\nALLERGIES: Not documented\n\nFOLLOW-UP\n  1. Orthopaedic fracture clinic: 2 weeks post-discharge (approx. 31/05/2025)\n  2. General Surgery telephone review re splenic injury: 6 weeks\n     post-discharge (approx. 28/06/2025) — to include splenic vaccination\n     advice follow-up\n  3. Respiratory/Thoracics: no routine follow-up arranged\n\nGP ACTIONS\n  - Splenic injury: patient has received Pneumococcal, Hib, and MenACWY\n    vaccinations and prophylaxis advice during admission — GP to be aware\n    for ongoing asplenic/hyposplenic management (further detail to be\n    confirmed by General Surgery at 6-week telephone review)\n  - Ensure ongoing enoxaparin supply and monitoring as directed by\n    Orthopaedics (dose and duration to be confirmed on final TTO)\n  - Analgesia: prescribe as per final TTO (details to be confirmed)\n\nPATIENT ADVICE\n  - Partial weight-bearing on left leg as instructed by Orthopaedics\n  - Splenic injury prophylaxis advice given during admission\n  ⚠ No further specific patient advice or safety-netting triggers are\n  documented in the notes. Clinician should document any additional\n  instructions before sign-off.\n\nVTE ASSESSMENT\nVTE prophylaxis with enoxaparin documented as given throughout inpatient\nstay and to continue on discharge per Orthopaedic instruction. Formal\nVTE assessment documentation not explicitly referenced in notes — confirm\ncompleted.\n\nAuthor: [Name, Grade, Date] ← TO BE COMPLETED BY RESPONSIBLE CLINICIAN\n```\n\n---\n\n# PART B — GP LETTER\n\n```\n17/05/2025\n\nDear Colleague,\n\nRe: [Patient full name — not documented], DOB: not documented,\nNHS No: not documented\nAdmitted: 12/05/2025, Discharged: 17/05/2025\nLead specialty: Not documented (multiple teams involved — Trauma &\nOrthopaedics, General Surgery, Respiratory/Thoracics)\n\nThis 47-year-old male was admitted following a road traffic collision as a\nrestrained driver at approximately 40 mph, sustaining multiple injuries as\ndetailed below.\n\nInjuries and management:\nCT imaging on admission confirmed a closed left tibial shaft fracture, a\ngrade II splenic laceration, left-sided rib fractures (ribs 7–9) with a\nsmall haemothorax, and undisplaced L1 transverse process fractures. The\npelvis and remainder of the spine were clear. GCS was 15 throughout.\n\nThe tibial fracture was treated with intramedullary nailing on 13/05. The\nsplenic laceration was managed non-operatively with serial observations and\nHb monitoring; repeat CT on day 4 confirmed improvement. A chest drain was\ninserted for the haemothorax and removed on 15/05 following satisfactory\nCXR and lung re-expansion. The L1 transverse process fractures were managed\nconservatively. He was mobilising with physiotherapy on partial\nweight-bearing of the left leg at discharge.\n\nIn view of the splenic injury, Pneumococcal, Hib, and MenACWY vaccinations\nwere administered prior to discharge, and prophylaxis advice was given.\n\nDiagnosis: Closed left tibial shaft fracture (IM nail); grade II splenic\nlaceration (non-operative); left rib fractures 7–9 with haemothorax (chest\ndrain, removed); undisplaced L1 transverse process fractures.\n\nResuscitation status: For resuscitation (no change during admission) —\nincluded for completeness.\n\nMedication changes:\n⚠ Pre-admission drug history was not documented. The following medications\nwere prescribed on discharge; full details (doses, frequencies, duration)\nrequire confirmation on the final TTO before this letter is relied upon:\n  - Analgesia: drug, dose, route, and frequency not documented — clarify\n  - Enoxaparin (NEW): dose, frequency, and intended duration not documented\n    — Orthopaedics to specify; please ensure supply and any required\n    monitoring in the community\n\nActions for you (GP):\n  1. Ensure ongoing enoxaparin supply and any required monitoring as\n     directed by Orthopaedics once dose and duration are confirmed on\n     the final TTO.\n  2. Prescribe ongoing analgesia as per the final TTO once details are\n     confirmed.\n  3. Be aware of this patient's splenic injury and vaccination status\n     (Pneumococcal, Hib, MenACWY given this admission) for ongoing\n     asplenic/hyposplenic management; further guidance will follow from\n     General Surgery at the 6-week telephone review.\n\nFollow-up already arranged:\n  - Orthopaedic fracture clinic: 2 weeks (approx. 31/05/2025)\n  - General Surgery telephone review (splenic injury): 6 weeks\n    (approx. 28/06/2025)\n  - Respiratory/Thoracics: no routine follow-up\n\nNo pending results are documented. Please confirm allergy status, which\nwas not recorded in these notes.\n\nYours sincerely,\n[Name, Grade] ← TO BE COMPLETED BY RESPONSIBLE CLINICIAN\n```\n\n---\n\nPART C - PATIENT VERSION (v2 second pass)\n\n# Your Discharge Information\n\n**Patient copy — please read this carefully and keep it safe**\n\n---\n\n## What happened and why you were in hospital\n\nYou were admitted on **12 May 2025** after a road traffic collision. You were a restrained driver. A specialist trauma team assessed you straight away.\n\nScans and tests showed you had four injuries:\n\n1. **A broken left shin bone (closed left tibial shaft fracture).** The bone was fixed with a metal rod (intramedullary nail) on 13 May.\n2. **A small tear to your spleen (grade II splenic laceration).** This was treated without an operation. The team watched it closely with blood tests and a repeat scan, which showed it was getting better.\n3. **Three broken ribs on your left side (ribs 7–9) with a small collection of blood around your lung (haemothorax).** A drain was put in on 12 May to remove the blood. The drain was taken out on 15 May after a chest X-ray showed your lung was re-expanding well.\n4. **Small cracks in a bone in your lower back (undisplaced L1 transverse process fractures).** These were managed with rest — no operation was needed.\n\n---\n\n## What was done during your stay\n\n- Your broken shin bone was fixed with a metal rod by the orthopaedic (bone) team.\n- The spleen tear was watched carefully with regular blood tests and a repeat scan.\n- A chest drain was put in and later removed once your lung had re-expanded.\n- The back bone cracks were managed with rest.\n- A physiotherapist helped you start moving and walking with partial weight on your left leg, as directed by the bone team.\n- You received injections to help prevent blood clots (enoxaparin) throughout your stay.\n- Because of the spleen injury, you were given three vaccinations before you went home: **Pneumococcal, Hib, and MenACWY**. You also received advice about this during your stay.\n\n---\n\n## Your medicines at home\n\n**Important notice for you and your GP:**\nThe full details of your medicines — including your pain relief and your blood clot prevention injection (enoxaparin) — still need to be confirmed by your doctor before your final prescription is issued. **Please make sure you receive a complete medicines list before or shortly after you leave hospital.** If you are unsure what you should be taking, contact the ward or your GP straight away.\n\n---\n\n## Keeping yourself safe at home\n\n**Left leg:** You must only put **partial weight** on your left leg, as the bone team instructed you. Continue to follow this guidance until told otherwise.\n\n**Spleen vaccinations:** You received important vaccinations in hospital because of your spleen injury. Your GP has been told about this and the General Surgery team will give you more advice at your six-week telephone call.\n\n---\n\n## Your follow-up appointments\n\n| Appointment | When |\n|---|---|\n| **Bone clinic (fracture clinic)** — to check your shin bone | Around **31 May 2025** (2 weeks after discharge) |\n| **General Surgery telephone review** — to check your spleen injury and vaccination advice | Around **28 June 2025** (6 weeks after discharge) |\n\nThere is no routine follow-up planned with the chest team, as your lung was re-expanding well when you left.\n\n---\n\n## If you are worried\n\nIf you become unwell or are worried about anything, contact your GP or call NHS 111. Call 999 if it is an emergency.\n\n---\n\n*This leaflet is a draft for clinician review and sign-off before it is given to the patient.*\n",
+  "gate": {
+    "canonical": "V1_LINES",
+    "status": "clean",
+    "ok": true,
+    "label": "PASS",
+    "findings": []
+  },
+  "cost_usd_est": 0.070683,
+  "error": null
+}

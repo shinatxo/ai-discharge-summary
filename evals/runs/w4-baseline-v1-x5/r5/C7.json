@@ -1,0 +1,65 @@
+{
+  "record_version": 1,
+  "generation_id": "w4-baseline-v1-x5/r5/C7",
+  "batch_id": "w4-baseline-v1-x5",
+  "run": 5,
+  "scenario_id": "C7",
+  "generator": "v1",
+  "path": "deployed",
+  "model_id": "anthropic.claude-sonnet-4-6",
+  "region": "eu-west-2",
+  "inference": {
+    "max_tokens": 4096,
+    "temperature": 0.0,
+    "patient_max_tokens": 1500
+  },
+  "prompts": {
+    "system": {
+      "path": "src/generate/system_prompt.md",
+      "file_sha256": "a7ec8a5661007b0a69231dd68a1f286013cf23a2192ed7ec16770bc07f3c1e3a",
+      "body_sha256": "de46dda1e90bdb1380e077bf7119a2d0d537b7f1f53199b3aeaa2c41aa645ee6"
+    },
+    "patient": {
+      "path": "src/generate/patient_system_prompt.md",
+      "file_sha256": "32f9767baf648dbe2ca1ad5e46d40ea75ff51890bca0b66ef1c44b96166f8e1b",
+      "body_sha256": "7fea4b502d0b9a8b983bcbcac353bc7763845ed0a3eaf0d39edfd80650d23435"
+    }
+  },
+  "prompt_caching": true,
+  "notes_sha256": "d15719c10172a3c9a85deae46695411eb27d652215d6152078b33ea2487a91ca",
+  "started_at": "2026-10-07T14:14:15+01:00",
+  "elapsed_s": 44.364,
+  "calls": [
+    {
+      "name": "combined",
+      "input_tokens": 117,
+      "output_tokens": 2029,
+      "cache_read_tokens": 5192,
+      "cache_write_tokens": 0,
+      "stop_reason": "end_turn",
+      "latency_s": 36.27,
+      "throttle_retries": 0
+    },
+    {
+      "name": "patient_v2",
+      "input_tokens": 668,
+      "output_tokens": 552,
+      "cache_read_tokens": 1038,
+      "cache_write_tokens": 0,
+      "stop_reason": "end_turn",
+      "latency_s": 8.093,
+      "throttle_retries": 0
+    }
+  ],
+  "patient_version": "v2",
+  "output": "I'll produce all three parts. Note that the patient version must be flagged for translation and produced in Polish (with an English copy for staff), as the notes document limited English and interpreter use.\n\n---\n\n# PART A — STRUCTURED CLINICAL DISCHARGE SUMMARY\n\n```\nDISCHARGE SUMMARY\n\nPatient: Not documented | DOB: Not documented (54F) | NHS No: Not documented | Hosp No: Not documented\nAdmitted: 19/05/2025 | Discharged: 20/05/2025\nSpecialty: Trauma & Orthopaedics (inferred — not documented, confirm)\n\nPRESENTING COMPLAINT\nMechanical fall resulting in right wrist injury.\n\nDIAGNOSIS\nPrimary: Closed displaced distal radius fracture (Colles'), right wrist.\nSecondary: Not documented.\nBackground: Not documented.\n\nKEY INVESTIGATIONS\nNot documented.\n\nTREATMENT DURING ADMISSION\nOpen reduction and internal fixation (ORIF) of right wrist performed 19/05/2025 —\ndocumented as uncomplicated. Backslab applied post-operatively, in situ at\ndischarge. Hand neurovascularly intact on day 2 review.\n\nRESUSCITATION STATUS\nNot documented — no resuscitation discussion indicated for this admission.\n\nMEDICATIONS ON DISCHARGE\nNot documented.\n\nALLERGIES: Not documented.\n\nFOLLOW-UP\nFracture clinic appointment in 1 week (date not specified).\n\nGP ACTIONS\nNot documented.\n\nPATIENT ADVICE\nNot documented.\n\nVTE ASSESSMENT\nNot documented.\n\nAuthor: [name, grade, date — to be completed by responsible clinician]\n```\n\n---\n\n> ⚠️ **FLAGS FOR REVIEWING CLINICIAN — please address before sign-off:**\n>\n> 1. **Patient identifiers** — full name, DOB, NHS number, and hospital number are not present in the notes. Please complete before issuing.\n> 2. **Specialty** — inferred as Trauma & Orthopaedics from clinical context; please confirm.\n> 3. **Medications on discharge** — not documented (pre-admission drug history and any discharge analgesia/medications not recorded). Please complete.\n> 4. **Allergies** — not documented. Please confirm allergy status before issuing.\n> 5. **VTE assessment** — not documented. Please confirm whether a VTE risk assessment was completed and whether thromboprophylaxis is required post-ORIF.\n> 6. **Patient advice / safety-netting** — no advice or safety-net instructions are recorded in the notes. Please document any advice given (wound care, backslab instructions, when to seek help) so it can be included in the patient-facing version.\n> 7. **Fracture clinic appointment** — date and location not specified. Please confirm and add.\n> 8. **Interpreter / translation** — notes document limited English and telephone interpreter use for consent. The patient-friendly version below is produced in Polish with an English copy for staff. Please ensure a translated copy or interpreter is arranged for handover of discharge information.\n\n---\n\n---\n\n# PART B — GP LETTER\n\n20/05/2025\n\nDear Colleague,\n\n**Re: [Patient name], DOB: Not documented, NHS No: Not documented**\nAdmitted: 19/05/2025 | Discharged: 20/05/2025 | Under: Trauma & Orthopaedics *(inferred — confirm)*\n\nThis 54-year-old woman was admitted on 19/05/2025 following a mechanical fall, sustaining a closed displaced distal radius fracture (Colles') of the right wrist.\n\nShe underwent open reduction and internal fixation (ORIF) of the right wrist on the day of admission, which was uncomplicated. She was reviewed on day 2 with the hand neurovascularly intact and a backslab in situ, and was deemed fit for discharge.\n\n**Diagnosis:** Closed displaced distal radius fracture (Colles'), right wrist — treated with ORIF.\n\n**Medication changes:** Not documented in the notes — please see attached summary. *(Note: pre-admission drug history and discharge medications were not recorded; please reconcile with the patient directly.)*\n\n**Actions for you (GP):** No specific actions documented.\n\n**Follow-up arranged:** Fracture clinic in 1 week *(date and location not specified — please confirm with the patient).*\n\n**Pending results:** None documented.\n\n*Please note: this patient has limited English. A telephone interpreter was used during admission. You may wish to arrange interpreter support for any follow-up consultations in primary care.*\n\nYours sincerely,\n[Author name, grade — to be completed by responsible clinician]\n\n---\n\n---\n\nPART C - PATIENT VERSION (v2 second pass)\n\n> ⚠️ **DRAFT ONLY — for clinician review and sign-off before issue.**\n> Several details are missing from the notes (see flags above). This leaflet cannot be finalised until the reviewing clinician has completed the discharge summary. In particular: patient identifiers, discharge medicines, allergy status, VTE assessment, specific safety-net advice, and the fracture clinic date and location must all be confirmed before this leaflet is given to the patient.\n> The notes record that the patient has limited English and that a telephone interpreter was used for consent. Please arrange a translated copy or an interpreter for handover of this discharge information.\n\n---\n\n# Your Discharge Information\n### Right Wrist Operation — 19–20 May 2025\n\n---\n\n## What was wrong\n\nYou had a fall and broke a bone in your right wrist. The break was called a **displaced distal radius fracture (Colles' fracture)**. This means the bone had moved out of place and needed an operation to put it back.\n\n---\n\n## What we did\n\nOn **19 May 2025** you had an operation called **open reduction and internal fixation (ORIF)**. The surgeon moved the bone back into the right position and fixed it in place. The operation went well.\n\nAfter the operation, a **plaster support (backslab)** was put on your wrist. This was still in place when you went home.\n\nBefore you left, the team checked the feeling and blood supply in your hand. Everything looked fine.\n\n---\n\n## Your medicines\n\n**The medicines you should take at home have not yet been recorded in your notes.**\nYour doctor needs to fill this in before you leave. Please ask a member of staff before you go home:\n\n- What medicines should I take?\n- How much should I take, and how often?\n- Are any of my usual medicines changed?\n\nDo not leave without this information.\n\n---\n\n## What happens next\n\nYou have a **fracture clinic appointment in about one week's time.**\nThe exact date and place have not yet been confirmed. Please ask a member of staff before you go home so you know when and where to go.\n\n---\n\n## If you are worried\n\nIf you become unwell or are worried about anything, contact your GP or call NHS 111. Call 999 if it is an emergency.\n\n---\n\n*This leaflet is a draft for clinician sign-off. It must not be given to the patient until the reviewing clinician has checked and approved it.*\n",
+  "gate": {
+    "canonical": "V1_LINES",
+    "status": "clean",
+    "ok": true,
+    "label": "PASS",
+    "findings": []
+  },
+  "cost_usd_est": 0.047233,
+  "error": null
+}

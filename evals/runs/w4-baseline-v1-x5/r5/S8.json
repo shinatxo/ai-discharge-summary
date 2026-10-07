@@ -1,0 +1,67 @@
+{
+  "record_version": 1,
+  "generation_id": "w4-baseline-v1-x5/r5/S8",
+  "batch_id": "w4-baseline-v1-x5",
+  "run": 5,
+  "scenario_id": "S8",
+  "generator": "v1",
+  "path": "deployed",
+  "model_id": "anthropic.claude-sonnet-4-6",
+  "region": "eu-west-2",
+  "inference": {
+    "max_tokens": 4096,
+    "temperature": 0.0,
+    "patient_max_tokens": 1500
+  },
+  "prompts": {
+    "system": {
+      "path": "src/generate/system_prompt.md",
+      "file_sha256": "a7ec8a5661007b0a69231dd68a1f286013cf23a2192ed7ec16770bc07f3c1e3a",
+      "body_sha256": "de46dda1e90bdb1380e077bf7119a2d0d537b7f1f53199b3aeaa2c41aa645ee6"
+    },
+    "patient": {
+      "path": "src/generate/patient_system_prompt.md",
+      "file_sha256": "32f9767baf648dbe2ca1ad5e46d40ea75ff51890bca0b66ef1c44b96166f8e1b",
+      "body_sha256": "7fea4b502d0b9a8b983bcbcac353bc7763845ed0a3eaf0d39edfd80650d23435"
+    }
+  },
+  "prompt_caching": true,
+  "notes_sha256": "db5dc0237ea1d82ade478142d26845b1f5fda1c9c35512621c0f5aa23a5afca6",
+  "started_at": "2026-10-07T14:02:23+01:00",
+  "elapsed_s": 49.275,
+  "calls": [
+    {
+      "name": "combined",
+      "input_tokens": 298,
+      "output_tokens": 2597,
+      "cache_read_tokens": 5192,
+      "cache_write_tokens": 0,
+      "stop_reason": "end_turn",
+      "latency_s": 34.324,
+      "throttle_retries": 0
+    },
+    {
+      "name": "patient_v2",
+      "input_tokens": 1229,
+      "output_tokens": 883,
+      "cache_read_tokens": 1038,
+      "cache_write_tokens": 0,
+      "stop_reason": "end_turn",
+      "latency_s": 14.948,
+      "throttle_retries": 0
+    }
+  ],
+  "patient_version": "v2",
+  "output": "I'll now produce all three parts. Note that several fields are not documented in the notes and are flagged accordingly.\n\n---\n\n# PART A — STRUCTURED CLINICAL DISCHARGE SUMMARY\n\n```\nDISCHARGE SUMMARY\n\nPatient: Not documented (male neonate) | DOB: 16/05/[YYYY — not documented]\nNHS No: Not documented | Hosp No: Not documented\nAdmitted: 16/05 | Discharged: 20/05\nSpecialty: Neonatal Medicine / Neonatal Unit (inferred — not documented, confirm)\nWeight: Birth weight 3.4 kg\n\nPRESENTING COMPLAINT\nTerm male neonate admitted to the Neonatal Unit (NNU) at 6 hours of age with\ngrunting, tachypnoea (RR 70), and fever (38.1 °C), in the context of maternal\nGroup B Streptococcus (GBS) positivity and intrapartum antibiotics administered\nless than 4 hours before delivery.\n\nDIAGNOSIS\nPrimary:   Neonatal early-onset sepsis (clinical diagnosis — blood culture\n           negative at 48 hours; treated with a full 5-day IV antibiotic course\n           on the basis of clinical features and initial CRP rise).\nSecondary: Not documented.\nBackground: Born at 39+2 weeks by spontaneous vaginal delivery (SVD).\n            Maternal GBS positive this pregnancy.\n\nKEY INVESTIGATIONS\n- Septic screen performed on Day 1 (16/05): bloods, blood culture, CRP.\n- CRP: 28 (Day 1) → 41 (Day 1, repeat) → 18 (Day 2, 17/05).\n  [Note: two Day-1 CRP values are recorded — 28 and 41. It is not clear from\n  the notes whether these represent two separate samples or a transcription\n  discrepancy. Clinician to confirm.]\n- Blood culture: no growth at 36 hours (Day 2); confirmed negative at 48 hours\n  (Day 3, 18/05).\n- Lumbar puncture: deferred on Day 1 (documented reason: stable respiratory\n  status). Not documented as having been performed subsequently.\n- Newborn hearing screen: passed (Day 3/discharge).\n- Routine newborn checks: completed (documented as done prior to discharge).\n\nTREATMENT DURING ADMISSION\n- Admitted to NNU on Day 1 (16/05).\n- IV benzylpenicillin + gentamicin commenced per neonatal sepsis protocol.\n- No respiratory support documented beyond Day 1 (off any respiratory support\n  by Day 2).\n- Feeding established and maintained throughout admission.\n- Full 5-day IV antibiotic course completed 20/05, on the basis of clinical\n  features and initial CRP rise, despite negative blood cultures.\n- Routine newborn checks completed prior to discharge.\n- Newborn hearing screen passed.\n\nRESUSCITATION STATUS\nNot documented — no resuscitation discussion indicated for this admission.\n\nMEDICATIONS ON DISCHARGE\nIV benzylpenicillin — COURSE COMPLETED (5-day course finished 20/05).\nIV gentamicin     — COURSE COMPLETED (5-day course finished 20/05).\n\nNo discharge medications documented. If no ongoing medications are intended,\nthis should be confirmed by the responsible clinician.\n\nALLERGIES: Not documented.\n\nFOLLOW-UP\nNo routine follow-up documented.\n[Clinician to confirm whether any community midwifery, health visitor, or GP\nnewborn review is intended — this is not documented in the notes.]\n\nGP ACTIONS\nNot documented.\n\nPATIENT ADVICE          (PARENT / CARER ADVICE)\nThe notes record that safety-net advice was given to parents regarding fever,\nfeeding, and breathing. The specific content of this advice is not transcribed\nin the notes and cannot be reproduced here. Clinician to confirm and document\nthe advice given if required.\n\nVTE ASSESSMENT: Not applicable (paediatric/neonatal).\n\n⚠ CLINICIAN FLAGS FOR REVIEW BEFORE SIGN-OFF:\n1. Patient identifiers (full name, DOB year, NHS number, hospital number) are\n   not present in the notes — these must be completed before this summary is\n   issued.\n2. Two CRP values are recorded on Day 1 (28 and 41) without clear timing or\n   labelling — please clarify whether these are sequential samples or a\n   transcription error.\n3. Lumbar puncture was deferred on Day 1; it is not documented whether it was\n   subsequently performed or formally decided against. Please clarify and\n   document.\n4. Allergy status is not documented — please confirm and complete.\n5. No discharge medications are documented — please confirm none are intended.\n6. No follow-up is documented — please confirm whether community midwifery,\n   health visitor, or GP newborn review has been arranged or is intended.\n7. The content of the safety-net advice given to parents (fever/feeding/\n   breathing) is not transcribed — please document if required for the record.\n8. Specialty/admitting team is inferred as Neonatal Medicine — please confirm.\n\nAuthor: [Name, Grade] — DRAFT FOR CLINICIAN REVIEW AND SIGN-OFF\nDate: [DD/MM/YYYY]\n```\n\n---\n\n# PART B — GP LETTER\n\n```\n[Date]\n\nDear Colleague,\n\nRe: [Patient full name — not documented], DOB: 16/05/[YYYY — not documented],\nNHS No: Not documented\nAdmitted: 16/05, Discharged: 20/05\nUnder: Neonatal Medicine / NNU (inferred — confirm)\n\nI am writing to inform you of the above neonate's recent admission to our\nNeonatal Unit and subsequent discharge home with his parents on 20/05.\n\nThis term male infant (born 39+2 weeks by SVD, birth weight 3.4 kg) was\nadmitted at 6 hours of age with grunting, tachypnoea (RR 70), and fever\n(38.1 °C). The admission occurred in the context of maternal GBS positivity\nthis pregnancy and intrapartum antibiotics given less than 4 hours before\ndelivery — a recognised risk factor for early-onset neonatal sepsis.\n\nA septic screen was performed on admission (bloods, blood culture, CRP). CRP\nrose from 28 to 41 on Day 1 before falling to 18 on Day 2. Blood cultures\nshowed no growth at 36 hours and were confirmed negative at 48 hours. Lumbar\npuncture was deferred on Day 1 given respiratory stability; it is not\ndocumented whether this was subsequently performed — please see the clinical\nrecord for clarification. IV benzylpenicillin and gentamicin were commenced per\nneonatal sepsis protocol. Despite negative blood cultures, a decision was made\nto complete a full 5-day IV antibiotic course on the basis of the clinical\npresentation and initial CRP rise. The infant improved rapidly, was off\nrespiratory support by Day 2, established full feeds, and was clinically well\nthroughout the remainder of the admission.\n\nRoutine newborn checks were completed and the newborn hearing screen was passed\nprior to discharge.\n\nDiagnosis: Neonatal early-onset sepsis (clinical; blood culture negative).\n\nMedication changes: IV benzylpenicillin and IV gentamicin — full 5-day course\ncompleted in hospital. No discharge medications documented.\n\nActions for you (GP): Not documented in the clinical notes. Please note the\nfollowing items that may require your attention, flagged for clinician\nconfirmation:\n- Allergy status has not been documented — please confirm and record.\n- No formal follow-up has been documented. Please confirm whether community\n  midwifery, health visitor, or GP newborn review has been arranged.\n\nFollow-up arranged: None documented.\n\nPending results: None documented. Please note that the LP status (deferred on\nDay 1) should be clarified in the clinical record.\n\nYours sincerely,\n\n[Author name, grade] — DRAFT FOR CLINICIAN REVIEW AND SIGN-OFF\n```\n\n---\n\nPART C - PATIENT VERSION (v2 second pass)\n\n> ⚠ **DRAFT — FOR CLINICIAN REVIEW AND SIGN-OFF BEFORE ISSUE**\n> Several details are missing from the source notes (see clinician flags). This leaflet cannot be finalised until patient identifiers are confirmed and the outstanding items are resolved. In particular, the safety-net section below is incomplete because the specific advice given to parents was not transcribed — **the clinician must supply and approve that content before this leaflet is given to the family.**\n\n---\n\n# Your Baby's Hospital Stay — Information for Parents\n\n## About this leaflet\n\nThis leaflet tells you what happened during your baby's stay with us. Please read it carefully and keep it somewhere safe. If anything is unclear, please ask your midwife, health visitor, or GP.\n\n---\n\n## Why your baby was admitted\n\nYour baby boy was born at 39 weeks and 2 days. When he was about 6 hours old, he was showing some signs that worried the team — he was breathing faster than normal, making a grunting sound, and had a slight temperature. Because of these signs, and because the bacteria called Group B Streptococcus (GBS) had been found during your pregnancy, your baby was admitted to the Neonatal Unit (NNU) for closer monitoring and treatment.\n\nThe team treated your baby for a possible early infection (early-onset neonatal sepsis). This means an infection that can appear in the first few days of life.\n\n---\n\n## What was done\n\n- Your baby was looked after on the Neonatal Unit from the day he was born.\n- A set of tests (a septic screen) was done on the first day. This included blood tests and a blood culture — a test that checks whether bacteria are growing in the blood.\n- The blood culture came back clear (no bacteria found) after 48 hours.\n- Your baby was given two antibiotics through a drip (IV) into a vein — **benzylpenicillin** and **gentamicin**. These are standard antibiotics used to treat possible infection in newborns.\n- Because of his symptoms and the blood test results at the start, the team decided to complete a full 5-day course of antibiotics. This course finished on 20 May.\n- Your baby did not need any breathing support after the first day.\n- Feeding was going well throughout the stay.\n- All routine newborn checks were completed before he went home.\n- Your baby had his **newborn hearing screen** — he passed.\n\n---\n\n## Medicines to take home\n\nYour baby's antibiotic course was completed in hospital. **There are no medicines to give at home.**\n\n*(Your doctor will confirm this before you leave.)*\n\n---\n\n## What happens next\n\nNo follow-up appointments have been recorded in the notes at this time. Your doctor will confirm before discharge whether any visits — such as from your community midwife, health visitor, or GP — have been arranged for your baby.\n\n---\n\n## When to get help\n\nThe team gave you advice before you left about what to look out for at home — including signs related to fever, feeding, and breathing. **Please follow that advice.** If you are not sure what you were told, ask your midwife, health visitor, or GP to go through it with you.\n\n> ⚠ **Clinician note:** The specific safety-net advice given to parents is not recorded in the notes and could not be included here. Please document and insert the agreed advice (covering fever, feeding, and breathing concerns, as referenced in the notes) before this leaflet is issued to the family. Until that is done, the generic line below is used as a placeholder only.\n\nIf you become unwell or are worried about anything, contact your GP or call NHS 111. Call 999 if it is an emergency.\n\n---\n\n*This leaflet is a draft prepared for clinician review. It must be checked, completed, and signed off by the responsible clinician before it is given to the family.*\n",
+  "gate": {
+    "canonical": "V1_LINES",
+    "status": "documented_advice",
+    "ok": true,
+    "label": "PASS (advisory)",
+    "findings": [
+      "The source notes record a seek-help trigger, so the fall-back rule is not engaged. Whether the rephrasing is faithful is a rubric judgement (EVAL_RESULTS.md D2), not checked here."
+    ]
+  },
+  "cost_usd_est": 0.064515,
+  "error": null
+}

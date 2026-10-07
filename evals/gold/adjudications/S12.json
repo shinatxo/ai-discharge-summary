@@ -1,0 +1,54 @@
+{
+  "scenario_id": "S12",
+  "rulings": {},
+  "med_rulings": {
+    "b8e306f680c3e350d736278ebd561b7502db2fb930676eb81c366a2514f7e8ea": {
+      "text": "A full medication reconciliation cannot be completed from the information provided. The reviewing clinician must document: • The complete discharge medication list (drug, dose, route, frequency). • Whether DAPT is to continue, be modified, or be stopped (particularly relevant given the sepsis episode, AKI, and change in clinical trajectory). • Whether any inpatient medications (e.g. antibiotics, antiemetics) are to continue after discharge. • Any medications stopped during admission and the reason.",
+      "verdict": "acceptable",
+      "reason": "prose about the list, not a drug",
+      "by": "Shina Oguntoye (CSO)",
+      "on": "2026-10-07",
+      "source": "w4-baseline-v1-x5 (proposed by Claude, approved by the CSO)"
+    },
+    "804a69b94a6cc7d0e11cc28c1e6c0abed9e8746c17dffdc13be5431c40245002": {
+      "text": "Pre-admission drug history is not recorded in these notes beyond the reference to dual antiplatelet therapy (DAPT) following recent NSTEMI. No discharge medication list has been documented. The reviewing clinician must complete full medication reconciliation before discharge, including:",
+      "verdict": "acceptable",
+      "reason": "prose about the list, not a drug",
+      "by": "Shina Oguntoye (CSO)",
+      "on": "2026-10-07",
+      "source": "w4-baseline-v1-x5 (proposed by Claude, approved by the CSO)"
+    },
+    "9dc5008aa462ef4fca05a2e522ea393baa03a5320393a1144917a6580026d7b4": {
+      "text": "Confirming continuation, dose adjustment, or suspension of DAPT in light of this admission (aspiration pneumonia, AKI, diverticulitis, possible obstruction)",
+      "verdict": "acceptable",
+      "reason": "prose about the list, not a drug",
+      "by": "Shina Oguntoye (CSO)",
+      "on": "2026-10-07",
+      "source": "w4-baseline-v1-x5 (proposed by Claude, approved by the CSO)"
+    },
+    "37640731717d7ea3518ca60e97bb359fee297e179cac39c89913a758326970a5": {
+      "text": "Reviewing all pre-admission medications against current renal function (AKI on CKD)",
+      "verdict": "acceptable",
+      "reason": "prose about the list, not a drug",
+      "by": "Shina Oguntoye (CSO)",
+      "on": "2026-10-07",
+      "source": "w4-baseline-v1-x5 (proposed by Claude, approved by the CSO)"
+    },
+    "e759c24f7105170788d45572e18aaea7810ed11b84dbd4d977281e92a9ef9556": {
+      "text": "The notes do not include a discharge medication list. The pre-admission drug history is also incompletely documented: the only medication reference is that the patient was on DAPT (dual antiplatelet therapy) following recent NSTEMI/CCU admission. Individual agents, doses, and frequencies of DAPT are not stated.",
+      "verdict": "acceptable",
+      "reason": "prose about the list, not a drug",
+      "by": "Shina Oguntoye (CSO)",
+      "on": "2026-10-07",
+      "source": "w4-baseline-v1-x5 (proposed by Claude, approved by the CSO)"
+    },
+    "7b1b22b739bf3eed542cdd2992e6938003de15862a9c3864ce9abd3268c2a81f": {
+      "text": "This field cannot be completed from the information provided. A full medicines reconciliation must be performed and documented by the responsible clinician before this summary is finalised.",
+      "verdict": "acceptable",
+      "reason": "prose about the list, not a drug",
+      "by": "Shina Oguntoye (CSO)",
+      "on": "2026-10-07",
+      "source": "w4-baseline-v1-x5 (proposed by Claude, approved by the CSO)"
+    }
+  }
+}

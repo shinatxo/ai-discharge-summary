@@ -1,0 +1,14 @@
+{
+  "scenario_id": "S8",
+  "rulings": {},
+  "med_rulings": {
+    "3d0ca2cfaba58fe0e41d5d36f4532554b59a53db0b5f887e5914a0609ecc0d0b": {
+      "text": "If no medications are required, this should be explicitly confirmed and documented by the responsible clinician.",
+      "verdict": "acceptable",
+      "reason": "prose about the list, not a drug",
+      "by": "Shina Oguntoye (CSO)",
+      "on": "2026-10-07",
+      "source": "w4-baseline-v1-x5 (proposed by Claude, approved by the CSO)"
+    }
+  }
+}

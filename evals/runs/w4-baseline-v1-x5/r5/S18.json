@@ -1,0 +1,65 @@
+{
+  "record_version": 1,
+  "generation_id": "w4-baseline-v1-x5/r5/S18",
+  "batch_id": "w4-baseline-v1-x5",
+  "run": 5,
+  "scenario_id": "S18",
+  "generator": "v1",
+  "path": "deployed",
+  "model_id": "anthropic.claude-sonnet-4-6",
+  "region": "eu-west-2",
+  "inference": {
+    "max_tokens": 4096,
+    "temperature": 0.0,
+    "patient_max_tokens": 1500
+  },
+  "prompts": {
+    "system": {
+      "path": "src/generate/system_prompt.md",
+      "file_sha256": "a7ec8a5661007b0a69231dd68a1f286013cf23a2192ed7ec16770bc07f3c1e3a",
+      "body_sha256": "de46dda1e90bdb1380e077bf7119a2d0d537b7f1f53199b3aeaa2c41aa645ee6"
+    },
+    "patient": {
+      "path": "src/generate/patient_system_prompt.md",
+      "file_sha256": "32f9767baf648dbe2ca1ad5e46d40ea75ff51890bca0b66ef1c44b96166f8e1b",
+      "body_sha256": "7fea4b502d0b9a8b983bcbcac353bc7763845ed0a3eaf0d39edfd80650d23435"
+    }
+  },
+  "prompt_caching": true,
+  "notes_sha256": "3d7f06d1a5a414275df26db1863e10bc9e085fde839ae9021e97d5f16ebf659b",
+  "started_at": "2026-10-07T14:11:59+01:00",
+  "elapsed_s": 36.321,
+  "calls": [
+    {
+      "name": "combined",
+      "input_tokens": 230,
+      "output_tokens": 2048,
+      "cache_read_tokens": 5192,
+      "cache_write_tokens": 0,
+      "stop_reason": "end_turn",
+      "latency_s": 26.483,
+      "throttle_retries": 0
+    },
+    {
+      "name": "patient_v2",
+      "input_tokens": 642,
+      "output_tokens": 674,
+      "cache_read_tokens": 1038,
+      "cache_write_tokens": 0,
+      "stop_reason": "end_turn",
+      "latency_s": 9.837,
+      "throttle_retries": 0
+    }
+  ],
+  "patient_version": "v2",
+  "output": "I'll now produce all three parts of the discharge summary draft.\n\n---\n\n# DISCHARGE SUMMARY — DRAFT FOR CLINICIAN REVIEW AND SIGN-OFF\n\n---\n\n## PART A — STRUCTURED CLINICAL DISCHARGE SUMMARY\n\n```\nDISCHARGE SUMMARY\n\nPatient: Not documented | DOB: Not documented (26 years old) | NHS No: Not documented | Hosp No: Not documented\nAdmitted: 19/05/YYYY | Discharged: 20/05/YYYY\nSpecialty: Neurology (inferred — not documented, confirm)\n\nPRESENTING COMPLAINT\nWitnessed first generalised tonic-clonic seizure at work, lasting approximately\n2 minutes, with post-ictal confusion. Lateral tongue bite noted. No incontinence\nreported.\n\nDIAGNOSIS\nPrimary: First unprovoked generalised tonic-clonic seizure.\nBackground: Nil documented.\n\nKEY INVESTIGATIONS\n- Blood tests: Normal (specific panels not documented).\n- Blood glucose: Normal.\n- Toxicology screen: Negative.\n- CT head: Normal.\n- MRI brain: Pending (outpatient).\n- EEG: Pending (outpatient).\n\nTREATMENT DURING ADMISSION\nNo antiepileptic medication started. Decision deferred to neurology following\noutpatient investigation, in the context of a first seizure and documented low\nimmediate recurrence risk. Neurology reviewed on Day 2 (20/05).\n\nRESUSCITATION STATUS\nNot documented — no resuscitation discussion indicated for this admission.\n\nMEDICATIONS ON DISCHARGE\nPre-admission drug history: Nil.\nNo medications prescribed on discharge.\nNone.\n\nALLERGIES: No known drug allergies (NKDA).\n\nFOLLOW-UP\n1. Outpatient MRI brain — arranged (date not documented).\n2. Outpatient EEG — arranged (date not documented).\n3. First-fit clinic (neurology outpatient) — arranged (date not documented).\nPending results: MRI brain and EEG results to be reviewed at first-fit clinic.\nResponsible clinician for results: Neurology (not documented further).\n\nGP ACTIONS\n- GP made aware at point of discharge.\n- Await neurology outpatient review and results of MRI brain and EEG.\n- No specific additional actions documented.\n\nPATIENT ADVICE\nThe following advice was documented by the treating clinician:\n- No swimming alone.\n- No working at heights.\n- No baths (unsupervised bathing).\n- Must not drive. Must inform the DVLA. Driving is prohibited for 6 months\n  from the date of the seizure (19/05/YYYY) for a Group 1 licence, in\n  accordance with DVLA guidance for a first unprovoked seizure.\n\nVTE ASSESSMENT: Not documented.\n\nAuthor: [Name, Grade, Date] ← To be completed by responsible clinician\n```\n\n---\n\n## PART B — GP LETTER\n\n```\n20/05/YYYY\n\nDear Colleague,\n\nRe: [Patient name], DOB: Not documented (26 years old), NHS No: Not documented\nAdmitted: 19/05/YYYY, Discharged: 20/05/YYYY under Neurology\n(inferred — not documented, confirm).\n\nThis 26-year-old male was admitted following a witnessed first generalised\ntonic-clonic seizure at work, lasting approximately 2 minutes, with post-ictal\nconfusion and a lateral tongue bite. No incontinence was reported.\n\nInvestigations during admission were reassuring: bloods (specific panels not\ndocumented), blood glucose, and toxicology screen were all normal, and CT head\nwas normal. There was no history of prior seizures, head injury, or\nalcohol/drug trigger. Neurology reviewed on Day 2 and classified this as a\nfirst unprovoked seizure. No antiepileptic medication was commenced, with the\ndecision appropriately deferred to outpatient neurology review following\nfurther investigation.\n\nDiagnosis: First unprovoked generalised tonic-clonic seizure.\n\nMedication changes: None. Patient had no pre-admission medications and none\nwere prescribed on discharge.\n\nActions for you (GP): Await neurology outpatient review. No other specific\nactions were documented.\n\nFollow-up arranged:\n- Outpatient MRI brain (date not documented).\n- Outpatient EEG (date not documented).\n- First-fit neurology clinic (date not documented).\nMRI and EEG results will be reviewed at the first-fit clinic; responsible\nclinician for actioning results is neurology (not documented further).\n\nPlease note: The patient has been advised he must not drive and must notify\nthe DVLA. DVLA regulations require 6 months off driving from the date of\nseizure (19/05/YYYY) for a Group 1 licence following a first unprovoked\nseizure.\n\nYours sincerely,\n[Name, Grade]\n```\n\n---\n\nPART C - PATIENT VERSION (v2 second pass)\n\n# Your Discharge Letter\n\n**From the Neurology Team | Admitted: 19 May | Discharged: 20 May**\n\n---\n\n## What Happened\n\nYou were brought to hospital after having a seizure (a fit) at work. It was witnessed by others and lasted about 2 minutes. After the seizure you were briefly confused, which is normal. You also had a small bite on the side of your tongue.\n\nThis was your first seizure of this kind. Tests were done to help understand why it happened.\n\n---\n\n## Tests We Did\n\nWhile you were in hospital, we checked your blood, including your blood sugar. All of these came back normal. A screen for drugs and toxins was also done and was negative. A scan of your brain (CT head) was normal too.\n\nTwo further tests still need to be done as an outpatient:\n\n- A detailed brain scan (MRI brain)\n- A brain-wave test (EEG)\n\nYou will be given appointments for both of these. The results will be looked at by the neurology team at your follow-up clinic.\n\n---\n\n## Treatment\n\nYou were seen by the neurology (brain and nerve) team during your stay. Because this was your first seizure and the immediate risk of another one was felt to be low, no seizure medicines were started. A decision about whether you need any medicine will be made after your scan and brain-wave test results are reviewed.\n\n---\n\n## Medicines\n\nYou were not taking any regular medicines before you came in, and you have not been given any new medicines to take home.\n\n---\n\n## What Happens Next\n\nYou have three outpatient appointments being arranged:\n\n1. **MRI brain scan** — date to be confirmed\n2. **EEG (brain-wave test)** — date to be confirmed\n3. **First-fit clinic** (neurology outpatient appointment) — date to be confirmed\n\nYour GP has been told about your admission. The neurology team will review your scan and test results at your clinic appointment.\n\nIf you do not hear about your appointment dates, please contact your GP surgery.\n\n---\n\n## Important Advice\n\nThe team has given you the following important safety advice. Please read this carefully.\n\n**Driving**\nYou must **not drive**. You must tell the DVLA about your seizure. Driving is not allowed for **6 months from the date of your seizure (19 May)**. This applies to a standard car or motorcycle licence (Group 1). It is your legal responsibility to inform the DVLA.\n\n**Water safety**\n- Do not swim alone.\n- Do not have a bath on your own (unsupervised).\n\n**Working at heights**\n- Do not work at heights.\n\n---\n\n## If You Are Worried\n\nIf you become unwell or are worried about anything, contact your GP or call NHS 111. Call 999 if it is an emergency.\n\n---\n\n*This letter is a draft for review and sign-off by the responsible clinician before it is given to the patient.*\n",
+  "gate": {
+    "canonical": "V1_LINES",
+    "status": "clean",
+    "ok": true,
+    "label": "PASS",
+    "findings": []
+  },
+  "cost_usd_est": 0.049847,
+  "error": null
+}

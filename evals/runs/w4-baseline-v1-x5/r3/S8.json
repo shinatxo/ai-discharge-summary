@@ -1,0 +1,67 @@
+{
+  "record_version": 1,
+  "generation_id": "w4-baseline-v1-x5/r3/S8",
+  "batch_id": "w4-baseline-v1-x5",
+  "run": 3,
+  "scenario_id": "S8",
+  "generator": "v1",
+  "path": "deployed",
+  "model_id": "anthropic.claude-sonnet-4-6",
+  "region": "eu-west-2",
+  "inference": {
+    "max_tokens": 4096,
+    "temperature": 0.0,
+    "patient_max_tokens": 1500
+  },
+  "prompts": {
+    "system": {
+      "path": "src/generate/system_prompt.md",
+      "file_sha256": "a7ec8a5661007b0a69231dd68a1f286013cf23a2192ed7ec16770bc07f3c1e3a",
+      "body_sha256": "de46dda1e90bdb1380e077bf7119a2d0d537b7f1f53199b3aeaa2c41aa645ee6"
+    },
+    "patient": {
+      "path": "src/generate/patient_system_prompt.md",
+      "file_sha256": "32f9767baf648dbe2ca1ad5e46d40ea75ff51890bca0b66ef1c44b96166f8e1b",
+      "body_sha256": "7fea4b502d0b9a8b983bcbcac353bc7763845ed0a3eaf0d39edfd80650d23435"
+    }
+  },
+  "prompt_caching": true,
+  "notes_sha256": "db5dc0237ea1d82ade478142d26845b1f5fda1c9c35512621c0f5aa23a5afca6",
+  "started_at": "2026-10-07T13:33:43+01:00",
+  "elapsed_s": 40.913,
+  "calls": [
+    {
+      "name": "combined",
+      "input_tokens": 298,
+      "output_tokens": 2376,
+      "cache_read_tokens": 5192,
+      "cache_write_tokens": 0,
+      "stop_reason": "end_turn",
+      "latency_s": 31.498,
+      "throttle_retries": 0
+    },
+    {
+      "name": "patient_v2",
+      "input_tokens": 1123,
+      "output_tokens": 607,
+      "cache_read_tokens": 1038,
+      "cache_write_tokens": 0,
+      "stop_reason": "end_turn",
+      "latency_s": 9.414,
+      "throttle_retries": 0
+    }
+  ],
+  "patient_version": "v2",
+  "output": "I'll now produce all three parts. Note that the notes say \"safety-net advice to parents re fever/feeding/breathing\" but do not specify the exact wording of that advice. I will reproduce the documented topics faithfully without inventing specific thresholds or triggers.\n\n---\n\n# PART A — STRUCTURED CLINICAL DISCHARGE SUMMARY\n\n```\nDISCHARGE SUMMARY\n\nPatient: Not documented (male neonate) | DOB: 16/05/[year not documented]\n(5 days old at discharge) | NHS No: Not documented | Hosp No: Not documented\nAdmitted: 16/05 | Discharged: 20/05\nSpecialty: Neonatal Unit (inferred — not documented, confirm)\nWeight: Birth weight 3.4 kg (recorded at birth; discharge weight not documented)\n\nPRESENTING COMPLAINT\nTerm male neonate admitted to the Neonatal Unit (NNU) at 6 hours of age with\ngrunting, tachypnoea (RR 70), and fever (38.1 °C), in the context of maternal\nGroup B Streptococcus (GBS) positivity and intrapartum antibiotics administered\nless than 4 hours before delivery.\n\nDIAGNOSIS\nPrimary: Neonatal early-onset infection / sepsis screen positive (clinical\n         presentation with CRP rise; blood cultures negative)\nBackground: Maternal GBS colonisation; intrapartum antibiotics <4 h prior to\n            delivery (incomplete prophylaxis)\n\nGESTATION / BIRTH DETAILS\nGestation: 39+2 weeks. Mode of delivery: Spontaneous vaginal delivery (SVD).\nBirth weight: 3.4 kg.\n\nKEY INVESTIGATIONS\n- Septic screen (Day 1, 16/05): bloods and blood culture sent; CRP 28 mg/L\n- CRP (Day 2, 17/05): 18 mg/L (falling)\n- Blood culture: No growth at 36 h; confirmed negative at 48 h\n- Lumbar puncture: Deferred (clinically stable respiratory status at time of\n  screen)\n- Hearing screen: Passed (Day 3, 18/05)\n- Repeat CRP trend: 28 → 41 → 18 mg/L\n\nNote: Year of birth not documented in the notes — please confirm and add to\nthe record.\n\nTREATMENT DURING ADMISSION\n- Admitted to NNU for monitoring and treatment.\n- IV benzylpenicillin + gentamicin commenced per neonatal sepsis protocol\n  (Day 1, 16/05).\n- Respiratory support: Not documented (notes state \"off any resp support\" by\n  Day 2 — nature and duration of any initial support not specified).\n- Full 5-day course of IV antibiotics completed (Day 5, 20/05), on the basis\n  of clinical presentation and initial CRP rise, despite negative blood cultures.\n- Routine newborn checks completed prior to discharge.\n\nRESUSCITATION STATUS\nNot documented — no resuscitation discussion indicated for this admission.\n\nMEDICATIONS ON DISCHARGE\nPre-admission drug history: None (neonate).\nIV benzylpenicillin — STOPPED (course completed Day 5, 20/05).\nIV gentamicin — STOPPED (course completed Day 5, 20/05).\n\nDischarge medications: None documented.\n\nNote: If any discharge medications (e.g. vitamin K, if not already given, or\nother routine neonatal medications) were prescribed, they are not recorded in\nthese notes and cannot be included here.\n\nALLERGIES: Not documented.\n\nFOLLOW-UP\nNo routine follow-up documented.\nHearing screen passed — no further audiology follow-up indicated per notes.\n\nGP ACTIONS\nNot documented.\n\nPATIENT ADVICE          (PARENT / CARER ADVICE)\nThe notes record that safety-net advice was given to parents regarding fever,\nfeeding, and breathing. The specific content, thresholds, and wording of this\nadvice are not transcribed in the notes and cannot be reproduced here.\nThe reviewing clinician should confirm that the advice given is documented\nin full in the medical record.\n\nVTE ASSESSMENT: Not applicable (neonatal patient).\n\n⚠ ITEMS REQUIRING CLINICIAN REVIEW BEFORE SIGN-OFF:\n1. Patient identifiers (full name, NHS number, hospital number, year of birth)\n   are not documented — please complete before issuing.\n2. Specialty confirmed as NNU — please confirm admitting consultant.\n3. Nature and duration of any respiratory support on Day 1 not specified —\n   clarify if clinically relevant.\n4. The specific content of safety-net advice given to parents (re fever,\n   feeding, breathing) is not transcribed — please document in full.\n5. Discharge medications: confirm whether any routine neonatal medications\n   (e.g. vitamin K) were given and document accordingly.\n6. Allergy status not documented — please confirm.\n\nAuthor: [Name, Grade, Date] ← TO BE COMPLETED BY RESPONSIBLE CLINICIAN\n```\n\n---\n\n# PART B — GP LETTER\n\n```\n20/05/[year]\n\nDear Colleague,\n\nRe: Male neonate (name not documented), DOB 16/05/[year], NHS No: Not documented\nAdmitted 16/05, discharged 20/05 under Neonatal Unit (inferred — confirm).\n\nThis term male neonate (born 39+2 weeks by SVD, birth weight 3.4 kg) was\nadmitted to the Neonatal Unit at 6 hours of age with grunting, tachypnoea\n(RR 70), and fever (38.1 °C), in the context of maternal GBS positivity and\nintrapartum antibiotics administered less than 4 hours before delivery\n(incomplete prophylaxis).\n\nA septic screen was performed on Day 1, including blood cultures and CRP\n(initial CRP 28, rising to 41 mg/L). Lumbar puncture was deferred given\nclinical stability. IV benzylpenicillin and gentamicin were commenced per\nneonatal sepsis protocol. Blood cultures showed no growth at 36 and 48 hours.\nCRP fell to 18 mg/L by Day 2. The clinical team elected to complete a full\n5-day IV antibiotic course on the basis of the clinical presentation and\ninitial CRP rise. The infant improved rapidly, was off respiratory support by\nDay 2, and was feeding fully by Day 3. Newborn hearing screen was passed.\nRoutine newborn checks were completed. He was discharged home with parents on\nDay 5 in good condition.\n\nDiagnosis: Neonatal early-onset infection / sepsis (clinical and biochemical,\nblood culture negative).\n\nMedication changes:\n- IV benzylpenicillin — STOPPED (course completed).\n- IV gentamicin — STOPPED (course completed).\n- No medications on discharge.\n\nActions for you (GP): Not documented in the clinical notes. No specific\nactions have been delegated to primary care.\n\nFollow-up arranged: None. No routine follow-up was planned at discharge.\n\nPending results: None documented.\n\nPlease note: Patient identifiers (full name, NHS number, hospital number) were\nnot available in the source notes. This letter should be updated with full\nidentifiers before filing.\n\nYours sincerely,\n[Name, Grade] ← TO BE COMPLETED BY RESPONSIBLE CLINICIAN\n```\n\n---\n\nPART C - PATIENT VERSION (v2 second pass)\n\n# Your Baby's Discharge Letter\n\n**A note for parents and carers**\nThis letter tells you what happened during your baby's stay in hospital, what treatment he had, and what to do next. Please keep it somewhere safe.\n\n---\n\n## What was wrong\n\nYour baby boy was admitted to the Neonatal Unit (NNU) when he was 6 hours old. He had fast breathing, a grunting sound when he breathed, and a mild temperature (fever). Because of these signs — and because a bacteria called Group B Streptococcus (GBS) had been found in your body during pregnancy — the doctors were concerned he might have an early infection (early-onset neonatal sepsis). They started treatment straight away to keep him safe.\n\n---\n\n## What the doctors found\n\nThe team did some blood tests, including a blood culture (a test to look for bacteria in the blood). His infection marker (CRP) was raised at first, but it came down over the following days. The blood culture showed no bacteria growing. His breathing also improved quickly.\n\nYour baby also had a **newborn hearing screen**, which he **passed**.\n\n---\n\n## What treatment he had\n\nYour baby was given two antibiotic medicines through a drip (a small tube into a vein):\n\n- **Benzylpenicillin** (an antibiotic)\n- **Gentamicin** (an antibiotic)\n\nHe had a full **5-day course** of these antibiotics. Both medicines were **stopped** when the course was finished, on the day he came home. He does not need to take any medicines at home.\n\n---\n\n## Medicines to take at home\n\n**None.** Your baby does not need any medicines at home. Both antibiotics were finished before he left hospital.\n\n---\n\n## What happens next\n\nThe notes do not record any follow-up appointments for your baby. Because he passed his hearing screen, no further hearing checks are needed at this stage.\n\nYour baby's GP (family doctor) will be sent a copy of this letter. It is a good idea to register your baby with your GP if you have not already done so, so they can support you both going forward.\n\n---\n\n## When to get help\n\nThe team gave you advice before you left about what to look out for — including your baby's temperature, feeding, and breathing. If you are not sure what you were told, or if you have any questions, please contact your midwife, health visitor, or the hospital team.\n\nIf you become unwell or are worried about anything, contact your GP or call NHS 111. Call 999 if it is an emergency.\n\n---\n\n*This letter is a draft for review and sign-off by the responsible clinician before it is given to the family.*\n",
+  "gate": {
+    "canonical": "V1_LINES",
+    "status": "documented_advice",
+    "ok": true,
+    "label": "PASS (advisory)",
+    "findings": [
+      "The source notes record a seek-help trigger, so the fall-back rule is not engaged. Whether the rephrasing is faithful is a rubric judgement (EVAL_RESULTS.md D2), not checked here."
+    ]
+  },
+  "cost_usd_est": 0.055965,
+  "error": null
+}

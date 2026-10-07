@@ -1,0 +1,65 @@
+{
+  "record_version": 1,
+  "generation_id": "w4-baseline-v1-x5/r1/S9",
+  "batch_id": "w4-baseline-v1-x5",
+  "run": 1,
+  "scenario_id": "S9",
+  "generator": "v1",
+  "path": "deployed",
+  "model_id": "anthropic.claude-sonnet-4-6",
+  "region": "eu-west-2",
+  "inference": {
+    "max_tokens": 4096,
+    "temperature": 0.0,
+    "patient_max_tokens": 1500
+  },
+  "prompts": {
+    "system": {
+      "path": "src/generate/system_prompt.md",
+      "file_sha256": "a7ec8a5661007b0a69231dd68a1f286013cf23a2192ed7ec16770bc07f3c1e3a",
+      "body_sha256": "de46dda1e90bdb1380e077bf7119a2d0d537b7f1f53199b3aeaa2c41aa645ee6"
+    },
+    "patient": {
+      "path": "src/generate/patient_system_prompt.md",
+      "file_sha256": "32f9767baf648dbe2ca1ad5e46d40ea75ff51890bca0b66ef1c44b96166f8e1b",
+      "body_sha256": "7fea4b502d0b9a8b983bcbcac353bc7763845ed0a3eaf0d39edfd80650d23435"
+    }
+  },
+  "prompt_caching": true,
+  "notes_sha256": "fff6b2a27043c88393b3a44a1c2074ccc86e3d61eb2be9262fc6d67ca0a4aa4a",
+  "started_at": "2026-10-07T13:05:44+01:00",
+  "elapsed_s": 42.293,
+  "calls": [
+    {
+      "name": "combined",
+      "input_tokens": 310,
+      "output_tokens": 2343,
+      "cache_read_tokens": 5192,
+      "cache_write_tokens": 0,
+      "stop_reason": "end_turn",
+      "latency_s": 30.228,
+      "throttle_retries": 0
+    },
+    {
+      "name": "patient_v2",
+      "input_tokens": 845,
+      "output_tokens": 787,
+      "cache_read_tokens": 1038,
+      "cache_write_tokens": 0,
+      "stop_reason": "end_turn",
+      "latency_s": 12.062,
+      "throttle_retries": 0
+    }
+  ],
+  "patient_version": "v2",
+  "output": "I'll produce all three parts. A few notes on gaps I've flagged inline.\n\n---\n\n# PART A — STRUCTURED CLINICAL DISCHARGE SUMMARY\n\n```\nDISCHARGE SUMMARY\n\nPatient: Not documented | DOB: Not documented (9 years old) | NHS No: Not documented | Hosp No: Not documented\nAdmitted: 17/05/2025 | Discharged: 20/05/2025\nSpecialty: Paediatrics (inferred — not documented, confirm)\nWeight: 28 kg (recorded on admission)\n\nPRESENTING COMPLAINT\nA 9-year-old girl presenting with a 2-week history of polyuria and polydipsia,\n3 kg weight loss, 2 days of vomiting and abdominal pain, and drowsiness.\n\nDIAGNOSIS\nPrimary:   Diabetic ketoacidosis (DKA)\nSecondary: New presentation of Type 1 Diabetes Mellitus (T1DM)\n\nKEY INVESTIGATIONS\nAdmission:\n  - Blood glucose: >HI on bedside meter; laboratory glucose 34 mmol/L\n  - Blood ketones: 5.2 mmol/L\n  - pH: 7.18 (acidaemia)\n  - Bicarbonate (HCO₃⁻): 11 mmol/L\n\nDay 2 (18/05):\n  - pH: 7.34 (resolving acidosis)\n  - Blood ketones: 0.8 mmol/L\n\nFurther investigation results (e.g. U&Es, FBC, HbA1c, autoantibodies):\nNot documented.\n\nTREATMENT DURING ADMISSION\n- DKA protocol initiated on admission: cautious IV fluid resuscitation,\n  fixed-rate insulin infusion, potassium replacement, hourly clinical and\n  biochemical monitoring.\n- PICU informed; patient managed on ward HDU.\n- Day 2: Transition to subcutaneous basal-bolus insulin regimen once\n  acidosis resolved and ketones cleared.\n- Diabetes specialist nurse and dietician input commenced Day 2.\n- Structured diabetes education programme begun with patient and family:\n  carbohydrate counting, hypoglycaemia management, sick-day rules.\n- By Day 4: patient and parents confident with insulin injections and\n  blood glucose monitoring.\n\nRESUSCITATION STATUS\nNot documented — no resuscitation discussion documented in these notes.\n\nMEDICATIONS ON DISCHARGE\nPre-admission drug history: Not documented (no prior medications recorded).\n\n  - Basal insulin: drug name, dose, and frequency not documented — requires\n    clarification before discharge letter is finalised.\n  - Bolus (rapid-acting) insulin: drug name, dose, and frequency not\n    documented — requires clarification before discharge letter is finalised.\n\n⚠ CLINICIAN ACTION REQUIRED: The notes confirm a basal-bolus subcutaneous\ninsulin regimen was prescribed but do not specify the insulin products, doses,\nor frequencies. These must be completed before this summary is issued.\n\nALLERGIES: Not documented\n\nFOLLOW-UP\n1. Diabetes team review: 1 week post-discharge (approximately 27/05/2025).\n2. Dietician follow-up: arranged (date not documented).\n3. Telephone support from diabetes team available in the interim.\n\nGP ACTIONS\nGP informed. No acute actions delegated to primary care.\n\nPATIENT / PARENT / CARER ADVICE\nNot documented. No specific safety-netting or discharge instructions are\nrecorded in the notes.\n\nVTE ASSESSMENT: Not applicable (paediatric)\n\nAuthor: [Name, Grade, Date] — DRAFT: requires clinician review and sign-off\n```\n\n---\n\n# PART B — GP LETTER\n\n```\n20/05/2025\n\nDear Colleague,\n\nRe: [Patient name], DOB: Not documented (9 years old), NHS No: Not documented\nAdmitted: 17/05/2025 | Discharged: 20/05/2025 | Specialty: Paediatrics\n(inferred — confirm)\n\nI am writing to update you regarding this 9-year-old girl who was admitted on\n17/05/2025 with diabetic ketoacidosis (DKA) representing the new presentation\nof Type 1 Diabetes Mellitus (T1DM).\n\nOn admission she had a 2-week history of polyuria, polydipsia, and 3 kg weight\nloss, with 2 days of vomiting, abdominal pain, and drowsiness. Investigations\nconfirmed severe DKA: blood glucose 34 mmol/L, ketones 5.2 mmol/L, pH 7.18,\nbicarbonate 11 mmol/L. PICU was informed; she was managed on the ward HDU.\nShe was treated with cautious IV fluid resuscitation, a fixed-rate insulin\ninfusion, and potassium replacement per DKA protocol. By Day 2 the acidosis\nhad resolved (pH 7.34, ketones 0.8 mmol/L) and she was transitioned to a\nsubcutaneous basal-bolus insulin regimen. She received input from the diabetes\nspecialist nurse and dietician, with structured education covering carbohydrate\ncounting, hypoglycaemia management, and sick-day rules. By Day 4 she and her\nparents were confident with injections and monitoring and she was fit for\ndischarge.\n\nDiagnosis: Diabetic ketoacidosis; new-onset Type 1 Diabetes Mellitus.\n\nMedication changes:\n  - Basal insulin: NEW — product, dose, and frequency not documented in\n    these notes. ⚠ Please refer to the attached prescription / discharge\n    medication list once completed by the clinical team.\n  - Bolus (rapid-acting) insulin: NEW — product, dose, and frequency not\n    documented in these notes. ⚠ As above.\n  No pre-admission medications were recorded.\n\nActions for you (GP): No acute actions have been delegated to primary care.\nThe diabetes team will lead ongoing management.\n\nFollow-up arranged:\n  - Diabetes team review in 1 week (approximately 27/05/2025), with telephone\n    support available in the interim.\n  - Dietician follow-up arranged (date not documented).\n\nNo pending results are documented in these notes.\n\nYours sincerely,\n\n[Name, Grade]\n[DRAFT — for clinician review and sign-off]\n```\n\n---\n\nPART C - PATIENT VERSION (v2 second pass)\n\n> **⚠ DRAFT — For clinician review and sign-off before giving to the family.**\n> The insulin names, doses, and timing are missing from the notes and must be filled in before this leaflet is shared.\n\n---\n\n# Your Child's Discharge Letter\n\n## What happened\n\nYour daughter came into hospital because her blood sugar (glucose) was very high and her body had built up harmful substances called ketones. This is called **diabetic ketoacidosis (DKA)**. It happened because she has been diagnosed with **Type 1 Diabetes (T1DM)** — this is a new diagnosis made during this stay.\n\nType 1 Diabetes means the body stops making a hormone called insulin. Insulin is needed to keep blood sugar at a safe level. This is not caused by anything you or your daughter did.\n\n---\n\n## What we did in hospital\n\nWhen she arrived, her blood sugar was very high (34 mmol/L) and her blood was too acidic (pH 7.18). We started treatment straight away:\n\n- We gave fluids through a drip to help her body recover safely.\n- We gave insulin through the drip to bring her blood sugar and ketones down.\n- We checked her blood closely every hour.\n- The intensive care team (PICU) were kept informed, and she was cared for in a high-dependency area of the ward.\n\nBy the next day her blood was much better (pH 7.34, ketones 0.8 mmol/L). We then moved her on to insulin injections under the skin, which is what she will use at home.\n\n---\n\n## Learning to manage diabetes\n\nFrom day two, a **diabetes specialist nurse** and a **dietician** worked with your daughter and your family. Before she went home, you had started a diabetes education programme. This covered:\n\n- counting carbohydrates in food,\n- what to do if blood sugar goes too low (hypoglycaemia), and\n- what to do when she is unwell (sick-day rules).\n\nBy the time she left hospital, you and your daughter felt confident giving insulin injections and checking blood sugar at home.\n\n---\n\n## Medicines to take at home\n\nYour daughter needs **two types of insulin** given by injection under the skin:\n\n1. A **background (basal) insulin** — given once or twice a day to keep blood sugar steady.\n2. A **quick-acting (bolus) insulin** — given at mealtimes.\n\n> **⚠ Important:** The names of the insulins, the doses, and the exact times to give them are not yet filled in on these notes. Your diabetes team must give you this information before your daughter leaves hospital — or will confirm it with you very shortly. **Do not change or guess the doses.** If you are unsure about anything, call the diabetes team (see below).\n\n---\n\n## What happens next\n\n| Appointment | When |\n|---|---|\n| Diabetes team review | Around **27 May 2025** (1 week after discharge) |\n| Dietician follow-up | Arranged — date to be confirmed with you |\n\n**Between now and your first appointment**, the diabetes team can be reached by phone if you have any questions or concerns. You were given their contact details before leaving hospital.\n\nYour daughter's **GP has been told** about this admission.\n\n---\n\n## If you are worried\n\nIf you become unwell or are worried about anything, contact your GP or call NHS 111. Call 999 if it is an emergency.\n",
+  "gate": {
+    "canonical": "V1_LINES",
+    "status": "clean",
+    "ok": true,
+    "label": "PASS",
+    "findings": []
+  },
+  "cost_usd_est": 0.057512,
+  "error": null
+}

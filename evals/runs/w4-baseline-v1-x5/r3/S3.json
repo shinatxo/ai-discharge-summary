@@ -1,0 +1,67 @@
+{
+  "record_version": 1,
+  "generation_id": "w4-baseline-v1-x5/r3/S3",
+  "batch_id": "w4-baseline-v1-x5",
+  "run": 3,
+  "scenario_id": "S3",
+  "generator": "v1",
+  "path": "deployed",
+  "model_id": "anthropic.claude-sonnet-4-6",
+  "region": "eu-west-2",
+  "inference": {
+    "max_tokens": 4096,
+    "temperature": 0.0,
+    "patient_max_tokens": 1500
+  },
+  "prompts": {
+    "system": {
+      "path": "src/generate/system_prompt.md",
+      "file_sha256": "a7ec8a5661007b0a69231dd68a1f286013cf23a2192ed7ec16770bc07f3c1e3a",
+      "body_sha256": "de46dda1e90bdb1380e077bf7119a2d0d537b7f1f53199b3aeaa2c41aa645ee6"
+    },
+    "patient": {
+      "path": "src/generate/patient_system_prompt.md",
+      "file_sha256": "32f9767baf648dbe2ca1ad5e46d40ea75ff51890bca0b66ef1c44b96166f8e1b",
+      "body_sha256": "7fea4b502d0b9a8b983bcbcac353bc7763845ed0a3eaf0d39edfd80650d23435"
+    }
+  },
+  "prompt_caching": true,
+  "notes_sha256": "c8882fcefb7f24fb39b45a7bb32cb6bfeb5481df37eff450606bec809ab51ef1",
+  "started_at": "2026-10-07T13:32:27+01:00",
+  "elapsed_s": 41.611,
+  "calls": [
+    {
+      "name": "combined",
+      "input_tokens": 432,
+      "output_tokens": 2678,
+      "cache_read_tokens": 5192,
+      "cache_write_tokens": 0,
+      "stop_reason": "end_turn",
+      "latency_s": 33.215,
+      "throttle_retries": 0
+    },
+    {
+      "name": "patient_v2",
+      "input_tokens": 907,
+      "output_tokens": 534,
+      "cache_read_tokens": 1038,
+      "cache_write_tokens": 0,
+      "stop_reason": "end_turn",
+      "latency_s": 8.394,
+      "throttle_retries": 0
+    }
+  ],
+  "patient_version": "v2",
+  "output": "I'll now produce all three parts of the discharge summary.\n\n---\n\n# PART A — STRUCTURED CLINICAL DISCHARGE SUMMARY\n\n```\nDISCHARGE SUMMARY\n\nPatient: Not documented (full name not provided in notes)\nDOB: Not documented | Age: 45 | NHS No: Not documented | Hosp No: Not documented\nAdmitted: 18/05/2025 | Discharged: 23/05/2025\nSpecialty: Acute Mental Health Unit (inferred — not documented, confirm)\nLegal status: Informal (voluntary) — NOT detained under the Mental Health Act.\n\nPRESENTING COMPLAINT\nA 45-year-old woman self-presented to A&E with a six-week history of worsening\nlow mood, anhedonia, early-morning waking, reduced appetite with approximately\n4 kg weight loss, and poor concentration. She reported active suicidal ideation\nwith thoughts of overdose; no formed plan or intent was present at initial\nassessment, but ideation was described as escalating. No psychotic features\nwere identified. Identified triggers included a recent relationship breakdown\nand work-related stress.\n\nDIAGNOSIS\nPrimary: Depressive episode with active suicidal ideation (no psychotic features).\nBackground: One previous depressive episode (2018), GP-managed with sertraline\n            for approximately nine months; no previous mental health admissions.\n\nKEY INVESTIGATIONS\nNot documented.\n\nTREATMENT DURING ADMISSION\n- Informal (voluntary) admission to acute mental health unit agreed following\n  liaison psychiatry assessment in A&E.\n- Sertraline 50 mg once daily commenced on Day 3 (20/05/2025).\n- Psychoeducation provided.\n- Multidisciplinary team (MDT) review on Day 5 (22/05/2025): mood improving,\n  suicidal ideation reduced to fleeting/passive with no intent, patient\n  future-oriented.\n- Collaborative safety plan completed with patient prior to discharge.\n- Crisis team telephone number provided to patient.\n\nRESUSCITATION STATUS\nNot documented — no resuscitation discussion indicated for this admission.\n\nRISK ASSESSMENT\nAt admission (18/05/2025):\n  Risk to self: Moderate-high. Active suicidal ideation with thoughts of\n  overdose; no formed plan or intent at that time, but ideation escalating.\n  Risk to others: None identified.\n  Protective factors: Two dependent children (ages 8 and 11); help-seeking\n  behaviour; future-oriented thinking.\n  Safeguarding: Two children at home. Social context noted for exploration;\n  no immediate safeguarding concerns flagged at admission.\n\nAt discharge (23/05/2025):\n  Suicidal ideation: Fleeting and passive; no intent. Patient future-oriented,\n  engaging with safety plan.\n  Collaborative safety plan: Completed with patient.\n\nMEDICATIONS ON DISCHARGE\nSertraline 50 mg orally once daily — (NEW, commenced 20/05/2025).\n  Dose review documented at four weeks post-discharge.\n\nPre-admission medication: None.\n\nALLERGIES: No known drug allergies (NKDA).\n\nFOLLOW-UP\n1. Community Mental Health Team (CMHT): appointment in one week\n   (approximately 30/05/2025 — exact date not documented).\n2. GP: monitor mood and tolerability of sertraline; dose review at four weeks.\n3. Crisis team number provided to patient at discharge.\n\nGP ACTIONS\n1. Monitor mood and tolerability of sertraline 50 mg OD.\n2. Review sertraline dose at four weeks post-discharge (approximately\n   20/06/2025).\n\nPATIENT ADVICE\nCollaborative safety plan completed with patient. Crisis team telephone number\ngiven to patient at discharge.\nNo further specific patient advice documented in the notes.\n\nVTE ASSESSMENT: Not documented.\n\nAuthor: [Name, Grade, Date — to be completed by responsible clinician]\n```\n\n---\n\n# PART B — GP LETTER\n\n```\n23/05/2025\n\nDear Colleague,\n\nRe: [Patient full name — not documented], DOB: Not documented, Age: 45\nNHS No: Not documented\nAdmitted: 18/05/2025 | Discharged: 23/05/2025\nAcute Mental Health Unit (inferred — confirm)\n\nThank you for seeing this 45-year-old woman who self-presented to A&E on\n18/05/2025 with a six-week history of worsening low mood, anhedonia,\nearly-morning waking, reduced appetite (~4 kg weight loss), poor concentration,\nand escalating active suicidal ideation with thoughts of overdose (no formed\nplan or intent at assessment). She was admitted informally (voluntary — NOT\ndetained under the Mental Health Act) to the acute mental health unit following\nliaison psychiatry review.\n\nDuring admission, she engaged well with the ward. Sertraline 50 mg once daily\nwas commenced on 20/05/2025, with psychoeducation provided. By MDT review on\n22/05/2025, mood had improved, suicidal ideation had reduced to fleeting and\npassive with no intent, and she was future-oriented. A collaborative safety plan\nwas completed with her prior to discharge, and she was given the crisis team\ntelephone number.\n\nBackground: one previous depressive episode in 2018, managed in primary care\nwith sertraline for approximately nine months. No previous mental health\nadmissions. No physical comorbidities. NKDA. Alcohol approximately 14 units\nper week.\n\nSafeguarding note: she has two children at home (ages 8 and 11). Social context\nwas noted for exploration at admission; no immediate safeguarding concerns were\nflagged. Please be aware of this in your ongoing management.\n\nDiagnosis: Depressive episode with active suicidal ideation (no psychotic\nfeatures).\n\nMedication changes:\n  NEW — Sertraline 50 mg orally once daily (commenced 20/05/2025).\n  Pre-admission medications: none.\n\nActions for you (GP):\n  1. Monitor mood and tolerability of sertraline 50 mg OD.\n  2. Review sertraline dose at four weeks post-discharge (approximately\n     20/06/2025).\n\nFollow-up already arranged:\n  - CMHT appointment in one week (approximately 30/05/2025 — exact date not\n    documented in notes).\n  - Crisis team number given to patient.\n\nNo investigations were documented during this admission; no pending results\nto action.\n\nYours sincerely,\n[Name, Grade — to be completed by responsible clinician]\n```\n\n---\n\nPART C - PATIENT VERSION (v2 second pass)\n\n# Your Discharge Letter\n\n**From the Mental Health Team — for you to keep at home**\n\n---\n\n## Why you came into hospital\n\nYou came to A&E because you had been feeling very low for around six weeks. You were having thoughts of harming yourself, and the team wanted to make sure you were safe. You agreed to come into the mental health unit as a voluntary patient — you were not detained.\n\n---\n\n## What happened during your stay\n\nYou were admitted on **18 May 2025** and went home on **23 May 2025**.\n\nDuring your stay:\n\n- The team talked with you and kept a close eye on how you were feeling.\n- You were given information to help you understand what you are going through (this is called psychoeducation).\n- By day five, your mood had started to lift and the difficult thoughts had become much less frequent. You were thinking about the future.\n- Before you left, you and the team worked together on a **safety plan** — a personal guide to help you if things feel hard again. You have a copy of this.\n- You were given the **crisis team telephone number** to keep with you.\n\n---\n\n## Your medicines\n\n**Sertraline 50 mg — one tablet by mouth, once a day**\n*(This is a new medicine, started on 20 May 2025.)*\n\nYou were not taking any regular medicines before this admission.\n\nYou have no known drug allergies.\n\n---\n\n## What happens next\n\n**1. Community Mental Health Team (CMHT)**\nYou have an appointment in about one week (around **30 May 2025**). The exact date and time will be confirmed — please check any paperwork you were given when you left.\n\n**2. Your GP**\nYour GP will check how you are feeling and how well you are getting on with sertraline. At around **four weeks** after discharge (approximately **20 June 2025**), your GP will review whether the sertraline dose needs to change.\n\n**3. Crisis team**\nYou already have the crisis team telephone number. Please keep it somewhere easy to find.\n\n---\n\n## If you are worried\n\nIf you become unwell or are worried about anything, contact your GP or call NHS 111. Call 999 if it is an emergency.\n\n---\n\n*This letter is a draft for review and sign-off by your responsible clinician before it is given to you.*\n",
+  "gate": {
+    "canonical": "V1_LINES",
+    "status": "documented_advice",
+    "ok": true,
+    "label": "PASS (advisory)",
+    "findings": [
+      "The source notes record a seek-help trigger, so the fall-back rule is not engaged. Whether the rephrasing is faithful is a rubric judgement (EVAL_RESULTS.md D2), not checked here."
+    ]
+  },
+  "cost_usd_est": 0.059473,
+  "error": null
+}

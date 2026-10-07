@@ -1,0 +1,65 @@
+{
+  "record_version": 1,
+  "generation_id": "w4-baseline-v1-x5/r3/C7",
+  "batch_id": "w4-baseline-v1-x5",
+  "run": 3,
+  "scenario_id": "C7",
+  "generator": "v1",
+  "path": "deployed",
+  "model_id": "anthropic.claude-sonnet-4-6",
+  "region": "eu-west-2",
+  "inference": {
+    "max_tokens": 4096,
+    "temperature": 0.0,
+    "patient_max_tokens": 1500
+  },
+  "prompts": {
+    "system": {
+      "path": "src/generate/system_prompt.md",
+      "file_sha256": "a7ec8a5661007b0a69231dd68a1f286013cf23a2192ed7ec16770bc07f3c1e3a",
+      "body_sha256": "de46dda1e90bdb1380e077bf7119a2d0d537b7f1f53199b3aeaa2c41aa645ee6"
+    },
+    "patient": {
+      "path": "src/generate/patient_system_prompt.md",
+      "file_sha256": "32f9767baf648dbe2ca1ad5e46d40ea75ff51890bca0b66ef1c44b96166f8e1b",
+      "body_sha256": "7fea4b502d0b9a8b983bcbcac353bc7763845ed0a3eaf0d39edfd80650d23435"
+    }
+  },
+  "prompt_caching": true,
+  "notes_sha256": "d15719c10172a3c9a85deae46695411eb27d652215d6152078b33ea2487a91ca",
+  "started_at": "2026-10-07T13:44:32+01:00",
+  "elapsed_s": 34.526,
+  "calls": [
+    {
+      "name": "combined",
+      "input_tokens": 117,
+      "output_tokens": 2244,
+      "cache_read_tokens": 5192,
+      "cache_write_tokens": 0,
+      "stop_reason": "end_turn",
+      "latency_s": 28.389,
+      "throttle_retries": 0
+    },
+    {
+      "name": "patient_v2",
+      "input_tokens": 741,
+      "output_tokens": 422,
+      "cache_read_tokens": 1038,
+      "cache_write_tokens": 0,
+      "stop_reason": "end_turn",
+      "latency_s": 6.135,
+      "throttle_retries": 0
+    }
+  ],
+  "patient_version": "v2",
+  "output": "I'll produce all three parts. Note that the patient version must be flagged for translation and produced in Polish (with an English copy for staff), as the patient has limited English.\n\n---\n\n# PART A — STRUCTURED CLINICAL DISCHARGE SUMMARY\n\n```\nDISCHARGE SUMMARY\n\nPatient: Not documented | DOB: Not documented | NHS No: Not documented | Hosp No: Not documented\nAdmitted: 19/05/YYYY | Discharged: 20/05/YYYY\nSpecialty: Trauma & Orthopaedics (inferred — not documented, confirm)\n\nPRESENTING COMPLAINT\n54-year-old female admitted following a mechanical fall, sustaining a closed\ndisplaced distal radius fracture of the right wrist.\n\nDIAGNOSIS\nPrimary: Closed displaced distal radius fracture (Colles'), right wrist.\nBackground: Not documented.\n\nKEY INVESTIGATIONS\nNot documented.\n\nTREATMENT DURING ADMISSION\nOpen reduction and internal fixation (ORIF) of right right wrist performed on\nday of admission (19/05). Procedure documented as uncomplicated. Backslab\napplied post-operatively. Hand neurovascularly intact on day 2 review.\n\nRESUSCITATION STATUS\nNot documented — no resuscitation discussion indicated for this admission.\n\nMEDICATIONS ON DISCHARGE\nNot documented.\n\nALLERGIES: Not documented.\n\nFOLLOW-UP\nFracture clinic appointment in 1 week (date not documented).\n\nGP ACTIONS\nNot documented.\n\nPATIENT ADVICE\nNot documented.\n\nVTE ASSESSMENT\nNot documented.\n\nAuthor: [name, grade, date] ← to be completed by responsible clinician\n```\n\n---\n\n⚠️ **FLAGS FOR REVIEWING CLINICIAN — please address before sign-off:**\n\n1. **Patient identifiers** — full name, DOB, NHS number, and hospital number are not present in the notes. These must be added before the summary is issued.\n2. **Admission year** — year of admission/discharge not stated; dates recorded as 19/05 and 20/05 only.\n3. **Specialty** — inferred as Trauma & Orthopaedics from clinical context; please confirm.\n4. **Medications on discharge** — no discharge medications or pre-admission drug history documented. Please complete medication reconciliation (including analgesia, VTE prophylaxis if applicable, and any pre-admission medications).\n5. **Allergies** — not documented. Please confirm and record allergy status before discharge.\n6. **VTE assessment** — not documented. Please confirm whether a VTE risk assessment was completed, as required for surgical admissions.\n7. **Fracture clinic appointment** — documented as \"in 1 week\" but no specific date, time, or location recorded.\n8. **Patient advice / safety-netting** — no discharge advice documented. Please record any instructions given to the patient (e.g. backslab care, wound care, analgesia instructions, when to seek help) so these can be carried into the patient-facing version.\n9. **Interpreter / language** — patient is Polish-speaking with limited English; telephone interpreter used for consent. Please confirm interpreter arrangements for discharge and ensure translated written information is provided.\n10. **Mechanism of fall** — no detail documented regarding the cause of the fall (e.g. trip, syncope, environmental). Consider whether a falls risk assessment or further investigation is warranted.\n\n---\n\n---\n\n# PART B — GP LETTER\n\n```\n[Date]\n\nDear Colleague,\n\nRe: [Patient name], DOB [not documented], NHS No [not documented]\nAdmitted: 19/05/YYYY, Discharged: 20/05/YYYY\nUnder: Trauma & Orthopaedics (inferred — not documented, confirm)\n\nThis 54-year-old woman was admitted on 19/05 following a mechanical fall in\nwhich she sustained a closed displaced distal radius (Colles') fracture of the\nright wrist.\n\nShe underwent open reduction and internal fixation (ORIF) of the right wrist\non the day of admission. The procedure was uncomplicated. On day 2 post-\noperatively, the hand was documented as neurovascularly intact and she was\ncomfortable, with a backslab in situ. She was discharged home on 20/05.\n\nDiagnosis: Closed displaced distal radius fracture (Colles'), right wrist —\ntreated with ORIF.\n\nMedication changes: Not documented. Pre-admission drug history and discharge\nmedications were not recorded in the notes available to me. Please reconcile\nher medication list at your earliest opportunity, including analgesia and VTE\nprophylaxis if not already addressed.\n\nActions for you (GP): Not documented. No specific actions were delegated to\nprimary care in the notes provided.\n\nFollow-up arranged: Fracture clinic in 1 week (specific date not documented).\n\nPending results: None documented.\n\nPlease note: this patient is Polish-speaking with limited English. A telephone\ninterpreter was used for consent during the admission. Please ensure interpreter\nsupport is available for any consultations.\n\nPlease also note that allergy status and VTE assessment were not documented in\nthe notes available; these should be confirmed and recorded.\n\nYours sincerely,\n[Author name, grade]\n[To be completed by responsible clinician]\n```\n\n---\n\n---\n\nPART C - PATIENT VERSION (v2 second pass)\n\n# Your Discharge Letter\n\n**Please note: This is a draft. Your care team will check it before it is given to you.**\n\n---\n\n## What happened\n\nYou came into hospital on 19 May after a fall. The fall broke a bone in your right wrist. This is called a **distal radius fracture (Colles' fracture)**. The bone had moved out of place, so it needed an operation to fix it.\n\n---\n\n## What we did\n\nOn the day you came in, you had an operation called **open reduction and internal fixation (ORIF)**. This means the surgeon made a small opening, moved the bone back into the right position, and held it in place with a metal plate or screws. The operation went well with no problems.\n\nAfter the operation, a **backslab** (a half-plaster support) was put on your wrist to protect it.\n\nOn the day you went home, the team checked the feeling and blood supply in your hand and everything was fine.\n\n---\n\n## Your medicines\n\n⚠️ **Your medicines have not yet been recorded in your notes.** Your care team will give you this information before you leave. Please make sure you get a full list of any medicines to take at home before you go.\n\n---\n\n## What happens next\n\nYou have a **fracture clinic appointment in about one week**. The team will check your wrist and see how it is healing.\n\n⚠️ **The exact date, time, and place of this appointment have not yet been confirmed.** Your care team will give you these details before you leave. Please make sure you have them.\n\n---\n\n## If you are worried\n\nIf you become unwell or are worried about anything, contact your GP or call NHS 111. Call 999 if it is an emergency.\n\n---\n\n*This letter is a draft for your care team to check and complete before it is given to you.*\n",
+  "gate": {
+    "canonical": "V1_LINES",
+    "status": "clean",
+    "ok": true,
+    "label": "PASS",
+    "findings": []
+  },
+  "cost_usd_est": 0.048876,
+  "error": null
+}

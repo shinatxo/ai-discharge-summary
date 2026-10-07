@@ -1,0 +1,69 @@
+{
+  "record_version": 1,
+  "generation_id": "w4-baseline-v1-x5/r2/C7",
+  "batch_id": "w4-baseline-v1-x5",
+  "run": 2,
+  "scenario_id": "C7",
+  "generator": "v1",
+  "path": "deployed",
+  "model_id": "anthropic.claude-sonnet-4-6",
+  "region": "eu-west-2",
+  "inference": {
+    "max_tokens": 4096,
+    "temperature": 0.0,
+    "patient_max_tokens": 1500
+  },
+  "prompts": {
+    "system": {
+      "path": "src/generate/system_prompt.md",
+      "file_sha256": "a7ec8a5661007b0a69231dd68a1f286013cf23a2192ed7ec16770bc07f3c1e3a",
+      "body_sha256": "de46dda1e90bdb1380e077bf7119a2d0d537b7f1f53199b3aeaa2c41aa645ee6"
+    },
+    "patient": {
+      "path": "src/generate/patient_system_prompt.md",
+      "file_sha256": "32f9767baf648dbe2ca1ad5e46d40ea75ff51890bca0b66ef1c44b96166f8e1b",
+      "body_sha256": "7fea4b502d0b9a8b983bcbcac353bc7763845ed0a3eaf0d39edfd80650d23435"
+    }
+  },
+  "prompt_caching": true,
+  "notes_sha256": "d15719c10172a3c9a85deae46695411eb27d652215d6152078b33ea2487a91ca",
+  "started_at": "2026-10-07T13:30:18+01:00",
+  "elapsed_s": 43.365,
+  "calls": [
+    {
+      "name": "combined",
+      "input_tokens": 117,
+      "output_tokens": 2029,
+      "cache_read_tokens": 5192,
+      "cache_write_tokens": 0,
+      "stop_reason": "end_turn",
+      "latency_s": 26.765,
+      "throttle_retries": 0
+    },
+    {
+      "name": "patient_v2",
+      "input_tokens": 668,
+      "output_tokens": 1153,
+      "cache_read_tokens": 1038,
+      "cache_write_tokens": 0,
+      "stop_reason": "end_turn",
+      "latency_s": 16.597,
+      "throttle_retries": 0
+    }
+  ],
+  "patient_version": "v2",
+  "output": "I'll produce all three parts. Note that the patient version must be flagged for translation and produced in Polish (with an English copy for staff), as the notes document limited English and interpreter use.\n\n---\n\n# PART A — STRUCTURED CLINICAL DISCHARGE SUMMARY\n\n```\nDISCHARGE SUMMARY\n\nPatient: Not documented | DOB: Not documented (54F) | NHS No: Not documented | Hosp No: Not documented\nAdmitted: 19/05/2025 | Discharged: 20/05/2025\nSpecialty: Trauma & Orthopaedics (inferred — not documented, confirm)\n\nPRESENTING COMPLAINT\nMechanical fall resulting in right wrist injury.\n\nDIAGNOSIS\nPrimary: Closed displaced distal radius fracture (Colles'), right wrist.\nSecondary: Not documented.\nBackground: Not documented.\n\nKEY INVESTIGATIONS\nNot documented.\n\nTREATMENT DURING ADMISSION\nOpen reduction and internal fixation (ORIF) of right wrist performed 19/05/2025 —\ndocumented as uncomplicated. Backslab applied post-operatively, in situ at\ndischarge. Hand neurovascularly intact on day 2 review.\n\nRESUSCITATION STATUS\nNot documented — no resuscitation discussion indicated for this admission.\n\nMEDICATIONS ON DISCHARGE\nNot documented.\n\nALLERGIES: Not documented.\n\nFOLLOW-UP\nFracture clinic appointment in 1 week (date not specified).\n\nGP ACTIONS\nNot documented.\n\nPATIENT ADVICE\nNot documented.\n\nVTE ASSESSMENT\nNot documented.\n\nAuthor: [name, grade, date — to be completed by responsible clinician]\n```\n\n---\n\n> ⚠️ **FLAGS FOR REVIEWING CLINICIAN — please address before sign-off:**\n>\n> 1. **Patient identifiers** — full name, DOB, NHS number, and hospital number are not present in the notes. Please complete before issuing.\n> 2. **Specialty** — inferred as Trauma & Orthopaedics from clinical context; please confirm.\n> 3. **Medications on discharge** — not documented (pre-admission drug history and any discharge analgesia/medications not recorded). Please complete.\n> 4. **Allergies** — not documented. Please confirm allergy status before issuing.\n> 5. **VTE assessment** — not documented. Please confirm whether a VTE risk assessment was completed and whether thromboprophylaxis is required post-ORIF.\n> 6. **Patient advice / safety-netting** — no advice or safety-net instructions are recorded in the notes. Please document any advice given (wound care, backslab instructions, when to seek help) so it can be included in the patient-facing version.\n> 7. **Fracture clinic appointment** — date and location not specified. Please confirm and add.\n> 8. **Interpreter / translation** — notes document limited English and telephone interpreter use for consent. The patient-friendly version below is produced in Polish with an English copy for staff. Please ensure a translated copy or interpreter is arranged for handover of discharge information.\n\n---\n\n---\n\n# PART B — GP LETTER\n\n20/05/2025\n\nDear Colleague,\n\n**Re: [Patient name], DOB: Not documented, NHS No: Not documented**\nAdmitted: 19/05/2025 | Discharged: 20/05/2025 | Under: Trauma & Orthopaedics *(inferred — confirm)*\n\nThis 54-year-old woman was admitted on 19/05/2025 following a mechanical fall, sustaining a closed displaced distal radius fracture (Colles') of the right wrist.\n\nShe underwent open reduction and internal fixation (ORIF) of the right wrist on the day of admission, which was uncomplicated. She was reviewed on day 2 with the hand neurovascularly intact and a backslab in situ, and was deemed fit for discharge.\n\n**Diagnosis:** Closed displaced distal radius fracture (Colles'), right wrist — treated with ORIF.\n\n**Medication changes:** Not documented in the notes — please see attached summary. *(Note: pre-admission drug history and discharge medications were not recorded; please reconcile with the patient directly.)*\n\n**Actions for you (GP):** No specific actions documented.\n\n**Follow-up arranged:** Fracture clinic in 1 week *(date and location not specified — please confirm with the patient).*\n\n**Pending results:** None documented.\n\n*Please note: this patient has limited English. A telephone interpreter was used during admission. You may wish to arrange interpreter support for any follow-up consultations in primary care.*\n\nYours sincerely,\n[Author name, grade — to be completed by responsible clinician]\n\n---\n\n---\n\nPART C - PATIENT VERSION (v2 second pass)\n\n> ⚠️ **DRAFT ONLY — for clinician review and sign-off before issue.**\n> Several items are incomplete in the source notes (see flags above). This leaflet reflects only what is currently documented. It must not be given to the patient until the reviewing clinician has completed all flagged fields and approved the final version.\n>\n> **Translation note:** The source notes record that the patient has limited English and that a telephone interpreter was used for consent. A Polish-language version follows the English text. Please ensure a qualified interpreter or translated materials are available when handing over discharge information.\n\n---\n\n# Your Discharge Information — Right Wrist Operation\n\n## What happened\n\nYou came to hospital after a fall. You had broken a bone in your right wrist. This is called a **distal radius fracture (Colles' fracture)**.\n\n## What we did\n\nOn **19 May 2025** you had an operation to fix the broken bone. The surgeon moved the bone back into the right place and held it there with a small metal plate and screws. This is called **open reduction and internal fixation (ORIF)**. The operation went well.\n\nAfter the operation, a plaster support called a **backslab** was put on your wrist. You still had this on when you went home.\n\nBefore you left, the team checked the feeling and blood supply in your hand. Everything looked fine.\n\n## Your medicines\n\n*(This section has not been completed in your notes yet. Your doctor needs to add this before you receive your final copy. Please ask before you leave if you are not sure what medicines to take.)*\n\n## What happens next\n\nYou have an appointment at the **fracture clinic in about 1 week**. The exact date, time, and place still need to be confirmed — please check this with the ward team before you go home.\n\n---\n\n## If you feel unwell\n\nIf you become unwell or are worried about anything, contact your GP or call NHS 111. Call 999 if it is an emergency.\n\n---\n\n*This leaflet is a draft. It must be checked and signed off by your responsible doctor before it is given to you.*\n\n---\n---\n\n# Informacje po wypisie ze szpitala — Operacja nadgarstka prawego\n\n> ⚠️ **WERSJA ROBOCZA — wymaga sprawdzenia i zatwierdzenia przez lekarza przed wydaniem pacjentce.**\n\n---\n\n## Co się stało\n\nTrafiła Pani do szpitala po upadku. Złamała Pani kość w prawym nadgarstku. Złamanie to nazywa się **złamaniem dalszej nasady kości promieniowej (złamanie Collesa)**.\n\n## Co zrobiliśmy\n\nW dniu **19 maja 2025 roku** przeszła Pani operację naprawy złamanej kości. Chirurg ustawił kość we właściwym miejscu i unieruchomił ją małą metalową płytką i śrubami. Zabieg ten nazywa się **otwartą repozycją i wewnętrzną stabilizacją (ORIF)**. Operacja przebiegła pomyślnie.\n\nPo operacji założono Pani gipsową szynę podtrzymującą nadgarstek, zwaną **backslab**. Miała ją Pani nadal przy wypisie do domu.\n\nPrzed wyjściem ze szpitala zespół sprawdził czucie i ukrwienie w Pani dłoni. Wszystko wyglądało dobrze.\n\n## Pani leki\n\n*(Ta część nie została jeszcze uzupełniona w dokumentacji. Lekarz musi ją wypełnić przed wydaniem ostatecznej wersji tej ulotki. Proszę zapytać przed wyjściem ze szpitala, jeśli nie jest Pani pewna, jakie leki przyjmować.)*\n\n## Co dalej\n\nMa Pani wizytę w **poradni urazowej za około 1 tydzień**. Dokładna data, godzina i miejsce wizyty muszą jeszcze zostać potwierdzone — proszę sprawdzić to z personelem oddziału przed wyjściem do domu.\n\n---\n\n## Jeśli poczuje się Pani gorzej\n\nJeśli poczuje się Pani gorzej lub będzie się Pani o coś martwić, proszę skontaktować się z lekarzem pierwszego kontaktu (GP) lub zadzwonić pod numer **NHS 111**. W nagłych przypadkach proszę dzwonić pod numer **999**.\n\n---\n\n*Ta ulotka jest wersją roboczą. Musi zostać sprawdzona i zatwierdzona przez odpowiedzialnego lekarza przed jej wydaniem.*\n",
+  "gate": {
+    "canonical": "V1_LINES",
+    "status": "added_advice",
+    "ok": false,
+    "label": "FAIL",
+    "findings": [
+      "The notes record no seek-help trigger, so PART C's only permitted signposting is a canonical fall-back line, verbatim.",
+      "expected: If you become unwell or are worried about anything, contact your GP or call NHS 111. Call 999 if it is an emergency.",
+      "observed: If you become unwell or are worried about anything, contact your GP or call NHS 111. Call 999 if it is an emergency. Jeśli poczuje się Pani gorzej lub będzie się Pani o coś martwić, proszę skontaktować się z lekarzem pierwszego kontaktu (GP) lub zadzwonić pod numer **NHS 111**. W nagłych przypadkach proszę dzwonić pod numer **999**."
+    ]
+  },
+  "cost_usd_est": 0.057149,
+  "error": null
+}

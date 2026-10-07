@@ -1,0 +1,67 @@
+{
+  "record_version": 1,
+  "generation_id": "w4-baseline-v1-x5/r2/S8",
+  "batch_id": "w4-baseline-v1-x5",
+  "run": 2,
+  "scenario_id": "S8",
+  "generator": "v1",
+  "path": "deployed",
+  "model_id": "anthropic.claude-sonnet-4-6",
+  "region": "eu-west-2",
+  "inference": {
+    "max_tokens": 4096,
+    "temperature": 0.0,
+    "patient_max_tokens": 1500
+  },
+  "prompts": {
+    "system": {
+      "path": "src/generate/system_prompt.md",
+      "file_sha256": "a7ec8a5661007b0a69231dd68a1f286013cf23a2192ed7ec16770bc07f3c1e3a",
+      "body_sha256": "de46dda1e90bdb1380e077bf7119a2d0d537b7f1f53199b3aeaa2c41aa645ee6"
+    },
+    "patient": {
+      "path": "src/generate/patient_system_prompt.md",
+      "file_sha256": "32f9767baf648dbe2ca1ad5e46d40ea75ff51890bca0b66ef1c44b96166f8e1b",
+      "body_sha256": "7fea4b502d0b9a8b983bcbcac353bc7763845ed0a3eaf0d39edfd80650d23435"
+    }
+  },
+  "prompt_caching": true,
+  "notes_sha256": "db5dc0237ea1d82ade478142d26845b1f5fda1c9c35512621c0f5aa23a5afca6",
+  "started_at": "2026-10-07T13:19:17+01:00",
+  "elapsed_s": 41.544,
+  "calls": [
+    {
+      "name": "combined",
+      "input_tokens": 298,
+      "output_tokens": 2286,
+      "cache_read_tokens": 5192,
+      "cache_write_tokens": 0,
+      "stop_reason": "end_turn",
+      "latency_s": 31.44,
+      "throttle_retries": 0
+    },
+    {
+      "name": "patient_v2",
+      "input_tokens": 863,
+      "output_tokens": 655,
+      "cache_read_tokens": 1038,
+      "cache_write_tokens": 0,
+      "stop_reason": "end_turn",
+      "latency_s": 10.101,
+      "throttle_retries": 0
+    }
+  ],
+  "patient_version": "v2",
+  "output": "I'll now produce all three parts. Note that the notes say \"safety-net advice to parents re fever/feeding/breathing\" but do not specify the exact wording of that advice. I will reproduce the documented topics faithfully without inventing specific thresholds or triggers.\n\n---\n\n# PART A — STRUCTURED CLINICAL DISCHARGE SUMMARY\n\n```\nDISCHARGE SUMMARY\n\nPatient: Not documented (male neonate) | DOB: 16/05/2025 (4 days) |\nNHS No: Not documented | Hosp No: Not documented\nAdmitted: 16/05/2025 | Discharged: 20/05/2025\nSpecialty: Neonatal Medicine (inferred — not documented, confirm)\nWeight: 3.4 kg (birth weight, 16/05/2025)\n\nPRESENTING COMPLAINT\nTerm male neonate admitted to the Neonatal Unit at 6 hours of age with\ngrunting, tachypnoea (RR 70), and fever (38.1 °C), in the context of\nmaternal Group B Streptococcus (GBS) positivity and intrapartum antibiotics\nadministered less than 4 hours before delivery.\n\nDIAGNOSIS\nPrimary: Neonatal early-onset infection / sepsis screen positive (clinical\n         presentation with CRP rise; blood culture negative at 48 hours)\nBackground: Maternal GBS colonisation; intrapartum antibiotics <4 h\n            before delivery (incomplete prophylaxis)\n\nKEY INVESTIGATIONS\n- Blood culture: no growth at 36 h; confirmed negative at 48 h\n- CRP: 28 (Day 1, 16/05) → 41 (Day 1/2) → 18 (Day 2, 17/05) — rising\n  then falling trend\n- Lumbar puncture: deferred (clinically stable respiratory status at time\n  of assessment)\n- Hearing screen: passed (Day 3, 18/05)\n- Routine newborn checks: completed prior to discharge\n\nTREATMENT DURING ADMISSION\n- Admitted to Neonatal Unit (NNU) Day 1\n- Septic screen performed: bloods, blood culture, CRP\n- IV benzylpenicillin + gentamicin commenced per neonatal sepsis protocol\n- Respiratory support: not documented as required beyond Day 1; off any\n  respiratory support by Day 2\n- Decision on Day 3 to complete full 5-day IV antibiotic course on the\n  basis of clinical presentation and initial CRP rise, despite negative\n  blood cultures\n- IV antibiotics completed Day 5 (20/05)\n\nRESUSCITATION STATUS\nNot documented — no resuscitation discussion indicated for this admission.\n\nMEDICATIONS ON DISCHARGE\nIV benzylpenicillin — STOPPED (course completed 20/05/2025, 5-day course\n                      as planned)\nIV gentamicin       — STOPPED (course completed 20/05/2025, 5-day course\n                      as planned)\n\nNo discharge medications documented.\n\nALLERGIES: Not documented\n\nFOLLOW-UP\nNo routine follow-up arranged.\nHearing screen passed prior to discharge — no further audiology follow-up\ndocumented.\n\nGP ACTIONS\nNot documented.\n\nPATIENT ADVICE          (PARENT / CARER ADVICE)\nThe notes record that safety-net advice was given to parents regarding\nfever, feeding, and breathing. The specific content, thresholds, and\ntriggers are not transcribed in these notes.\n\n⚠ CLINICIAN ACTION REQUIRED: Please document the specific advice given\nso that it can be reproduced accurately in the parent-facing version\n(Part C). The patient-friendly summary below reflects only the documented\ntopics; no specific thresholds or triggers have been added.\n\nVTE ASSESSMENT: Not applicable (paediatric/neonatal)\n\nAuthor: [Name, Grade, Date] ← TO BE COMPLETED BY RESPONSIBLE CLINICIAN\n```\n\n---\n\n# PART B — GP LETTER\n\n```\n20/05/2025\n\nDear Colleague,\n\nRe: Male neonate (name not documented), DOB 16/05/2025, NHS No: Not documented\nAdmitted 16/05/2025, discharged 20/05/2025 under Neonatal Medicine\n(inferred — confirm).\n\nThis term male infant (born 39+2 weeks by spontaneous vaginal delivery,\nbirth weight 3.4 kg) was admitted to the Neonatal Unit at 6 hours of age\nwith grunting, tachypnoea (RR 70), and fever (38.1 °C), in the context of\nmaternal GBS positivity and intrapartum antibiotics given less than 4 hours\nbefore delivery (incomplete prophylaxis).\n\nA septic screen was performed on admission (bloods, blood culture, CRP).\nLumbar puncture was deferred given clinical stability. CRP rose from 28 to\n41 before falling to 18 on Day 2. Blood cultures were negative at both 36\nand 48 hours. The clinical team elected to complete a full 5-day course of\nIV benzylpenicillin and gentamicin (per neonatal sepsis protocol) on the\nbasis of the clinical presentation and initial CRP trajectory, despite\nnegative cultures. The infant improved promptly, was off respiratory\nsupport by Day 2, feeding fully by Day 3, and was clinically well at\ndischarge. The newborn hearing screen was passed. Routine newborn checks\nwere completed.\n\nDiagnosis: Neonatal early-onset infection / clinical sepsis (blood culture\nnegative; CRP rise with clinical features in context of incomplete GBS\nprophylaxis).\n\nMedication changes: IV benzylpenicillin and IV gentamicin — both STOPPED,\n5-day course completed 20/05/2025. No medications on discharge.\n\nActions for you (GP): Not documented by the discharging team.\n\nFollow-up arranged: None. No routine follow-up has been arranged.\n\nPending results: None documented.\n\nPlease note: the patient's name and NHS number were not available in the\nnotes provided to me; please link this letter to the correct record on\nreceipt.\n\nYours sincerely,\n[Name, Grade] ← TO BE COMPLETED BY RESPONSIBLE CLINICIAN\n```\n\n---\n\nPART C - PATIENT VERSION (v2 second pass)\n\n# Your Baby's Discharge Letter\n\n**For the parents and carers of a baby boy born 16 May 2025**\n\n---\n\n## What happened and why your baby was admitted\n\nShortly after your baby was born, the team noticed he was breathing faster than normal and making a grunting sound. He also had a slight temperature. Because of this — and because of a bacteria called Group B Streptococcus (GBS) that was found during your pregnancy — the doctors wanted to check carefully for a possible infection.\n\nYour baby was admitted to the Neonatal Unit (NNU) on the day he was born so the team could watch him closely and run some tests.\n\n---\n\n## Tests that were done\n\n- A **blood test** was taken to look for signs of infection. A marker called CRP went up at first and then came back down, which the team monitored closely.\n- A **blood culture** (a test that checks whether bacteria are growing in the blood) came back clear after 48 hours.\n- A **hearing screen** was done on day 3 — your baby **passed**.\n- All **routine newborn checks** were completed before he went home.\n\n---\n\n## What treatment your baby had\n\nYour baby was given two antibiotic medicines through a drip (a small tube into a vein):\n\n- **Benzylpenicillin** (an antibiotic)\n- **Gentamicin** (an antibiotic)\n\nEven though the blood culture came back clear, the doctors decided to give a full **5-day course** of antibiotics because of the way your baby had been at the start and the early blood-test results. Both antibiotics were finished on 20 May 2025.\n\nBy day 2, your baby no longer needed any help with his breathing.\n\n---\n\n## Medicines to take home\n\nYour baby **does not need any medicines** at home. Both antibiotic courses were fully completed in hospital before he was discharged.\n\n---\n\n## What happens next\n\nNo further hospital appointments have been arranged. Because your baby passed his hearing screen, no further hearing checks are needed at this stage.\n\nIf you have not already heard from your GP, it is worth letting them know your baby has been home from hospital.\n\n---\n\n## When to get help\n\nThe team talked to you about what to look out for at home — including your baby's **temperature**, **feeding**, and **breathing**. The specific details of that advice were not written down in the notes we have, so we are not able to repeat them here. **Please speak to your midwife, health visitor, or the neonatal team if you are unsure what you were told, or if you have any questions.**\n\nIf you become unwell or are worried about anything, contact your GP or call NHS 111. Call 999 if it is an emergency.\n\n---\n\n*This letter is a draft for review and sign-off by the responsible clinician before it is given to the family.*\n",
+  "gate": {
+    "canonical": "V1_LINES",
+    "status": "documented_advice",
+    "ok": true,
+    "label": "PASS (advisory)",
+    "findings": [
+      "The source notes record a seek-help trigger, so the fall-back rule is not engaged. Whether the rephrasing is faithful is a rubric judgement (EVAL_RESULTS.md D2), not checked here."
+    ]
+  },
+  "cost_usd_est": 0.054414,
+  "error": null
+}

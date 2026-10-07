@@ -1,0 +1,6470 @@
+{
+  "scorer": "safety_net",
+  "scorer_version": 2,
+  "batch_id": "w4-baseline-v1-x5",
+  "generator": "v1",
+  "gold": {
+    "S11": {
+      "status": "approved",
+      "sha256": "20f52f3a721a8c0f4f923e60a22948bf6cd17224206d57885a3dab7897de8a0d"
+    },
+    "S8": {
+      "status": "approved",
+      "sha256": "1750729bbff29dcf405a6e4759ddf7be6a7f6dcd16dbbac99acb5f823f4798a6"
+    },
+    "S18": {
+      "status": "approved",
+      "sha256": "5086d224b0a5ab587cf5802e748f75f7b28f85c6f966b7e91c1a967cdb0d5df9"
+    },
+    "S13": {
+      "status": "approved",
+      "sha256": "34f0dfcbb5fadda073991ced1955b2de90621a33f38663c3fbc033a4735f847a"
+    },
+    "A5": {
+      "status": "approved",
+      "sha256": "80d0adab601df1792cf3627f394ebbc8843500ec7d9763277e376948f0e3e0e4"
+    },
+    "S3": {
+      "status": "approved",
+      "sha256": "19c67912c3e49e17750982df362b3075e82874ca57363e72d5ab7708b235f0a6"
+    },
+    "S15": {
+      "status": "approved",
+      "sha256": "b61d05b40648a2b7a749463ca87f170511806a81eadf44feeec4686daf63390d"
+    },
+    "C7": {
+      "status": "approved",
+      "sha256": "1967d054fcd90565e7851ab3932127a79b51a5edecf5cc52f2c374e591b5df0f"
+    },
+    "S9": {
+      "status": "approved",
+      "sha256": "5a395e104b7a98f4f818578d2e61555e11efe4b499be1e7a9faf86d574264126"
+    },
+    "B6": {
+      "status": "approved",
+      "sha256": "fba7dc568098c106ab9002b171622c602fd77e869b99d1857ddb2582762c7124"
+    },
+    "S4": {
+      "status": "approved",
+      "sha256": "7d837e9dbc286bfc7e5758ba1f253286bf47327bd1c391f9946a720cd47a8208"
+    },
+    "S14": {
+      "status": "approved",
+      "sha256": "11ac78ee87c168a9e2653afc0b12cb08de6d02493ccceae0a505e9200846175f"
+    },
+    "S1": {
+      "status": "approved",
+      "sha256": "17c1a71d3422d157cd75942acec635e4dc588eea7c60c6278efb3e6cb7245ff4"
+    },
+    "S16": {
+      "status": "approved",
+      "sha256": "dd05baaad97444d727d611113bd2b1ac9bbb57d960cfdb9e996a860214b3060e"
+    },
+    "S17": {
+      "status": "approved",
+      "sha256": "1cd17a625573c85e980538e3b5580370f92f4685adfa5e530d32d4f2bfbed145"
+    },
+    "S2": {
+      "status": "approved",
+      "sha256": "4ea0940764ea8104f40b06321685cbbbfae43fa240340483733125eb046434d2"
+    },
+    "S10": {
+      "status": "approved",
+      "sha256": "9200c327d753efae6d9dbd1a0fa0ec286b68f61a0d38996b6660f74faea0342d"
+    },
+    "S12": {
+      "status": "approved",
+      "sha256": "5d61299a2f0ebb04eb5b6ccc248ea03413bf17a04d0bb3197876f13bceb4903f"
+    }
+  },
+  "results": [
+    {
+      "generator": "v1",
+      "gold_status": "approved",
+      "route": {
+        "gold": "fallback",
+        "predicted": "fallback",
+        "correct": true,
+        "gold_basis": null
+      },
+      "advice": {
+        "units": [],
+        "n_units": 0,
+        "n_gold": 0,
+        "n_other_line": 0,
+        "n_unlocated": 0,
+        "n_adjudicated": 0,
+        "gold_items": 0,
+        "gold_items_carried": 0,
+        "meta_flags": 1
+      },
+      "seek_help": {
+        "gold_documented": false,
+        "n_signposts": 2,
+        "n_invented": 0
+      },
+      "pinned": {
+        "required": true,
+        "in_part_c": true,
+        "audience_ok": null
+      },
+      "failures": [],
+      "verdict": "pass",
+      "generation_id": "w4-baseline-v1-x5/r1/S1",
+      "scenario_id": "S1",
+      "run": 1,
+      "gate": {
+        "at_generation": "documented_advice",
+        "at_generation_ok": true,
+        "now": "documented_advice",
+        "now_ok": true
+      }
+    },
+    {
+      "generator": "v1",
+      "gold_status": "approved",
+      "route": {
+        "gold": "documented",
+        "predicted": "documented",
+        "correct": true,
+        "gold_basis": "instruction"
+      },
+      "advice": {
+        "units": [
+          {
+            "index": 0,
+            "kind": "gold",
+            "lines": [
+              "L012"
+            ],
+            "key": "612eb9554098e7b7c3bae6f49deb8bd431b1ed695e1ded615cb2730d3d7e6d17"
+          },
+          {
+            "index": 1,
+            "kind": "gold",
+            "lines": [
+              "L012"
+            ],
+            "key": "c323d69e882906e59a6b6f26203cc4aca29a3756a36946dbaa3ba924c4748335"
+          }
+        ],
+        "n_units": 2,
+        "n_gold": 2,
+        "n_other_line": 0,
+        "n_unlocated": 0,
+        "n_adjudicated": 0,
+        "gold_items": 2,
+        "gold_items_carried": 2,
+        "meta_flags": 3
+      },
+      "seek_help": {
+        "gold_documented": false,
+        "n_signposts": 2,
+        "n_invented": 0
+      },
+      "pinned": {
+        "required": true,
+        "in_part_c": true,
+        "audience_ok": null
+      },
+      "failures": [],
+      "verdict": "pass",
+      "generation_id": "w4-baseline-v1-x5/r1/S2",
+      "scenario_id": "S2",
+      "run": 1,
+      "gate": {
+        "at_generation": "documented_advice",
+        "at_generation_ok": true,
+        "now": "documented_advice",
+        "now_ok": true
+      }
+    },
+    {
+      "generator": "v1",
+      "gold_status": "approved",
+      "route": {
+        "gold": "documented",
+        "predicted": "documented",
+        "correct": true,
+        "gold_basis": "record_only"
+      },
+      "advice": {
+        "units": [
+          {
+            "index": 0,
+            "kind": "adjudicated_supported",
+            "lines": null,
+            "key": "1d0275a0728619014aa09f0fe35095a24216cc22ad3be911f71bd597e125a12c"
+          },
+          {
+            "index": 1,
+            "kind": "gold",
+            "lines": [
+              "L022"
+            ],
+            "key": "5392e929db5eb90277f3b2f740b9cb0837cdf2919b6d4d33138b75d2676f1bba"
+          }
+        ],
+        "n_units": 2,
+        "n_gold": 1,
+        "n_other_line": 0,
+        "n_unlocated": 0,
+        "n_adjudicated": 1,
+        "gold_items": 2,
+        "gold_items_carried": 1,
+        "meta_flags": 1
+      },
+      "seek_help": {
+        "gold_documented": true,
+        "n_signposts": 3,
+        "n_invented": 0
+      },
+      "pinned": {
+        "required": false,
+        "in_part_c": true,
+        "audience_ok": null
+      },
+      "failures": [],
+      "verdict": "pass",
+      "generation_id": "w4-baseline-v1-x5/r1/S3",
+      "scenario_id": "S3",
+      "run": 1,
+      "gate": {
+        "at_generation": "documented_advice",
+        "at_generation_ok": true,
+        "now": "documented_advice",
+        "now_ok": true
+      }
+    },
+    {
+      "generator": "v1",
+      "gold_status": "approved",
+      "route": {
+        "gold": "documented",
+        "predicted": "documented",
+        "correct": true,
+        "gold_basis": "record_only"
+      },
+      "advice": {
+        "units": [
+          {
+            "index": 0,
+            "kind": "adjudicated_supported",
+            "lines": null,
+            "key": "11e5ec330c8c3828456ad9f0cfac398cd39303e19307d6adc4f8a798076a3a1e"
+          }
+        ],
+        "n_units": 1,
+        "n_gold": 0,
+        "n_other_line": 0,
+        "n_unlocated": 0,
+        "n_adjudicated": 1,
+        "gold_items": 1,
+        "gold_items_carried": 0,
+        "meta_flags": 1
+      },
+      "seek_help": {
+        "gold_documented": false,
+        "n_signposts": 2,
+        "n_invented": 0
+      },
+      "pinned": {
+        "required": true,
+        "in_part_c": true,
+        "audience_ok": null
+      },
+      "failures": [],
+      "verdict": "pass",
+      "generation_id": "w4-baseline-v1-x5/r1/S4",
+      "scenario_id": "S4",
+      "run": 1,
+      "gate": {
+        "at_generation": "documented_advice",
+        "at_generation_ok": true,
+        "now": "documented_advice",
+        "now_ok": true
+      }
+    },
+    {
+      "generator": "v1",
+      "gold_status": "approved",
+      "route": {
+        "gold": "documented",
+        "predicted": "documented",
+        "correct": true,
+        "gold_basis": "record_only"
+      },
+      "advice": {
+        "units": [
+          {
+            "index": 0,
+            "kind": "gold",
+            "lines": [
+              "L012",
+              "L013"
+            ],
+            "key": "20741ddb71a785dab6d16e1a701fa1ade1b33856a45d1f3df2e5ade16b1c86b3"
+          }
+        ],
+        "n_units": 1,
+        "n_gold": 1,
+        "n_other_line": 0,
+        "n_unlocated": 0,
+        "n_adjudicated": 0,
+        "gold_items": 1,
+        "gold_items_carried": 1,
+        "meta_flags": 4
+      },
+      "seek_help": {
+        "gold_documented": true,
+        "n_signposts": 2,
+        "n_invented": 0
+      },
+      "pinned": {
+        "required": false,
+        "in_part_c": true,
+        "audience_ok": null
+      },
+      "failures": [],
+      "verdict": "pass",
+      "generation_id": "w4-baseline-v1-x5/r1/S8",
+      "scenario_id": "S8",
+      "run": 1,
+      "gate": {
+        "at_generation": "documented_advice",
+        "at_generation_ok": true,
+        "now": "documented_advice",
+        "now_ok": true
+      }
+    },
+    {
+      "generator": "v1",
+      "gold_status": "approved",
+      "route": {
+        "gold": "documented",
+        "predicted": "fallback",
+        "correct": false,
+        "gold_basis": "instruction"
+      },
+      "advice": {
+        "units": [],
+        "n_units": 0,
+        "n_gold": 0,
+        "n_other_line": 0,
+        "n_unlocated": 0,
+        "n_adjudicated": 0,
+        "gold_items": 2,
+        "gold_items_carried": 0,
+        "meta_flags": 2
+      },
+      "seek_help": {
+        "gold_documented": true,
+        "n_signposts": 2,
+        "n_invented": 0
+      },
+      "pinned": {
+        "required": false,
+        "in_part_c": true,
+        "audience_ok": null
+      },
+      "failures": [
+        "route"
+      ],
+      "verdict": "fail",
+      "generation_id": "w4-baseline-v1-x5/r1/S9",
+      "scenario_id": "S9",
+      "run": 1,
+      "gate": {
+        "at_generation": "clean",
+        "at_generation_ok": true,
+        "now": "clean",
+        "now_ok": true
+      }
+    },
+    {
+      "generator": "v1",
+      "gold_status": "approved",
+      "route": {
+        "gold": "documented",
+        "predicted": "documented",
+        "correct": true,
+        "gold_basis": "record_only"
+      },
+      "advice": {
+        "units": [
+          {
+            "index": 0,
+            "kind": "adjudicated_supported",
+            "lines": null,
+            "key": "8a9cc2d7b931e2532cdd63c46b3330fe64c9c6761b4e6735115dc675f4b5d04b"
+          }
+        ],
+        "n_units": 1,
+        "n_gold": 0,
+        "n_other_line": 0,
+        "n_unlocated": 0,
+        "n_adjudicated": 1,
+        "gold_items": 1,
+        "gold_items_carried": 0,
+        "meta_flags": 2
+      },
+      "seek_help": {
+        "gold_documented": true,
+        "n_signposts": 2,
+        "n_invented": 0
+      },
+      "pinned": {
+        "required": false,
+        "in_part_c": true,
+        "audience_ok": null
+      },
+      "failures": [],
+      "verdict": "pass",
+      "generation_id": "w4-baseline-v1-x5/r1/S10",
+      "scenario_id": "S10",
+      "run": 1,
+      "gate": {
+        "at_generation": "documented_advice",
+        "at_generation_ok": true,
+        "now": "documented_advice",
+        "now_ok": true
+      }
+    },
+    {
+      "generator": "v1",
+      "gold_status": "approved",
+      "route": {
+        "gold": "documented",
+        "predicted": "fallback",
+        "correct": false,
+        "gold_basis": "instruction"
+      },
+      "advice": {
+        "units": [],
+        "n_units": 0,
+        "n_gold": 0,
+        "n_other_line": 0,
+        "n_unlocated": 0,
+        "n_adjudicated": 0,
+        "gold_items": 2,
+        "gold_items_carried": 0,
+        "meta_flags": 1
+      },
+      "seek_help": {
+        "gold_documented": false,
+        "n_signposts": 2,
+        "n_invented": 0
+      },
+      "pinned": {
+        "required": true,
+        "in_part_c": true,
+        "audience_ok": null
+      },
+      "failures": [
+        "route"
+      ],
+      "verdict": "fail",
+      "generation_id": "w4-baseline-v1-x5/r1/S11",
+      "scenario_id": "S11",
+      "run": 1,
+      "gate": {
+        "at_generation": "clean",
+        "at_generation_ok": true,
+        "now": "clean",
+        "now_ok": true
+      }
+    },
+    {
+      "generator": "v1",
+      "gold_status": "approved",
+      "route": {
+        "gold": "fallback",
+        "predicted": "fallback",
+        "correct": true,
+        "gold_basis": null
+      },
+      "advice": {
+        "units": [],
+        "n_units": 0,
+        "n_gold": 0,
+        "n_other_line": 0,
+        "n_unlocated": 0,
+        "n_adjudicated": 0,
+        "gold_items": 0,
+        "gold_items_carried": 0,
+        "meta_flags": 1
+      },
+      "seek_help": {
+        "gold_documented": false,
+        "n_signposts": 2,
+        "n_invented": 0
+      },
+      "pinned": {
+        "required": true,
+        "in_part_c": true,
+        "audience_ok": null
+      },
+      "failures": [],
+      "verdict": "pass",
+      "generation_id": "w4-baseline-v1-x5/r1/S12",
+      "scenario_id": "S12",
+      "run": 1,
+      "gate": {
+        "at_generation": "documented_advice",
+        "at_generation_ok": true,
+        "now": "documented_advice",
+        "now_ok": true
+      }
+    },
+    {
+      "generator": "v1",
+      "gold_status": "approved",
+      "route": {
+        "gold": "fallback",
+        "predicted": "fallback",
+        "correct": true,
+        "gold_basis": null
+      },
+      "advice": {
+        "units": [],
+        "n_units": 0,
+        "n_gold": 0,
+        "n_other_line": 0,
+        "n_unlocated": 0,
+        "n_adjudicated": 0,
+        "gold_items": 0,
+        "gold_items_carried": 0,
+        "meta_flags": 1
+      },
+      "seek_help": {
+        "gold_documented": false,
+        "n_signposts": 2,
+        "n_invented": 0
+      },
+      "pinned": {
+        "required": true,
+        "in_part_c": true,
+        "audience_ok": null
+      },
+      "failures": [],
+      "verdict": "pass",
+      "generation_id": "w4-baseline-v1-x5/r1/S13",
+      "scenario_id": "S13",
+      "run": 1,
+      "gate": {
+        "at_generation": "documented_advice",
+        "at_generation_ok": true,
+        "now": "documented_advice",
+        "now_ok": true
+      }
+    },
+    {
+      "generator": "v1",
+      "gold_status": "approved",
+      "route": {
+        "gold": "documented",
+        "predicted": "documented",
+        "correct": true,
+        "gold_basis": "instruction"
+      },
+      "advice": {
+        "units": [
+          {
+            "index": 0,
+            "kind": "adjudicated_supported",
+            "lines": null,
+            "key": "fc9aee288aeb6de056c931dfe62099c9da61d16266adfe72992f837dd29757d8"
+          },
+          {
+            "index": 1,
+            "kind": "adjudicated_supported",
+            "lines": null,
+            "key": "77ddd64bddda741d8bcd9252d0cb3bba305c46d2c5d34e8078e13a9fb9a76fbe"
+          }
+        ],
+        "n_units": 2,
+        "n_gold": 0,
+        "n_other_line": 0,
+        "n_unlocated": 0,
+        "n_adjudicated": 2,
+        "gold_items": 1,
+        "gold_items_carried": 0,
+        "meta_flags": 0
+      },
+      "seek_help": {
+        "gold_documented": false,
+        "n_signposts": 2,
+        "n_invented": 0
+      },
+      "pinned": {
+        "required": true,
+        "in_part_c": true,
+        "audience_ok": null
+      },
+      "failures": [],
+      "verdict": "pass",
+      "generation_id": "w4-baseline-v1-x5/r1/S14",
+      "scenario_id": "S14",
+      "run": 1,
+      "gate": {
+        "at_generation": "clean",
+        "at_generation_ok": true,
+        "now": "clean",
+        "now_ok": true
+      }
+    },
+    {
+      "generator": "v1",
+      "gold_status": "approved",
+      "route": {
+        "gold": "documented",
+        "predicted": "documented",
+        "correct": true,
+        "gold_basis": "record_only"
+      },
+      "advice": {
+        "units": [
+          {
+            "index": 0,
+            "kind": "gold",
+            "lines": [
+              "L010",
+              "L011"
+            ],
+            "key": "7090dd77757696e0264227af32b1424db8b04b18ed89435f72b88aa76098a053"
+          },
+          {
+            "index": 1,
+            "kind": "gold",
+            "lines": [
+              "L012"
+            ],
+            "key": "7e96dac40ab7b4df1d2b6269946292892d8057245f7ba539700bfd4779db6e8c"
+          },
+          {
+            "index": 2,
+            "kind": "gold",
+            "lines": [
+              "L012"
+            ],
+            "key": "01e5368e82c2d126c487c28900ce027f220e42f19fe893edb6bca734376fc07b"
+          }
+        ],
+        "n_units": 3,
+        "n_gold": 3,
+        "n_other_line": 0,
+        "n_unlocated": 0,
+        "n_adjudicated": 0,
+        "gold_items": 2,
+        "gold_items_carried": 2,
+        "meta_flags": 1
+      },
+      "seek_help": {
+        "gold_documented": false,
+        "n_signposts": 2,
+        "n_invented": 0
+      },
+      "pinned": {
+        "required": true,
+        "in_part_c": true,
+        "audience_ok": null
+      },
+      "failures": [],
+      "verdict": "pass",
+      "generation_id": "w4-baseline-v1-x5/r1/S15",
+      "scenario_id": "S15",
+      "run": 1,
+      "gate": {
+        "at_generation": "clean",
+        "at_generation_ok": true,
+        "now": "clean",
+        "now_ok": true
+      }
+    },
+    {
+      "generator": "v1",
+      "gold_status": "approved",
+      "route": {
+        "gold": "fallback",
+        "predicted": "fallback",
+        "correct": true,
+        "gold_basis": null
+      },
+      "advice": {
+        "units": [],
+        "n_units": 0,
+        "n_gold": 0,
+        "n_other_line": 0,
+        "n_unlocated": 0,
+        "n_adjudicated": 0,
+        "gold_items": 0,
+        "gold_items_carried": 0,
+        "meta_flags": 1
+      },
+      "seek_help": {
+        "gold_documented": false,
+        "n_signposts": 2,
+        "n_invented": 0
+      },
+      "pinned": {
+        "required": true,
+        "in_part_c": true,
+        "audience_ok": null
+      },
+      "failures": [],
+      "verdict": "pass",
+      "generation_id": "w4-baseline-v1-x5/r1/S16",
+      "scenario_id": "S16",
+      "run": 1,
+      "gate": {
+        "at_generation": "clean",
+        "at_generation_ok": true,
+        "now": "clean",
+        "now_ok": true
+      }
+    },
+    {
+      "generator": "v1",
+      "gold_status": "approved",
+      "route": {
+        "gold": "fallback",
+        "predicted": "fallback",
+        "correct": true,
+        "gold_basis": null
+      },
+      "advice": {
+        "units": [],
+        "n_units": 0,
+        "n_gold": 0,
+        "n_other_line": 0,
+        "n_unlocated": 0,
+        "n_adjudicated": 0,
+        "gold_items": 0,
+        "gold_items_carried": 0,
+        "meta_flags": 1
+      },
+      "seek_help": {
+        "gold_documented": false,
+        "n_signposts": 2,
+        "n_invented": 0
+      },
+      "pinned": {
+        "required": true,
+        "in_part_c": true,
+        "audience_ok": null
+      },
+      "failures": [],
+      "verdict": "pass",
+      "generation_id": "w4-baseline-v1-x5/r1/S17",
+      "scenario_id": "S17",
+      "run": 1,
+      "gate": {
+        "at_generation": "clean",
+        "at_generation_ok": true,
+        "now": "clean",
+        "now_ok": true
+      }
+    },
+    {
+      "generator": "v1",
+      "gold_status": "approved",
+      "route": {
+        "gold": "documented",
+        "predicted": "documented",
+        "correct": true,
+        "gold_basis": "instruction"
+      },
+      "advice": {
+        "units": [
+          {
+            "index": 0,
+            "kind": "gold",
+            "lines": [
+              "L007"
+            ],
+            "key": "1074cf4131e5b832c702c2973ca1f273d34304e48a95420ed1c9489cd20c10bf"
+          },
+          {
+            "index": 1,
+            "kind": "adjudicated_unsupported",
+            "lines": null,
+            "key": "fa7eab53ffa04b6b12841092f2b32ab314e6df8ce4cfc0450f61197a4f4bd749"
+          },
+          {
+            "index": 2,
+            "kind": "adjudicated_unsupported",
+            "lines": null,
+            "key": "64e762b3f6f708a3215b40eeeb6bdb219c9de561d76645a8279feb8bba8d6c3f"
+          },
+          {
+            "index": 3,
+            "kind": "gold",
+            "lines": [
+              "L008",
+              "L009"
+            ],
+            "key": "8d72f04ed192e5955ac00119b1d66047b41e40125d6aa9ce0585a588ae7e91a0"
+          }
+        ],
+        "n_units": 4,
+        "n_gold": 2,
+        "n_other_line": 0,
+        "n_unlocated": 0,
+        "n_adjudicated": 2,
+        "gold_items": 3,
+        "gold_items_carried": 3,
+        "meta_flags": 1
+      },
+      "seek_help": {
+        "gold_documented": false,
+        "n_signposts": 2,
+        "n_invented": 0
+      },
+      "pinned": {
+        "required": true,
+        "in_part_c": true,
+        "audience_ok": null
+      },
+      "failures": [
+        "unsupported_advice"
+      ],
+      "verdict": "fail",
+      "generation_id": "w4-baseline-v1-x5/r1/S18",
+      "scenario_id": "S18",
+      "run": 1,
+      "gate": {
+        "at_generation": "clean",
+        "at_generation_ok": true,
+        "now": "clean",
+        "now_ok": true
+      }
+    },
+    {
+      "generator": "v1",
+      "gold_status": "approved",
+      "route": {
+        "gold": "fallback",
+        "predicted": "fallback",
+        "correct": true,
+        "gold_basis": null
+      },
+      "advice": {
+        "units": [],
+        "n_units": 0,
+        "n_gold": 0,
+        "n_other_line": 0,
+        "n_unlocated": 0,
+        "n_adjudicated": 0,
+        "gold_items": 0,
+        "gold_items_carried": 0,
+        "meta_flags": 1
+      },
+      "seek_help": {
+        "gold_documented": false,
+        "n_signposts": 2,
+        "n_invented": 0
+      },
+      "pinned": {
+        "required": true,
+        "in_part_c": true,
+        "audience_ok": null
+      },
+      "failures": [],
+      "verdict": "pass",
+      "generation_id": "w4-baseline-v1-x5/r1/A5",
+      "scenario_id": "A5",
+      "run": 1,
+      "gate": {
+        "at_generation": "documented_advice",
+        "at_generation_ok": true,
+        "now": "documented_advice",
+        "now_ok": true
+      }
+    },
+    {
+      "generator": "v1",
+      "gold_status": "approved",
+      "route": {
+        "gold": "fallback",
+        "predicted": "fallback",
+        "correct": true,
+        "gold_basis": null
+      },
+      "advice": {
+        "units": [],
+        "n_units": 0,
+        "n_gold": 0,
+        "n_other_line": 0,
+        "n_unlocated": 0,
+        "n_adjudicated": 0,
+        "gold_items": 0,
+        "gold_items_carried": 0,
+        "meta_flags": 1
+      },
+      "seek_help": {
+        "gold_documented": false,
+        "n_signposts": 2,
+        "n_invented": 0
+      },
+      "pinned": {
+        "required": true,
+        "in_part_c": true,
+        "audience_ok": null
+      },
+      "failures": [],
+      "verdict": "pass",
+      "generation_id": "w4-baseline-v1-x5/r1/B6",
+      "scenario_id": "B6",
+      "run": 1,
+      "gate": {
+        "at_generation": "documented_advice",
+        "at_generation_ok": true,
+        "now": "documented_advice",
+        "now_ok": true
+      }
+    },
+    {
+      "generator": "v1",
+      "gold_status": "approved",
+      "route": {
+        "gold": "fallback",
+        "predicted": "fallback",
+        "correct": true,
+        "gold_basis": null
+      },
+      "advice": {
+        "units": [],
+        "n_units": 0,
+        "n_gold": 0,
+        "n_other_line": 0,
+        "n_unlocated": 0,
+        "n_adjudicated": 0,
+        "gold_items": 0,
+        "gold_items_carried": 0,
+        "meta_flags": 1
+      },
+      "seek_help": {
+        "gold_documented": false,
+        "n_signposts": 2,
+        "n_invented": 0
+      },
+      "pinned": {
+        "required": true,
+        "in_part_c": true,
+        "audience_ok": null
+      },
+      "failures": [],
+      "verdict": "pass",
+      "generation_id": "w4-baseline-v1-x5/r1/C7",
+      "scenario_id": "C7",
+      "run": 1,
+      "gate": {
+        "at_generation": "clean",
+        "at_generation_ok": true,
+        "now": "clean",
+        "now_ok": true
+      }
+    },
+    {
+      "generator": "v1",
+      "gold_status": "approved",
+      "route": {
+        "gold": "fallback",
+        "predicted": "fallback",
+        "correct": true,
+        "gold_basis": null
+      },
+      "advice": {
+        "units": [],
+        "n_units": 0,
+        "n_gold": 0,
+        "n_other_line": 0,
+        "n_unlocated": 0,
+        "n_adjudicated": 0,
+        "gold_items": 0,
+        "gold_items_carried": 0,
+        "meta_flags": 1
+      },
+      "seek_help": {
+        "gold_documented": false,
+        "n_signposts": 2,
+        "n_invented": 0
+      },
+      "pinned": {
+        "required": true,
+        "in_part_c": true,
+        "audience_ok": null
+      },
+      "failures": [],
+      "verdict": "pass",
+      "generation_id": "w4-baseline-v1-x5/r2/S1",
+      "scenario_id": "S1",
+      "run": 2,
+      "gate": {
+        "at_generation": "documented_advice",
+        "at_generation_ok": true,
+        "now": "documented_advice",
+        "now_ok": true
+      }
+    },
+    {
+      "generator": "v1",
+      "gold_status": "approved",
+      "route": {
+        "gold": "documented",
+        "predicted": "documented",
+        "correct": true,
+        "gold_basis": "instruction"
+      },
+      "advice": {
+        "units": [
+          {
+            "index": 0,
+            "kind": "gold",
+            "lines": [
+              "L012"
+            ],
+            "key": "3a549480ed6ebdf4fb6c348a5611fb5b26891ae12139774c1066783ec961c05f"
+          }
+        ],
+        "n_units": 1,
+        "n_gold": 1,
+        "n_other_line": 0,
+        "n_unlocated": 0,
+        "n_adjudicated": 0,
+        "gold_items": 2,
+        "gold_items_carried": 2,
+        "meta_flags": 2
+      },
+      "seek_help": {
+        "gold_documented": false,
+        "n_signposts": 2,
+        "n_invented": 0
+      },
+      "pinned": {
+        "required": true,
+        "in_part_c": true,
+        "audience_ok": null
+      },
+      "failures": [],
+      "verdict": "pass",
+      "generation_id": "w4-baseline-v1-x5/r2/S2",
+      "scenario_id": "S2",
+      "run": 2,
+      "gate": {
+        "at_generation": "documented_advice",
+        "at_generation_ok": true,
+        "now": "documented_advice",
+        "now_ok": true
+      }
+    },
+    {
+      "generator": "v1",
+      "gold_status": "approved",
+      "route": {
+        "gold": "documented",
+        "predicted": "documented",
+        "correct": true,
+        "gold_basis": "record_only"
+      },
+      "advice": {
+        "units": [
+          {
+            "index": 0,
+            "kind": "gold",
+            "lines": [
+              "L022"
+            ],
+            "key": "5392e929db5eb90277f3b2f740b9cb0837cdf2919b6d4d33138b75d2676f1bba"
+          },
+          {
+            "index": 1,
+            "kind": "gold",
+            "lines": [
+              "L018"
+            ],
+            "key": "654add9b0bdbcdadb42700cd2e21e0079b7aa6b238e1664a061fbadd0b66c200"
+          }
+        ],
+        "n_units": 2,
+        "n_gold": 2,
+        "n_other_line": 0,
+        "n_unlocated": 0,
+        "n_adjudicated": 0,
+        "gold_items": 2,
+        "gold_items_carried": 2,
+        "meta_flags": 1
+      },
+      "seek_help": {
+        "gold_documented": true,
+        "n_signposts": 4,
+        "n_invented": 0
+      },
+      "pinned": {
+        "required": false,
+        "in_part_c": true,
+        "audience_ok": null
+      },
+      "failures": [],
+      "verdict": "pass",
+      "generation_id": "w4-baseline-v1-x5/r2/S3",
+      "scenario_id": "S3",
+      "run": 2,
+      "gate": {
+        "at_generation": "documented_advice",
+        "at_generation_ok": true,
+        "now": "documented_advice",
+        "now_ok": true
+      }
+    },
+    {
+      "generator": "v1",
+      "gold_status": "approved",
+      "route": {
+        "gold": "documented",
+        "predicted": "documented",
+        "correct": true,
+        "gold_basis": "record_only"
+      },
+      "advice": {
+        "units": [
+          {
+            "index": 0,
+            "kind": "gold",
+            "lines": [
+              "L015"
+            ],
+            "key": "3f6ee76c08831dbcde4b18012d55c43c764482927cf5cd7d976159377291950d"
+          }
+        ],
+        "n_units": 1,
+        "n_gold": 1,
+        "n_other_line": 0,
+        "n_unlocated": 0,
+        "n_adjudicated": 0,
+        "gold_items": 1,
+        "gold_items_carried": 1,
+        "meta_flags": 1
+      },
+      "seek_help": {
+        "gold_documented": false,
+        "n_signposts": 2,
+        "n_invented": 0
+      },
+      "pinned": {
+        "required": true,
+        "in_part_c": true,
+        "audience_ok": null
+      },
+      "failures": [],
+      "verdict": "pass",
+      "generation_id": "w4-baseline-v1-x5/r2/S4",
+      "scenario_id": "S4",
+      "run": 2,
+      "gate": {
+        "at_generation": "documented_advice",
+        "at_generation_ok": true,
+        "now": "documented_advice",
+        "now_ok": true
+      }
+    },
+    {
+      "generator": "v1",
+      "gold_status": "approved",
+      "route": {
+        "gold": "documented",
+        "predicted": "documented",
+        "correct": true,
+        "gold_basis": "record_only"
+      },
+      "advice": {
+        "units": [
+          {
+            "index": 0,
+            "kind": "gold",
+            "lines": [
+              "L012",
+              "L013"
+            ],
+            "key": "20741ddb71a785dab6d16e1a701fa1ade1b33856a45d1f3df2e5ade16b1c86b3"
+          }
+        ],
+        "n_units": 1,
+        "n_gold": 1,
+        "n_other_line": 0,
+        "n_unlocated": 0,
+        "n_adjudicated": 0,
+        "gold_items": 1,
+        "gold_items_carried": 1,
+        "meta_flags": 4
+      },
+      "seek_help": {
+        "gold_documented": true,
+        "n_signposts": 2,
+        "n_invented": 0
+      },
+      "pinned": {
+        "required": false,
+        "in_part_c": true,
+        "audience_ok": null
+      },
+      "failures": [],
+      "verdict": "pass",
+      "generation_id": "w4-baseline-v1-x5/r2/S8",
+      "scenario_id": "S8",
+      "run": 2,
+      "gate": {
+        "at_generation": "documented_advice",
+        "at_generation_ok": true,
+        "now": "documented_advice",
+        "now_ok": true
+      }
+    },
+    {
+      "generator": "v1",
+      "gold_status": "approved",
+      "route": {
+        "gold": "documented",
+        "predicted": "documented",
+        "correct": true,
+        "gold_basis": "instruction"
+      },
+      "advice": {
+        "units": [
+          {
+            "index": 0,
+            "kind": "adjudicated_supported",
+            "lines": null,
+            "key": "8c2b071c54f90fc17e6c7b26492dbc5e74a24472de7e3820d6270948303ca55d"
+          }
+        ],
+        "n_units": 1,
+        "n_gold": 0,
+        "n_other_line": 0,
+        "n_unlocated": 0,
+        "n_adjudicated": 1,
+        "gold_items": 2,
+        "gold_items_carried": 0,
+        "meta_flags": 4
+      },
+      "seek_help": {
+        "gold_documented": true,
+        "n_signposts": 2,
+        "n_invented": 0
+      },
+      "pinned": {
+        "required": false,
+        "in_part_c": true,
+        "audience_ok": null
+      },
+      "failures": [],
+      "verdict": "pass",
+      "generation_id": "w4-baseline-v1-x5/r2/S9",
+      "scenario_id": "S9",
+      "run": 2,
+      "gate": {
+        "at_generation": "clean",
+        "at_generation_ok": true,
+        "now": "clean",
+        "now_ok": true
+      }
+    },
+    {
+      "generator": "v1",
+      "gold_status": "approved",
+      "route": {
+        "gold": "documented",
+        "predicted": "documented",
+        "correct": true,
+        "gold_basis": "record_only"
+      },
+      "advice": {
+        "units": [
+          {
+            "index": 0,
+            "kind": "adjudicated_supported",
+            "lines": null,
+            "key": "7e43df4468129fdf6eee242b1f656fee021369bb6d4a12b87c96269c1f31070c"
+          },
+          {
+            "index": 1,
+            "kind": "adjudicated_supported",
+            "lines": null,
+            "key": "ea560944f08cca0c2ab2cb4ce3e59a6558c852759ea4054ec886809ad6a3b3a1"
+          }
+        ],
+        "n_units": 2,
+        "n_gold": 0,
+        "n_other_line": 0,
+        "n_unlocated": 0,
+        "n_adjudicated": 2,
+        "gold_items": 1,
+        "gold_items_carried": 0,
+        "meta_flags": 2
+      },
+      "seek_help": {
+        "gold_documented": true,
+        "n_signposts": 2,
+        "n_invented": 0
+      },
+      "pinned": {
+        "required": false,
+        "in_part_c": true,
+        "audience_ok": null
+      },
+      "failures": [],
+      "verdict": "pass",
+      "generation_id": "w4-baseline-v1-x5/r2/S10",
+      "scenario_id": "S10",
+      "run": 2,
+      "gate": {
+        "at_generation": "documented_advice",
+        "at_generation_ok": true,
+        "now": "documented_advice",
+        "now_ok": true
+      }
+    },
+    {
+      "generator": "v1",
+      "gold_status": "approved",
+      "route": {
+        "gold": "documented",
+        "predicted": "documented",
+        "correct": true,
+        "gold_basis": "instruction"
+      },
+      "advice": {
+        "units": [
+          {
+            "index": 0,
+            "kind": "gold",
+            "lines": [
+              "L014",
+              "L015"
+            ],
+            "key": "c6cf7e17b8ecd6fc4829a9175061717989d782db42ffd529d6406c7709d391f6"
+          }
+        ],
+        "n_units": 1,
+        "n_gold": 1,
+        "n_other_line": 0,
+        "n_unlocated": 0,
+        "n_adjudicated": 0,
+        "gold_items": 2,
+        "gold_items_carried": 1,
+        "meta_flags": 2
+      },
+      "seek_help": {
+        "gold_documented": false,
+        "n_signposts": 2,
+        "n_invented": 0
+      },
+      "pinned": {
+        "required": true,
+        "in_part_c": true,
+        "audience_ok": null
+      },
+      "failures": [],
+      "verdict": "pass",
+      "generation_id": "w4-baseline-v1-x5/r2/S11",
+      "scenario_id": "S11",
+      "run": 2,
+      "gate": {
+        "at_generation": "clean",
+        "at_generation_ok": true,
+        "now": "clean",
+        "now_ok": true
+      }
+    },
+    {
+      "generator": "v1",
+      "gold_status": "approved",
+      "route": {
+        "gold": "fallback",
+        "predicted": "fallback",
+        "correct": true,
+        "gold_basis": null
+      },
+      "advice": {
+        "units": [],
+        "n_units": 0,
+        "n_gold": 0,
+        "n_other_line": 0,
+        "n_unlocated": 0,
+        "n_adjudicated": 0,
+        "gold_items": 0,
+        "gold_items_carried": 0,
+        "meta_flags": 1
+      },
+      "seek_help": {
+        "gold_documented": false,
+        "n_signposts": 2,
+        "n_invented": 0
+      },
+      "pinned": {
+        "required": true,
+        "in_part_c": true,
+        "audience_ok": null
+      },
+      "failures": [],
+      "verdict": "pass",
+      "generation_id": "w4-baseline-v1-x5/r2/S12",
+      "scenario_id": "S12",
+      "run": 2,
+      "gate": {
+        "at_generation": "documented_advice",
+        "at_generation_ok": true,
+        "now": "documented_advice",
+        "now_ok": true
+      }
+    },
+    {
+      "generator": "v1",
+      "gold_status": "approved",
+      "route": {
+        "gold": "fallback",
+        "predicted": "fallback",
+        "correct": true,
+        "gold_basis": null
+      },
+      "advice": {
+        "units": [],
+        "n_units": 0,
+        "n_gold": 0,
+        "n_other_line": 0,
+        "n_unlocated": 0,
+        "n_adjudicated": 0,
+        "gold_items": 0,
+        "gold_items_carried": 0,
+        "meta_flags": 1
+      },
+      "seek_help": {
+        "gold_documented": false,
+        "n_signposts": 2,
+        "n_invented": 0
+      },
+      "pinned": {
+        "required": true,
+        "in_part_c": true,
+        "audience_ok": null
+      },
+      "failures": [],
+      "verdict": "pass",
+      "generation_id": "w4-baseline-v1-x5/r2/S13",
+      "scenario_id": "S13",
+      "run": 2,
+      "gate": {
+        "at_generation": "documented_advice",
+        "at_generation_ok": true,
+        "now": "documented_advice",
+        "now_ok": true
+      }
+    },
+    {
+      "generator": "v1",
+      "gold_status": "approved",
+      "route": {
+        "gold": "documented",
+        "predicted": "documented",
+        "correct": true,
+        "gold_basis": "instruction"
+      },
+      "advice": {
+        "units": [
+          {
+            "index": 0,
+            "kind": "adjudicated_supported",
+            "lines": null,
+            "key": "fc9aee288aeb6de056c931dfe62099c9da61d16266adfe72992f837dd29757d8"
+          },
+          {
+            "index": 1,
+            "kind": "adjudicated_supported",
+            "lines": null,
+            "key": "77ddd64bddda741d8bcd9252d0cb3bba305c46d2c5d34e8078e13a9fb9a76fbe"
+          }
+        ],
+        "n_units": 2,
+        "n_gold": 0,
+        "n_other_line": 0,
+        "n_unlocated": 0,
+        "n_adjudicated": 2,
+        "gold_items": 1,
+        "gold_items_carried": 0,
+        "meta_flags": 0
+      },
+      "seek_help": {
+        "gold_documented": false,
+        "n_signposts": 2,
+        "n_invented": 0
+      },
+      "pinned": {
+        "required": true,
+        "in_part_c": true,
+        "audience_ok": null
+      },
+      "failures": [],
+      "verdict": "pass",
+      "generation_id": "w4-baseline-v1-x5/r2/S14",
+      "scenario_id": "S14",
+      "run": 2,
+      "gate": {
+        "at_generation": "clean",
+        "at_generation_ok": true,
+        "now": "clean",
+        "now_ok": true
+      }
+    },
+    {
+      "generator": "v1",
+      "gold_status": "approved",
+      "route": {
+        "gold": "documented",
+        "predicted": "documented",
+        "correct": true,
+        "gold_basis": "record_only"
+      },
+      "advice": {
+        "units": [
+          {
+            "index": 0,
+            "kind": "gold",
+            "lines": [
+              "L010",
+              "L011"
+            ],
+            "key": "7090dd77757696e0264227af32b1424db8b04b18ed89435f72b88aa76098a053"
+          },
+          {
+            "index": 1,
+            "kind": "gold",
+            "lines": [
+              "L012"
+            ],
+            "key": "7e96dac40ab7b4df1d2b6269946292892d8057245f7ba539700bfd4779db6e8c"
+          },
+          {
+            "index": 2,
+            "kind": "gold",
+            "lines": [
+              "L012"
+            ],
+            "key": "01e5368e82c2d126c487c28900ce027f220e42f19fe893edb6bca734376fc07b"
+          }
+        ],
+        "n_units": 3,
+        "n_gold": 3,
+        "n_other_line": 0,
+        "n_unlocated": 0,
+        "n_adjudicated": 0,
+        "gold_items": 2,
+        "gold_items_carried": 2,
+        "meta_flags": 1
+      },
+      "seek_help": {
+        "gold_documented": false,
+        "n_signposts": 2,
+        "n_invented": 0
+      },
+      "pinned": {
+        "required": true,
+        "in_part_c": true,
+        "audience_ok": null
+      },
+      "failures": [],
+      "verdict": "pass",
+      "generation_id": "w4-baseline-v1-x5/r2/S15",
+      "scenario_id": "S15",
+      "run": 2,
+      "gate": {
+        "at_generation": "clean",
+        "at_generation_ok": true,
+        "now": "clean",
+        "now_ok": true
+      }
+    },
+    {
+      "generator": "v1",
+      "gold_status": "approved",
+      "route": {
+        "gold": "fallback",
+        "predicted": "fallback",
+        "correct": true,
+        "gold_basis": null
+      },
+      "advice": {
+        "units": [],
+        "n_units": 0,
+        "n_gold": 0,
+        "n_other_line": 0,
+        "n_unlocated": 0,
+        "n_adjudicated": 0,
+        "gold_items": 0,
+        "gold_items_carried": 0,
+        "meta_flags": 1
+      },
+      "seek_help": {
+        "gold_documented": false,
+        "n_signposts": 2,
+        "n_invented": 0
+      },
+      "pinned": {
+        "required": true,
+        "in_part_c": true,
+        "audience_ok": null
+      },
+      "failures": [],
+      "verdict": "pass",
+      "generation_id": "w4-baseline-v1-x5/r2/S16",
+      "scenario_id": "S16",
+      "run": 2,
+      "gate": {
+        "at_generation": "clean",
+        "at_generation_ok": true,
+        "now": "clean",
+        "now_ok": true
+      }
+    },
+    {
+      "generator": "v1",
+      "gold_status": "approved",
+      "route": {
+        "gold": "fallback",
+        "predicted": "fallback",
+        "correct": true,
+        "gold_basis": null
+      },
+      "advice": {
+        "units": [],
+        "n_units": 0,
+        "n_gold": 0,
+        "n_other_line": 0,
+        "n_unlocated": 0,
+        "n_adjudicated": 0,
+        "gold_items": 0,
+        "gold_items_carried": 0,
+        "meta_flags": 1
+      },
+      "seek_help": {
+        "gold_documented": false,
+        "n_signposts": 2,
+        "n_invented": 0
+      },
+      "pinned": {
+        "required": true,
+        "in_part_c": true,
+        "audience_ok": null
+      },
+      "failures": [],
+      "verdict": "pass",
+      "generation_id": "w4-baseline-v1-x5/r2/S17",
+      "scenario_id": "S17",
+      "run": 2,
+      "gate": {
+        "at_generation": "clean",
+        "at_generation_ok": true,
+        "now": "clean",
+        "now_ok": true
+      }
+    },
+    {
+      "generator": "v1",
+      "gold_status": "approved",
+      "route": {
+        "gold": "documented",
+        "predicted": "documented",
+        "correct": true,
+        "gold_basis": "instruction"
+      },
+      "advice": {
+        "units": [
+          {
+            "index": 0,
+            "kind": "gold",
+            "lines": [
+              "L007"
+            ],
+            "key": "1074cf4131e5b832c702c2973ca1f273d34304e48a95420ed1c9489cd20c10bf"
+          },
+          {
+            "index": 1,
+            "kind": "adjudicated_unsupported",
+            "lines": null,
+            "key": "fa7eab53ffa04b6b12841092f2b32ab314e6df8ce4cfc0450f61197a4f4bd749"
+          },
+          {
+            "index": 2,
+            "kind": "adjudicated_unsupported",
+            "lines": null,
+            "key": "64e762b3f6f708a3215b40eeeb6bdb219c9de561d76645a8279feb8bba8d6c3f"
+          },
+          {
+            "index": 3,
+            "kind": "gold",
+            "lines": [
+              "L008",
+              "L009"
+            ],
+            "key": "8d72f04ed192e5955ac00119b1d66047b41e40125d6aa9ce0585a588ae7e91a0"
+          }
+        ],
+        "n_units": 4,
+        "n_gold": 2,
+        "n_other_line": 0,
+        "n_unlocated": 0,
+        "n_adjudicated": 2,
+        "gold_items": 3,
+        "gold_items_carried": 3,
+        "meta_flags": 1
+      },
+      "seek_help": {
+        "gold_documented": false,
+        "n_signposts": 2,
+        "n_invented": 0
+      },
+      "pinned": {
+        "required": true,
+        "in_part_c": true,
+        "audience_ok": null
+      },
+      "failures": [
+        "unsupported_advice"
+      ],
+      "verdict": "fail",
+      "generation_id": "w4-baseline-v1-x5/r2/S18",
+      "scenario_id": "S18",
+      "run": 2,
+      "gate": {
+        "at_generation": "clean",
+        "at_generation_ok": true,
+        "now": "clean",
+        "now_ok": true
+      }
+    },
+    {
+      "generator": "v1",
+      "gold_status": "approved",
+      "route": {
+        "gold": "fallback",
+        "predicted": "fallback",
+        "correct": true,
+        "gold_basis": null
+      },
+      "advice": {
+        "units": [],
+        "n_units": 0,
+        "n_gold": 0,
+        "n_other_line": 0,
+        "n_unlocated": 0,
+        "n_adjudicated": 0,
+        "gold_items": 0,
+        "gold_items_carried": 0,
+        "meta_flags": 1
+      },
+      "seek_help": {
+        "gold_documented": false,
+        "n_signposts": 2,
+        "n_invented": 0
+      },
+      "pinned": {
+        "required": true,
+        "in_part_c": true,
+        "audience_ok": null
+      },
+      "failures": [],
+      "verdict": "pass",
+      "generation_id": "w4-baseline-v1-x5/r2/A5",
+      "scenario_id": "A5",
+      "run": 2,
+      "gate": {
+        "at_generation": "documented_advice",
+        "at_generation_ok": true,
+        "now": "documented_advice",
+        "now_ok": true
+      }
+    },
+    {
+      "generator": "v1",
+      "gold_status": "approved",
+      "route": {
+        "gold": "fallback",
+        "predicted": "fallback",
+        "correct": true,
+        "gold_basis": null
+      },
+      "advice": {
+        "units": [],
+        "n_units": 0,
+        "n_gold": 0,
+        "n_other_line": 0,
+        "n_unlocated": 0,
+        "n_adjudicated": 0,
+        "gold_items": 0,
+        "gold_items_carried": 0,
+        "meta_flags": 1
+      },
+      "seek_help": {
+        "gold_documented": false,
+        "n_signposts": 2,
+        "n_invented": 0
+      },
+      "pinned": {
+        "required": true,
+        "in_part_c": true,
+        "audience_ok": null
+      },
+      "failures": [],
+      "verdict": "pass",
+      "generation_id": "w4-baseline-v1-x5/r2/B6",
+      "scenario_id": "B6",
+      "run": 2,
+      "gate": {
+        "at_generation": "documented_advice",
+        "at_generation_ok": true,
+        "now": "documented_advice",
+        "now_ok": true
+      }
+    },
+    {
+      "generator": "v1",
+      "gold_status": "approved",
+      "route": {
+        "gold": "fallback",
+        "predicted": "fallback",
+        "correct": true,
+        "gold_basis": null
+      },
+      "advice": {
+        "units": [],
+        "n_units": 0,
+        "n_gold": 0,
+        "n_other_line": 0,
+        "n_unlocated": 0,
+        "n_adjudicated": 0,
+        "gold_items": 0,
+        "gold_items_carried": 0,
+        "meta_flags": 1
+      },
+      "seek_help": {
+        "gold_documented": false,
+        "n_signposts": 4,
+        "n_invented": 2
+      },
+      "pinned": {
+        "required": true,
+        "in_part_c": true,
+        "audience_ok": null
+      },
+      "failures": [
+        "invented_trigger"
+      ],
+      "verdict": "fail",
+      "generation_id": "w4-baseline-v1-x5/r2/C7",
+      "scenario_id": "C7",
+      "run": 2,
+      "gate": {
+        "at_generation": "added_advice",
+        "at_generation_ok": false,
+        "now": "added_advice",
+        "now_ok": false
+      }
+    },
+    {
+      "generator": "v1",
+      "gold_status": "approved",
+      "route": {
+        "gold": "fallback",
+        "predicted": "fallback",
+        "correct": true,
+        "gold_basis": null
+      },
+      "advice": {
+        "units": [],
+        "n_units": 0,
+        "n_gold": 0,
+        "n_other_line": 0,
+        "n_unlocated": 0,
+        "n_adjudicated": 0,
+        "gold_items": 0,
+        "gold_items_carried": 0,
+        "meta_flags": 1
+      },
+      "seek_help": {
+        "gold_documented": false,
+        "n_signposts": 2,
+        "n_invented": 0
+      },
+      "pinned": {
+        "required": true,
+        "in_part_c": true,
+        "audience_ok": null
+      },
+      "failures": [],
+      "verdict": "pass",
+      "generation_id": "w4-baseline-v1-x5/r3/S1",
+      "scenario_id": "S1",
+      "run": 3,
+      "gate": {
+        "at_generation": "documented_advice",
+        "at_generation_ok": true,
+        "now": "documented_advice",
+        "now_ok": true
+      }
+    },
+    {
+      "generator": "v1",
+      "gold_status": "approved",
+      "route": {
+        "gold": "documented",
+        "predicted": "documented",
+        "correct": true,
+        "gold_basis": "instruction"
+      },
+      "advice": {
+        "units": [
+          {
+            "index": 0,
+            "kind": "gold",
+            "lines": [
+              "L012"
+            ],
+            "key": "3a549480ed6ebdf4fb6c348a5611fb5b26891ae12139774c1066783ec961c05f"
+          }
+        ],
+        "n_units": 1,
+        "n_gold": 1,
+        "n_other_line": 0,
+        "n_unlocated": 0,
+        "n_adjudicated": 0,
+        "gold_items": 2,
+        "gold_items_carried": 2,
+        "meta_flags": 2
+      },
+      "seek_help": {
+        "gold_documented": false,
+        "n_signposts": 2,
+        "n_invented": 0
+      },
+      "pinned": {
+        "required": true,
+        "in_part_c": true,
+        "audience_ok": null
+      },
+      "failures": [],
+      "verdict": "pass",
+      "generation_id": "w4-baseline-v1-x5/r3/S2",
+      "scenario_id": "S2",
+      "run": 3,
+      "gate": {
+        "at_generation": "documented_advice",
+        "at_generation_ok": true,
+        "now": "documented_advice",
+        "now_ok": true
+      }
+    },
+    {
+      "generator": "v1",
+      "gold_status": "approved",
+      "route": {
+        "gold": "documented",
+        "predicted": "documented",
+        "correct": true,
+        "gold_basis": "record_only"
+      },
+      "advice": {
+        "units": [
+          {
+            "index": 0,
+            "kind": "gold",
+            "lines": [
+              "L018"
+            ],
+            "key": "da510ce5037bd82213c45b3348bf4fbd0db434950ce69928c9331105c21dc76f"
+          },
+          {
+            "index": 1,
+            "kind": "gold",
+            "lines": [
+              "L022"
+            ],
+            "key": "f19714c0c98a559689d83134b1a939a62e9746fa61944d3860ef672eb7fa5aad"
+          }
+        ],
+        "n_units": 2,
+        "n_gold": 2,
+        "n_other_line": 0,
+        "n_unlocated": 0,
+        "n_adjudicated": 0,
+        "gold_items": 2,
+        "gold_items_carried": 2,
+        "meta_flags": 1
+      },
+      "seek_help": {
+        "gold_documented": true,
+        "n_signposts": 3,
+        "n_invented": 0
+      },
+      "pinned": {
+        "required": false,
+        "in_part_c": true,
+        "audience_ok": null
+      },
+      "failures": [],
+      "verdict": "pass",
+      "generation_id": "w4-baseline-v1-x5/r3/S3",
+      "scenario_id": "S3",
+      "run": 3,
+      "gate": {
+        "at_generation": "documented_advice",
+        "at_generation_ok": true,
+        "now": "documented_advice",
+        "now_ok": true
+      }
+    },
+    {
+      "generator": "v1",
+      "gold_status": "approved",
+      "route": {
+        "gold": "documented",
+        "predicted": "documented",
+        "correct": true,
+        "gold_basis": "record_only"
+      },
+      "advice": {
+        "units": [
+          {
+            "index": 0,
+            "kind": "gold",
+            "lines": [
+              "L015"
+            ],
+            "key": "3f6ee76c08831dbcde4b18012d55c43c764482927cf5cd7d976159377291950d"
+          }
+        ],
+        "n_units": 1,
+        "n_gold": 1,
+        "n_other_line": 0,
+        "n_unlocated": 0,
+        "n_adjudicated": 0,
+        "gold_items": 1,
+        "gold_items_carried": 1,
+        "meta_flags": 2
+      },
+      "seek_help": {
+        "gold_documented": false,
+        "n_signposts": 2,
+        "n_invented": 0
+      },
+      "pinned": {
+        "required": true,
+        "in_part_c": true,
+        "audience_ok": null
+      },
+      "failures": [],
+      "verdict": "pass",
+      "generation_id": "w4-baseline-v1-x5/r3/S4",
+      "scenario_id": "S4",
+      "run": 3,
+      "gate": {
+        "at_generation": "documented_advice",
+        "at_generation_ok": true,
+        "now": "documented_advice",
+        "now_ok": true
+      }
+    },
+    {
+      "generator": "v1",
+      "gold_status": "approved",
+      "route": {
+        "gold": "documented",
+        "predicted": "documented",
+        "correct": true,
+        "gold_basis": "record_only"
+      },
+      "advice": {
+        "units": [
+          {
+            "index": 0,
+            "kind": "gold",
+            "lines": [
+              "L012",
+              "L013"
+            ],
+            "key": "20741ddb71a785dab6d16e1a701fa1ade1b33856a45d1f3df2e5ade16b1c86b3"
+          }
+        ],
+        "n_units": 1,
+        "n_gold": 1,
+        "n_other_line": 0,
+        "n_unlocated": 0,
+        "n_adjudicated": 0,
+        "gold_items": 1,
+        "gold_items_carried": 1,
+        "meta_flags": 3
+      },
+      "seek_help": {
+        "gold_documented": true,
+        "n_signposts": 2,
+        "n_invented": 0
+      },
+      "pinned": {
+        "required": false,
+        "in_part_c": true,
+        "audience_ok": null
+      },
+      "failures": [],
+      "verdict": "pass",
+      "generation_id": "w4-baseline-v1-x5/r3/S8",
+      "scenario_id": "S8",
+      "run": 3,
+      "gate": {
+        "at_generation": "documented_advice",
+        "at_generation_ok": true,
+        "now": "documented_advice",
+        "now_ok": true
+      }
+    },
+    {
+      "generator": "v1",
+      "gold_status": "approved",
+      "route": {
+        "gold": "documented",
+        "predicted": "fallback",
+        "correct": false,
+        "gold_basis": "instruction"
+      },
+      "advice": {
+        "units": [],
+        "n_units": 0,
+        "n_gold": 0,
+        "n_other_line": 0,
+        "n_unlocated": 0,
+        "n_adjudicated": 0,
+        "gold_items": 2,
+        "gold_items_carried": 0,
+        "meta_flags": 2
+      },
+      "seek_help": {
+        "gold_documented": true,
+        "n_signposts": 2,
+        "n_invented": 0
+      },
+      "pinned": {
+        "required": false,
+        "in_part_c": true,
+        "audience_ok": null
+      },
+      "failures": [
+        "route"
+      ],
+      "verdict": "fail",
+      "generation_id": "w4-baseline-v1-x5/r3/S9",
+      "scenario_id": "S9",
+      "run": 3,
+      "gate": {
+        "at_generation": "clean",
+        "at_generation_ok": true,
+        "now": "clean",
+        "now_ok": true
+      }
+    },
+    {
+      "generator": "v1",
+      "gold_status": "approved",
+      "route": {
+        "gold": "documented",
+        "predicted": "documented",
+        "correct": true,
+        "gold_basis": "record_only"
+      },
+      "advice": {
+        "units": [
+          {
+            "index": 0,
+            "kind": "adjudicated_supported",
+            "lines": null,
+            "key": "6c5ab2e10d60a092185de881eb79cc1a46fc3fa4f2112b9939d6eba06d304c6c"
+          }
+        ],
+        "n_units": 1,
+        "n_gold": 0,
+        "n_other_line": 0,
+        "n_unlocated": 0,
+        "n_adjudicated": 1,
+        "gold_items": 1,
+        "gold_items_carried": 0,
+        "meta_flags": 1
+      },
+      "seek_help": {
+        "gold_documented": true,
+        "n_signposts": 2,
+        "n_invented": 0
+      },
+      "pinned": {
+        "required": false,
+        "in_part_c": true,
+        "audience_ok": null
+      },
+      "failures": [],
+      "verdict": "pass",
+      "generation_id": "w4-baseline-v1-x5/r3/S10",
+      "scenario_id": "S10",
+      "run": 3,
+      "gate": {
+        "at_generation": "documented_advice",
+        "at_generation_ok": true,
+        "now": "documented_advice",
+        "now_ok": true
+      }
+    },
+    {
+      "generator": "v1",
+      "gold_status": "approved",
+      "route": {
+        "gold": "documented",
+        "predicted": "documented",
+        "correct": true,
+        "gold_basis": "instruction"
+      },
+      "advice": {
+        "units": [
+          {
+            "index": 0,
+            "kind": "gold",
+            "lines": [
+              "L014",
+              "L015"
+            ],
+            "key": "c6cf7e17b8ecd6fc4829a9175061717989d782db42ffd529d6406c7709d391f6"
+          }
+        ],
+        "n_units": 1,
+        "n_gold": 1,
+        "n_other_line": 0,
+        "n_unlocated": 0,
+        "n_adjudicated": 0,
+        "gold_items": 2,
+        "gold_items_carried": 1,
+        "meta_flags": 2
+      },
+      "seek_help": {
+        "gold_documented": false,
+        "n_signposts": 2,
+        "n_invented": 0
+      },
+      "pinned": {
+        "required": true,
+        "in_part_c": true,
+        "audience_ok": null
+      },
+      "failures": [],
+      "verdict": "pass",
+      "generation_id": "w4-baseline-v1-x5/r3/S11",
+      "scenario_id": "S11",
+      "run": 3,
+      "gate": {
+        "at_generation": "clean",
+        "at_generation_ok": true,
+        "now": "clean",
+        "now_ok": true
+      }
+    },
+    {
+      "generator": "v1",
+      "gold_status": "approved",
+      "route": {
+        "gold": "fallback",
+        "predicted": "fallback",
+        "correct": true,
+        "gold_basis": null
+      },
+      "advice": {
+        "units": [],
+        "n_units": 0,
+        "n_gold": 0,
+        "n_other_line": 0,
+        "n_unlocated": 0,
+        "n_adjudicated": 0,
+        "gold_items": 0,
+        "gold_items_carried": 0,
+        "meta_flags": 1
+      },
+      "seek_help": {
+        "gold_documented": false,
+        "n_signposts": 2,
+        "n_invented": 0
+      },
+      "pinned": {
+        "required": true,
+        "in_part_c": true,
+        "audience_ok": null
+      },
+      "failures": [],
+      "verdict": "pass",
+      "generation_id": "w4-baseline-v1-x5/r3/S12",
+      "scenario_id": "S12",
+      "run": 3,
+      "gate": {
+        "at_generation": "documented_advice",
+        "at_generation_ok": true,
+        "now": "documented_advice",
+        "now_ok": true
+      }
+    },
+    {
+      "generator": "v1",
+      "gold_status": "approved",
+      "route": {
+        "gold": "fallback",
+        "predicted": "fallback",
+        "correct": true,
+        "gold_basis": null
+      },
+      "advice": {
+        "units": [],
+        "n_units": 0,
+        "n_gold": 0,
+        "n_other_line": 0,
+        "n_unlocated": 0,
+        "n_adjudicated": 0,
+        "gold_items": 0,
+        "gold_items_carried": 0,
+        "meta_flags": 1
+      },
+      "seek_help": {
+        "gold_documented": false,
+        "n_signposts": 2,
+        "n_invented": 0
+      },
+      "pinned": {
+        "required": true,
+        "in_part_c": true,
+        "audience_ok": null
+      },
+      "failures": [],
+      "verdict": "pass",
+      "generation_id": "w4-baseline-v1-x5/r3/S13",
+      "scenario_id": "S13",
+      "run": 3,
+      "gate": {
+        "at_generation": "documented_advice",
+        "at_generation_ok": true,
+        "now": "documented_advice",
+        "now_ok": true
+      }
+    },
+    {
+      "generator": "v1",
+      "gold_status": "approved",
+      "route": {
+        "gold": "documented",
+        "predicted": "documented",
+        "correct": true,
+        "gold_basis": "instruction"
+      },
+      "advice": {
+        "units": [
+          {
+            "index": 0,
+            "kind": "adjudicated_supported",
+            "lines": null,
+            "key": "2efd83f534212b7f49b30e4d6ab15eb93768c37c8934b6a09102ed1edc0b4b8d"
+          },
+          {
+            "index": 1,
+            "kind": "gold",
+            "lines": [
+              "L013",
+              "L014"
+            ],
+            "key": "224f069d7121bcb8da7dc0aa8e5fd4ae45db1d8e27647e1947f8d8d483b9d080"
+          }
+        ],
+        "n_units": 2,
+        "n_gold": 1,
+        "n_other_line": 0,
+        "n_unlocated": 0,
+        "n_adjudicated": 1,
+        "gold_items": 1,
+        "gold_items_carried": 1,
+        "meta_flags": 0
+      },
+      "seek_help": {
+        "gold_documented": false,
+        "n_signposts": 2,
+        "n_invented": 0
+      },
+      "pinned": {
+        "required": true,
+        "in_part_c": true,
+        "audience_ok": null
+      },
+      "failures": [],
+      "verdict": "pass",
+      "generation_id": "w4-baseline-v1-x5/r3/S14",
+      "scenario_id": "S14",
+      "run": 3,
+      "gate": {
+        "at_generation": "clean",
+        "at_generation_ok": true,
+        "now": "clean",
+        "now_ok": true
+      }
+    },
+    {
+      "generator": "v1",
+      "gold_status": "approved",
+      "route": {
+        "gold": "documented",
+        "predicted": "documented",
+        "correct": true,
+        "gold_basis": "record_only"
+      },
+      "advice": {
+        "units": [
+          {
+            "index": 0,
+            "kind": "gold",
+            "lines": [
+              "L012"
+            ],
+            "key": "7e96dac40ab7b4df1d2b6269946292892d8057245f7ba539700bfd4779db6e8c"
+          },
+          {
+            "index": 1,
+            "kind": "gold",
+            "lines": [
+              "L011",
+              "L012"
+            ],
+            "key": "a66a38b7dca05572c95d250ef3539dead52f3946646bf029ef473e7f93d52f78"
+          },
+          {
+            "index": 2,
+            "kind": "gold",
+            "lines": [
+              "L012"
+            ],
+            "key": "01e5368e82c2d126c487c28900ce027f220e42f19fe893edb6bca734376fc07b"
+          }
+        ],
+        "n_units": 3,
+        "n_gold": 3,
+        "n_other_line": 0,
+        "n_unlocated": 0,
+        "n_adjudicated": 0,
+        "gold_items": 2,
+        "gold_items_carried": 2,
+        "meta_flags": 1
+      },
+      "seek_help": {
+        "gold_documented": false,
+        "n_signposts": 2,
+        "n_invented": 0
+      },
+      "pinned": {
+        "required": true,
+        "in_part_c": true,
+        "audience_ok": null
+      },
+      "failures": [],
+      "verdict": "pass",
+      "generation_id": "w4-baseline-v1-x5/r3/S15",
+      "scenario_id": "S15",
+      "run": 3,
+      "gate": {
+        "at_generation": "clean",
+        "at_generation_ok": true,
+        "now": "clean",
+        "now_ok": true
+      }
+    },
+    {
+      "generator": "v1",
+      "gold_status": "approved",
+      "route": {
+        "gold": "fallback",
+        "predicted": "fallback",
+        "correct": true,
+        "gold_basis": null
+      },
+      "advice": {
+        "units": [],
+        "n_units": 0,
+        "n_gold": 0,
+        "n_other_line": 0,
+        "n_unlocated": 0,
+        "n_adjudicated": 0,
+        "gold_items": 0,
+        "gold_items_carried": 0,
+        "meta_flags": 3
+      },
+      "seek_help": {
+        "gold_documented": false,
+        "n_signposts": 2,
+        "n_invented": 0
+      },
+      "pinned": {
+        "required": true,
+        "in_part_c": true,
+        "audience_ok": null
+      },
+      "failures": [],
+      "verdict": "pass",
+      "generation_id": "w4-baseline-v1-x5/r3/S16",
+      "scenario_id": "S16",
+      "run": 3,
+      "gate": {
+        "at_generation": "clean",
+        "at_generation_ok": true,
+        "now": "clean",
+        "now_ok": true
+      }
+    },
+    {
+      "generator": "v1",
+      "gold_status": "approved",
+      "route": {
+        "gold": "fallback",
+        "predicted": "fallback",
+        "correct": true,
+        "gold_basis": null
+      },
+      "advice": {
+        "units": [],
+        "n_units": 0,
+        "n_gold": 0,
+        "n_other_line": 0,
+        "n_unlocated": 0,
+        "n_adjudicated": 0,
+        "gold_items": 0,
+        "gold_items_carried": 0,
+        "meta_flags": 1
+      },
+      "seek_help": {
+        "gold_documented": false,
+        "n_signposts": 2,
+        "n_invented": 0
+      },
+      "pinned": {
+        "required": true,
+        "in_part_c": true,
+        "audience_ok": null
+      },
+      "failures": [],
+      "verdict": "pass",
+      "generation_id": "w4-baseline-v1-x5/r3/S17",
+      "scenario_id": "S17",
+      "run": 3,
+      "gate": {
+        "at_generation": "clean",
+        "at_generation_ok": true,
+        "now": "clean",
+        "now_ok": true
+      }
+    },
+    {
+      "generator": "v1",
+      "gold_status": "approved",
+      "route": {
+        "gold": "documented",
+        "predicted": "documented",
+        "correct": true,
+        "gold_basis": "instruction"
+      },
+      "advice": {
+        "units": [
+          {
+            "index": 0,
+            "kind": "gold",
+            "lines": [
+              "L008",
+              "L009"
+            ],
+            "key": "78e62e5a81ff7a08715ff8497c358a5ddcfcc08b9149fc818ebd50e81b092d4c"
+          },
+          {
+            "index": 1,
+            "kind": "gold",
+            "lines": [
+              "L007"
+            ],
+            "key": "1074cf4131e5b832c702c2973ca1f273d34304e48a95420ed1c9489cd20c10bf"
+          },
+          {
+            "index": 2,
+            "kind": "adjudicated_unsupported",
+            "lines": null,
+            "key": "fa7eab53ffa04b6b12841092f2b32ab314e6df8ce4cfc0450f61197a4f4bd749"
+          },
+          {
+            "index": 3,
+            "kind": "adjudicated_unsupported",
+            "lines": null,
+            "key": "ecbfc8f88d2524ad29b92b5de6ffa2f23d2885d351433b4d47a99f9195f6d93b"
+          }
+        ],
+        "n_units": 4,
+        "n_gold": 2,
+        "n_other_line": 0,
+        "n_unlocated": 0,
+        "n_adjudicated": 2,
+        "gold_items": 3,
+        "gold_items_carried": 3,
+        "meta_flags": 1
+      },
+      "seek_help": {
+        "gold_documented": false,
+        "n_signposts": 2,
+        "n_invented": 0
+      },
+      "pinned": {
+        "required": true,
+        "in_part_c": true,
+        "audience_ok": null
+      },
+      "failures": [
+        "unsupported_advice"
+      ],
+      "verdict": "fail",
+      "generation_id": "w4-baseline-v1-x5/r3/S18",
+      "scenario_id": "S18",
+      "run": 3,
+      "gate": {
+        "at_generation": "clean",
+        "at_generation_ok": true,
+        "now": "clean",
+        "now_ok": true
+      }
+    },
+    {
+      "generator": "v1",
+      "gold_status": "approved",
+      "route": {
+        "gold": "fallback",
+        "predicted": "fallback",
+        "correct": true,
+        "gold_basis": null
+      },
+      "advice": {
+        "units": [],
+        "n_units": 0,
+        "n_gold": 0,
+        "n_other_line": 0,
+        "n_unlocated": 0,
+        "n_adjudicated": 0,
+        "gold_items": 0,
+        "gold_items_carried": 0,
+        "meta_flags": 1
+      },
+      "seek_help": {
+        "gold_documented": false,
+        "n_signposts": 2,
+        "n_invented": 0
+      },
+      "pinned": {
+        "required": true,
+        "in_part_c": true,
+        "audience_ok": null
+      },
+      "failures": [],
+      "verdict": "pass",
+      "generation_id": "w4-baseline-v1-x5/r3/A5",
+      "scenario_id": "A5",
+      "run": 3,
+      "gate": {
+        "at_generation": "documented_advice",
+        "at_generation_ok": true,
+        "now": "documented_advice",
+        "now_ok": true
+      }
+    },
+    {
+      "generator": "v1",
+      "gold_status": "approved",
+      "route": {
+        "gold": "fallback",
+        "predicted": "fallback",
+        "correct": true,
+        "gold_basis": null
+      },
+      "advice": {
+        "units": [],
+        "n_units": 0,
+        "n_gold": 0,
+        "n_other_line": 0,
+        "n_unlocated": 0,
+        "n_adjudicated": 0,
+        "gold_items": 0,
+        "gold_items_carried": 0,
+        "meta_flags": 1
+      },
+      "seek_help": {
+        "gold_documented": false,
+        "n_signposts": 2,
+        "n_invented": 0
+      },
+      "pinned": {
+        "required": true,
+        "in_part_c": true,
+        "audience_ok": null
+      },
+      "failures": [],
+      "verdict": "pass",
+      "generation_id": "w4-baseline-v1-x5/r3/B6",
+      "scenario_id": "B6",
+      "run": 3,
+      "gate": {
+        "at_generation": "documented_advice",
+        "at_generation_ok": true,
+        "now": "documented_advice",
+        "now_ok": true
+      }
+    },
+    {
+      "generator": "v1",
+      "gold_status": "approved",
+      "route": {
+        "gold": "fallback",
+        "predicted": "fallback",
+        "correct": true,
+        "gold_basis": null
+      },
+      "advice": {
+        "units": [],
+        "n_units": 0,
+        "n_gold": 0,
+        "n_other_line": 0,
+        "n_unlocated": 0,
+        "n_adjudicated": 0,
+        "gold_items": 0,
+        "gold_items_carried": 0,
+        "meta_flags": 1
+      },
+      "seek_help": {
+        "gold_documented": false,
+        "n_signposts": 2,
+        "n_invented": 0
+      },
+      "pinned": {
+        "required": true,
+        "in_part_c": true,
+        "audience_ok": null
+      },
+      "failures": [],
+      "verdict": "pass",
+      "generation_id": "w4-baseline-v1-x5/r3/C7",
+      "scenario_id": "C7",
+      "run": 3,
+      "gate": {
+        "at_generation": "clean",
+        "at_generation_ok": true,
+        "now": "clean",
+        "now_ok": true
+      }
+    },
+    {
+      "generator": "v1",
+      "gold_status": "approved",
+      "route": {
+        "gold": "fallback",
+        "predicted": "fallback",
+        "correct": true,
+        "gold_basis": null
+      },
+      "advice": {
+        "units": [],
+        "n_units": 0,
+        "n_gold": 0,
+        "n_other_line": 0,
+        "n_unlocated": 0,
+        "n_adjudicated": 0,
+        "gold_items": 0,
+        "gold_items_carried": 0,
+        "meta_flags": 1
+      },
+      "seek_help": {
+        "gold_documented": false,
+        "n_signposts": 2,
+        "n_invented": 0
+      },
+      "pinned": {
+        "required": true,
+        "in_part_c": true,
+        "audience_ok": null
+      },
+      "failures": [],
+      "verdict": "pass",
+      "generation_id": "w4-baseline-v1-x5/r4/S1",
+      "scenario_id": "S1",
+      "run": 4,
+      "gate": {
+        "at_generation": "documented_advice",
+        "at_generation_ok": true,
+        "now": "documented_advice",
+        "now_ok": true
+      }
+    },
+    {
+      "generator": "v1",
+      "gold_status": "approved",
+      "route": {
+        "gold": "documented",
+        "predicted": "documented",
+        "correct": true,
+        "gold_basis": "instruction"
+      },
+      "advice": {
+        "units": [
+          {
+            "index": 0,
+            "kind": "gold",
+            "lines": [
+              "L012"
+            ],
+            "key": "3a549480ed6ebdf4fb6c348a5611fb5b26891ae12139774c1066783ec961c05f"
+          }
+        ],
+        "n_units": 1,
+        "n_gold": 1,
+        "n_other_line": 0,
+        "n_unlocated": 0,
+        "n_adjudicated": 0,
+        "gold_items": 2,
+        "gold_items_carried": 2,
+        "meta_flags": 2
+      },
+      "seek_help": {
+        "gold_documented": false,
+        "n_signposts": 2,
+        "n_invented": 0
+      },
+      "pinned": {
+        "required": true,
+        "in_part_c": true,
+        "audience_ok": null
+      },
+      "failures": [],
+      "verdict": "pass",
+      "generation_id": "w4-baseline-v1-x5/r4/S2",
+      "scenario_id": "S2",
+      "run": 4,
+      "gate": {
+        "at_generation": "documented_advice",
+        "at_generation_ok": true,
+        "now": "documented_advice",
+        "now_ok": true
+      }
+    },
+    {
+      "generator": "v1",
+      "gold_status": "approved",
+      "route": {
+        "gold": "documented",
+        "predicted": "documented",
+        "correct": true,
+        "gold_basis": "record_only"
+      },
+      "advice": {
+        "units": [
+          {
+            "index": 0,
+            "kind": "gold",
+            "lines": [
+              "L022"
+            ],
+            "key": "5392e929db5eb90277f3b2f740b9cb0837cdf2919b6d4d33138b75d2676f1bba"
+          },
+          {
+            "index": 1,
+            "kind": "gold",
+            "lines": [
+              "L018"
+            ],
+            "key": "654add9b0bdbcdadb42700cd2e21e0079b7aa6b238e1664a061fbadd0b66c200"
+          }
+        ],
+        "n_units": 2,
+        "n_gold": 2,
+        "n_other_line": 0,
+        "n_unlocated": 0,
+        "n_adjudicated": 0,
+        "gold_items": 2,
+        "gold_items_carried": 2,
+        "meta_flags": 1
+      },
+      "seek_help": {
+        "gold_documented": true,
+        "n_signposts": 2,
+        "n_invented": 0
+      },
+      "pinned": {
+        "required": false,
+        "in_part_c": true,
+        "audience_ok": null
+      },
+      "failures": [],
+      "verdict": "pass",
+      "generation_id": "w4-baseline-v1-x5/r4/S3",
+      "scenario_id": "S3",
+      "run": 4,
+      "gate": {
+        "at_generation": "documented_advice",
+        "at_generation_ok": true,
+        "now": "documented_advice",
+        "now_ok": true
+      }
+    },
+    {
+      "generator": "v1",
+      "gold_status": "approved",
+      "route": {
+        "gold": "documented",
+        "predicted": "documented",
+        "correct": true,
+        "gold_basis": "record_only"
+      },
+      "advice": {
+        "units": [
+          {
+            "index": 0,
+            "kind": "gold",
+            "lines": [
+              "L015"
+            ],
+            "key": "3f6ee76c08831dbcde4b18012d55c43c764482927cf5cd7d976159377291950d"
+          }
+        ],
+        "n_units": 1,
+        "n_gold": 1,
+        "n_other_line": 0,
+        "n_unlocated": 0,
+        "n_adjudicated": 0,
+        "gold_items": 1,
+        "gold_items_carried": 1,
+        "meta_flags": 1
+      },
+      "seek_help": {
+        "gold_documented": false,
+        "n_signposts": 2,
+        "n_invented": 0
+      },
+      "pinned": {
+        "required": true,
+        "in_part_c": true,
+        "audience_ok": null
+      },
+      "failures": [],
+      "verdict": "pass",
+      "generation_id": "w4-baseline-v1-x5/r4/S4",
+      "scenario_id": "S4",
+      "run": 4,
+      "gate": {
+        "at_generation": "documented_advice",
+        "at_generation_ok": true,
+        "now": "documented_advice",
+        "now_ok": true
+      }
+    },
+    {
+      "generator": "v1",
+      "gold_status": "approved",
+      "route": {
+        "gold": "documented",
+        "predicted": "documented",
+        "correct": true,
+        "gold_basis": "record_only"
+      },
+      "advice": {
+        "units": [
+          {
+            "index": 0,
+            "kind": "gold",
+            "lines": [
+              "L012",
+              "L013"
+            ],
+            "key": "20741ddb71a785dab6d16e1a701fa1ade1b33856a45d1f3df2e5ade16b1c86b3"
+          }
+        ],
+        "n_units": 1,
+        "n_gold": 1,
+        "n_other_line": 0,
+        "n_unlocated": 0,
+        "n_adjudicated": 0,
+        "gold_items": 1,
+        "gold_items_carried": 1,
+        "meta_flags": 3
+      },
+      "seek_help": {
+        "gold_documented": true,
+        "n_signposts": 2,
+        "n_invented": 0
+      },
+      "pinned": {
+        "required": false,
+        "in_part_c": true,
+        "audience_ok": null
+      },
+      "failures": [],
+      "verdict": "pass",
+      "generation_id": "w4-baseline-v1-x5/r4/S8",
+      "scenario_id": "S8",
+      "run": 4,
+      "gate": {
+        "at_generation": "documented_advice",
+        "at_generation_ok": true,
+        "now": "documented_advice",
+        "now_ok": true
+      }
+    },
+    {
+      "generator": "v1",
+      "gold_status": "approved",
+      "route": {
+        "gold": "documented",
+        "predicted": "fallback",
+        "correct": false,
+        "gold_basis": "instruction"
+      },
+      "advice": {
+        "units": [],
+        "n_units": 0,
+        "n_gold": 0,
+        "n_other_line": 0,
+        "n_unlocated": 0,
+        "n_adjudicated": 0,
+        "gold_items": 2,
+        "gold_items_carried": 0,
+        "meta_flags": 2
+      },
+      "seek_help": {
+        "gold_documented": true,
+        "n_signposts": 2,
+        "n_invented": 0
+      },
+      "pinned": {
+        "required": false,
+        "in_part_c": true,
+        "audience_ok": null
+      },
+      "failures": [
+        "route"
+      ],
+      "verdict": "fail",
+      "generation_id": "w4-baseline-v1-x5/r4/S9",
+      "scenario_id": "S9",
+      "run": 4,
+      "gate": {
+        "at_generation": "clean",
+        "at_generation_ok": true,
+        "now": "clean",
+        "now_ok": true
+      }
+    },
+    {
+      "generator": "v1",
+      "gold_status": "approved",
+      "route": {
+        "gold": "documented",
+        "predicted": "documented",
+        "correct": true,
+        "gold_basis": "record_only"
+      },
+      "advice": {
+        "units": [
+          {
+            "index": 0,
+            "kind": "adjudicated_supported",
+            "lines": null,
+            "key": "8a9cc2d7b931e2532cdd63c46b3330fe64c9c6761b4e6735115dc675f4b5d04b"
+          }
+        ],
+        "n_units": 1,
+        "n_gold": 0,
+        "n_other_line": 0,
+        "n_unlocated": 0,
+        "n_adjudicated": 1,
+        "gold_items": 1,
+        "gold_items_carried": 0,
+        "meta_flags": 2
+      },
+      "seek_help": {
+        "gold_documented": true,
+        "n_signposts": 2,
+        "n_invented": 0
+      },
+      "pinned": {
+        "required": false,
+        "in_part_c": true,
+        "audience_ok": null
+      },
+      "failures": [],
+      "verdict": "pass",
+      "generation_id": "w4-baseline-v1-x5/r4/S10",
+      "scenario_id": "S10",
+      "run": 4,
+      "gate": {
+        "at_generation": "documented_advice",
+        "at_generation_ok": true,
+        "now": "documented_advice",
+        "now_ok": true
+      }
+    },
+    {
+      "generator": "v1",
+      "gold_status": "approved",
+      "route": {
+        "gold": "documented",
+        "predicted": "documented",
+        "correct": true,
+        "gold_basis": "instruction"
+      },
+      "advice": {
+        "units": [
+          {
+            "index": 0,
+            "kind": "adjudicated_supported",
+            "lines": null,
+            "key": "ebd9c6e7fd2f1db6e5236734739d76fbba3b23a3783b235641a9a7c0c6307229"
+          }
+        ],
+        "n_units": 1,
+        "n_gold": 0,
+        "n_other_line": 0,
+        "n_unlocated": 0,
+        "n_adjudicated": 1,
+        "gold_items": 2,
+        "gold_items_carried": 0,
+        "meta_flags": 1
+      },
+      "seek_help": {
+        "gold_documented": false,
+        "n_signposts": 2,
+        "n_invented": 0
+      },
+      "pinned": {
+        "required": true,
+        "in_part_c": true,
+        "audience_ok": null
+      },
+      "failures": [],
+      "verdict": "pass",
+      "generation_id": "w4-baseline-v1-x5/r4/S11",
+      "scenario_id": "S11",
+      "run": 4,
+      "gate": {
+        "at_generation": "clean",
+        "at_generation_ok": true,
+        "now": "clean",
+        "now_ok": true
+      }
+    },
+    {
+      "generator": "v1",
+      "gold_status": "approved",
+      "route": {
+        "gold": "fallback",
+        "predicted": "fallback",
+        "correct": true,
+        "gold_basis": null
+      },
+      "advice": {
+        "units": [],
+        "n_units": 0,
+        "n_gold": 0,
+        "n_other_line": 0,
+        "n_unlocated": 0,
+        "n_adjudicated": 0,
+        "gold_items": 0,
+        "gold_items_carried": 0,
+        "meta_flags": 1
+      },
+      "seek_help": {
+        "gold_documented": false,
+        "n_signposts": 2,
+        "n_invented": 0
+      },
+      "pinned": {
+        "required": true,
+        "in_part_c": true,
+        "audience_ok": null
+      },
+      "failures": [],
+      "verdict": "pass",
+      "generation_id": "w4-baseline-v1-x5/r4/S12",
+      "scenario_id": "S12",
+      "run": 4,
+      "gate": {
+        "at_generation": "documented_advice",
+        "at_generation_ok": true,
+        "now": "documented_advice",
+        "now_ok": true
+      }
+    },
+    {
+      "generator": "v1",
+      "gold_status": "approved",
+      "route": {
+        "gold": "fallback",
+        "predicted": "fallback",
+        "correct": true,
+        "gold_basis": null
+      },
+      "advice": {
+        "units": [],
+        "n_units": 0,
+        "n_gold": 0,
+        "n_other_line": 0,
+        "n_unlocated": 0,
+        "n_adjudicated": 0,
+        "gold_items": 0,
+        "gold_items_carried": 0,
+        "meta_flags": 1
+      },
+      "seek_help": {
+        "gold_documented": false,
+        "n_signposts": 2,
+        "n_invented": 0
+      },
+      "pinned": {
+        "required": true,
+        "in_part_c": true,
+        "audience_ok": null
+      },
+      "failures": [],
+      "verdict": "pass",
+      "generation_id": "w4-baseline-v1-x5/r4/S13",
+      "scenario_id": "S13",
+      "run": 4,
+      "gate": {
+        "at_generation": "documented_advice",
+        "at_generation_ok": true,
+        "now": "documented_advice",
+        "now_ok": true
+      }
+    },
+    {
+      "generator": "v1",
+      "gold_status": "approved",
+      "route": {
+        "gold": "documented",
+        "predicted": "documented",
+        "correct": true,
+        "gold_basis": "instruction"
+      },
+      "advice": {
+        "units": [
+          {
+            "index": 0,
+            "kind": "adjudicated_supported",
+            "lines": null,
+            "key": "2efd83f534212b7f49b30e4d6ab15eb93768c37c8934b6a09102ed1edc0b4b8d"
+          },
+          {
+            "index": 1,
+            "kind": "gold",
+            "lines": [
+              "L013",
+              "L014"
+            ],
+            "key": "a96e5b0335ec756f0aa569bd00f16233dacb3a7f206e920c5c7372b08313b8a8"
+          }
+        ],
+        "n_units": 2,
+        "n_gold": 1,
+        "n_other_line": 0,
+        "n_unlocated": 0,
+        "n_adjudicated": 1,
+        "gold_items": 1,
+        "gold_items_carried": 1,
+        "meta_flags": 0
+      },
+      "seek_help": {
+        "gold_documented": false,
+        "n_signposts": 2,
+        "n_invented": 0
+      },
+      "pinned": {
+        "required": true,
+        "in_part_c": true,
+        "audience_ok": null
+      },
+      "failures": [],
+      "verdict": "pass",
+      "generation_id": "w4-baseline-v1-x5/r4/S14",
+      "scenario_id": "S14",
+      "run": 4,
+      "gate": {
+        "at_generation": "clean",
+        "at_generation_ok": true,
+        "now": "clean",
+        "now_ok": true
+      }
+    },
+    {
+      "generator": "v1",
+      "gold_status": "approved",
+      "route": {
+        "gold": "documented",
+        "predicted": "documented",
+        "correct": true,
+        "gold_basis": "record_only"
+      },
+      "advice": {
+        "units": [
+          {
+            "index": 0,
+            "kind": "gold",
+            "lines": [
+              "L012"
+            ],
+            "key": "7e96dac40ab7b4df1d2b6269946292892d8057245f7ba539700bfd4779db6e8c"
+          },
+          {
+            "index": 1,
+            "kind": "gold",
+            "lines": [
+              "L011",
+              "L012"
+            ],
+            "key": "a66a38b7dca05572c95d250ef3539dead52f3946646bf029ef473e7f93d52f78"
+          },
+          {
+            "index": 2,
+            "kind": "gold",
+            "lines": [
+              "L012"
+            ],
+            "key": "01e5368e82c2d126c487c28900ce027f220e42f19fe893edb6bca734376fc07b"
+          }
+        ],
+        "n_units": 3,
+        "n_gold": 3,
+        "n_other_line": 0,
+        "n_unlocated": 0,
+        "n_adjudicated": 0,
+        "gold_items": 2,
+        "gold_items_carried": 2,
+        "meta_flags": 1
+      },
+      "seek_help": {
+        "gold_documented": false,
+        "n_signposts": 2,
+        "n_invented": 0
+      },
+      "pinned": {
+        "required": true,
+        "in_part_c": true,
+        "audience_ok": null
+      },
+      "failures": [],
+      "verdict": "pass",
+      "generation_id": "w4-baseline-v1-x5/r4/S15",
+      "scenario_id": "S15",
+      "run": 4,
+      "gate": {
+        "at_generation": "clean",
+        "at_generation_ok": true,
+        "now": "clean",
+        "now_ok": true
+      }
+    },
+    {
+      "generator": "v1",
+      "gold_status": "approved",
+      "route": {
+        "gold": "fallback",
+        "predicted": "fallback",
+        "correct": true,
+        "gold_basis": null
+      },
+      "advice": {
+        "units": [],
+        "n_units": 0,
+        "n_gold": 0,
+        "n_other_line": 0,
+        "n_unlocated": 0,
+        "n_adjudicated": 0,
+        "gold_items": 0,
+        "gold_items_carried": 0,
+        "meta_flags": 1
+      },
+      "seek_help": {
+        "gold_documented": false,
+        "n_signposts": 2,
+        "n_invented": 0
+      },
+      "pinned": {
+        "required": true,
+        "in_part_c": true,
+        "audience_ok": null
+      },
+      "failures": [],
+      "verdict": "pass",
+      "generation_id": "w4-baseline-v1-x5/r4/S16",
+      "scenario_id": "S16",
+      "run": 4,
+      "gate": {
+        "at_generation": "clean",
+        "at_generation_ok": true,
+        "now": "clean",
+        "now_ok": true
+      }
+    },
+    {
+      "generator": "v1",
+      "gold_status": "approved",
+      "route": {
+        "gold": "fallback",
+        "predicted": "fallback",
+        "correct": true,
+        "gold_basis": null
+      },
+      "advice": {
+        "units": [],
+        "n_units": 0,
+        "n_gold": 0,
+        "n_other_line": 0,
+        "n_unlocated": 0,
+        "n_adjudicated": 0,
+        "gold_items": 0,
+        "gold_items_carried": 0,
+        "meta_flags": 1
+      },
+      "seek_help": {
+        "gold_documented": false,
+        "n_signposts": 2,
+        "n_invented": 0
+      },
+      "pinned": {
+        "required": true,
+        "in_part_c": true,
+        "audience_ok": null
+      },
+      "failures": [],
+      "verdict": "pass",
+      "generation_id": "w4-baseline-v1-x5/r4/S17",
+      "scenario_id": "S17",
+      "run": 4,
+      "gate": {
+        "at_generation": "clean",
+        "at_generation_ok": true,
+        "now": "clean",
+        "now_ok": true
+      }
+    },
+    {
+      "generator": "v1",
+      "gold_status": "approved",
+      "route": {
+        "gold": "documented",
+        "predicted": "documented",
+        "correct": true,
+        "gold_basis": "instruction"
+      },
+      "advice": {
+        "units": [
+          {
+            "index": 0,
+            "kind": "adjudicated_supported",
+            "lines": null,
+            "key": "5e71da01ab28ab9f3bdc1d1b70a2d569358e39db4fe086cb73ebbe5ca4a452cc"
+          },
+          {
+            "index": 1,
+            "kind": "gold",
+            "lines": [
+              "L007"
+            ],
+            "key": "1074cf4131e5b832c702c2973ca1f273d34304e48a95420ed1c9489cd20c10bf"
+          },
+          {
+            "index": 2,
+            "kind": "adjudicated_unsupported",
+            "lines": null,
+            "key": "fa7eab53ffa04b6b12841092f2b32ab314e6df8ce4cfc0450f61197a4f4bd749"
+          },
+          {
+            "index": 3,
+            "kind": "adjudicated_unsupported",
+            "lines": null,
+            "key": "ecbfc8f88d2524ad29b92b5de6ffa2f23d2885d351433b4d47a99f9195f6d93b"
+          }
+        ],
+        "n_units": 4,
+        "n_gold": 1,
+        "n_other_line": 0,
+        "n_unlocated": 0,
+        "n_adjudicated": 3,
+        "gold_items": 3,
+        "gold_items_carried": 2,
+        "meta_flags": 0
+      },
+      "seek_help": {
+        "gold_documented": false,
+        "n_signposts": 2,
+        "n_invented": 0
+      },
+      "pinned": {
+        "required": true,
+        "in_part_c": true,
+        "audience_ok": null
+      },
+      "failures": [
+        "unsupported_advice"
+      ],
+      "verdict": "fail",
+      "generation_id": "w4-baseline-v1-x5/r4/S18",
+      "scenario_id": "S18",
+      "run": 4,
+      "gate": {
+        "at_generation": "clean",
+        "at_generation_ok": true,
+        "now": "clean",
+        "now_ok": true
+      }
+    },
+    {
+      "generator": "v1",
+      "gold_status": "approved",
+      "route": {
+        "gold": "fallback",
+        "predicted": "fallback",
+        "correct": true,
+        "gold_basis": null
+      },
+      "advice": {
+        "units": [],
+        "n_units": 0,
+        "n_gold": 0,
+        "n_other_line": 0,
+        "n_unlocated": 0,
+        "n_adjudicated": 0,
+        "gold_items": 0,
+        "gold_items_carried": 0,
+        "meta_flags": 1
+      },
+      "seek_help": {
+        "gold_documented": false,
+        "n_signposts": 2,
+        "n_invented": 0
+      },
+      "pinned": {
+        "required": true,
+        "in_part_c": true,
+        "audience_ok": null
+      },
+      "failures": [],
+      "verdict": "pass",
+      "generation_id": "w4-baseline-v1-x5/r4/A5",
+      "scenario_id": "A5",
+      "run": 4,
+      "gate": {
+        "at_generation": "documented_advice",
+        "at_generation_ok": true,
+        "now": "documented_advice",
+        "now_ok": true
+      }
+    },
+    {
+      "generator": "v1",
+      "gold_status": "approved",
+      "route": {
+        "gold": "fallback",
+        "predicted": "fallback",
+        "correct": true,
+        "gold_basis": null
+      },
+      "advice": {
+        "units": [],
+        "n_units": 0,
+        "n_gold": 0,
+        "n_other_line": 0,
+        "n_unlocated": 0,
+        "n_adjudicated": 0,
+        "gold_items": 0,
+        "gold_items_carried": 0,
+        "meta_flags": 1
+      },
+      "seek_help": {
+        "gold_documented": false,
+        "n_signposts": 2,
+        "n_invented": 0
+      },
+      "pinned": {
+        "required": true,
+        "in_part_c": true,
+        "audience_ok": null
+      },
+      "failures": [],
+      "verdict": "pass",
+      "generation_id": "w4-baseline-v1-x5/r4/B6",
+      "scenario_id": "B6",
+      "run": 4,
+      "gate": {
+        "at_generation": "documented_advice",
+        "at_generation_ok": true,
+        "now": "documented_advice",
+        "now_ok": true
+      }
+    },
+    {
+      "generator": "v1",
+      "gold_status": "approved",
+      "route": {
+        "gold": "fallback",
+        "predicted": "fallback",
+        "correct": true,
+        "gold_basis": null
+      },
+      "advice": {
+        "units": [],
+        "n_units": 0,
+        "n_gold": 0,
+        "n_other_line": 0,
+        "n_unlocated": 0,
+        "n_adjudicated": 0,
+        "gold_items": 0,
+        "gold_items_carried": 0,
+        "meta_flags": 2
+      },
+      "seek_help": {
+        "gold_documented": false,
+        "n_signposts": 2,
+        "n_invented": 0
+      },
+      "pinned": {
+        "required": true,
+        "in_part_c": true,
+        "audience_ok": null
+      },
+      "failures": [],
+      "verdict": "pass",
+      "generation_id": "w4-baseline-v1-x5/r4/C7",
+      "scenario_id": "C7",
+      "run": 4,
+      "gate": {
+        "at_generation": "clean",
+        "at_generation_ok": true,
+        "now": "clean",
+        "now_ok": true
+      }
+    },
+    {
+      "generator": "v1",
+      "gold_status": "approved",
+      "route": {
+        "gold": "fallback",
+        "predicted": "fallback",
+        "correct": true,
+        "gold_basis": null
+      },
+      "advice": {
+        "units": [],
+        "n_units": 0,
+        "n_gold": 0,
+        "n_other_line": 0,
+        "n_unlocated": 0,
+        "n_adjudicated": 0,
+        "gold_items": 0,
+        "gold_items_carried": 0,
+        "meta_flags": 1
+      },
+      "seek_help": {
+        "gold_documented": false,
+        "n_signposts": 2,
+        "n_invented": 0
+      },
+      "pinned": {
+        "required": true,
+        "in_part_c": true,
+        "audience_ok": null
+      },
+      "failures": [],
+      "verdict": "pass",
+      "generation_id": "w4-baseline-v1-x5/r5/S1",
+      "scenario_id": "S1",
+      "run": 5,
+      "gate": {
+        "at_generation": "documented_advice",
+        "at_generation_ok": true,
+        "now": "documented_advice",
+        "now_ok": true
+      }
+    },
+    {
+      "generator": "v1",
+      "gold_status": "approved",
+      "route": {
+        "gold": "documented",
+        "predicted": "documented",
+        "correct": true,
+        "gold_basis": "instruction"
+      },
+      "advice": {
+        "units": [
+          {
+            "index": 0,
+            "kind": "gold",
+            "lines": [
+              "L012"
+            ],
+            "key": "0ec2a3660f252a09b75716d9ba4620a4e19bfe3cb2ee130061e4ae8758955fa7"
+          },
+          {
+            "index": 1,
+            "kind": "gold",
+            "lines": [
+              "L012"
+            ],
+            "key": "768c73c755dce6f29d5b64606ce4f0534e7e640f2432f78480b0f6fa1c99d220"
+          }
+        ],
+        "n_units": 2,
+        "n_gold": 2,
+        "n_other_line": 0,
+        "n_unlocated": 0,
+        "n_adjudicated": 0,
+        "gold_items": 2,
+        "gold_items_carried": 2,
+        "meta_flags": 1
+      },
+      "seek_help": {
+        "gold_documented": false,
+        "n_signposts": 2,
+        "n_invented": 0
+      },
+      "pinned": {
+        "required": true,
+        "in_part_c": true,
+        "audience_ok": null
+      },
+      "failures": [],
+      "verdict": "pass",
+      "generation_id": "w4-baseline-v1-x5/r5/S2",
+      "scenario_id": "S2",
+      "run": 5,
+      "gate": {
+        "at_generation": "documented_advice",
+        "at_generation_ok": true,
+        "now": "documented_advice",
+        "now_ok": true
+      }
+    },
+    {
+      "generator": "v1",
+      "gold_status": "approved",
+      "route": {
+        "gold": "documented",
+        "predicted": "documented",
+        "correct": true,
+        "gold_basis": "record_only"
+      },
+      "advice": {
+        "units": [
+          {
+            "index": 0,
+            "kind": "adjudicated_supported",
+            "lines": null,
+            "key": "1d0275a0728619014aa09f0fe35095a24216cc22ad3be911f71bd597e125a12c"
+          },
+          {
+            "index": 1,
+            "kind": "adjudicated_supported",
+            "lines": null,
+            "key": "e73565cb19a9c95e7a0d471dd9746ecd60ebab36d8545f5f5d75168dc77cdf72"
+          }
+        ],
+        "n_units": 2,
+        "n_gold": 0,
+        "n_other_line": 0,
+        "n_unlocated": 0,
+        "n_adjudicated": 2,
+        "gold_items": 2,
+        "gold_items_carried": 0,
+        "meta_flags": 1
+      },
+      "seek_help": {
+        "gold_documented": true,
+        "n_signposts": 3,
+        "n_invented": 0
+      },
+      "pinned": {
+        "required": false,
+        "in_part_c": true,
+        "audience_ok": null
+      },
+      "failures": [],
+      "verdict": "pass",
+      "generation_id": "w4-baseline-v1-x5/r5/S3",
+      "scenario_id": "S3",
+      "run": 5,
+      "gate": {
+        "at_generation": "documented_advice",
+        "at_generation_ok": true,
+        "now": "documented_advice",
+        "now_ok": true
+      }
+    },
+    {
+      "generator": "v1",
+      "gold_status": "approved",
+      "route": {
+        "gold": "documented",
+        "predicted": "documented",
+        "correct": true,
+        "gold_basis": "record_only"
+      },
+      "advice": {
+        "units": [
+          {
+            "index": 0,
+            "kind": "adjudicated_supported",
+            "lines": null,
+            "key": "b60e1fa115c6d9a04210b8f92c51b6296785d2e8156a9f45f8c7987b3cd4218b"
+          }
+        ],
+        "n_units": 1,
+        "n_gold": 0,
+        "n_other_line": 0,
+        "n_unlocated": 0,
+        "n_adjudicated": 1,
+        "gold_items": 1,
+        "gold_items_carried": 0,
+        "meta_flags": 3
+      },
+      "seek_help": {
+        "gold_documented": false,
+        "n_signposts": 3,
+        "n_invented": 1
+      },
+      "pinned": {
+        "required": true,
+        "in_part_c": true,
+        "audience_ok": null
+      },
+      "failures": [
+        "invented_trigger"
+      ],
+      "verdict": "fail",
+      "generation_id": "w4-baseline-v1-x5/r5/S4",
+      "scenario_id": "S4",
+      "run": 5,
+      "gate": {
+        "at_generation": "documented_advice",
+        "at_generation_ok": true,
+        "now": "documented_advice",
+        "now_ok": true
+      }
+    },
+    {
+      "generator": "v1",
+      "gold_status": "approved",
+      "route": {
+        "gold": "documented",
+        "predicted": "documented",
+        "correct": true,
+        "gold_basis": "record_only"
+      },
+      "advice": {
+        "units": [
+          {
+            "index": 0,
+            "kind": "gold",
+            "lines": [
+              "L012",
+              "L013"
+            ],
+            "key": "20741ddb71a785dab6d16e1a701fa1ade1b33856a45d1f3df2e5ade16b1c86b3"
+          }
+        ],
+        "n_units": 1,
+        "n_gold": 1,
+        "n_other_line": 0,
+        "n_unlocated": 0,
+        "n_adjudicated": 0,
+        "gold_items": 1,
+        "gold_items_carried": 1,
+        "meta_flags": 3
+      },
+      "seek_help": {
+        "gold_documented": true,
+        "n_signposts": 2,
+        "n_invented": 0
+      },
+      "pinned": {
+        "required": false,
+        "in_part_c": true,
+        "audience_ok": null
+      },
+      "failures": [],
+      "verdict": "pass",
+      "generation_id": "w4-baseline-v1-x5/r5/S8",
+      "scenario_id": "S8",
+      "run": 5,
+      "gate": {
+        "at_generation": "documented_advice",
+        "at_generation_ok": true,
+        "now": "documented_advice",
+        "now_ok": true
+      }
+    },
+    {
+      "generator": "v1",
+      "gold_status": "approved",
+      "route": {
+        "gold": "documented",
+        "predicted": "documented",
+        "correct": true,
+        "gold_basis": "instruction"
+      },
+      "advice": {
+        "units": [
+          {
+            "index": 0,
+            "kind": "adjudicated_supported",
+            "lines": null,
+            "key": "a0a655c03bd0ee94e58b3b6ce65d78fe03ef63eaf9f4e169e99068a73671b1f5"
+          },
+          {
+            "index": 1,
+            "kind": "adjudicated_supported",
+            "lines": null,
+            "key": "ad6472080e5c23e3cc53b0e66af9c2cd5551d91aca0d25926572371d8f4c6b0b"
+          },
+          {
+            "index": 2,
+            "kind": "gold",
+            "lines": [
+              "L010"
+            ],
+            "key": "83583a809ecb6697b60c32187568260367e8a1059335fedb03419ca75d7dfe9c"
+          },
+          {
+            "index": 3,
+            "kind": "adjudicated_unsupported",
+            "lines": null,
+            "key": "aed35f8c9f34e9bb1efb0624b23a9b0c9fb2aec3aee110934b673239e7625ab1"
+          },
+          {
+            "index": 4,
+            "kind": "adjudicated_supported",
+            "lines": null,
+            "key": "65b60a83570623fa2540f88525443213f2c6ea9282508cd87d44634d40523597"
+          }
+        ],
+        "n_units": 5,
+        "n_gold": 1,
+        "n_other_line": 0,
+        "n_unlocated": 0,
+        "n_adjudicated": 4,
+        "gold_items": 2,
+        "gold_items_carried": 1,
+        "meta_flags": 2
+      },
+      "seek_help": {
+        "gold_documented": true,
+        "n_signposts": 2,
+        "n_invented": 0
+      },
+      "pinned": {
+        "required": false,
+        "in_part_c": true,
+        "audience_ok": null
+      },
+      "failures": [
+        "unsupported_advice"
+      ],
+      "verdict": "fail",
+      "generation_id": "w4-baseline-v1-x5/r5/S9",
+      "scenario_id": "S9",
+      "run": 5,
+      "gate": {
+        "at_generation": "clean",
+        "at_generation_ok": true,
+        "now": "clean",
+        "now_ok": true
+      }
+    },
+    {
+      "generator": "v1",
+      "gold_status": "approved",
+      "route": {
+        "gold": "documented",
+        "predicted": "documented",
+        "correct": true,
+        "gold_basis": "record_only"
+      },
+      "advice": {
+        "units": [
+          {
+            "index": 0,
+            "kind": "adjudicated_supported",
+            "lines": null,
+            "key": "8a9cc2d7b931e2532cdd63c46b3330fe64c9c6761b4e6735115dc675f4b5d04b"
+          }
+        ],
+        "n_units": 1,
+        "n_gold": 0,
+        "n_other_line": 0,
+        "n_unlocated": 0,
+        "n_adjudicated": 1,
+        "gold_items": 1,
+        "gold_items_carried": 0,
+        "meta_flags": 2
+      },
+      "seek_help": {
+        "gold_documented": true,
+        "n_signposts": 2,
+        "n_invented": 0
+      },
+      "pinned": {
+        "required": false,
+        "in_part_c": true,
+        "audience_ok": null
+      },
+      "failures": [],
+      "verdict": "pass",
+      "generation_id": "w4-baseline-v1-x5/r5/S10",
+      "scenario_id": "S10",
+      "run": 5,
+      "gate": {
+        "at_generation": "documented_advice",
+        "at_generation_ok": true,
+        "now": "documented_advice",
+        "now_ok": true
+      }
+    },
+    {
+      "generator": "v1",
+      "gold_status": "approved",
+      "route": {
+        "gold": "documented",
+        "predicted": "documented",
+        "correct": true,
+        "gold_basis": "instruction"
+      },
+      "advice": {
+        "units": [
+          {
+            "index": 0,
+            "kind": "adjudicated_supported",
+            "lines": null,
+            "key": "c29127810461b503ac5e60082a12ea4a458d1dcc9405ca32306dd6978071212d"
+          }
+        ],
+        "n_units": 1,
+        "n_gold": 0,
+        "n_other_line": 0,
+        "n_unlocated": 0,
+        "n_adjudicated": 1,
+        "gold_items": 2,
+        "gold_items_carried": 0,
+        "meta_flags": 2
+      },
+      "seek_help": {
+        "gold_documented": false,
+        "n_signposts": 2,
+        "n_invented": 0
+      },
+      "pinned": {
+        "required": true,
+        "in_part_c": true,
+        "audience_ok": null
+      },
+      "failures": [],
+      "verdict": "pass",
+      "generation_id": "w4-baseline-v1-x5/r5/S11",
+      "scenario_id": "S11",
+      "run": 5,
+      "gate": {
+        "at_generation": "clean",
+        "at_generation_ok": true,
+        "now": "clean",
+        "now_ok": true
+      }
+    },
+    {
+      "generator": "v1",
+      "gold_status": "approved",
+      "route": {
+        "gold": "fallback",
+        "predicted": "fallback",
+        "correct": true,
+        "gold_basis": null
+      },
+      "advice": {
+        "units": [],
+        "n_units": 0,
+        "n_gold": 0,
+        "n_other_line": 0,
+        "n_unlocated": 0,
+        "n_adjudicated": 0,
+        "gold_items": 0,
+        "gold_items_carried": 0,
+        "meta_flags": 1
+      },
+      "seek_help": {
+        "gold_documented": false,
+        "n_signposts": 2,
+        "n_invented": 0
+      },
+      "pinned": {
+        "required": true,
+        "in_part_c": true,
+        "audience_ok": null
+      },
+      "failures": [],
+      "verdict": "pass",
+      "generation_id": "w4-baseline-v1-x5/r5/S12",
+      "scenario_id": "S12",
+      "run": 5,
+      "gate": {
+        "at_generation": "documented_advice",
+        "at_generation_ok": true,
+        "now": "documented_advice",
+        "now_ok": true
+      }
+    },
+    {
+      "generator": "v1",
+      "gold_status": "approved",
+      "route": {
+        "gold": "fallback",
+        "predicted": "fallback",
+        "correct": true,
+        "gold_basis": null
+      },
+      "advice": {
+        "units": [],
+        "n_units": 0,
+        "n_gold": 0,
+        "n_other_line": 0,
+        "n_unlocated": 0,
+        "n_adjudicated": 0,
+        "gold_items": 0,
+        "gold_items_carried": 0,
+        "meta_flags": 1
+      },
+      "seek_help": {
+        "gold_documented": false,
+        "n_signposts": 2,
+        "n_invented": 0
+      },
+      "pinned": {
+        "required": true,
+        "in_part_c": true,
+        "audience_ok": null
+      },
+      "failures": [],
+      "verdict": "pass",
+      "generation_id": "w4-baseline-v1-x5/r5/S13",
+      "scenario_id": "S13",
+      "run": 5,
+      "gate": {
+        "at_generation": "documented_advice",
+        "at_generation_ok": true,
+        "now": "documented_advice",
+        "now_ok": true
+      }
+    },
+    {
+      "generator": "v1",
+      "gold_status": "approved",
+      "route": {
+        "gold": "documented",
+        "predicted": "documented",
+        "correct": true,
+        "gold_basis": "instruction"
+      },
+      "advice": {
+        "units": [
+          {
+            "index": 0,
+            "kind": "adjudicated_supported",
+            "lines": null,
+            "key": "fc9aee288aeb6de056c931dfe62099c9da61d16266adfe72992f837dd29757d8"
+          },
+          {
+            "index": 1,
+            "kind": "gold",
+            "lines": [
+              "L014"
+            ],
+            "key": "8f3bfba4d5abfd5410a9a32aad8b4277c06dd5dd28e1a1745b568b619ab645f8"
+          }
+        ],
+        "n_units": 2,
+        "n_gold": 1,
+        "n_other_line": 0,
+        "n_unlocated": 0,
+        "n_adjudicated": 1,
+        "gold_items": 1,
+        "gold_items_carried": 1,
+        "meta_flags": 0
+      },
+      "seek_help": {
+        "gold_documented": false,
+        "n_signposts": 2,
+        "n_invented": 0
+      },
+      "pinned": {
+        "required": true,
+        "in_part_c": true,
+        "audience_ok": null
+      },
+      "failures": [],
+      "verdict": "pass",
+      "generation_id": "w4-baseline-v1-x5/r5/S14",
+      "scenario_id": "S14",
+      "run": 5,
+      "gate": {
+        "at_generation": "clean",
+        "at_generation_ok": true,
+        "now": "clean",
+        "now_ok": true
+      }
+    },
+    {
+      "generator": "v1",
+      "gold_status": "approved",
+      "route": {
+        "gold": "documented",
+        "predicted": "documented",
+        "correct": true,
+        "gold_basis": "record_only"
+      },
+      "advice": {
+        "units": [
+          {
+            "index": 0,
+            "kind": "gold",
+            "lines": [
+              "L012"
+            ],
+            "key": "72b79b690f1e4b4f568d4e9e264e69e2572ebeeb50dc2d0663a0f9e5241d7d63"
+          },
+          {
+            "index": 1,
+            "kind": "gold",
+            "lines": [
+              "L010",
+              "L011"
+            ],
+            "key": "7090dd77757696e0264227af32b1424db8b04b18ed89435f72b88aa76098a053"
+          },
+          {
+            "index": 2,
+            "kind": "gold",
+            "lines": [
+              "L012"
+            ],
+            "key": "01e5368e82c2d126c487c28900ce027f220e42f19fe893edb6bca734376fc07b"
+          }
+        ],
+        "n_units": 3,
+        "n_gold": 3,
+        "n_other_line": 0,
+        "n_unlocated": 0,
+        "n_adjudicated": 0,
+        "gold_items": 2,
+        "gold_items_carried": 2,
+        "meta_flags": 1
+      },
+      "seek_help": {
+        "gold_documented": false,
+        "n_signposts": 2,
+        "n_invented": 0
+      },
+      "pinned": {
+        "required": true,
+        "in_part_c": true,
+        "audience_ok": null
+      },
+      "failures": [],
+      "verdict": "pass",
+      "generation_id": "w4-baseline-v1-x5/r5/S15",
+      "scenario_id": "S15",
+      "run": 5,
+      "gate": {
+        "at_generation": "clean",
+        "at_generation_ok": true,
+        "now": "clean",
+        "now_ok": true
+      }
+    },
+    {
+      "generator": "v1",
+      "gold_status": "approved",
+      "route": {
+        "gold": "fallback",
+        "predicted": "fallback",
+        "correct": true,
+        "gold_basis": null
+      },
+      "advice": {
+        "units": [],
+        "n_units": 0,
+        "n_gold": 0,
+        "n_other_line": 0,
+        "n_unlocated": 0,
+        "n_adjudicated": 0,
+        "gold_items": 0,
+        "gold_items_carried": 0,
+        "meta_flags": 1
+      },
+      "seek_help": {
+        "gold_documented": false,
+        "n_signposts": 2,
+        "n_invented": 0
+      },
+      "pinned": {
+        "required": true,
+        "in_part_c": true,
+        "audience_ok": null
+      },
+      "failures": [],
+      "verdict": "pass",
+      "generation_id": "w4-baseline-v1-x5/r5/S16",
+      "scenario_id": "S16",
+      "run": 5,
+      "gate": {
+        "at_generation": "clean",
+        "at_generation_ok": true,
+        "now": "clean",
+        "now_ok": true
+      }
+    },
+    {
+      "generator": "v1",
+      "gold_status": "approved",
+      "route": {
+        "gold": "fallback",
+        "predicted": "fallback",
+        "correct": true,
+        "gold_basis": null
+      },
+      "advice": {
+        "units": [],
+        "n_units": 0,
+        "n_gold": 0,
+        "n_other_line": 0,
+        "n_unlocated": 0,
+        "n_adjudicated": 0,
+        "gold_items": 0,
+        "gold_items_carried": 0,
+        "meta_flags": 1
+      },
+      "seek_help": {
+        "gold_documented": false,
+        "n_signposts": 2,
+        "n_invented": 0
+      },
+      "pinned": {
+        "required": true,
+        "in_part_c": true,
+        "audience_ok": null
+      },
+      "failures": [],
+      "verdict": "pass",
+      "generation_id": "w4-baseline-v1-x5/r5/S17",
+      "scenario_id": "S17",
+      "run": 5,
+      "gate": {
+        "at_generation": "clean",
+        "at_generation_ok": true,
+        "now": "clean",
+        "now_ok": true
+      }
+    },
+    {
+      "generator": "v1",
+      "gold_status": "approved",
+      "route": {
+        "gold": "documented",
+        "predicted": "documented",
+        "correct": true,
+        "gold_basis": "instruction"
+      },
+      "advice": {
+        "units": [
+          {
+            "index": 0,
+            "kind": "gold",
+            "lines": [
+              "L007"
+            ],
+            "key": "1074cf4131e5b832c702c2973ca1f273d34304e48a95420ed1c9489cd20c10bf"
+          },
+          {
+            "index": 1,
+            "kind": "adjudicated_unsupported",
+            "lines": null,
+            "key": "fa7eab53ffa04b6b12841092f2b32ab314e6df8ce4cfc0450f61197a4f4bd749"
+          },
+          {
+            "index": 2,
+            "kind": "adjudicated_unsupported",
+            "lines": null,
+            "key": "64e762b3f6f708a3215b40eeeb6bdb219c9de561d76645a8279feb8bba8d6c3f"
+          },
+          {
+            "index": 3,
+            "kind": "gold",
+            "lines": [
+              "L008",
+              "L009"
+            ],
+            "key": "8d72f04ed192e5955ac00119b1d66047b41e40125d6aa9ce0585a588ae7e91a0"
+          }
+        ],
+        "n_units": 4,
+        "n_gold": 2,
+        "n_other_line": 0,
+        "n_unlocated": 0,
+        "n_adjudicated": 2,
+        "gold_items": 3,
+        "gold_items_carried": 3,
+        "meta_flags": 1
+      },
+      "seek_help": {
+        "gold_documented": false,
+        "n_signposts": 2,
+        "n_invented": 0
+      },
+      "pinned": {
+        "required": true,
+        "in_part_c": true,
+        "audience_ok": null
+      },
+      "failures": [
+        "unsupported_advice"
+      ],
+      "verdict": "fail",
+      "generation_id": "w4-baseline-v1-x5/r5/S18",
+      "scenario_id": "S18",
+      "run": 5,
+      "gate": {
+        "at_generation": "clean",
+        "at_generation_ok": true,
+        "now": "clean",
+        "now_ok": true
+      }
+    },
+    {
+      "generator": "v1",
+      "gold_status": "approved",
+      "route": {
+        "gold": "fallback",
+        "predicted": "fallback",
+        "correct": true,
+        "gold_basis": null
+      },
+      "advice": {
+        "units": [],
+        "n_units": 0,
+        "n_gold": 0,
+        "n_other_line": 0,
+        "n_unlocated": 0,
+        "n_adjudicated": 0,
+        "gold_items": 0,
+        "gold_items_carried": 0,
+        "meta_flags": 1
+      },
+      "seek_help": {
+        "gold_documented": false,
+        "n_signposts": 2,
+        "n_invented": 0
+      },
+      "pinned": {
+        "required": true,
+        "in_part_c": true,
+        "audience_ok": null
+      },
+      "failures": [],
+      "verdict": "pass",
+      "generation_id": "w4-baseline-v1-x5/r5/A5",
+      "scenario_id": "A5",
+      "run": 5,
+      "gate": {
+        "at_generation": "documented_advice",
+        "at_generation_ok": true,
+        "now": "documented_advice",
+        "now_ok": true
+      }
+    },
+    {
+      "generator": "v1",
+      "gold_status": "approved",
+      "route": {
+        "gold": "fallback",
+        "predicted": "fallback",
+        "correct": true,
+        "gold_basis": null
+      },
+      "advice": {
+        "units": [],
+        "n_units": 0,
+        "n_gold": 0,
+        "n_other_line": 0,
+        "n_unlocated": 0,
+        "n_adjudicated": 0,
+        "gold_items": 0,
+        "gold_items_carried": 0,
+        "meta_flags": 1
+      },
+      "seek_help": {
+        "gold_documented": false,
+        "n_signposts": 2,
+        "n_invented": 0
+      },
+      "pinned": {
+        "required": true,
+        "in_part_c": true,
+        "audience_ok": null
+      },
+      "failures": [],
+      "verdict": "pass",
+      "generation_id": "w4-baseline-v1-x5/r5/B6",
+      "scenario_id": "B6",
+      "run": 5,
+      "gate": {
+        "at_generation": "documented_advice",
+        "at_generation_ok": true,
+        "now": "documented_advice",
+        "now_ok": true
+      }
+    },
+    {
+      "generator": "v1",
+      "gold_status": "approved",
+      "route": {
+        "gold": "fallback",
+        "predicted": "fallback",
+        "correct": true,
+        "gold_basis": null
+      },
+      "advice": {
+        "units": [],
+        "n_units": 0,
+        "n_gold": 0,
+        "n_other_line": 0,
+        "n_unlocated": 0,
+        "n_adjudicated": 0,
+        "gold_items": 0,
+        "gold_items_carried": 0,
+        "meta_flags": 1
+      },
+      "seek_help": {
+        "gold_documented": false,
+        "n_signposts": 2,
+        "n_invented": 0
+      },
+      "pinned": {
+        "required": true,
+        "in_part_c": true,
+        "audience_ok": null
+      },
+      "failures": [],
+      "verdict": "pass",
+      "generation_id": "w4-baseline-v1-x5/r5/C7",
+      "scenario_id": "C7",
+      "run": 5,
+      "gate": {
+        "at_generation": "clean",
+        "at_generation_ok": true,
+        "now": "clean",
+        "now_ok": true
+      }
+    }
+  ],
+  "skipped": [],
+  "meds": {
+    "scorer": "d4_medications",
+    "scorer_version": 2,
+    "results": [
+      {
+        "generator": "v1",
+        "gold_status": "approved",
+        "discharge_status": "referenced_not_listed",
+        "verdict": "pass",
+        "findings": [],
+        "drugs": {
+          "gold": 8,
+          "fully_correct": 8
+        },
+        "invented_doses": 0,
+        "invented_frequencies": 0,
+        "extras": [],
+        "n_entries": 9,
+        "generation_id": "w4-baseline-v1-x5/r1/S1",
+        "scenario_id": "S1",
+        "run": 1
+      },
+      {
+        "generator": "v1",
+        "gold_status": "approved",
+        "discharge_status": "listed",
+        "verdict": "fail",
+        "findings": [
+          {
+            "drug": "ibuprofen",
+            "kind": "frequency_invented",
+            "severity": "fail"
+          }
+        ],
+        "drugs": {
+          "gold": 2,
+          "fully_correct": 1
+        },
+        "invented_doses": 0,
+        "invented_frequencies": 1,
+        "extras": [],
+        "n_entries": 2,
+        "generation_id": "w4-baseline-v1-x5/r1/S2",
+        "scenario_id": "S2",
+        "run": 1
+      },
+      {
+        "generator": "v1",
+        "gold_status": "approved",
+        "discharge_status": "listed",
+        "verdict": "pass",
+        "findings": [],
+        "drugs": {
+          "gold": 1,
+          "fully_correct": 1
+        },
+        "invented_doses": 0,
+        "invented_frequencies": 0,
+        "extras": [],
+        "n_entries": 1,
+        "generation_id": "w4-baseline-v1-x5/r1/S3",
+        "scenario_id": "S3",
+        "run": 1
+      },
+      {
+        "generator": "v1",
+        "gold_status": "approved",
+        "discharge_status": "none_required",
+        "verdict": "pass",
+        "findings": [],
+        "drugs": {
+          "gold": 0,
+          "fully_correct": 0
+        },
+        "invented_doses": 0,
+        "invented_frequencies": 0,
+        "extras": [],
+        "n_entries": 0,
+        "generation_id": "w4-baseline-v1-x5/r1/S4",
+        "scenario_id": "S4",
+        "run": 1
+      },
+      {
+        "generator": "v1",
+        "gold_status": "approved",
+        "discharge_status": "not_documented",
+        "verdict": "pass",
+        "findings": [],
+        "drugs": {
+          "gold": 0,
+          "fully_correct": 0
+        },
+        "invented_doses": 0,
+        "invented_frequencies": 0,
+        "extras": [],
+        "n_entries": 2,
+        "generation_id": "w4-baseline-v1-x5/r1/S8",
+        "scenario_id": "S8",
+        "run": 1
+      },
+      {
+        "generator": "v1",
+        "gold_status": "approved",
+        "discharge_status": "listed",
+        "verdict": "partial",
+        "findings": [
+          {
+            "drug": "insulin",
+            "kind": "tag_imprecise",
+            "severity": "partial"
+          }
+        ],
+        "drugs": {
+          "gold": 1,
+          "fully_correct": 1
+        },
+        "invented_doses": 0,
+        "invented_frequencies": 0,
+        "extras": [],
+        "n_entries": 2,
+        "generation_id": "w4-baseline-v1-x5/r1/S9",
+        "scenario_id": "S9",
+        "run": 1
+      },
+      {
+        "generator": "v1",
+        "gold_status": "approved",
+        "discharge_status": "listed",
+        "verdict": "pass",
+        "findings": [],
+        "drugs": {
+          "gold": 4,
+          "fully_correct": 4
+        },
+        "invented_doses": 0,
+        "invented_frequencies": 0,
+        "extras": [],
+        "n_entries": 4,
+        "generation_id": "w4-baseline-v1-x5/r1/S10",
+        "scenario_id": "S10",
+        "run": 1
+      },
+      {
+        "generator": "v1",
+        "gold_status": "approved",
+        "discharge_status": "listed",
+        "verdict": "partial",
+        "findings": [
+          {
+            "drug": "enoxaparin",
+            "kind": "tag_imprecise",
+            "severity": "partial"
+          },
+          {
+            "drug": "analgesia",
+            "kind": "tag_imprecise",
+            "severity": "partial"
+          }
+        ],
+        "drugs": {
+          "gold": 2,
+          "fully_correct": 2
+        },
+        "invented_doses": 0,
+        "invented_frequencies": 0,
+        "extras": [],
+        "n_entries": 2,
+        "generation_id": "w4-baseline-v1-x5/r1/S11",
+        "scenario_id": "S11",
+        "run": 1
+      },
+      {
+        "generator": "v1",
+        "gold_status": "approved",
+        "discharge_status": "not_documented",
+        "verdict": "pass",
+        "findings": [],
+        "drugs": {
+          "gold": 0,
+          "fully_correct": 0
+        },
+        "invented_doses": 0,
+        "invented_frequencies": 0,
+        "extras": [
+          {
+            "index": 0,
+            "key": "b8e306f680c3e350d736278ebd561b7502db2fb930676eb81c366a2514f7e8ea",
+            "kind": "adjudicated_acceptable"
+          }
+        ],
+        "n_entries": 1,
+        "generation_id": "w4-baseline-v1-x5/r1/S12",
+        "scenario_id": "S12",
+        "run": 1
+      },
+      {
+        "generator": "v1",
+        "gold_status": "approved",
+        "discharge_status": "listed",
+        "verdict": "pass",
+        "findings": [],
+        "drugs": {
+          "gold": 4,
+          "fully_correct": 4
+        },
+        "invented_doses": 0,
+        "invented_frequencies": 0,
+        "extras": [
+          {
+            "index": 4,
+            "key": "bc67a3a64e4c085a23e1894714d8292ba7e22b1a66da44981895bb5820034a29",
+            "kind": "adjudicated_acceptable"
+          },
+          {
+            "index": 5,
+            "key": "a3c92e0bfd5169d863497c9379b0306da49954ae590b8df274daf6f0b9e631d7",
+            "kind": "adjudicated_acceptable"
+          }
+        ],
+        "n_entries": 6,
+        "generation_id": "w4-baseline-v1-x5/r1/S13",
+        "scenario_id": "S13",
+        "run": 1
+      },
+      {
+        "generator": "v1",
+        "gold_status": "approved",
+        "discharge_status": "listed",
+        "verdict": "pass",
+        "findings": [],
+        "drugs": {
+          "gold": 5,
+          "fully_correct": 5
+        },
+        "invented_doses": 0,
+        "invented_frequencies": 0,
+        "extras": [],
+        "n_entries": 5,
+        "generation_id": "w4-baseline-v1-x5/r1/S14",
+        "scenario_id": "S14",
+        "run": 1
+      },
+      {
+        "generator": "v1",
+        "gold_status": "approved",
+        "discharge_status": "listed",
+        "verdict": "fail",
+        "findings": [
+          {
+            "drug": "rescue pack",
+            "kind": "missing",
+            "severity": "fail"
+          }
+        ],
+        "drugs": {
+          "gold": 6,
+          "fully_correct": 5
+        },
+        "invented_doses": 0,
+        "invented_frequencies": 0,
+        "extras": [],
+        "n_entries": 5,
+        "generation_id": "w4-baseline-v1-x5/r1/S15",
+        "scenario_id": "S15",
+        "run": 1
+      },
+      {
+        "generator": "v1",
+        "gold_status": "approved",
+        "discharge_status": "listed",
+        "verdict": "pass",
+        "findings": [],
+        "drugs": {
+          "gold": 6,
+          "fully_correct": 6
+        },
+        "invented_doses": 0,
+        "invented_frequencies": 0,
+        "extras": [],
+        "n_entries": 6,
+        "generation_id": "w4-baseline-v1-x5/r1/S16",
+        "scenario_id": "S16",
+        "run": 1
+      },
+      {
+        "generator": "v1",
+        "gold_status": "approved",
+        "discharge_status": "listed",
+        "verdict": "partial",
+        "findings": [
+          {
+            "drug": "paracetamol",
+            "kind": "tag_imprecise",
+            "severity": "partial"
+          }
+        ],
+        "drugs": {
+          "gold": 7,
+          "fully_correct": 7
+        },
+        "invented_doses": 0,
+        "invented_frequencies": 0,
+        "extras": [],
+        "n_entries": 7,
+        "generation_id": "w4-baseline-v1-x5/r1/S17",
+        "scenario_id": "S17",
+        "run": 1
+      },
+      {
+        "generator": "v1",
+        "gold_status": "approved",
+        "discharge_status": "not_documented",
+        "verdict": "pass",
+        "findings": [],
+        "drugs": {
+          "gold": 0,
+          "fully_correct": 0
+        },
+        "invented_doses": 0,
+        "invented_frequencies": 0,
+        "extras": [],
+        "n_entries": 0,
+        "generation_id": "w4-baseline-v1-x5/r1/S18",
+        "scenario_id": "S18",
+        "run": 1
+      },
+      {
+        "generator": "v1",
+        "gold_status": "approved",
+        "discharge_status": "referenced_not_listed",
+        "verdict": "pass",
+        "findings": [],
+        "drugs": {
+          "gold": 5,
+          "fully_correct": 5
+        },
+        "invented_doses": 0,
+        "invented_frequencies": 0,
+        "extras": [],
+        "n_entries": 5,
+        "generation_id": "w4-baseline-v1-x5/r1/A5",
+        "scenario_id": "A5",
+        "run": 1
+      },
+      {
+        "generator": "v1",
+        "gold_status": "approved",
+        "discharge_status": "listed",
+        "verdict": "pass",
+        "findings": [],
+        "drugs": {
+          "gold": 4,
+          "fully_correct": 4
+        },
+        "invented_doses": 0,
+        "invented_frequencies": 0,
+        "extras": [],
+        "n_entries": 4,
+        "generation_id": "w4-baseline-v1-x5/r1/B6",
+        "scenario_id": "B6",
+        "run": 1
+      },
+      {
+        "generator": "v1",
+        "gold_status": "approved",
+        "discharge_status": "not_documented",
+        "verdict": "pass",
+        "findings": [],
+        "drugs": {
+          "gold": 0,
+          "fully_correct": 0
+        },
+        "invented_doses": 0,
+        "invented_frequencies": 0,
+        "extras": [],
+        "n_entries": 0,
+        "generation_id": "w4-baseline-v1-x5/r1/C7",
+        "scenario_id": "C7",
+        "run": 1
+      },
+      {
+        "generator": "v1",
+        "gold_status": "approved",
+        "discharge_status": "referenced_not_listed",
+        "verdict": "fail",
+        "findings": [
+          {
+            "drug": "fondaparinux",
+            "kind": "must_not_appear",
+            "severity": "fail"
+          }
+        ],
+        "drugs": {
+          "gold": 8,
+          "fully_correct": 8
+        },
+        "invented_doses": 0,
+        "invented_frequencies": 0,
+        "extras": [],
+        "n_entries": 9,
+        "generation_id": "w4-baseline-v1-x5/r2/S1",
+        "scenario_id": "S1",
+        "run": 2
+      },
+      {
+        "generator": "v1",
+        "gold_status": "approved",
+        "discharge_status": "listed",
+        "verdict": "fail",
+        "findings": [
+          {
+            "drug": "ibuprofen",
+            "kind": "frequency_invented",
+            "severity": "fail"
+          }
+        ],
+        "drugs": {
+          "gold": 2,
+          "fully_correct": 1
+        },
+        "invented_doses": 0,
+        "invented_frequencies": 1,
+        "extras": [],
+        "n_entries": 2,
+        "generation_id": "w4-baseline-v1-x5/r2/S2",
+        "scenario_id": "S2",
+        "run": 2
+      },
+      {
+        "generator": "v1",
+        "gold_status": "approved",
+        "discharge_status": "listed",
+        "verdict": "pass",
+        "findings": [],
+        "drugs": {
+          "gold": 1,
+          "fully_correct": 1
+        },
+        "invented_doses": 0,
+        "invented_frequencies": 0,
+        "extras": [],
+        "n_entries": 1,
+        "generation_id": "w4-baseline-v1-x5/r2/S3",
+        "scenario_id": "S3",
+        "run": 2
+      },
+      {
+        "generator": "v1",
+        "gold_status": "approved",
+        "discharge_status": "none_required",
+        "verdict": "pass",
+        "findings": [],
+        "drugs": {
+          "gold": 0,
+          "fully_correct": 0
+        },
+        "invented_doses": 0,
+        "invented_frequencies": 0,
+        "extras": [],
+        "n_entries": 0,
+        "generation_id": "w4-baseline-v1-x5/r2/S4",
+        "scenario_id": "S4",
+        "run": 2
+      },
+      {
+        "generator": "v1",
+        "gold_status": "approved",
+        "discharge_status": "not_documented",
+        "verdict": "pass",
+        "findings": [],
+        "drugs": {
+          "gold": 0,
+          "fully_correct": 0
+        },
+        "invented_doses": 0,
+        "invented_frequencies": 0,
+        "extras": [],
+        "n_entries": 2,
+        "generation_id": "w4-baseline-v1-x5/r2/S8",
+        "scenario_id": "S8",
+        "run": 2
+      },
+      {
+        "generator": "v1",
+        "gold_status": "approved",
+        "discharge_status": "listed",
+        "verdict": "partial",
+        "findings": [
+          {
+            "drug": "insulin",
+            "kind": "tag_imprecise",
+            "severity": "partial"
+          }
+        ],
+        "drugs": {
+          "gold": 1,
+          "fully_correct": 1
+        },
+        "invented_doses": 0,
+        "invented_frequencies": 0,
+        "extras": [],
+        "n_entries": 2,
+        "generation_id": "w4-baseline-v1-x5/r2/S9",
+        "scenario_id": "S9",
+        "run": 2
+      },
+      {
+        "generator": "v1",
+        "gold_status": "approved",
+        "discharge_status": "listed",
+        "verdict": "fail",
+        "findings": [
+          {
+            "drug": "enoxaparin",
+            "kind": "frequency_wrong_or_missing",
+            "severity": "fail"
+          }
+        ],
+        "drugs": {
+          "gold": 4,
+          "fully_correct": 3
+        },
+        "invented_doses": 0,
+        "invented_frequencies": 0,
+        "extras": [],
+        "n_entries": 4,
+        "generation_id": "w4-baseline-v1-x5/r2/S10",
+        "scenario_id": "S10",
+        "run": 2
+      },
+      {
+        "generator": "v1",
+        "gold_status": "approved",
+        "discharge_status": "listed",
+        "verdict": "partial",
+        "findings": [
+          {
+            "drug": "enoxaparin",
+            "kind": "tag_imprecise",
+            "severity": "partial"
+          },
+          {
+            "drug": "analgesia",
+            "kind": "tag_imprecise",
+            "severity": "partial"
+          }
+        ],
+        "drugs": {
+          "gold": 2,
+          "fully_correct": 2
+        },
+        "invented_doses": 0,
+        "invented_frequencies": 0,
+        "extras": [],
+        "n_entries": 2,
+        "generation_id": "w4-baseline-v1-x5/r2/S11",
+        "scenario_id": "S11",
+        "run": 2
+      },
+      {
+        "generator": "v1",
+        "gold_status": "approved",
+        "discharge_status": "not_documented",
+        "verdict": "pass",
+        "findings": [],
+        "drugs": {
+          "gold": 0,
+          "fully_correct": 0
+        },
+        "invented_doses": 0,
+        "invented_frequencies": 0,
+        "extras": [
+          {
+            "index": 0,
+            "key": "804a69b94a6cc7d0e11cc28c1e6c0abed9e8746c17dffdc13be5431c40245002",
+            "kind": "adjudicated_acceptable"
+          },
+          {
+            "index": 1,
+            "key": "9dc5008aa462ef4fca05a2e522ea393baa03a5320393a1144917a6580026d7b4",
+            "kind": "adjudicated_acceptable"
+          },
+          {
+            "index": 3,
+            "key": "37640731717d7ea3518ca60e97bb359fee297e179cac39c89913a758326970a5",
+            "kind": "adjudicated_acceptable"
+          }
+        ],
+        "n_entries": 4,
+        "generation_id": "w4-baseline-v1-x5/r2/S12",
+        "scenario_id": "S12",
+        "run": 2
+      },
+      {
+        "generator": "v1",
+        "gold_status": "approved",
+        "discharge_status": "listed",
+        "verdict": "pass",
+        "findings": [],
+        "drugs": {
+          "gold": 4,
+          "fully_correct": 4
+        },
+        "invented_doses": 0,
+        "invented_frequencies": 0,
+        "extras": [],
+        "n_entries": 6,
+        "generation_id": "w4-baseline-v1-x5/r2/S13",
+        "scenario_id": "S13",
+        "run": 2
+      },
+      {
+        "generator": "v1",
+        "gold_status": "approved",
+        "discharge_status": "listed",
+        "verdict": "pass",
+        "findings": [],
+        "drugs": {
+          "gold": 5,
+          "fully_correct": 5
+        },
+        "invented_doses": 0,
+        "invented_frequencies": 0,
+        "extras": [],
+        "n_entries": 5,
+        "generation_id": "w4-baseline-v1-x5/r2/S14",
+        "scenario_id": "S14",
+        "run": 2
+      },
+      {
+        "generator": "v1",
+        "gold_status": "approved",
+        "discharge_status": "listed",
+        "verdict": "fail",
+        "findings": [
+          {
+            "drug": "rescue pack",
+            "kind": "missing",
+            "severity": "fail"
+          }
+        ],
+        "drugs": {
+          "gold": 6,
+          "fully_correct": 5
+        },
+        "invented_doses": 0,
+        "invented_frequencies": 0,
+        "extras": [],
+        "n_entries": 5,
+        "generation_id": "w4-baseline-v1-x5/r2/S15",
+        "scenario_id": "S15",
+        "run": 2
+      },
+      {
+        "generator": "v1",
+        "gold_status": "approved",
+        "discharge_status": "listed",
+        "verdict": "fail",
+        "findings": [
+          {
+            "drug": "warfarin",
+            "kind": "frequency_invented",
+            "severity": "fail"
+          }
+        ],
+        "drugs": {
+          "gold": 6,
+          "fully_correct": 5
+        },
+        "invented_doses": 0,
+        "invented_frequencies": 1,
+        "extras": [],
+        "n_entries": 6,
+        "generation_id": "w4-baseline-v1-x5/r2/S16",
+        "scenario_id": "S16",
+        "run": 2
+      },
+      {
+        "generator": "v1",
+        "gold_status": "approved",
+        "discharge_status": "listed",
+        "verdict": "partial",
+        "findings": [
+          {
+            "drug": "paracetamol",
+            "kind": "tag_imprecise",
+            "severity": "partial"
+          }
+        ],
+        "drugs": {
+          "gold": 7,
+          "fully_correct": 7
+        },
+        "invented_doses": 0,
+        "invented_frequencies": 0,
+        "extras": [],
+        "n_entries": 7,
+        "generation_id": "w4-baseline-v1-x5/r2/S17",
+        "scenario_id": "S17",
+        "run": 2
+      },
+      {
+        "generator": "v1",
+        "gold_status": "approved",
+        "discharge_status": "not_documented",
+        "verdict": "pass",
+        "findings": [],
+        "drugs": {
+          "gold": 0,
+          "fully_correct": 0
+        },
+        "invented_doses": 0,
+        "invented_frequencies": 0,
+        "extras": [],
+        "n_entries": 0,
+        "generation_id": "w4-baseline-v1-x5/r2/S18",
+        "scenario_id": "S18",
+        "run": 2
+      },
+      {
+        "generator": "v1",
+        "gold_status": "approved",
+        "discharge_status": "referenced_not_listed",
+        "verdict": "pass",
+        "findings": [],
+        "drugs": {
+          "gold": 5,
+          "fully_correct": 5
+        },
+        "invented_doses": 0,
+        "invented_frequencies": 0,
+        "extras": [],
+        "n_entries": 5,
+        "generation_id": "w4-baseline-v1-x5/r2/A5",
+        "scenario_id": "A5",
+        "run": 2
+      },
+      {
+        "generator": "v1",
+        "gold_status": "approved",
+        "discharge_status": "listed",
+        "verdict": "pass",
+        "findings": [],
+        "drugs": {
+          "gold": 4,
+          "fully_correct": 4
+        },
+        "invented_doses": 0,
+        "invented_frequencies": 0,
+        "extras": [],
+        "n_entries": 4,
+        "generation_id": "w4-baseline-v1-x5/r2/B6",
+        "scenario_id": "B6",
+        "run": 2
+      },
+      {
+        "generator": "v1",
+        "gold_status": "approved",
+        "discharge_status": "not_documented",
+        "verdict": "pass",
+        "findings": [],
+        "drugs": {
+          "gold": 0,
+          "fully_correct": 0
+        },
+        "invented_doses": 0,
+        "invented_frequencies": 0,
+        "extras": [],
+        "n_entries": 0,
+        "generation_id": "w4-baseline-v1-x5/r2/C7",
+        "scenario_id": "C7",
+        "run": 2
+      },
+      {
+        "generator": "v1",
+        "gold_status": "approved",
+        "discharge_status": "referenced_not_listed",
+        "verdict": "pass",
+        "findings": [],
+        "drugs": {
+          "gold": 8,
+          "fully_correct": 8
+        },
+        "invented_doses": 0,
+        "invented_frequencies": 0,
+        "extras": [],
+        "n_entries": 8,
+        "generation_id": "w4-baseline-v1-x5/r3/S1",
+        "scenario_id": "S1",
+        "run": 3
+      },
+      {
+        "generator": "v1",
+        "gold_status": "approved",
+        "discharge_status": "listed",
+        "verdict": "fail",
+        "findings": [
+          {
+            "drug": "ibuprofen",
+            "kind": "frequency_invented",
+            "severity": "fail"
+          }
+        ],
+        "drugs": {
+          "gold": 2,
+          "fully_correct": 1
+        },
+        "invented_doses": 0,
+        "invented_frequencies": 1,
+        "extras": [],
+        "n_entries": 2,
+        "generation_id": "w4-baseline-v1-x5/r3/S2",
+        "scenario_id": "S2",
+        "run": 3
+      },
+      {
+        "generator": "v1",
+        "gold_status": "approved",
+        "discharge_status": "listed",
+        "verdict": "pass",
+        "findings": [],
+        "drugs": {
+          "gold": 1,
+          "fully_correct": 1
+        },
+        "invented_doses": 0,
+        "invented_frequencies": 0,
+        "extras": [],
+        "n_entries": 1,
+        "generation_id": "w4-baseline-v1-x5/r3/S3",
+        "scenario_id": "S3",
+        "run": 3
+      },
+      {
+        "generator": "v1",
+        "gold_status": "approved",
+        "discharge_status": "none_required",
+        "verdict": "pass",
+        "findings": [],
+        "drugs": {
+          "gold": 0,
+          "fully_correct": 0
+        },
+        "invented_doses": 0,
+        "invented_frequencies": 0,
+        "extras": [],
+        "n_entries": 0,
+        "generation_id": "w4-baseline-v1-x5/r3/S4",
+        "scenario_id": "S4",
+        "run": 3
+      },
+      {
+        "generator": "v1",
+        "gold_status": "approved",
+        "discharge_status": "not_documented",
+        "verdict": "pass",
+        "findings": [],
+        "drugs": {
+          "gold": 0,
+          "fully_correct": 0
+        },
+        "invented_doses": 0,
+        "invented_frequencies": 0,
+        "extras": [],
+        "n_entries": 2,
+        "generation_id": "w4-baseline-v1-x5/r3/S8",
+        "scenario_id": "S8",
+        "run": 3
+      },
+      {
+        "generator": "v1",
+        "gold_status": "approved",
+        "discharge_status": "listed",
+        "verdict": "pass",
+        "findings": [],
+        "drugs": {
+          "gold": 1,
+          "fully_correct": 1
+        },
+        "invented_doses": 0,
+        "invented_frequencies": 0,
+        "extras": [],
+        "n_entries": 2,
+        "generation_id": "w4-baseline-v1-x5/r3/S9",
+        "scenario_id": "S9",
+        "run": 3
+      },
+      {
+        "generator": "v1",
+        "gold_status": "approved",
+        "discharge_status": "listed",
+        "verdict": "pass",
+        "findings": [],
+        "drugs": {
+          "gold": 4,
+          "fully_correct": 4
+        },
+        "invented_doses": 0,
+        "invented_frequencies": 0,
+        "extras": [],
+        "n_entries": 4,
+        "generation_id": "w4-baseline-v1-x5/r3/S10",
+        "scenario_id": "S10",
+        "run": 3
+      },
+      {
+        "generator": "v1",
+        "gold_status": "approved",
+        "discharge_status": "listed",
+        "verdict": "partial",
+        "findings": [
+          {
+            "drug": "enoxaparin",
+            "kind": "tag_imprecise",
+            "severity": "partial"
+          },
+          {
+            "drug": "analgesia",
+            "kind": "tag_imprecise",
+            "severity": "partial"
+          }
+        ],
+        "drugs": {
+          "gold": 2,
+          "fully_correct": 2
+        },
+        "invented_doses": 0,
+        "invented_frequencies": 0,
+        "extras": [],
+        "n_entries": 2,
+        "generation_id": "w4-baseline-v1-x5/r3/S11",
+        "scenario_id": "S11",
+        "run": 3
+      },
+      {
+        "generator": "v1",
+        "gold_status": "approved",
+        "discharge_status": "not_documented",
+        "verdict": "pass",
+        "findings": [],
+        "drugs": {
+          "gold": 0,
+          "fully_correct": 0
+        },
+        "invented_doses": 0,
+        "invented_frequencies": 0,
+        "extras": [],
+        "n_entries": 0,
+        "generation_id": "w4-baseline-v1-x5/r3/S12",
+        "scenario_id": "S12",
+        "run": 3
+      },
+      {
+        "generator": "v1",
+        "gold_status": "approved",
+        "discharge_status": "listed",
+        "verdict": "pass",
+        "findings": [],
+        "drugs": {
+          "gold": 4,
+          "fully_correct": 4
+        },
+        "invented_doses": 0,
+        "invented_frequencies": 0,
+        "extras": [],
+        "n_entries": 6,
+        "generation_id": "w4-baseline-v1-x5/r3/S13",
+        "scenario_id": "S13",
+        "run": 3
+      },
+      {
+        "generator": "v1",
+        "gold_status": "approved",
+        "discharge_status": "listed",
+        "verdict": "pass",
+        "findings": [],
+        "drugs": {
+          "gold": 5,
+          "fully_correct": 5
+        },
+        "invented_doses": 0,
+        "invented_frequencies": 0,
+        "extras": [],
+        "n_entries": 5,
+        "generation_id": "w4-baseline-v1-x5/r3/S14",
+        "scenario_id": "S14",
+        "run": 3
+      },
+      {
+        "generator": "v1",
+        "gold_status": "approved",
+        "discharge_status": "listed",
+        "verdict": "fail",
+        "findings": [
+          {
+            "drug": "rescue pack",
+            "kind": "missing",
+            "severity": "fail"
+          }
+        ],
+        "drugs": {
+          "gold": 6,
+          "fully_correct": 5
+        },
+        "invented_doses": 0,
+        "invented_frequencies": 0,
+        "extras": [],
+        "n_entries": 5,
+        "generation_id": "w4-baseline-v1-x5/r3/S15",
+        "scenario_id": "S15",
+        "run": 3
+      },
+      {
+        "generator": "v1",
+        "gold_status": "approved",
+        "discharge_status": "listed",
+        "verdict": "pass",
+        "findings": [],
+        "drugs": {
+          "gold": 6,
+          "fully_correct": 6
+        },
+        "invented_doses": 0,
+        "invented_frequencies": 0,
+        "extras": [],
+        "n_entries": 6,
+        "generation_id": "w4-baseline-v1-x5/r3/S16",
+        "scenario_id": "S16",
+        "run": 3
+      },
+      {
+        "generator": "v1",
+        "gold_status": "approved",
+        "discharge_status": "listed",
+        "verdict": "partial",
+        "findings": [
+          {
+            "drug": "paracetamol",
+            "kind": "tag_imprecise",
+            "severity": "partial"
+          }
+        ],
+        "drugs": {
+          "gold": 7,
+          "fully_correct": 7
+        },
+        "invented_doses": 0,
+        "invented_frequencies": 0,
+        "extras": [],
+        "n_entries": 7,
+        "generation_id": "w4-baseline-v1-x5/r3/S17",
+        "scenario_id": "S17",
+        "run": 3
+      },
+      {
+        "generator": "v1",
+        "gold_status": "approved",
+        "discharge_status": "not_documented",
+        "verdict": "pass",
+        "findings": [],
+        "drugs": {
+          "gold": 0,
+          "fully_correct": 0
+        },
+        "invented_doses": 0,
+        "invented_frequencies": 0,
+        "extras": [],
+        "n_entries": 0,
+        "generation_id": "w4-baseline-v1-x5/r3/S18",
+        "scenario_id": "S18",
+        "run": 3
+      },
+      {
+        "generator": "v1",
+        "gold_status": "approved",
+        "discharge_status": "referenced_not_listed",
+        "verdict": "pass",
+        "findings": [],
+        "drugs": {
+          "gold": 5,
+          "fully_correct": 5
+        },
+        "invented_doses": 0,
+        "invented_frequencies": 0,
+        "extras": [],
+        "n_entries": 5,
+        "generation_id": "w4-baseline-v1-x5/r3/A5",
+        "scenario_id": "A5",
+        "run": 3
+      },
+      {
+        "generator": "v1",
+        "gold_status": "approved",
+        "discharge_status": "listed",
+        "verdict": "pass",
+        "findings": [],
+        "drugs": {
+          "gold": 4,
+          "fully_correct": 4
+        },
+        "invented_doses": 0,
+        "invented_frequencies": 0,
+        "extras": [],
+        "n_entries": 4,
+        "generation_id": "w4-baseline-v1-x5/r3/B6",
+        "scenario_id": "B6",
+        "run": 3
+      },
+      {
+        "generator": "v1",
+        "gold_status": "approved",
+        "discharge_status": "not_documented",
+        "verdict": "pass",
+        "findings": [],
+        "drugs": {
+          "gold": 0,
+          "fully_correct": 0
+        },
+        "invented_doses": 0,
+        "invented_frequencies": 0,
+        "extras": [],
+        "n_entries": 0,
+        "generation_id": "w4-baseline-v1-x5/r3/C7",
+        "scenario_id": "C7",
+        "run": 3
+      },
+      {
+        "generator": "v1",
+        "gold_status": "approved",
+        "discharge_status": "referenced_not_listed",
+        "verdict": "fail",
+        "findings": [
+          {
+            "drug": "fondaparinux",
+            "kind": "must_not_appear",
+            "severity": "fail"
+          }
+        ],
+        "drugs": {
+          "gold": 8,
+          "fully_correct": 8
+        },
+        "invented_doses": 0,
+        "invented_frequencies": 0,
+        "extras": [],
+        "n_entries": 9,
+        "generation_id": "w4-baseline-v1-x5/r4/S1",
+        "scenario_id": "S1",
+        "run": 4
+      },
+      {
+        "generator": "v1",
+        "gold_status": "approved",
+        "discharge_status": "listed",
+        "verdict": "fail",
+        "findings": [
+          {
+            "drug": "ibuprofen",
+            "kind": "frequency_invented",
+            "severity": "fail"
+          }
+        ],
+        "drugs": {
+          "gold": 2,
+          "fully_correct": 1
+        },
+        "invented_doses": 0,
+        "invented_frequencies": 1,
+        "extras": [],
+        "n_entries": 2,
+        "generation_id": "w4-baseline-v1-x5/r4/S2",
+        "scenario_id": "S2",
+        "run": 4
+      },
+      {
+        "generator": "v1",
+        "gold_status": "approved",
+        "discharge_status": "listed",
+        "verdict": "pass",
+        "findings": [],
+        "drugs": {
+          "gold": 1,
+          "fully_correct": 1
+        },
+        "invented_doses": 0,
+        "invented_frequencies": 0,
+        "extras": [],
+        "n_entries": 1,
+        "generation_id": "w4-baseline-v1-x5/r4/S3",
+        "scenario_id": "S3",
+        "run": 4
+      },
+      {
+        "generator": "v1",
+        "gold_status": "approved",
+        "discharge_status": "none_required",
+        "verdict": "pass",
+        "findings": [],
+        "drugs": {
+          "gold": 0,
+          "fully_correct": 0
+        },
+        "invented_doses": 0,
+        "invented_frequencies": 0,
+        "extras": [],
+        "n_entries": 0,
+        "generation_id": "w4-baseline-v1-x5/r4/S4",
+        "scenario_id": "S4",
+        "run": 4
+      },
+      {
+        "generator": "v1",
+        "gold_status": "approved",
+        "discharge_status": "not_documented",
+        "verdict": "pass",
+        "findings": [],
+        "drugs": {
+          "gold": 0,
+          "fully_correct": 0
+        },
+        "invented_doses": 0,
+        "invented_frequencies": 0,
+        "extras": [
+          {
+            "index": 0,
+            "key": "3d0ca2cfaba58fe0e41d5d36f4532554b59a53db0b5f887e5914a0609ecc0d0b",
+            "kind": "adjudicated_acceptable"
+          }
+        ],
+        "n_entries": 1,
+        "generation_id": "w4-baseline-v1-x5/r4/S8",
+        "scenario_id": "S8",
+        "run": 4
+      },
+      {
+        "generator": "v1",
+        "gold_status": "approved",
+        "discharge_status": "listed",
+        "verdict": "partial",
+        "findings": [
+          {
+            "drug": "insulin",
+            "kind": "tag_imprecise",
+            "severity": "partial"
+          }
+        ],
+        "drugs": {
+          "gold": 1,
+          "fully_correct": 1
+        },
+        "invented_doses": 0,
+        "invented_frequencies": 0,
+        "extras": [],
+        "n_entries": 2,
+        "generation_id": "w4-baseline-v1-x5/r4/S9",
+        "scenario_id": "S9",
+        "run": 4
+      },
+      {
+        "generator": "v1",
+        "gold_status": "approved",
+        "discharge_status": "listed",
+        "verdict": "pass",
+        "findings": [],
+        "drugs": {
+          "gold": 4,
+          "fully_correct": 4
+        },
+        "invented_doses": 0,
+        "invented_frequencies": 0,
+        "extras": [
+          {
+            "index": 0,
+            "key": "89f408a43e7ecb08de525639f60ecca665e283c7631aa6abc64bc6212304d538",
+            "kind": "adjudicated_acceptable"
+          }
+        ],
+        "n_entries": 5,
+        "generation_id": "w4-baseline-v1-x5/r4/S10",
+        "scenario_id": "S10",
+        "run": 4
+      },
+      {
+        "generator": "v1",
+        "gold_status": "approved",
+        "discharge_status": "listed",
+        "verdict": "partial",
+        "findings": [
+          {
+            "drug": "enoxaparin",
+            "kind": "tag_imprecise",
+            "severity": "partial"
+          },
+          {
+            "drug": "analgesia",
+            "kind": "tag_imprecise",
+            "severity": "partial"
+          }
+        ],
+        "drugs": {
+          "gold": 2,
+          "fully_correct": 2
+        },
+        "invented_doses": 0,
+        "invented_frequencies": 0,
+        "extras": [],
+        "n_entries": 2,
+        "generation_id": "w4-baseline-v1-x5/r4/S11",
+        "scenario_id": "S11",
+        "run": 4
+      },
+      {
+        "generator": "v1",
+        "gold_status": "approved",
+        "discharge_status": "not_documented",
+        "verdict": "pass",
+        "findings": [],
+        "drugs": {
+          "gold": 0,
+          "fully_correct": 0
+        },
+        "invented_doses": 0,
+        "invented_frequencies": 0,
+        "extras": [],
+        "n_entries": 0,
+        "generation_id": "w4-baseline-v1-x5/r4/S12",
+        "scenario_id": "S12",
+        "run": 4
+      },
+      {
+        "generator": "v1",
+        "gold_status": "approved",
+        "discharge_status": "listed",
+        "verdict": "pass",
+        "findings": [],
+        "drugs": {
+          "gold": 4,
+          "fully_correct": 4
+        },
+        "invented_doses": 0,
+        "invented_frequencies": 0,
+        "extras": [
+          {
+            "index": 4,
+            "key": "fd27b7466c16c58f56ff927f0537fc84efc8deb53e4813ef1d68778e723afeab",
+            "kind": "adjudicated_acceptable"
+          }
+        ],
+        "n_entries": 5,
+        "generation_id": "w4-baseline-v1-x5/r4/S13",
+        "scenario_id": "S13",
+        "run": 4
+      },
+      {
+        "generator": "v1",
+        "gold_status": "approved",
+        "discharge_status": "listed",
+        "verdict": "pass",
+        "findings": [],
+        "drugs": {
+          "gold": 5,
+          "fully_correct": 5
+        },
+        "invented_doses": 0,
+        "invented_frequencies": 0,
+        "extras": [],
+        "n_entries": 5,
+        "generation_id": "w4-baseline-v1-x5/r4/S14",
+        "scenario_id": "S14",
+        "run": 4
+      },
+      {
+        "generator": "v1",
+        "gold_status": "approved",
+        "discharge_status": "listed",
+        "verdict": "fail",
+        "findings": [
+          {
+            "drug": "rescue pack",
+            "kind": "missing",
+            "severity": "fail"
+          }
+        ],
+        "drugs": {
+          "gold": 6,
+          "fully_correct": 5
+        },
+        "invented_doses": 0,
+        "invented_frequencies": 0,
+        "extras": [],
+        "n_entries": 5,
+        "generation_id": "w4-baseline-v1-x5/r4/S15",
+        "scenario_id": "S15",
+        "run": 4
+      },
+      {
+        "generator": "v1",
+        "gold_status": "approved",
+        "discharge_status": "listed",
+        "verdict": "partial",
+        "findings": [
+          {
+            "drug": "analgesia",
+            "kind": "tag_imprecise",
+            "severity": "partial"
+          }
+        ],
+        "drugs": {
+          "gold": 6,
+          "fully_correct": 6
+        },
+        "invented_doses": 0,
+        "invented_frequencies": 0,
+        "extras": [],
+        "n_entries": 10,
+        "generation_id": "w4-baseline-v1-x5/r4/S16",
+        "scenario_id": "S16",
+        "run": 4
+      },
+      {
+        "generator": "v1",
+        "gold_status": "approved",
+        "discharge_status": "listed",
+        "verdict": "pass",
+        "findings": [],
+        "drugs": {
+          "gold": 7,
+          "fully_correct": 7
+        },
+        "invented_doses": 0,
+        "invented_frequencies": 0,
+        "extras": [],
+        "n_entries": 7,
+        "generation_id": "w4-baseline-v1-x5/r4/S17",
+        "scenario_id": "S17",
+        "run": 4
+      },
+      {
+        "generator": "v1",
+        "gold_status": "approved",
+        "discharge_status": "not_documented",
+        "verdict": "pass",
+        "findings": [],
+        "drugs": {
+          "gold": 0,
+          "fully_correct": 0
+        },
+        "invented_doses": 0,
+        "invented_frequencies": 0,
+        "extras": [],
+        "n_entries": 0,
+        "generation_id": "w4-baseline-v1-x5/r4/S18",
+        "scenario_id": "S18",
+        "run": 4
+      },
+      {
+        "generator": "v1",
+        "gold_status": "approved",
+        "discharge_status": "referenced_not_listed",
+        "verdict": "pass",
+        "findings": [],
+        "drugs": {
+          "gold": 5,
+          "fully_correct": 5
+        },
+        "invented_doses": 0,
+        "invented_frequencies": 0,
+        "extras": [],
+        "n_entries": 5,
+        "generation_id": "w4-baseline-v1-x5/r4/A5",
+        "scenario_id": "A5",
+        "run": 4
+      },
+      {
+        "generator": "v1",
+        "gold_status": "approved",
+        "discharge_status": "listed",
+        "verdict": "pass",
+        "findings": [],
+        "drugs": {
+          "gold": 4,
+          "fully_correct": 4
+        },
+        "invented_doses": 0,
+        "invented_frequencies": 0,
+        "extras": [],
+        "n_entries": 4,
+        "generation_id": "w4-baseline-v1-x5/r4/B6",
+        "scenario_id": "B6",
+        "run": 4
+      },
+      {
+        "generator": "v1",
+        "gold_status": "approved",
+        "discharge_status": "not_documented",
+        "verdict": "pass",
+        "findings": [],
+        "drugs": {
+          "gold": 0,
+          "fully_correct": 0
+        },
+        "invented_doses": 0,
+        "invented_frequencies": 0,
+        "extras": [],
+        "n_entries": 0,
+        "generation_id": "w4-baseline-v1-x5/r4/C7",
+        "scenario_id": "C7",
+        "run": 4
+      },
+      {
+        "generator": "v1",
+        "gold_status": "approved",
+        "discharge_status": "referenced_not_listed",
+        "verdict": "pass",
+        "findings": [],
+        "drugs": {
+          "gold": 8,
+          "fully_correct": 8
+        },
+        "invented_doses": 0,
+        "invented_frequencies": 0,
+        "extras": [],
+        "n_entries": 9,
+        "generation_id": "w4-baseline-v1-x5/r5/S1",
+        "scenario_id": "S1",
+        "run": 5
+      },
+      {
+        "generator": "v1",
+        "gold_status": "approved",
+        "discharge_status": "listed",
+        "verdict": "fail",
+        "findings": [
+          {
+            "drug": "ibuprofen",
+            "kind": "frequency_invented",
+            "severity": "fail"
+          }
+        ],
+        "drugs": {
+          "gold": 2,
+          "fully_correct": 1
+        },
+        "invented_doses": 0,
+        "invented_frequencies": 1,
+        "extras": [],
+        "n_entries": 2,
+        "generation_id": "w4-baseline-v1-x5/r5/S2",
+        "scenario_id": "S2",
+        "run": 5
+      },
+      {
+        "generator": "v1",
+        "gold_status": "approved",
+        "discharge_status": "listed",
+        "verdict": "pass",
+        "findings": [],
+        "drugs": {
+          "gold": 1,
+          "fully_correct": 1
+        },
+        "invented_doses": 0,
+        "invented_frequencies": 0,
+        "extras": [],
+        "n_entries": 1,
+        "generation_id": "w4-baseline-v1-x5/r5/S3",
+        "scenario_id": "S3",
+        "run": 5
+      },
+      {
+        "generator": "v1",
+        "gold_status": "approved",
+        "discharge_status": "none_required",
+        "verdict": "pass",
+        "findings": [],
+        "drugs": {
+          "gold": 0,
+          "fully_correct": 0
+        },
+        "invented_doses": 0,
+        "invented_frequencies": 0,
+        "extras": [],
+        "n_entries": 0,
+        "generation_id": "w4-baseline-v1-x5/r5/S4",
+        "scenario_id": "S4",
+        "run": 5
+      },
+      {
+        "generator": "v1",
+        "gold_status": "approved",
+        "discharge_status": "not_documented",
+        "verdict": "pass",
+        "findings": [],
+        "drugs": {
+          "gold": 0,
+          "fully_correct": 0
+        },
+        "invented_doses": 0,
+        "invented_frequencies": 0,
+        "extras": [],
+        "n_entries": 2,
+        "generation_id": "w4-baseline-v1-x5/r5/S8",
+        "scenario_id": "S8",
+        "run": 5
+      },
+      {
+        "generator": "v1",
+        "gold_status": "approved",
+        "discharge_status": "listed",
+        "verdict": "pass",
+        "findings": [],
+        "drugs": {
+          "gold": 1,
+          "fully_correct": 1
+        },
+        "invented_doses": 0,
+        "invented_frequencies": 0,
+        "extras": [],
+        "n_entries": 3,
+        "generation_id": "w4-baseline-v1-x5/r5/S9",
+        "scenario_id": "S9",
+        "run": 5
+      },
+      {
+        "generator": "v1",
+        "gold_status": "approved",
+        "discharge_status": "listed",
+        "verdict": "pass",
+        "findings": [],
+        "drugs": {
+          "gold": 4,
+          "fully_correct": 4
+        },
+        "invented_doses": 0,
+        "invented_frequencies": 0,
+        "extras": [],
+        "n_entries": 4,
+        "generation_id": "w4-baseline-v1-x5/r5/S10",
+        "scenario_id": "S10",
+        "run": 5
+      },
+      {
+        "generator": "v1",
+        "gold_status": "approved",
+        "discharge_status": "listed",
+        "verdict": "partial",
+        "findings": [
+          {
+            "drug": "enoxaparin",
+            "kind": "tag_imprecise",
+            "severity": "partial"
+          },
+          {
+            "drug": "analgesia",
+            "kind": "tag_imprecise",
+            "severity": "partial"
+          }
+        ],
+        "drugs": {
+          "gold": 2,
+          "fully_correct": 2
+        },
+        "invented_doses": 0,
+        "invented_frequencies": 0,
+        "extras": [],
+        "n_entries": 2,
+        "generation_id": "w4-baseline-v1-x5/r5/S11",
+        "scenario_id": "S11",
+        "run": 5
+      },
+      {
+        "generator": "v1",
+        "gold_status": "approved",
+        "discharge_status": "not_documented",
+        "verdict": "pass",
+        "findings": [],
+        "drugs": {
+          "gold": 0,
+          "fully_correct": 0
+        },
+        "invented_doses": 0,
+        "invented_frequencies": 0,
+        "extras": [
+          {
+            "index": 0,
+            "key": "e759c24f7105170788d45572e18aaea7810ed11b84dbd4d977281e92a9ef9556",
+            "kind": "adjudicated_acceptable"
+          },
+          {
+            "index": 2,
+            "key": "7b1b22b739bf3eed542cdd2992e6938003de15862a9c3864ce9abd3268c2a81f",
+            "kind": "adjudicated_acceptable"
+          }
+        ],
+        "n_entries": 3,
+        "generation_id": "w4-baseline-v1-x5/r5/S12",
+        "scenario_id": "S12",
+        "run": 5
+      },
+      {
+        "generator": "v1",
+        "gold_status": "approved",
+        "discharge_status": "listed",
+        "verdict": "pass",
+        "findings": [],
+        "drugs": {
+          "gold": 4,
+          "fully_correct": 4
+        },
+        "invented_doses": 0,
+        "invented_frequencies": 0,
+        "extras": [],
+        "n_entries": 6,
+        "generation_id": "w4-baseline-v1-x5/r5/S13",
+        "scenario_id": "S13",
+        "run": 5
+      },
+      {
+        "generator": "v1",
+        "gold_status": "approved",
+        "discharge_status": "listed",
+        "verdict": "pass",
+        "findings": [],
+        "drugs": {
+          "gold": 5,
+          "fully_correct": 5
+        },
+        "invented_doses": 0,
+        "invented_frequencies": 0,
+        "extras": [],
+        "n_entries": 5,
+        "generation_id": "w4-baseline-v1-x5/r5/S14",
+        "scenario_id": "S14",
+        "run": 5
+      },
+      {
+        "generator": "v1",
+        "gold_status": "approved",
+        "discharge_status": "listed",
+        "verdict": "fail",
+        "findings": [
+          {
+            "drug": "rescue pack",
+            "kind": "missing",
+            "severity": "fail"
+          }
+        ],
+        "drugs": {
+          "gold": 6,
+          "fully_correct": 5
+        },
+        "invented_doses": 0,
+        "invented_frequencies": 0,
+        "extras": [],
+        "n_entries": 5,
+        "generation_id": "w4-baseline-v1-x5/r5/S15",
+        "scenario_id": "S15",
+        "run": 5
+      },
+      {
+        "generator": "v1",
+        "gold_status": "approved",
+        "discharge_status": "listed",
+        "verdict": "pass",
+        "findings": [],
+        "drugs": {
+          "gold": 6,
+          "fully_correct": 6
+        },
+        "invented_doses": 0,
+        "invented_frequencies": 0,
+        "extras": [],
+        "n_entries": 6,
+        "generation_id": "w4-baseline-v1-x5/r5/S16",
+        "scenario_id": "S16",
+        "run": 5
+      },
+      {
+        "generator": "v1",
+        "gold_status": "approved",
+        "discharge_status": "listed",
+        "verdict": "partial",
+        "findings": [
+          {
+            "drug": "paracetamol",
+            "kind": "tag_imprecise",
+            "severity": "partial"
+          }
+        ],
+        "drugs": {
+          "gold": 7,
+          "fully_correct": 7
+        },
+        "invented_doses": 0,
+        "invented_frequencies": 0,
+        "extras": [],
+        "n_entries": 7,
+        "generation_id": "w4-baseline-v1-x5/r5/S17",
+        "scenario_id": "S17",
+        "run": 5
+      },
+      {
+        "generator": "v1",
+        "gold_status": "approved",
+        "discharge_status": "not_documented",
+        "verdict": "pass",
+        "findings": [],
+        "drugs": {
+          "gold": 0,
+          "fully_correct": 0
+        },
+        "invented_doses": 0,
+        "invented_frequencies": 0,
+        "extras": [],
+        "n_entries": 0,
+        "generation_id": "w4-baseline-v1-x5/r5/S18",
+        "scenario_id": "S18",
+        "run": 5
+      },
+      {
+        "generator": "v1",
+        "gold_status": "approved",
+        "discharge_status": "referenced_not_listed",
+        "verdict": "fail",
+        "findings": [
+          {
+            "drug": null,
+            "kind": "invented_drug",
+            "severity": "fail"
+          }
+        ],
+        "drugs": {
+          "gold": 5,
+          "fully_correct": 5
+        },
+        "invented_doses": 0,
+        "invented_frequencies": 0,
+        "extras": [
+          {
+            "index": 1,
+            "key": "d28fdb071f1653f2fff5f155ad26f626346e7a097626d5d749e0ea3f44327079",
+            "kind": "adjudicated_invented"
+          }
+        ],
+        "n_entries": 6,
+        "generation_id": "w4-baseline-v1-x5/r5/A5",
+        "scenario_id": "A5",
+        "run": 5
+      },
+      {
+        "generator": "v1",
+        "gold_status": "approved",
+        "discharge_status": "listed",
+        "verdict": "pass",
+        "findings": [],
+        "drugs": {
+          "gold": 4,
+          "fully_correct": 4
+        },
+        "invented_doses": 0,
+        "invented_frequencies": 0,
+        "extras": [],
+        "n_entries": 4,
+        "generation_id": "w4-baseline-v1-x5/r5/B6",
+        "scenario_id": "B6",
+        "run": 5
+      },
+      {
+        "generator": "v1",
+        "gold_status": "approved",
+        "discharge_status": "not_documented",
+        "verdict": "pass",
+        "findings": [],
+        "drugs": {
+          "gold": 0,
+          "fully_correct": 0
+        },
+        "invented_doses": 0,
+        "invented_frequencies": 0,
+        "extras": [],
+        "n_entries": 0,
+        "generation_id": "w4-baseline-v1-x5/r5/C7",
+        "scenario_id": "C7",
+        "run": 5
+      }
+    ]
+  }
+}

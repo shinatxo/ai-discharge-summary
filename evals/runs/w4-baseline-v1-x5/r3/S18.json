@@ -1,0 +1,65 @@
+{
+  "record_version": 1,
+  "generation_id": "w4-baseline-v1-x5/r3/S18",
+  "batch_id": "w4-baseline-v1-x5",
+  "run": 3,
+  "scenario_id": "S18",
+  "generator": "v1",
+  "path": "deployed",
+  "model_id": "anthropic.claude-sonnet-4-6",
+  "region": "eu-west-2",
+  "inference": {
+    "max_tokens": 4096,
+    "temperature": 0.0,
+    "patient_max_tokens": 1500
+  },
+  "prompts": {
+    "system": {
+      "path": "src/generate/system_prompt.md",
+      "file_sha256": "a7ec8a5661007b0a69231dd68a1f286013cf23a2192ed7ec16770bc07f3c1e3a",
+      "body_sha256": "de46dda1e90bdb1380e077bf7119a2d0d537b7f1f53199b3aeaa2c41aa645ee6"
+    },
+    "patient": {
+      "path": "src/generate/patient_system_prompt.md",
+      "file_sha256": "32f9767baf648dbe2ca1ad5e46d40ea75ff51890bca0b66ef1c44b96166f8e1b",
+      "body_sha256": "7fea4b502d0b9a8b983bcbcac353bc7763845ed0a3eaf0d39edfd80650d23435"
+    }
+  },
+  "prompt_caching": true,
+  "notes_sha256": "3d7f06d1a5a414275df26db1863e10bc9e085fde839ae9021e97d5f16ebf659b",
+  "started_at": "2026-10-07T13:42:28+01:00",
+  "elapsed_s": 31.302,
+  "calls": [
+    {
+      "name": "combined",
+      "input_tokens": 230,
+      "output_tokens": 1937,
+      "cache_read_tokens": 5192,
+      "cache_write_tokens": 0,
+      "stop_reason": "end_turn",
+      "latency_s": 23.936,
+      "throttle_retries": 0
+    },
+    {
+      "name": "patient_v2",
+      "input_tokens": 604,
+      "output_tokens": 535,
+      "cache_read_tokens": 1038,
+      "cache_write_tokens": 0,
+      "stop_reason": "end_turn",
+      "latency_s": 7.365,
+      "throttle_retries": 0
+    }
+  ],
+  "patient_version": "v2",
+  "output": "I'll now produce all three parts of the discharge summary.\n\n---\n\n# PART A — STRUCTURED CLINICAL DISCHARGE SUMMARY\n\n```\nDISCHARGE SUMMARY\n\nPatient: Not documented | DOB: Not documented | NHS No: Not documented | Hosp No: Not documented\nAdmitted: 19/05/2025 | Discharged: 20/05/2025\nSpecialty: Neurology\n\nPRESENTING COMPLAINT\n26-year-old male presenting following a witnessed first generalised tonic-clonic\nseizure at work, lasting approximately 2 minutes, with post-ictal confusion.\n\nDIAGNOSIS\nPrimary: First unprovoked generalised tonic-clonic seizure.\nBackground: None documented.\n\nKEY INVESTIGATIONS\n- Bloods: Normal (specific panels not documented).\n- Blood glucose: Normal.\n- Toxicology screen: Negative.\n- CT head: Normal.\n- MRI brain: Pending (outpatient).\n- EEG: Pending (outpatient).\n\nTREATMENT DURING ADMISSION\nNo antiepileptic medication started. Decision deferred to neurology following\noutpatient investigations (first seizure, documented as low immediate recurrence\nrisk). Neurology reviewed on Day 2 (20/05/2025). Plan for outpatient MRI brain,\nEEG, and first-fit clinic.\n\nRESUSCITATION STATUS\nNot documented — no resuscitation discussion indicated for this admission.\n\nMEDICATIONS ON DISCHARGE\nNo pre-admission medications (DH: nil).\nNo medications started on discharge.\nNone.\n\nALLERGIES: No known drug allergies (NKDA — documented).\n\nFOLLOW-UP\n- First-fit clinic: to be arranged (outpatient).\n- Outpatient MRI brain: to be arranged.\n- Outpatient EEG: to be arranged.\n- GP: informed; to await neurology outpatient review.\n\nGP ACTIONS\n- Aware of admission and diagnosis.\n- Await neurology outpatient review and results of MRI brain and EEG.\n- No specific additional actions documented beyond the above.\n\nPATIENT ADVICE\nThe following advice was documented by the treating clinician:\n- No driving: patient must not drive and must inform the DVLA. Group 1 licence\n  holders must not drive for 6 months from the date of the first unprovoked\n  seizure (seizure date: 19/05/2025).\n- No swimming alone.\n- No working at heights.\n- No unsupervised baths.\n\nVTE ASSESSMENT: Not documented.\n\nAuthor: [Name, grade, date — to be completed by responsible clinician]\n```\n\n---\n\n# PART B — GP LETTER\n\n```\n20/05/2025\n\nDear Colleague,\n\nRe: [Patient name not documented], DOB: Not documented, NHS No: Not documented\nAdmitted: 19/05/2025, discharged: 20/05/2025 under Neurology.\n\nThis 26-year-old male was admitted following a witnessed first generalised\ntonic-clonic seizure at work, lasting approximately 2 minutes, with subsequent\npost-ictal confusion. There was a lateral tongue bite noted. No incontinence\nwas reported. There was no preceding head injury, no prior seizure history,\nand no alcohol or drug trigger identified.\n\nInvestigations during admission were reassuring: bloods (specific panels not\ndocumented), blood glucose, and toxicology screen were all normal, and CT head\nwas normal. No antiepileptic medication was commenced; this was a clinical\ndecision based on documented low immediate recurrence risk for a first\nunprovoked seizure, with the decision on longer-term treatment deferred to\nneurology following outpatient investigations.\n\nNeurology reviewed the patient on 20/05/2025 and confirmed the diagnosis of\nfirst unprovoked generalised tonic-clonic seizure.\n\nDiagnosis: First unprovoked generalised tonic-clonic seizure.\n\nMedication changes: None. Patient had no pre-admission medications and was\ndischarged on no medications.\n\nActions for you (GP): Await neurology outpatient review and results of\noutpatient MRI brain and EEG. No further specific actions documented.\n\nFollow-up arranged:\n- First-fit clinic (outpatient) — to be arranged via neurology.\n- Outpatient MRI brain — to be arranged.\n- Outpatient EEG — to be arranged.\n\nPending results: MRI brain and EEG — responsibility for actioning to be\nconfirmed with the neurology team.\n\nYours sincerely,\n[Author name, grade — to be completed by responsible clinician]\n```\n\n---\n\nPART C - PATIENT VERSION (v2 second pass)\n\n# Your Discharge Letter\n\n**From the Neurology Team | Admitted: 19 May 2025 | Discharged: 20 May 2025**\n\n---\n\n## What Happened\n\nYou came into hospital after having a seizure (a fit) at work. During the seizure your whole body shook (this is called a generalised tonic-clonic seizure). It lasted about 2 minutes. After it stopped, you were briefly confused, which is normal after this type of seizure.\n\nThe team ran some tests, including blood tests and a scan of your brain (CT head). These all came back normal. You were seen by the neurology (brain and nerve) team, who reviewed you before you went home.\n\n---\n\n## Tests Still to Come\n\nTwo more tests have been arranged for you as an outpatient (meaning you do not need to stay in hospital for them):\n\n- **MRI brain** — a detailed scan of your brain.\n- **EEG** — a test that measures the electrical activity in your brain.\n\nYou will also be given an appointment for a **first-fit clinic**, where the neurology team will go through all your results with you and decide on next steps.\n\nYour GP has been told about your admission and will wait to hear from the neurology team once your results are back.\n\n---\n\n## Medicines\n\nYou were not taking any medicines before you came in, and no new medicines have been started. The neurology team want to wait for the results of your scans and tests before making any decisions about medication.\n\n---\n\n## Important Advice\n\nThe neurology team has asked you to follow this advice while you are waiting for your follow-up:\n\n- **Do not drive.** You must stop driving now and tell the DVLA. If you hold a standard (Group 1) driving licence, you must not drive for **6 months** from the date of your seizure (19 May 2025).\n- **Do not swim alone.**\n- **Do not work at heights.**\n- **Do not have a bath without someone else nearby** — showers are safer for now.\n\n---\n\n## If You Are Worried\n\nIf you become unwell or are worried about anything, contact your GP or call NHS 111. Call 999 if it is an emergency.\n\n---\n\n*This letter is a draft for review and sign-off by the responsible clinician before it is given to the patient.*\n",
+  "gate": {
+    "canonical": "V1_LINES",
+    "status": "clean",
+    "ok": true,
+    "label": "PASS",
+    "findings": []
+  },
+  "cost_usd_est": 0.045596,
+  "error": null
+}

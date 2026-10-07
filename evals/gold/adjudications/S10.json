@@ -1,0 +1,51 @@
+{
+  "scenario_id": "S10",
+  "rulings": {
+    "8a9cc2d7b931e2532cdd63c46b3330fe64c9c6761b4e6735115dc675f4b5d04b": {
+      "text": "The clinician documented safety-netting regarding PPH, sepsis, and VTE.",
+      "verdict": "supported",
+      "lines": "L010",
+      "reason": "restates the record 'Safety-net re PPH/sepsis/VTE'",
+      "by": "Shina Oguntoye (CSO)",
+      "on": "2026-10-07",
+      "source": "w4-baseline-v1-x5 (proposed by Claude, approved by the CSO)"
+    },
+    "7e43df4468129fdf6eee242b1f656fee021369bb6d4a12b87c96269c1f31070c": {
+      "text": "Postpartum haemorrhage (PPH)",
+      "verdict": "supported",
+      "lines": "L010",
+      "reason": "one topic of the L010 record, listed under its lead-in",
+      "by": "Shina Oguntoye (CSO)",
+      "on": "2026-10-07",
+      "source": "w4-baseline-v1-x5 (proposed by Claude, approved by the CSO)"
+    },
+    "ea560944f08cca0c2ab2cb4ce3e59a6558c852759ea4054ec886809ad6a3b3a1": {
+      "text": "Sepsis",
+      "verdict": "supported",
+      "lines": "L010",
+      "reason": "one topic of the L010 record",
+      "by": "Shina Oguntoye (CSO)",
+      "on": "2026-10-07",
+      "source": "w4-baseline-v1-x5 (proposed by Claude, approved by the CSO)"
+    },
+    "6c5ab2e10d60a092185de881eb79cc1a46fc3fa4f2112b9939d6eba06d304c6c": {
+      "text": "The notes record that safety-netting advice was given covering PPH, sepsis, and VTE.",
+      "verdict": "supported",
+      "lines": "L010",
+      "reason": "restates the L010 record",
+      "by": "Shina Oguntoye (CSO)",
+      "on": "2026-10-07",
+      "source": "w4-baseline-v1-x5 (proposed by Claude, approved by the CSO)"
+    }
+  },
+  "med_rulings": {
+    "89f408a43e7ecb08de525639f60ecca665e283c7631aa6abc64bc6212304d538": {
+      "text": "All medications are new this admission (no pre-admission drug history documented):",
+      "verdict": "acceptable",
+      "reason": "prose about the list, not a drug",
+      "by": "Shina Oguntoye (CSO)",
+      "on": "2026-10-07",
+      "source": "w4-baseline-v1-x5 (proposed by Claude, approved by the CSO)"
+    }
+  }
+}

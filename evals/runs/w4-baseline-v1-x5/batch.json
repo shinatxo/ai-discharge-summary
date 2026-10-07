@@ -1,0 +1,818 @@
+{
+  "batch_id": "w4-baseline-v1-x5",
+  "tier1_5_met": false,
+  "tier1_5": "89/90 generations gate PASS across 18 scenarios",
+  "stopped_early": false,
+  "generations": [
+    {
+      "run": 1,
+      "scenario_id": "S1",
+      "record": "r1/S1.json",
+      "gate_status": "documented_advice",
+      "gate_ok": true,
+      "error_code": null,
+      "cost_usd_est": 0.095662
+    },
+    {
+      "run": 1,
+      "scenario_id": "S2",
+      "record": "r1/S2.json",
+      "gate_status": "documented_advice",
+      "gate_ok": true,
+      "error_code": null,
+      "cost_usd_est": 0.048388
+    },
+    {
+      "run": 1,
+      "scenario_id": "S3",
+      "record": "r1/S3.json",
+      "gate_status": "documented_advice",
+      "gate_ok": true,
+      "error_code": null,
+      "cost_usd_est": 0.063311
+    },
+    {
+      "run": 1,
+      "scenario_id": "S4",
+      "record": "r1/S4.json",
+      "gate_status": "documented_advice",
+      "gate_ok": true,
+      "error_code": null,
+      "cost_usd_est": 0.040372
+    },
+    {
+      "run": 1,
+      "scenario_id": "S8",
+      "record": "r1/S8.json",
+      "gate_status": "documented_advice",
+      "gate_ok": true,
+      "error_code": null,
+      "cost_usd_est": 0.054381
+    },
+    {
+      "run": 1,
+      "scenario_id": "S9",
+      "record": "r1/S9.json",
+      "gate_status": "clean",
+      "gate_ok": true,
+      "error_code": null,
+      "cost_usd_est": 0.057512
+    },
+    {
+      "run": 1,
+      "scenario_id": "S10",
+      "record": "r1/S10.json",
+      "gate_status": "documented_advice",
+      "gate_ok": true,
+      "error_code": null,
+      "cost_usd_est": 0.07693
+    },
+    {
+      "run": 1,
+      "scenario_id": "S11",
+      "record": "r1/S11.json",
+      "gate_status": "clean",
+      "gate_ok": true,
+      "error_code": null,
+      "cost_usd_est": 0.076319
+    },
+    {
+      "run": 1,
+      "scenario_id": "S12",
+      "record": "r1/S12.json",
+      "gate_status": "documented_advice",
+      "gate_ok": true,
+      "error_code": null,
+      "cost_usd_est": 0.093704
+    },
+    {
+      "run": 1,
+      "scenario_id": "S13",
+      "record": "r1/S13.json",
+      "gate_status": "documented_advice",
+      "gate_ok": true,
+      "error_code": null,
+      "cost_usd_est": 0.096875
+    },
+    {
+      "run": 1,
+      "scenario_id": "S14",
+      "record": "r1/S14.json",
+      "gate_status": "clean",
+      "gate_ok": true,
+      "error_code": null,
+      "cost_usd_est": 0.064743
+    },
+    {
+      "run": 1,
+      "scenario_id": "S15",
+      "record": "r1/S15.json",
+      "gate_status": "clean",
+      "gate_ok": true,
+      "error_code": null,
+      "cost_usd_est": 0.074583
+    },
+    {
+      "run": 1,
+      "scenario_id": "S16",
+      "record": "r1/S16.json",
+      "gate_status": "clean",
+      "gate_ok": true,
+      "error_code": null,
+      "cost_usd_est": 0.074326
+    },
+    {
+      "run": 1,
+      "scenario_id": "S17",
+      "record": "r1/S17.json",
+      "gate_status": "clean",
+      "gate_ok": true,
+      "error_code": null,
+      "cost_usd_est": 0.074151
+    },
+    {
+      "run": 1,
+      "scenario_id": "S18",
+      "record": "r1/S18.json",
+      "gate_status": "clean",
+      "gate_ok": true,
+      "error_code": null,
+      "cost_usd_est": 0.051899
+    },
+    {
+      "run": 1,
+      "scenario_id": "A5",
+      "record": "r1/A5.json",
+      "gate_status": "documented_advice",
+      "gate_ok": true,
+      "error_code": null,
+      "cost_usd_est": 0.057189
+    },
+    {
+      "run": 1,
+      "scenario_id": "B6",
+      "record": "r1/B6.json",
+      "gate_status": "documented_advice",
+      "gate_ok": true,
+      "error_code": null,
+      "cost_usd_est": 0.069884
+    },
+    {
+      "run": 1,
+      "scenario_id": "C7",
+      "record": "r1/C7.json",
+      "gate_status": "clean",
+      "gate_ok": true,
+      "error_code": null,
+      "cost_usd_est": 0.045418
+    },
+    {
+      "run": 2,
+      "scenario_id": "S1",
+      "record": "r2/S1.json",
+      "gate_status": "documented_advice",
+      "gate_ok": true,
+      "error_code": null,
+      "cost_usd_est": 0.077441
+    },
+    {
+      "run": 2,
+      "scenario_id": "S2",
+      "record": "r2/S2.json",
+      "gate_status": "documented_advice",
+      "gate_ok": true,
+      "error_code": null,
+      "cost_usd_est": 0.046481
+    },
+    {
+      "run": 2,
+      "scenario_id": "S3",
+      "record": "r2/S3.json",
+      "gate_status": "documented_advice",
+      "gate_ok": true,
+      "error_code": null,
+      "cost_usd_est": 0.060103
+    },
+    {
+      "run": 2,
+      "scenario_id": "S4",
+      "record": "r2/S4.json",
+      "gate_status": "documented_advice",
+      "gate_ok": true,
+      "error_code": null,
+      "cost_usd_est": 0.04058
+    },
+    {
+      "run": 2,
+      "scenario_id": "S8",
+      "record": "r2/S8.json",
+      "gate_status": "documented_advice",
+      "gate_ok": true,
+      "error_code": null,
+      "cost_usd_est": 0.054414
+    },
+    {
+      "run": 2,
+      "scenario_id": "S9",
+      "record": "r2/S9.json",
+      "gate_status": "clean",
+      "gate_ok": true,
+      "error_code": null,
+      "cost_usd_est": 0.060654
+    },
+    {
+      "run": 2,
+      "scenario_id": "S10",
+      "record": "r2/S10.json",
+      "gate_status": "documented_advice",
+      "gate_ok": true,
+      "error_code": null,
+      "cost_usd_est": 0.077068
+    },
+    {
+      "run": 2,
+      "scenario_id": "S11",
+      "record": "r2/S11.json",
+      "gate_status": "clean",
+      "gate_ok": true,
+      "error_code": null,
+      "cost_usd_est": 0.083767
+    },
+    {
+      "run": 2,
+      "scenario_id": "S12",
+      "record": "r2/S12.json",
+      "gate_status": "documented_advice",
+      "gate_ok": true,
+      "error_code": null,
+      "cost_usd_est": 0.094284
+    },
+    {
+      "run": 2,
+      "scenario_id": "S13",
+      "record": "r2/S13.json",
+      "gate_status": "documented_advice",
+      "gate_ok": true,
+      "error_code": null,
+      "cost_usd_est": 0.087869
+    },
+    {
+      "run": 2,
+      "scenario_id": "S14",
+      "record": "r2/S14.json",
+      "gate_status": "clean",
+      "gate_ok": true,
+      "error_code": null,
+      "cost_usd_est": 0.064677
+    },
+    {
+      "run": 2,
+      "scenario_id": "S15",
+      "record": "r2/S15.json",
+      "gate_status": "clean",
+      "gate_ok": true,
+      "error_code": null,
+      "cost_usd_est": 0.075425
+    },
+    {
+      "run": 2,
+      "scenario_id": "S16",
+      "record": "r2/S16.json",
+      "gate_status": "clean",
+      "gate_ok": true,
+      "error_code": null,
+      "cost_usd_est": 0.077055
+    },
+    {
+      "run": 2,
+      "scenario_id": "S17",
+      "record": "r2/S17.json",
+      "gate_status": "clean",
+      "gate_ok": true,
+      "error_code": null,
+      "cost_usd_est": 0.075963
+    },
+    {
+      "run": 2,
+      "scenario_id": "S18",
+      "record": "r2/S18.json",
+      "gate_status": "clean",
+      "gate_ok": true,
+      "error_code": null,
+      "cost_usd_est": 0.050111
+    },
+    {
+      "run": 2,
+      "scenario_id": "A5",
+      "record": "r2/A5.json",
+      "gate_status": "documented_advice",
+      "gate_ok": true,
+      "error_code": null,
+      "cost_usd_est": 0.060971
+    },
+    {
+      "run": 2,
+      "scenario_id": "B6",
+      "record": "r2/B6.json",
+      "gate_status": "documented_advice",
+      "gate_ok": true,
+      "error_code": null,
+      "cost_usd_est": 0.068257
+    },
+    {
+      "run": 2,
+      "scenario_id": "C7",
+      "record": "r2/C7.json",
+      "gate_status": "added_advice",
+      "gate_ok": false,
+      "error_code": null,
+      "cost_usd_est": 0.057149
+    },
+    {
+      "run": 3,
+      "scenario_id": "S1",
+      "record": "r3/S1.json",
+      "gate_status": "documented_advice",
+      "gate_ok": true,
+      "error_code": null,
+      "cost_usd_est": 0.074897
+    },
+    {
+      "run": 3,
+      "scenario_id": "S2",
+      "record": "r3/S2.json",
+      "gate_status": "documented_advice",
+      "gate_ok": true,
+      "error_code": null,
+      "cost_usd_est": 0.046283
+    },
+    {
+      "run": 3,
+      "scenario_id": "S3",
+      "record": "r3/S3.json",
+      "gate_status": "documented_advice",
+      "gate_ok": true,
+      "error_code": null,
+      "cost_usd_est": 0.059473
+    },
+    {
+      "run": 3,
+      "scenario_id": "S4",
+      "record": "r3/S4.json",
+      "gate_status": "documented_advice",
+      "gate_ok": true,
+      "error_code": null,
+      "cost_usd_est": 0.047461
+    },
+    {
+      "run": 3,
+      "scenario_id": "S8",
+      "record": "r3/S8.json",
+      "gate_status": "documented_advice",
+      "gate_ok": true,
+      "error_code": null,
+      "cost_usd_est": 0.055965
+    },
+    {
+      "run": 3,
+      "scenario_id": "S9",
+      "record": "r3/S9.json",
+      "gate_status": "clean",
+      "gate_ok": true,
+      "error_code": null,
+      "cost_usd_est": 0.060172
+    },
+    {
+      "run": 3,
+      "scenario_id": "S10",
+      "record": "r3/S10.json",
+      "gate_status": "documented_advice",
+      "gate_ok": true,
+      "error_code": null,
+      "cost_usd_est": 0.067317
+    },
+    {
+      "run": 3,
+      "scenario_id": "S11",
+      "record": "r3/S11.json",
+      "gate_status": "clean",
+      "gate_ok": true,
+      "error_code": null,
+      "cost_usd_est": 0.085681
+    },
+    {
+      "run": 3,
+      "scenario_id": "S12",
+      "record": "r3/S12.json",
+      "gate_status": "documented_advice",
+      "gate_ok": true,
+      "error_code": null,
+      "cost_usd_est": 0.096314
+    },
+    {
+      "run": 3,
+      "scenario_id": "S13",
+      "record": "r3/S13.json",
+      "gate_status": "documented_advice",
+      "gate_ok": true,
+      "error_code": null,
+      "cost_usd_est": 0.088414
+    },
+    {
+      "run": 3,
+      "scenario_id": "S14",
+      "record": "r3/S14.json",
+      "gate_status": "clean",
+      "gate_ok": true,
+      "error_code": null,
+      "cost_usd_est": 0.071834
+    },
+    {
+      "run": 3,
+      "scenario_id": "S15",
+      "record": "r3/S15.json",
+      "gate_status": "clean",
+      "gate_ok": true,
+      "error_code": null,
+      "cost_usd_est": 0.064409
+    },
+    {
+      "run": 3,
+      "scenario_id": "S16",
+      "record": "r3/S16.json",
+      "gate_status": "clean",
+      "gate_ok": true,
+      "error_code": null,
+      "cost_usd_est": 0.082163
+    },
+    {
+      "run": 3,
+      "scenario_id": "S17",
+      "record": "r3/S17.json",
+      "gate_status": "clean",
+      "gate_ok": true,
+      "error_code": null,
+      "cost_usd_est": 0.074151
+    },
+    {
+      "run": 3,
+      "scenario_id": "S18",
+      "record": "r3/S18.json",
+      "gate_status": "clean",
+      "gate_ok": true,
+      "error_code": null,
+      "cost_usd_est": 0.045596
+    },
+    {
+      "run": 3,
+      "scenario_id": "A5",
+      "record": "r3/A5.json",
+      "gate_status": "documented_advice",
+      "gate_ok": true,
+      "error_code": null,
+      "cost_usd_est": 0.059258
+    },
+    {
+      "run": 3,
+      "scenario_id": "B6",
+      "record": "r3/B6.json",
+      "gate_status": "documented_advice",
+      "gate_ok": true,
+      "error_code": null,
+      "cost_usd_est": 0.073379
+    },
+    {
+      "run": 3,
+      "scenario_id": "C7",
+      "record": "r3/C7.json",
+      "gate_status": "clean",
+      "gate_ok": true,
+      "error_code": null,
+      "cost_usd_est": 0.048876
+    },
+    {
+      "run": 4,
+      "scenario_id": "S1",
+      "record": "r4/S1.json",
+      "gate_status": "documented_advice",
+      "gate_ok": true,
+      "error_code": null,
+      "cost_usd_est": 0.074587
+    },
+    {
+      "run": 4,
+      "scenario_id": "S2",
+      "record": "r4/S2.json",
+      "gate_status": "documented_advice",
+      "gate_ok": true,
+      "error_code": null,
+      "cost_usd_est": 0.04559
+    },
+    {
+      "run": 4,
+      "scenario_id": "S3",
+      "record": "r4/S3.json",
+      "gate_status": "documented_advice",
+      "gate_ok": true,
+      "error_code": null,
+      "cost_usd_est": 0.060763
+    },
+    {
+      "run": 4,
+      "scenario_id": "S4",
+      "record": "r4/S4.json",
+      "gate_status": "documented_advice",
+      "gate_ok": true,
+      "error_code": null,
+      "cost_usd_est": 0.044972
+    },
+    {
+      "run": 4,
+      "scenario_id": "S8",
+      "record": "r4/S8.json",
+      "gate_status": "documented_advice",
+      "gate_ok": true,
+      "error_code": null,
+      "cost_usd_est": 0.063766
+    },
+    {
+      "run": 4,
+      "scenario_id": "S9",
+      "record": "r4/S9.json",
+      "gate_status": "clean",
+      "gate_ok": true,
+      "error_code": null,
+      "cost_usd_est": 0.058667
+    },
+    {
+      "run": 4,
+      "scenario_id": "S10",
+      "record": "r4/S10.json",
+      "gate_status": "documented_advice",
+      "gate_ok": true,
+      "error_code": null,
+      "cost_usd_est": 0.064274
+    },
+    {
+      "run": 4,
+      "scenario_id": "S11",
+      "record": "r4/S11.json",
+      "gate_status": "clean",
+      "gate_ok": true,
+      "error_code": null,
+      "cost_usd_est": 0.070683
+    },
+    {
+      "run": 4,
+      "scenario_id": "S12",
+      "record": "r4/S12.json",
+      "gate_status": "documented_advice",
+      "gate_ok": true,
+      "error_code": null,
+      "cost_usd_est": 0.09605
+    },
+    {
+      "run": 4,
+      "scenario_id": "S13",
+      "record": "r4/S13.json",
+      "gate_status": "documented_advice",
+      "gate_ok": true,
+      "error_code": null,
+      "cost_usd_est": 0.093918
+    },
+    {
+      "run": 4,
+      "scenario_id": "S14",
+      "record": "r4/S14.json",
+      "gate_status": "clean",
+      "gate_ok": true,
+      "error_code": null,
+      "cost_usd_est": 0.064558
+    },
+    {
+      "run": 4,
+      "scenario_id": "S15",
+      "record": "r4/S15.json",
+      "gate_status": "clean",
+      "gate_ok": true,
+      "error_code": null,
+      "cost_usd_est": 0.069825
+    },
+    {
+      "run": 4,
+      "scenario_id": "S16",
+      "record": "r4/S16.json",
+      "gate_status": "clean",
+      "gate_ok": true,
+      "error_code": null,
+      "cost_usd_est": 0.079286
+    },
+    {
+      "run": 4,
+      "scenario_id": "S17",
+      "record": "r4/S17.json",
+      "gate_status": "clean",
+      "gate_ok": true,
+      "error_code": null,
+      "cost_usd_est": 0.079685
+    },
+    {
+      "run": 4,
+      "scenario_id": "S18",
+      "record": "r4/S18.json",
+      "gate_status": "clean",
+      "gate_ok": true,
+      "error_code": null,
+      "cost_usd_est": 0.056542
+    },
+    {
+      "run": 4,
+      "scenario_id": "A5",
+      "record": "r4/A5.json",
+      "gate_status": "documented_advice",
+      "gate_ok": true,
+      "error_code": null,
+      "cost_usd_est": 0.055869
+    },
+    {
+      "run": 4,
+      "scenario_id": "B6",
+      "record": "r4/B6.json",
+      "gate_status": "documented_advice",
+      "gate_ok": true,
+      "error_code": null,
+      "cost_usd_est": 0.066287
+    },
+    {
+      "run": 4,
+      "scenario_id": "C7",
+      "record": "r4/C7.json",
+      "gate_status": "clean",
+      "gate_ok": true,
+      "error_code": null,
+      "cost_usd_est": 0.048477
+    },
+    {
+      "run": 5,
+      "scenario_id": "S1",
+      "record": "r5/S1.json",
+      "gate_status": "documented_advice",
+      "gate_ok": true,
+      "error_code": null,
+      "cost_usd_est": 0.072135
+    },
+    {
+      "run": 5,
+      "scenario_id": "S2",
+      "record": "r5/S2.json",
+      "gate_status": "documented_advice",
+      "gate_ok": true,
+      "error_code": null,
+      "cost_usd_est": 0.055265
+    },
+    {
+      "run": 5,
+      "scenario_id": "S3",
+      "record": "r5/S3.json",
+      "gate_status": "documented_advice",
+      "gate_ok": true,
+      "error_code": null,
+      "cost_usd_est": 0.060588
+    },
+    {
+      "run": 5,
+      "scenario_id": "S4",
+      "record": "r5/S4.json",
+      "gate_status": "documented_advice",
+      "gate_ok": true,
+      "error_code": null,
+      "cost_usd_est": 0.039937
+    },
+    {
+      "run": 5,
+      "scenario_id": "S8",
+      "record": "r5/S8.json",
+      "gate_status": "documented_advice",
+      "gate_ok": true,
+      "error_code": null,
+      "cost_usd_est": 0.064515
+    },
+    {
+      "run": 5,
+      "scenario_id": "S9",
+      "record": "r5/S9.json",
+      "gate_status": "clean",
+      "gate_ok": true,
+      "error_code": null,
+      "cost_usd_est": 0.064545
+    },
+    {
+      "run": 5,
+      "scenario_id": "S10",
+      "record": "r5/S10.json",
+      "gate_status": "documented_advice",
+      "gate_ok": true,
+      "error_code": null,
+      "cost_usd_est": 0.078398
+    },
+    {
+      "run": 5,
+      "scenario_id": "S11",
+      "record": "r5/S11.json",
+      "gate_status": "clean",
+      "gate_ok": true,
+      "error_code": null,
+      "cost_usd_est": 0.085256
+    },
+    {
+      "run": 5,
+      "scenario_id": "S12",
+      "record": "r5/S12.json",
+      "gate_status": "documented_advice",
+      "gate_ok": true,
+      "error_code": null,
+      "cost_usd_est": 0.089569
+    },
+    {
+      "run": 5,
+      "scenario_id": "S13",
+      "record": "r5/S13.json",
+      "gate_status": "documented_advice",
+      "gate_ok": true,
+      "error_code": null,
+      "cost_usd_est": 0.088414
+    },
+    {
+      "run": 5,
+      "scenario_id": "S14",
+      "record": "r5/S14.json",
+      "gate_status": "clean",
+      "gate_ok": true,
+      "error_code": null,
+      "cost_usd_est": 0.073659
+    },
+    {
+      "run": 5,
+      "scenario_id": "S15",
+      "record": "r5/S15.json",
+      "gate_status": "clean",
+      "gate_ok": true,
+      "error_code": null,
+      "cost_usd_est": 0.071795
+    },
+    {
+      "run": 5,
+      "scenario_id": "S16",
+      "record": "r5/S16.json",
+      "gate_status": "clean",
+      "gate_ok": true,
+      "error_code": null,
+      "cost_usd_est": 0.076385
+    },
+    {
+      "run": 5,
+      "scenario_id": "S17",
+      "record": "r5/S17.json",
+      "gate_status": "clean",
+      "gate_ok": true,
+      "error_code": null,
+      "cost_usd_est": 0.08122
+    },
+    {
+      "run": 5,
+      "scenario_id": "S18",
+      "record": "r5/S18.json",
+      "gate_status": "clean",
+      "gate_ok": true,
+      "error_code": null,
+      "cost_usd_est": 0.049847
+    },
+    {
+      "run": 5,
+      "scenario_id": "A5",
+      "record": "r5/A5.json",
+      "gate_status": "documented_advice",
+      "gate_ok": true,
+      "error_code": null,
+      "cost_usd_est": 0.057677
+    },
+    {
+      "run": 5,
+      "scenario_id": "B6",
+      "record": "r5/B6.json",
+      "gate_status": "documented_advice",
+      "gate_ok": true,
+      "error_code": null,
+      "cost_usd_est": 0.071646
+    },
+    {
+      "run": 5,
+      "scenario_id": "C7",
+      "record": "r5/C7.json",
+      "gate_status": "clean",
+      "gate_ok": true,
+      "error_code": null,
+      "cost_usd_est": 0.047233
+    }
+  ]
+}

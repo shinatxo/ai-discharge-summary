@@ -1,0 +1,67 @@
+{
+  "record_version": 1,
+  "generation_id": "w4-baseline-v1-x5/r3/S4",
+  "batch_id": "w4-baseline-v1-x5",
+  "run": 3,
+  "scenario_id": "S4",
+  "generator": "v1",
+  "path": "deployed",
+  "model_id": "anthropic.claude-sonnet-4-6",
+  "region": "eu-west-2",
+  "inference": {
+    "max_tokens": 4096,
+    "temperature": 0.0,
+    "patient_max_tokens": 1500
+  },
+  "prompts": {
+    "system": {
+      "path": "src/generate/system_prompt.md",
+      "file_sha256": "a7ec8a5661007b0a69231dd68a1f286013cf23a2192ed7ec16770bc07f3c1e3a",
+      "body_sha256": "de46dda1e90bdb1380e077bf7119a2d0d537b7f1f53199b3aeaa2c41aa645ee6"
+    },
+    "patient": {
+      "path": "src/generate/patient_system_prompt.md",
+      "file_sha256": "32f9767baf648dbe2ca1ad5e46d40ea75ff51890bca0b66ef1c44b96166f8e1b",
+      "body_sha256": "7fea4b502d0b9a8b983bcbcac353bc7763845ed0a3eaf0d39edfd80650d23435"
+    }
+  },
+  "prompt_caching": true,
+  "notes_sha256": "647dbf1787d657773d262b81e9df534fdf54b57d06d61b8fa585b26bbcd9a6cc",
+  "started_at": "2026-10-07T13:33:09+01:00",
+  "elapsed_s": 34.754,
+  "calls": [
+    {
+      "name": "combined",
+      "input_tokens": 349,
+      "output_tokens": 1906,
+      "cache_read_tokens": 5192,
+      "cache_write_tokens": 0,
+      "stop_reason": "end_turn",
+      "latency_s": 25.801,
+      "throttle_retries": 0
+    },
+    {
+      "name": "patient_v2",
+      "input_tokens": 900,
+      "output_tokens": 596,
+      "cache_read_tokens": 1038,
+      "cache_write_tokens": 0,
+      "stop_reason": "end_turn",
+      "latency_s": 8.951,
+      "throttle_retries": 0
+    }
+  ],
+  "patient_version": "v2",
+  "output": "I'll now produce all three parts of the discharge summary.\n\n---\n\n# PART A — STRUCTURED CLINICAL DISCHARGE SUMMARY\n\n```\nDISCHARGE SUMMARY\n\nPatient: Not documented | DOB: Not documented (10 months) | NHS No: Not documented | Hosp No: Not documented\nAdmitted: 19/05/[YYYY] | Discharged: 20/05/[YYYY]\nSpecialty: Paediatrics (inferred — not documented, confirm)\nWeight: 9 kg (recorded on admission)\n\nPRESENTING COMPLAINT\nTen-month-old male presented with a three-day history of coryzal symptoms,\nworsening cough, noisy breathing, and poor feeding (approximately 50% of\nnormal intake), with reduced wet nappies. Referred in by GP.\n\nDIAGNOSIS\nPrimary: Bronchiolitis (clinical diagnosis; RSV confirmed on nasopharyngeal\n         aspirate)\nBackground: Born at term. No significant past medical history. Immunisations\n            up to date. No family history of atopy documented.\n\nKEY INVESTIGATIONS\n- Nasopharyngeal aspirate (NPA): RSV positive (result Day 2, 20/05)\n- Observations on admission: Temperature 37.6 °C, RR 58, SpO₂ 90% on room air\n- Observations at discharge: RR 44, SpO₂ 93–95% on room air, minimal work\n  of breathing\n\nTREATMENT DURING ADMISSION\n- Supplemental oxygen commenced to maintain saturations ≥90%; weaned off\n  overnight Day 1–2; tolerating room air at discharge.\n- Nasogastric (NG) feeds commenced for reduced oral intake; removed Day 2\n  as oral feeding improved to approximately 75% and subsequently full feeds.\n- Antibiotics not given (viral aetiology).\n- Salbutamol not given (not indicated in bronchiolitis).\n- Supportive care with observations throughout.\n\nRESUSCITATION STATUS\nNot documented — no resuscitation discussion indicated for this admission.\n\nMEDICATIONS ON DISCHARGE\nNone (documented: \"No meds needed\").\n\nALLERGIES: None known (NKDA documented).\n\nFOLLOW-UP\nNo routine follow-up arranged (documented: \"No routine f/u\").\n\nGP ACTIONS\nNot documented.\n\nPATIENT ADVICE          (PARENT / CARER ADVICE)\nParental safety-net advice given (documented). The specific content of that\nadvice is not transcribed in these notes — the reviewing clinician should\nconfirm and document the detail before sign-off.\n\nVTE ASSESSMENT: Not applicable (paediatric).\n\nAuthor: [Name, grade, date — to be completed by responsible clinician]\n```\n\n---\n\n> ⚠️ **Flags for reviewing clinician — please address before sign-off:**\n>\n> 1. **Patient identifiers** — Full name, date of birth (year), NHS number, and\n>    hospital number are not present in the notes. These must be completed before\n>    the summary is issued.\n> 2. **Admission/discharge year** — Dates recorded as 19/05 and 20/05 without a\n>    year. Please confirm and complete.\n> 3. **Specialty** — Not explicitly stated; inferred as Paediatrics from clinical\n>    context. Please confirm.\n> 4. **Safety-net advice content** — The notes record that \"parental safety-net\n>    advice given\" but do not transcribe what was said. The patient-friendly\n>    version (Part C) can only reproduce advice that is documented. Please add\n>    the specific advice to the record so it can be included in the discharge\n>    letter given to parents.\n> 5. **GP actions** — None are documented. If any primary-care actions are\n>    intended (e.g. weight check, feeding review), please add them.\n\n---\n\n---\n\n# PART B — GP LETTER\n\n```\n20/05/[YYYY]\n\nDear Colleague,\n\nRe: [Patient full name], DOB: [DD/MM/YYYY] (10 months), NHS No: Not documented\nAdmitted: 19/05/[YYYY], Discharged: 20/05/[YYYY] under Paediatrics (inferred —\nconfirm).\n\nI am writing to let you know about the above patient, a 10-month-old male\nadmitted under your referral with a two-day history of worsening bronchiolitis,\nconfirmed RSV-positive on nasopharyngeal aspirate.\n\nOn admission he had an oxygen saturation of 90% on room air, a respiratory\nrate of 58, mild-to-moderate subcostal recession, and widespread fine\ncrepitations and wheeze. He was alert and not clinically dehydrated, though\noral intake was reduced to approximately 50% of normal with fewer wet nappies.\nBirth history was unremarkable (term, no significant past medical history,\nimmunisations up to date, NKDA).\n\nHe was managed with supplemental oxygen (target saturations ≥90%) and\nnasogastric feeding. Antibiotics and salbutamol were appropriately withheld.\nHe improved steadily: oxygen was weaned overnight, NG feeds were discontinued\non Day 2 as oral intake recovered, and he was tolerating full oral feeds with\nstable saturations on room air and minimal work of breathing at the time of\ndischarge.\n\nDiagnosis: Bronchiolitis (RSV-confirmed).\n\nMedication changes: None — no medications prescribed on discharge.\n\nActions for you (GP): Not documented. No specific actions were recorded in\nthe inpatient notes.\n\nFollow-up arranged: None — no routine follow-up was arranged.\n\nPending results: None outstanding.\n\nYours sincerely,\n[Author name, grade — to be completed by responsible clinician]\n```\n\n---\n\n---\n\nPART C - PATIENT VERSION (v2 second pass)\n\n> ⚠️ **DRAFT ONLY — For clinician review and sign-off before issue**\n> Patient identifiers, year of admission, and safety-net advice content are incomplete in the source notes (see flags above). This leaflet cannot be finalised until those gaps are resolved. In particular, the specific safety-net advice given to parents has not been transcribed — only a generic fall-back can be included here until the documented detail is added to the record.\n\n---\n\n# Your Child's Discharge Letter\n\n## What this letter is for\n\nThis letter tells you what happened during your child's stay in hospital, what was done to help, and what to do next. Please keep it somewhere safe.\n\n---\n\n## What was wrong\n\nYour baby had a chest infection called **bronchiolitis**. This is caused by a virus called **RSV (respiratory syncytial virus)**. It made his airways swell and fill with mucus, which caused:\n\n- a noisy, wheezy cough\n- fast or difficult breathing\n- poor feeding\n- fewer wet nappies than usual\n\nBronchiolitis is very common in babies. A test on a swab from his nose confirmed the RSV virus.\n\n---\n\n## What we did in hospital\n\nWhen your baby came in, the team checked his breathing and the level of oxygen in his blood. His oxygen level was a little low, so we gave him some extra oxygen through a small tube near his nose. By the next morning he was breathing well enough on his own without any extra oxygen.\n\nBecause he was not feeding well enough, we passed a thin, soft tube through his nose into his stomach (a **nasogastric tube**) to give him milk feeds. As his feeding improved — first to about three-quarters of his normal amount, then back to full feeds — the tube was taken out.\n\nHe was not given any antibiotics because bronchiolitis is caused by a virus, not bacteria. The team watched him closely throughout his stay.\n\n---\n\n## Medicines to take at home\n\nYour baby does **not** need any medicines at home. The team confirmed this before he was discharged.\n\nHe has **no known allergies**.\n\n---\n\n## What happens next\n\nNo follow-up appointments have been arranged. If you have any concerns about your baby after he goes home, please contact your GP in the first instance.\n\n---\n\n## When to get help\n\nIf you become unwell or are worried about anything, contact your GP or call NHS 111. Call 999 if it is an emergency.\n\n---\n\n*This letter is a draft for clinician sign-off. It must not be given to parents until it has been reviewed, identifiers completed, and the documented safety-net advice added.*\n",
+  "gate": {
+    "canonical": "V1_LINES",
+    "status": "documented_advice",
+    "ok": true,
+    "label": "PASS (advisory)",
+    "findings": [
+      "The source notes record a seek-help trigger, so the fall-back rule is not engaged. Whether the rephrasing is faithful is a rubric judgement (EVAL_RESULTS.md D2), not checked here."
+    ]
+  },
+  "cost_usd_est": 0.047461,
+  "error": null
+}

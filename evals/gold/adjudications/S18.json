@@ -1,0 +1,42 @@
+{
+  "scenario_id": "S18",
+  "rulings": {
+    "fa7eab53ffa04b6b12841092f2b32ab314e6df8ce4cfc0450f61197a4f4bd749": {
+      "text": "No working at heights.",
+      "verdict": "unsupported",
+      "lines": "L007–L008",
+      "reason": "JUDGEMENT CALL: the notes say 'heights'; 'no WORKING at heights' narrows the restriction to one activity (ladders, climbing at home drop out) — a meaning change, HAZ-17's shape",
+      "by": "Shina Oguntoye (CSO)",
+      "on": "2026-10-07",
+      "source": "w4-baseline-v1-x5 (proposed by Claude, approved by the CSO)"
+    },
+    "64e762b3f6f708a3215b40eeeb6bdb219c9de561d76645a8279feb8bba8d6c3f": {
+      "text": "No baths (unsupervised bathing).",
+      "verdict": "unsupported",
+      "lines": "L008",
+      "reason": "the notes say 'baths'; adding '(unsupervised bathing)' relaxes it to 'no unsupervised baths' — a meaning change",
+      "by": "Shina Oguntoye (CSO)",
+      "on": "2026-10-07",
+      "source": "w4-baseline-v1-x5 (proposed by Claude, approved by the CSO)"
+    },
+    "ecbfc8f88d2524ad29b92b5de6ffa2f23d2885d351433b4d47a99f9195f6d93b": {
+      "text": "No unsupervised baths.",
+      "verdict": "unsupported",
+      "lines": "L008",
+      "reason": "as above: 'no unsupervised baths' relaxes 'no baths'",
+      "by": "Shina Oguntoye (CSO)",
+      "on": "2026-10-07",
+      "source": "w4-baseline-v1-x5 (proposed by Claude, approved by the CSO)"
+    },
+    "5e71da01ab28ab9f3bdc1d1b70a2d569358e39db4fe086cb73ebbe5ca4a452cc": {
+      "text": "No driving: patient must not drive and must inform the DVLA. A 6-month driving ban applies from the date of the seizure (19/05/YYYY) for a first unprovoked seizure (Group 1 licence). Patient informed.",
+      "verdict": "supported",
+      "lines": "L007–L009",
+      "reason": "no driving, inform DVLA, 6 months, group 1 — all in L007–L009",
+      "by": "Shina Oguntoye (CSO)",
+      "on": "2026-10-07",
+      "source": "w4-baseline-v1-x5 (proposed by Claude, approved by the CSO)"
+    }
+  },
+  "med_rulings": {}
+}

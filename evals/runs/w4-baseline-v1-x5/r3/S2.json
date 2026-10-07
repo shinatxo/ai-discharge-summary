@@ -1,0 +1,67 @@
+{
+  "record_version": 1,
+  "generation_id": "w4-baseline-v1-x5/r3/S2",
+  "batch_id": "w4-baseline-v1-x5",
+  "run": 3,
+  "scenario_id": "S2",
+  "generator": "v1",
+  "path": "deployed",
+  "model_id": "anthropic.claude-sonnet-4-6",
+  "region": "eu-west-2",
+  "inference": {
+    "max_tokens": 4096,
+    "temperature": 0.0,
+    "patient_max_tokens": 1500
+  },
+  "prompts": {
+    "system": {
+      "path": "src/generate/system_prompt.md",
+      "file_sha256": "a7ec8a5661007b0a69231dd68a1f286013cf23a2192ed7ec16770bc07f3c1e3a",
+      "body_sha256": "de46dda1e90bdb1380e077bf7119a2d0d537b7f1f53199b3aeaa2c41aa645ee6"
+    },
+    "patient": {
+      "path": "src/generate/patient_system_prompt.md",
+      "file_sha256": "32f9767baf648dbe2ca1ad5e46d40ea75ff51890bca0b66ef1c44b96166f8e1b",
+      "body_sha256": "7fea4b502d0b9a8b983bcbcac353bc7763845ed0a3eaf0d39edfd80650d23435"
+    }
+  },
+  "prompt_caching": true,
+  "notes_sha256": "1b138eb44a03c3ac42c22625b36982e32d8a0eece4c7e63daa91a2aa836d3ed6",
+  "started_at": "2026-10-07T13:31:53+01:00",
+  "elapsed_s": 34.297,
+  "calls": [
+    {
+      "name": "combined",
+      "input_tokens": 289,
+      "output_tokens": 1851,
+      "cache_read_tokens": 5192,
+      "cache_write_tokens": 0,
+      "stop_reason": "end_turn",
+      "latency_s": 24.551,
+      "throttle_retries": 0
+    },
+    {
+      "name": "patient_v2",
+      "input_tokens": 628,
+      "output_tokens": 646,
+      "cache_read_tokens": 1038,
+      "cache_write_tokens": 0,
+      "stop_reason": "end_turn",
+      "latency_s": 9.744,
+      "throttle_retries": 0
+    }
+  ],
+  "patient_version": "v2",
+  "output": "I'll now produce all three parts of the discharge summary draft.\n\n---\n\n# PART A — STRUCTURED CLINICAL DISCHARGE SUMMARY\n\n```\nDISCHARGE SUMMARY\n\nPatient: Not documented | DOB: Not documented (28 years) | NHS No: Not documented | Hosp No: Not documented\nAdmitted: 20/05/YYYY | Discharged: 21/05/YYYY\nSpecialty: General Surgery (inferred — not documented, confirm)\n\nPRESENTING COMPLAINT\nAn 18-hour history of abdominal pain, beginning periumbilically and migrating\nto the right iliac fossa, associated with nausea, vomiting, and anorexia.\n\nDIAGNOSIS\nPrimary: Acute appendicitis (non-perforated), confirmed intra-operatively.\n\nKEY INVESTIGATIONS\n- WCC: 14.2 (raised)\n- CRP: 68 (raised)\n- Urine dipstick: negative\n- Ultrasound abdomen/pelvis: appendix not well visualised; free fluid in RIF\n\nTREATMENT DURING ADMISSION\n- NBM and IV fluid resuscitation commenced on admission.\n- IV co-amoxiclav commenced pre-operatively.\n- Laparoscopic appendicectomy performed on 20/05/YYYY. Intra-operative\n  findings: acutely inflamed appendix, no perforation. Procedure\n  uncomplicated; estimated blood loss minimal.\n- Post-operatively: tolerating diet, pain controlled, apyrexial, mobilising\n  by day 2.\n- Appendix specimen sent for histology — result pending.\n\nRESUSCITATION STATUS\nFor resuscitation. No change during admission.\n\nMEDICATIONS ON DISCHARGE\nPre-admission drug history: Nil.\n\n- Co-codamol — dose not documented — oral — PRN (NEW)\n- Ibuprofen — dose not documented — oral — PRN (NEW)\n\n⚠ CLINICIAN FLAG: Doses and frequencies for co-codamol and ibuprofen are not\ndocumented in the notes. Please confirm and add before sign-off.\n\nALLERGIES: None known (NKDA documented).\n\nFOLLOW-UP\n- Histology result pending — no follow-up plan or responsible clinician for\n  chasing this result is documented. Please confirm before sign-off.\n\nGP ACTIONS\nNot documented.\n\nPATIENT ADVICE\n\"Wound care and safety-net advice given\" is recorded in the notes. The\nspecific content of this advice is not transcribed. Please document the\ndetail before sign-off so it can be reproduced accurately in the patient\nversion.\n\nVTE ASSESSMENT: Not documented.\n\nAuthor: [Name, Grade, Date — to be completed by responsible clinician]\n```\n\n---\n\n# PART B — GP LETTER\n\n```\n[Date]\n\nDear Colleague,\n\nRe: Not documented (28-year-old male), DOB: Not documented, NHS No: Not documented\nAdmitted: 20/05/YYYY, Discharged: 21/05/YYYY\nUnder: General Surgery (inferred — not documented, confirm)\n\nThis 28-year-old male was admitted as an emergency surgical referral with an\n18-hour history of right iliac fossa pain, nausea, vomiting, and anorexia,\nconsistent with acute appendicitis.\n\nOn examination he was pyrexial (37.9 °C) with right iliac fossa tenderness,\nguarding, and a positive Rovsing's sign. Bloods showed a raised WCC of 14.2\nand CRP of 68. Urine dipstick was negative. Ultrasound did not clearly\nvisualise the appendix but demonstrated free fluid in the right iliac fossa.\n\nHe underwent an uncomplicated laparoscopic appendicectomy on the day of\nadmission. Intra-operative findings confirmed an acutely inflamed, non-\nperforated appendix. He recovered well post-operatively, tolerating diet,\nmobilising, and was discharged the following day.\n\nDiagnosis: Acute appendicitis (non-perforated).\n\nMedication changes: No pre-admission medications. Two new short-course PRN\nanalgesics were prescribed on discharge — co-codamol and ibuprofen — however\ndoses and frequencies were not documented in the notes and require\nclarification. Please see the attached discharge summary.\n\nPending results: Appendix histology is outstanding. It is not documented in\nthe notes who is responsible for reviewing and actioning this result. Please\nclarify with the discharging team.\n\nActions for you (GP): Not documented. No specific actions were delegated to\nprimary care in the discharge notes.\n\nFollow-up arranged: Not documented.\n\nYours sincerely,\n[Name, Grade — to be completed by responsible clinician]\n```\n\n---\n\nPART C - PATIENT VERSION (v2 second pass)\n\n> ⚠ **DRAFT ONLY — for clinician review and sign-off before giving to patient.**\n> Medication doses, histology follow-up, and safety-net detail are incomplete in the source summary (see flags below). This leaflet cannot be finalised until those gaps are resolved.\n\n---\n\n# Your Discharge Letter — Going Home After Your Operation\n\n## What was wrong\n\nYou came to hospital with pain in your tummy that moved to the lower right side. Tests and your operation confirmed that you had an inflamed appendix (acute appendicitis). Your appendix had not burst, and the operation went smoothly.\n\n---\n\n## What we did\n\n- We gave you fluids through a drip and stopped you eating or drinking while we got ready for your operation.\n- We gave you an antibiotic (co-amoxiclav) through the drip before your operation.\n- You had a keyhole operation (laparoscopic appendicectomy) to remove your appendix. The surgeon found that your appendix was inflamed but had not burst. Blood loss was very small.\n- After the operation you were able to eat and drink, your pain was well controlled, and you were up and moving around.\n\n---\n\n## Your medicines to take home\n\nYou have been given two pain-relief medicines to take when you need them:\n\n- **Co-codamol** — taken by mouth when needed (PRN)\n- **Ibuprofen** — taken by mouth when needed (PRN)\n\n> ⚠ **CLINICIAN FLAG — action needed before sign-off:** The doses and how often to take these medicines are **not recorded** in the notes. Please add this information before giving this leaflet to the patient.\n\nYou were not on any regular medicines before you came in, and no new regular medicines have been started.\n\n---\n\n## What happens next\n\nThe appendix that was removed has been sent to the laboratory to be looked at more closely (histology). The result is not back yet.\n\n> ⚠ **CLINICIAN FLAG — action needed before sign-off:** There is no plan recorded for who will check this result or how you will be told about it. Please confirm the follow-up arrangement and add it here before sign-off.\n\n---\n\n## If you feel unwell\n\nThe notes record that wound care and safety-net advice were given to you before you left. However, the detail of that advice was not written down, so we are not able to repeat it here.\n\n> ⚠ **CLINICIAN FLAG — action needed before sign-off:** Please document the specific wound care and safety-net advice that was given so it can be included in the final version of this leaflet.\n\nUntil this leaflet is finalised, please use the general guidance below:\n\nIf you become unwell or are worried about anything, contact your GP or call NHS 111. Call 999 if it is an emergency.\n",
+  "gate": {
+    "canonical": "V1_LINES",
+    "status": "documented_advice",
+    "ok": true,
+    "label": "PASS (advisory)",
+    "findings": [
+      "The source notes record a seek-help trigger, so the fall-back rule is not engaged. Whether the rephrasing is faithful is a rubric judgement (EVAL_RESULTS.md D2), not checked here."
+    ]
+  },
+  "cost_usd_est": 0.046283,
+  "error": null
+}

@@ -1,0 +1,24 @@
+{
+  "scenario_id": "S4",
+  "rulings": {
+    "11e5ec330c8c3828456ad9f0cfac398cd39303e19307d6adc4f8a798076a3a1e": {
+      "text": "/ PARENT & CARER ADVICE Parental safety-net advice given (documented).",
+      "verdict": "supported",
+      "lines": "L015",
+      "reason": "the bare record (a heading fragment is attached; content is the record)",
+      "by": "Shina Oguntoye (CSO)",
+      "on": "2026-10-07",
+      "source": "w4-baseline-v1-x5 (proposed by Claude, approved by the CSO)"
+    },
+    "b60e1fa115c6d9a04210b8f92c51b6296785d2e8156a9f45f8c7987b3cd4218b": {
+      "text": "Notes record: \"Parental safety-net advice given.\"",
+      "verdict": "supported",
+      "lines": "L015",
+      "reason": "quotes the record verbatim",
+      "by": "Shina Oguntoye (CSO)",
+      "on": "2026-10-07",
+      "source": "w4-baseline-v1-x5 (proposed by Claude, approved by the CSO)"
+    }
+  },
+  "med_rulings": {}
+}

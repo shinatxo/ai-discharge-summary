@@ -1,0 +1,24 @@
+{
+  "scenario_id": "S3",
+  "rulings": {
+    "1d0275a0728619014aa09f0fe35095a24216cc22ad3be911f71bd597e125a12c": {
+      "text": "Collaborative safety plan completed with patient (content not transcribed in notes).",
+      "verdict": "supported",
+      "lines": "L018",
+      "reason": "the safety-plan record, with an honest aside",
+      "by": "Shina Oguntoye (CSO)",
+      "on": "2026-10-07",
+      "source": "w4-baseline-v1-x5 (proposed by Claude, approved by the CSO)"
+    },
+    "e73565cb19a9c95e7a0d471dd9746ecd60ebab36d8545f5f5d75168dc77cdf72": {
+      "text": "Crisis team telephone number given to patient at discharge (number not documented in notes).",
+      "verdict": "supported",
+      "lines": "L022",
+      "reason": "'Crisis team number given'",
+      "by": "Shina Oguntoye (CSO)",
+      "on": "2026-10-07",
+      "source": "w4-baseline-v1-x5 (proposed by Claude, approved by the CSO)"
+    }
+  },
+  "med_rulings": {}
+}

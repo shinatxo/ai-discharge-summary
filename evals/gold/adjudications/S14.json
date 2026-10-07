@@ -1,0 +1,33 @@
+{
+  "scenario_id": "S14",
+  "rulings": {
+    "fc9aee288aeb6de056c931dfe62099c9da61d16266adfe72992f837dd29757d8": {
+      "text": "Patient advised not to drive.",
+      "verdict": "supported",
+      "lines": "L014",
+      "reason": "'advised not to drive'",
+      "by": "Shina Oguntoye (CSO)",
+      "on": "2026-10-07",
+      "source": "w4-baseline-v1-x5 (proposed by Claude, approved by the CSO)"
+    },
+    "77ddd64bddda741d8bcd9252d0cb3bba305c46d2c5d34e8078e13a9fb9a76fbe": {
+      "text": "Patient advised they must inform the DVLA; a minimum of one month off driving applies per DVLA rules. (No further patient advice documented in the notes.)",
+      "verdict": "supported",
+      "lines": "L014",
+      "reason": "DVLA + 1 month, as L014",
+      "by": "Shina Oguntoye (CSO)",
+      "on": "2026-10-07",
+      "source": "w4-baseline-v1-x5 (proposed by Claude, approved by the CSO)"
+    },
+    "2efd83f534212b7f49b30e4d6ab15eb93768c37c8934b6a09102ed1edc0b4b8d": {
+      "text": "Advised not to drive.",
+      "verdict": "supported",
+      "lines": "L014",
+      "reason": "'advised not to drive'",
+      "by": "Shina Oguntoye (CSO)",
+      "on": "2026-10-07",
+      "source": "w4-baseline-v1-x5 (proposed by Claude, approved by the CSO)"
+    }
+  },
+  "med_rulings": {}
+}

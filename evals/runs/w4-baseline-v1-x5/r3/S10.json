@@ -1,0 +1,67 @@
+{
+  "record_version": 1,
+  "generation_id": "w4-baseline-v1-x5/r3/S10",
+  "batch_id": "w4-baseline-v1-x5",
+  "run": 3,
+  "scenario_id": "S10",
+  "generator": "v1",
+  "path": "deployed",
+  "model_id": "anthropic.claude-sonnet-4-6",
+  "region": "eu-west-2",
+  "inference": {
+    "max_tokens": 4096,
+    "temperature": 0.0,
+    "patient_max_tokens": 1500
+  },
+  "prompts": {
+    "system": {
+      "path": "src/generate/system_prompt.md",
+      "file_sha256": "a7ec8a5661007b0a69231dd68a1f286013cf23a2192ed7ec16770bc07f3c1e3a",
+      "body_sha256": "de46dda1e90bdb1380e077bf7119a2d0d537b7f1f53199b3aeaa2c41aa645ee6"
+    },
+    "patient": {
+      "path": "src/generate/patient_system_prompt.md",
+      "file_sha256": "32f9767baf648dbe2ca1ad5e46d40ea75ff51890bca0b66ef1c44b96166f8e1b",
+      "body_sha256": "7fea4b502d0b9a8b983bcbcac353bc7763845ed0a3eaf0d39edfd80650d23435"
+    }
+  },
+  "prompt_caching": true,
+  "notes_sha256": "a00b5caaa8e251a370d8136857fd8a4d7969cc70de71013d55dbd99a5fd03229",
+  "started_at": "2026-10-07T13:35:09+01:00",
+  "elapsed_s": 48.861,
+  "calls": [
+    {
+      "name": "combined",
+      "input_tokens": 298,
+      "output_tokens": 2658,
+      "cache_read_tokens": 5192,
+      "cache_write_tokens": 0,
+      "stop_reason": "end_turn",
+      "latency_s": 34.095,
+      "throttle_retries": 0
+    },
+    {
+      "name": "patient_v2",
+      "input_tokens": 1123,
+      "output_tokens": 1013,
+      "cache_read_tokens": 1038,
+      "cache_write_tokens": 0,
+      "stop_reason": "end_turn",
+      "latency_s": 14.764,
+      "throttle_retries": 0
+    }
+  ],
+  "patient_version": "v2",
+  "output": "I'll produce all three parts. One note before the summary: the notes mention \"Safety-net re PPH/sepsis/VTE\" on Day 3 but do not specify the exact wording, triggers, or thresholds given to the patient. I will reproduce the documented topics faithfully and flag the gap for the reviewing clinician rather than inventing specific red-flag criteria.\n\n---\n\n# PART A — STRUCTURED CLINICAL DISCHARGE SUMMARY\n\n```\nDISCHARGE SUMMARY\n\nPatient: Not documented (full name not provided) | DOB: Not documented\n(age 31 implied by notes — confirm) | NHS No: Not documented |\nHosp No: Not documented\nAdmitted: 15/05/2025 | Discharged: 17/05/2025\nSpecialty: Obstetrics (inferred — not documented, confirm)\n\nPRESENTING COMPLAINT\nEmergency admission at 39 weeks gestation (P1) in active labour with\npathological CTG / fetal distress, requiring emergency lower-segment\nCaesarean section (LSCS).\n\nDIAGNOSIS\nPrimary:   Emergency LSCS for pathological CTG / fetal distress at 39/40.\n           Primary postpartum haemorrhage (PPH) ~1,200 ml secondary to\n           uterine atony, managed medically (no return to theatre).\nSecondary: Post-operative anaemia — Hb 84 g/L (pre-operative Hb 119 g/L).\nBackground: Nil documented.\n\nKEY INVESTIGATIONS\n- Haemoglobin: 119 g/L (pre-operative) → 84 g/L (Day 1 post-op).\n  Patient asymptomatic; observations stable.\n  No further investigation results documented.\n\nTREATMENT DURING ADMISSION\n- Emergency LSCS under not-documented anaesthetic.\n- Intra-operative management of primary PPH (~1,200 ml estimated blood\n  loss): oxytocin, ergometrine, and bimanual compression. Haemostasis\n  achieved; no return to theatre required.\n- Day 1: Oral iron commenced for post-operative anaemia.\n- Day 1: Prophylactic enoxaparin commenced (dose not documented) once\n  daily, in view of elevated VTE risk (LSCS + PPH).\n- Regular paracetamol and ibuprofen PRN prescribed for post-operative\n  analgesia (doses not documented).\n- Breastfeeding established by Day 2.\n- Community midwife handover completed. GP and health visitor informed.\n\nRESUSCITATION STATUS\nNot documented — no resuscitation discussion indicated for this\nadmission.\n\nMEDICATIONS ON DISCHARGE\nPre-admission drug history: Nil (documented).\n\n1. Enoxaparin — dose not documented — subcutaneous — once daily\n   (NEW; to continue for 10 days post-discharge for VTE prophylaxis\n   following LSCS + PPH).\n   *** PRESCRIBER NOTE: dose not documented in notes — confirm before\n   issuing. ***\n\n2. Oral iron — preparation, dose, and frequency not documented (NEW;\n   commenced Day 1 for post-operative anaemia).\n   *** PRESCRIBER NOTE: preparation, dose, and frequency not documented\n   — confirm before issuing. ***\n\n3. Paracetamol — dose not documented — oral — regular (NEW; post-\n   operative analgesia).\n   *** PRESCRIBER NOTE: dose and frequency not documented — confirm\n   before issuing. ***\n\n4. Ibuprofen — dose not documented — oral — PRN (NEW; post-operative\n   analgesia).\n   *** PRESCRIBER NOTE: dose and frequency not documented — confirm\n   before issuing. ***\n\n   No pre-admission medications were stopped (none were taken).\n\nALLERGIES: NKDA (no known drug allergies — documented).\n\nFOLLOW-UP\n- Postnatal check at 6 weeks with GP.\n- Community midwife follow-up arranged (handover completed in hospital).\n- No further hospital follow-up documented.\n- Pending results: None documented.\n\nGP ACTIONS\n- Postnatal check at 6 weeks.\n- Review and monitor post-operative anaemia (Hb 84 g/L at discharge);\n  ongoing oral iron — no specific monitoring interval documented.\n- Health visitor informed (documented).\n- No other specific GP actions documented.\n\nPATIENT ADVICE\nThe notes record that safety-netting advice was given covering PPH,\nsepsis, and VTE. The specific triggers, thresholds, and wording\ncommunicated to the patient are not transcribed in the notes.\n*** REVIEWING CLINICIAN: please document the specific safety-net\ninstructions given, so they can be reproduced accurately in the\npatient-facing summary (Part C). ***\n\nVTE ASSESSMENT\nVTE risk assessed as elevated (LSCS + PPH documented as the basis);\nprophylactic enoxaparin prescribed. Formal assessment tool / score not\ndocumented.\n\nAuthor: [Name, Grade] — DRAFT — requires clinician review and sign-off\nDate: [DD/MM/YYYY]\n```\n\n---\n\n# PART B — GP LETTER\n\n```\n17/05/2025\n\nDear Colleague,\n\nRe: [Patient full name], DOB: [DD/MM/YYYY], NHS No: [not documented]\nAdmitted: 15/05/2025 | Discharged: 17/05/2025\nUnder: Obstetrics (inferred — confirm)\n\nThis 31-year-old woman (P1) was admitted as an emergency at 39 weeks\ngestation and delivered by emergency LSCS for pathological CTG / fetal\ndistress. She had a primary PPH of approximately 1,200 ml secondary to\nuterine atony, managed successfully with oxytocin, ergometrine, and\nbimanual compression; no return to theatre was required.\n\nPost-operatively, her haemoglobin fell from 119 g/L to 84 g/L. She\nremained asymptomatic with stable observations throughout. Oral iron was\ncommenced on Day 1. She mobilised well, breastfeeding was established,\nand the wound was clean at discharge on Day 3.\n\nDiagnosis: Emergency LSCS for fetal distress; primary PPH (uterine\natony); post-operative anaemia.\n\nMedication changes (all new — no pre-admission medications):\n- Enoxaparin (dose not documented) SC once daily — NEW — to continue\n  for 10 days post-discharge for VTE prophylaxis (LSCS + PPH).\n  Please confirm dose with the discharging team if not clear on the\n  prescription.\n- Oral iron (preparation, dose, and frequency not documented) — NEW —\n  for post-operative anaemia.\n- Paracetamol (dose not documented) regular — NEW — post-operative\n  analgesia.\n- Ibuprofen (dose not documented) PRN — NEW — post-operative analgesia.\n\nPlease note: doses and preparations for all discharge medications are\nnot fully transcribed in the notes. The dispensed prescription should\nbe used as the authoritative source; please contact the discharging\nteam if clarification is needed.\n\nActions for you (GP):\n1. Postnatal check at 6 weeks (already arranged per notes).\n2. Review post-operative anaemia — Hb 84 g/L at discharge — and\n   ongoing response to oral iron. No specific monitoring interval was\n   documented; clinical judgement required.\n\nFollow-up arranged:\n- Community midwife follow-up (handover completed prior to discharge).\n- 6-week postnatal check with GP (as above).\n- Health visitor informed.\n\nPending results: None documented.\n\nYours sincerely,\n[Name, Grade] — DRAFT — requires clinician review and sign-off\n```\n\n---\n\nPART C - PATIENT VERSION (v2 second pass)\n\n# Your Discharge Letter\n\n**A note for you after your stay — please read this at home**\n\n*This is a draft. Your clinical team will check and sign it off before it is finalised.*\n\n---\n\n## Welcome home — and congratulations on the birth of your baby\n\nWe hope you and your baby are doing well. This letter explains what happened during your stay, what treatment you had, and what to do next. Please keep it somewhere safe.\n\n---\n\n## What happened\n\nYou came into hospital at 39 weeks pregnant and in active labour. The monitor tracing of your baby's heartbeat (CTG) showed signs that your baby needed to be born quickly. Because of this, you had an emergency operation to deliver your baby through your tummy. This is called an emergency Caesarean section (LSCS).\n\nAfter your baby was born, you lost more blood than expected — about 1,200 ml. This is called a primary postpartum haemorrhage (PPH). The team treated this with medicines and a procedure to help your womb contract. It worked well, and you did not need to go back to the operating theatre.\n\nBecause of the blood loss, your blood count (haemoglobin) was lower than normal after the operation. This is called post-operative anaemia. You had no symptoms from this, and your observations stayed stable throughout.\n\nBy the time you went home, breastfeeding had been established.\n\n---\n\n## What was done\n\n- Your baby was delivered by emergency Caesarean section (LSCS).\n- Medicines were given during the operation to stop the bleeding and help your womb contract. These were oxytocin and ergometrine, along with a hands-on technique called bimanual compression.\n- Iron tablets were started the day after your operation to help build your blood count back up.\n- A blood-thinning injection was started to reduce the risk of a blood clot (VTE — venous thromboembolism). This is a known risk after a Caesarean section and heavy blood loss.\n\n---\n\n## Your medicines when you went home\n\nYou were not taking any medicines before you came in. The following medicines were started during your stay. **Please check the details on your prescription or medicine bag, as some doses still need to be confirmed by your doctor before you take them.**\n\n1. **Enoxaparin — injection under the skin — once a day**\n   This is a blood-thinning injection to reduce the risk of a blood clot (VTE). You need to take this for **10 days** after leaving hospital.\n\n2. **Iron tablets (oral iron) — preparation, dose, and how often to take: please check your prescription**\n   These help your body build up your blood count after the blood loss you had.\n\n3. **Paracetamol — tablets — regular (as prescribed)**\n   This is a painkiller to help with discomfort after your operation. Please check your prescription for the dose and how often to take it.\n\n4. **Ibuprofen — tablets — when needed (as prescribed)**\n   This is an anti-inflammatory painkiller for pain relief after your operation. Please check your prescription for the dose and how often to take it.\n\nYou have **no known drug allergies** on record.\n\n---\n\n## What happens next\n\n- **Community midwife:** A community midwife will visit you at home. This handover was arranged before you left hospital.\n- **Health visitor:** Your health visitor has been told about your baby's arrival.\n- **GP check at 6 weeks:** You will have a postnatal check with your GP at around 6 weeks. Your GP will also check on your blood count (anaemia) and your iron tablets at that appointment.\n- **No further hospital appointments** have been arranged at this stage.\n\n---\n\n## When to get help\n\nThe notes record that you were given safety-netting advice before you left — covering heavy bleeding, signs of infection, and blood clots. The specific details of that advice were not written down in full, so we are not able to repeat them here. **If you are unsure what to look out for, please ask your community midwife or GP to go through this with you as soon as possible.**\n\nIf you become unwell or are worried about anything, contact your GP or call NHS 111. Call 999 if it is an emergency.\n\n---\n\n*This letter is a draft and must be checked and signed off by your clinical team before it is final. If anything does not look right, please let your midwife or GP know.*\n",
+  "gate": {
+    "canonical": "V1_LINES",
+    "status": "documented_advice",
+    "ok": true,
+    "label": "PASS (advisory)",
+    "findings": [
+      "The source notes record a seek-help trigger, so the fall-back rule is not engaged. Whether the rephrasing is faithful is a rubric judgement (EVAL_RESULTS.md D2), not checked here."
+    ]
+  },
+  "cost_usd_est": 0.067317,
+  "error": null
+}

@@ -1,0 +1,14 @@
+{
+  "scenario_id": "A5",
+  "rulings": {},
+  "med_rulings": {
+    "d28fdb071f1653f2fff5f155ad26f626346e7a097626d5d749e0ea3f44327079": {
+      "text": "Clarithromycin [dose not documented] — oral, to complete course. (NEW — started this admission; IV course stepped down to oral 10/05.) ⚠ Note: the notes state \"switched to oral antibiotics\" but do not specify whether clarithromycin was continued orally or stopped at step-down. Clarify before issuing TTO.",
+      "verdict": "invented",
+      "reason": "clarithromycin is not on the TTO (co-amoxiclav only); listing it as a NEW discharge drug, even with a ⚠ flag, puts a drug on the list the notes do not",
+      "by": "Shina Oguntoye (CSO)",
+      "on": "2026-10-07",
+      "source": "w4-baseline-v1-x5 (proposed by Claude, approved by the CSO)"
+    }
+  }
+}

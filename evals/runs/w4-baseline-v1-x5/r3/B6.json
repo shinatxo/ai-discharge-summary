@@ -1,0 +1,67 @@
+{
+  "record_version": 1,
+  "generation_id": "w4-baseline-v1-x5/r3/B6",
+  "batch_id": "w4-baseline-v1-x5",
+  "run": 3,
+  "scenario_id": "B6",
+  "generator": "v1",
+  "path": "deployed",
+  "model_id": "anthropic.claude-sonnet-4-6",
+  "region": "eu-west-2",
+  "inference": {
+    "max_tokens": 4096,
+    "temperature": 0.0,
+    "patient_max_tokens": 1500
+  },
+  "prompts": {
+    "system": {
+      "path": "src/generate/system_prompt.md",
+      "file_sha256": "a7ec8a5661007b0a69231dd68a1f286013cf23a2192ed7ec16770bc07f3c1e3a",
+      "body_sha256": "de46dda1e90bdb1380e077bf7119a2d0d537b7f1f53199b3aeaa2c41aa645ee6"
+    },
+    "patient": {
+      "path": "src/generate/patient_system_prompt.md",
+      "file_sha256": "32f9767baf648dbe2ca1ad5e46d40ea75ff51890bca0b66ef1c44b96166f8e1b",
+      "body_sha256": "7fea4b502d0b9a8b983bcbcac353bc7763845ed0a3eaf0d39edfd80650d23435"
+    }
+  },
+  "prompt_caching": true,
+  "notes_sha256": "fa57541fe0dd7d176b5b46020f94e83903003d8ff0d88cc4443cd33468c757ae",
+  "started_at": "2026-10-07T13:43:42+01:00",
+  "elapsed_s": 50.579,
+  "calls": [
+    {
+      "name": "combined",
+      "input_tokens": 391,
+      "output_tokens": 3219,
+      "cache_read_tokens": 5192,
+      "cache_write_tokens": 0,
+      "stop_reason": "end_turn",
+      "latency_s": 39.618,
+      "throttle_retries": 0
+    },
+    {
+      "name": "patient_v2",
+      "input_tokens": 1242,
+      "output_tokens": 777,
+      "cache_read_tokens": 1038,
+      "cache_write_tokens": 0,
+      "stop_reason": "end_turn",
+      "latency_s": 10.959,
+      "throttle_retries": 0
+    }
+  ],
+  "patient_version": "v2",
+  "output": "I'll work through the key issues before drafting:\n\n**Flags identified:**\n1. **Warfarin dose conflict:** TTO doctor wrote 5 mg OD; pharmacy reconciliation says 4 mg OD per anticoagulation clinic. This must be surfaced as a discrepancy — not silently resolved.\n2. **Allergy conflict:** Day 1 notes NKDA; Day 3 nursing note records penicillin allergy (rash as a child, patient-reported). Both must be surfaced.\n3. **Resuscitation status changed twice:** For resus → DNACPR (Day 3, Dr Lowe) → For resus (Day 4, revoked by patient/family wish). Must be flagged with full narrative.\n4. **Digoxin:** New drug this admission (loaded Day 2), continued on discharge. Dose 125 mcg OD.\n5. **Bisoprolol:** Increased from 2.5 mg to 5 mg OD.\n6. **Furosemide:** Unchanged at 40 mg OD.\n7. **Warfarin:** Pre-admission 3 mg OD; discharge dose disputed (see above).\n8. **Patient advice:** None documented — must write \"Not documented.\"\n9. **VTE:** Not documented.\n10. **GP actions:** Monitor INR and digoxin level — documented.\n\n---\n\n# PART A — STRUCTURED CLINICAL DISCHARGE SUMMARY\n\n```\nDISCHARGE SUMMARY\n\nPatient: Not documented (full name not provided) | DOB: Not documented |\nNHS No: Not documented | Hosp No: Not documented\nAdmitted: 14/05/2025 | Discharged: 18/05/2025\nSpecialty: Cardiology (inferred — not documented, confirm)\n\nPRESENTING COMPLAINT\nPalpitations and breathlessness.\n\nDIAGNOSIS\nPrimary:   New atrial fibrillation with fast ventricular response.\nSecondary: Mild decompensated heart failure.\nBackground: Hypertension.\n\nKEY INVESTIGATIONS\nNot documented (no investigation results recorded beyond clinical observations).\nObservations on admission: HR 138 (irregularly irregular), BP 110/70 mmHg,\nbibasal crepitations.\n\nTREATMENT DURING ADMISSION\n- Rate control: digoxin loading commenced Day 2 (15/05); bisoprolol increased\n  from 2.5 mg to 5 mg OD.\n- Diuresis for decompensated heart failure (furosemide — dose/route/schedule of\n  inpatient diuresis not documented beyond continuation of pre-admission dose).\n- Anticoagulation: warfarin continued throughout admission.\n- Patient improved significantly by Day 4 (17/05) and was fit for discharge\n  Day 5 (18/05).\n\nRESUSCITATION STATUS\nFor resuscitation.\n\n*** CHANGED DURING ADMISSION — TWICE ***\n\n1. Initial status (admission, 14/05): For resuscitation.\n\n2. Change 1 — DNACPR (16/05): Following an overnight deterioration, a DNACPR\n   form was completed on 16/05 by Dr Lowe. No further detail regarding the\n   clinical reasoning or patient/family discussion at this point is documented\n   in the supplied notes.\n\n3. Change 2 — DNACPR REVOKED, returned to For resuscitation (17/05):\n   On the consultant ward round of 17/05, the patient was noted to be much\n   improved. The patient and family expressed a wish for full active treatment.\n   The DNACPR was revoked and the patient's status returned to For resuscitation.\n\nCurrent status at discharge: For resuscitation. The DNACPR decision of 16/05\nhas been formally revoked.\n\nMEDICATIONS ON DISCHARGE\n\n⚠ ALLERGY CONFLICT — SEE ALLERGY SECTION BELOW. REVIEW BEFORE PRESCRIBING.\n\n⚠ WARFARIN DOSE CONFLICT — REQUIRES CLINICIAN RESOLUTION BEFORE DISPENSING:\n  The TTO written by the doctor records warfarin 5 mg OD. The pharmacy\n  reconciliation note on the same day (18/05) records warfarin 4 mg OD, citing\n  the anticoagulation clinic. These two values are irreconcilable. The correct\n  discharge dose must be confirmed by the responsible clinician before the\n  prescription is issued or handed to the patient.\n\n1. Bisoprolol 5 mg oral OD                    (INCREASED from 2.5 mg OD)\n2. Furosemide 40 mg oral OD                   (continued)\n3. Digoxin 125 mcg oral OD                    (NEW — started this admission)\n4. Warfarin [dose DISPUTED — see above] oral OD\n   Pre-admission dose: 3 mg OD. Discharge dose recorded as either 5 mg OD\n   (doctor TTO) or 4 mg OD (pharmacy reconciliation). Clinician must confirm\n   and correct before issue. Target INR 2–3 (pre-existing).\n\nALLERGIES\n⚠ CONFLICT — REQUIRES CLINICIAN REVIEW AND FORMAL RECONCILIATION:\n\n- Day 1 notes (14/05): NKDA (no known drug allergies).\n- Day 3 nursing note (16/05): Penicillin allergy documented as patient-reported\n  — rash as a child.\n\nThese two records are contradictory. The allergy status must be formally\nreviewed, clarified with the patient, and reconciled in the allergy record\nbefore discharge and before any future prescribing. Do not assume NKDA.\n\nFOLLOW-UP\n- Cardiology outpatient appointment: 6 weeks (details not documented).\n- INR monitoring: to be arranged/continued in primary care (see GP Actions).\n- Digoxin level monitoring: to be arranged in primary care (see GP Actions).\n\nGP ACTIONS\n1. Monitor INR — target 2–3 (pre-existing target for AF). Note warfarin dose\n   conflict above; confirm correct discharge dose with discharging team before\n   adjusting anticoagulation management.\n2. Check digoxin level (new drug this admission).\n3. Formally reconcile allergy status (NKDA vs. penicillin allergy — rash as a\n   child, patient-reported on 16/05). Update records accordingly.\n\nPATIENT ADVICE\nNot documented.\n\nVTE ASSESSMENT\nNot documented.\n\nAuthor: [Name, grade, date] — DRAFT: requires clinician review and sign-off\n```\n\n---\n\n# PART B — GP LETTER\n\n```\n18/05/2025\n\nDear Colleague,\n\nRe: [Patient name not documented], DOB: not documented, NHS No: not documented\nAdmitted: 14/05/2025 | Discharged: 18/05/2025\nSpecialty: Cardiology (inferred — confirm)\n\nThank you for seeing this 68-year-old woman who was admitted via the Emergency\nDepartment on 14/05/2025 with palpitations and breathlessness, found to have\nnew atrial fibrillation with fast ventricular response and mild decompensated\nheart failure.\n\nOn admission she was haemodynamically borderline (HR 138, BP 110/70 mmHg) with\nbibasal crepitations. She was managed with rate control (digoxin loading and\nuptitration of bisoprolol), diuresis, and continuation of her pre-existing\nanticoagulation with warfarin. She improved significantly and was fit for\ndischarge on Day 5.\n\nDiagnosis: New atrial fibrillation with fast ventricular response; mild\ndecompensated heart failure. Background hypertension.\n\nResuscitation status: The patient's resuscitation status changed twice during\nthis admission. A DNACPR was put in place on 16/05 by Dr Lowe following an\novernight deterioration. This was revoked on 17/05 following clinical\nimprovement and an expressed wish by the patient and family for full active\ntreatment. She is discharged For resuscitation.\n\n⚠ MEDICATION CHANGES — ACTION REQUIRED:\n\n1. Digoxin 125 mcg OD — NEW (started this admission). Please check digoxin\n   level as below.\n\n2. Bisoprolol — INCREASED from 2.5 mg OD to 5 mg OD.\n\n3. Warfarin — DOSE CONFLICT REQUIRING RESOLUTION: Pre-admission dose was 3 mg\n   OD. The doctor's TTO records 5 mg OD; the pharmacy reconciliation note on\n   the same day records 4 mg OD (citing the anticoagulation clinic). The correct\n   discharge dose has not been unambiguously established. Please contact the\n   discharging team to confirm the intended dose before managing anticoagulation\n   in the community. Target INR remains 2–3.\n\n4. Furosemide 40 mg OD — unchanged.\n\n⚠ ALLERGY CONFLICT REQUIRING RECONCILIATION: The admission clerking recorded\nNKDA. A nursing note on Day 3 (16/05) records a patient-reported penicillin\nallergy (rash as a child). These records are contradictory. Please formally\nclarify and reconcile the allergy status with the patient and update your\nrecords. Do not assume NKDA.\n\nActions for you (GP):\n1. Confirm correct warfarin discharge dose with discharging team; manage INR\n   accordingly (target 2–3).\n2. Check digoxin level.\n3. Formally reconcile allergy status (NKDA vs. penicillin allergy) and update\n   records.\n\nFollow-up arranged: Cardiology outpatient review at 6 weeks.\n\nYours sincerely,\n\n[Author name, grade]\n[DRAFT — requires clinician review and sign-off]\n```\n\n---\n\nPART C - PATIENT VERSION (v2 second pass)\n\n# Your Discharge Letter\n\n**From the Cardiology Team | Admitted: 14 May 2025 | Discharged: 18 May 2025**\n\n*This is a draft for clinician review and sign-off before it is given to you.*\n\n---\n\n## What brought you in\n\nYou came to hospital with a fast, irregular heartbeat and breathlessness. We found that your heart had gone into an abnormal rhythm called **atrial fibrillation (AF)**. This was making your heart beat too fast. You also had some extra fluid building up, which is linked to your **heart failure**. You already have a history of **high blood pressure (hypertension)**.\n\n---\n\n## What we did\n\nWe gave you medicines to slow your heart rate down and to help your body get rid of the extra fluid. You improved a great deal during your stay and were well enough to go home on 18 May.\n\n---\n\n## Your medicines when you went home\n\nPlease read this section carefully. **There is an important issue with your warfarin dose that needs to be sorted out before you take it — see below.**\n\n| Medicine | Dose | What changed? |\n|---|---|---|\n| **Bisoprolol** | 5 mg once a day | **Increased** — your dose was 2.5 mg before; it is now 5 mg |\n| **Furosemide** (a water tablet) | 40 mg once a day | No change — same as before |\n| **Digoxin** | 125 micrograms once a day | **New** — started during this admission |\n| **Warfarin** (a blood-thinning tablet) | **Dose to be confirmed — see below** | See below |\n\n### ⚠ Important — your warfarin dose\n\nThere is a disagreement in your paperwork about the right warfarin dose to take at home. Before you take any warfarin, **please wait to hear from your doctor or pharmacist** so they can confirm the correct dose for you. Do not guess or use your old dose without checking first.\n\nYour target INR (the blood-test result that shows how well the warfarin is working) remains **2 to 3**, as it was before.\n\n---\n\n## Allergy check\n\nWhen you came in, your notes said you had no known drug allergies. Later in your stay, a nurse recorded that you may have had a **penicillin allergy** (a rash as a child). These two records do not match. Your GP will need to go through this with you and update your records. Please remind any doctor, nurse, or pharmacist of this uncertainty until it is sorted out.\n\n---\n\n## What happens next\n\n- **Cardiology outpatient appointment:** You have a follow-up appointment with the cardiology team in about **6 weeks**. Details will be sent to you.\n- **Blood tests with your GP:** Your GP will arrange:\n  - Regular **INR blood tests** to check your warfarin is working safely.\n  - A **digoxin level blood test**, because digoxin is a new medicine for you.\n- **Warfarin dose:** Your GP will also confirm the correct warfarin dose with the hospital team before making any changes.\n\n---\n\n## If you feel unwell\n\nIf you become unwell or are worried about anything, contact your GP or call NHS 111. Call 999 if it is an emergency.\n",
+  "gate": {
+    "canonical": "V1_LINES",
+    "status": "documented_advice",
+    "ok": true,
+    "label": "PASS (advisory)",
+    "findings": [
+      "The source notes record a seek-help trigger, so the fall-back rule is not engaged. Whether the rephrasing is faithful is a rubric judgement (EVAL_RESULTS.md D2), not checked here."
+    ]
+  },
+  "cost_usd_est": 0.073379,
+  "error": null
+}

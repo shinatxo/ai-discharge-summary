@@ -1,0 +1,51 @@
+{
+  "scenario_id": "S9",
+  "rulings": {
+    "8c2b071c54f90fc17e6c7b26492dbc5e74a24472de7e3820d6270948303ca55d": {
+      "text": "The notes record that education on these topics was delivered during the admission.",
+      "verdict": "supported",
+      "lines": "L010",
+      "reason": "the education record",
+      "by": "Shina Oguntoye (CSO)",
+      "on": "2026-10-07",
+      "source": "w4-baseline-v1-x5 (proposed by Claude, approved by the CSO)"
+    },
+    "a0a655c03bd0ee94e58b3b6ce65d78fe03ef63eaf9f4e169e99068a73671b1f5": {
+      "text": "Carbohydrate counting",
+      "verdict": "supported",
+      "lines": "L010",
+      "reason": "a topic of the education record",
+      "by": "Shina Oguntoye (CSO)",
+      "on": "2026-10-07",
+      "source": "w4-baseline-v1-x5 (proposed by Claude, approved by the CSO)"
+    },
+    "ad6472080e5c23e3cc53b0e66af9c2cd5551d91aca0d25926572371d8f4c6b0b": {
+      "text": "Hypoglycaemia management",
+      "verdict": "supported",
+      "lines": "L010",
+      "reason": "'hypo management'",
+      "by": "Shina Oguntoye (CSO)",
+      "on": "2026-10-07",
+      "source": "w4-baseline-v1-x5 (proposed by Claude, approved by the CSO)"
+    },
+    "aed35f8c9f34e9bb1efb0624b23a9b0c9fb2aec3aee110934b673239e7625ab1": {
+      "text": "Insulin injection technique and blood glucose monitoring (patient and parents confirmed competent)",
+      "verdict": "unsupported",
+      "lines": "L011",
+      "reason": "JUDGEMENT CALL: the notes say 'Confident with injections + monitoring'; 'confirmed competent' upgrades a reported confidence into an assessed competence",
+      "by": "Shina Oguntoye (CSO)",
+      "on": "2026-10-07",
+      "source": "w4-baseline-v1-x5 (proposed by Claude, approved by the CSO)"
+    },
+    "65b60a83570623fa2540f88525443213f2c6ea9282508cd87d44634d40523597": {
+      "text": "Telephone support from the diabetes team is available between discharge and the 1-week review appointment",
+      "verdict": "supported",
+      "lines": "L012",
+      "reason": "'phone support meanwhile' before the 1/52 review",
+      "by": "Shina Oguntoye (CSO)",
+      "on": "2026-10-07",
+      "source": "w4-baseline-v1-x5 (proposed by Claude, approved by the CSO)"
+    }
+  },
+  "med_rulings": {}
+}

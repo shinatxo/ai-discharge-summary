@@ -117,9 +117,11 @@ def score_batch(batch_dir: Path, gold_dir: Path = G.GOLD_DIR,
                          "at_generation_ok": (rec.get("gate") or {}).get("ok"),
                          "now": now.status, "now_ok": now.ok}
         results.append(r)
-        m = MD.score(med_view_for(rec), golds[sid], adj[sid][1])
-        m.update(ids)
-        med_results.append(m)
+        mv = med_view_for(rec)
+        if mv is not None:                   # None: the pipeline has no step 5a yet
+            m = MD.score(mv, golds[sid], adj[sid][1])
+            m.update(ids)
+            med_results.append(m)
     return {"scorer": "safety_net", "scorer_version": SCORER_VERSION,
             "batch_id": manifest["batch_id"], "generator": manifest["generator"],
             "gold": gold_meta, "results": results, "skipped": skipped,
@@ -127,11 +129,13 @@ def score_batch(batch_dir: Path, gold_dir: Path = G.GOLD_DIR,
                      "results": med_results}}
 
 
-def med_view_for(record: dict) -> MD.MedView:
+def med_view_for(record: dict) -> MD.MedView | None:
     if record["generator"] == "v1":
         return MD.view_from_v1(record["output"])
     if record["generator"] == "pipeline":
-        st = record["steps"]["reconcile_medications"]
+        st = record["steps"].get("reconcile_medications")
+        if st is None:
+            return None                      # step 5a not built yet: D4 is not scored
         return MD.view_from_5a(st["reconciliation"], st.get("discharge_status"))
     raise ScoreError(f"{record['generation_id']}: unknown generator")
 
@@ -228,6 +232,13 @@ def _write_med_reports(batch_dir: Path, out: Path, scored: dict, corpus: dict) -
         indent=2) + "\n", encoding="utf-8")
     res = meds["results"]
     n = len(res)
+    if n == 0:
+        (out / "MEDS.md").write_text(
+            f"# D4 medication reconciliation — batch `{scored['batch_id']}`\n\n"
+            "**Not scored:** no generation in this batch has a step 5a (reconcile_medications) "
+            "output. D4 on the pipeline side waits for 5a.\n", encoding="utf-8")
+        (out / "review_meds.md").write_text("Nothing to adjudicate.\n", encoding="utf-8")
+        return
     v = lambda x: sum(1 for r in res if r["verdict"] == x)  # noqa: E731
     kinds: dict[str, int] = {}
     for r in res:

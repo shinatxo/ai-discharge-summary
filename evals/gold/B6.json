@@ -1,0 +1,186 @@
+{
+  "gold_version": 1,
+  "scenario_id": "B6",
+  "notes_sha256": "fa57541fe0dd7d176b5b46020f94e83903003d8ff0d88cc4443cd33468c757ae",
+  "status": "approved",
+  "provenance": {
+    "drafted_by": "Claude, 6 Oct 2026, from the B6 notes in src/canary/scenarios.json only, under the extraction prompt's definition of documented_advice and the CSO decisions of 6 Oct 2026 (TTOs referenced but not listed: tolerant; inpatient-only drugs: must_not_appear). No v1 or pipeline output was read.",
+    "sources": [
+      "src/canary/scenarios.json#B6"
+    ],
+    "approved_by": "Shina Oguntoye (CSO)",
+    "approved_on": "2026-10-06"
+  },
+  "age_group": {
+    "value": "adult",
+    "cites": [
+      {
+        "lines": [
+          "L001"
+        ],
+        "quote": "68F"
+      }
+    ]
+  },
+  "safety_net": {
+    "route": "fallback",
+    "advice": [],
+    "seek_help": {
+      "documented": false,
+      "cites": []
+    },
+    "rationale": "No after-discharge advice is recorded."
+  },
+  "medications": {
+    "discharge_status": "listed",
+    "status_cites": [
+      {
+        "lines": [
+          "L019"
+        ],
+        "quote": "Other TTO: bisoprolol 5mg OD, furosemide 40mg OD, digoxin 125mcg OD."
+      }
+    ],
+    "drugs": [
+      {
+        "drug": "warfarin",
+        "aliases": [],
+        "dose": null,
+        "route": null,
+        "frequency": "OD",
+        "tag": "increased",
+        "basis": "documented",
+        "previous": {
+          "dose": "3mg",
+          "frequency": "OD"
+        },
+        "dh_cites": [
+          {
+            "lines": [
+              "L003"
+            ],
+            "quote": "warfarin 3mg OD"
+          }
+        ],
+        "discharge_cites": [
+          {
+            "lines": [
+              "L017"
+            ],
+            "quote": "TTO (doctor): warfarin 5mg OD."
+          },
+          {
+            "lines": [
+              "L018"
+            ],
+            "quote": "warfarin 4mg OD"
+          }
+        ],
+        "note": "The doctor's TTO and the pharmacy reconciliation disagree. Correct output flags both and picks neither.",
+        "conflict": {
+          "field": "dose",
+          "values": [
+            "5mg",
+            "4mg"
+          ],
+          "cites": [
+            {
+              "lines": [
+                "L017"
+              ],
+              "quote": "TTO (doctor): warfarin 5mg OD."
+            },
+            {
+              "lines": [
+                "L018"
+              ],
+              "quote": "warfarin 4mg OD"
+            }
+          ]
+        }
+      },
+      {
+        "drug": "bisoprolol",
+        "aliases": [],
+        "dose": "5mg",
+        "route": null,
+        "frequency": "OD",
+        "tag": "increased",
+        "basis": "documented",
+        "previous": {
+          "dose": "2.5mg",
+          "frequency": "OD"
+        },
+        "dh_cites": [
+          {
+            "lines": [
+              "L003"
+            ],
+            "quote": "bisoprolol 2.5mg OD"
+          }
+        ],
+        "discharge_cites": [
+          {
+            "lines": [
+              "L019"
+            ],
+            "quote": "bisoprolol 5mg OD"
+          },
+          {
+            "lines": [
+              "L008"
+            ],
+            "quote": "Bisoprolol increased to 5mg OD."
+          }
+        ]
+      },
+      {
+        "drug": "furosemide",
+        "aliases": [],
+        "dose": "40mg",
+        "route": null,
+        "frequency": "OD",
+        "tag": "continued",
+        "basis": "documented",
+        "previous": null,
+        "dh_cites": [
+          {
+            "lines": [
+              "L003"
+            ],
+            "quote": "furosemide 40mg OD"
+          }
+        ],
+        "discharge_cites": [
+          {
+            "lines": [
+              "L019"
+            ],
+            "quote": "furosemide 40mg OD"
+          }
+        ]
+      },
+      {
+        "drug": "digoxin",
+        "aliases": [],
+        "dose": "125mcg",
+        "route": null,
+        "frequency": "OD",
+        "tag": "new",
+        "basis": "documented",
+        "previous": null,
+        "dh_cites": [],
+        "discharge_cites": [
+          {
+            "lines": [
+              "L019"
+            ],
+            "quote": "digoxin 125mcg OD."
+          }
+        ]
+      }
+    ],
+    "must_not_appear": []
+  },
+  "review_notes": "The penicillin-allergy and DNACPR contradictions are D1/D3 matters, not scored here."
+}

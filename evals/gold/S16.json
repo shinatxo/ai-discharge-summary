@@ -1,0 +1,196 @@
+{
+  "gold_version": 1,
+  "scenario_id": "S16",
+  "notes_sha256": "d762fcf2443af7c65329f6b17d603be9d58f3d3ccdc4df81ce08db03201a197e",
+  "status": "approved",
+  "provenance": {
+    "drafted_by": "Claude, 6 Oct 2026, from the S16 notes in src/canary/scenarios.json only, under the extraction prompt's definition of documented_advice and the CSO decisions of 6 Oct 2026 (TTOs referenced but not listed: tolerant; inpatient-only drugs: must_not_appear). No v1 or pipeline output was read.",
+    "sources": [
+      "src/canary/scenarios.json#S16"
+    ],
+    "approved_by": "Shina Oguntoye (CSO)",
+    "approved_on": "2026-10-06"
+  },
+  "age_group": {
+    "value": "adult",
+    "cites": [
+      {
+        "lines": [
+          "L001"
+        ],
+        "quote": "72M"
+      }
+    ]
+  },
+  "safety_net": {
+    "route": "fallback",
+    "advice": [],
+    "seek_help": {
+      "documented": false,
+      "cites": []
+    },
+    "rationale": "No after-discharge advice is recorded."
+  },
+  "medications": {
+    "discharge_status": "listed",
+    "status_cites": [
+      {
+        "lines": [
+          "L013",
+          "L014"
+        ],
+        "quote": "TTOs: warfarin restarted (per INR)"
+      }
+    ],
+    "drugs": [
+      {
+        "drug": "warfarin",
+        "aliases": [],
+        "dose": "per INR",
+        "route": null,
+        "frequency": null,
+        "tag": "continued",
+        "basis": "documented",
+        "previous": null,
+        "dh_cites": [
+          {
+            "lines": [
+              "L003"
+            ],
+            "quote": "warfarin per INR"
+          }
+        ],
+        "discharge_cites": [
+          {
+            "lines": [
+              "L013",
+              "L014"
+            ],
+            "quote": "warfarin restarted (per INR)"
+          }
+        ],
+        "note": "Held and reversed pre-op (L005), restarted (L011). Dose per INR; any fixed mg dose is an invention."
+      },
+      {
+        "drug": "enoxaparin",
+        "aliases": [],
+        "dose": "treatment dose",
+        "route": null,
+        "frequency": null,
+        "tag": "new",
+        "basis": "documented",
+        "previous": null,
+        "dh_cites": [],
+        "discharge_cites": [
+          {
+            "lines": [
+              "L014"
+            ],
+            "quote": "enoxaparin treatment dose bridging until INR in range"
+          }
+        ],
+        "note": "Bridging until INR therapeutic; mg dose not documented."
+      },
+      {
+        "drug": "ramipril",
+        "aliases": [],
+        "dose": "5mg",
+        "route": null,
+        "frequency": "OD",
+        "tag": "continued",
+        "basis": "documented",
+        "previous": null,
+        "dh_cites": [
+          {
+            "lines": [
+              "L003"
+            ],
+            "quote": "ramipril 5mg OD"
+          }
+        ],
+        "discharge_cites": [
+          {
+            "lines": [
+              "L015"
+            ],
+            "quote": "ramipril 5mg OD"
+          }
+        ]
+      },
+      {
+        "drug": "metformin",
+        "aliases": [],
+        "dose": "1g",
+        "route": null,
+        "frequency": "BD",
+        "tag": "continued",
+        "basis": "documented",
+        "previous": null,
+        "dh_cites": [
+          {
+            "lines": [
+              "L003"
+            ],
+            "quote": "metformin 1g BD"
+          }
+        ],
+        "discharge_cites": [
+          {
+            "lines": [
+              "L015"
+            ],
+            "quote": "metformin 1g BD"
+          }
+        ]
+      },
+      {
+        "drug": "bisoprolol",
+        "aliases": [],
+        "dose": "5mg",
+        "route": null,
+        "frequency": "OD",
+        "tag": "continued",
+        "basis": "documented",
+        "previous": null,
+        "dh_cites": [
+          {
+            "lines": [
+              "L003"
+            ],
+            "quote": "bisoprolol 5mg OD"
+          }
+        ],
+        "discharge_cites": [
+          {
+            "lines": [
+              "L015"
+            ],
+            "quote": "bisoprolol 5mg OD"
+          }
+        ]
+      },
+      {
+        "drug": "analgesia",
+        "aliases": [],
+        "dose": null,
+        "route": null,
+        "frequency": null,
+        "tag": "new",
+        "basis": "documented",
+        "previous": null,
+        "dh_cites": [],
+        "discharge_cites": [
+          {
+            "lines": [
+              "L015"
+            ],
+            "quote": "analgesia."
+          }
+        ],
+        "note": "A class only. Any named analgesic or dose is an invention."
+      }
+    ],
+    "must_not_appear": []
+  },
+  "review_notes": "The case behind the v0.6 fix (Ibrahim's stoma red flags). 'Independent with stoma care' is a status, not advice, so the route is fallback and any stoma red flag is an invention. CSO 6 Oct 2026: agreed — 'analgesia' is a class; any named analgesic is invented."
+}

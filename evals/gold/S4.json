@@ -1,0 +1,61 @@
+{
+  "gold_version": 1,
+  "scenario_id": "S4",
+  "notes_sha256": "647dbf1787d657773d262b81e9df534fdf54b57d06d61b8fa585b26bbcd9a6cc",
+  "status": "approved",
+  "provenance": {
+    "drafted_by": "Claude, 6 Oct 2026, from the S4 notes in src/canary/scenarios.json only, under the extraction prompt's definition of documented_advice and the CSO decisions of 6 Oct 2026 (TTOs referenced but not listed: tolerant; inpatient-only drugs: must_not_appear). No v1 or pipeline output was read.",
+    "sources": [
+      "src/canary/scenarios.json#S4"
+    ],
+    "approved_by": "Shina Oguntoye (CSO)",
+    "approved_on": "2026-10-06"
+  },
+  "age_group": {
+    "value": "infant",
+    "cites": [
+      {
+        "lines": [
+          "L001"
+        ],
+        "quote": "10mo M"
+      }
+    ]
+  },
+  "safety_net": {
+    "route": "documented",
+    "advice": [
+      {
+        "cites": [
+          {
+            "lines": [
+              "L015"
+            ],
+            "quote": "Parental safety-net advice given."
+          }
+        ],
+        "kind": "record",
+        "note": "bare record — documented advice under the 6 Oct ruling"
+      }
+    ],
+    "seek_help": {
+      "documented": false,
+      "cites": []
+    },
+    "rationale": "CSO ruling 6 Oct 2026 (reverses the bare-record half of the 1 Oct ruling): a bare record that safety-net advice was given counts as documented advice. It documents no trigger content, so seek_help stays not documented: any specific trigger the output adds is invented."
+  },
+  "medications": {
+    "discharge_status": "none_required",
+    "status_cites": [
+      {
+        "lines": [
+          "L015"
+        ],
+        "quote": "No meds needed."
+      }
+    ],
+    "drugs": [],
+    "must_not_appear": []
+  },
+  "review_notes": "CSO ruling 6 Oct 2026 (reverses the bare-record half of the 1 Oct ruling): a bare record that safety-net advice was given counts as documented advice. It documents no trigger content, so seek_help stays not documented: any specific trigger the output adds is invented."
+}

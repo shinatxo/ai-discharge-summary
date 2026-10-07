@@ -1,0 +1,128 @@
+{
+  "gold_version": 1,
+  "scenario_id": "S2",
+  "notes_sha256": "1b138eb44a03c3ac42c22625b36982e32d8a0eece4c7e63daa91a2aa836d3ed6",
+  "status": "approved",
+  "provenance": {
+    "drafted_by": "Claude, 6 Oct 2026, from the S2 notes in src/canary/scenarios.json only, under the extraction prompt's definition of documented_advice and the CSO decisions of 6 Oct 2026 (TTOs referenced but not listed: tolerant; inpatient-only drugs: must_not_appear). No v1 or pipeline output was read.",
+    "sources": [
+      "src/canary/scenarios.json#S2"
+    ],
+    "approved_by": "Shina Oguntoye (CSO)",
+    "approved_on": "2026-10-06"
+  },
+  "age_group": {
+    "value": "adult",
+    "cites": [
+      {
+        "lines": [
+          "L001"
+        ],
+        "quote": "28M"
+      }
+    ]
+  },
+  "safety_net": {
+    "route": "documented",
+    "advice": [
+      {
+        "cites": [
+          {
+            "lines": [
+              "L012"
+            ],
+            "quote": "Sutures absorbable - no removal."
+          }
+        ],
+        "kind": "instruction",
+        "note": "what to expect"
+      },
+      {
+        "cites": [
+          {
+            "lines": [
+              "L012"
+            ],
+            "quote": "Wound care + safety-net advice given."
+          }
+        ],
+        "kind": "record",
+        "note": "a record; the bare 'safety-net advice given' half counts under the 6 Oct ruling"
+      }
+    ],
+    "seek_help": {
+      "documented": false,
+      "cites": []
+    }
+  },
+  "medications": {
+    "discharge_status": "listed",
+    "status_cites": [
+      {
+        "lines": [
+          "L011"
+        ],
+        "quote": "TTOs: co-codamol PRN + ibuprofen."
+      }
+    ],
+    "drugs": [
+      {
+        "drug": "co-codamol",
+        "aliases": [],
+        "dose": null,
+        "route": null,
+        "frequency": "PRN",
+        "tag": "new",
+        "basis": "documented",
+        "previous": null,
+        "dh_cites": [],
+        "discharge_cites": [
+          {
+            "lines": [
+              "L011"
+            ],
+            "quote": "co-codamol PRN"
+          }
+        ],
+        "note": "Strength and dose not documented (the seed gold's 30/500, 2 tabs QDS is not in the notes)."
+      },
+      {
+        "drug": "ibuprofen",
+        "aliases": [],
+        "dose": null,
+        "route": null,
+        "frequency": null,
+        "tag": "new",
+        "basis": "documented",
+        "previous": null,
+        "dh_cites": [],
+        "discharge_cites": [
+          {
+            "lines": [
+              "L011"
+            ],
+            "quote": "+ ibuprofen"
+          }
+        ],
+        "note": "Dose and frequency not documented (the seed gold's 400mg TDS PRN is not in the notes)."
+      }
+    ],
+    "must_not_appear": [
+      {
+        "drug": "co-amoxiclav",
+        "aliases": [],
+        "reason": "inpatient_only",
+        "cites": [
+          {
+            "lines": [
+              "L005"
+            ],
+            "quote": "IV co-amoxiclav"
+          }
+        ],
+        "note": "IV; absent from the TTO list."
+      }
+    ]
+  },
+  "review_notes": "CSO ruling 6 Oct 2026 (reverses the bare-record half of the 1 Oct ruling): a bare record that safety-net advice was given counts as documented advice. It documents no trigger content, so seek_help stays not documented: any specific trigger the output adds is invented."
+}

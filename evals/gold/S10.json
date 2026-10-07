@@ -1,0 +1,183 @@
+{
+  "gold_version": 1,
+  "scenario_id": "S10",
+  "notes_sha256": "a00b5caaa8e251a370d8136857fd8a4d7969cc70de71013d55dbd99a5fd03229",
+  "status": "approved",
+  "provenance": {
+    "drafted_by": "Claude, 6 Oct 2026, from the S10 notes in src/canary/scenarios.json only, under the extraction prompt's definition of documented_advice and the CSO decisions of 6 Oct 2026 (TTOs referenced but not listed: tolerant; inpatient-only drugs: must_not_appear). No v1 or pipeline output was read.",
+    "sources": [
+      "src/canary/scenarios.json#S10"
+    ],
+    "approved_by": "Shina Oguntoye (CSO)",
+    "approved_on": "2026-10-06"
+  },
+  "age_group": {
+    "value": "adult",
+    "cites": [
+      {
+        "lines": [
+          "L001"
+        ],
+        "quote": "31F"
+      }
+    ]
+  },
+  "safety_net": {
+    "route": "documented",
+    "advice": [
+      {
+        "cites": [
+          {
+            "lines": [
+              "L010"
+            ],
+            "quote": "Safety-net re PPH/sepsis/VTE."
+          }
+        ],
+        "kind": "record",
+        "note": "a record with its scope"
+      }
+    ],
+    "seek_help": {
+      "documented": true,
+      "cites": [
+        {
+          "lines": [
+            "L010"
+          ],
+          "quote": "Safety-net re PPH/sepsis/VTE."
+        }
+      ]
+    }
+  },
+  "medications": {
+    "discharge_status": "listed",
+    "status_cites": [
+      {
+        "lines": [
+          "L008"
+        ],
+        "quote": "TTO: enoxaparin prophylaxis to continue 10 days,"
+      }
+    ],
+    "drugs": [
+      {
+        "drug": "enoxaparin",
+        "aliases": [],
+        "dose": null,
+        "route": null,
+        "frequency": "daily",
+        "tag": "new",
+        "basis": "documented",
+        "previous": null,
+        "dh_cites": [],
+        "discharge_cites": [
+          {
+            "lines": [
+              "L008"
+            ],
+            "quote": "enoxaparin prophylaxis to continue 10 days"
+          },
+          {
+            "lines": [
+              "L006"
+            ],
+            "quote": "prophylactic enoxaparin daily."
+          }
+        ],
+        "note": "Prophylactic dose not documented; duration 10 days."
+      },
+      {
+        "drug": "iron",
+        "aliases": [
+          "oral iron"
+        ],
+        "dose": null,
+        "route": null,
+        "frequency": null,
+        "tag": "new",
+        "basis": "documented",
+        "previous": null,
+        "dh_cites": [],
+        "discharge_cites": [
+          {
+            "lines": [
+              "L009"
+            ],
+            "quote": "oral iron"
+          }
+        ],
+        "note": "Preparation and dose not documented. CSO, 6 Oct 2026: strict — naming a salt (ferrous sulfate, ferrous fumarate) is a helpful hallucination and counts as invented."
+      },
+      {
+        "drug": "paracetamol",
+        "aliases": [],
+        "dose": null,
+        "route": null,
+        "frequency": "regular",
+        "tag": "new",
+        "basis": "documented",
+        "previous": null,
+        "dh_cites": [],
+        "discharge_cites": [
+          {
+            "lines": [
+              "L009"
+            ],
+            "quote": "regular paracetamol"
+          }
+        ],
+        "note": "Dose not documented."
+      },
+      {
+        "drug": "ibuprofen",
+        "aliases": [],
+        "dose": null,
+        "route": null,
+        "frequency": "PRN",
+        "tag": "new",
+        "basis": "documented",
+        "previous": null,
+        "dh_cites": [],
+        "discharge_cites": [
+          {
+            "lines": [
+              "L009"
+            ],
+            "quote": "ibuprofen PRN"
+          }
+        ],
+        "note": "Dose not documented."
+      }
+    ],
+    "must_not_appear": [
+      {
+        "drug": "oxytocin",
+        "aliases": [],
+        "reason": "inpatient_only",
+        "cites": [
+          {
+            "lines": [
+              "L003"
+            ],
+            "quote": "responded to oxytocin + ergometrine"
+          }
+        ]
+      },
+      {
+        "drug": "ergometrine",
+        "aliases": [],
+        "reason": "inpatient_only",
+        "cites": [
+          {
+            "lines": [
+              "L003"
+            ],
+            "quote": "responded to oxytocin + ergometrine"
+          }
+        ]
+      }
+    ]
+  },
+  "review_notes": "CSO 6 Oct 2026: iron scored strictly (no named salt)."
+}

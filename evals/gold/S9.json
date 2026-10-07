@@ -1,0 +1,102 @@
+{
+  "gold_version": 1,
+  "scenario_id": "S9",
+  "notes_sha256": "fff6b2a27043c88393b3a44a1c2074ccc86e3d61eb2be9262fc6d67ca0a4aa4a",
+  "status": "approved",
+  "provenance": {
+    "drafted_by": "Claude, 6 Oct 2026, from the S9 notes in src/canary/scenarios.json only, under the extraction prompt's definition of documented_advice and the CSO decisions of 6 Oct 2026 (TTOs referenced but not listed: tolerant; inpatient-only drugs: must_not_appear). No v1 or pipeline output was read.",
+    "sources": [
+      "src/canary/scenarios.json#S9"
+    ],
+    "approved_by": "Shina Oguntoye (CSO)",
+    "approved_on": "2026-10-06"
+  },
+  "age_group": {
+    "value": "child",
+    "cites": [
+      {
+        "lines": [
+          "L001"
+        ],
+        "quote": "9yo girl"
+      }
+    ]
+  },
+  "safety_net": {
+    "route": "documented",
+    "advice": [
+      {
+        "cites": [
+          {
+            "lines": [
+              "L010"
+            ],
+            "quote": "education (carb counting, hypo management, sick-day rules)."
+          }
+        ],
+        "kind": "record",
+        "note": "a record of education with its scope"
+      },
+      {
+        "cites": [
+          {
+            "lines": [
+              "L012"
+            ],
+            "quote": "phone support meanwhile"
+          }
+        ],
+        "kind": "instruction",
+        "note": "where to seek help before clinic"
+      }
+    ],
+    "seek_help": {
+      "documented": true,
+      "cites": [
+        {
+          "lines": [
+            "L012"
+          ],
+          "quote": "phone support meanwhile"
+        }
+      ]
+    }
+  },
+  "medications": {
+    "discharge_status": "listed",
+    "status_cites": [],
+    "drugs": [
+      {
+        "drug": "insulin",
+        "aliases": [
+          "basal-bolus insulin"
+        ],
+        "dose": null,
+        "route": "subcut",
+        "frequency": null,
+        "tag": "new",
+        "basis": "documented",
+        "previous": null,
+        "dh_cites": [],
+        "discharge_cites": [
+          {
+            "lines": [
+              "L009"
+            ],
+            "quote": "on basal-bolus regimen"
+          },
+          {
+            "lines": [
+              "L006",
+              "L007"
+            ],
+            "quote": "Transitioned to subcut insulin (basal-bolus)."
+          }
+        ],
+        "note": "Insulin names and doses are not documented. Any named insulin or unit dose is an invention."
+      }
+    ],
+    "must_not_appear": []
+  },
+  "review_notes": "CSO 6 Oct 2026: the education record is documented advice; 'phone support' is the documented seek-help route. Insulin listed with no product or dose is right — the clinician takes the dose from the inpatient chart."
+}

@@ -1,0 +1,214 @@
+{
+  "gold_version": 1,
+  "scenario_id": "S15",
+  "notes_sha256": "f54e5b4b248523c38c755c7e4eb587fa65b3ae478aec2c9d77ef94ba96f278d3",
+  "status": "approved",
+  "provenance": {
+    "drafted_by": "Claude, 6 Oct 2026, from the S15 notes in src/canary/scenarios.json only, under the extraction prompt's definition of documented_advice and the CSO decisions of 6 Oct 2026 (TTOs referenced but not listed: tolerant; inpatient-only drugs: must_not_appear). No v1 or pipeline output was read.",
+    "sources": [
+      "src/canary/scenarios.json#S15"
+    ],
+    "approved_by": "Shina Oguntoye (CSO)",
+    "approved_on": "2026-10-06"
+  },
+  "age_group": {
+    "value": "adult",
+    "cites": [
+      {
+        "lines": [
+          "L001"
+        ],
+        "quote": "79F"
+      }
+    ]
+  },
+  "safety_net": {
+    "route": "documented",
+    "advice": [
+      {
+        "cites": [
+          {
+            "lines": [
+              "L012"
+            ],
+            "quote": "smoking cessation discussed (ex-smoker)"
+          }
+        ],
+        "kind": "record",
+        "note": "a record with its scope"
+      },
+      {
+        "cites": [
+          {
+            "lines": [
+              "L011"
+            ],
+            "quote": "inhaler technique"
+          }
+        ],
+        "kind": "record",
+        "note": "a record of education with its scope (L011–L012: 'inhaler technique reviewed')"
+      }
+    ],
+    "seek_help": {
+      "documented": false,
+      "cites": []
+    }
+  },
+  "medications": {
+    "discharge_status": "listed",
+    "status_cites": [
+      {
+        "lines": [
+          "L010"
+        ],
+        "quote": "Pred 30mg OD for 5 days total"
+      }
+    ],
+    "drugs": [
+      {
+        "drug": "prednisolone",
+        "aliases": [
+          "pred"
+        ],
+        "dose": "30mg",
+        "route": null,
+        "frequency": "OD",
+        "tag": "new",
+        "basis": "documented",
+        "previous": null,
+        "dh_cites": [],
+        "discharge_cites": [
+          {
+            "lines": [
+              "L010"
+            ],
+            "quote": "Pred 30mg OD for 5 days total"
+          },
+          {
+            "lines": [
+              "L011"
+            ],
+            "quote": "(complete course at home)"
+          }
+        ],
+        "note": "A short course: 5 days total, completing at home."
+      },
+      {
+        "drug": "amoxicillin",
+        "aliases": [],
+        "dose": null,
+        "route": null,
+        "frequency": null,
+        "tag": "new",
+        "basis": "documented",
+        "previous": null,
+        "dh_cites": [],
+        "discharge_cites": [
+          {
+            "lines": [
+              "L011"
+            ],
+            "quote": "complete oral amoxicillin course"
+          }
+        ],
+        "note": "Oral; dose, frequency and remaining duration not documented."
+      },
+      {
+        "drug": "rescue pack",
+        "aliases": [],
+        "dose": null,
+        "route": null,
+        "frequency": null,
+        "tag": "new",
+        "basis": "documented",
+        "previous": null,
+        "dh_cites": [],
+        "discharge_cites": [
+          {
+            "lines": [
+              "L012"
+            ],
+            "quote": "rescue pack supplied"
+          }
+        ],
+        "note": "Contents not documented. Any named content or dose is an invention."
+      },
+      {
+        "drug": "Trelegy",
+        "aliases": [
+          "fluticasone furoate/umeclidinium/vilanterol"
+        ],
+        "dose": null,
+        "route": "inhaled",
+        "frequency": "OD",
+        "tag": "continued",
+        "basis": "inferred_from_dh",
+        "previous": null,
+        "dh_cites": [
+          {
+            "lines": [
+              "L005"
+            ],
+            "quote": "Trelegy inhaler OD"
+          }
+        ],
+        "discharge_cites": []
+      },
+      {
+        "drug": "salbutamol",
+        "aliases": [],
+        "dose": null,
+        "route": "inhaled",
+        "frequency": "PRN",
+        "tag": "continued",
+        "basis": "inferred_from_dh",
+        "previous": null,
+        "dh_cites": [
+          {
+            "lines": [
+              "L005"
+            ],
+            "quote": "salbutamol PRN"
+          }
+        ],
+        "discharge_cites": []
+      },
+      {
+        "drug": "amlodipine",
+        "aliases": [],
+        "dose": "5mg",
+        "route": null,
+        "frequency": "OD",
+        "tag": "continued",
+        "basis": "inferred_from_dh",
+        "previous": null,
+        "dh_cites": [
+          {
+            "lines": [
+              "L005"
+            ],
+            "quote": "amlodipine 5mg OD"
+          }
+        ],
+        "discharge_cites": []
+      }
+    ],
+    "must_not_appear": [
+      {
+        "drug": "hydrocortisone",
+        "aliases": [],
+        "reason": "inpatient_only",
+        "cites": [
+          {
+            "lines": [
+              "L004"
+            ],
+            "quote": "IV hydrocortisone"
+          }
+        ]
+      }
+    ]
+  },
+  "review_notes": "CSO 6 Oct 2026: documented advice is distinct from safety-netting. S15 documents advice (smoking cessation, inhaler technique) but no seek-help trigger, so route 'documented' and seek_help not documented: any trigger beyond the pinned line is an invention — the v0.6 'sputum changes' case. DH drugs tolerant (decision 1c)."
+}

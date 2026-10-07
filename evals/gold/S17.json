@@ -1,0 +1,222 @@
+{
+  "gold_version": 1,
+  "scenario_id": "S17",
+  "notes_sha256": "e3e6093b1af13ac9ae86dfab84056ca00f418c7112b956aba9373d9a8d8e40b4",
+  "status": "approved",
+  "provenance": {
+    "drafted_by": "Claude, 6 Oct 2026, from the S17 notes in src/canary/scenarios.json only, under the extraction prompt's definition of documented_advice and the CSO decisions of 6 Oct 2026 (TTOs referenced but not listed: tolerant; inpatient-only drugs: must_not_appear). No v1 or pipeline output was read.",
+    "sources": [
+      "src/canary/scenarios.json#S17"
+    ],
+    "approved_by": "Shina Oguntoye (CSO)",
+    "approved_on": "2026-10-06"
+  },
+  "age_group": {
+    "value": "adult",
+    "cites": [
+      {
+        "lines": [
+          "L001"
+        ],
+        "quote": "70F"
+      }
+    ]
+  },
+  "safety_net": {
+    "route": "fallback",
+    "advice": [],
+    "seek_help": {
+      "documented": false,
+      "cites": []
+    },
+    "rationale": "No after-discharge advice is recorded; the NSAID stop is a medication change."
+  },
+  "medications": {
+    "discharge_status": "listed",
+    "status_cites": [
+      {
+        "lines": [
+          "L008"
+        ],
+        "quote": "Discharge. TTOs: oral PPI high dose (new), H. pylori eradication"
+      }
+    ],
+    "drugs": [
+      {
+        "drug": "proton pump inhibitor",
+        "aliases": [
+          "PPI"
+        ],
+        "dose": "high dose",
+        "route": null,
+        "frequency": null,
+        "tag": "new",
+        "basis": "documented",
+        "previous": null,
+        "dh_cites": [],
+        "discharge_cites": [
+          {
+            "lines": [
+              "L008"
+            ],
+            "quote": "oral PPI high dose (new)"
+          }
+        ],
+        "note": "The agent is not documented. A named PPI (omeprazole, lansoprazole…) or mg dose is an invention."
+      },
+      {
+        "drug": "amoxicillin",
+        "aliases": [],
+        "dose": null,
+        "route": null,
+        "frequency": null,
+        "tag": "new",
+        "basis": "documented",
+        "previous": null,
+        "dh_cites": [],
+        "discharge_cites": [
+          {
+            "lines": [
+              "L009"
+            ],
+            "quote": "(amoxicillin + clarithromycin 7/7, new)"
+          }
+        ],
+        "note": "H. pylori eradication, 7 days; dose not documented."
+      },
+      {
+        "drug": "clarithromycin",
+        "aliases": [],
+        "dose": null,
+        "route": null,
+        "frequency": null,
+        "tag": "new",
+        "basis": "documented",
+        "previous": null,
+        "dh_cites": [],
+        "discharge_cites": [
+          {
+            "lines": [
+              "L009"
+            ],
+            "quote": "(amoxicillin + clarithromycin 7/7, new)"
+          }
+        ],
+        "note": "H. pylori eradication, 7 days; dose not documented."
+      },
+      {
+        "drug": "ibuprofen",
+        "aliases": [],
+        "dose": "400mg",
+        "route": null,
+        "frequency": "TDS",
+        "tag": "stopped",
+        "basis": "documented",
+        "previous": null,
+        "dh_cites": [
+          {
+            "lines": [
+              "L002"
+            ],
+            "quote": "ibuprofen 400mg TDS"
+          }
+        ],
+        "discharge_cites": [
+          {
+            "lines": [
+              "L009"
+            ],
+            "quote": "ibuprofen STOPPED permanently (cause)"
+          }
+        ]
+      },
+      {
+        "drug": "paracetamol",
+        "aliases": [],
+        "dose": null,
+        "route": null,
+        "frequency": "regular",
+        "tag": "changed",
+        "basis": "documented",
+        "previous": {
+          "dose": null,
+          "frequency": "PRN"
+        },
+        "dh_cites": [
+          {
+            "lines": [
+              "L003"
+            ],
+            "quote": "paracetamol PRN"
+          }
+        ],
+        "discharge_cites": [
+          {
+            "lines": [
+              "L010"
+            ],
+            "quote": "paracetamol regular for OA instead"
+          }
+        ],
+        "note": "PRN to regular; dose not documented."
+      },
+      {
+        "drug": "amlodipine",
+        "aliases": [],
+        "dose": "5mg",
+        "route": null,
+        "frequency": "OD",
+        "tag": "continued",
+        "basis": "documented",
+        "previous": null,
+        "dh_cites": [
+          {
+            "lines": [
+              "L003"
+            ],
+            "quote": "amlodipine 5mg OD"
+          }
+        ],
+        "discharge_cites": [
+          {
+            "lines": [
+              "L010"
+            ],
+            "quote": "amlodipine continued."
+          }
+        ]
+      },
+      {
+        "drug": "apixaban",
+        "aliases": [],
+        "dose": "5mg",
+        "route": null,
+        "frequency": "BD",
+        "tag": "withheld",
+        "basis": "documented",
+        "previous": null,
+        "dh_cites": [
+          {
+            "lines": [
+              "L002",
+              "L003"
+            ],
+            "quote": "apixaban 5mg BD"
+          }
+        ],
+        "discharge_cites": [
+          {
+            "lines": [
+              "L010",
+              "L011"
+            ],
+            "quote": "Apixaban: WITHHELD on discharge"
+          }
+        ],
+        "note": "Withheld pending review in ~2 weeks — distinct from STOPPED."
+      }
+    ],
+    "must_not_appear": []
+  },
+  "review_notes": "CSO 6 Oct 2026: fallback agreed. 'Avoid NSAIDs' is not inferred from 'STOPPED permanently' (see W4 build record); the medication change itself carries 'permanently (cause)'."
+}

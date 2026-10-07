@@ -1,0 +1,183 @@
+{
+  "gold_version": 1,
+  "scenario_id": "S13",
+  "notes_sha256": "7bdbea67d99837b5ac07d98a1dac7f07026885128b3e5d533937cc8014c86971",
+  "status": "approved",
+  "provenance": {
+    "drafted_by": "Claude, 6 Oct 2026, from the S13 notes in src/canary/scenarios.json only, under the extraction prompt's definition of documented_advice and the CSO decisions of 6 Oct 2026 (TTOs referenced but not listed: tolerant; inpatient-only drugs: must_not_appear). No v1 or pipeline output was read.",
+    "sources": [
+      "src/canary/scenarios.json#S13"
+    ],
+    "approved_by": "Shina Oguntoye (CSO)",
+    "approved_on": "2026-10-06"
+  },
+  "age_group": {
+    "value": "adult",
+    "cites": [
+      {
+        "lines": [
+          "L001"
+        ],
+        "quote": "58F"
+      }
+    ]
+  },
+  "safety_net": {
+    "route": "fallback",
+    "advice": [],
+    "seek_help": {
+      "documented": false,
+      "cites": []
+    },
+    "rationale": "No after-discharge advice to the patient is recorded."
+  },
+  "medications": {
+    "discharge_status": "listed",
+    "status_cites": [
+      {
+        "lines": [
+          "L014"
+        ],
+        "quote": "TTOs: bisoprolol 2.5mg OD (new, for AF), apixaban 5mg BD (new, AF), amlodipine 5mg"
+      }
+    ],
+    "drugs": [
+      {
+        "drug": "bisoprolol",
+        "aliases": [],
+        "dose": "2.5mg",
+        "route": null,
+        "frequency": "OD",
+        "tag": "new",
+        "basis": "documented",
+        "previous": null,
+        "dh_cites": [],
+        "discharge_cites": [
+          {
+            "lines": [
+              "L014"
+            ],
+            "quote": "bisoprolol 2.5mg OD (new, for AF)"
+          }
+        ]
+      },
+      {
+        "drug": "apixaban",
+        "aliases": [],
+        "dose": "5mg",
+        "route": null,
+        "frequency": "BD",
+        "tag": "new",
+        "basis": "documented",
+        "previous": null,
+        "dh_cites": [],
+        "discharge_cites": [
+          {
+            "lines": [
+              "L014"
+            ],
+            "quote": "apixaban 5mg BD (new, AF)"
+          }
+        ]
+      },
+      {
+        "drug": "amlodipine",
+        "aliases": [],
+        "dose": "5mg",
+        "route": null,
+        "frequency": "OD",
+        "tag": "continued",
+        "basis": "documented",
+        "previous": null,
+        "dh_cites": [
+          {
+            "lines": [
+              "L013"
+            ],
+            "quote": "amlodipine 5mg OD"
+          }
+        ],
+        "discharge_cites": [
+          {
+            "lines": [
+              "L014",
+              "L015"
+            ],
+            "quote": "amlodipine 5mg OD continued"
+          }
+        ]
+      },
+      {
+        "drug": "atorvastatin",
+        "aliases": [],
+        "dose": "20mg",
+        "route": null,
+        "frequency": "ON",
+        "tag": "continued",
+        "basis": "documented",
+        "previous": null,
+        "dh_cites": [
+          {
+            "lines": [
+              "L013"
+            ],
+            "quote": "atorvastatin 20mg ON"
+          }
+        ],
+        "discharge_cites": [
+          {
+            "lines": [
+              "L015"
+            ],
+            "quote": "atorvastatin 20mg ON continued"
+          }
+        ]
+      }
+    ],
+    "must_not_appear": [
+      {
+        "drug": "piperacillin-tazobactam",
+        "aliases": [
+          "pip-taz",
+          "Tazocin"
+        ],
+        "reason": "inpatient_only",
+        "cites": [
+          {
+            "lines": [
+              "L005"
+            ],
+            "quote": "long course IV pip-taz"
+          }
+        ]
+      },
+      {
+        "drug": "benzylpenicillin",
+        "aliases": [],
+        "reason": "inpatient_only",
+        "cites": [
+          {
+            "lines": [
+              "L005"
+            ],
+            "quote": "benzylpenicillin + clindamycin per micro."
+          }
+        ]
+      },
+      {
+        "drug": "clindamycin",
+        "aliases": [],
+        "reason": "inpatient_only",
+        "cites": [
+          {
+            "lines": [
+              "L005"
+            ],
+            "quote": "benzylpenicillin + clindamycin per micro."
+          }
+        ]
+      }
+    ]
+  },
+  "review_notes": "'plus wound care' (L015) and the district nurse / tissue viability plan are care plans, not patient advice."
+}

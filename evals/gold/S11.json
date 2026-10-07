@@ -1,0 +1,113 @@
+{
+  "gold_version": 1,
+  "scenario_id": "S11",
+  "notes_sha256": "ed2e3ee49d11c4bfb7eb6ca95f90d402685abec1913adce3b032619831a2a7d6",
+  "status": "approved",
+  "provenance": {
+    "drafted_by": "Claude, 6 Oct 2026, from the S11 notes in src/canary/scenarios.json only, under the extraction prompt's definition of documented_advice and the CSO decisions of 6 Oct 2026 (TTOs referenced but not listed: tolerant; inpatient-only drugs: must_not_appear). No v1 or pipeline output was read.",
+    "sources": [
+      "src/canary/scenarios.json#S11"
+    ],
+    "approved_by": "Shina Oguntoye (CSO)",
+    "approved_on": "2026-10-06"
+  },
+  "age_group": {
+    "value": "adult",
+    "cites": [
+      {
+        "lines": [
+          "L001"
+        ],
+        "quote": "47M"
+      }
+    ]
+  },
+  "safety_net": {
+    "route": "documented",
+    "advice": [
+      {
+        "cites": [
+          {
+            "lines": [
+              "L015"
+            ],
+            "quote": "MenACWY vaccination + prophylaxis advice given for splenic injury."
+          }
+        ],
+        "kind": "record",
+        "note": "a record with its scope"
+      },
+      {
+        "cites": [
+          {
+            "lines": [
+              "L010"
+            ],
+            "quote": "partial weight-bear left leg per ortho"
+          }
+        ],
+        "kind": "instruction",
+        "note": "what to do"
+      }
+    ],
+    "seek_help": {
+      "documented": false,
+      "cites": []
+    }
+  },
+  "medications": {
+    "discharge_status": "listed",
+    "status_cites": [
+      {
+        "lines": [
+          "L012"
+        ],
+        "quote": "TTOs: analgesia, enoxaparin."
+      }
+    ],
+    "drugs": [
+      {
+        "drug": "enoxaparin",
+        "aliases": [],
+        "dose": null,
+        "route": null,
+        "frequency": null,
+        "tag": "new",
+        "basis": "documented",
+        "previous": null,
+        "dh_cites": [],
+        "discharge_cites": [
+          {
+            "lines": [
+              "L012"
+            ],
+            "quote": "continue per ortho. TTOs: analgesia, enoxaparin."
+          }
+        ],
+        "note": "Dose and duration not documented ('continue per ortho')."
+      },
+      {
+        "drug": "analgesia",
+        "aliases": [],
+        "dose": null,
+        "route": null,
+        "frequency": null,
+        "tag": "new",
+        "basis": "documented",
+        "previous": null,
+        "dh_cites": [],
+        "discharge_cites": [
+          {
+            "lines": [
+              "L012"
+            ],
+            "quote": "TTOs: analgesia, enoxaparin."
+          }
+        ],
+        "note": "A class only. Any named analgesic or dose is an invention."
+      }
+    ],
+    "must_not_appear": []
+  },
+  "review_notes": "CSO: 'analgesia' as a drug entry — the scorer will treat any named analgesic as invented. CSO 6 Oct 2026: agreed — 'analgesia' is a class; any named analgesic is invented."
+}

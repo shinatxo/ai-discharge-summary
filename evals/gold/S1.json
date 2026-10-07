@@ -1,0 +1,243 @@
+{
+  "gold_version": 1,
+  "scenario_id": "S1",
+  "notes_sha256": "deacfb8fe45187fb890a33b6e0c8ad2f5e6902c825879bb20931a69f80969fa3",
+  "status": "approved",
+  "provenance": {
+    "drafted_by": "Claude, 6 Oct 2026, from the S1 notes in src/canary/scenarios.json only. No v1 or pipeline output was read. EVAL_RESULTS.md §4 S1 used as a cross-check and departed from where it states what the notes do not (ticagrelor 90mg BD; VTE).",
+    "sources": [
+      "src/canary/scenarios.json#S1"
+    ],
+    "approved_by": "Shina Oguntoye (CSO)",
+    "approved_on": "2026-10-06"
+  },
+  "age_group": {
+    "value": "adult",
+    "cites": [
+      {
+        "lines": [
+          "L001"
+        ],
+        "quote": "82F"
+      }
+    ]
+  },
+  "safety_net": {
+    "route": "fallback",
+    "advice": [],
+    "seek_help": {
+      "documented": false,
+      "cites": []
+    },
+    "rationale": "No advice to the patient is recorded. The gate's notes regex reads 'via ED' (L001) as a seek-help term and goes advisory; under 5b's definition this is not documented advice, so the pinned line is expected."
+  },
+  "medications": {
+    "discharge_status": "referenced_not_listed",
+    "status_cites": [
+      {
+        "lines": [
+          "L021"
+        ],
+        "quote": "TTOs done."
+      }
+    ],
+    "drugs": [
+      {
+        "drug": "aspirin",
+        "aliases": [],
+        "dose": "75mg",
+        "route": null,
+        "frequency": "OD",
+        "tag": "continued",
+        "basis": "documented",
+        "previous": null,
+        "dh_cites": [
+          {
+            "lines": [
+              "L004"
+            ],
+            "quote": "aspirin 75mg OD"
+          }
+        ],
+        "discharge_cites": [
+          {
+            "lines": [
+              "L011"
+            ],
+            "quote": "Continue DAPT."
+          }
+        ]
+      },
+      {
+        "drug": "ticagrelor",
+        "aliases": [],
+        "dose": null,
+        "route": null,
+        "frequency": null,
+        "tag": "new",
+        "basis": "documented",
+        "previous": null,
+        "dh_cites": [],
+        "discharge_cites": [
+          {
+            "lines": [
+              "L007"
+            ],
+            "quote": "add ticagrelor (DAPT)"
+          },
+          {
+            "lines": [
+              "L011"
+            ],
+            "quote": "Continue DAPT."
+          }
+        ],
+        "note": "Dose and frequency are not documented. 90mg BD (the seed gold) would be an invented dose."
+      },
+      {
+        "drug": "bisoprolol",
+        "aliases": [],
+        "dose": "7.5mg",
+        "route": null,
+        "frequency": "OD",
+        "tag": "increased",
+        "basis": "documented",
+        "previous": {
+          "dose": "5mg",
+          "frequency": "OD"
+        },
+        "dh_cites": [
+          {
+            "lines": [
+              "L003"
+            ],
+            "quote": "bisoprolol 5mg OD"
+          }
+        ],
+        "discharge_cites": [
+          {
+            "lines": [
+              "L017"
+            ],
+            "quote": "Bisoprolol up to 7.5mg OD."
+          }
+        ]
+      },
+      {
+        "drug": "isosorbide mononitrate",
+        "aliases": [
+          "ISMN"
+        ],
+        "dose": "30mg",
+        "route": null,
+        "frequency": "OD",
+        "tag": "new",
+        "basis": "documented",
+        "previous": null,
+        "dh_cites": [],
+        "discharge_cites": [
+          {
+            "lines": [
+              "L017"
+            ],
+            "quote": "Added ISMN 30mg OD."
+          }
+        ]
+      },
+      {
+        "drug": "ramipril",
+        "aliases": [],
+        "dose": "5mg",
+        "route": null,
+        "frequency": "OD",
+        "tag": "continued",
+        "basis": "inferred_from_dh",
+        "previous": null,
+        "dh_cites": [
+          {
+            "lines": [
+              "L003"
+            ],
+            "quote": "ramipril 5mg OD"
+          }
+        ],
+        "discharge_cites": [],
+        "note": "No change documented; L021 asks the GP to uptitrate the ACEi, which implies it continues."
+      },
+      {
+        "drug": "furosemide",
+        "aliases": [],
+        "dose": "40mg",
+        "route": null,
+        "frequency": "OD",
+        "tag": "continued",
+        "basis": "inferred_from_dh",
+        "previous": null,
+        "dh_cites": [
+          {
+            "lines": [
+              "L003"
+            ],
+            "quote": "furosemide 40mg OD"
+          }
+        ],
+        "discharge_cites": []
+      },
+      {
+        "drug": "metformin",
+        "aliases": [],
+        "dose": "1g",
+        "route": null,
+        "frequency": "BD",
+        "tag": "continued",
+        "basis": "inferred_from_dh",
+        "previous": null,
+        "dh_cites": [
+          {
+            "lines": [
+              "L003"
+            ],
+            "quote": "metformin 1g BD"
+          }
+        ],
+        "discharge_cites": []
+      },
+      {
+        "drug": "atorvastatin",
+        "aliases": [],
+        "dose": "80mg",
+        "route": null,
+        "frequency": "ON",
+        "tag": "continued",
+        "basis": "inferred_from_dh",
+        "previous": null,
+        "dh_cites": [
+          {
+            "lines": [
+              "L004"
+            ],
+            "quote": "atorvastatin 80mg ON"
+          }
+        ],
+        "discharge_cites": []
+      }
+    ],
+    "must_not_appear": [
+      {
+        "drug": "fondaparinux",
+        "aliases": [],
+        "reason": "inpatient_only",
+        "cites": [
+          {
+            "lines": [
+              "L007"
+            ],
+            "quote": "fondaparinux"
+          }
+        ],
+        "note": "CSO judgement, not documented: an inpatient NSTEMI anticoagulant. The notes never record it stopping."
+      }
+    ]
+  },
+  "review_notes": "Approved 6 Oct 2026. CSO decisions recorded with it, applied to every gold record: (1) TTOs referenced but not listed — tolerant: an undocumented DH drug is 'continued, inferred_from_dh'; 'continued' or 'confirm against the TTO' both pass; silently dropping or changing it fails. (2) Inpatient-only drugs never documented as stopped are must_not_appear, recorded as CSO judgement."
+}

@@ -1,0 +1,101 @@
+{
+  "gold_version": 1,
+  "scenario_id": "S8",
+  "notes_sha256": "db5dc0237ea1d82ade478142d26845b1f5fda1c9c35512621c0f5aa23a5afca6",
+  "status": "approved",
+  "provenance": {
+    "drafted_by": "Claude, 6 Oct 2026, from the S8 notes in src/canary/scenarios.json only, under the extraction prompt's definition of documented_advice and the CSO decisions of 6 Oct 2026 (TTOs referenced but not listed: tolerant; inpatient-only drugs: must_not_appear). No v1 or pipeline output was read.",
+    "sources": [
+      "src/canary/scenarios.json#S8"
+    ],
+    "approved_by": "Shina Oguntoye (CSO)",
+    "approved_on": "2026-10-06"
+  },
+  "age_group": {
+    "value": "neonate",
+    "cites": [
+      {
+        "lines": [
+          "L002"
+        ],
+        "quote": "At 6h of age"
+      }
+    ]
+  },
+  "safety_net": {
+    "route": "documented",
+    "advice": [
+      {
+        "cites": [
+          {
+            "lines": [
+              "L012",
+              "L013"
+            ],
+            "quote": "Safety-net advice to parents re fever/feeding/breathing."
+          }
+        ],
+        "kind": "record",
+        "note": "the 1 Oct CSO ruling's own example"
+      }
+    ],
+    "seek_help": {
+      "documented": true,
+      "cites": [
+        {
+          "lines": [
+            "L012",
+            "L013"
+          ],
+          "quote": "Safety-net advice to parents re fever/feeding/breathing."
+        }
+      ]
+    }
+  },
+  "medications": {
+    "discharge_status": "not_documented",
+    "status_cites": [],
+    "drugs": [],
+    "must_not_appear": [
+      {
+        "drug": "benzylpenicillin",
+        "aliases": [],
+        "reason": "inpatient_only",
+        "cites": [
+          {
+            "lines": [
+              "L004"
+            ],
+            "quote": "Started IV benzylpenicillin +"
+          },
+          {
+            "lines": [
+              "L011"
+            ],
+            "quote": "Completed abx."
+          }
+        ]
+      },
+      {
+        "drug": "gentamicin",
+        "aliases": [],
+        "reason": "inpatient_only",
+        "cites": [
+          {
+            "lines": [
+              "L005"
+            ],
+            "quote": "gentamicin per neonatal sepsis protocol."
+          },
+          {
+            "lines": [
+              "L011"
+            ],
+            "quote": "Completed abx."
+          }
+        ]
+      }
+    ]
+  },
+  "review_notes": "Discharge medication is not addressed, so 'not_documented' rather than 'none_required'. Both antibiotics are documented as completed."
+}

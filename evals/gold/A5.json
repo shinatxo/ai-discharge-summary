@@ -1,0 +1,174 @@
+{
+  "gold_version": 1,
+  "scenario_id": "A5",
+  "notes_sha256": "17990ee1d94abcc513c9b663863e4a9a92ef69d1a564f1544879be8404ae7092",
+  "status": "approved",
+  "provenance": {
+    "drafted_by": "Claude, 6 Oct 2026, from the A5 notes in src/canary/scenarios.json only, under the extraction prompt's definition of documented_advice and the CSO decisions of 6 Oct 2026 (TTOs referenced but not listed: tolerant; inpatient-only drugs: must_not_appear). No v1 or pipeline output was read.",
+    "sources": [
+      "src/canary/scenarios.json#A5"
+    ],
+    "approved_by": "Shina Oguntoye (CSO)",
+    "approved_on": "2026-10-06"
+  },
+  "age_group": {
+    "value": "adult",
+    "cites": [
+      {
+        "lines": [
+          "L001"
+        ],
+        "quote": "76M"
+      }
+    ]
+  },
+  "safety_net": {
+    "route": "fallback",
+    "advice": [],
+    "seek_help": {
+      "documented": false,
+      "cites": []
+    },
+    "rationale": "No after-discharge advice is recorded. 'GP: review COPD inhaler technique' is a GP plan."
+  },
+  "medications": {
+    "discharge_status": "referenced_not_listed",
+    "status_cites": [
+      {
+        "lines": [
+          "L019"
+        ],
+        "quote": "continue regular medications."
+      }
+    ],
+    "drugs": [
+      {
+        "drug": "co-amoxiclav",
+        "aliases": [],
+        "dose": null,
+        "route": null,
+        "frequency": null,
+        "tag": "new",
+        "basis": "documented",
+        "previous": null,
+        "dh_cites": [],
+        "discharge_cites": [
+          {
+            "lines": [
+              "L018",
+              "L019"
+            ],
+            "quote": "complete oral co-amoxiclav course (5 days)"
+          }
+        ],
+        "note": "Oral; dose and frequency not documented."
+      },
+      {
+        "drug": "apixaban",
+        "aliases": [],
+        "dose": "5mg",
+        "route": null,
+        "frequency": "BD",
+        "tag": "continued",
+        "basis": "documented",
+        "previous": null,
+        "dh_cites": [
+          {
+            "lines": [
+              "L002"
+            ],
+            "quote": "DH: apixaban 5mg BD"
+          }
+        ],
+        "discharge_cites": [
+          {
+            "lines": [
+              "L019"
+            ],
+            "quote": "continue regular medications."
+          }
+        ]
+      },
+      {
+        "drug": "salbutamol",
+        "aliases": [],
+        "dose": null,
+        "route": "inhaled",
+        "frequency": "PRN",
+        "tag": "continued",
+        "basis": "documented",
+        "previous": null,
+        "dh_cites": [
+          {
+            "lines": [
+              "L002"
+            ],
+            "quote": "salbutamol inhaler PRN"
+          }
+        ],
+        "discharge_cites": [
+          {
+            "lines": [
+              "L019"
+            ],
+            "quote": "continue regular medications."
+          }
+        ]
+      },
+      {
+        "drug": "amlodipine",
+        "aliases": [],
+        "dose": "5mg",
+        "route": null,
+        "frequency": "OD",
+        "tag": "continued",
+        "basis": "documented",
+        "previous": null,
+        "dh_cites": [
+          {
+            "lines": [
+              "L003"
+            ],
+            "quote": "amlodipine 5mg OD"
+          }
+        ],
+        "discharge_cites": [
+          {
+            "lines": [
+              "L019"
+            ],
+            "quote": "continue regular medications."
+          }
+        ]
+      },
+      {
+        "drug": "ramipril",
+        "aliases": [],
+        "dose": "5mg",
+        "route": null,
+        "frequency": "OD",
+        "tag": "continued",
+        "basis": "documented",
+        "previous": null,
+        "dh_cites": [
+          {
+            "lines": [
+              "L003"
+            ],
+            "quote": "ramipril 5mg OD"
+          }
+        ],
+        "discharge_cites": [
+          {
+            "lines": [
+              "L019"
+            ],
+            "quote": "continue regular medications."
+          }
+        ]
+      }
+    ],
+    "must_not_appear": []
+  },
+  "review_notes": "The guard-flagged lines (L014–L016) are never cited. 'Continue regular medications' documents the DH drugs as continued, so their basis is 'documented', not inferred. Clarithromycin is left out of must_not_appear: 'switched to oral antibiotics' (L012) leaves it unclear."
+}

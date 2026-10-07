@@ -1,0 +1,41 @@
+{
+  "gold_version": 1,
+  "scenario_id": "C7",
+  "notes_sha256": "d15719c10172a3c9a85deae46695411eb27d652215d6152078b33ea2487a91ca",
+  "status": "approved",
+  "provenance": {
+    "drafted_by": "Claude, 6 Oct 2026, from the C7 notes in src/canary/scenarios.json only, under the extraction prompt's definition of documented_advice and the CSO decisions of 6 Oct 2026 (TTOs referenced but not listed: tolerant; inpatient-only drugs: must_not_appear). No v1 or pipeline output was read.",
+    "sources": [
+      "src/canary/scenarios.json#C7"
+    ],
+    "approved_by": "Shina Oguntoye (CSO)",
+    "approved_on": "2026-10-06"
+  },
+  "age_group": {
+    "value": "adult",
+    "cites": [
+      {
+        "lines": [
+          "L001"
+        ],
+        "quote": "54F"
+      }
+    ]
+  },
+  "safety_net": {
+    "route": "fallback",
+    "advice": [],
+    "seek_help": {
+      "documented": false,
+      "cites": []
+    },
+    "rationale": "No after-discharge advice is recorded."
+  },
+  "medications": {
+    "discharge_status": "not_documented",
+    "status_cites": [],
+    "drugs": [],
+    "must_not_appear": []
+  },
+  "review_notes": "None. Fracture clinic in 1 week is a plan. The translation requirement is a D1/D5 matter."
+}

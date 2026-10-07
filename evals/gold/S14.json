@@ -1,0 +1,200 @@
+{
+  "gold_version": 1,
+  "scenario_id": "S14",
+  "notes_sha256": "20c5042a7bbfa0a841857197d01c69abf4b0abe852955048535cbba89c736340",
+  "status": "approved",
+  "provenance": {
+    "drafted_by": "Claude, 6 Oct 2026, from the S14 notes in src/canary/scenarios.json only, under the extraction prompt's definition of documented_advice and the CSO decisions of 6 Oct 2026 (TTOs referenced but not listed: tolerant; inpatient-only drugs: must_not_appear). No v1 or pipeline output was read.",
+    "sources": [
+      "src/canary/scenarios.json#S14"
+    ],
+    "approved_by": "Shina Oguntoye (CSO)",
+    "approved_on": "2026-10-06"
+  },
+  "age_group": {
+    "value": "adult",
+    "cites": [
+      {
+        "lines": [
+          "L001"
+        ],
+        "quote": "74M"
+      }
+    ]
+  },
+  "safety_net": {
+    "route": "documented",
+    "advice": [
+      {
+        "cites": [
+          {
+            "lines": [
+              "L014"
+            ],
+            "quote": "Driving: advised not to drive, must inform DVLA (1 month off driving min per rules)."
+          }
+        ],
+        "kind": "instruction",
+        "note": "what to avoid"
+      }
+    ],
+    "seek_help": {
+      "documented": false,
+      "cites": []
+    }
+  },
+  "medications": {
+    "discharge_status": "listed",
+    "status_cites": [
+      {
+        "lines": [
+          "L011"
+        ],
+        "quote": "Discharge. TTOs: apixaban 5mg BD (new), aspirin STOPPED, amlodipine"
+      }
+    ],
+    "drugs": [
+      {
+        "drug": "apixaban",
+        "aliases": [],
+        "dose": "5mg",
+        "route": null,
+        "frequency": "BD",
+        "tag": "new",
+        "basis": "documented",
+        "previous": null,
+        "dh_cites": [],
+        "discharge_cites": [
+          {
+            "lines": [
+              "L011"
+            ],
+            "quote": "apixaban 5mg BD (new)"
+          }
+        ]
+      },
+      {
+        "drug": "aspirin",
+        "aliases": [],
+        "dose": "75mg",
+        "route": null,
+        "frequency": "OD",
+        "tag": "stopped",
+        "basis": "documented",
+        "previous": null,
+        "dh_cites": [
+          {
+            "lines": [
+              "L003",
+              "L004"
+            ],
+            "quote": "aspirin 75mg OD"
+          }
+        ],
+        "discharge_cites": [
+          {
+            "lines": [
+              "L011"
+            ],
+            "quote": "aspirin STOPPED"
+          },
+          {
+            "lines": [
+              "L009"
+            ],
+            "quote": "aspirin stopped."
+          }
+        ]
+      },
+      {
+        "drug": "amlodipine",
+        "aliases": [],
+        "dose": "10mg",
+        "route": null,
+        "frequency": "OD",
+        "tag": "continued",
+        "basis": "documented",
+        "previous": null,
+        "dh_cites": [
+          {
+            "lines": [
+              "L004"
+            ],
+            "quote": "amlodipine 10mg OD"
+          }
+        ],
+        "discharge_cites": [
+          {
+            "lines": [
+              "L011",
+              "L012"
+            ],
+            "quote": "amlodipine 10mg OD continued"
+          }
+        ]
+      },
+      {
+        "drug": "atorvastatin",
+        "aliases": [],
+        "dose": "80mg",
+        "route": null,
+        "frequency": "ON",
+        "tag": "new",
+        "basis": "documented",
+        "previous": null,
+        "dh_cites": [],
+        "discharge_cites": [
+          {
+            "lines": [
+              "L012"
+            ],
+            "quote": "atorvastatin 80mg ON (new, secondary prevention)"
+          }
+        ]
+      },
+      {
+        "drug": "metformin",
+        "aliases": [],
+        "dose": "1g",
+        "route": null,
+        "frequency": "BD",
+        "tag": "continued",
+        "basis": "documented",
+        "previous": null,
+        "dh_cites": [
+          {
+            "lines": [
+              "L004"
+            ],
+            "quote": "metformin 1g BD"
+          }
+        ],
+        "discharge_cites": [
+          {
+            "lines": [
+              "L012",
+              "L013"
+            ],
+            "quote": "metformin 1g BD continued."
+          }
+        ]
+      }
+    ],
+    "must_not_appear": [
+      {
+        "drug": "alteplase",
+        "aliases": [],
+        "reason": "inpatient_only",
+        "cites": [
+          {
+            "lines": [
+              "L002"
+            ],
+            "quote": "Thrombolysed (alteplase)"
+          }
+        ]
+      }
+    ]
+  },
+  "review_notes": "None beyond the usual check. L008's 'apixaba' typo is cited nowhere."
+}

@@ -1,0 +1,112 @@
+{
+  "gold_version": 1,
+  "scenario_id": "S3",
+  "notes_sha256": "c8882fcefb7f24fb39b45a7bb32cb6bfeb5481df37eff450606bec809ab51ef1",
+  "status": "approved",
+  "provenance": {
+    "drafted_by": "Claude, 6 Oct 2026, from the S3 notes in src/canary/scenarios.json only, under the extraction prompt's definition of documented_advice and the CSO decisions of 6 Oct 2026 (TTOs referenced but not listed: tolerant; inpatient-only drugs: must_not_appear). No v1 or pipeline output was read.",
+    "sources": [
+      "src/canary/scenarios.json#S3"
+    ],
+    "approved_by": "Shina Oguntoye (CSO)",
+    "approved_on": "2026-10-06"
+  },
+  "age_group": {
+    "value": "adult",
+    "cites": [
+      {
+        "lines": [
+          "L001"
+        ],
+        "quote": "45F"
+      }
+    ]
+  },
+  "safety_net": {
+    "route": "documented",
+    "advice": [
+      {
+        "cites": [
+          {
+            "lines": [
+              "L018"
+            ],
+            "quote": "Collaborative safety plan completed w/ pt."
+          }
+        ],
+        "kind": "record",
+        "note": "a named plan for what to do in a crisis"
+      },
+      {
+        "cites": [
+          {
+            "lines": [
+              "L022"
+            ],
+            "quote": "Crisis team number given."
+          }
+        ],
+        "kind": "record",
+        "note": "where to seek help"
+      }
+    ],
+    "seek_help": {
+      "documented": true,
+      "cites": [
+        {
+          "lines": [
+            "L022"
+          ],
+          "quote": "Crisis team number given."
+        },
+        {
+          "lines": [
+            "L019"
+          ],
+          "quote": "early CMHT follow-up + crisis line."
+        }
+      ]
+    }
+  },
+  "medications": {
+    "discharge_status": "listed",
+    "status_cites": [
+      {
+        "lines": [
+          "L021"
+        ],
+        "quote": "Discharged. Sertraline 50mg OD, review dose at 4/52."
+      }
+    ],
+    "drugs": [
+      {
+        "drug": "sertraline",
+        "aliases": [],
+        "dose": "50mg",
+        "route": null,
+        "frequency": "OD",
+        "tag": "new",
+        "basis": "documented",
+        "previous": null,
+        "dh_cites": [],
+        "discharge_cites": [
+          {
+            "lines": [
+              "L014"
+            ],
+            "quote": "Started sertraline 50mg OD."
+          },
+          {
+            "lines": [
+              "L021"
+            ],
+            "quote": "Sertraline 50mg OD, review dose at 4/52."
+          }
+        ],
+        "note": "DH nil regular (L007). The 2018 sertraline course was stopped years before admission, so it is not a pre-admission drug."
+      }
+    ],
+    "must_not_appear": []
+  },
+  "review_notes": "None beyond the usual check. 'Psychoeducation given' (L014) is left out as a bare record."
+}

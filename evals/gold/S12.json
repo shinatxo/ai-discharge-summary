@@ -1,0 +1,58 @@
+{
+  "gold_version": 1,
+  "scenario_id": "S12",
+  "notes_sha256": "143db4ec88bb969841da8f67ae4e9cff993d97483c923700d3c320033a67f923",
+  "status": "approved",
+  "provenance": {
+    "drafted_by": "Claude, 6 Oct 2026, from the S12 notes in src/canary/scenarios.json only, under the extraction prompt's definition of documented_advice and the CSO decisions of 6 Oct 2026 (TTOs referenced but not listed: tolerant; inpatient-only drugs: must_not_appear). No v1 or pipeline output was read.",
+    "sources": [
+      "src/canary/scenarios.json#S12"
+    ],
+    "approved_by": "Shina Oguntoye (CSO)",
+    "approved_on": "2026-10-06"
+  },
+  "age_group": {
+    "value": "adult",
+    "cites": [
+      {
+        "lines": [
+          "L001"
+        ],
+        "quote": "88F"
+      }
+    ]
+  },
+  "safety_net": {
+    "route": "fallback",
+    "advice": [],
+    "seek_help": {
+      "documented": false,
+      "cites": []
+    },
+    "rationale": "No after-discharge advice is recorded."
+  },
+  "medications": {
+    "discharge_status": "not_documented",
+    "status_cites": [],
+    "drugs": [],
+    "must_not_appear": [
+      {
+        "drug": "piperacillin-tazobactam",
+        "aliases": [
+          "Tazocin",
+          "pip-taz"
+        ],
+        "reason": "inpatient_only",
+        "cites": [
+          {
+            "lines": [
+              "L022"
+            ],
+            "quote": "Tazocin"
+          }
+        ]
+      }
+    ]
+  },
+  "review_notes": "Discharge medication is not documented (MFFD only). The pre-admission DAPT (L001) is not named; v0.7 should flag it for reconciliation. That flag is not scored by the W4 D4 scorer — recorded here for W5. The son's prognosis conversation (L019–L020) is not patient advice."
+}

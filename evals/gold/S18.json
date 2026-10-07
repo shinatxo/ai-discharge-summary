@@ -1,0 +1,101 @@
+{
+  "gold_version": 1,
+  "scenario_id": "S18",
+  "notes_sha256": "3d7f06d1a5a414275df26db1863e10bc9e085fde839ae9021e97d5f16ebf659b",
+  "status": "approved",
+  "provenance": {
+    "drafted_by": "Claude, 6 Oct 2026, from the S18 notes in src/canary/scenarios.json only, under the extraction prompt's definition of documented_advice and the CSO decisions of 6 Oct 2026 (TTOs referenced but not listed: tolerant; inpatient-only drugs: must_not_appear). No v1 or pipeline output was read.",
+    "sources": [
+      "src/canary/scenarios.json#S18"
+    ],
+    "approved_by": "Shina Oguntoye (CSO)",
+    "approved_on": "2026-10-06"
+  },
+  "age_group": {
+    "value": "adult",
+    "cites": [
+      {
+        "lines": [
+          "L001"
+        ],
+        "quote": "26M"
+      }
+    ]
+  },
+  "safety_net": {
+    "route": "documented",
+    "advice": [
+      {
+        "cites": [
+          {
+            "lines": [
+              "L007",
+              "L008"
+            ],
+            "quote": "Safety advice (no swimming alone, heights, baths)."
+          }
+        ],
+        "kind": "instruction",
+        "note": "what to avoid"
+      },
+      {
+        "cites": [
+          {
+            "lines": [
+              "L007"
+            ],
+            "quote": "No driving."
+          }
+        ],
+        "kind": "instruction",
+        "note": "what to avoid"
+      },
+      {
+        "cites": [
+          {
+            "lines": [
+              "L008",
+              "L009"
+            ],
+            "quote": "DVLA: must not drive, must inform DVLA (6 months off driving from seizure for a first unprovoked seizure, group 1)."
+          }
+        ],
+        "kind": "instruction",
+        "note": "what to do"
+      }
+    ],
+    "seek_help": {
+      "documented": false,
+      "cites": []
+    }
+  },
+  "medications": {
+    "discharge_status": "not_documented",
+    "status_cites": [],
+    "drugs": [],
+    "must_not_appear": [
+      {
+        "drug": "antiepileptic",
+        "aliases": [
+          "levetiracetam",
+          "lamotrigine",
+          "sodium valproate",
+          "valproate",
+          "carbamazepine",
+          "AED"
+        ],
+        "reason": "not_prescribed",
+        "cites": [
+          {
+            "lines": [
+              "L004"
+            ],
+            "quote": "Started on no antiepileptic"
+          }
+        ],
+        "note": "No AED was started. Any named antiepileptic on a discharge list is an invention."
+      }
+    ]
+  },
+  "review_notes": "Discharge medication is not addressed beyond 'no antiepileptic', so 'not_documented'. No seek-help trigger is documented, so the gate stays clean; the activity and driving restrictions are documented advice."
+}

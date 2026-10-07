@@ -16,8 +16,7 @@ of 6 Oct 2026:
            discharge medication (reconstruction); an extra entry the CSO has ruled
            invented.
   PARTIAL  every drug, dose and frequency right, but a change tag missing or
-           imprecise (INCREASED without the old dose; NEW for a frequency change;
-           STOPPED for WITHHELD).
+           imprecise (INCREASED without the old dose; NEW for a frequency change).
   PASS     otherwise.
   REVIEW   otherwise passing, with an entry naming no gold drug that the CSO has
            not yet ruled on (a synonym the gold lacks, or an invented drug).
@@ -380,6 +379,10 @@ def score(view: MedView, gold: dict, adjudications: dict | None = None) -> dict:
         elif gt == "withheld":
             if tag in ("continued", "new", "increased", "decreased"):
                 find("fail", "withheld_shown_continuing", name)
+            elif tag == "stopped":
+                # CSO, 7 Oct 2026: a withheld drug shown as STOPPED may never be restarted
+                # (apixaban after a healed bleed) — a Fail, not an imprecise tag.
+                find("fail", "withheld_shown_stopped", name)
             elif tag != "withheld":
                 find("partial", "tag_imprecise", name)
         elif gt in ("increased", "decreased"):

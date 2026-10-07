@@ -76,7 +76,7 @@ def test_stopped_drug_shown_continuing_fails():
     assert ("aspirin", "stopped_shown_continuing") in kinds("S14", meds)[1]
 
 
-def test_withheld_shown_as_stopped_is_partial():
+def test_withheld_shown_as_stopped_fails():
     meds = """- Oral PPI high dose (NEW)
 - Amoxicillin (NEW)
 - Clarithromycin (NEW)
@@ -84,7 +84,8 @@ def test_withheld_shown_as_stopped_is_partial():
 - Paracetamol regular (changed from PRN)
 - Amlodipine 5 mg OD (continued)
 - Apixaban 5 mg BD — STOPPED"""
-    assert kinds("S17", meds) == ("partial", [("apixaban", "tag_imprecise")])
+    # CSO, 7 Oct 2026: STOPPED for WITHHELD risks the drug never being restarted.
+    assert kinds("S17", meds) == ("fail", [("apixaban", "withheld_shown_stopped")])
 
 
 @pytest.mark.parametrize("warfarin,ok", [

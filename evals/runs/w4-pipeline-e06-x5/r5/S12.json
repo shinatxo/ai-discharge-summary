@@ -1,0 +1,924 @@
+{
+  "record_version": 1,
+  "generation_id": "w4-pipeline-e06-x5/r5/S12",
+  "batch_id": "w4-pipeline-e06-x5",
+  "run": 5,
+  "scenario_id": "S12",
+  "generator": "pipeline",
+  "path": "steps-1-5b",
+  "model_id": "anthropic.claude-sonnet-4-6",
+  "region": "eu-west-2",
+  "prompts": {
+    "extract_facts": {
+      "path": "src/generate/pipeline/prompts/extract_facts.md",
+      "file_sha256": "d44eef3af82f0b7185b301a518b4034722b2830771a1d23e71f358859be697d0",
+      "body_sha256": "ec91cd4136e8b4e74330b75d4bb7250537e110bfafe32a3b1af52e5246bbd146"
+    }
+  },
+  "prompt_caching": true,
+  "notes_sha256": "143db4ec88bb969841da8f67ae4e9cff993d97483c923700d3c320033a67f923",
+  "started_at": "2026-10-07T19:23:07+01:00",
+  "elapsed_s": 19.657,
+  "calls": [
+    {
+      "name": "extract_facts",
+      "input_tokens": 1084,
+      "output_tokens": 2507,
+      "cache_read_tokens": 3970,
+      "cache_write_tokens": 0,
+      "stop_reason": "tool_use",
+      "latency_s": 19.53,
+      "throttle_retries": 0
+    }
+  ],
+  "steps": {
+    "guard_input": {
+      "notes_sha256": "143db4ec88bb969841da8f67ae4e9cff993d97483c923700d3c320033a67f923",
+      "line_count": 45,
+      "flags": []
+    },
+    "extract_facts": {
+      "call": {
+        "model_id": "anthropic.claude-sonnet-4-6",
+        "prompt_sha256": "ec91cd4136e8b4e74330b75d4bb7250537e110bfafe32a3b1af52e5246bbd146",
+        "stop_reason": "tool_use",
+        "attempts": 1,
+        "input_tokens": 1084,
+        "output_tokens": 2507,
+        "cache_read_tokens": 3970,
+        "cache_write_tokens": 0,
+        "latency_ms": 19530
+      }
+    },
+    "validate_facts": {
+      "facts": {
+        "fields": {
+          "age_sex": {
+            "status": "documented",
+            "items": [
+              {
+                "value": "88-year-old female",
+                "cites": [
+                  {
+                    "lines": [
+                      "L001"
+                    ],
+                    "quote": "88F",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "age_sex.0",
+                "citation_status": "verified",
+                "reason": null
+              }
+            ],
+            "field_check": "ok"
+          },
+          "specialty": {
+            "status": "not_documented",
+            "items": [],
+            "field_check": "ok"
+          },
+          "legal_status": {
+            "status": "not_documented",
+            "items": [],
+            "field_check": "ok"
+          },
+          "weight": {
+            "status": "not_documented",
+            "items": [],
+            "field_check": "ok"
+          },
+          "admission_date": {
+            "status": "documented",
+            "items": [],
+            "field_check": "status_without_items"
+          },
+          "discharge_date": {
+            "status": "not_documented",
+            "items": [],
+            "field_check": "ok"
+          },
+          "presenting_complaint": {
+            "status": "documented",
+            "items": [
+              {
+                "value": "Found on floor by son; patient reports fall going to commode",
+                "cites": [
+                  {
+                    "lines": [
+                      "L003",
+                      "L004"
+                    ],
+                    "quote": "found on floor by son at 10a, according to the patient she\nwent to commode and had a fall",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "presenting_complaint.0",
+                "citation_status": "verified",
+                "reason": null
+              }
+            ],
+            "field_check": "ok"
+          },
+          "diagnosis_primary": {
+            "status": "documented",
+            "items": [
+              {
+                "value": "Sepsis; possible aspiration pneumonia",
+                "cites": [
+                  {
+                    "lines": [
+                      "L017",
+                      "L018"
+                    ],
+                    "quote": "Spiking fevers. Dropped sats. Ongoing\nvomiting despite antiemetics. Treat as sepsis. Possible aspiration pneumonia.",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "diagnosis_primary.0",
+                "citation_status": "verified",
+                "reason": null
+              }
+            ],
+            "field_check": "ok"
+          },
+          "diagnosis_secondary": {
+            "status": "documented",
+            "items": [
+              {
+                "value": "?Underlying dementia (query; referral to memory clinic advised as outpatient)",
+                "cites": [
+                  {
+                    "lines": [
+                      "L001",
+                      "L002"
+                    ],
+                    "quote": "advised to refer to memory clinic as OP due to ?underlying dementia",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "diagnosis_secondary.0",
+                "citation_status": "verified",
+                "reason": null
+              },
+              {
+                "value": "Consolidation right lower zone",
+                "cites": [
+                  {
+                    "lines": [
+                      "L034"
+                    ],
+                    "quote": "some consolidation RLZ and sigmoid diverticulitis",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "diagnosis_secondary.1",
+                "citation_status": "verified",
+                "reason": null
+              },
+              {
+                "value": "Sigmoid diverticulitis",
+                "cites": [
+                  {
+                    "lines": [
+                      "L034"
+                    ],
+                    "quote": "sigmoid diverticulitis",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "diagnosis_secondary.2",
+                "citation_status": "verified",
+                "reason": null
+              },
+              {
+                "value": "AKI and raised inflammatory markers",
+                "cites": [
+                  {
+                    "lines": [
+                      "L035"
+                    ],
+                    "quote": "AKI and raised inflammatory markers",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "diagnosis_secondary.3",
+                "citation_status": "verified",
+                "reason": null
+              },
+              {
+                "value": "Dilated bowel loops on AXR concerning for obstruction; faecal loading",
+                "cites": [
+                  {
+                    "lines": [
+                      "L031"
+                    ],
+                    "quote": "AXR dilated bowel loops concerning for obstruction, faecal loading",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "diagnosis_secondary.4",
+                "citation_status": "verified",
+                "reason": null
+              }
+            ],
+            "field_check": "ok"
+          },
+          "diagnosis_background": {
+            "status": "documented",
+            "items": [
+              {
+                "value": "Recent discharge from CCU following NSTEMI, on DAPT",
+                "cites": [
+                  {
+                    "lines": [
+                      "L001",
+                      "L002"
+                    ],
+                    "quote": "recent discharge from CCU following NSTEMI on DAPT",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "diagnosis_background.0",
+                "citation_status": "verified",
+                "reason": null
+              },
+              {
+                "value": "Hypertension",
+                "cites": [
+                  {
+                    "lines": [
+                      "L007"
+                    ],
+                    "quote": "PMHx Hypertension",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "diagnosis_background.1",
+                "citation_status": "verified",
+                "reason": null
+              },
+              {
+                "value": "Ischaemic heart disease (IHD)",
+                "cites": [
+                  {
+                    "lines": [
+                      "L007"
+                    ],
+                    "quote": "IHD",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "diagnosis_background.2",
+                "citation_status": "verified",
+                "reason": null
+              },
+              {
+                "value": "Chronic kidney disease (CKD)",
+                "cites": [
+                  {
+                    "lines": [
+                      "L007"
+                    ],
+                    "quote": "CKD",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "diagnosis_background.3",
+                "citation_status": "verified",
+                "reason": null
+              },
+              {
+                "value": "AKI (previous)",
+                "cites": [
+                  {
+                    "lines": [
+                      "L007"
+                    ],
+                    "quote": "AKI",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "diagnosis_background.4",
+                "citation_status": "verified",
+                "reason": null
+              },
+              {
+                "value": "Closed fracture of rib (previous)",
+                "cites": [
+                  {
+                    "lines": [
+                      "L007"
+                    ],
+                    "quote": "closed fracture of rib",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "diagnosis_background.5",
+                "citation_status": "verified",
+                "reason": null
+              },
+              {
+                "value": "Fracture of neck of femur (previous)",
+                "cites": [
+                  {
+                    "lines": [
+                      "L007",
+                      "L008"
+                    ],
+                    "quote": "fracture of neck\nof femur",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "diagnosis_background.6",
+                "citation_status": "verified",
+                "reason": null
+              },
+              {
+                "value": "Hyperparathyroidism",
+                "cites": [
+                  {
+                    "lines": [
+                      "L008"
+                    ],
+                    "quote": "hyperparathyroidism",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "diagnosis_background.7",
+                "citation_status": "verified",
+                "reason": null
+              },
+              {
+                "value": "Carcinoma of cervix",
+                "cites": [
+                  {
+                    "lines": [
+                      "L008"
+                    ],
+                    "quote": "Ca cervix",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "diagnosis_background.8",
+                "citation_status": "verified",
+                "reason": null
+              }
+            ],
+            "field_check": "ok"
+          },
+          "key_investigations": {
+            "status": "documented",
+            "items": [
+              {
+                "value": "CK 186",
+                "cites": [
+                  {
+                    "lines": [
+                      "L009"
+                    ],
+                    "quote": "CK 186",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "key_investigations.0",
+                "citation_status": "verified",
+                "reason": null
+              },
+              {
+                "value": "eGFR 44 (baseline)",
+                "cites": [
+                  {
+                    "lines": [
+                      "L010"
+                    ],
+                    "quote": "eGFR 44 (baseline)",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "key_investigations.1",
+                "citation_status": "verified",
+                "reason": null
+              },
+              {
+                "value": "WBC 11.1, CRP 2.5",
+                "cites": [
+                  {
+                    "lines": [
+                      "L011"
+                    ],
+                    "quote": "WBC 11.1, CRP 2.5",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "key_investigations.2",
+                "citation_status": "verified",
+                "reason": null
+              },
+              {
+                "value": "Troponin 77",
+                "cites": [
+                  {
+                    "lines": [
+                      "L012"
+                    ],
+                    "quote": "Trop 77",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "key_investigations.3",
+                "citation_status": "verified",
+                "reason": null
+              },
+              {
+                "value": "ECG: short run of atrial flutter",
+                "cites": [
+                  {
+                    "lines": [
+                      "L013"
+                    ],
+                    "quote": "ECG - short run of A. flutter",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "key_investigations.4",
+                "citation_status": "verified",
+                "reason": null
+              },
+              {
+                "value": "CT head: nil acute",
+                "cites": [
+                  {
+                    "lines": [
+                      "L014"
+                    ],
+                    "quote": "CT Head nil acute",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "key_investigations.5",
+                "citation_status": "verified",
+                "reason": null
+              },
+              {
+                "value": "CT C-spine and CT thorax: nil acute",
+                "cites": [
+                  {
+                    "lines": [
+                      "L015"
+                    ],
+                    "quote": "CT C-spine and CT thorax nil acute",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "key_investigations.6",
+                "citation_status": "verified",
+                "reason": null
+              },
+              {
+                "value": "AXR: dilated bowel loops concerning for obstruction, faecal loading",
+                "cites": [
+                  {
+                    "lines": [
+                      "L031"
+                    ],
+                    "quote": "AXR dilated bowel loops concerning for obstruction, faecal loading",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "key_investigations.7",
+                "citation_status": "verified",
+                "reason": null
+              },
+              {
+                "value": "CXR (12/05/26): negative",
+                "cites": [
+                  {
+                    "lines": [
+                      "L032"
+                    ],
+                    "quote": "CXR negative",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "key_investigations.8",
+                "citation_status": "verified",
+                "reason": null
+              },
+              {
+                "value": "Urine culture: negative",
+                "cites": [
+                  {
+                    "lines": [
+                      "L033"
+                    ],
+                    "quote": "Urine culture negative",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "key_investigations.9",
+                "citation_status": "verified",
+                "reason": null
+              },
+              {
+                "value": "Non-contrast CT: consolidation right lower zone and sigmoid diverticulitis",
+                "cites": [
+                  {
+                    "lines": [
+                      "L034"
+                    ],
+                    "quote": "Non contrast CT showed some consolidation RLZ and sigmoid diverticulitis",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "key_investigations.10",
+                "citation_status": "verified",
+                "reason": null
+              },
+              {
+                "value": "Lactate: normal",
+                "cites": [
+                  {
+                    "lines": [
+                      "L036"
+                    ],
+                    "quote": "Lactate normal",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "key_investigations.11",
+                "citation_status": "verified",
+                "reason": null
+              }
+            ],
+            "field_check": "ok"
+          },
+          "treatment": {
+            "status": "documented",
+            "items": [
+              {
+                "value": "Tazocin (piperacillin-tazobactam) prescribed",
+                "cites": [
+                  {
+                    "lines": [
+                      "L022"
+                    ],
+                    "quote": "Tazocin",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "treatment.0",
+                "citation_status": "verified",
+                "reason": null
+              },
+              {
+                "value": "Intravenous fluids",
+                "cites": [
+                  {
+                    "lines": [
+                      "L023"
+                    ],
+                    "quote": "Fluids",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "treatment.1",
+                "citation_status": "verified",
+                "reason": null
+              },
+              {
+                "value": "Oxygen",
+                "cites": [
+                  {
+                    "lines": [
+                      "L024"
+                    ],
+                    "quote": "Oxygen",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "treatment.2",
+                "citation_status": "verified",
+                "reason": null
+              },
+              {
+                "value": "Bloods including blood cultures",
+                "cites": [
+                  {
+                    "lines": [
+                      "L025"
+                    ],
+                    "quote": "Bloods including cultures",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "treatment.3",
+                "citation_status": "verified",
+                "reason": null
+              },
+              {
+                "value": "Urine culture; consideration of catheter to monitor urine output",
+                "cites": [
+                  {
+                    "lines": [
+                      "L026"
+                    ],
+                    "quote": "Urine culture if possible -> consider catheter to monitor urine output",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "treatment.4",
+                "citation_status": "verified",
+                "reason": null
+              },
+              {
+                "value": "Chest X-ray (CXR) requested",
+                "cites": [
+                  {
+                    "lines": [
+                      "L027"
+                    ],
+                    "quote": "CXR",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "treatment.5",
+                "citation_status": "verified",
+                "reason": null
+              },
+              {
+                "value": "Amber care plan initiated",
+                "cites": [
+                  {
+                    "lines": [
+                      "L028"
+                    ],
+                    "quote": "Amber care",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "treatment.6",
+                "citation_status": "verified",
+                "reason": null
+              },
+              {
+                "value": "ReSPECT form completed",
+                "cites": [
+                  {
+                    "lines": [
+                      "L029"
+                    ],
+                    "quote": "RESPECT form",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "treatment.7",
+                "citation_status": "verified",
+                "reason": null
+              },
+              {
+                "value": "Situation explained to nursing staff and son; son understands patient may not survive this admission",
+                "cites": [
+                  {
+                    "lines": [
+                      "L019"
+                    ],
+                    "quote": "I\nexplained the situation to the nursing staff and to her son, Steven. He understands\nthat she may not survive this admission.",
+                    "verified": false,
+                    "reason": "quote_not_found"
+                  }
+                ],
+                "fact_id": "treatment.8",
+                "citation_status": "citation_unverified",
+                "reason": "quote_not_found"
+              }
+            ],
+            "field_check": "ok"
+          },
+          "risk_assessment": {
+            "status": "not_documented",
+            "items": [],
+            "field_check": "ok"
+          },
+          "allergies": {
+            "status": "not_documented",
+            "items": [],
+            "field_check": "ok"
+          },
+          "follow_up": {
+            "status": "documented",
+            "items": [
+              {
+                "value": "Referral to memory clinic as outpatient for ?underlying dementia",
+                "cites": [
+                  {
+                    "lines": [
+                      "L001",
+                      "L002"
+                    ],
+                    "quote": "advised to refer to memory clinic as OP due to ?underlying dementia",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "follow_up.0",
+                "citation_status": "verified",
+                "reason": null
+              }
+            ],
+            "field_check": "ok"
+          },
+          "gp_actions": {
+            "status": "not_documented",
+            "items": [],
+            "field_check": "ok"
+          },
+          "vte_assessment": {
+            "status": "not_documented",
+            "items": [],
+            "field_check": "ok"
+          }
+        },
+        "medications": {
+          "pre_admission": [],
+          "discharge": [
+            {
+              "value": "Medically fit for discharge (MFFD)",
+              "cites": [
+                {
+                  "lines": [
+                    "L045"
+                  ],
+                  "quote": "PLAN: MFFD",
+                  "verified": true,
+                  "reason": null
+                }
+              ],
+              "fact_id": "medications.discharge.0",
+              "citation_status": "verified",
+              "reason": null
+            }
+          ],
+          "discharge_status": "not_documented",
+          "medications_check": "items_on_not_documented"
+        },
+        "resus": {
+          "changed": "not_documented",
+          "cites": [
+            {
+              "lines": [
+                "L029"
+              ],
+              "quote": "RESPECT form",
+              "verified": true,
+              "reason": null
+            }
+          ],
+          "form_or_discussion_documented": true,
+          "status_documented": "not_documented",
+          "fact_id": "resus",
+          "citation_status": "verified",
+          "reason": null
+        },
+        "documented_advice": [],
+        "age_group": "adult",
+        "contradictions": [
+          {
+            "value": "Patient referred to by name in notes (L017, L019) — name not recorded per policy; clinical content recorded as normal",
+            "cites": [
+              {
+                "lines": [
+                  "L017"
+                ],
+                "quote": "Mavis has deteriorated. NEWS 9.",
+                "verified": true,
+                "reason": null
+              }
+            ],
+            "fact_id": "contradictions.0",
+            "citation_status": "citation_unverified",
+            "reason": "contradiction_one_side"
+          }
+        ],
+        "suspicious_text": []
+      },
+      "uncited_lines": [
+        "L005",
+        "L006",
+        "L019",
+        "L020",
+        "L021",
+        "L037",
+        "L039",
+        "L040",
+        "L041",
+        "L042",
+        "L043",
+        "L044"
+      ],
+      "counts": {
+        "cites_total": 42,
+        "cites_verified": 41,
+        "items_unverified": 2,
+        "fields_inconsistent": 1,
+        "medications_inconsistent": 1
+      }
+    },
+    "retrieve_evidence": {
+      "medication": [
+        {
+          "line": "L045",
+          "sources": [
+            "cited"
+          ],
+          "fact_ids": [
+            "medications.discharge.0"
+          ],
+          "flagged": false
+        }
+      ],
+      "resus": [
+        {
+          "line": "L029",
+          "sources": [
+            "cited",
+            "resus_term"
+          ],
+          "fact_ids": [
+            "resus"
+          ],
+          "flagged": false
+        }
+      ],
+      "counts": {
+        "medication_lines": 1,
+        "resus_lines": 1,
+        "medication_matched_not_cited": 0,
+        "resus_matched_not_cited": 0
+      }
+    },
+    "route_resus": {
+      "route": "documented_but_absent",
+      "forced": "no",
+      "status": "not_documented",
+      "changed": "not_documented",
+      "cited_lines": [
+        "L029"
+      ],
+      "rendered": "RESUSCITATION STATUS\nA resuscitation form or discussion is documented ([L029]: \"RESPECT form\"). Its recommendation is not transcribed in these notes. Confirm against the completed form before relying on any resuscitation decision."
+    },
+    "select_safety_net": {
+      "route": "fallback",
+      "audience": "adult",
+      "pinned_line": "If you have been given a number to call, use that first. Otherwise, if you are worried, contact your GP or call NHS 111. Call 999 if it is an emergency.",
+      "advice": [],
+      "advice_excluded": 0,
+      "cited_lines": [],
+      "part_ab": "If you have been given a number to call, use that first. Otherwise, if you are worried, contact your GP or call NHS 111. Call 999 if it is an emergency.",
+      "part_c": "If you have been given a number to call, use that first. Otherwise, if you are worried, contact your GP or call NHS 111. Call 999 if it is an emergency."
+    }
+  },
+  "output": null,
+  "gate": null,
+  "failed_step": null,
+  "error": null,
+  "cost_usd_est": 0.046253
+}

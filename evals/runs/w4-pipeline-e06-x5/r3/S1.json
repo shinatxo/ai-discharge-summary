@@ -1,0 +1,922 @@
+{
+  "record_version": 1,
+  "generation_id": "w4-pipeline-e06-x5/r3/S1",
+  "batch_id": "w4-pipeline-e06-x5",
+  "run": 3,
+  "scenario_id": "S1",
+  "generator": "pipeline",
+  "path": "steps-1-5b",
+  "model_id": "anthropic.claude-sonnet-4-6",
+  "region": "eu-west-2",
+  "prompts": {
+    "extract_facts": {
+      "path": "src/generate/pipeline/prompts/extract_facts.md",
+      "file_sha256": "d44eef3af82f0b7185b301a518b4034722b2830771a1d23e71f358859be697d0",
+      "body_sha256": "ec91cd4136e8b4e74330b75d4bb7250537e110bfafe32a3b1af52e5246bbd146"
+    }
+  },
+  "prompt_caching": true,
+  "notes_sha256": "deacfb8fe45187fb890a33b6e0c8ad2f5e6902c825879bb20931a69f80969fa3",
+  "started_at": "2026-10-07T19:10:57+01:00",
+  "elapsed_s": 20.359,
+  "calls": [
+    {
+      "name": "extract_facts",
+      "input_tokens": 979,
+      "output_tokens": 2430,
+      "cache_read_tokens": 3970,
+      "cache_write_tokens": 0,
+      "stop_reason": "tool_use",
+      "latency_s": 20.322,
+      "throttle_retries": 0
+    }
+  ],
+  "steps": {
+    "guard_input": {
+      "notes_sha256": "deacfb8fe45187fb890a33b6e0c8ad2f5e6902c825879bb20931a69f80969fa3",
+      "line_count": 22,
+      "flags": []
+    },
+    "extract_facts": {
+      "call": {
+        "model_id": "anthropic.claude-sonnet-4-6",
+        "prompt_sha256": "ec91cd4136e8b4e74330b75d4bb7250537e110bfafe32a3b1af52e5246bbd146",
+        "stop_reason": "tool_use",
+        "attempts": 1,
+        "input_tokens": 979,
+        "output_tokens": 2430,
+        "cache_read_tokens": 3970,
+        "cache_write_tokens": 0,
+        "latency_ms": 20322
+      }
+    },
+    "validate_facts": {
+      "facts": {
+        "fields": {
+          "age_sex": {
+            "status": "documented",
+            "items": [
+              {
+                "value": "82-year-old female",
+                "cites": [
+                  {
+                    "lines": [
+                      "L001"
+                    ],
+                    "quote": "82F",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "age_sex.0",
+                "citation_status": "verified",
+                "reason": null
+              }
+            ],
+            "field_check": "ok"
+          },
+          "specialty": {
+            "status": "documented",
+            "items": [
+              {
+                "value": "Cardiology",
+                "cites": [
+                  {
+                    "lines": [
+                      "L010"
+                    ],
+                    "quote": "Cardiology r/v. NSTEMI confirmed",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "specialty.0",
+                "citation_status": "verified",
+                "reason": null
+              }
+            ],
+            "field_check": "ok"
+          },
+          "legal_status": {
+            "status": "not_documented",
+            "items": [],
+            "field_check": "ok"
+          },
+          "weight": {
+            "status": "not_documented",
+            "items": [],
+            "field_check": "ok"
+          },
+          "admission_date": {
+            "status": "documented",
+            "items": [
+              {
+                "value": "12/05",
+                "cites": [
+                  {
+                    "lines": [
+                      "L001"
+                    ],
+                    "quote": "12/05",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "admission_date.0",
+                "citation_status": "verified",
+                "reason": null
+              }
+            ],
+            "field_check": "ok"
+          },
+          "discharge_date": {
+            "status": "documented",
+            "items": [
+              {
+                "value": "16/05",
+                "cites": [
+                  {
+                    "lines": [
+                      "L021"
+                    ],
+                    "quote": "16/05) Fit for discharge",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "discharge_date.0",
+                "citation_status": "verified",
+                "reason": null
+              }
+            ],
+            "field_check": "ok"
+          },
+          "presenting_complaint": {
+            "status": "documented",
+            "items": [
+              {
+                "value": "Central chest pain and shortness of breath on exertion for 2 days",
+                "cites": [
+                  {
+                    "lines": [
+                      "L001"
+                    ],
+                    "quote": "central chest pain + SOB on exertion x2/7",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "presenting_complaint.0",
+                "citation_status": "verified",
+                "reason": null
+              }
+            ],
+            "field_check": "ok"
+          },
+          "diagnosis_primary": {
+            "status": "documented",
+            "items": [
+              {
+                "value": "NSTEMI",
+                "cites": [
+                  {
+                    "lines": [
+                      "L007"
+                    ],
+                    "quote": "Imp: NSTEMI",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "diagnosis_primary.0",
+                "citation_status": "verified",
+                "reason": null
+              }
+            ],
+            "field_check": "ok"
+          },
+          "diagnosis_secondary": {
+            "status": "documented",
+            "items": [
+              {
+                "value": "Severe three-vessel coronary artery disease, not suitable for PCI",
+                "cites": [
+                  {
+                    "lines": [
+                      "L014"
+                    ],
+                    "quote": "Angio: severe 3VD, not for PCI",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "diagnosis_secondary.0",
+                "citation_status": "verified",
+                "reason": null
+              }
+            ],
+            "field_check": "ok"
+          },
+          "diagnosis_background": {
+            "status": "documented",
+            "items": [
+              {
+                "value": "Heart failure with reduced ejection fraction (EF 35%)",
+                "cites": [
+                  {
+                    "lines": [
+                      "L002"
+                    ],
+                    "quote": "HFrEF (EF 35%)",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "diagnosis_background.0",
+                "citation_status": "verified",
+                "reason": null
+              },
+              {
+                "value": "Chronic kidney disease stage 3b",
+                "cites": [
+                  {
+                    "lines": [
+                      "L002"
+                    ],
+                    "quote": "CKD 3b",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "diagnosis_background.1",
+                "citation_status": "verified",
+                "reason": null
+              },
+              {
+                "value": "Type 2 diabetes mellitus",
+                "cites": [
+                  {
+                    "lines": [
+                      "L002"
+                    ],
+                    "quote": "T2DM",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "diagnosis_background.2",
+                "citation_status": "verified",
+                "reason": null
+              },
+              {
+                "value": "Hypertension",
+                "cites": [
+                  {
+                    "lines": [
+                      "L002"
+                    ],
+                    "quote": "HTN",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "diagnosis_background.3",
+                "citation_status": "verified",
+                "reason": null
+              },
+              {
+                "value": "Previous myocardial infarction 2019",
+                "cites": [
+                  {
+                    "lines": [
+                      "L002"
+                    ],
+                    "quote": "prev MI 2019",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "diagnosis_background.4",
+                "citation_status": "verified",
+                "reason": null
+              }
+            ],
+            "field_check": "ok"
+          },
+          "key_investigations": {
+            "status": "documented",
+            "items": [
+              {
+                "value": "ECG: T-wave inversion V4-6",
+                "cites": [
+                  {
+                    "lines": [
+                      "L006"
+                    ],
+                    "quote": "ECG: TWI V4-6",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "key_investigations.0",
+                "citation_status": "verified",
+                "reason": null
+              },
+              {
+                "value": "Troponin: 287 rising to 412",
+                "cites": [
+                  {
+                    "lines": [
+                      "L006"
+                    ],
+                    "quote": "Trop 287 -> 412",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "key_investigations.1",
+                "citation_status": "verified",
+                "reason": null
+              },
+              {
+                "value": "GRACE score: high risk",
+                "cites": [
+                  {
+                    "lines": [
+                      "L010"
+                    ],
+                    "quote": "GRACE high",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "key_investigations.2",
+                "citation_status": "verified",
+                "reason": null
+              },
+              {
+                "value": "Creatinine: 168 (Day 2, 13/05)",
+                "cites": [
+                  {
+                    "lines": [
+                      "L011"
+                    ],
+                    "quote": "Creat 168",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "key_investigations.3",
+                "citation_status": "verified",
+                "reason": null
+              },
+              {
+                "value": "Creatinine: improving to 142 (Day 4, 15/05)",
+                "cites": [
+                  {
+                    "lines": [
+                      "L019"
+                    ],
+                    "quote": "Creat improving 142",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "key_investigations.4",
+                "citation_status": "verified",
+                "reason": null
+              },
+              {
+                "value": "Inpatient coronary angiogram: severe three-vessel disease, not suitable for PCI",
+                "cites": [
+                  {
+                    "lines": [
+                      "L014"
+                    ],
+                    "quote": "Angio: severe 3VD, not for PCI",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "key_investigations.5",
+                "citation_status": "verified",
+                "reason": null
+              },
+              {
+                "value": "On examination (Day 1): heart sounds I+II+0, bibasal crepitations, BP 148/86 mmHg, HR 92, sats 94% on room air",
+                "cites": [
+                  {
+                    "lines": [
+                      "L005"
+                    ],
+                    "quote": "HS I+II+0, bibasal creps, BP 148/86, HR 92, sats 94% RA",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "key_investigations.6",
+                "citation_status": "verified",
+                "reason": null
+              }
+            ],
+            "field_check": "ok"
+          },
+          "treatment": {
+            "status": "documented",
+            "items": [
+              {
+                "value": "Ticagrelor added (dual antiplatelet therapy) and fondaparinux commenced",
+                "cites": [
+                  {
+                    "lines": [
+                      "L007"
+                    ],
+                    "quote": "add ticagrelor (DAPT), fondaparinux",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "treatment.0",
+                "citation_status": "verified",
+                "reason": null
+              },
+              {
+                "value": "Inpatient coronary angiogram performed",
+                "cites": [
+                  {
+                    "lines": [
+                      "L010"
+                    ],
+                    "quote": "For inpatient angiogram",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "treatment.1",
+                "citation_status": "verified",
+                "reason": null
+              },
+              {
+                "value": "MDT decision: medical management",
+                "cites": [
+                  {
+                    "lines": [
+                      "L014"
+                    ],
+                    "quote": "MDT -> medical mgmt",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "treatment.2",
+                "citation_status": "verified",
+                "reason": null
+              },
+              {
+                "value": "Bisoprolol uptitrated to 7.5mg once daily",
+                "cites": [
+                  {
+                    "lines": [
+                      "L017"
+                    ],
+                    "quote": "Bisoprolol up to 7.5mg OD",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "treatment.3",
+                "citation_status": "verified",
+                "reason": null
+              },
+              {
+                "value": "Isosorbide mononitrate 30mg once daily added",
+                "cites": [
+                  {
+                    "lines": [
+                      "L017"
+                    ],
+                    "quote": "Added ISMN 30mg OD",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "treatment.4",
+                "citation_status": "verified",
+                "reason": null
+              },
+              {
+                "value": "Mobilising with physiotherapy",
+                "cites": [
+                  {
+                    "lines": [
+                      "L019"
+                    ],
+                    "quote": "Mobilising w/ physio",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "treatment.5",
+                "citation_status": "verified",
+                "reason": null
+              },
+              {
+                "value": "Cardiac rehabilitation referral completed",
+                "cites": [
+                  {
+                    "lines": [
+                      "L019"
+                    ],
+                    "quote": "Cardiac rehab referral done",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "treatment.6",
+                "citation_status": "verified",
+                "reason": null
+              },
+              {
+                "value": "DNACPR discussed with patient and family on 14/05, given frailty, comorbidities and inoperable disease",
+                "cites": [
+                  {
+                    "lines": [
+                      "L015"
+                    ],
+                    "quote": "DNACPR discussed +",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "treatment.7",
+                "citation_status": "verified",
+                "reason": null
+              },
+              {
+                "value": "DNACPR form completed 14/05",
+                "cites": [
+                  {
+                    "lines": [
+                      "L016"
+                    ],
+                    "quote": "DNACPR form completed by Dr Patel 14/05",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "treatment.8",
+                "citation_status": "verified",
+                "reason": null
+              }
+            ],
+            "field_check": "ok"
+          },
+          "risk_assessment": {
+            "status": "not_documented",
+            "items": [],
+            "field_check": "ok"
+          },
+          "allergies": {
+            "status": "documented",
+            "items": [
+              {
+                "value": "No known drug allergies",
+                "cites": [
+                  {
+                    "lines": [
+                      "L004"
+                    ],
+                    "quote": "NKDA",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "allergies.0",
+                "citation_status": "verified",
+                "reason": null
+              }
+            ],
+            "field_check": "ok"
+          },
+          "follow_up": {
+            "status": "documented",
+            "items": [
+              {
+                "value": "Cardiology outpatient appointment in 6 weeks",
+                "cites": [
+                  {
+                    "lines": [
+                      "L022"
+                    ],
+                    "quote": "Cardiology OPA 6/52",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "follow_up.0",
+                "citation_status": "verified",
+                "reason": null
+              }
+            ],
+            "field_check": "ok"
+          },
+          "gp_actions": {
+            "status": "documented",
+            "items": [
+              {
+                "value": "Monitor renal function; uptitrate ACE inhibitor as tolerated",
+                "cites": [
+                  {
+                    "lines": [
+                      "L021"
+                    ],
+                    "quote": "GP: monitor renal fn, uptitrate ACEi as tolerated",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "gp_actions.0",
+                "citation_status": "verified",
+                "reason": null
+              }
+            ],
+            "field_check": "ok"
+          },
+          "vte_assessment": {
+            "status": "not_documented",
+            "items": [],
+            "field_check": "ok"
+          }
+        },
+        "medications": {
+          "pre_admission": [
+            {
+              "value": "Ramipril 5mg once daily",
+              "cites": [
+                {
+                  "lines": [
+                    "L003"
+                  ],
+                  "quote": "ramipril 5mg OD",
+                  "verified": true,
+                  "reason": null
+                }
+              ],
+              "fact_id": "medications.pre_admission.0",
+              "citation_status": "verified",
+              "reason": null
+            },
+            {
+              "value": "Bisoprolol 5mg once daily",
+              "cites": [
+                {
+                  "lines": [
+                    "L003"
+                  ],
+                  "quote": "bisoprolol 5mg OD",
+                  "verified": true,
+                  "reason": null
+                }
+              ],
+              "fact_id": "medications.pre_admission.1",
+              "citation_status": "verified",
+              "reason": null
+            },
+            {
+              "value": "Furosemide 40mg once daily",
+              "cites": [
+                {
+                  "lines": [
+                    "L003"
+                  ],
+                  "quote": "furosemide 40mg OD",
+                  "verified": true,
+                  "reason": null
+                }
+              ],
+              "fact_id": "medications.pre_admission.2",
+              "citation_status": "verified",
+              "reason": null
+            },
+            {
+              "value": "Metformin 1g twice daily",
+              "cites": [
+                {
+                  "lines": [
+                    "L003"
+                  ],
+                  "quote": "metformin 1g BD",
+                  "verified": true,
+                  "reason": null
+                }
+              ],
+              "fact_id": "medications.pre_admission.3",
+              "citation_status": "verified",
+              "reason": null
+            },
+            {
+              "value": "Atorvastatin 80mg at night",
+              "cites": [
+                {
+                  "lines": [
+                    "L004"
+                  ],
+                  "quote": "atorvastatin 80mg ON",
+                  "verified": true,
+                  "reason": null
+                }
+              ],
+              "fact_id": "medications.pre_admission.4",
+              "citation_status": "verified",
+              "reason": null
+            },
+            {
+              "value": "Aspirin 75mg once daily",
+              "cites": [
+                {
+                  "lines": [
+                    "L004"
+                  ],
+                  "quote": "aspirin 75mg OD",
+                  "verified": true,
+                  "reason": null
+                }
+              ],
+              "fact_id": "medications.pre_admission.5",
+              "citation_status": "verified",
+              "reason": null
+            }
+          ],
+          "discharge": [],
+          "discharge_status": "not_documented",
+          "medications_check": "ok"
+        },
+        "resus": {
+          "changed": "yes",
+          "cites": [
+            {
+              "lines": [
+                "L008"
+              ],
+              "quote": "For resus.",
+              "verified": true,
+              "reason": null
+            },
+            {
+              "lines": [
+                "L012"
+              ],
+              "quote": "For resus.",
+              "verified": true,
+              "reason": null
+            },
+            {
+              "lines": [
+                "L015",
+                "L016"
+              ],
+              "quote": "DNACPR discussed +\nagreed w/ pt + family. DNACPR form completed by Dr Patel 14/05.",
+              "verified": true,
+              "reason": null
+            }
+          ],
+          "form_or_discussion_documented": true,
+          "status_documented": "dnacpr",
+          "fact_id": "resus",
+          "citation_status": "verified",
+          "reason": null
+        },
+        "documented_advice": [],
+        "age_group": "adult",
+        "contradictions": [],
+        "suspicious_text": []
+      },
+      "uncited_lines": [],
+      "counts": {
+        "cites_total": 40,
+        "cites_verified": 40,
+        "items_unverified": 0,
+        "fields_inconsistent": 0,
+        "medications_inconsistent": 0
+      }
+    },
+    "retrieve_evidence": {
+      "medication": [
+        {
+          "line": "L003",
+          "sources": [
+            "cited",
+            "med_header"
+          ],
+          "fact_ids": [
+            "medications.pre_admission.0",
+            "medications.pre_admission.1",
+            "medications.pre_admission.2",
+            "medications.pre_admission.3"
+          ],
+          "flagged": false
+        },
+        {
+          "line": "L004",
+          "sources": [
+            "cited",
+            "med_continuation"
+          ],
+          "fact_ids": [
+            "medications.pre_admission.4",
+            "medications.pre_admission.5"
+          ],
+          "flagged": false
+        },
+        {
+          "line": "L021",
+          "sources": [
+            "med_header"
+          ],
+          "fact_ids": [],
+          "flagged": false
+        }
+      ],
+      "resus": [
+        {
+          "line": "L008",
+          "sources": [
+            "cited",
+            "resus_term"
+          ],
+          "fact_ids": [
+            "resus"
+          ],
+          "flagged": false
+        },
+        {
+          "line": "L012",
+          "sources": [
+            "cited",
+            "resus_term"
+          ],
+          "fact_ids": [
+            "resus"
+          ],
+          "flagged": false
+        },
+        {
+          "line": "L015",
+          "sources": [
+            "cited",
+            "resus_term"
+          ],
+          "fact_ids": [
+            "resus"
+          ],
+          "flagged": false
+        },
+        {
+          "line": "L016",
+          "sources": [
+            "cited",
+            "resus_term"
+          ],
+          "fact_ids": [
+            "resus"
+          ],
+          "flagged": false
+        }
+      ],
+      "counts": {
+        "medication_lines": 3,
+        "resus_lines": 4,
+        "medication_matched_not_cited": 1,
+        "resus_matched_not_cited": 0
+      }
+    },
+    "route_resus": {
+      "route": "documented",
+      "forced": "no",
+      "status": "dnacpr",
+      "changed": "yes",
+      "cited_lines": [
+        "L008",
+        "L012",
+        "L015",
+        "L016"
+      ],
+      "rendered": "RESUSCITATION STATUS\nDNACPR. *** CHANGED DURING ADMISSION ***\nSource: [L008]: \"For resus.\"; [L012]: \"For resus.\"; [L015–L016]: \"DNACPR discussed + agreed w/ pt + family. DNACPR form completed by Dr Patel 14/05.\""
+    },
+    "select_safety_net": {
+      "route": "fallback",
+      "audience": "adult",
+      "pinned_line": "If you have been given a number to call, use that first. Otherwise, if you are worried, contact your GP or call NHS 111. Call 999 if it is an emergency.",
+      "advice": [],
+      "advice_excluded": 0,
+      "cited_lines": [],
+      "part_ab": "If you have been given a number to call, use that first. Otherwise, if you are worried, contact your GP or call NHS 111. Call 999 if it is an emergency.",
+      "part_c": "If you have been given a number to call, use that first. Otherwise, if you are worried, contact your GP or call NHS 111. Call 999 if it is an emergency."
+    }
+  },
+  "output": null,
+  "gate": null,
+  "failed_step": null,
+  "error": null,
+  "cost_usd_est": 0.044636
+}

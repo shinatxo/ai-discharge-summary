@@ -1,0 +1,3881 @@
+{
+  "scorer": "safety_net",
+  "scorer_version": 2,
+  "batch_id": "w4-pipeline-e06-x5",
+  "generator": "pipeline",
+  "gold": {
+    "S12": {
+      "status": "approved",
+      "sha256": "5d61299a2f0ebb04eb5b6ccc248ea03413bf17a04d0bb3197876f13bceb4903f"
+    },
+    "B6": {
+      "status": "approved",
+      "sha256": "fba7dc568098c106ab9002b171622c602fd77e869b99d1857ddb2582762c7124"
+    },
+    "S16": {
+      "status": "approved",
+      "sha256": "dd05baaad97444d727d611113bd2b1ac9bbb57d960cfdb9e996a860214b3060e"
+    },
+    "S9": {
+      "status": "approved",
+      "sha256": "5a395e104b7a98f4f818578d2e61555e11efe4b499be1e7a9faf86d574264126"
+    },
+    "S1": {
+      "status": "approved",
+      "sha256": "17c1a71d3422d157cd75942acec635e4dc588eea7c60c6278efb3e6cb7245ff4"
+    },
+    "S3": {
+      "status": "approved",
+      "sha256": "19c67912c3e49e17750982df362b3075e82874ca57363e72d5ab7708b235f0a6"
+    },
+    "S10": {
+      "status": "approved",
+      "sha256": "9200c327d753efae6d9dbd1a0fa0ec286b68f61a0d38996b6660f74faea0342d"
+    },
+    "S18": {
+      "status": "approved",
+      "sha256": "5086d224b0a5ab587cf5802e748f75f7b28f85c6f966b7e91c1a967cdb0d5df9"
+    },
+    "S11": {
+      "status": "approved",
+      "sha256": "20f52f3a721a8c0f4f923e60a22948bf6cd17224206d57885a3dab7897de8a0d"
+    },
+    "S17": {
+      "status": "approved",
+      "sha256": "1cd17a625573c85e980538e3b5580370f92f4685adfa5e530d32d4f2bfbed145"
+    },
+    "S13": {
+      "status": "approved",
+      "sha256": "34f0dfcbb5fadda073991ced1955b2de90621a33f38663c3fbc033a4735f847a"
+    },
+    "C7": {
+      "status": "approved",
+      "sha256": "1967d054fcd90565e7851ab3932127a79b51a5edecf5cc52f2c374e591b5df0f"
+    },
+    "S15": {
+      "status": "approved",
+      "sha256": "b61d05b40648a2b7a749463ca87f170511806a81eadf44feeec4686daf63390d"
+    },
+    "S4": {
+      "status": "approved",
+      "sha256": "7d837e9dbc286bfc7e5758ba1f253286bf47327bd1c391f9946a720cd47a8208"
+    },
+    "S2": {
+      "status": "approved",
+      "sha256": "4ea0940764ea8104f40b06321685cbbbfae43fa240340483733125eb046434d2"
+    },
+    "S14": {
+      "status": "approved",
+      "sha256": "11ac78ee87c168a9e2653afc0b12cb08de6d02493ccceae0a505e9200846175f"
+    },
+    "A5": {
+      "status": "approved",
+      "sha256": "80d0adab601df1792cf3627f394ebbc8843500ec7d9763277e376948f0e3e0e4"
+    },
+    "S8": {
+      "status": "approved",
+      "sha256": "1750729bbff29dcf405a6e4759ddf7be6a7f6dcd16dbbac99acb5f823f4798a6"
+    }
+  },
+  "results": [
+    {
+      "generator": "pipeline",
+      "gold_status": "approved",
+      "route": {
+        "gold": "fallback",
+        "predicted": "fallback",
+        "correct": true,
+        "gold_basis": null
+      },
+      "advice": {
+        "units": [],
+        "n_units": 0,
+        "n_gold": 0,
+        "n_other_line": 0,
+        "n_unlocated": 0,
+        "n_adjudicated": 0,
+        "gold_items": 0,
+        "gold_items_carried": 0,
+        "meta_flags": 0
+      },
+      "seek_help": {
+        "gold_documented": false,
+        "n_signposts": 4,
+        "n_invented": 0
+      },
+      "pinned": {
+        "required": true,
+        "in_part_c": true,
+        "audience_ok": true
+      },
+      "failures": [],
+      "verdict": "pass",
+      "generation_id": "w4-pipeline-e06-x5/r1/S1",
+      "scenario_id": "S1",
+      "run": 1
+    },
+    {
+      "generator": "pipeline",
+      "gold_status": "approved",
+      "route": {
+        "gold": "documented",
+        "predicted": "documented",
+        "correct": true,
+        "gold_basis": "instruction"
+      },
+      "advice": {
+        "units": [
+          {
+            "index": 0,
+            "kind": "gold",
+            "lines": [
+              "L012"
+            ],
+            "key": "68daba0413b43908e8e690b30e48a00550714ff80cba0ce64170111f3363bbd3"
+          },
+          {
+            "index": 1,
+            "kind": "gold",
+            "lines": [
+              "L012"
+            ],
+            "key": "c54103da540351566c73870cf666d86705f59b1f561abcf48c5342c529404de8"
+          }
+        ],
+        "n_units": 2,
+        "n_gold": 2,
+        "n_other_line": 0,
+        "n_unlocated": 0,
+        "n_adjudicated": 0,
+        "gold_items": 2,
+        "gold_items_carried": 2,
+        "meta_flags": 0
+      },
+      "seek_help": {
+        "gold_documented": false,
+        "n_signposts": 2,
+        "n_invented": 0
+      },
+      "pinned": {
+        "required": true,
+        "in_part_c": true,
+        "audience_ok": true
+      },
+      "failures": [],
+      "verdict": "pass",
+      "generation_id": "w4-pipeline-e06-x5/r1/S2",
+      "scenario_id": "S2",
+      "run": 1
+    },
+    {
+      "generator": "pipeline",
+      "gold_status": "approved",
+      "route": {
+        "gold": "documented",
+        "predicted": "documented",
+        "correct": true,
+        "gold_basis": "record_only"
+      },
+      "advice": {
+        "units": [
+          {
+            "index": 0,
+            "kind": "gold",
+            "lines": [
+              "L021",
+              "L022"
+            ],
+            "key": "a170ae0bb7bcfbe9bda2206653b567cea3f53f973a447599a86a926e759de096"
+          }
+        ],
+        "n_units": 1,
+        "n_gold": 1,
+        "n_other_line": 0,
+        "n_unlocated": 0,
+        "n_adjudicated": 0,
+        "gold_items": 2,
+        "gold_items_carried": 1,
+        "meta_flags": 0
+      },
+      "seek_help": {
+        "gold_documented": true,
+        "n_signposts": 2,
+        "n_invented": 0
+      },
+      "pinned": {
+        "required": false,
+        "in_part_c": true,
+        "audience_ok": true
+      },
+      "failures": [],
+      "verdict": "pass",
+      "generation_id": "w4-pipeline-e06-x5/r1/S3",
+      "scenario_id": "S3",
+      "run": 1
+    },
+    {
+      "generator": "pipeline",
+      "gold_status": "approved",
+      "route": {
+        "gold": "documented",
+        "predicted": "documented",
+        "correct": true,
+        "gold_basis": "record_only"
+      },
+      "advice": {
+        "units": [
+          {
+            "index": 0,
+            "kind": "gold",
+            "lines": [
+              "L015"
+            ],
+            "key": "a45a4f4e4bb6c571f85155ad687d48d64a89bd20a37bd516b0a25f8d71284529"
+          }
+        ],
+        "n_units": 1,
+        "n_gold": 1,
+        "n_other_line": 0,
+        "n_unlocated": 0,
+        "n_adjudicated": 0,
+        "gold_items": 1,
+        "gold_items_carried": 1,
+        "meta_flags": 0
+      },
+      "seek_help": {
+        "gold_documented": false,
+        "n_signposts": 2,
+        "n_invented": 0
+      },
+      "pinned": {
+        "required": true,
+        "in_part_c": true,
+        "audience_ok": true
+      },
+      "failures": [],
+      "verdict": "pass",
+      "generation_id": "w4-pipeline-e06-x5/r1/S4",
+      "scenario_id": "S4",
+      "run": 1
+    },
+    {
+      "generator": "pipeline",
+      "gold_status": "approved",
+      "route": {
+        "gold": "documented",
+        "predicted": "documented",
+        "correct": true,
+        "gold_basis": "record_only"
+      },
+      "advice": {
+        "units": [
+          {
+            "index": 0,
+            "kind": "gold",
+            "lines": [
+              "L012",
+              "L013"
+            ],
+            "key": "c1d8940df5f1a5f32b862866cfa41f2edd8fd3375cfb622772b46a8c345f2265"
+          }
+        ],
+        "n_units": 1,
+        "n_gold": 1,
+        "n_other_line": 0,
+        "n_unlocated": 0,
+        "n_adjudicated": 0,
+        "gold_items": 1,
+        "gold_items_carried": 1,
+        "meta_flags": 0
+      },
+      "seek_help": {
+        "gold_documented": true,
+        "n_signposts": 2,
+        "n_invented": 0
+      },
+      "pinned": {
+        "required": false,
+        "in_part_c": true,
+        "audience_ok": true
+      },
+      "failures": [],
+      "verdict": "pass",
+      "generation_id": "w4-pipeline-e06-x5/r1/S8",
+      "scenario_id": "S8",
+      "run": 1
+    },
+    {
+      "generator": "pipeline",
+      "gold_status": "approved",
+      "route": {
+        "gold": "documented",
+        "predicted": "fallback",
+        "correct": false,
+        "gold_basis": "instruction"
+      },
+      "advice": {
+        "units": [],
+        "n_units": 0,
+        "n_gold": 0,
+        "n_other_line": 0,
+        "n_unlocated": 0,
+        "n_adjudicated": 0,
+        "gold_items": 2,
+        "gold_items_carried": 0,
+        "meta_flags": 0
+      },
+      "seek_help": {
+        "gold_documented": true,
+        "n_signposts": 4,
+        "n_invented": 0
+      },
+      "pinned": {
+        "required": false,
+        "in_part_c": true,
+        "audience_ok": true
+      },
+      "failures": [
+        "route"
+      ],
+      "verdict": "fail",
+      "generation_id": "w4-pipeline-e06-x5/r1/S9",
+      "scenario_id": "S9",
+      "run": 1
+    },
+    {
+      "generator": "pipeline",
+      "gold_status": "approved",
+      "route": {
+        "gold": "documented",
+        "predicted": "documented",
+        "correct": true,
+        "gold_basis": "record_only"
+      },
+      "advice": {
+        "units": [
+          {
+            "index": 0,
+            "kind": "gold",
+            "lines": [
+              "L010"
+            ],
+            "key": "96f4e7065f052aa170b0bd945faedf2547f451629658fdcdfc8aa357ba5b6736"
+          }
+        ],
+        "n_units": 1,
+        "n_gold": 1,
+        "n_other_line": 0,
+        "n_unlocated": 0,
+        "n_adjudicated": 0,
+        "gold_items": 1,
+        "gold_items_carried": 1,
+        "meta_flags": 0
+      },
+      "seek_help": {
+        "gold_documented": true,
+        "n_signposts": 2,
+        "n_invented": 0
+      },
+      "pinned": {
+        "required": false,
+        "in_part_c": true,
+        "audience_ok": true
+      },
+      "failures": [],
+      "verdict": "pass",
+      "generation_id": "w4-pipeline-e06-x5/r1/S10",
+      "scenario_id": "S10",
+      "run": 1
+    },
+    {
+      "generator": "pipeline",
+      "gold_status": "approved",
+      "route": {
+        "gold": "documented",
+        "predicted": "documented",
+        "correct": true,
+        "gold_basis": "instruction"
+      },
+      "advice": {
+        "units": [
+          {
+            "index": 0,
+            "kind": "gold",
+            "lines": [
+              "L014",
+              "L015"
+            ],
+            "key": "748c32b4f72eb23f8c7990f2b778b98fbe309e9899d823686f338e7a1f6a2646"
+          }
+        ],
+        "n_units": 1,
+        "n_gold": 1,
+        "n_other_line": 0,
+        "n_unlocated": 0,
+        "n_adjudicated": 0,
+        "gold_items": 2,
+        "gold_items_carried": 1,
+        "meta_flags": 0
+      },
+      "seek_help": {
+        "gold_documented": false,
+        "n_signposts": 2,
+        "n_invented": 0
+      },
+      "pinned": {
+        "required": true,
+        "in_part_c": true,
+        "audience_ok": true
+      },
+      "failures": [],
+      "verdict": "pass",
+      "generation_id": "w4-pipeline-e06-x5/r1/S11",
+      "scenario_id": "S11",
+      "run": 1
+    },
+    {
+      "generator": "pipeline",
+      "gold_status": "approved",
+      "route": {
+        "gold": "fallback",
+        "predicted": "fallback",
+        "correct": true,
+        "gold_basis": null
+      },
+      "advice": {
+        "units": [],
+        "n_units": 0,
+        "n_gold": 0,
+        "n_other_line": 0,
+        "n_unlocated": 0,
+        "n_adjudicated": 0,
+        "gold_items": 0,
+        "gold_items_carried": 0,
+        "meta_flags": 0
+      },
+      "seek_help": {
+        "gold_documented": false,
+        "n_signposts": 4,
+        "n_invented": 0
+      },
+      "pinned": {
+        "required": true,
+        "in_part_c": true,
+        "audience_ok": true
+      },
+      "failures": [],
+      "verdict": "pass",
+      "generation_id": "w4-pipeline-e06-x5/r1/S12",
+      "scenario_id": "S12",
+      "run": 1
+    },
+    {
+      "generator": "pipeline",
+      "gold_status": "approved",
+      "route": {
+        "gold": "fallback",
+        "predicted": "fallback",
+        "correct": true,
+        "gold_basis": null
+      },
+      "advice": {
+        "units": [],
+        "n_units": 0,
+        "n_gold": 0,
+        "n_other_line": 0,
+        "n_unlocated": 0,
+        "n_adjudicated": 0,
+        "gold_items": 0,
+        "gold_items_carried": 0,
+        "meta_flags": 0
+      },
+      "seek_help": {
+        "gold_documented": false,
+        "n_signposts": 4,
+        "n_invented": 0
+      },
+      "pinned": {
+        "required": true,
+        "in_part_c": true,
+        "audience_ok": true
+      },
+      "failures": [],
+      "verdict": "pass",
+      "generation_id": "w4-pipeline-e06-x5/r1/S13",
+      "scenario_id": "S13",
+      "run": 1
+    },
+    {
+      "generator": "pipeline",
+      "gold_status": "approved",
+      "route": {
+        "gold": "documented",
+        "predicted": "documented",
+        "correct": true,
+        "gold_basis": "instruction"
+      },
+      "advice": {
+        "units": [
+          {
+            "index": 0,
+            "kind": "gold",
+            "lines": [
+              "L014"
+            ],
+            "key": "d432347525b284389846edbab1a1f607be60b17530b9c8122b783bc6f612ddfc"
+          }
+        ],
+        "n_units": 1,
+        "n_gold": 1,
+        "n_other_line": 0,
+        "n_unlocated": 0,
+        "n_adjudicated": 0,
+        "gold_items": 1,
+        "gold_items_carried": 1,
+        "meta_flags": 0
+      },
+      "seek_help": {
+        "gold_documented": false,
+        "n_signposts": 2,
+        "n_invented": 0
+      },
+      "pinned": {
+        "required": true,
+        "in_part_c": true,
+        "audience_ok": true
+      },
+      "failures": [],
+      "verdict": "pass",
+      "generation_id": "w4-pipeline-e06-x5/r1/S14",
+      "scenario_id": "S14",
+      "run": 1
+    },
+    {
+      "generator": "pipeline",
+      "gold_status": "approved",
+      "route": {
+        "gold": "documented",
+        "predicted": "documented",
+        "correct": true,
+        "gold_basis": "record_only"
+      },
+      "advice": {
+        "units": [
+          {
+            "index": 0,
+            "kind": "gold",
+            "lines": [
+              "L012"
+            ],
+            "key": "fc187641354c5b6d5bfc10386907bb2ce132a8b4047be2e2bb15c2a1d3841809"
+          }
+        ],
+        "n_units": 1,
+        "n_gold": 1,
+        "n_other_line": 0,
+        "n_unlocated": 0,
+        "n_adjudicated": 0,
+        "gold_items": 2,
+        "gold_items_carried": 1,
+        "meta_flags": 0
+      },
+      "seek_help": {
+        "gold_documented": false,
+        "n_signposts": 2,
+        "n_invented": 0
+      },
+      "pinned": {
+        "required": true,
+        "in_part_c": true,
+        "audience_ok": true
+      },
+      "failures": [],
+      "verdict": "pass",
+      "generation_id": "w4-pipeline-e06-x5/r1/S15",
+      "scenario_id": "S15",
+      "run": 1
+    },
+    {
+      "generator": "pipeline",
+      "gold_status": "approved",
+      "route": {
+        "gold": "fallback",
+        "predicted": "documented",
+        "correct": false,
+        "gold_basis": null
+      },
+      "advice": {
+        "units": [
+          {
+            "index": 0,
+            "kind": "other_line",
+            "lines": [
+              "L013"
+            ],
+            "key": "5a4424d1a07dbf5933252a43f173a9a30288cac86916c3782da298c6e64b6fd1"
+          }
+        ],
+        "n_units": 1,
+        "n_gold": 0,
+        "n_other_line": 1,
+        "n_unlocated": 0,
+        "n_adjudicated": 0,
+        "gold_items": 0,
+        "gold_items_carried": 0,
+        "meta_flags": 0
+      },
+      "seek_help": {
+        "gold_documented": false,
+        "n_signposts": 2,
+        "n_invented": 0
+      },
+      "pinned": {
+        "required": true,
+        "in_part_c": true,
+        "audience_ok": true
+      },
+      "failures": [
+        "route"
+      ],
+      "verdict": "fail",
+      "generation_id": "w4-pipeline-e06-x5/r1/S16",
+      "scenario_id": "S16",
+      "run": 1
+    },
+    {
+      "generator": "pipeline",
+      "gold_status": "approved",
+      "route": {
+        "gold": "fallback",
+        "predicted": "fallback",
+        "correct": true,
+        "gold_basis": null
+      },
+      "advice": {
+        "units": [],
+        "n_units": 0,
+        "n_gold": 0,
+        "n_other_line": 0,
+        "n_unlocated": 0,
+        "n_adjudicated": 0,
+        "gold_items": 0,
+        "gold_items_carried": 0,
+        "meta_flags": 0
+      },
+      "seek_help": {
+        "gold_documented": false,
+        "n_signposts": 4,
+        "n_invented": 0
+      },
+      "pinned": {
+        "required": true,
+        "in_part_c": true,
+        "audience_ok": true
+      },
+      "failures": [],
+      "verdict": "pass",
+      "generation_id": "w4-pipeline-e06-x5/r1/S17",
+      "scenario_id": "S17",
+      "run": 1
+    },
+    {
+      "generator": "pipeline",
+      "gold_status": "approved",
+      "route": {
+        "gold": "documented",
+        "predicted": "documented",
+        "correct": true,
+        "gold_basis": "instruction"
+      },
+      "advice": {
+        "units": [
+          {
+            "index": 0,
+            "kind": "gold",
+            "lines": [
+              "L007",
+              "L008"
+            ],
+            "key": "fe8b7cd09c6637ddcc2a0597adc8a2f778a23c33bf6d579f49a2a01918a85cd6"
+          }
+        ],
+        "n_units": 1,
+        "n_gold": 1,
+        "n_other_line": 0,
+        "n_unlocated": 0,
+        "n_adjudicated": 0,
+        "gold_items": 3,
+        "gold_items_carried": 3,
+        "meta_flags": 0
+      },
+      "seek_help": {
+        "gold_documented": false,
+        "n_signposts": 2,
+        "n_invented": 0
+      },
+      "pinned": {
+        "required": true,
+        "in_part_c": true,
+        "audience_ok": true
+      },
+      "failures": [],
+      "verdict": "pass",
+      "generation_id": "w4-pipeline-e06-x5/r1/S18",
+      "scenario_id": "S18",
+      "run": 1
+    },
+    {
+      "generator": "pipeline",
+      "gold_status": "approved",
+      "route": {
+        "gold": "fallback",
+        "predicted": "fallback",
+        "correct": true,
+        "gold_basis": null
+      },
+      "advice": {
+        "units": [],
+        "n_units": 0,
+        "n_gold": 0,
+        "n_other_line": 0,
+        "n_unlocated": 0,
+        "n_adjudicated": 0,
+        "gold_items": 0,
+        "gold_items_carried": 0,
+        "meta_flags": 0
+      },
+      "seek_help": {
+        "gold_documented": false,
+        "n_signposts": 4,
+        "n_invented": 0
+      },
+      "pinned": {
+        "required": true,
+        "in_part_c": true,
+        "audience_ok": true
+      },
+      "failures": [],
+      "verdict": "pass",
+      "generation_id": "w4-pipeline-e06-x5/r1/A5",
+      "scenario_id": "A5",
+      "run": 1
+    },
+    {
+      "generator": "pipeline",
+      "gold_status": "approved",
+      "route": {
+        "gold": "fallback",
+        "predicted": "fallback",
+        "correct": true,
+        "gold_basis": null
+      },
+      "advice": {
+        "units": [],
+        "n_units": 0,
+        "n_gold": 0,
+        "n_other_line": 0,
+        "n_unlocated": 0,
+        "n_adjudicated": 0,
+        "gold_items": 0,
+        "gold_items_carried": 0,
+        "meta_flags": 0
+      },
+      "seek_help": {
+        "gold_documented": false,
+        "n_signposts": 4,
+        "n_invented": 0
+      },
+      "pinned": {
+        "required": true,
+        "in_part_c": true,
+        "audience_ok": true
+      },
+      "failures": [],
+      "verdict": "pass",
+      "generation_id": "w4-pipeline-e06-x5/r1/B6",
+      "scenario_id": "B6",
+      "run": 1
+    },
+    {
+      "generator": "pipeline",
+      "gold_status": "approved",
+      "route": {
+        "gold": "fallback",
+        "predicted": "fallback",
+        "correct": true,
+        "gold_basis": null
+      },
+      "advice": {
+        "units": [],
+        "n_units": 0,
+        "n_gold": 0,
+        "n_other_line": 0,
+        "n_unlocated": 0,
+        "n_adjudicated": 0,
+        "gold_items": 0,
+        "gold_items_carried": 0,
+        "meta_flags": 0
+      },
+      "seek_help": {
+        "gold_documented": false,
+        "n_signposts": 4,
+        "n_invented": 0
+      },
+      "pinned": {
+        "required": true,
+        "in_part_c": true,
+        "audience_ok": true
+      },
+      "failures": [],
+      "verdict": "pass",
+      "generation_id": "w4-pipeline-e06-x5/r1/C7",
+      "scenario_id": "C7",
+      "run": 1
+    },
+    {
+      "generator": "pipeline",
+      "gold_status": "approved",
+      "route": {
+        "gold": "fallback",
+        "predicted": "fallback",
+        "correct": true,
+        "gold_basis": null
+      },
+      "advice": {
+        "units": [],
+        "n_units": 0,
+        "n_gold": 0,
+        "n_other_line": 0,
+        "n_unlocated": 0,
+        "n_adjudicated": 0,
+        "gold_items": 0,
+        "gold_items_carried": 0,
+        "meta_flags": 0
+      },
+      "seek_help": {
+        "gold_documented": false,
+        "n_signposts": 4,
+        "n_invented": 0
+      },
+      "pinned": {
+        "required": true,
+        "in_part_c": true,
+        "audience_ok": true
+      },
+      "failures": [],
+      "verdict": "pass",
+      "generation_id": "w4-pipeline-e06-x5/r2/S1",
+      "scenario_id": "S1",
+      "run": 2
+    },
+    {
+      "generator": "pipeline",
+      "gold_status": "approved",
+      "route": {
+        "gold": "documented",
+        "predicted": "documented",
+        "correct": true,
+        "gold_basis": "instruction"
+      },
+      "advice": {
+        "units": [
+          {
+            "index": 0,
+            "kind": "gold",
+            "lines": [
+              "L012"
+            ],
+            "key": "965fba2518f49fd99f429a63926df239075158e0fcdbbc462e5c34a37710df2c"
+          },
+          {
+            "index": 1,
+            "kind": "gold",
+            "lines": [
+              "L012"
+            ],
+            "key": "5775e06cf9bf953f6621d8cbfc95372d637393aaf2bd6bd01016b76b9e8f794d"
+          }
+        ],
+        "n_units": 2,
+        "n_gold": 2,
+        "n_other_line": 0,
+        "n_unlocated": 0,
+        "n_adjudicated": 0,
+        "gold_items": 2,
+        "gold_items_carried": 2,
+        "meta_flags": 0
+      },
+      "seek_help": {
+        "gold_documented": false,
+        "n_signposts": 2,
+        "n_invented": 0
+      },
+      "pinned": {
+        "required": true,
+        "in_part_c": true,
+        "audience_ok": true
+      },
+      "failures": [],
+      "verdict": "pass",
+      "generation_id": "w4-pipeline-e06-x5/r2/S2",
+      "scenario_id": "S2",
+      "run": 2
+    },
+    {
+      "generator": "pipeline",
+      "gold_status": "approved",
+      "route": {
+        "gold": "documented",
+        "predicted": "fallback",
+        "correct": false,
+        "gold_basis": "record_only"
+      },
+      "advice": {
+        "units": [],
+        "n_units": 0,
+        "n_gold": 0,
+        "n_other_line": 0,
+        "n_unlocated": 0,
+        "n_adjudicated": 0,
+        "gold_items": 2,
+        "gold_items_carried": 0,
+        "meta_flags": 0
+      },
+      "seek_help": {
+        "gold_documented": true,
+        "n_signposts": 4,
+        "n_invented": 0
+      },
+      "pinned": {
+        "required": false,
+        "in_part_c": true,
+        "audience_ok": true
+      },
+      "failures": [
+        "route"
+      ],
+      "verdict": "fail",
+      "generation_id": "w4-pipeline-e06-x5/r2/S3",
+      "scenario_id": "S3",
+      "run": 2
+    },
+    {
+      "generator": "pipeline",
+      "gold_status": "approved",
+      "route": {
+        "gold": "documented",
+        "predicted": "documented",
+        "correct": true,
+        "gold_basis": "record_only"
+      },
+      "advice": {
+        "units": [
+          {
+            "index": 0,
+            "kind": "gold",
+            "lines": [
+              "L015"
+            ],
+            "key": "a45a4f4e4bb6c571f85155ad687d48d64a89bd20a37bd516b0a25f8d71284529"
+          }
+        ],
+        "n_units": 1,
+        "n_gold": 1,
+        "n_other_line": 0,
+        "n_unlocated": 0,
+        "n_adjudicated": 0,
+        "gold_items": 1,
+        "gold_items_carried": 1,
+        "meta_flags": 0
+      },
+      "seek_help": {
+        "gold_documented": false,
+        "n_signposts": 2,
+        "n_invented": 0
+      },
+      "pinned": {
+        "required": true,
+        "in_part_c": true,
+        "audience_ok": true
+      },
+      "failures": [],
+      "verdict": "pass",
+      "generation_id": "w4-pipeline-e06-x5/r2/S4",
+      "scenario_id": "S4",
+      "run": 2
+    },
+    {
+      "generator": "pipeline",
+      "gold_status": "approved",
+      "route": {
+        "gold": "documented",
+        "predicted": "documented",
+        "correct": true,
+        "gold_basis": "record_only"
+      },
+      "advice": {
+        "units": [
+          {
+            "index": 0,
+            "kind": "gold",
+            "lines": [
+              "L012",
+              "L013"
+            ],
+            "key": "8c207253cb53ffd559215761c8e9d174e8d094a13131fe99665c99e15969c437"
+          }
+        ],
+        "n_units": 1,
+        "n_gold": 1,
+        "n_other_line": 0,
+        "n_unlocated": 0,
+        "n_adjudicated": 0,
+        "gold_items": 1,
+        "gold_items_carried": 1,
+        "meta_flags": 0
+      },
+      "seek_help": {
+        "gold_documented": true,
+        "n_signposts": 2,
+        "n_invented": 0
+      },
+      "pinned": {
+        "required": false,
+        "in_part_c": true,
+        "audience_ok": true
+      },
+      "failures": [],
+      "verdict": "pass",
+      "generation_id": "w4-pipeline-e06-x5/r2/S8",
+      "scenario_id": "S8",
+      "run": 2
+    },
+    {
+      "generator": "pipeline",
+      "gold_status": "approved",
+      "route": {
+        "gold": "documented",
+        "predicted": "fallback",
+        "correct": false,
+        "gold_basis": "instruction"
+      },
+      "advice": {
+        "units": [],
+        "n_units": 0,
+        "n_gold": 0,
+        "n_other_line": 0,
+        "n_unlocated": 0,
+        "n_adjudicated": 0,
+        "gold_items": 2,
+        "gold_items_carried": 0,
+        "meta_flags": 0
+      },
+      "seek_help": {
+        "gold_documented": true,
+        "n_signposts": 4,
+        "n_invented": 0
+      },
+      "pinned": {
+        "required": false,
+        "in_part_c": true,
+        "audience_ok": true
+      },
+      "failures": [
+        "route"
+      ],
+      "verdict": "fail",
+      "generation_id": "w4-pipeline-e06-x5/r2/S9",
+      "scenario_id": "S9",
+      "run": 2
+    },
+    {
+      "generator": "pipeline",
+      "gold_status": "approved",
+      "route": {
+        "gold": "documented",
+        "predicted": "documented",
+        "correct": true,
+        "gold_basis": "record_only"
+      },
+      "advice": {
+        "units": [
+          {
+            "index": 0,
+            "kind": "gold",
+            "lines": [
+              "L010"
+            ],
+            "key": "96f4e7065f052aa170b0bd945faedf2547f451629658fdcdfc8aa357ba5b6736"
+          }
+        ],
+        "n_units": 1,
+        "n_gold": 1,
+        "n_other_line": 0,
+        "n_unlocated": 0,
+        "n_adjudicated": 0,
+        "gold_items": 1,
+        "gold_items_carried": 1,
+        "meta_flags": 0
+      },
+      "seek_help": {
+        "gold_documented": true,
+        "n_signposts": 2,
+        "n_invented": 0
+      },
+      "pinned": {
+        "required": false,
+        "in_part_c": true,
+        "audience_ok": true
+      },
+      "failures": [],
+      "verdict": "pass",
+      "generation_id": "w4-pipeline-e06-x5/r2/S10",
+      "scenario_id": "S10",
+      "run": 2
+    },
+    {
+      "generator": "pipeline",
+      "gold_status": "approved",
+      "route": {
+        "gold": "documented",
+        "predicted": "documented",
+        "correct": true,
+        "gold_basis": "instruction"
+      },
+      "advice": {
+        "units": [
+          {
+            "index": 0,
+            "kind": "gold",
+            "lines": [
+              "L014",
+              "L015"
+            ],
+            "key": "8c538afb56c27d4f5994fe3958822c94bb58fdae91961909660355ca712147f3"
+          }
+        ],
+        "n_units": 1,
+        "n_gold": 1,
+        "n_other_line": 0,
+        "n_unlocated": 0,
+        "n_adjudicated": 0,
+        "gold_items": 2,
+        "gold_items_carried": 1,
+        "meta_flags": 0
+      },
+      "seek_help": {
+        "gold_documented": false,
+        "n_signposts": 2,
+        "n_invented": 0
+      },
+      "pinned": {
+        "required": true,
+        "in_part_c": true,
+        "audience_ok": true
+      },
+      "failures": [],
+      "verdict": "pass",
+      "generation_id": "w4-pipeline-e06-x5/r2/S11",
+      "scenario_id": "S11",
+      "run": 2
+    },
+    {
+      "generator": "pipeline",
+      "gold_status": "approved",
+      "route": {
+        "gold": "fallback",
+        "predicted": "fallback",
+        "correct": true,
+        "gold_basis": null
+      },
+      "advice": {
+        "units": [],
+        "n_units": 0,
+        "n_gold": 0,
+        "n_other_line": 0,
+        "n_unlocated": 0,
+        "n_adjudicated": 0,
+        "gold_items": 0,
+        "gold_items_carried": 0,
+        "meta_flags": 0
+      },
+      "seek_help": {
+        "gold_documented": false,
+        "n_signposts": 4,
+        "n_invented": 0
+      },
+      "pinned": {
+        "required": true,
+        "in_part_c": true,
+        "audience_ok": true
+      },
+      "failures": [],
+      "verdict": "pass",
+      "generation_id": "w4-pipeline-e06-x5/r2/S12",
+      "scenario_id": "S12",
+      "run": 2
+    },
+    {
+      "generator": "pipeline",
+      "gold_status": "approved",
+      "route": {
+        "gold": "fallback",
+        "predicted": "fallback",
+        "correct": true,
+        "gold_basis": null
+      },
+      "advice": {
+        "units": [],
+        "n_units": 0,
+        "n_gold": 0,
+        "n_other_line": 0,
+        "n_unlocated": 0,
+        "n_adjudicated": 0,
+        "gold_items": 0,
+        "gold_items_carried": 0,
+        "meta_flags": 0
+      },
+      "seek_help": {
+        "gold_documented": false,
+        "n_signposts": 4,
+        "n_invented": 0
+      },
+      "pinned": {
+        "required": true,
+        "in_part_c": true,
+        "audience_ok": true
+      },
+      "failures": [],
+      "verdict": "pass",
+      "generation_id": "w4-pipeline-e06-x5/r2/S13",
+      "scenario_id": "S13",
+      "run": 2
+    },
+    {
+      "generator": "pipeline",
+      "gold_status": "approved",
+      "route": {
+        "gold": "documented",
+        "predicted": "documented",
+        "correct": true,
+        "gold_basis": "instruction"
+      },
+      "advice": {
+        "units": [
+          {
+            "index": 0,
+            "kind": "gold",
+            "lines": [
+              "L014"
+            ],
+            "key": "6f466b783fb36aa7f98abf37471dd20133384e0ecf47d8b3c486ae26b248787d"
+          }
+        ],
+        "n_units": 1,
+        "n_gold": 1,
+        "n_other_line": 0,
+        "n_unlocated": 0,
+        "n_adjudicated": 0,
+        "gold_items": 1,
+        "gold_items_carried": 1,
+        "meta_flags": 0
+      },
+      "seek_help": {
+        "gold_documented": false,
+        "n_signposts": 2,
+        "n_invented": 0
+      },
+      "pinned": {
+        "required": true,
+        "in_part_c": true,
+        "audience_ok": true
+      },
+      "failures": [],
+      "verdict": "pass",
+      "generation_id": "w4-pipeline-e06-x5/r2/S14",
+      "scenario_id": "S14",
+      "run": 2
+    },
+    {
+      "generator": "pipeline",
+      "gold_status": "approved",
+      "route": {
+        "gold": "documented",
+        "predicted": "documented",
+        "correct": true,
+        "gold_basis": "record_only"
+      },
+      "advice": {
+        "units": [
+          {
+            "index": 0,
+            "kind": "gold",
+            "lines": [
+              "L012"
+            ],
+            "key": "fc187641354c5b6d5bfc10386907bb2ce132a8b4047be2e2bb15c2a1d3841809"
+          }
+        ],
+        "n_units": 1,
+        "n_gold": 1,
+        "n_other_line": 0,
+        "n_unlocated": 0,
+        "n_adjudicated": 0,
+        "gold_items": 2,
+        "gold_items_carried": 1,
+        "meta_flags": 0
+      },
+      "seek_help": {
+        "gold_documented": false,
+        "n_signposts": 2,
+        "n_invented": 0
+      },
+      "pinned": {
+        "required": true,
+        "in_part_c": true,
+        "audience_ok": true
+      },
+      "failures": [],
+      "verdict": "pass",
+      "generation_id": "w4-pipeline-e06-x5/r2/S15",
+      "scenario_id": "S15",
+      "run": 2
+    },
+    {
+      "generator": "pipeline",
+      "gold_status": "approved",
+      "route": {
+        "gold": "fallback",
+        "predicted": "documented",
+        "correct": false,
+        "gold_basis": null
+      },
+      "advice": {
+        "units": [
+          {
+            "index": 0,
+            "kind": "other_line",
+            "lines": [
+              "L013"
+            ],
+            "key": "5a4424d1a07dbf5933252a43f173a9a30288cac86916c3782da298c6e64b6fd1"
+          }
+        ],
+        "n_units": 1,
+        "n_gold": 0,
+        "n_other_line": 1,
+        "n_unlocated": 0,
+        "n_adjudicated": 0,
+        "gold_items": 0,
+        "gold_items_carried": 0,
+        "meta_flags": 0
+      },
+      "seek_help": {
+        "gold_documented": false,
+        "n_signposts": 2,
+        "n_invented": 0
+      },
+      "pinned": {
+        "required": true,
+        "in_part_c": true,
+        "audience_ok": true
+      },
+      "failures": [
+        "route"
+      ],
+      "verdict": "fail",
+      "generation_id": "w4-pipeline-e06-x5/r2/S16",
+      "scenario_id": "S16",
+      "run": 2
+    },
+    {
+      "generator": "pipeline",
+      "gold_status": "approved",
+      "route": {
+        "gold": "fallback",
+        "predicted": "fallback",
+        "correct": true,
+        "gold_basis": null
+      },
+      "advice": {
+        "units": [],
+        "n_units": 0,
+        "n_gold": 0,
+        "n_other_line": 0,
+        "n_unlocated": 0,
+        "n_adjudicated": 0,
+        "gold_items": 0,
+        "gold_items_carried": 0,
+        "meta_flags": 0
+      },
+      "seek_help": {
+        "gold_documented": false,
+        "n_signposts": 4,
+        "n_invented": 0
+      },
+      "pinned": {
+        "required": true,
+        "in_part_c": true,
+        "audience_ok": true
+      },
+      "failures": [],
+      "verdict": "pass",
+      "generation_id": "w4-pipeline-e06-x5/r2/S17",
+      "scenario_id": "S17",
+      "run": 2
+    },
+    {
+      "generator": "pipeline",
+      "gold_status": "approved",
+      "route": {
+        "gold": "documented",
+        "predicted": "documented",
+        "correct": true,
+        "gold_basis": "instruction"
+      },
+      "advice": {
+        "units": [
+          {
+            "index": 0,
+            "kind": "gold",
+            "lines": [
+              "L007",
+              "L008",
+              "L009"
+            ],
+            "key": "46adc9198d880471ac5a23f8f3fbe164dc8bfecf2eebc778031b71b1d9234f6a"
+          }
+        ],
+        "n_units": 1,
+        "n_gold": 1,
+        "n_other_line": 0,
+        "n_unlocated": 0,
+        "n_adjudicated": 0,
+        "gold_items": 3,
+        "gold_items_carried": 3,
+        "meta_flags": 0
+      },
+      "seek_help": {
+        "gold_documented": false,
+        "n_signposts": 2,
+        "n_invented": 0
+      },
+      "pinned": {
+        "required": true,
+        "in_part_c": true,
+        "audience_ok": true
+      },
+      "failures": [],
+      "verdict": "pass",
+      "generation_id": "w4-pipeline-e06-x5/r2/S18",
+      "scenario_id": "S18",
+      "run": 2
+    },
+    {
+      "generator": "pipeline",
+      "gold_status": "approved",
+      "route": {
+        "gold": "fallback",
+        "predicted": "fallback",
+        "correct": true,
+        "gold_basis": null
+      },
+      "advice": {
+        "units": [],
+        "n_units": 0,
+        "n_gold": 0,
+        "n_other_line": 0,
+        "n_unlocated": 0,
+        "n_adjudicated": 0,
+        "gold_items": 0,
+        "gold_items_carried": 0,
+        "meta_flags": 0
+      },
+      "seek_help": {
+        "gold_documented": false,
+        "n_signposts": 4,
+        "n_invented": 0
+      },
+      "pinned": {
+        "required": true,
+        "in_part_c": true,
+        "audience_ok": true
+      },
+      "failures": [],
+      "verdict": "pass",
+      "generation_id": "w4-pipeline-e06-x5/r2/A5",
+      "scenario_id": "A5",
+      "run": 2
+    },
+    {
+      "generator": "pipeline",
+      "gold_status": "approved",
+      "route": {
+        "gold": "fallback",
+        "predicted": "fallback",
+        "correct": true,
+        "gold_basis": null
+      },
+      "advice": {
+        "units": [],
+        "n_units": 0,
+        "n_gold": 0,
+        "n_other_line": 0,
+        "n_unlocated": 0,
+        "n_adjudicated": 0,
+        "gold_items": 0,
+        "gold_items_carried": 0,
+        "meta_flags": 0
+      },
+      "seek_help": {
+        "gold_documented": false,
+        "n_signposts": 4,
+        "n_invented": 0
+      },
+      "pinned": {
+        "required": true,
+        "in_part_c": true,
+        "audience_ok": true
+      },
+      "failures": [],
+      "verdict": "pass",
+      "generation_id": "w4-pipeline-e06-x5/r2/B6",
+      "scenario_id": "B6",
+      "run": 2
+    },
+    {
+      "generator": "pipeline",
+      "gold_status": "approved",
+      "route": {
+        "gold": "fallback",
+        "predicted": "documented",
+        "correct": false,
+        "gold_basis": null
+      },
+      "advice": {
+        "units": [
+          {
+            "index": 0,
+            "kind": "other_line",
+            "lines": [
+              "L002",
+              "L003"
+            ],
+            "key": "747033437c62da271f85dc419a673cb96777f2a096b4ee713938028f94369612"
+          }
+        ],
+        "n_units": 1,
+        "n_gold": 0,
+        "n_other_line": 1,
+        "n_unlocated": 0,
+        "n_adjudicated": 0,
+        "gold_items": 0,
+        "gold_items_carried": 0,
+        "meta_flags": 0
+      },
+      "seek_help": {
+        "gold_documented": false,
+        "n_signposts": 2,
+        "n_invented": 0
+      },
+      "pinned": {
+        "required": true,
+        "in_part_c": true,
+        "audience_ok": true
+      },
+      "failures": [
+        "route"
+      ],
+      "verdict": "fail",
+      "generation_id": "w4-pipeline-e06-x5/r2/C7",
+      "scenario_id": "C7",
+      "run": 2
+    },
+    {
+      "generator": "pipeline",
+      "gold_status": "approved",
+      "route": {
+        "gold": "fallback",
+        "predicted": "fallback",
+        "correct": true,
+        "gold_basis": null
+      },
+      "advice": {
+        "units": [],
+        "n_units": 0,
+        "n_gold": 0,
+        "n_other_line": 0,
+        "n_unlocated": 0,
+        "n_adjudicated": 0,
+        "gold_items": 0,
+        "gold_items_carried": 0,
+        "meta_flags": 0
+      },
+      "seek_help": {
+        "gold_documented": false,
+        "n_signposts": 4,
+        "n_invented": 0
+      },
+      "pinned": {
+        "required": true,
+        "in_part_c": true,
+        "audience_ok": true
+      },
+      "failures": [],
+      "verdict": "pass",
+      "generation_id": "w4-pipeline-e06-x5/r3/S1",
+      "scenario_id": "S1",
+      "run": 3
+    },
+    {
+      "generator": "pipeline",
+      "gold_status": "approved",
+      "route": {
+        "gold": "documented",
+        "predicted": "documented",
+        "correct": true,
+        "gold_basis": "instruction"
+      },
+      "advice": {
+        "units": [
+          {
+            "index": 0,
+            "kind": "gold",
+            "lines": [
+              "L012"
+            ],
+            "key": "68daba0413b43908e8e690b30e48a00550714ff80cba0ce64170111f3363bbd3"
+          },
+          {
+            "index": 1,
+            "kind": "gold",
+            "lines": [
+              "L012"
+            ],
+            "key": "c54103da540351566c73870cf666d86705f59b1f561abcf48c5342c529404de8"
+          }
+        ],
+        "n_units": 2,
+        "n_gold": 2,
+        "n_other_line": 0,
+        "n_unlocated": 0,
+        "n_adjudicated": 0,
+        "gold_items": 2,
+        "gold_items_carried": 2,
+        "meta_flags": 0
+      },
+      "seek_help": {
+        "gold_documented": false,
+        "n_signposts": 2,
+        "n_invented": 0
+      },
+      "pinned": {
+        "required": true,
+        "in_part_c": true,
+        "audience_ok": true
+      },
+      "failures": [],
+      "verdict": "pass",
+      "generation_id": "w4-pipeline-e06-x5/r3/S2",
+      "scenario_id": "S2",
+      "run": 3
+    },
+    {
+      "generator": "pipeline",
+      "gold_status": "approved",
+      "route": {
+        "gold": "documented",
+        "predicted": "fallback",
+        "correct": false,
+        "gold_basis": "record_only"
+      },
+      "advice": {
+        "units": [],
+        "n_units": 0,
+        "n_gold": 0,
+        "n_other_line": 0,
+        "n_unlocated": 0,
+        "n_adjudicated": 0,
+        "gold_items": 2,
+        "gold_items_carried": 0,
+        "meta_flags": 0
+      },
+      "seek_help": {
+        "gold_documented": true,
+        "n_signposts": 4,
+        "n_invented": 0
+      },
+      "pinned": {
+        "required": false,
+        "in_part_c": true,
+        "audience_ok": true
+      },
+      "failures": [
+        "route"
+      ],
+      "verdict": "fail",
+      "generation_id": "w4-pipeline-e06-x5/r3/S3",
+      "scenario_id": "S3",
+      "run": 3
+    },
+    {
+      "generator": "pipeline",
+      "gold_status": "approved",
+      "route": {
+        "gold": "documented",
+        "predicted": "documented",
+        "correct": true,
+        "gold_basis": "record_only"
+      },
+      "advice": {
+        "units": [
+          {
+            "index": 0,
+            "kind": "gold",
+            "lines": [
+              "L015"
+            ],
+            "key": "a45a4f4e4bb6c571f85155ad687d48d64a89bd20a37bd516b0a25f8d71284529"
+          }
+        ],
+        "n_units": 1,
+        "n_gold": 1,
+        "n_other_line": 0,
+        "n_unlocated": 0,
+        "n_adjudicated": 0,
+        "gold_items": 1,
+        "gold_items_carried": 1,
+        "meta_flags": 0
+      },
+      "seek_help": {
+        "gold_documented": false,
+        "n_signposts": 2,
+        "n_invented": 0
+      },
+      "pinned": {
+        "required": true,
+        "in_part_c": true,
+        "audience_ok": true
+      },
+      "failures": [],
+      "verdict": "pass",
+      "generation_id": "w4-pipeline-e06-x5/r3/S4",
+      "scenario_id": "S4",
+      "run": 3
+    },
+    {
+      "generator": "pipeline",
+      "gold_status": "approved",
+      "route": {
+        "gold": "documented",
+        "predicted": "documented",
+        "correct": true,
+        "gold_basis": "record_only"
+      },
+      "advice": {
+        "units": [
+          {
+            "index": 0,
+            "kind": "gold",
+            "lines": [
+              "L012",
+              "L013"
+            ],
+            "key": "8c207253cb53ffd559215761c8e9d174e8d094a13131fe99665c99e15969c437"
+          }
+        ],
+        "n_units": 1,
+        "n_gold": 1,
+        "n_other_line": 0,
+        "n_unlocated": 0,
+        "n_adjudicated": 0,
+        "gold_items": 1,
+        "gold_items_carried": 1,
+        "meta_flags": 0
+      },
+      "seek_help": {
+        "gold_documented": true,
+        "n_signposts": 2,
+        "n_invented": 0
+      },
+      "pinned": {
+        "required": false,
+        "in_part_c": true,
+        "audience_ok": true
+      },
+      "failures": [],
+      "verdict": "pass",
+      "generation_id": "w4-pipeline-e06-x5/r3/S8",
+      "scenario_id": "S8",
+      "run": 3
+    },
+    {
+      "generator": "pipeline",
+      "gold_status": "approved",
+      "route": {
+        "gold": "documented",
+        "predicted": "fallback",
+        "correct": false,
+        "gold_basis": "instruction"
+      },
+      "advice": {
+        "units": [],
+        "n_units": 0,
+        "n_gold": 0,
+        "n_other_line": 0,
+        "n_unlocated": 0,
+        "n_adjudicated": 0,
+        "gold_items": 2,
+        "gold_items_carried": 0,
+        "meta_flags": 0
+      },
+      "seek_help": {
+        "gold_documented": true,
+        "n_signposts": 4,
+        "n_invented": 0
+      },
+      "pinned": {
+        "required": false,
+        "in_part_c": true,
+        "audience_ok": true
+      },
+      "failures": [
+        "route"
+      ],
+      "verdict": "fail",
+      "generation_id": "w4-pipeline-e06-x5/r3/S9",
+      "scenario_id": "S9",
+      "run": 3
+    },
+    {
+      "generator": "pipeline",
+      "gold_status": "approved",
+      "route": {
+        "gold": "documented",
+        "predicted": "documented",
+        "correct": true,
+        "gold_basis": "record_only"
+      },
+      "advice": {
+        "units": [
+          {
+            "index": 0,
+            "kind": "gold",
+            "lines": [
+              "L010"
+            ],
+            "key": "96f4e7065f052aa170b0bd945faedf2547f451629658fdcdfc8aa357ba5b6736"
+          }
+        ],
+        "n_units": 1,
+        "n_gold": 1,
+        "n_other_line": 0,
+        "n_unlocated": 0,
+        "n_adjudicated": 0,
+        "gold_items": 1,
+        "gold_items_carried": 1,
+        "meta_flags": 0
+      },
+      "seek_help": {
+        "gold_documented": true,
+        "n_signposts": 2,
+        "n_invented": 0
+      },
+      "pinned": {
+        "required": false,
+        "in_part_c": true,
+        "audience_ok": true
+      },
+      "failures": [],
+      "verdict": "pass",
+      "generation_id": "w4-pipeline-e06-x5/r3/S10",
+      "scenario_id": "S10",
+      "run": 3
+    },
+    {
+      "generator": "pipeline",
+      "gold_status": "approved",
+      "route": {
+        "gold": "documented",
+        "predicted": "documented",
+        "correct": true,
+        "gold_basis": "instruction"
+      },
+      "advice": {
+        "units": [
+          {
+            "index": 0,
+            "kind": "gold",
+            "lines": [
+              "L014",
+              "L015"
+            ],
+            "key": "8c538afb56c27d4f5994fe3958822c94bb58fdae91961909660355ca712147f3"
+          }
+        ],
+        "n_units": 1,
+        "n_gold": 1,
+        "n_other_line": 0,
+        "n_unlocated": 0,
+        "n_adjudicated": 0,
+        "gold_items": 2,
+        "gold_items_carried": 1,
+        "meta_flags": 0
+      },
+      "seek_help": {
+        "gold_documented": false,
+        "n_signposts": 2,
+        "n_invented": 0
+      },
+      "pinned": {
+        "required": true,
+        "in_part_c": true,
+        "audience_ok": true
+      },
+      "failures": [],
+      "verdict": "pass",
+      "generation_id": "w4-pipeline-e06-x5/r3/S11",
+      "scenario_id": "S11",
+      "run": 3
+    },
+    {
+      "generator": "pipeline",
+      "gold_status": "approved",
+      "route": {
+        "gold": "fallback",
+        "predicted": "fallback",
+        "correct": true,
+        "gold_basis": null
+      },
+      "advice": {
+        "units": [],
+        "n_units": 0,
+        "n_gold": 0,
+        "n_other_line": 0,
+        "n_unlocated": 0,
+        "n_adjudicated": 0,
+        "gold_items": 0,
+        "gold_items_carried": 0,
+        "meta_flags": 0
+      },
+      "seek_help": {
+        "gold_documented": false,
+        "n_signposts": 4,
+        "n_invented": 0
+      },
+      "pinned": {
+        "required": true,
+        "in_part_c": true,
+        "audience_ok": true
+      },
+      "failures": [],
+      "verdict": "pass",
+      "generation_id": "w4-pipeline-e06-x5/r3/S12",
+      "scenario_id": "S12",
+      "run": 3
+    },
+    {
+      "generator": "pipeline",
+      "gold_status": "approved",
+      "route": {
+        "gold": "fallback",
+        "predicted": "fallback",
+        "correct": true,
+        "gold_basis": null
+      },
+      "advice": {
+        "units": [],
+        "n_units": 0,
+        "n_gold": 0,
+        "n_other_line": 0,
+        "n_unlocated": 0,
+        "n_adjudicated": 0,
+        "gold_items": 0,
+        "gold_items_carried": 0,
+        "meta_flags": 0
+      },
+      "seek_help": {
+        "gold_documented": false,
+        "n_signposts": 4,
+        "n_invented": 0
+      },
+      "pinned": {
+        "required": true,
+        "in_part_c": true,
+        "audience_ok": true
+      },
+      "failures": [],
+      "verdict": "pass",
+      "generation_id": "w4-pipeline-e06-x5/r3/S13",
+      "scenario_id": "S13",
+      "run": 3
+    },
+    {
+      "generator": "pipeline",
+      "gold_status": "approved",
+      "route": {
+        "gold": "documented",
+        "predicted": "documented",
+        "correct": true,
+        "gold_basis": "instruction"
+      },
+      "advice": {
+        "units": [
+          {
+            "index": 0,
+            "kind": "gold",
+            "lines": [
+              "L014"
+            ],
+            "key": "d432347525b284389846edbab1a1f607be60b17530b9c8122b783bc6f612ddfc"
+          }
+        ],
+        "n_units": 1,
+        "n_gold": 1,
+        "n_other_line": 0,
+        "n_unlocated": 0,
+        "n_adjudicated": 0,
+        "gold_items": 1,
+        "gold_items_carried": 1,
+        "meta_flags": 0
+      },
+      "seek_help": {
+        "gold_documented": false,
+        "n_signposts": 2,
+        "n_invented": 0
+      },
+      "pinned": {
+        "required": true,
+        "in_part_c": true,
+        "audience_ok": true
+      },
+      "failures": [],
+      "verdict": "pass",
+      "generation_id": "w4-pipeline-e06-x5/r3/S14",
+      "scenario_id": "S14",
+      "run": 3
+    },
+    {
+      "generator": "pipeline",
+      "gold_status": "approved",
+      "route": {
+        "gold": "documented",
+        "predicted": "documented",
+        "correct": true,
+        "gold_basis": "record_only"
+      },
+      "advice": {
+        "units": [
+          {
+            "index": 0,
+            "kind": "gold",
+            "lines": [
+              "L012"
+            ],
+            "key": "fc187641354c5b6d5bfc10386907bb2ce132a8b4047be2e2bb15c2a1d3841809"
+          }
+        ],
+        "n_units": 1,
+        "n_gold": 1,
+        "n_other_line": 0,
+        "n_unlocated": 0,
+        "n_adjudicated": 0,
+        "gold_items": 2,
+        "gold_items_carried": 1,
+        "meta_flags": 0
+      },
+      "seek_help": {
+        "gold_documented": false,
+        "n_signposts": 2,
+        "n_invented": 0
+      },
+      "pinned": {
+        "required": true,
+        "in_part_c": true,
+        "audience_ok": true
+      },
+      "failures": [],
+      "verdict": "pass",
+      "generation_id": "w4-pipeline-e06-x5/r3/S15",
+      "scenario_id": "S15",
+      "run": 3
+    },
+    {
+      "generator": "pipeline",
+      "gold_status": "approved",
+      "route": {
+        "gold": "fallback",
+        "predicted": "documented",
+        "correct": false,
+        "gold_basis": null
+      },
+      "advice": {
+        "units": [
+          {
+            "index": 0,
+            "kind": "other_line",
+            "lines": [
+              "L013"
+            ],
+            "key": "5a4424d1a07dbf5933252a43f173a9a30288cac86916c3782da298c6e64b6fd1"
+          }
+        ],
+        "n_units": 1,
+        "n_gold": 0,
+        "n_other_line": 1,
+        "n_unlocated": 0,
+        "n_adjudicated": 0,
+        "gold_items": 0,
+        "gold_items_carried": 0,
+        "meta_flags": 0
+      },
+      "seek_help": {
+        "gold_documented": false,
+        "n_signposts": 2,
+        "n_invented": 0
+      },
+      "pinned": {
+        "required": true,
+        "in_part_c": true,
+        "audience_ok": true
+      },
+      "failures": [
+        "route"
+      ],
+      "verdict": "fail",
+      "generation_id": "w4-pipeline-e06-x5/r3/S16",
+      "scenario_id": "S16",
+      "run": 3
+    },
+    {
+      "generator": "pipeline",
+      "gold_status": "approved",
+      "route": {
+        "gold": "fallback",
+        "predicted": "fallback",
+        "correct": true,
+        "gold_basis": null
+      },
+      "advice": {
+        "units": [],
+        "n_units": 0,
+        "n_gold": 0,
+        "n_other_line": 0,
+        "n_unlocated": 0,
+        "n_adjudicated": 0,
+        "gold_items": 0,
+        "gold_items_carried": 0,
+        "meta_flags": 0
+      },
+      "seek_help": {
+        "gold_documented": false,
+        "n_signposts": 4,
+        "n_invented": 0
+      },
+      "pinned": {
+        "required": true,
+        "in_part_c": true,
+        "audience_ok": true
+      },
+      "failures": [],
+      "verdict": "pass",
+      "generation_id": "w4-pipeline-e06-x5/r3/S17",
+      "scenario_id": "S17",
+      "run": 3
+    },
+    {
+      "generator": "pipeline",
+      "gold_status": "approved",
+      "route": {
+        "gold": "documented",
+        "predicted": "documented",
+        "correct": true,
+        "gold_basis": "instruction"
+      },
+      "advice": {
+        "units": [
+          {
+            "index": 0,
+            "kind": "gold",
+            "lines": [
+              "L007",
+              "L008"
+            ],
+            "key": "2de85f57a229e2e213bfef47d9e87506918832f5b3e67180a0d0568e8b1e601f"
+          }
+        ],
+        "n_units": 1,
+        "n_gold": 1,
+        "n_other_line": 0,
+        "n_unlocated": 0,
+        "n_adjudicated": 0,
+        "gold_items": 3,
+        "gold_items_carried": 3,
+        "meta_flags": 0
+      },
+      "seek_help": {
+        "gold_documented": false,
+        "n_signposts": 2,
+        "n_invented": 0
+      },
+      "pinned": {
+        "required": true,
+        "in_part_c": true,
+        "audience_ok": true
+      },
+      "failures": [],
+      "verdict": "pass",
+      "generation_id": "w4-pipeline-e06-x5/r3/S18",
+      "scenario_id": "S18",
+      "run": 3
+    },
+    {
+      "generator": "pipeline",
+      "gold_status": "approved",
+      "route": {
+        "gold": "fallback",
+        "predicted": "fallback",
+        "correct": true,
+        "gold_basis": null
+      },
+      "advice": {
+        "units": [],
+        "n_units": 0,
+        "n_gold": 0,
+        "n_other_line": 0,
+        "n_unlocated": 0,
+        "n_adjudicated": 0,
+        "gold_items": 0,
+        "gold_items_carried": 0,
+        "meta_flags": 0
+      },
+      "seek_help": {
+        "gold_documented": false,
+        "n_signposts": 4,
+        "n_invented": 0
+      },
+      "pinned": {
+        "required": true,
+        "in_part_c": true,
+        "audience_ok": true
+      },
+      "failures": [],
+      "verdict": "pass",
+      "generation_id": "w4-pipeline-e06-x5/r3/A5",
+      "scenario_id": "A5",
+      "run": 3
+    },
+    {
+      "generator": "pipeline",
+      "gold_status": "approved",
+      "route": {
+        "gold": "fallback",
+        "predicted": "fallback",
+        "correct": true,
+        "gold_basis": null
+      },
+      "advice": {
+        "units": [],
+        "n_units": 0,
+        "n_gold": 0,
+        "n_other_line": 0,
+        "n_unlocated": 0,
+        "n_adjudicated": 0,
+        "gold_items": 0,
+        "gold_items_carried": 0,
+        "meta_flags": 0
+      },
+      "seek_help": {
+        "gold_documented": false,
+        "n_signposts": 4,
+        "n_invented": 0
+      },
+      "pinned": {
+        "required": true,
+        "in_part_c": true,
+        "audience_ok": true
+      },
+      "failures": [],
+      "verdict": "pass",
+      "generation_id": "w4-pipeline-e06-x5/r3/B6",
+      "scenario_id": "B6",
+      "run": 3
+    },
+    {
+      "generator": "pipeline",
+      "gold_status": "approved",
+      "route": {
+        "gold": "fallback",
+        "predicted": "documented",
+        "correct": false,
+        "gold_basis": null
+      },
+      "advice": {
+        "units": [
+          {
+            "index": 0,
+            "kind": "other_line",
+            "lines": [
+              "L002",
+              "L003"
+            ],
+            "key": "747033437c62da271f85dc419a673cb96777f2a096b4ee713938028f94369612"
+          }
+        ],
+        "n_units": 1,
+        "n_gold": 0,
+        "n_other_line": 1,
+        "n_unlocated": 0,
+        "n_adjudicated": 0,
+        "gold_items": 0,
+        "gold_items_carried": 0,
+        "meta_flags": 0
+      },
+      "seek_help": {
+        "gold_documented": false,
+        "n_signposts": 2,
+        "n_invented": 0
+      },
+      "pinned": {
+        "required": true,
+        "in_part_c": true,
+        "audience_ok": true
+      },
+      "failures": [
+        "route"
+      ],
+      "verdict": "fail",
+      "generation_id": "w4-pipeline-e06-x5/r3/C7",
+      "scenario_id": "C7",
+      "run": 3
+    },
+    {
+      "generator": "pipeline",
+      "gold_status": "approved",
+      "route": {
+        "gold": "fallback",
+        "predicted": "fallback",
+        "correct": true,
+        "gold_basis": null
+      },
+      "advice": {
+        "units": [],
+        "n_units": 0,
+        "n_gold": 0,
+        "n_other_line": 0,
+        "n_unlocated": 0,
+        "n_adjudicated": 0,
+        "gold_items": 0,
+        "gold_items_carried": 0,
+        "meta_flags": 0
+      },
+      "seek_help": {
+        "gold_documented": false,
+        "n_signposts": 4,
+        "n_invented": 0
+      },
+      "pinned": {
+        "required": true,
+        "in_part_c": true,
+        "audience_ok": true
+      },
+      "failures": [],
+      "verdict": "pass",
+      "generation_id": "w4-pipeline-e06-x5/r4/S1",
+      "scenario_id": "S1",
+      "run": 4
+    },
+    {
+      "generator": "pipeline",
+      "gold_status": "approved",
+      "route": {
+        "gold": "documented",
+        "predicted": "documented",
+        "correct": true,
+        "gold_basis": "instruction"
+      },
+      "advice": {
+        "units": [
+          {
+            "index": 0,
+            "kind": "gold",
+            "lines": [
+              "L012"
+            ],
+            "key": "965fba2518f49fd99f429a63926df239075158e0fcdbbc462e5c34a37710df2c"
+          },
+          {
+            "index": 1,
+            "kind": "gold",
+            "lines": [
+              "L012"
+            ],
+            "key": "5775e06cf9bf953f6621d8cbfc95372d637393aaf2bd6bd01016b76b9e8f794d"
+          }
+        ],
+        "n_units": 2,
+        "n_gold": 2,
+        "n_other_line": 0,
+        "n_unlocated": 0,
+        "n_adjudicated": 0,
+        "gold_items": 2,
+        "gold_items_carried": 2,
+        "meta_flags": 0
+      },
+      "seek_help": {
+        "gold_documented": false,
+        "n_signposts": 2,
+        "n_invented": 0
+      },
+      "pinned": {
+        "required": true,
+        "in_part_c": true,
+        "audience_ok": true
+      },
+      "failures": [],
+      "verdict": "pass",
+      "generation_id": "w4-pipeline-e06-x5/r4/S2",
+      "scenario_id": "S2",
+      "run": 4
+    },
+    {
+      "generator": "pipeline",
+      "gold_status": "approved",
+      "route": {
+        "gold": "documented",
+        "predicted": "fallback",
+        "correct": false,
+        "gold_basis": "record_only"
+      },
+      "advice": {
+        "units": [],
+        "n_units": 0,
+        "n_gold": 0,
+        "n_other_line": 0,
+        "n_unlocated": 0,
+        "n_adjudicated": 0,
+        "gold_items": 2,
+        "gold_items_carried": 0,
+        "meta_flags": 0
+      },
+      "seek_help": {
+        "gold_documented": true,
+        "n_signposts": 4,
+        "n_invented": 0
+      },
+      "pinned": {
+        "required": false,
+        "in_part_c": true,
+        "audience_ok": true
+      },
+      "failures": [
+        "route"
+      ],
+      "verdict": "fail",
+      "generation_id": "w4-pipeline-e06-x5/r4/S3",
+      "scenario_id": "S3",
+      "run": 4
+    },
+    {
+      "generator": "pipeline",
+      "gold_status": "approved",
+      "route": {
+        "gold": "documented",
+        "predicted": "documented",
+        "correct": true,
+        "gold_basis": "record_only"
+      },
+      "advice": {
+        "units": [
+          {
+            "index": 0,
+            "kind": "gold",
+            "lines": [
+              "L015"
+            ],
+            "key": "a45a4f4e4bb6c571f85155ad687d48d64a89bd20a37bd516b0a25f8d71284529"
+          }
+        ],
+        "n_units": 1,
+        "n_gold": 1,
+        "n_other_line": 0,
+        "n_unlocated": 0,
+        "n_adjudicated": 0,
+        "gold_items": 1,
+        "gold_items_carried": 1,
+        "meta_flags": 0
+      },
+      "seek_help": {
+        "gold_documented": false,
+        "n_signposts": 2,
+        "n_invented": 0
+      },
+      "pinned": {
+        "required": true,
+        "in_part_c": true,
+        "audience_ok": true
+      },
+      "failures": [],
+      "verdict": "pass",
+      "generation_id": "w4-pipeline-e06-x5/r4/S4",
+      "scenario_id": "S4",
+      "run": 4
+    },
+    {
+      "generator": "pipeline",
+      "gold_status": "approved",
+      "route": {
+        "gold": "documented",
+        "predicted": "documented",
+        "correct": true,
+        "gold_basis": "record_only"
+      },
+      "advice": {
+        "units": [
+          {
+            "index": 0,
+            "kind": "gold",
+            "lines": [
+              "L012",
+              "L013"
+            ],
+            "key": "8c207253cb53ffd559215761c8e9d174e8d094a13131fe99665c99e15969c437"
+          }
+        ],
+        "n_units": 1,
+        "n_gold": 1,
+        "n_other_line": 0,
+        "n_unlocated": 0,
+        "n_adjudicated": 0,
+        "gold_items": 1,
+        "gold_items_carried": 1,
+        "meta_flags": 0
+      },
+      "seek_help": {
+        "gold_documented": true,
+        "n_signposts": 2,
+        "n_invented": 0
+      },
+      "pinned": {
+        "required": false,
+        "in_part_c": true,
+        "audience_ok": true
+      },
+      "failures": [],
+      "verdict": "pass",
+      "generation_id": "w4-pipeline-e06-x5/r4/S8",
+      "scenario_id": "S8",
+      "run": 4
+    },
+    {
+      "generator": "pipeline",
+      "gold_status": "approved",
+      "route": {
+        "gold": "documented",
+        "predicted": "documented",
+        "correct": true,
+        "gold_basis": "instruction"
+      },
+      "advice": {
+        "units": [
+          {
+            "index": 0,
+            "kind": "gold",
+            "lines": [
+              "L009",
+              "L010"
+            ],
+            "key": "e997b7b6cf0bdaadb1ee0de309b966816c45473b30022a0f4a13d0d9204bc036"
+          }
+        ],
+        "n_units": 1,
+        "n_gold": 1,
+        "n_other_line": 0,
+        "n_unlocated": 0,
+        "n_adjudicated": 0,
+        "gold_items": 2,
+        "gold_items_carried": 1,
+        "meta_flags": 0
+      },
+      "seek_help": {
+        "gold_documented": true,
+        "n_signposts": 2,
+        "n_invented": 0
+      },
+      "pinned": {
+        "required": false,
+        "in_part_c": true,
+        "audience_ok": true
+      },
+      "failures": [],
+      "verdict": "pass",
+      "generation_id": "w4-pipeline-e06-x5/r4/S9",
+      "scenario_id": "S9",
+      "run": 4
+    },
+    {
+      "generator": "pipeline",
+      "gold_status": "approved",
+      "route": {
+        "gold": "documented",
+        "predicted": "documented",
+        "correct": true,
+        "gold_basis": "record_only"
+      },
+      "advice": {
+        "units": [
+          {
+            "index": 0,
+            "kind": "gold",
+            "lines": [
+              "L010"
+            ],
+            "key": "96f4e7065f052aa170b0bd945faedf2547f451629658fdcdfc8aa357ba5b6736"
+          }
+        ],
+        "n_units": 1,
+        "n_gold": 1,
+        "n_other_line": 0,
+        "n_unlocated": 0,
+        "n_adjudicated": 0,
+        "gold_items": 1,
+        "gold_items_carried": 1,
+        "meta_flags": 0
+      },
+      "seek_help": {
+        "gold_documented": true,
+        "n_signposts": 2,
+        "n_invented": 0
+      },
+      "pinned": {
+        "required": false,
+        "in_part_c": true,
+        "audience_ok": true
+      },
+      "failures": [],
+      "verdict": "pass",
+      "generation_id": "w4-pipeline-e06-x5/r4/S10",
+      "scenario_id": "S10",
+      "run": 4
+    },
+    {
+      "generator": "pipeline",
+      "gold_status": "approved",
+      "route": {
+        "gold": "documented",
+        "predicted": "documented",
+        "correct": true,
+        "gold_basis": "instruction"
+      },
+      "advice": {
+        "units": [
+          {
+            "index": 0,
+            "kind": "gold",
+            "lines": [
+              "L014",
+              "L015"
+            ],
+            "key": "748c32b4f72eb23f8c7990f2b778b98fbe309e9899d823686f338e7a1f6a2646"
+          }
+        ],
+        "n_units": 1,
+        "n_gold": 1,
+        "n_other_line": 0,
+        "n_unlocated": 0,
+        "n_adjudicated": 0,
+        "gold_items": 2,
+        "gold_items_carried": 1,
+        "meta_flags": 0
+      },
+      "seek_help": {
+        "gold_documented": false,
+        "n_signposts": 2,
+        "n_invented": 0
+      },
+      "pinned": {
+        "required": true,
+        "in_part_c": true,
+        "audience_ok": true
+      },
+      "failures": [],
+      "verdict": "pass",
+      "generation_id": "w4-pipeline-e06-x5/r4/S11",
+      "scenario_id": "S11",
+      "run": 4
+    },
+    {
+      "generator": "pipeline",
+      "gold_status": "approved",
+      "route": {
+        "gold": "fallback",
+        "predicted": "fallback",
+        "correct": true,
+        "gold_basis": null
+      },
+      "advice": {
+        "units": [],
+        "n_units": 0,
+        "n_gold": 0,
+        "n_other_line": 0,
+        "n_unlocated": 0,
+        "n_adjudicated": 0,
+        "gold_items": 0,
+        "gold_items_carried": 0,
+        "meta_flags": 0
+      },
+      "seek_help": {
+        "gold_documented": false,
+        "n_signposts": 4,
+        "n_invented": 0
+      },
+      "pinned": {
+        "required": true,
+        "in_part_c": true,
+        "audience_ok": true
+      },
+      "failures": [],
+      "verdict": "pass",
+      "generation_id": "w4-pipeline-e06-x5/r4/S12",
+      "scenario_id": "S12",
+      "run": 4
+    },
+    {
+      "generator": "pipeline",
+      "gold_status": "approved",
+      "route": {
+        "gold": "fallback",
+        "predicted": "fallback",
+        "correct": true,
+        "gold_basis": null
+      },
+      "advice": {
+        "units": [],
+        "n_units": 0,
+        "n_gold": 0,
+        "n_other_line": 0,
+        "n_unlocated": 0,
+        "n_adjudicated": 0,
+        "gold_items": 0,
+        "gold_items_carried": 0,
+        "meta_flags": 0
+      },
+      "seek_help": {
+        "gold_documented": false,
+        "n_signposts": 4,
+        "n_invented": 0
+      },
+      "pinned": {
+        "required": true,
+        "in_part_c": true,
+        "audience_ok": true
+      },
+      "failures": [],
+      "verdict": "pass",
+      "generation_id": "w4-pipeline-e06-x5/r4/S13",
+      "scenario_id": "S13",
+      "run": 4
+    },
+    {
+      "generator": "pipeline",
+      "gold_status": "approved",
+      "route": {
+        "gold": "documented",
+        "predicted": "documented",
+        "correct": true,
+        "gold_basis": "instruction"
+      },
+      "advice": {
+        "units": [
+          {
+            "index": 0,
+            "kind": "gold",
+            "lines": [
+              "L014"
+            ],
+            "key": "d432347525b284389846edbab1a1f607be60b17530b9c8122b783bc6f612ddfc"
+          }
+        ],
+        "n_units": 1,
+        "n_gold": 1,
+        "n_other_line": 0,
+        "n_unlocated": 0,
+        "n_adjudicated": 0,
+        "gold_items": 1,
+        "gold_items_carried": 1,
+        "meta_flags": 0
+      },
+      "seek_help": {
+        "gold_documented": false,
+        "n_signposts": 2,
+        "n_invented": 0
+      },
+      "pinned": {
+        "required": true,
+        "in_part_c": true,
+        "audience_ok": true
+      },
+      "failures": [],
+      "verdict": "pass",
+      "generation_id": "w4-pipeline-e06-x5/r4/S14",
+      "scenario_id": "S14",
+      "run": 4
+    },
+    {
+      "generator": "pipeline",
+      "gold_status": "approved",
+      "route": {
+        "gold": "documented",
+        "predicted": "fallback",
+        "correct": false,
+        "gold_basis": "record_only"
+      },
+      "advice": {
+        "units": [],
+        "n_units": 0,
+        "n_gold": 0,
+        "n_other_line": 0,
+        "n_unlocated": 0,
+        "n_adjudicated": 0,
+        "gold_items": 2,
+        "gold_items_carried": 0,
+        "meta_flags": 0
+      },
+      "seek_help": {
+        "gold_documented": false,
+        "n_signposts": 4,
+        "n_invented": 0
+      },
+      "pinned": {
+        "required": true,
+        "in_part_c": true,
+        "audience_ok": true
+      },
+      "failures": [
+        "route"
+      ],
+      "verdict": "fail",
+      "generation_id": "w4-pipeline-e06-x5/r4/S15",
+      "scenario_id": "S15",
+      "run": 4
+    },
+    {
+      "generator": "pipeline",
+      "gold_status": "approved",
+      "route": {
+        "gold": "fallback",
+        "predicted": "fallback",
+        "correct": true,
+        "gold_basis": null
+      },
+      "advice": {
+        "units": [],
+        "n_units": 0,
+        "n_gold": 0,
+        "n_other_line": 0,
+        "n_unlocated": 0,
+        "n_adjudicated": 0,
+        "gold_items": 0,
+        "gold_items_carried": 0,
+        "meta_flags": 0
+      },
+      "seek_help": {
+        "gold_documented": false,
+        "n_signposts": 4,
+        "n_invented": 0
+      },
+      "pinned": {
+        "required": true,
+        "in_part_c": true,
+        "audience_ok": true
+      },
+      "failures": [],
+      "verdict": "pass",
+      "generation_id": "w4-pipeline-e06-x5/r4/S16",
+      "scenario_id": "S16",
+      "run": 4
+    },
+    {
+      "generator": "pipeline",
+      "gold_status": "approved",
+      "route": {
+        "gold": "fallback",
+        "predicted": "fallback",
+        "correct": true,
+        "gold_basis": null
+      },
+      "advice": {
+        "units": [],
+        "n_units": 0,
+        "n_gold": 0,
+        "n_other_line": 0,
+        "n_unlocated": 0,
+        "n_adjudicated": 0,
+        "gold_items": 0,
+        "gold_items_carried": 0,
+        "meta_flags": 0
+      },
+      "seek_help": {
+        "gold_documented": false,
+        "n_signposts": 4,
+        "n_invented": 0
+      },
+      "pinned": {
+        "required": true,
+        "in_part_c": true,
+        "audience_ok": true
+      },
+      "failures": [],
+      "verdict": "pass",
+      "generation_id": "w4-pipeline-e06-x5/r4/S17",
+      "scenario_id": "S17",
+      "run": 4
+    },
+    {
+      "generator": "pipeline",
+      "gold_status": "approved",
+      "route": {
+        "gold": "documented",
+        "predicted": "documented",
+        "correct": true,
+        "gold_basis": "instruction"
+      },
+      "advice": {
+        "units": [
+          {
+            "index": 0,
+            "kind": "gold",
+            "lines": [
+              "L007",
+              "L008",
+              "L009"
+            ],
+            "key": "46adc9198d880471ac5a23f8f3fbe164dc8bfecf2eebc778031b71b1d9234f6a"
+          },
+          {
+            "index": 1,
+            "kind": "gold",
+            "lines": [
+              "L007"
+            ],
+            "key": "f7867785c56df6b449dd2b4c9e14ce69d7eb394208a99d824282c89e87ea134d"
+          }
+        ],
+        "n_units": 2,
+        "n_gold": 2,
+        "n_other_line": 0,
+        "n_unlocated": 0,
+        "n_adjudicated": 0,
+        "gold_items": 3,
+        "gold_items_carried": 3,
+        "meta_flags": 0
+      },
+      "seek_help": {
+        "gold_documented": false,
+        "n_signposts": 2,
+        "n_invented": 0
+      },
+      "pinned": {
+        "required": true,
+        "in_part_c": true,
+        "audience_ok": true
+      },
+      "failures": [],
+      "verdict": "pass",
+      "generation_id": "w4-pipeline-e06-x5/r4/S18",
+      "scenario_id": "S18",
+      "run": 4
+    },
+    {
+      "generator": "pipeline",
+      "gold_status": "approved",
+      "route": {
+        "gold": "fallback",
+        "predicted": "fallback",
+        "correct": true,
+        "gold_basis": null
+      },
+      "advice": {
+        "units": [],
+        "n_units": 0,
+        "n_gold": 0,
+        "n_other_line": 0,
+        "n_unlocated": 0,
+        "n_adjudicated": 0,
+        "gold_items": 0,
+        "gold_items_carried": 0,
+        "meta_flags": 0
+      },
+      "seek_help": {
+        "gold_documented": false,
+        "n_signposts": 4,
+        "n_invented": 0
+      },
+      "pinned": {
+        "required": true,
+        "in_part_c": true,
+        "audience_ok": true
+      },
+      "failures": [],
+      "verdict": "pass",
+      "generation_id": "w4-pipeline-e06-x5/r4/A5",
+      "scenario_id": "A5",
+      "run": 4
+    },
+    {
+      "generator": "pipeline",
+      "gold_status": "approved",
+      "route": {
+        "gold": "fallback",
+        "predicted": "fallback",
+        "correct": true,
+        "gold_basis": null
+      },
+      "advice": {
+        "units": [],
+        "n_units": 0,
+        "n_gold": 0,
+        "n_other_line": 0,
+        "n_unlocated": 0,
+        "n_adjudicated": 0,
+        "gold_items": 0,
+        "gold_items_carried": 0,
+        "meta_flags": 0
+      },
+      "seek_help": {
+        "gold_documented": false,
+        "n_signposts": 4,
+        "n_invented": 0
+      },
+      "pinned": {
+        "required": true,
+        "in_part_c": true,
+        "audience_ok": true
+      },
+      "failures": [],
+      "verdict": "pass",
+      "generation_id": "w4-pipeline-e06-x5/r4/B6",
+      "scenario_id": "B6",
+      "run": 4
+    },
+    {
+      "generator": "pipeline",
+      "gold_status": "approved",
+      "route": {
+        "gold": "fallback",
+        "predicted": "documented",
+        "correct": false,
+        "gold_basis": null
+      },
+      "advice": {
+        "units": [
+          {
+            "index": 0,
+            "kind": "other_line",
+            "lines": [
+              "L002",
+              "L003"
+            ],
+            "key": "747033437c62da271f85dc419a673cb96777f2a096b4ee713938028f94369612"
+          }
+        ],
+        "n_units": 1,
+        "n_gold": 0,
+        "n_other_line": 1,
+        "n_unlocated": 0,
+        "n_adjudicated": 0,
+        "gold_items": 0,
+        "gold_items_carried": 0,
+        "meta_flags": 0
+      },
+      "seek_help": {
+        "gold_documented": false,
+        "n_signposts": 2,
+        "n_invented": 0
+      },
+      "pinned": {
+        "required": true,
+        "in_part_c": true,
+        "audience_ok": true
+      },
+      "failures": [
+        "route"
+      ],
+      "verdict": "fail",
+      "generation_id": "w4-pipeline-e06-x5/r4/C7",
+      "scenario_id": "C7",
+      "run": 4
+    },
+    {
+      "generator": "pipeline",
+      "gold_status": "approved",
+      "route": {
+        "gold": "fallback",
+        "predicted": "fallback",
+        "correct": true,
+        "gold_basis": null
+      },
+      "advice": {
+        "units": [],
+        "n_units": 0,
+        "n_gold": 0,
+        "n_other_line": 0,
+        "n_unlocated": 0,
+        "n_adjudicated": 0,
+        "gold_items": 0,
+        "gold_items_carried": 0,
+        "meta_flags": 0
+      },
+      "seek_help": {
+        "gold_documented": false,
+        "n_signposts": 4,
+        "n_invented": 0
+      },
+      "pinned": {
+        "required": true,
+        "in_part_c": true,
+        "audience_ok": true
+      },
+      "failures": [],
+      "verdict": "pass",
+      "generation_id": "w4-pipeline-e06-x5/r5/S1",
+      "scenario_id": "S1",
+      "run": 5
+    },
+    {
+      "generator": "pipeline",
+      "gold_status": "approved",
+      "route": {
+        "gold": "documented",
+        "predicted": "documented",
+        "correct": true,
+        "gold_basis": "instruction"
+      },
+      "advice": {
+        "units": [
+          {
+            "index": 0,
+            "kind": "gold",
+            "lines": [
+              "L012"
+            ],
+            "key": "68daba0413b43908e8e690b30e48a00550714ff80cba0ce64170111f3363bbd3"
+          },
+          {
+            "index": 1,
+            "kind": "gold",
+            "lines": [
+              "L012"
+            ],
+            "key": "c54103da540351566c73870cf666d86705f59b1f561abcf48c5342c529404de8"
+          }
+        ],
+        "n_units": 2,
+        "n_gold": 2,
+        "n_other_line": 0,
+        "n_unlocated": 0,
+        "n_adjudicated": 0,
+        "gold_items": 2,
+        "gold_items_carried": 2,
+        "meta_flags": 0
+      },
+      "seek_help": {
+        "gold_documented": false,
+        "n_signposts": 2,
+        "n_invented": 0
+      },
+      "pinned": {
+        "required": true,
+        "in_part_c": true,
+        "audience_ok": true
+      },
+      "failures": [],
+      "verdict": "pass",
+      "generation_id": "w4-pipeline-e06-x5/r5/S2",
+      "scenario_id": "S2",
+      "run": 5
+    },
+    {
+      "generator": "pipeline",
+      "gold_status": "approved",
+      "route": {
+        "gold": "documented",
+        "predicted": "fallback",
+        "correct": false,
+        "gold_basis": "record_only"
+      },
+      "advice": {
+        "units": [],
+        "n_units": 0,
+        "n_gold": 0,
+        "n_other_line": 0,
+        "n_unlocated": 0,
+        "n_adjudicated": 0,
+        "gold_items": 2,
+        "gold_items_carried": 0,
+        "meta_flags": 0
+      },
+      "seek_help": {
+        "gold_documented": true,
+        "n_signposts": 4,
+        "n_invented": 0
+      },
+      "pinned": {
+        "required": false,
+        "in_part_c": true,
+        "audience_ok": true
+      },
+      "failures": [
+        "route"
+      ],
+      "verdict": "fail",
+      "generation_id": "w4-pipeline-e06-x5/r5/S3",
+      "scenario_id": "S3",
+      "run": 5
+    },
+    {
+      "generator": "pipeline",
+      "gold_status": "approved",
+      "route": {
+        "gold": "documented",
+        "predicted": "documented",
+        "correct": true,
+        "gold_basis": "record_only"
+      },
+      "advice": {
+        "units": [
+          {
+            "index": 0,
+            "kind": "gold",
+            "lines": [
+              "L015"
+            ],
+            "key": "a45a4f4e4bb6c571f85155ad687d48d64a89bd20a37bd516b0a25f8d71284529"
+          }
+        ],
+        "n_units": 1,
+        "n_gold": 1,
+        "n_other_line": 0,
+        "n_unlocated": 0,
+        "n_adjudicated": 0,
+        "gold_items": 1,
+        "gold_items_carried": 1,
+        "meta_flags": 0
+      },
+      "seek_help": {
+        "gold_documented": false,
+        "n_signposts": 2,
+        "n_invented": 0
+      },
+      "pinned": {
+        "required": true,
+        "in_part_c": true,
+        "audience_ok": true
+      },
+      "failures": [],
+      "verdict": "pass",
+      "generation_id": "w4-pipeline-e06-x5/r5/S4",
+      "scenario_id": "S4",
+      "run": 5
+    },
+    {
+      "generator": "pipeline",
+      "gold_status": "approved",
+      "route": {
+        "gold": "documented",
+        "predicted": "documented",
+        "correct": true,
+        "gold_basis": "record_only"
+      },
+      "advice": {
+        "units": [
+          {
+            "index": 0,
+            "kind": "gold",
+            "lines": [
+              "L012",
+              "L013"
+            ],
+            "key": "8c207253cb53ffd559215761c8e9d174e8d094a13131fe99665c99e15969c437"
+          }
+        ],
+        "n_units": 1,
+        "n_gold": 1,
+        "n_other_line": 0,
+        "n_unlocated": 0,
+        "n_adjudicated": 0,
+        "gold_items": 1,
+        "gold_items_carried": 1,
+        "meta_flags": 0
+      },
+      "seek_help": {
+        "gold_documented": true,
+        "n_signposts": 2,
+        "n_invented": 0
+      },
+      "pinned": {
+        "required": false,
+        "in_part_c": true,
+        "audience_ok": true
+      },
+      "failures": [],
+      "verdict": "pass",
+      "generation_id": "w4-pipeline-e06-x5/r5/S8",
+      "scenario_id": "S8",
+      "run": 5
+    },
+    {
+      "generator": "pipeline",
+      "gold_status": "approved",
+      "route": {
+        "gold": "documented",
+        "predicted": "documented",
+        "correct": true,
+        "gold_basis": "instruction"
+      },
+      "advice": {
+        "units": [
+          {
+            "index": 0,
+            "kind": "gold",
+            "lines": [
+              "L009",
+              "L010"
+            ],
+            "key": "e997b7b6cf0bdaadb1ee0de309b966816c45473b30022a0f4a13d0d9204bc036"
+          },
+          {
+            "index": 1,
+            "kind": "other_line",
+            "lines": [
+              "L011"
+            ],
+            "key": "c28aa018cafd8c137f029a13f5116eaf96303d3805eaba99393b17b8d49eab84"
+          }
+        ],
+        "n_units": 2,
+        "n_gold": 1,
+        "n_other_line": 1,
+        "n_unlocated": 0,
+        "n_adjudicated": 0,
+        "gold_items": 2,
+        "gold_items_carried": 1,
+        "meta_flags": 0
+      },
+      "seek_help": {
+        "gold_documented": true,
+        "n_signposts": 2,
+        "n_invented": 0
+      },
+      "pinned": {
+        "required": false,
+        "in_part_c": true,
+        "audience_ok": true
+      },
+      "failures": [],
+      "verdict": "pass",
+      "generation_id": "w4-pipeline-e06-x5/r5/S9",
+      "scenario_id": "S9",
+      "run": 5
+    },
+    {
+      "generator": "pipeline",
+      "gold_status": "approved",
+      "route": {
+        "gold": "documented",
+        "predicted": "documented",
+        "correct": true,
+        "gold_basis": "record_only"
+      },
+      "advice": {
+        "units": [
+          {
+            "index": 0,
+            "kind": "gold",
+            "lines": [
+              "L010"
+            ],
+            "key": "96f4e7065f052aa170b0bd945faedf2547f451629658fdcdfc8aa357ba5b6736"
+          }
+        ],
+        "n_units": 1,
+        "n_gold": 1,
+        "n_other_line": 0,
+        "n_unlocated": 0,
+        "n_adjudicated": 0,
+        "gold_items": 1,
+        "gold_items_carried": 1,
+        "meta_flags": 0
+      },
+      "seek_help": {
+        "gold_documented": true,
+        "n_signposts": 2,
+        "n_invented": 0
+      },
+      "pinned": {
+        "required": false,
+        "in_part_c": true,
+        "audience_ok": true
+      },
+      "failures": [],
+      "verdict": "pass",
+      "generation_id": "w4-pipeline-e06-x5/r5/S10",
+      "scenario_id": "S10",
+      "run": 5
+    },
+    {
+      "generator": "pipeline",
+      "gold_status": "approved",
+      "route": {
+        "gold": "documented",
+        "predicted": "documented",
+        "correct": true,
+        "gold_basis": "instruction"
+      },
+      "advice": {
+        "units": [
+          {
+            "index": 0,
+            "kind": "gold",
+            "lines": [
+              "L014",
+              "L015"
+            ],
+            "key": "748c32b4f72eb23f8c7990f2b778b98fbe309e9899d823686f338e7a1f6a2646"
+          }
+        ],
+        "n_units": 1,
+        "n_gold": 1,
+        "n_other_line": 0,
+        "n_unlocated": 0,
+        "n_adjudicated": 0,
+        "gold_items": 2,
+        "gold_items_carried": 1,
+        "meta_flags": 0
+      },
+      "seek_help": {
+        "gold_documented": false,
+        "n_signposts": 2,
+        "n_invented": 0
+      },
+      "pinned": {
+        "required": true,
+        "in_part_c": true,
+        "audience_ok": true
+      },
+      "failures": [],
+      "verdict": "pass",
+      "generation_id": "w4-pipeline-e06-x5/r5/S11",
+      "scenario_id": "S11",
+      "run": 5
+    },
+    {
+      "generator": "pipeline",
+      "gold_status": "approved",
+      "route": {
+        "gold": "fallback",
+        "predicted": "fallback",
+        "correct": true,
+        "gold_basis": null
+      },
+      "advice": {
+        "units": [],
+        "n_units": 0,
+        "n_gold": 0,
+        "n_other_line": 0,
+        "n_unlocated": 0,
+        "n_adjudicated": 0,
+        "gold_items": 0,
+        "gold_items_carried": 0,
+        "meta_flags": 0
+      },
+      "seek_help": {
+        "gold_documented": false,
+        "n_signposts": 4,
+        "n_invented": 0
+      },
+      "pinned": {
+        "required": true,
+        "in_part_c": true,
+        "audience_ok": true
+      },
+      "failures": [],
+      "verdict": "pass",
+      "generation_id": "w4-pipeline-e06-x5/r5/S12",
+      "scenario_id": "S12",
+      "run": 5
+    },
+    {
+      "generator": "pipeline",
+      "gold_status": "approved",
+      "route": {
+        "gold": "fallback",
+        "predicted": "fallback",
+        "correct": true,
+        "gold_basis": null
+      },
+      "advice": {
+        "units": [],
+        "n_units": 0,
+        "n_gold": 0,
+        "n_other_line": 0,
+        "n_unlocated": 0,
+        "n_adjudicated": 0,
+        "gold_items": 0,
+        "gold_items_carried": 0,
+        "meta_flags": 0
+      },
+      "seek_help": {
+        "gold_documented": false,
+        "n_signposts": 4,
+        "n_invented": 0
+      },
+      "pinned": {
+        "required": true,
+        "in_part_c": true,
+        "audience_ok": true
+      },
+      "failures": [],
+      "verdict": "pass",
+      "generation_id": "w4-pipeline-e06-x5/r5/S13",
+      "scenario_id": "S13",
+      "run": 5
+    },
+    {
+      "generator": "pipeline",
+      "gold_status": "approved",
+      "route": {
+        "gold": "documented",
+        "predicted": "documented",
+        "correct": true,
+        "gold_basis": "instruction"
+      },
+      "advice": {
+        "units": [
+          {
+            "index": 0,
+            "kind": "gold",
+            "lines": [
+              "L014"
+            ],
+            "key": "6f466b783fb36aa7f98abf37471dd20133384e0ecf47d8b3c486ae26b248787d"
+          }
+        ],
+        "n_units": 1,
+        "n_gold": 1,
+        "n_other_line": 0,
+        "n_unlocated": 0,
+        "n_adjudicated": 0,
+        "gold_items": 1,
+        "gold_items_carried": 1,
+        "meta_flags": 0
+      },
+      "seek_help": {
+        "gold_documented": false,
+        "n_signposts": 2,
+        "n_invented": 0
+      },
+      "pinned": {
+        "required": true,
+        "in_part_c": true,
+        "audience_ok": true
+      },
+      "failures": [],
+      "verdict": "pass",
+      "generation_id": "w4-pipeline-e06-x5/r5/S14",
+      "scenario_id": "S14",
+      "run": 5
+    },
+    {
+      "generator": "pipeline",
+      "gold_status": "approved",
+      "route": {
+        "gold": "documented",
+        "predicted": "fallback",
+        "correct": false,
+        "gold_basis": "record_only"
+      },
+      "advice": {
+        "units": [],
+        "n_units": 0,
+        "n_gold": 0,
+        "n_other_line": 0,
+        "n_unlocated": 0,
+        "n_adjudicated": 0,
+        "gold_items": 2,
+        "gold_items_carried": 0,
+        "meta_flags": 0
+      },
+      "seek_help": {
+        "gold_documented": false,
+        "n_signposts": 4,
+        "n_invented": 0
+      },
+      "pinned": {
+        "required": true,
+        "in_part_c": true,
+        "audience_ok": true
+      },
+      "failures": [
+        "route"
+      ],
+      "verdict": "fail",
+      "generation_id": "w4-pipeline-e06-x5/r5/S15",
+      "scenario_id": "S15",
+      "run": 5
+    },
+    {
+      "generator": "pipeline",
+      "gold_status": "approved",
+      "route": {
+        "gold": "fallback",
+        "predicted": "documented",
+        "correct": false,
+        "gold_basis": null
+      },
+      "advice": {
+        "units": [
+          {
+            "index": 0,
+            "kind": "other_line",
+            "lines": [
+              "L013"
+            ],
+            "key": "e1336a60091531b08a1c9191fc56fd01f66d1e446153684106acbb4e892576a3"
+          }
+        ],
+        "n_units": 1,
+        "n_gold": 0,
+        "n_other_line": 1,
+        "n_unlocated": 0,
+        "n_adjudicated": 0,
+        "gold_items": 0,
+        "gold_items_carried": 0,
+        "meta_flags": 0
+      },
+      "seek_help": {
+        "gold_documented": false,
+        "n_signposts": 2,
+        "n_invented": 0
+      },
+      "pinned": {
+        "required": true,
+        "in_part_c": true,
+        "audience_ok": true
+      },
+      "failures": [
+        "route"
+      ],
+      "verdict": "fail",
+      "generation_id": "w4-pipeline-e06-x5/r5/S16",
+      "scenario_id": "S16",
+      "run": 5
+    },
+    {
+      "generator": "pipeline",
+      "gold_status": "approved",
+      "route": {
+        "gold": "fallback",
+        "predicted": "fallback",
+        "correct": true,
+        "gold_basis": null
+      },
+      "advice": {
+        "units": [],
+        "n_units": 0,
+        "n_gold": 0,
+        "n_other_line": 0,
+        "n_unlocated": 0,
+        "n_adjudicated": 0,
+        "gold_items": 0,
+        "gold_items_carried": 0,
+        "meta_flags": 0
+      },
+      "seek_help": {
+        "gold_documented": false,
+        "n_signposts": 4,
+        "n_invented": 0
+      },
+      "pinned": {
+        "required": true,
+        "in_part_c": true,
+        "audience_ok": true
+      },
+      "failures": [],
+      "verdict": "pass",
+      "generation_id": "w4-pipeline-e06-x5/r5/S17",
+      "scenario_id": "S17",
+      "run": 5
+    },
+    {
+      "generator": "pipeline",
+      "gold_status": "approved",
+      "route": {
+        "gold": "documented",
+        "predicted": "documented",
+        "correct": true,
+        "gold_basis": "instruction"
+      },
+      "advice": {
+        "units": [
+          {
+            "index": 0,
+            "kind": "gold",
+            "lines": [
+              "L007",
+              "L008",
+              "L009"
+            ],
+            "key": "a26d44c09115aca177ee60a8ea1ebaf7fd5c74b127c242bdb96be7a536744c80"
+          },
+          {
+            "index": 1,
+            "kind": "gold",
+            "lines": [
+              "L006",
+              "L007"
+            ],
+            "key": "575dc7d8567a321b4d4fc15e581f46cd218614db6cd680c1e651a40a6a30b035"
+          }
+        ],
+        "n_units": 2,
+        "n_gold": 2,
+        "n_other_line": 0,
+        "n_unlocated": 0,
+        "n_adjudicated": 0,
+        "gold_items": 3,
+        "gold_items_carried": 3,
+        "meta_flags": 0
+      },
+      "seek_help": {
+        "gold_documented": false,
+        "n_signposts": 2,
+        "n_invented": 0
+      },
+      "pinned": {
+        "required": true,
+        "in_part_c": true,
+        "audience_ok": true
+      },
+      "failures": [],
+      "verdict": "pass",
+      "generation_id": "w4-pipeline-e06-x5/r5/S18",
+      "scenario_id": "S18",
+      "run": 5
+    },
+    {
+      "generator": "pipeline",
+      "gold_status": "approved",
+      "route": {
+        "gold": "fallback",
+        "predicted": "fallback",
+        "correct": true,
+        "gold_basis": null
+      },
+      "advice": {
+        "units": [],
+        "n_units": 0,
+        "n_gold": 0,
+        "n_other_line": 0,
+        "n_unlocated": 0,
+        "n_adjudicated": 0,
+        "gold_items": 0,
+        "gold_items_carried": 0,
+        "meta_flags": 0
+      },
+      "seek_help": {
+        "gold_documented": false,
+        "n_signposts": 4,
+        "n_invented": 0
+      },
+      "pinned": {
+        "required": true,
+        "in_part_c": true,
+        "audience_ok": true
+      },
+      "failures": [],
+      "verdict": "pass",
+      "generation_id": "w4-pipeline-e06-x5/r5/A5",
+      "scenario_id": "A5",
+      "run": 5
+    },
+    {
+      "generator": "pipeline",
+      "gold_status": "approved",
+      "route": {
+        "gold": "fallback",
+        "predicted": "fallback",
+        "correct": true,
+        "gold_basis": null
+      },
+      "advice": {
+        "units": [],
+        "n_units": 0,
+        "n_gold": 0,
+        "n_other_line": 0,
+        "n_unlocated": 0,
+        "n_adjudicated": 0,
+        "gold_items": 0,
+        "gold_items_carried": 0,
+        "meta_flags": 0
+      },
+      "seek_help": {
+        "gold_documented": false,
+        "n_signposts": 4,
+        "n_invented": 0
+      },
+      "pinned": {
+        "required": true,
+        "in_part_c": true,
+        "audience_ok": true
+      },
+      "failures": [],
+      "verdict": "pass",
+      "generation_id": "w4-pipeline-e06-x5/r5/B6",
+      "scenario_id": "B6",
+      "run": 5
+    },
+    {
+      "generator": "pipeline",
+      "gold_status": "approved",
+      "route": {
+        "gold": "fallback",
+        "predicted": "fallback",
+        "correct": true,
+        "gold_basis": null
+      },
+      "advice": {
+        "units": [],
+        "n_units": 0,
+        "n_gold": 0,
+        "n_other_line": 0,
+        "n_unlocated": 0,
+        "n_adjudicated": 0,
+        "gold_items": 0,
+        "gold_items_carried": 0,
+        "meta_flags": 0
+      },
+      "seek_help": {
+        "gold_documented": false,
+        "n_signposts": 4,
+        "n_invented": 0
+      },
+      "pinned": {
+        "required": true,
+        "in_part_c": true,
+        "audience_ok": true
+      },
+      "failures": [],
+      "verdict": "pass",
+      "generation_id": "w4-pipeline-e06-x5/r5/C7",
+      "scenario_id": "C7",
+      "run": 5
+    }
+  ],
+  "skipped": [],
+  "meds": {
+    "scorer": "d4_medications",
+    "scorer_version": 2,
+    "results": []
+  }
+}

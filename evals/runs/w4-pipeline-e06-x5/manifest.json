@@ -1,0 +1,105 @@
+{
+  "record_version": 1,
+  "batch_id": "w4-pipeline-e06-x5",
+  "created_at": "2026-10-07T16:00:51+01:00",
+  "generator": "pipeline",
+  "path": "steps-1-5b",
+  "model_id": "anthropic.claude-sonnet-4-6",
+  "region": "eu-west-2",
+  "prompts": {
+    "extract_facts": {
+      "path": "src/generate/pipeline/prompts/extract_facts.md",
+      "file_sha256": "d44eef3af82f0b7185b301a518b4034722b2830771a1d23e71f358859be697d0",
+      "body_sha256": "ec91cd4136e8b4e74330b75d4bb7250537e110bfafe32a3b1af52e5246bbd146"
+    }
+  },
+  "prompt_caching": true,
+  "corpus": {
+    "path": "src/canary/scenarios.json",
+    "sha256": "d510623686bff3fd851e69dc3943e014aad9b4aff87417fd80e030c71f604321"
+  },
+  "scenarios": [
+    {
+      "id": "S1",
+      "notes_sha256": "deacfb8fe45187fb890a33b6e0c8ad2f5e6902c825879bb20931a69f80969fa3"
+    },
+    {
+      "id": "S2",
+      "notes_sha256": "1b138eb44a03c3ac42c22625b36982e32d8a0eece4c7e63daa91a2aa836d3ed6"
+    },
+    {
+      "id": "S3",
+      "notes_sha256": "c8882fcefb7f24fb39b45a7bb32cb6bfeb5481df37eff450606bec809ab51ef1"
+    },
+    {
+      "id": "S4",
+      "notes_sha256": "647dbf1787d657773d262b81e9df534fdf54b57d06d61b8fa585b26bbcd9a6cc"
+    },
+    {
+      "id": "S8",
+      "notes_sha256": "db5dc0237ea1d82ade478142d26845b1f5fda1c9c35512621c0f5aa23a5afca6"
+    },
+    {
+      "id": "S9",
+      "notes_sha256": "fff6b2a27043c88393b3a44a1c2074ccc86e3d61eb2be9262fc6d67ca0a4aa4a"
+    },
+    {
+      "id": "S10",
+      "notes_sha256": "a00b5caaa8e251a370d8136857fd8a4d7969cc70de71013d55dbd99a5fd03229"
+    },
+    {
+      "id": "S11",
+      "notes_sha256": "ed2e3ee49d11c4bfb7eb6ca95f90d402685abec1913adce3b032619831a2a7d6"
+    },
+    {
+      "id": "S12",
+      "notes_sha256": "143db4ec88bb969841da8f67ae4e9cff993d97483c923700d3c320033a67f923"
+    },
+    {
+      "id": "S13",
+      "notes_sha256": "7bdbea67d99837b5ac07d98a1dac7f07026885128b3e5d533937cc8014c86971"
+    },
+    {
+      "id": "S14",
+      "notes_sha256": "20c5042a7bbfa0a841857197d01c69abf4b0abe852955048535cbba89c736340"
+    },
+    {
+      "id": "S15",
+      "notes_sha256": "f54e5b4b248523c38c755c7e4eb587fa65b3ae478aec2c9d77ef94ba96f278d3"
+    },
+    {
+      "id": "S16",
+      "notes_sha256": "d762fcf2443af7c65329f6b17d603be9d58f3d3ccdc4df81ce08db03201a197e"
+    },
+    {
+      "id": "S17",
+      "notes_sha256": "e3e6093b1af13ac9ae86dfab84056ca00f418c7112b956aba9373d9a8d8e40b4"
+    },
+    {
+      "id": "S18",
+      "notes_sha256": "3d7f06d1a5a414275df26db1863e10bc9e085fde839ae9021e97d5f16ebf659b"
+    },
+    {
+      "id": "A5",
+      "notes_sha256": "17990ee1d94abcc513c9b663863e4a9a92ef69d1a564f1544879be8404ae7092"
+    },
+    {
+      "id": "B6",
+      "notes_sha256": "fa57541fe0dd7d176b5b46020f94e83903003d8ff0d88cc4443cd33468c757ae"
+    },
+    {
+      "id": "C7",
+      "notes_sha256": "d15719c10172a3c9a85deae46695411eb27d652215d6152078b33ea2487a91ca"
+    }
+  ],
+  "runs": 5,
+  "price_basis": {
+    "usd_per_mtok": {
+      "input": 3.0,
+      "output": 15.0,
+      "cache_write": 3.75,
+      "cache_read": 0.3
+    },
+    "regional_premium": 1.1
+  }
+}

@@ -1,0 +1,874 @@
+{
+  "record_version": 1,
+  "generation_id": "w4-pipeline-e06-x5/r4/S13",
+  "batch_id": "w4-pipeline-e06-x5",
+  "run": 4,
+  "scenario_id": "S13",
+  "generator": "pipeline",
+  "path": "steps-1-5b",
+  "model_id": "anthropic.claude-sonnet-4-6",
+  "region": "eu-west-2",
+  "prompts": {
+    "extract_facts": {
+      "path": "src/generate/pipeline/prompts/extract_facts.md",
+      "file_sha256": "d44eef3af82f0b7185b301a518b4034722b2830771a1d23e71f358859be697d0",
+      "body_sha256": "ec91cd4136e8b4e74330b75d4bb7250537e110bfafe32a3b1af52e5246bbd146"
+    }
+  },
+  "prompt_caching": true,
+  "notes_sha256": "7bdbea67d99837b5ac07d98a1dac7f07026885128b3e5d533937cc8014c86971",
+  "started_at": "2026-10-07T19:18:32+01:00",
+  "elapsed_s": 20.272,
+  "calls": [
+    {
+      "name": "extract_facts",
+      "input_tokens": 918,
+      "output_tokens": 2550,
+      "cache_read_tokens": 3970,
+      "cache_write_tokens": 0,
+      "stop_reason": "tool_use",
+      "latency_s": 20.215,
+      "throttle_retries": 0
+    }
+  ],
+  "steps": {
+    "guard_input": {
+      "notes_sha256": "7bdbea67d99837b5ac07d98a1dac7f07026885128b3e5d533937cc8014c86971",
+      "line_count": 17,
+      "flags": []
+    },
+    "extract_facts": {
+      "call": {
+        "model_id": "anthropic.claude-sonnet-4-6",
+        "prompt_sha256": "ec91cd4136e8b4e74330b75d4bb7250537e110bfafe32a3b1af52e5246bbd146",
+        "stop_reason": "tool_use",
+        "attempts": 1,
+        "input_tokens": 918,
+        "output_tokens": 2550,
+        "cache_read_tokens": 3970,
+        "cache_write_tokens": 0,
+        "latency_ms": 20215
+      }
+    },
+    "validate_facts": {
+      "facts": {
+        "fields": {
+          "age_sex": {
+            "status": "documented",
+            "items": [
+              {
+                "value": "58-year-old female",
+                "cites": [
+                  {
+                    "lines": [
+                      "L001"
+                    ],
+                    "quote": "58F",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "age_sex.0",
+                "citation_status": "verified",
+                "reason": null
+              }
+            ],
+            "field_check": "ok"
+          },
+          "specialty": {
+            "status": "inferred_flagged",
+            "items": [
+              {
+                "value": "Intensive Care / ITU (with surgical and multi-specialty input)",
+                "cites": [
+                  {
+                    "lines": [
+                      "L001",
+                      "L002"
+                    ],
+                    "quote": "ED -> theatre (debridement) -> ITU",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "specialty.0",
+                "citation_status": "verified",
+                "reason": null
+              }
+            ],
+            "field_check": "ok"
+          },
+          "legal_status": {
+            "status": "not_documented",
+            "items": [],
+            "field_check": "ok"
+          },
+          "weight": {
+            "status": "not_documented",
+            "items": [],
+            "field_check": "ok"
+          },
+          "admission_date": {
+            "status": "documented",
+            "items": [
+              {
+                "value": "02/04",
+                "cites": [
+                  {
+                    "lines": [
+                      "L001"
+                    ],
+                    "quote": "Admitted 02/04",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "admission_date.0",
+                "citation_status": "verified",
+                "reason": null
+              }
+            ],
+            "field_check": "ok"
+          },
+          "discharge_date": {
+            "status": "documented",
+            "items": [
+              {
+                "value": "21/05",
+                "cites": [
+                  {
+                    "lines": [
+                      "L012"
+                    ],
+                    "quote": "Discharged 21/05 (49-day admission)",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "discharge_date.0",
+                "citation_status": "verified",
+                "reason": null
+              }
+            ],
+            "field_check": "ok"
+          },
+          "presenting_complaint": {
+            "status": "documented",
+            "items": [
+              {
+                "value": "Necrotising soft-tissue infection of the left thigh with septic shock",
+                "cites": [
+                  {
+                    "lines": [
+                      "L001"
+                    ],
+                    "quote": "necrotising soft-tissue infection L thigh + septic shock",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "presenting_complaint.0",
+                "citation_status": "verified",
+                "reason": null
+              }
+            ],
+            "field_check": "ok"
+          },
+          "diagnosis_primary": {
+            "status": "documented",
+            "items": [
+              {
+                "value": "Necrotising soft-tissue infection, left thigh, with septic shock",
+                "cites": [
+                  {
+                    "lines": [
+                      "L001"
+                    ],
+                    "quote": "necrotising soft-tissue infection L thigh + septic shock",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "diagnosis_primary.0",
+                "citation_status": "verified",
+                "reason": null
+              }
+            ],
+            "field_check": "ok"
+          },
+          "diagnosis_secondary": {
+            "status": "documented",
+            "items": [
+              {
+                "value": "ARDS",
+                "cites": [
+                  {
+                    "lines": [
+                      "L006"
+                    ],
+                    "quote": "ARDS (proned x2)",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "diagnosis_secondary.0",
+                "citation_status": "verified",
+                "reason": null
+              },
+              {
+                "value": "ICU-acquired weakness",
+                "cites": [
+                  {
+                    "lines": [
+                      "L006"
+                    ],
+                    "quote": "ICU-acquired weakness",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "diagnosis_secondary.1",
+                "citation_status": "verified",
+                "reason": null
+              },
+              {
+                "value": "Line sepsis (day 14; lines changed)",
+                "cites": [
+                  {
+                    "lines": [
+                      "L006"
+                    ],
+                    "quote": "line sepsis day 14 (lines changed)",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "diagnosis_secondary.2",
+                "citation_status": "verified",
+                "reason": null
+              },
+              {
+                "value": "New atrial fibrillation (rate-controlled)",
+                "cites": [
+                  {
+                    "lines": [
+                      "L006",
+                      "L007"
+                    ],
+                    "quote": "AF (new, rate-controlled)",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "diagnosis_secondary.3",
+                "citation_status": "verified",
+                "reason": null
+              },
+              {
+                "value": "Acute kidney injury (requiring CVVH)",
+                "cites": [
+                  {
+                    "lines": [
+                      "L002",
+                      "L003"
+                    ],
+                    "quote": "Multi-organ support: intubated/ventilated,\nnoradrenaline, CVVH for AKI",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "diagnosis_secondary.4",
+                "citation_status": "verified",
+                "reason": null
+              }
+            ],
+            "field_check": "ok"
+          },
+          "diagnosis_background": {
+            "status": "not_documented",
+            "items": [],
+            "field_check": "ok"
+          },
+          "key_investigations": {
+            "status": "documented",
+            "items": [
+              {
+                "value": "Wound/microbiological organisms: Group A Streptococcus and anaerobes",
+                "cites": [
+                  {
+                    "lines": [
+                      "L004"
+                    ],
+                    "quote": "Organisms: Group A strep + anaerobes",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "key_investigations.0",
+                "citation_status": "verified",
+                "reason": null
+              }
+            ],
+            "field_check": "ok"
+          },
+          "treatment": {
+            "status": "documented",
+            "items": [
+              {
+                "value": "Multi-organ support: intubation and mechanical ventilation, noradrenaline infusion, continuous veno-venous haemofiltration (CVVH) for AKI",
+                "cites": [
+                  {
+                    "lines": [
+                      "L002",
+                      "L003"
+                    ],
+                    "quote": "intubated/ventilated,\nnoradrenaline, CVVH for AKI",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "treatment.0",
+                "citation_status": "verified",
+                "reason": null
+              },
+              {
+                "value": "Multiple surgical debridements x4 (days 0, 2, 5, 9), washout, delayed closure, and VAC dressing",
+                "cites": [
+                  {
+                    "lines": [
+                      "L003",
+                      "L004"
+                    ],
+                    "quote": "Multiple theatre trips (debridements x4, days 0/2/5/9),\nwashout + delayed closure + VAC dressing",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "treatment.1",
+                "citation_status": "verified",
+                "reason": null
+              },
+              {
+                "value": "Long course IV piperacillin-tazobactam, then tailored to benzylpenicillin and clindamycin per microbiology advice",
+                "cites": [
+                  {
+                    "lines": [
+                      "L004",
+                      "L005"
+                    ],
+                    "quote": "long course IV pip-taz then tailored to benzylpenicillin + clindamycin per micro",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "treatment.2",
+                "citation_status": "verified",
+                "reason": null
+              },
+              {
+                "value": "Prone positioning x2 for ARDS",
+                "cites": [
+                  {
+                    "lines": [
+                      "L006"
+                    ],
+                    "quote": "ARDS (proned x2)",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "treatment.3",
+                "citation_status": "verified",
+                "reason": null
+              },
+              {
+                "value": "Central lines changed on day 14 for line sepsis",
+                "cites": [
+                  {
+                    "lines": [
+                      "L006"
+                    ],
+                    "quote": "line sepsis day 14 (lines changed)",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "treatment.4",
+                "citation_status": "verified",
+                "reason": null
+              },
+              {
+                "value": "Nutritional support via nasogastric (NG) tube, progressing to oral intake",
+                "cites": [
+                  {
+                    "lines": [
+                      "L007"
+                    ],
+                    "quote": "nutrition via NG then improving oral",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "treatment.5",
+                "citation_status": "verified",
+                "reason": null
+              },
+              {
+                "value": "Renal recovery; CVVH discontinued day 16. Extubated day 18. Stepped down to ward day 24",
+                "cites": [
+                  {
+                    "lines": [
+                      "L010"
+                    ],
+                    "quote": "Renal recovered, off CVVH day 16. Extubated day 18. Stepped down to ward day 24.",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "treatment.6",
+                "citation_status": "verified",
+                "reason": null
+              },
+              {
+                "value": "Wound healing by secondary intention with district nurse and tissue viability team involvement",
+                "cites": [
+                  {
+                    "lines": [
+                      "L011",
+                      "L012"
+                    ],
+                    "quote": "Wound healing by secondary intention, district nurse +\ntissue viability",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "treatment.7",
+                "citation_status": "verified",
+                "reason": null
+              },
+              {
+                "value": "Prolonged rehabilitation and physiotherapy",
+                "cites": [
+                  {
+                    "lines": [
+                      "L011"
+                    ],
+                    "quote": "Rehab/physio prolonged",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "treatment.8",
+                "citation_status": "verified",
+                "reason": null
+              },
+              {
+                "value": "Resuscitation status changed during admission: for resuscitation on admission; DNACPR placed day 8 during deterioration; rescinded day 20 following improvement and family discussion",
+                "cites": [
+                  {
+                    "lines": [
+                      "L008",
+                      "L009"
+                    ],
+                    "quote": "For resus on admission. DNACPR placed day 8 during deterioration (poor\nprognosis), then rescinded day 20 once improving + family discussion",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "treatment.9",
+                "citation_status": "verified",
+                "reason": null
+              }
+            ],
+            "field_check": "ok"
+          },
+          "risk_assessment": {
+            "status": "not_documented",
+            "items": [],
+            "field_check": "ok"
+          },
+          "allergies": {
+            "status": "documented",
+            "items": [
+              {
+                "value": "No known drug allergies",
+                "cites": [
+                  {
+                    "lines": [
+                      "L013"
+                    ],
+                    "quote": "NKDA",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "allergies.0",
+                "citation_status": "verified",
+                "reason": null
+              }
+            ],
+            "field_check": "ok"
+          },
+          "follow_up": {
+            "status": "documented",
+            "items": [
+              {
+                "value": "Plastics/wound clinic follow-up at 2 weeks",
+                "cites": [
+                  {
+                    "lines": [
+                      "L016"
+                    ],
+                    "quote": "plastics/wound clinic 2/52",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "follow_up.0",
+                "citation_status": "verified",
+                "reason": null
+              },
+              {
+                "value": "Cardiology follow-up (for AF) at 6 weeks",
+                "cites": [
+                  {
+                    "lines": [
+                      "L016"
+                    ],
+                    "quote": "cardiology (AF) 6/52",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "follow_up.1",
+                "citation_status": "verified",
+                "reason": null
+              },
+              {
+                "value": "ICU follow-up clinic",
+                "cites": [
+                  {
+                    "lines": [
+                      "L016",
+                      "L017"
+                    ],
+                    "quote": "ICU follow-up clinic",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "follow_up.2",
+                "citation_status": "verified",
+                "reason": null
+              },
+              {
+                "value": "Community physiotherapy and occupational therapy",
+                "cites": [
+                  {
+                    "lines": [
+                      "L017"
+                    ],
+                    "quote": "physio/OT community",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "follow_up.3",
+                "citation_status": "verified",
+                "reason": null
+              }
+            ],
+            "field_check": "ok"
+          },
+          "gp_actions": {
+            "status": "documented",
+            "items": [
+              {
+                "value": "Monitor renal function post-AKI and blood pressure",
+                "cites": [
+                  {
+                    "lines": [
+                      "L015",
+                      "L016"
+                    ],
+                    "quote": "GP: monitor renal\nfunction post-AKI, BP",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "gp_actions.0",
+                "citation_status": "verified",
+                "reason": null
+              }
+            ],
+            "field_check": "ok"
+          },
+          "vte_assessment": {
+            "status": "not_documented",
+            "items": [],
+            "field_check": "ok"
+          }
+        },
+        "medications": {
+          "pre_admission": [
+            {
+              "value": "Amlodipine 5 mg once daily",
+              "cites": [
+                {
+                  "lines": [
+                    "L013"
+                  ],
+                  "quote": "amlodipine 5mg OD",
+                  "verified": true,
+                  "reason": null
+                }
+              ],
+              "fact_id": "medications.pre_admission.0",
+              "citation_status": "verified",
+              "reason": null
+            },
+            {
+              "value": "Atorvastatin 20 mg at night",
+              "cites": [
+                {
+                  "lines": [
+                    "L013"
+                  ],
+                  "quote": "atorvastatin 20mg ON",
+                  "verified": true,
+                  "reason": null
+                }
+              ],
+              "fact_id": "medications.pre_admission.1",
+              "citation_status": "verified",
+              "reason": null
+            }
+          ],
+          "discharge": [
+            {
+              "value": "Bisoprolol 2.5 mg once daily (new, for AF)",
+              "cites": [
+                {
+                  "lines": [
+                    "L014"
+                  ],
+                  "quote": "bisoprolol 2.5mg OD (new, for AF)",
+                  "verified": true,
+                  "reason": null
+                }
+              ],
+              "fact_id": "medications.discharge.0",
+              "citation_status": "verified",
+              "reason": null
+            },
+            {
+              "value": "Apixaban 5 mg twice daily (new, for AF)",
+              "cites": [
+                {
+                  "lines": [
+                    "L014",
+                    "L015"
+                  ],
+                  "quote": "apixaban 5mg BD (new, AF)",
+                  "verified": true,
+                  "reason": null
+                }
+              ],
+              "fact_id": "medications.discharge.1",
+              "citation_status": "verified",
+              "reason": null
+            },
+            {
+              "value": "Amlodipine 5 mg once daily (continued)",
+              "cites": [
+                {
+                  "lines": [
+                    "L014",
+                    "L015"
+                  ],
+                  "quote": "amlodipine 5mg\nOD continued",
+                  "verified": true,
+                  "reason": null
+                }
+              ],
+              "fact_id": "medications.discharge.2",
+              "citation_status": "verified",
+              "reason": null
+            },
+            {
+              "value": "Atorvastatin 20 mg at night (continued)",
+              "cites": [
+                {
+                  "lines": [
+                    "L015"
+                  ],
+                  "quote": "atorvastatin 20mg ON continued",
+                  "verified": true,
+                  "reason": null
+                }
+              ],
+              "fact_id": "medications.discharge.3",
+              "citation_status": "verified",
+              "reason": null
+            },
+            {
+              "value": "Wound care (on discharge)",
+              "cites": [
+                {
+                  "lines": [
+                    "L015"
+                  ],
+                  "quote": "plus wound care",
+                  "verified": true,
+                  "reason": null
+                }
+              ],
+              "fact_id": "medications.discharge.4",
+              "citation_status": "verified",
+              "reason": null
+            }
+          ],
+          "discharge_status": "listed",
+          "medications_check": "ok"
+        },
+        "resus": {
+          "changed": "yes",
+          "cites": [
+            {
+              "lines": [
+                "L008",
+                "L009"
+              ],
+              "quote": "For resus on admission. DNACPR placed day 8 during deterioration (poor\nprognosis), then rescinded day 20 once improving + family discussion",
+              "verified": true,
+              "reason": null
+            }
+          ],
+          "form_or_discussion_documented": true,
+          "status_documented": "for_resuscitation",
+          "fact_id": "resus",
+          "citation_status": "verified",
+          "reason": null
+        },
+        "documented_advice": [],
+        "age_group": "adult",
+        "contradictions": [],
+        "suspicious_text": []
+      },
+      "uncited_lines": [],
+      "counts": {
+        "cites_total": 36,
+        "cites_verified": 36,
+        "items_unverified": 0,
+        "fields_inconsistent": 0,
+        "medications_inconsistent": 0
+      }
+    },
+    "retrieve_evidence": {
+      "medication": [
+        {
+          "line": "L013",
+          "sources": [
+            "cited",
+            "med_header"
+          ],
+          "fact_ids": [
+            "medications.pre_admission.0",
+            "medications.pre_admission.1"
+          ],
+          "flagged": false
+        },
+        {
+          "line": "L014",
+          "sources": [
+            "cited",
+            "med_header"
+          ],
+          "fact_ids": [
+            "medications.discharge.0",
+            "medications.discharge.1",
+            "medications.discharge.2"
+          ],
+          "flagged": false
+        },
+        {
+          "line": "L015",
+          "sources": [
+            "cited",
+            "med_continuation"
+          ],
+          "fact_ids": [
+            "medications.discharge.1",
+            "medications.discharge.2",
+            "medications.discharge.3",
+            "medications.discharge.4"
+          ],
+          "flagged": false
+        },
+        {
+          "line": "L016",
+          "sources": [
+            "med_continuation"
+          ],
+          "fact_ids": [],
+          "flagged": false
+        }
+      ],
+      "resus": [
+        {
+          "line": "L008",
+          "sources": [
+            "cited",
+            "resus_term"
+          ],
+          "fact_ids": [
+            "resus"
+          ],
+          "flagged": false
+        },
+        {
+          "line": "L009",
+          "sources": [
+            "cited"
+          ],
+          "fact_ids": [
+            "resus"
+          ],
+          "flagged": false
+        }
+      ],
+      "counts": {
+        "medication_lines": 4,
+        "resus_lines": 2,
+        "medication_matched_not_cited": 1,
+        "resus_matched_not_cited": 0
+      }
+    },
+    "route_resus": {
+      "route": "documented",
+      "forced": "no",
+      "status": "for_resuscitation",
+      "changed": "yes",
+      "cited_lines": [
+        "L008",
+        "L009"
+      ],
+      "rendered": "RESUSCITATION STATUS\nFor resuscitation. *** CHANGED DURING ADMISSION ***\nSource: [L008–L009]: \"For resus on admission. DNACPR placed day 8 during deterioration (poor prognosis), then rescinded day 20 once improving + family discussion\""
+    },
+    "select_safety_net": {
+      "route": "fallback",
+      "audience": "adult",
+      "pinned_line": "If you have been given a number to call, use that first. Otherwise, if you are worried, contact your GP or call NHS 111. Call 999 if it is an emergency.",
+      "advice": [],
+      "advice_excluded": 0,
+      "cited_lines": [],
+      "part_ab": "If you have been given a number to call, use that first. Otherwise, if you are worried, contact your GP or call NHS 111. Call 999 if it is an emergency.",
+      "part_c": "If you have been given a number to call, use that first. Otherwise, if you are worried, contact your GP or call NHS 111. Call 999 if it is an emergency."
+    }
+  },
+  "output": null,
+  "gate": null,
+  "failed_step": null,
+  "error": null,
+  "cost_usd_est": 0.046415
+}

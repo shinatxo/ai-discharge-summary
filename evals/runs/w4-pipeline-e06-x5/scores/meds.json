@@ -1,0 +1,81 @@
+{
+  "batch_id": "w4-pipeline-e06-x5",
+  "generator": "pipeline",
+  "gold": {
+    "S12": {
+      "status": "approved",
+      "sha256": "5d61299a2f0ebb04eb5b6ccc248ea03413bf17a04d0bb3197876f13bceb4903f"
+    },
+    "B6": {
+      "status": "approved",
+      "sha256": "fba7dc568098c106ab9002b171622c602fd77e869b99d1857ddb2582762c7124"
+    },
+    "S16": {
+      "status": "approved",
+      "sha256": "dd05baaad97444d727d611113bd2b1ac9bbb57d960cfdb9e996a860214b3060e"
+    },
+    "S9": {
+      "status": "approved",
+      "sha256": "5a395e104b7a98f4f818578d2e61555e11efe4b499be1e7a9faf86d574264126"
+    },
+    "S1": {
+      "status": "approved",
+      "sha256": "17c1a71d3422d157cd75942acec635e4dc588eea7c60c6278efb3e6cb7245ff4"
+    },
+    "S3": {
+      "status": "approved",
+      "sha256": "19c67912c3e49e17750982df362b3075e82874ca57363e72d5ab7708b235f0a6"
+    },
+    "S10": {
+      "status": "approved",
+      "sha256": "9200c327d753efae6d9dbd1a0fa0ec286b68f61a0d38996b6660f74faea0342d"
+    },
+    "S18": {
+      "status": "approved",
+      "sha256": "5086d224b0a5ab587cf5802e748f75f7b28f85c6f966b7e91c1a967cdb0d5df9"
+    },
+    "S11": {
+      "status": "approved",
+      "sha256": "20f52f3a721a8c0f4f923e60a22948bf6cd17224206d57885a3dab7897de8a0d"
+    },
+    "S17": {
+      "status": "approved",
+      "sha256": "1cd17a625573c85e980538e3b5580370f92f4685adfa5e530d32d4f2bfbed145"
+    },
+    "S13": {
+      "status": "approved",
+      "sha256": "34f0dfcbb5fadda073991ced1955b2de90621a33f38663c3fbc033a4735f847a"
+    },
+    "C7": {
+      "status": "approved",
+      "sha256": "1967d054fcd90565e7851ab3932127a79b51a5edecf5cc52f2c374e591b5df0f"
+    },
+    "S15": {
+      "status": "approved",
+      "sha256": "b61d05b40648a2b7a749463ca87f170511806a81eadf44feeec4686daf63390d"
+    },
+    "S4": {
+      "status": "approved",
+      "sha256": "7d837e9dbc286bfc7e5758ba1f253286bf47327bd1c391f9946a720cd47a8208"
+    },
+    "S2": {
+      "status": "approved",
+      "sha256": "4ea0940764ea8104f40b06321685cbbbfae43fa240340483733125eb046434d2"
+    },
+    "S14": {
+      "status": "approved",
+      "sha256": "11ac78ee87c168a9e2653afc0b12cb08de6d02493ccceae0a505e9200846175f"
+    },
+    "A5": {
+      "status": "approved",
+      "sha256": "80d0adab601df1792cf3627f394ebbc8843500ec7d9763277e376948f0e3e0e4"
+    },
+    "S8": {
+      "status": "approved",
+      "sha256": "1750729bbff29dcf405a6e4759ddf7be6a7f6dcd16dbbac99acb5f823f4798a6"
+    }
+  },
+  "scorer": "d4_medications",
+  "scorer_version": 2,
+  "results": []
+}

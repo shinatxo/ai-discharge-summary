@@ -358,8 +358,8 @@ python3 -m pytest tests/ -q
 
 # 2-verify) Cold-eval WITH caching on the smoke set (proves cacheRead engages in-region):
 pip install boto3 --break-system-packages
-python evals/run_cold_eval.py S14 S16 S18 --prompt-caching --out runs/cache-check
-#   open evals/runs/cache-check/SUMMARY.md — "Cache read" should be > 0 on calls after the first.
+python evals/run_cold_eval.py S14 S16 S18 --prompt-caching --batch cache-check
+#   open evals/runs/cache-check/BATCH_SUMMARY.md — cache read should be > 0 on calls after the first.
 
 # --- Deploy (plain CloudFormation; this repo does NOT use the SAM transform) ---
 # package zips each Lambda's code dir and rewrites Code: to S3:
@@ -391,10 +391,11 @@ aws logs filter-log-events --log-group-name /aws/lambda/STACK-generate \
 
 # 3) Output discipline: measure avg_out (Step 0), tighten prompts/discharge-summary-system-prompt.md,
 #    re-run cold eval and DIFF quality + tokens before/after — don't trade quality for a few cents:
-python evals/run_cold_eval.py --out runs/baseline
+python evals/run_cold_eval.py --all --batch prompt-baseline
 # (edit the prompt)
-python evals/run_cold_eval.py --out runs/trimmed
-diff evals/runs/baseline/SUMMARY.md evals/runs/trimmed/SUMMARY.md
+python evals/run_cold_eval.py --all --batch prompt-trimmed
+python evals/score_batch.py evals/runs/prompt-baseline && python evals/score_batch.py evals/runs/prompt-trimmed
+diff evals/runs/prompt-baseline/BATCH_SUMMARY.md evals/runs/prompt-trimmed/BATCH_SUMMARY.md
 ```
 
 To roll back any lever: redeploy with `PromptCaching=off`, or `CanaryNightlyScenarios=''`

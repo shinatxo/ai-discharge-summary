@@ -19,6 +19,22 @@ summary table only.
 
 ## 1. How to run an eval
 
+**Automated (W4, Oct 2026 — use this).** Generate, then score; the two are separate, so a gold or
+scorer correction is a re-score, never a re-run:
+
+```zsh
+python evals/run_cold_eval.py --all --runs 5 --deployed-path --batch <name> --dry-run   # v1: plan + cost
+python evals/run_cold_eval.py --all --runs 5 --deployed-path --batch <name>             # v1: live
+python evals/run_pipeline_eval.py --all --runs 5 --batch <name>                         # pipeline steps 1-5b
+python evals/score_batch.py evals/runs/<name>                                           # both metrics
+```
+
+Corpus: `src/canary/scenarios.json` (the 18 canary scenarios). Gold: `evals/gold/` (CSO-approved;
+format in its README). CSO rulings on sentences the scorer cannot place:
+`evals/gold/adjudications/`. Reports land in `evals/runs/<name>/scores/`.
+
+**Manual (the original procedure, kept for the rubric dimensions the scorers do not cover):**
+
 1. Set the model's system prompt to the current `discharge-summary-system-prompt.md`.
 2. Paste a scenario's **INPUT — free-text ward-round notes** as the user message.
 3. Capture all three outputs (summary, GP letter, patient version).
@@ -323,6 +339,8 @@ antibiotic/insulin/VTE specifics — all pending Shina's clinical sign-off.
 | 2026-05-30 | Claude Sonnet 4.6 (eu-west-2, on-demand, temp=0) | v0.6 | Cowork | 5/5 | **Patient v2a real-Bedrock regression (S14–S18), patient second pass ON.** 357.6s, 25,263 in / 15,138 out, `end_turn` on all five. Outputs at `runs/run-2026-05-30-patient-v2/`. **Added to this log 17 Sep 2026 during WS4** — the run had been committed (`8bc6d71`) but never entered here. It matters more than a housekeeping fix: **this run supplies half the ten-generation v0.6 corpus** that `safety_net_gate.py` was later measured against (5 clean / 2 PART A inventions / 3 PART C deviations), and the S15 COPD invention quoted in `WS2a` §5.2, in the v0.7 changelog and in the gate's own docstring — *"If breathlessness worsens, sputum changes…"* — is at `runs/run-2026-05-30-patient-v2/S15.md`, not in the 05-28 run. The evidence for the project's highest-profile hazard was sitting outside its own evaluation record. |
 | 2026-09-15 | Claude Sonnet 4.6 (eu-west-2, on-demand, temp=0) | **v0.7** | `safety_net_gate.py` + Cowork | **4/4 gate PASS** | **v0.7 verification, v1 combined patient path.** S8, S9, S15, S18 run cold. **S15 and S18 — the two known PART A invention failures under v0.6 — return `clean`**, meaning the gate inspected PART A's advice field and found no invented trigger; S8 returns `documented_advice`. 144.6s, 21,999 in / 9,142 out tokens, `end_turn` on all four. Unit suite green at 65. Outputs at `runs/run-2026-09-15-discharge-summary-system-prompt/`. |
 | 2026-09-15 | Claude Sonnet 4.6 (eu-west-2, on-demand, temp=0) | **v0.7** | `safety_net_gate.py` + Cowork | **4/4 gate PASS** | **v0.7 on the DEPLOYED path** — re-run with `--patient-second-pass`, because CI pins `PatientV2SecondPass=on` and the 15 Sep v1 run had exercised the path the stack does *not* use. Same four scenarios, same results; 210.3s, 21,999 in / 9,303 out. **This is the run that counts for deployed behaviour:** with the second pass on, PART A is the patient leaflet's sole input, so it is the path where a PART A invention would reach the patient unopposed. Outputs at `runs/run-2026-09-15-discharge-summary-system-prompt-patient-v2/`. *(Written up 16 Sep; the run itself is timestamped 2026-09-15T16:10:46 and is dated to the evidence.)* |
+| 2026-10-07 | Claude Sonnet 4.6 (eu-west-2, on-demand, temp=0, prompt caching on) | **v0.7** (deployed path) | `score_batch.py` (scorer v2) + gold + CSO adjudications | **Safety-netting 78/90; D4 62 pass / 13 partial / 15 fail; gate 89/90** | **W4 baseline — all 18 canary scenarios × 5 runs, 90 generations, 180 calls, est. $6.05** (`runs/w4-baseline-v1-x5/`). **Safety case Tier 1 #5: NOT MET** — the one gate FAIL is C7 r2, an unverified Polish rendering of the pinned line in the leaflet (CSO, 7 Oct: kept as a fail). Route correct 86/90; invented seek-help triggers 3 sentences in 2 generations (C7 r2, S4 r5); advice ruled unsupported in 6 (S18 narrows "heights" and relaxes "baths"; S9 "confident" → "confirmed competent"). D4: S15 omits the rescue pack 5/5; S2 extends PRN to ibuprofen 5/5; S1 lists fondaparinux 2/5; invented doses 0. Outside the metrics: an invented year ("2025") in 54/90. The seed gold (§4) for S1 and S2 states doses the notes do not contain — superseded by `evals/gold/`. Full record: ADR-009 "Build record — W4". |
+| 2026-10-07 | Claude Sonnet 4.6 (eu-west-2, on-demand, temp=0, prompt caching on) | pipeline steps 1–5b, extraction **e0.6** | `score_batch.py` (scorer v2) + gold | **Safety-netting 74/90; D4 not scored (no 5a)** | **W4 stretch — agentic pipeline, same 18 × 5**, 90 step-2 calls, est. $3.34 (`runs/w4-pipeline-e06-x5/`). The other side of WS1a DoD 5. Invented triggers 0, advice ruled unsupported 0 — by construction (code-pinned line, verified verbatim quotes). All 16 fails are route errors: non-advice recorded as advice (S16 4/5, C7 3/5); a citation to the wrong line, excluded as unverified (S3 3/5); advice not extracted (S9 3/5, S15 2/5, S3 1/5). Citations verified 97.5%; step 4 forced 3/90 (S15). |
 
 ---
 

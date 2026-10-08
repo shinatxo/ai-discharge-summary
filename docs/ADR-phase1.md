@@ -1104,10 +1104,10 @@ canary run could not fit its Lambda; that rested on a stale 5 requests/min quota
 
 ## ADR-009 — The agentic pipeline: named steps, step traces, a review-gate seam, and a branch-isolated build
 
-> **Version 1.3 · 1 Oct 2026.** *(v1.1, 24 Sep: accepted with the author's rulings; reconciled
+> **Version 1.4 · 8 Oct 2026.** *(v1.1, 24 Sep: accepted with the author's rulings; reconciled
 > against the live account — see "Live-state reconciliation" below. v1.2, 30 Sep: the W2 part-1
 > build decisions — see "Build record — W2 part 1". v1.3, 1 Oct: the W2 part-2 build decisions
-> and first live measurements — see "Build record — W2 part 2".)* Records the author's design of 23 Sep 2026, pressure-tested
+> and first live measurements — see "Build record — W2 part 2".; v1.4, 8 Oct: the W3 and W4 build records — see "Build record — W3" and "Build record — W4".)* Records the author's design of 23 Sep 2026, pressure-tested
 > against the repository on 24 Sep 2026, then checked by an independent verification pass the same
 > day (findings applied; see *Verification* at the end). Where the test found that part of the
 > design cannot work as written, the evidence is shown and the amendment is marked **[A1]–[A7]**
@@ -2446,6 +2446,148 @@ Actual: **~2.5 h** (logged on The Window) — a **0.5 h overrun**, recorded; W2�
 3–4 h estimate was pessimistic: code steps with fixed contracts and fixtures already in place went faster
 than the model step had. Next: W4 — eval harness I, the
 18-scenario v0.7 baseline (`run_cold_eval.py` with `V1_LINES`).
+
+### Build record — W4 (3–8 Oct 2026)
+
+**What W4 had to produce.** Measured against the sources, not the brief: (1) safety case §12.3
+Tier 1 #5 — *"A `SUMMARY.md` with ≥18 scenarios, gate PASS on all, entered in the run log"*, run as
+the v1 baseline; (2) WS1a DoD 5 — the v1 side of (e)'s step-level metric (safety-netting
+correctness), from a scorer that also takes step 5b's output; (3) (e)'s second metric, D4
+medication reconciliation, on the same gold. Pass criterion for #5 set before the run: gate PASS on
+every generation of every run, no errors; a failure is recorded as evidence, never re-run away.
+**Stretch, taken:** the pipeline side of DoD 5 on the same 18 × 5. All of it on
+`feat/agentic-pipeline` (a push to `main` redeploys all five Lambdas); this record and the v1.4
+header are the only change to `main`.
+
+**The harness (`evals/run_cold_eval.py`).** Found first: the runner read only S8–S18 from
+`eval-scenarios-expansion.md`, so 7 of the 18 could not run, and it sent each scenario's notes
+*inside its markdown code fence* — never what the deployed path receives. Now: input is
+`src/canary/scenarios.json`, stripped as the dispatcher strips, so `notes_sha256` equals the audit
+row's `input_sha256`; default prompts are the files the worker ships (`src/generate/*.md`; a test
+pins the `prompts/` copy to the same body); a batch is `--runs N` into `evals/runs/<batch>/r1…rN`
+and the runner refuses an existing folder (the 15 Sep overwrite near-miss); each generation writes
+JSON with both calls' tokens, prompt file/body sha256, notes sha256, gate result and a cost
+estimate — never the notes; a canary-window guard (02:00 daily, 03:00 Mon, Europe/London — the
+schedules carry `ScheduleExpressionTimezone`); throttle-only retry; console shows IDs, timings,
+tokens and gate status only (a test with a fake model that echoes the notes fails on any leak).
+Scoring is a separate step, so a gold or scorer correction is a re-score, not a re-run.
+
+**Gold (`evals/gold/<ID>.json`, `evals/gold.py`).** What the notes document for both metrics: age
+group; safety-net route, advice items (`kind`: instruction | record) and — separately — whether a
+seek-help trigger is documented; the D4 reconciliation in step 5a's per-drug shape (tag, basis,
+previous dose, DH and discharge citations, `conflict`, `must_not_appear`). Every claim cites
+`{lines, quote}` against the pipeline's own step-1 line index and is checked with step 3's
+`verify_cite`; `notes_sha256` pins each record to its notes. Drafted by Claude from the notes only
+(no model output read), approved by the author as CSO on 6 Oct 2026. **The seed checkpoints
+(`EVAL_RESULTS.md` §4) state values the notes do not contain** — S1 ticagrelor 90mg BD and a VTE
+assessment, S2 co-codamol 30/500 and ibuprofen 400mg TDS — the same class as Run 3's five gold
+errors; the new gold departs from them, and Run 1's S1 PASS rested on the invented dose.
+
+**CSO decisions, 6–7 Oct 2026** (each recorded in the gold or adjudication files):
+1. TTOs referenced but not listed (S1, A5): **tolerant** — an undocumented DH drug is
+   `continued, inferred_from_dh`; "continued" or "confirm against the TTO" pass; silently dropping or
+   changing it fails. The two prompts disagree here (v0.7 "do not silently drop" vs extraction
+   "never reconstruct"); scoring either strictly would measure the conflict, not the model.
+2. Inpatient-only drugs never documented as stopped (S1 fondaparinux): `must_not_appear`, recorded
+   as CSO judgement.
+3. **Documented advice and safety-netting are distinct** (S15). Gold records `seek_help`
+   separately: without a documented trigger, any signposting beyond the pinned line is an invention,
+   even where other advice is documented.
+4. **A bare "safety-net advice given" is documented advice** (S2, S4) — reverses the bare-record half
+   of the 1 Oct ruling. It documents no trigger content, so `seek_help` stays not documented and any
+   specific trigger an output adds is invented (strict, confirmed 7 Oct). Implemented in the
+   extraction prompt as **e0.6** (prompt-only; `prompt_sha256` 4989645d92e0 → ec91cd4136e8).
+5. S17: "avoid NSAIDs" is **not** inferred from "STOPPED permanently" — deriving advice the
+   clinician did not write is the WS2a §6 boundary; the medication change itself carries it.
+6. No named preparation where the notes name none (S10 "oral iron" — a named salt is invented); no
+   insulin product or dose (S9); "analgesia" is a class (S11, S16).
+7. D4: a **WITHHELD drug shown as STOPPED is a Fail** (S17 apixaban — it may never be restarted).
+8. S2 "co-codamol PRN + ibuprofen": strict — PRN is not documented for ibuprofen.
+9. **5b, for W5:** PART A/B always carries the pinned line after any documented advice, as PART C
+   does. (The first proposal — add it only when no trigger is documented — needs a facts-schema flag
+   5b does not have; "always" needs none and is safe because the line defers to any number given.)
+
+**The scorers (`evals/score_safety_net.py`, `evals/score_meds.py`, `evals/score_batch.py`).** Both
+reduce each generator to one view — v1's text, or the step output — and score only the view.
+Safety-netting: (i) route; (ii) every advice sentence located in a note line (pipeline: its
+verified cites; v1: content-word overlap ≥ 0.6, else CSO review); (iii) no signposting beyond the
+pinned line where no trigger is documented, and the pinned line present. Route accuracy is reported
+apart for advice that is only *recorded* (documented advice since the 1 Oct ruling, which
+post-dates v0.7). D4: `EVAL_RESULTS.md` D4 made deterministic (Fail / Partial / Pass, an entry
+naming no gold drug → CSO review). CSO rulings on unplaced sentences and entries are stored per
+distinct text (`evals/gold/adjudications/`) and reused by every later score. `score_batch.py`
+refuses on any corpus, notes or gold hash mismatch and writes Wilson 95% intervals.
+
+**Verifying the instrument — scorer v2, and two gate defects.** The first score of the baseline was
+wrong: checked by hand against the outputs, most D4 failures were parser defects — indented lists
+read as one entry; an indented ⚠ note, `*** PRESCRIBER NOTE ***` or an all-caps line ending the
+section or swallowing items; `Pre-admission dose: 3 mg` deleting B6's conflict; "Hb 84 g/L" read as
+a dose; "OD/BD not documented" read as a frequency; statements counted as drugs; short advice
+bullets and quoted records dropped as headings. Scorer v2 fixes each; 23 baseline outputs are pinned
+to their hand-checked verdicts. **Two defects were in the gate itself**: the advice-field heading
+missed "PATIENT / PARENT / CARER ADVICE" (and "… & CARER …"), and the field ran on past a bold
+"**VTE ASSESSMENT**" — on those outputs the gate's PART A check was blind. Fixed; the fixed gate
+re-run over all 90 saved outputs changed no result. `score_batch.py` now reports the gate as run at
+generation and as re-run with the current code. HAZ-13's lesson again: the check needs checking.
+
+**Results** (synthetic notes; 7 Oct 2026; Sonnet 4.6, eu-west-2, temperature 0, prompt caching on):
+
+| | v1 baseline `w4-baseline-v1-x5` | Pipeline `w4-pipeline-e06-x5` |
+|---|---|---|
+| Generator | prompt v0.7 + Patient v2 second pass (deployed path) | steps 1→2→3→3b→4→5b, extraction e0.6 |
+| Generations / Bedrock calls / errors | 90 / 180 / 0 | 90 / 90 / 0 |
+| Latency per generation (median, p90) | 48.5 s, 63.7 s | 17.6 s, 21.2 s (steps 1–5b only) |
+| Est. cost | $6.05 | $3.34 |
+| **Safety-netting pass** | **78/90 (87%, 95% CI 78–92%)** | **74/90 (82%, 73–89%)** |
+| Route correct | 86/90 | 74/90 |
+| Invented seek-help triggers | 3 sentences in 2 generations | **0** |
+| Advice ruled unsupported (meaning changed) | 6 generations | **0** (verbatim quotes only) |
+| Pinned line missing where required | 0 | 0 |
+| Gate (Tier 1 #5) | **89/90 — NOT MET** | — (gate runs at 8b, not built) |
+| D4 pass / partial / fail | 62 / 13 / 15; invented doses 0, frequencies 6 | not scored — 5a not built |
+
+**Safety case Tier 1 #5: NOT MET** (CSO, 7 Oct 2026). The one gate FAIL is C7 r2: the leaflet adds an
+unverified Polish rendering of the pinned line, which the gate cannot read and correctly fails. The
+v0.3 rule asks for translation or an interpreter to be arranged, not for the tool to translate. The
+fail is kept; the condition stays open; its next real test is the pipeline's PART C at the W11
+release gate.
+
+**What the baseline shows about v1** (all 5 runs unless stated): S15 omits the rescue pack (also in
+the 30 May and 15 Sep runs — a stable omission); S18 narrows "heights" to "no *working* at heights"
+and, in 3 runs, relaxes "baths" to "no *unsupervised* baths"; S2 extends PRN to ibuprofen; S1 lists
+fondaparinux as a NEW discharge drug (2/5); S9 (3/5) and S11 (1/5) write "Not documented" over
+documented advice; A5 lists clarithromycin, not on the TTO (1/5); invented triggers in C7 r2
+(Polish) and S4 r5 (a variant signpost). **Outside both metrics, for W5's D2:** v1 adds the year
+"2025" to dates the notes give as day/month in **54 of 90** generations (DNACPR and medication
+dates among them); C7 r2's leaflet adds "a small metal plate and screws".
+
+**What the pipeline run shows.** The pass rates do not differ (intervals overlap); the failure kinds
+do. v1 fails by changing what the patient is told; the pipeline cannot — code inserts the pinned
+line and advice travels only as step-3-verified quotes. All 16 pipeline fails are route errors:
+non-advice recorded as `documented_advice` (S16 "Independent with stoma care" 4/5; C7's interpreter
+note 3/5); S3's "Crisis team number given" cited to L021 instead of L022, flagged unverified and —
+as designed — excluded by 5b (3/5); advice not extracted (S9 3/5, S15 2/5, S3 1/5). Step 3 verified
+2,443 of 2,506 citations (97.5%). **W3's watch item answered:** step 4 forced the route in 3 of 90
+runs, all S15 (`resus_lines_uncited`); S1 never.
+
+**Open for W5+:**
+- 5b: the A/B pinned line (decision 9). Extraction: status and communication notes are not advice;
+  cite the line the quote is on — both measured on this harness against `w4-pipeline-e06-x5`.
+- The W5 rubric's D2: invented years, invented operative detail (C7), and PART C translation policy.
+- W5 LLM-as-judge calibration: the author blind-scores run r1 of `w4-baseline-v1-x5`.
+- D4 on the pipeline side waits for 5a. **Not yet scheduled anywhere:** steps 5a, 6, 7, 8a/8b, the
+  orchestrator, the TraceTable, the ephemeral end-to-end run and the worked example — ~17–20 h of
+  this ADR's own W2–W3 table. DoD items 1, 2 and 7 depend on them; the 1 Nov checkpoint should see
+  this line.
+- Carried, untouched: `suspicious_text` handling, `StepError` provider detail, the Lambda
+  runtime's botocore and `toolSpec.strict`, uncited-line coverage noise.
+
+**Commits** on `feat/agentic-pipeline`: `d84a795` harness · `5045775` gold · `6e78946` scorers ·
+`d4c2a5e` withheld = Fail · `337d1b3` scorer v2 + gate fixes · `ccb9545` the v1 baseline, scores and
+adjudications · `6186760` extraction e0.6 · then the pipeline runner and the pipeline batch. 543
+tests green on Python 3.13 at the end of W4 (370 at the start). Code, gold and scorers drafted by
+Claude; every piece reviewed and run by the author; the gold, rulings and adjudications are the
+author's as CSO. **Hours:** ~8 h of author time against W4's 15 h.
 
 ### Ephemeral stack log
 

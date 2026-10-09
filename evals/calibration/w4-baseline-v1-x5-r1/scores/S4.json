@@ -1,0 +1,34 @@
+{
+  "sheets_version": 1,
+  "generation_id": "w4-baseline-v1-x5/r1/S4",
+  "scenario_id": "S4",
+  "scorer": "author_blind",
+  "scored_at": null,
+  "dimensions": {
+    "D2": {
+      "verdict": null,
+      "auto_fail": false,
+      "findings": []
+    },
+    "D3": {
+      "verdict": null,
+      "auto_fail": false,
+      "findings": []
+    },
+    "D6": {
+      "verdict": null,
+      "auto_fail": false,
+      "findings": []
+    },
+    "D7": {
+      "verdict": null,
+      "auto_fail": false,
+      "findings": []
+    },
+    "D8": {
+      "verdict": null,
+      "auto_fail": false,
+      "findings": []
+    }
+  }
+}

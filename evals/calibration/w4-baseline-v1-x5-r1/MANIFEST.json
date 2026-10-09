@@ -1,0 +1,182 @@
+{
+  "sheets_version": 1,
+  "batch_id": "w4-baseline-v1-x5",
+  "run": 1,
+  "generator": "v1",
+  "created_at": "2026-10-09T15:45:40+01:00",
+  "rubric": {
+    "path": "evals/EVAL_RESULTS.md",
+    "section": "## 2. Scoring rubric",
+    "sha256": "d2f6709522f007551bc380d867baa7e3058b7f07e723bda9e1b3e5fcd9728144"
+  },
+  "corpus_sha256": "d510623686bff3fd851e69dc3943e014aad9b4aff87417fd80e030c71f604321",
+  "dimensions": [
+    "D2",
+    "D3",
+    "D6",
+    "D7",
+    "D8"
+  ],
+  "verdicts": [
+    "pass",
+    "partial",
+    "fail",
+    "na"
+  ],
+  "na_allowed": [
+    "D6",
+    "D8"
+  ],
+  "excluded": [
+    "gate result",
+    "cost",
+    "deterministic scores",
+    "judge output"
+  ],
+  "items": [
+    {
+      "scenario_id": "S1",
+      "generation_id": "w4-baseline-v1-x5/r1/S1",
+      "notes_sha256": "deacfb8fe45187fb890a33b6e0c8ad2f5e6902c825879bb20931a69f80969fa3",
+      "output_sha256": "cf2492d806bce922d477d42ae3c292d3d68be1bbafce9591cf03e1a571795b41",
+      "sheet": "sheets/S1.md",
+      "scores": "scores/S1.json"
+    },
+    {
+      "scenario_id": "S2",
+      "generation_id": "w4-baseline-v1-x5/r1/S2",
+      "notes_sha256": "1b138eb44a03c3ac42c22625b36982e32d8a0eece4c7e63daa91a2aa836d3ed6",
+      "output_sha256": "5edde1462860afb764c7fe10e657622a9017b9e06833ef80e946b7805aa5c887",
+      "sheet": "sheets/S2.md",
+      "scores": "scores/S2.json"
+    },
+    {
+      "scenario_id": "S3",
+      "generation_id": "w4-baseline-v1-x5/r1/S3",
+      "notes_sha256": "c8882fcefb7f24fb39b45a7bb32cb6bfeb5481df37eff450606bec809ab51ef1",
+      "output_sha256": "0c22381f12d30badc3f372cdac9d899f533a3d8144bd0efb7b6bd4153c13a138",
+      "sheet": "sheets/S3.md",
+      "scores": "scores/S3.json"
+    },
+    {
+      "scenario_id": "S4",
+      "generation_id": "w4-baseline-v1-x5/r1/S4",
+      "notes_sha256": "647dbf1787d657773d262b81e9df534fdf54b57d06d61b8fa585b26bbcd9a6cc",
+      "output_sha256": "63bbcd1af7c69d966e1deefb3940c994bb1cdc8b7573234743765468a09f5043",
+      "sheet": "sheets/S4.md",
+      "scores": "scores/S4.json"
+    },
+    {
+      "scenario_id": "S8",
+      "generation_id": "w4-baseline-v1-x5/r1/S8",
+      "notes_sha256": "db5dc0237ea1d82ade478142d26845b1f5fda1c9c35512621c0f5aa23a5afca6",
+      "output_sha256": "c3c4cafca682fa84080be6da6a91108c66c3cb23751519f4bbb07c2d5c5df576",
+      "sheet": "sheets/S8.md",
+      "scores": "scores/S8.json"
+    },
+    {
+      "scenario_id": "S9",
+      "generation_id": "w4-baseline-v1-x5/r1/S9",
+      "notes_sha256": "fff6b2a27043c88393b3a44a1c2074ccc86e3d61eb2be9262fc6d67ca0a4aa4a",
+      "output_sha256": "819788f3d9fec34ac5d14201d5a696fa26b2e7c66203bf441b6f21fef114dd6e",
+      "sheet": "sheets/S9.md",
+      "scores": "scores/S9.json"
+    },
+    {
+      "scenario_id": "S10",
+      "generation_id": "w4-baseline-v1-x5/r1/S10",
+      "notes_sha256": "a00b5caaa8e251a370d8136857fd8a4d7969cc70de71013d55dbd99a5fd03229",
+      "output_sha256": "bea5fc0856f465d80dd916cc5475f4dc074bdeb82c42e86db1ea60d98797dfab",
+      "sheet": "sheets/S10.md",
+      "scores": "scores/S10.json"
+    },
+    {
+      "scenario_id": "S11",
+      "generation_id": "w4-baseline-v1-x5/r1/S11",
+      "notes_sha256": "ed2e3ee49d11c4bfb7eb6ca95f90d402685abec1913adce3b032619831a2a7d6",
+      "output_sha256": "0e8d3c786ed892390cd15f1bfa72bf8edc39651d1990b3e60ad481e464c24d9a",
+      "sheet": "sheets/S11.md",
+      "scores": "scores/S11.json"
+    },
+    {
+      "scenario_id": "S12",
+      "generation_id": "w4-baseline-v1-x5/r1/S12",
+      "notes_sha256": "143db4ec88bb969841da8f67ae4e9cff993d97483c923700d3c320033a67f923",
+      "output_sha256": "529c82da2136770c9ca8001b6ff81d64c101058f18c39060bb5b182ad1afdf8e",
+      "sheet": "sheets/S12.md",
+      "scores": "scores/S12.json"
+    },
+    {
+      "scenario_id": "S13",
+      "generation_id": "w4-baseline-v1-x5/r1/S13",
+      "notes_sha256": "7bdbea67d99837b5ac07d98a1dac7f07026885128b3e5d533937cc8014c86971",
+      "output_sha256": "f1b26e637140d745e4db19ff2fe146539140882aa0eceea1f49ac3e137714fe3",
+      "sheet": "sheets/S13.md",
+      "scores": "scores/S13.json"
+    },
+    {
+      "scenario_id": "S14",
+      "generation_id": "w4-baseline-v1-x5/r1/S14",
+      "notes_sha256": "20c5042a7bbfa0a841857197d01c69abf4b0abe852955048535cbba89c736340",
+      "output_sha256": "62495e3887c3d455c9c7dc92a33e41199329c86058d7f8c7728c549050c956ea",
+      "sheet": "sheets/S14.md",
+      "scores": "scores/S14.json"
+    },
+    {
+      "scenario_id": "S15",
+      "generation_id": "w4-baseline-v1-x5/r1/S15",
+      "notes_sha256": "f54e5b4b248523c38c755c7e4eb587fa65b3ae478aec2c9d77ef94ba96f278d3",
+      "output_sha256": "69bb4c09afaf166db69f5016bcb9a805b1e54ebc3cd8e50813bba820c7e92021",
+      "sheet": "sheets/S15.md",
+      "scores": "scores/S15.json"
+    },
+    {
+      "scenario_id": "S16",
+      "generation_id": "w4-baseline-v1-x5/r1/S16",
+      "notes_sha256": "d762fcf2443af7c65329f6b17d603be9d58f3d3ccdc4df81ce08db03201a197e",
+      "output_sha256": "9d26266cbd8ec81b0c8cd040390b4f32d74a67e781ba69def65b479ec101a737",
+      "sheet": "sheets/S16.md",
+      "scores": "scores/S16.json"
+    },
+    {
+      "scenario_id": "S17",
+      "generation_id": "w4-baseline-v1-x5/r1/S17",
+      "notes_sha256": "e3e6093b1af13ac9ae86dfab84056ca00f418c7112b956aba9373d9a8d8e40b4",
+      "output_sha256": "9eac9199c4d23457c8973f748cff6703dc738ba541171aa76fae16b40062713e",
+      "sheet": "sheets/S17.md",
+      "scores": "scores/S17.json"
+    },
+    {
+      "scenario_id": "S18",
+      "generation_id": "w4-baseline-v1-x5/r1/S18",
+      "notes_sha256": "3d7f06d1a5a414275df26db1863e10bc9e085fde839ae9021e97d5f16ebf659b",
+      "output_sha256": "6cf63ed66eed6b5d885e1db87114cfc59e5ebde95d386f456f353139fe0b9d2a",
+      "sheet": "sheets/S18.md",
+      "scores": "scores/S18.json"
+    },
+    {
+      "scenario_id": "A5",
+      "generation_id": "w4-baseline-v1-x5/r1/A5",
+      "notes_sha256": "17990ee1d94abcc513c9b663863e4a9a92ef69d1a564f1544879be8404ae7092",
+      "output_sha256": "4fee0c6b978b31ab212d45797d6f93b9b14db843f6379fb95f571c74369d9526",
+      "sheet": "sheets/A5.md",
+      "scores": "scores/A5.json"
+    },
+    {
+      "scenario_id": "B6",
+      "generation_id": "w4-baseline-v1-x5/r1/B6",
+      "notes_sha256": "fa57541fe0dd7d176b5b46020f94e83903003d8ff0d88cc4443cd33468c757ae",
+      "output_sha256": "3100d9b64230d2f4efb33c906d4eae021f610e58c6e49de9f04236c780c719c4",
+      "sheet": "sheets/B6.md",
+      "scores": "scores/B6.json"
+    },
+    {
+      "scenario_id": "C7",
+      "generation_id": "w4-baseline-v1-x5/r1/C7",
+      "notes_sha256": "d15719c10172a3c9a85deae46695411eb27d652215d6152078b33ea2487a91ca",
+      "output_sha256": "5536a8284057dbc6c75a7feb540c225cfb937f73c1b9a6ac64acb695ca4c3b2e",
+      "sheet": "sheets/C7.md",
+      "scores": "scores/C7.json"
+    }
+  ]
+}

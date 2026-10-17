@@ -7,7 +7,7 @@
   "rubric": {
     "path": "evals/EVAL_RESULTS.md",
     "section": "## 2. Scoring rubric",
-    "sha256": "d2f6709522f007551bc380d867baa7e3058b7f07e723bda9e1b3e5fcd9728144"
+    "sha256": "f8291ae161363ad519507e4b921828ee2c1969272229d330700b7c6ff89a0b41"
   },
   "corpus_sha256": "d510623686bff3fd851e69dc3943e014aad9b4aff87417fd80e030c71f604321",
   "dimensions": [
@@ -177,6 +177,13 @@
       "output_sha256": "5536a8284057dbc6c75a7feb540c225cfb937f73c1b9a6ac64acb695ca4c3b2e",
       "sheet": "sheets/C7.md",
       "scores": "scores/C7.json"
+    }
+  ],
+  "rubric_history": [
+    {
+      "sha256": "d2f6709522f007551bc380d867baa7e3058b7f07e723bda9e1b3e5fcd9728144",
+      "until": "2026-10-16",
+      "reason": "R1 (S18) revised by the author as CSO during blind scoring, before any judge run; affects S18 only. Score files unchanged. Same edit records R2 (S3, ruled 12 Oct) in section 2."
     }
   ]
 }

@@ -231,12 +231,18 @@ method: `pip install textstat` then
 - **9 Oct 2026:** an added year is a D2 Fail · the tool never translates; any translated
   clinical content is a D2 Fail · judge `anthropic.claude-sonnet-4-6` · the calibration
   threshold above.
-- **R1 (S18), 9 Oct 2026:** the notes read "Safety advice (no swimming alone, heights,
-  baths)". Whether "alone" governs "baths" is ambiguous; an output rendering it as "no
-  *unsupervised* baths" takes the less restrictive reading and is a **D6 Fail**. So is
-  "heights" narrowed to "working at heights".
-- **Open — R2 (S3):** which S3 lines are D8 withheld-category content — ruled during
-  blind scoring and stored in `evals/gold/adjudications/`.
+- **R1 (S18), revised 16 Oct 2026** (supersedes the 9 Oct ruling): the notes read "Safety
+  advice (no swimming alone, heights, baths)". The natural reading is that "alone" governs
+  all three items, so an output rendering it as "no *unsupervised* baths" keeps the
+  instruction's meaning and is a **D6 Pass**. "Heights" narrowed to "*working* at heights"
+  is still a narrowing and a **D6 Fail**. D6's general rule stands: an ambiguous
+  instruction resolved in the less restrictive direction is a Fail; S18's "alone" reading
+  is not less restrictive. *(Revised during blind scoring of r1, before any judge run; the
+  judge was re-frozen on the revised rubric.)*
+- **R2 (S3), 12 Oct 2026:** L008–L010 (the risk assessment and the safeguarding note) are
+  D8 withheld-category content — "an assessment by a clinical professional, not [the
+  patient's] history"; every other S3 line may be kept. Stored in
+  `evals/gold/adjudications/S3.json`.
 
 ### Note on demographics (not a scored dimension)
 Patient identifiers — name, DOB, NHS number, hospital number — are **not scored**.

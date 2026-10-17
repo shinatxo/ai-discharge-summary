@@ -3,7 +3,7 @@
   "model_id": "anthropic.claude-sonnet-4-6",
   "temperature": 0.0,
   "instructions_sha256": "7b251e319c0ea1c2f63cf2bb70c0df438e035807bb4db909ac0f2a071c88310f",
-  "rubric_sha256": "d2f6709522f007551bc380d867baa7e3058b7f07e723bda9e1b3e5fcd9728144",
-  "system_sha256": "238de750c0d3c5143fd86cad5034f1767dff9396a9ce274d8647b2d7af217dbd",
-  "frozen_at": "2026-10-11T14:47:50+01:00"
+  "rubric_sha256": "f8291ae161363ad519507e4b921828ee2c1969272229d330700b7c6ff89a0b41",
+  "system_sha256": "696c133b15c855845b776c1bb4fbe8dfd298e37f3f50daf90e6e136d5c394f0a",
+  "frozen_at": "2026-10-17T07:22:17+01:00"
 }

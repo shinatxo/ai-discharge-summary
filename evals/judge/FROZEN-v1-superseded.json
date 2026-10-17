@@ -1,0 +1,9 @@
+{
+  "judge_version": 1,
+  "model_id": "anthropic.claude-sonnet-4-6",
+  "temperature": 0.0,
+  "instructions_sha256": "7b251e319c0ea1c2f63cf2bb70c0df438e035807bb4db909ac0f2a071c88310f",
+  "rubric_sha256": "d2f6709522f007551bc380d867baa7e3058b7f07e723bda9e1b3e5fcd9728144",
+  "system_sha256": "238de750c0d3c5143fd86cad5034f1767dff9396a9ce274d8647b2d7af217dbd",
+  "frozen_at": "2026-10-11T14:47:50+01:00"
+}

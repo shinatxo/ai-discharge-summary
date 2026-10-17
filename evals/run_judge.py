@@ -44,6 +44,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import gold as G  # noqa: E402
 import make_blind_sheets as mbs  # noqa: E402
+import pipeline_view as pv  # noqa: E402
 import run_cold_eval as rce  # noqa: E402
 from pipeline.validate import QUOTE_MAX_CHARS, normalise, verify_cite  # noqa: E402
 
@@ -254,6 +255,7 @@ def judge_one(client, rec: dict, lines: dict, system: str, meta: dict, *,
            "generation_id": rec["generation_id"], "scenario_id": rec["scenario_id"],
            "run": rec["run"], "notes_sha256": rec["notes_sha256"],
            "output_sha256": rce.sha256_text(rec["output"]),
+           "view": rec.get("view"),
            "model_id": MODEL_ID, "region": REGION, "temperature": TEMPERATURE,
            "tool_strict": STRICT_TOOL, "prompt": meta, "started_at": started_at,
            "call": None, "judgement": None, "verified": None, "error": None}
@@ -341,11 +343,15 @@ def main(argv=None, *, client_factory=None, now=None, sleep=time.sleep, confirm=
             if g["run"] not in runs:
                 continue
             rec = json.loads((a.batch_dir / g["record"]).read_text(encoding="utf-8"))
-            if rec["generator"] != "v1":
-                raise JudgeError(f"{rec['generation_id']}: this runner judges v1 records only")
+            if rec["generator"] not in ("v1", "pipeline"):
+                raise JudgeError(f"{rec['generation_id']}: unknown generator {rec['generator']!r}")
             if rec["notes_sha256"] != by_id[rec["scenario_id"]].notes_sha256:
                 raise JudgeError(f"{rec['generation_id']}: notes_sha256 does not match the corpus")
-            if rec.get("error") or not rec.get("output"):
+            if rec.get("error") or rec.get("failed_step"):
+                continue
+            if rec["generator"] == "pipeline":
+                rec = pv.judgeable(rec)        # steps 1–5b rendered as the judgeable view
+            if not rec.get("output"):
                 continue
             items.append((rec, G.line_index(by_id[rec["scenario_id"]].notes)))
         if not items:
@@ -407,6 +413,7 @@ def main(argv=None, *, client_factory=None, now=None, sleep=time.sleep, confirm=
         "frozen": json.loads(frozen_path.read_text(encoding="utf-8")),
         "runs": runs, "repeats": a.repeats, "concurrency": a.concurrency,
         "corpus_sha256": corpus_sha,
+        "views": sorted({json.dumps(r.get("view"), sort_keys=True) for r, _ in items}),
         "estimate": {"cost_usd_upper_bound": est_cost, "seconds": est_s},
     }, indent=2) + "\n", encoding="utf-8")
 

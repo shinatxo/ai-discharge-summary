@@ -293,3 +293,51 @@ def test_provider_error_message_is_recorded_in_the_file_not_printed(env, capsys)
     assert rec["tool_strict"] is False
     out = capsys.readouterr()
     assert "grammar" not in out.out + out.err and "ERROR ValidationException" in out.out
+
+
+# --- pipeline records (judged through evals/pipeline_view.py) ---------------------
+def make_pipeline_batch(tmp_path, ids=IDS, failed=()):
+    import pipeline_view as pv
+    sys.path.insert(0, str(ROOT / "tests"))
+    from test_pipeline_view import record
+    b = tmp_path / "pbatch"
+    gens = []
+    for sid in ids:
+        rec = record()
+        rec.update(generation_id=f"pb/r1/{sid}", scenario_id=sid, run=1,
+                   notes_sha256=BY_ID[sid].notes_sha256,
+                   failed_step="extract_facts" if sid in failed else None)
+        p = b / "r1" / f"{sid}.json"
+        p.parent.mkdir(parents=True, exist_ok=True)
+        p.write_text(json.dumps(rec))
+        gens.append({"run": 1, "scenario_id": sid, "record": f"r1/{sid}.json"})
+    (b / "manifest.json").write_text(json.dumps({"batch_id": "pb", "generator": "pipeline",
+                                                 "corpus": {"sha256": CORPUS_SHA}}))
+    (b / "batch.json").write_text(json.dumps({"batch_id": "pb", "generations": gens}))
+    return b, pv
+
+
+def test_pipeline_records_are_judged_through_the_view(env):
+    env["batch"], pv = make_pipeline_batch(env["batch"].parent, failed=("S3",))
+    fake = FakeBedrock()
+    assert run_main(env, ["--judge-id", "p1"], fake) == 0
+    out = env["batch"] / "judge" / "p1"
+    assert len(fake.calls) == 1                                    # S3 stopped early: skipped
+    rec = json.loads((out / "rep1" / "r1" / "S1.json").read_text())
+    assert rec["view"] == {"name": pv.VIEW_NAME, "version": pv.VIEW_VERSION}
+    assert "PART B — SAFETY-NETTING FOR THE CLINICIAN" in fake.calls[0]["messages"][0]["content"][0]["text"]
+    m = json.loads((out / "manifest.json").read_text())
+    assert m["views"] == [json.dumps(rec["view"], sort_keys=True)]
+
+
+def test_v1_records_carry_no_view(env):
+    assert run_main(env, ["--judge-id", "v"], FakeBedrock()) == 0
+    rec = json.loads((env["batch"] / "judge" / "v" / "rep1" / "r1" / "S1.json").read_text())
+    assert rec["view"] is None
+
+
+def test_unknown_generator_is_refused(env, capsys):
+    p = env["batch"] / "r1" / "S1.json"
+    p.write_text(json.dumps({**json.loads(p.read_text()), "generator": "other"}))
+    assert run_main(env, ["--dry-run"]) == 2
+    assert "unknown generator" in capsys.readouterr().err

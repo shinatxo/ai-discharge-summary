@@ -125,6 +125,8 @@ def test_strict_schema_every_object_closed_and_fully_required():
     walk(s)
     assert set(s["properties"]["dimensions"]["properties"]) == set(rj.DIMENSIONS)
     assert rj.tool_config()["toolChoice"] == {"tool": {"name": rj.TOOL_NAME}}
+    # Bedrock refuses strict mode for this schema (grammar too large) - not sent
+    assert "strict" not in rj.tool_config()["tools"][0]["toolSpec"]
 
 
 def test_freeze_then_check(tmp_path):
@@ -275,3 +277,19 @@ def test_console_shows_no_note_text_output_text_or_verdicts(env, capsys):
                 assert ln.strip() not in printed
     for word in ("Admitted", "added year", '"fail"', "verdict"):
         assert word not in printed
+
+
+class FailingBedrock(FakeBedrock):
+    def converse(self, **req):
+        self.calls.append(req)
+        raise ClientError({"Error": {"Code": "ValidationException",
+                                     "Message": "The compiled grammar is too large"}}, "Converse")
+
+
+def test_provider_error_message_is_recorded_in_the_file_not_printed(env, capsys):
+    assert run_main(env, ["--judge-id", "j8"], FailingBedrock()) == 1
+    rec = json.loads((env["batch"] / "judge" / "j8" / "rep1" / "r1" / "S1.json").read_text())
+    assert rec["error"] == {"code": "ValidationException", "message": "The compiled grammar is too large"}
+    assert rec["tool_strict"] is False
+    out = capsys.readouterr()
+    assert "grammar" not in out.out + out.err and "ERROR ValidationException" in out.out

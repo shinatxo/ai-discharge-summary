@@ -8,8 +8,9 @@
 What it does (EVAL_RESULTS.md section 2, "The judge" and "Calibration"):
 - Sends each v1 generation (notes with step-1 line IDs + the output verbatim) to
   `anthropic.claude-sonnet-4-6`, eu-west-2, temperature 0, with the judge prompt
-  and section 2 as the system prompt (cached), and one strict, forced tool
-  (`record_rubric_scores`) so the answer is structured.
+  and section 2 as the system prompt (cached), and one forced tool
+  (`record_rubric_scores`, not strict: Bedrock refused strict for this schema) so the
+  answer is structured; its shape is checked in code.
 - Verifies every finding in code: the output quote must be in the output and
   every note cite must pass step 3's `verify_cite`. A finding that fails is
   discarded and recorded as a judge defect; a partial/fail left with no
@@ -65,6 +66,11 @@ MAX_CONCURRENCY = 4
 THROTTLE_RETRIES = 2
 THROTTLE_WAIT_S = (20.0, 30.0)
 TOOL_NAME = "record_rubric_scores"
+# 17 Oct 2026: Bedrock refused strict mode for this schema ("The compiled grammar is
+# too large ... reduce the number of strict tools"; 54/54 ValidationException, $0, no
+# output). The tool stays forced; shape is enforced in code by verify() instead.
+STRICT_TOOL = False
+ERROR_MESSAGE_MAX = 300   # provider error text kept in the record file only, never printed
 DIMENSIONS, VERDICTS, NA_ALLOWED = mbs.DIMENSIONS, mbs.VERDICTS, mbs.NA_ALLOWED
 
 JUDGE_DIR = rce.REPO / "evals" / "judge"
@@ -142,12 +148,13 @@ def tool_schema() -> dict:
 
 
 def tool_config() -> dict:
-    return {"tools": [{"toolSpec": {
-                "name": TOOL_NAME,
-                "description": "Record the rubric v2 verdicts for D2, D3, D6, D7 and D8, with "
-                               "verbatim evidence for every partial or fail.",
-                "inputSchema": {"json": tool_schema()}, "strict": True}}],
-            "toolChoice": {"tool": {"name": TOOL_NAME}}}
+    spec = {"name": TOOL_NAME,
+            "description": "Record the rubric v2 verdicts for D2, D3, D6, D7 and D8, with "
+                           "verbatim evidence for every partial or fail.",
+            "inputSchema": {"json": tool_schema()}}
+    if STRICT_TOOL:
+        spec["strict"] = True
+    return {"tools": [{"toolSpec": spec}], "toolChoice": {"tool": {"name": TOOL_NAME}}}
 
 
 def user_text(lines: dict, output: str) -> str:
@@ -248,14 +255,15 @@ def judge_one(client, rec: dict, lines: dict, system: str, meta: dict, *,
            "run": rec["run"], "notes_sha256": rec["notes_sha256"],
            "output_sha256": rce.sha256_text(rec["output"]),
            "model_id": MODEL_ID, "region": REGION, "temperature": TEMPERATURE,
-           "prompt": meta, "started_at": started_at,
+           "tool_strict": STRICT_TOOL, "prompt": meta, "started_at": started_at,
            "call": None, "judgement": None, "verified": None, "error": None}
     t0 = time.time()
     try:
         resp, retries, latency = _converse(client, request, sleep)
     except ClientError as exc:
-        code = (getattr(exc, "response", {}) or {}).get("Error", {}).get("Code") or "ClientError"
-        out["error"] = {"code": code}
+        err = (getattr(exc, "response", {}) or {}).get("Error", {})
+        out["error"] = {"code": err.get("Code") or "ClientError",
+                        "message": (err.get("Message") or "")[:ERROR_MESSAGE_MAX]}
         out["elapsed_s"] = round(time.time() - t0, 3)
         return out
     usage = resp.get("usage", {}) or {}
@@ -394,7 +402,8 @@ def main(argv=None, *, client_factory=None, now=None, sleep=time.sleep, confirm=
     (out_dir / "manifest.json").write_text(json.dumps({
         "judge_version": JUDGE_VERSION, "judge_id": judge_id, "batch_id": manifest["batch_id"],
         "created_at": start.isoformat(timespec="seconds"), "model_id": MODEL_ID, "region": REGION,
-        "temperature": TEMPERATURE, "max_tokens": MAX_TOKENS, "prompt": meta,
+        "temperature": TEMPERATURE, "max_tokens": MAX_TOKENS, "tool_strict": STRICT_TOOL,
+        "prompt": meta,
         "frozen": json.loads(frozen_path.read_text(encoding="utf-8")),
         "runs": runs, "repeats": a.repeats, "concurrency": a.concurrency,
         "corpus_sha256": corpus_sha,

@@ -3,32 +3,35 @@
   "generation_id": "w4-baseline-v1-x5/r1/S13",
   "scenario_id": "S13",
   "scorer": "author_blind",
-  "scored_at": null,
+  "scored_at": "2026-10-16",
   "dimensions": {
     "D2": {
-      "verdict": null,
+      "verdict": "pass",
       "auto_fail": false,
       "findings": []
     },
     "D3": {
-      "verdict": null,
+      "verdict": "pass",
       "auto_fail": false,
       "findings": []
     },
     "D6": {
-      "verdict": null,
+      "verdict": "pass",
       "auto_fail": false,
       "findings": []
     },
     "D7": {
-      "verdict": null,
+      "verdict": "pass",
       "auto_fail": false,
       "findings": []
     },
     "D8": {
-      "verdict": null,
+      "verdict": "na",
       "auto_fail": false,
       "findings": []
     }
-  }
+  },
+  "observations": [
+    "Excellent!"
+  ]
 }

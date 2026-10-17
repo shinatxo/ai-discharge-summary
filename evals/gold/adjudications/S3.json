@@ -20,5 +20,19 @@
       "source": "w4-baseline-v1-x5 (proposed by Claude, approved by the CSO)"
     }
   },
-  "med_rulings": {}
+  "med_rulings": {},
+  "rubric_rulings": {
+    "R2_withheld_lines": {
+      "lines": [
+        "L008",
+        "L009",
+        "L010"
+      ],
+      "category": "clinician risk assessment and safeguarding",
+      "ruling": "Lines L008 to L010 should be withheld: they are an assessment by a clinical professional, not the patient's history. Everything else is fine to be kept.",
+      "ruled_by": "author as CSO",
+      "date": "2026-10-12",
+      "note": "Supersedes the drafting sentence in EVAL_RESULTS.md section 2 (D8) naming S3's D8 content; section 2 stays frozen for calibration."
+    }
+  }
 }

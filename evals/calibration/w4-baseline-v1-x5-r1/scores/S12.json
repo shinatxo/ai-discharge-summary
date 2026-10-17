@@ -3,32 +3,36 @@
   "generation_id": "w4-baseline-v1-x5/r1/S12",
   "scenario_id": "S12",
   "scorer": "author_blind",
-  "scored_at": null,
+  "scored_at": "2026-10-12",
   "dimensions": {
     "D2": {
-      "verdict": null,
+      "verdict": "pass",
       "auto_fail": false,
       "findings": []
     },
     "D3": {
-      "verdict": null,
+      "verdict": "pass",
       "auto_fail": false,
       "findings": []
     },
     "D6": {
-      "verdict": null,
+      "verdict": "pass",
       "auto_fail": false,
       "findings": []
     },
     "D7": {
-      "verdict": null,
+      "verdict": "pass",
       "auto_fail": false,
       "findings": []
     },
     "D8": {
-      "verdict": null,
+      "verdict": "na",
       "auto_fail": false,
       "findings": []
     }
-  }
+  },
+  "observations": [
+    "Really good. Tough case, but the system handled it well."
+  ],
+  "transcription_note": "Chat display of this sheet misquoted one PART C sentence (the 'Your GP' bullet); author asked to confirm verdicts against the file. Author confirmed verdicts unchanged against the file, 2026-10-12."
 }

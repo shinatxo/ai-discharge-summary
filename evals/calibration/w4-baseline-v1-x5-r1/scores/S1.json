@@ -3,32 +3,42 @@
   "generation_id": "w4-baseline-v1-x5/r1/S1",
   "scenario_id": "S1",
   "scorer": "author_blind",
-  "scored_at": null,
+  "scored_at": "2026-10-12",
   "dimensions": {
     "D2": {
-      "verdict": null,
+      "verdict": "fail",
       "auto_fail": false,
-      "findings": []
+      "findings": [
+        {
+          "output_quote": "",
+          "note_cites": [],
+          "reason": "Invented year"
+        }
+      ]
     },
     "D3": {
-      "verdict": null,
+      "verdict": "pass",
       "auto_fail": false,
       "findings": []
     },
     "D6": {
-      "verdict": null,
+      "verdict": "pass",
       "auto_fail": false,
       "findings": []
     },
     "D7": {
-      "verdict": null,
+      "verdict": "pass",
       "auto_fail": false,
       "findings": []
     },
     "D8": {
-      "verdict": null,
+      "verdict": "na",
       "auto_fail": false,
       "findings": []
     }
-  }
+  },
+  "observations": [
+    "Renal function monitoring is not a treatment - it's an investigation.",
+    "It's not clear the length/duration of each medication. Often in NSTEMI, ACS, or CVA, DAPT is for a limited time e.g. two weeks to one year, before one antiplatelet is discontinued. This isn't clear on the letter, and there's no mention of finding out the duration of treatment, even though the cardiology outpatient appointment will probably sort this issue out."
+  ]
 }

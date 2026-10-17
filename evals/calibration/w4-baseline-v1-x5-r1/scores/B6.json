@@ -3,32 +3,41 @@
   "generation_id": "w4-baseline-v1-x5/r1/B6",
   "scenario_id": "B6",
   "scorer": "author_blind",
-  "scored_at": null,
+  "scored_at": "2026-10-17",
   "dimensions": {
     "D2": {
-      "verdict": null,
+      "verdict": "fail",
       "auto_fail": false,
-      "findings": []
+      "findings": [
+        {
+          "output_quote": "",
+          "note_cites": [],
+          "reason": "invented year"
+        }
+      ]
     },
     "D3": {
-      "verdict": null,
+      "verdict": "pass",
       "auto_fail": false,
       "findings": []
     },
     "D6": {
-      "verdict": null,
+      "verdict": "pass",
       "auto_fail": false,
       "findings": []
     },
     "D7": {
-      "verdict": null,
+      "verdict": "pass",
       "auto_fail": false,
       "findings": []
     },
     "D8": {
-      "verdict": null,
+      "verdict": "na",
       "auto_fail": false,
       "findings": []
     }
-  }
+  },
+  "observations": [
+    "nil"
+  ]
 }

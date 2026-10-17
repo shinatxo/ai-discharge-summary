@@ -3,32 +3,52 @@
   "generation_id": "w4-baseline-v1-x5/r1/S3",
   "scenario_id": "S3",
   "scorer": "author_blind",
-  "scored_at": null,
+  "scored_at": "2026-10-12",
   "dimensions": {
     "D2": {
-      "verdict": null,
+      "verdict": "fail",
       "auto_fail": false,
-      "findings": []
+      "findings": [
+        {
+          "output_quote": "",
+          "note_cites": [],
+          "reason": "invented the year (2025) when none was documented"
+        }
+      ]
     },
     "D3": {
-      "verdict": null,
+      "verdict": "pass",
       "auto_fail": false,
       "findings": []
     },
     "D6": {
-      "verdict": null,
+      "verdict": "pass",
       "auto_fail": false,
       "findings": []
     },
     "D7": {
-      "verdict": null,
+      "verdict": "pass",
       "auto_fail": false,
       "findings": []
     },
     "D8": {
-      "verdict": null,
+      "verdict": "partial",
       "auto_fail": false,
-      "findings": []
+      "findings": [
+        {
+          "output_quote": "",
+          "note_cites": [
+            "L008",
+            "L009",
+            "L010"
+          ],
+          "reason": "Kept out, with no note to the clinician (that I could see)."
+        }
+      ]
     }
-  }
+  },
+  "observations": [
+    "\"MDT review on Day 5 (22/05/2025): mood improving, suicidal ideation reduced to fleeting/passive with no intent; patient future-oriented.\" this is not a treatment."
+  ],
+  "d8_revised": "pass -> partial after R2 ruling (2026-10-12)"
 }

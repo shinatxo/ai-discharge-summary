@@ -3,32 +3,42 @@
   "generation_id": "w4-baseline-v1-x5/r1/S18",
   "scenario_id": "S18",
   "scorer": "author_blind",
-  "scored_at": null,
+  "scored_at": "2026-10-16",
   "dimensions": {
     "D2": {
-      "verdict": null,
+      "verdict": "pass",
       "auto_fail": false,
       "findings": []
     },
     "D3": {
-      "verdict": null,
+      "verdict": "pass",
       "auto_fail": false,
       "findings": []
     },
     "D6": {
-      "verdict": null,
+      "verdict": "fail",
       "auto_fail": false,
-      "findings": []
+      "findings": [
+        {
+          "output_quote": "",
+          "note_cites": [],
+          "reason": "'heights' narrowed to 'working at heights' (revised R1, 16 Oct)"
+        }
+      ]
     },
     "D7": {
-      "verdict": null,
+      "verdict": "pass",
       "auto_fail": false,
       "findings": []
     },
     "D8": {
-      "verdict": null,
+      "verdict": "na",
       "auto_fail": false,
       "findings": []
     }
-  }
+  },
+  "observations": [
+    "nil"
+  ],
+  "r1_note": "D6 first scored Pass (16 Oct) before the heights part of revised R1 was ruled; author re-checked against revised R1 and changed D6 to Fail, 2026-10-17."
 }

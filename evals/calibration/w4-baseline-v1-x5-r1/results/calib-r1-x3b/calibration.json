@@ -1,0 +1,2610 @@
+{
+  "batch_id": "w4-baseline-v1-x5",
+  "run": 1,
+  "judge_id": "calib-r1-x3b",
+  "judge_prompt": {
+    "path": "evals/judge/judge_prompt.md",
+    "file_sha256": "03905869e7beb80569e68a60d58cfab24fb1a70696a8829f7c53f83d005e8383",
+    "instructions_sha256": "7b251e319c0ea1c2f63cf2bb70c0df438e035807bb4db909ac0f2a071c88310f",
+    "rubric_sha256": "f8291ae161363ad519507e4b921828ee2c1969272229d330700b7c6ff89a0b41",
+    "system_sha256": "696c133b15c855845b776c1bb4fbe8dfd298e37f3f50daf90e6e136d5c394f0a"
+  },
+  "author_rubric_sha256": "f8291ae161363ad519507e4b921828ee2c1969272229d330700b7c6ff89a0b41",
+  "repeats": [
+    "rep1",
+    "rep2",
+    "rep3"
+  ],
+  "combined": [
+    {
+      "missed_fails": [],
+      "kappa_w": 0.731066460587326,
+      "kappa_n": 72,
+      "na_mismatches": 3,
+      "raw_agreement": 76,
+      "n": 90,
+      "raw_ci95": [
+        0.755669687335892,
+        0.9050181099736166
+      ],
+      "by_dim": {
+        "D2": 14,
+        "D3": 17,
+        "D6": 15,
+        "D7": 15,
+        "D8": 15
+      }
+    },
+    {
+      "missed_fails": [],
+      "kappa_w": 0.7177541729893778,
+      "kappa_n": 72,
+      "na_mismatches": 2,
+      "raw_agreement": 78,
+      "n": 90,
+      "raw_ci95": [
+        0.7812588689264784,
+        0.9220539475642889
+      ],
+      "by_dim": {
+        "D2": 14,
+        "D3": 16,
+        "D6": 16,
+        "D7": 15,
+        "D8": 17
+      }
+    },
+    {
+      "missed_fails": [],
+      "kappa_w": 0.7142857142857143,
+      "kappa_n": 72,
+      "na_mismatches": 3,
+      "raw_agreement": 76,
+      "n": 90,
+      "raw_ci95": [
+        0.755669687335892,
+        0.9050181099736166
+      ],
+      "by_dim": {
+        "D2": 14,
+        "D3": 16,
+        "D6": 16,
+        "D7": 15,
+        "D8": 15
+      }
+    }
+  ],
+  "judge_alone": [
+    {
+      "missed_fails": [],
+      "kappa_w": 0.7630331753554502,
+      "kappa_n": 72,
+      "na_mismatches": 3,
+      "raw_agreement": 77,
+      "n": 90,
+      "raw_ci95": [
+        0.7683993769120605,
+        0.9136009299880774
+      ],
+      "by_dim": {
+        "D2": 14,
+        "D3": 17,
+        "D6": 15,
+        "D7": 16,
+        "D8": 15
+      }
+    },
+    {
+      "missed_fails": [],
+      "kappa_w": 0.7488372093023256,
+      "kappa_n": 72,
+      "na_mismatches": 2,
+      "raw_agreement": 79,
+      "n": 90,
+      "raw_ci95": [
+        0.7942607696004786,
+        0.930364556480918
+      ],
+      "by_dim": {
+        "D2": 14,
+        "D3": 16,
+        "D6": 16,
+        "D7": 16,
+        "D8": 17
+      }
+    },
+    {
+      "missed_fails": [],
+      "kappa_w": 0.7446808510638299,
+      "kappa_n": 72,
+      "na_mismatches": 3,
+      "raw_agreement": 77,
+      "n": 90,
+      "raw_ci95": [
+        0.7683993769120605,
+        0.9136009299880774
+      ],
+      "by_dim": {
+        "D2": 14,
+        "D3": 16,
+        "D6": 16,
+        "D7": 16,
+        "D8": 15
+      }
+    }
+  ],
+  "self_disagreement": {
+    "cells": 90,
+    "unstable": [
+      [
+        "S3",
+        "D6"
+      ],
+      [
+        "S3",
+        "D8"
+      ],
+      [
+        "S12",
+        "D3"
+      ],
+      [
+        "S12",
+        "D8"
+      ],
+      [
+        "S14",
+        "D3"
+      ],
+      [
+        "A5",
+        "D8"
+      ]
+    ],
+    "rate": 0.06666666666666667
+  },
+  "thresholds": {
+    "t1_no_missed_fails": true,
+    "t2_kappa": true,
+    "t3_self": true,
+    "met": true
+  },
+  "rows": [
+    [
+      {
+        "sid": "S1",
+        "dim": "D2",
+        "author": "fail",
+        "author_af": false,
+        "judge": "fail",
+        "check": "fail",
+        "combined": "fail"
+      },
+      {
+        "sid": "S1",
+        "dim": "D3",
+        "author": "pass",
+        "author_af": false,
+        "judge": "pass",
+        "check": null,
+        "combined": "pass"
+      },
+      {
+        "sid": "S1",
+        "dim": "D6",
+        "author": "pass",
+        "author_af": false,
+        "judge": "pass",
+        "check": null,
+        "combined": "pass"
+      },
+      {
+        "sid": "S1",
+        "dim": "D7",
+        "author": "pass",
+        "author_af": false,
+        "judge": "pass",
+        "check": null,
+        "combined": "pass"
+      },
+      {
+        "sid": "S1",
+        "dim": "D8",
+        "author": "na",
+        "author_af": false,
+        "judge": "na",
+        "check": null,
+        "combined": "na"
+      },
+      {
+        "sid": "S2",
+        "dim": "D2",
+        "author": "pass",
+        "author_af": false,
+        "judge": "fail",
+        "check": null,
+        "combined": "fail"
+      },
+      {
+        "sid": "S2",
+        "dim": "D3",
+        "author": "pass",
+        "author_af": false,
+        "judge": "pass",
+        "check": null,
+        "combined": "pass"
+      },
+      {
+        "sid": "S2",
+        "dim": "D6",
+        "author": "pass",
+        "author_af": false,
+        "judge": "pass",
+        "check": null,
+        "combined": "pass"
+      },
+      {
+        "sid": "S2",
+        "dim": "D7",
+        "author": "pass",
+        "author_af": false,
+        "judge": "pass",
+        "check": null,
+        "combined": "pass"
+      },
+      {
+        "sid": "S2",
+        "dim": "D8",
+        "author": "na",
+        "author_af": false,
+        "judge": "na",
+        "check": null,
+        "combined": "na"
+      },
+      {
+        "sid": "S3",
+        "dim": "D2",
+        "author": "fail",
+        "author_af": false,
+        "judge": "fail",
+        "check": "fail",
+        "combined": "fail"
+      },
+      {
+        "sid": "S3",
+        "dim": "D3",
+        "author": "pass",
+        "author_af": false,
+        "judge": "pass",
+        "check": null,
+        "combined": "pass"
+      },
+      {
+        "sid": "S3",
+        "dim": "D6",
+        "author": "pass",
+        "author_af": false,
+        "judge": "partial",
+        "check": null,
+        "combined": "partial"
+      },
+      {
+        "sid": "S3",
+        "dim": "D7",
+        "author": "pass",
+        "author_af": false,
+        "judge": "partial",
+        "check": null,
+        "combined": "partial"
+      },
+      {
+        "sid": "S3",
+        "dim": "D8",
+        "author": "partial",
+        "author_af": false,
+        "judge": "fail",
+        "check": null,
+        "combined": "fail"
+      },
+      {
+        "sid": "S4",
+        "dim": "D2",
+        "author": "fail",
+        "author_af": false,
+        "judge": "fail",
+        "check": "fail",
+        "combined": "fail"
+      },
+      {
+        "sid": "S4",
+        "dim": "D3",
+        "author": "pass",
+        "author_af": false,
+        "judge": "pass",
+        "check": null,
+        "combined": "pass"
+      },
+      {
+        "sid": "S4",
+        "dim": "D6",
+        "author": "pass",
+        "author_af": false,
+        "judge": "pass",
+        "check": null,
+        "combined": "pass"
+      },
+      {
+        "sid": "S4",
+        "dim": "D7",
+        "author": "pass",
+        "author_af": false,
+        "judge": "pass",
+        "check": null,
+        "combined": "pass"
+      },
+      {
+        "sid": "S4",
+        "dim": "D8",
+        "author": "na",
+        "author_af": false,
+        "judge": "na",
+        "check": null,
+        "combined": "na"
+      },
+      {
+        "sid": "S8",
+        "dim": "D2",
+        "author": "fail",
+        "author_af": false,
+        "judge": "fail",
+        "check": "fail",
+        "combined": "fail"
+      },
+      {
+        "sid": "S8",
+        "dim": "D3",
+        "author": "pass",
+        "author_af": false,
+        "judge": "pass",
+        "check": null,
+        "combined": "pass"
+      },
+      {
+        "sid": "S8",
+        "dim": "D6",
+        "author": "pass",
+        "author_af": false,
+        "judge": "pass",
+        "check": null,
+        "combined": "pass"
+      },
+      {
+        "sid": "S8",
+        "dim": "D7",
+        "author": "pass",
+        "author_af": false,
+        "judge": "pass",
+        "check": null,
+        "combined": "pass"
+      },
+      {
+        "sid": "S8",
+        "dim": "D8",
+        "author": "na",
+        "author_af": false,
+        "judge": "na",
+        "check": null,
+        "combined": "na"
+      },
+      {
+        "sid": "S9",
+        "dim": "D2",
+        "author": "fail",
+        "author_af": false,
+        "judge": "fail",
+        "check": "fail",
+        "combined": "fail"
+      },
+      {
+        "sid": "S9",
+        "dim": "D3",
+        "author": "pass",
+        "author_af": false,
+        "judge": "pass",
+        "check": null,
+        "combined": "pass"
+      },
+      {
+        "sid": "S9",
+        "dim": "D6",
+        "author": "pass",
+        "author_af": false,
+        "judge": "pass",
+        "check": null,
+        "combined": "pass"
+      },
+      {
+        "sid": "S9",
+        "dim": "D7",
+        "author": "pass",
+        "author_af": false,
+        "judge": "pass",
+        "check": null,
+        "combined": "pass"
+      },
+      {
+        "sid": "S9",
+        "dim": "D8",
+        "author": "na",
+        "author_af": false,
+        "judge": "na",
+        "check": null,
+        "combined": "na"
+      },
+      {
+        "sid": "S10",
+        "dim": "D2",
+        "author": "pass",
+        "author_af": false,
+        "judge": "fail",
+        "check": null,
+        "combined": "fail"
+      },
+      {
+        "sid": "S10",
+        "dim": "D3",
+        "author": "pass",
+        "author_af": false,
+        "judge": "pass",
+        "check": null,
+        "combined": "pass"
+      },
+      {
+        "sid": "S10",
+        "dim": "D6",
+        "author": "pass",
+        "author_af": false,
+        "judge": "partial",
+        "check": null,
+        "combined": "partial"
+      },
+      {
+        "sid": "S10",
+        "dim": "D7",
+        "author": "pass",
+        "author_af": false,
+        "judge": "pass",
+        "check": null,
+        "combined": "pass"
+      },
+      {
+        "sid": "S10",
+        "dim": "D8",
+        "author": "na",
+        "author_af": false,
+        "judge": "na",
+        "check": null,
+        "combined": "na"
+      },
+      {
+        "sid": "S11",
+        "dim": "D2",
+        "author": "fail",
+        "author_af": false,
+        "judge": "fail",
+        "check": "fail",
+        "combined": "fail"
+      },
+      {
+        "sid": "S11",
+        "dim": "D3",
+        "author": "pass",
+        "author_af": false,
+        "judge": "pass",
+        "check": null,
+        "combined": "pass"
+      },
+      {
+        "sid": "S11",
+        "dim": "D6",
+        "author": "pass",
+        "author_af": false,
+        "judge": "pass",
+        "check": null,
+        "combined": "pass"
+      },
+      {
+        "sid": "S11",
+        "dim": "D7",
+        "author": "pass",
+        "author_af": false,
+        "judge": "pass",
+        "check": null,
+        "combined": "pass"
+      },
+      {
+        "sid": "S11",
+        "dim": "D8",
+        "author": "na",
+        "author_af": false,
+        "judge": "na",
+        "check": null,
+        "combined": "na"
+      },
+      {
+        "sid": "S12",
+        "dim": "D2",
+        "author": "pass",
+        "author_af": false,
+        "judge": "fail",
+        "check": "fail",
+        "combined": "fail"
+      },
+      {
+        "sid": "S12",
+        "dim": "D3",
+        "author": "pass",
+        "author_af": false,
+        "judge": "partial",
+        "check": null,
+        "combined": "partial"
+      },
+      {
+        "sid": "S12",
+        "dim": "D6",
+        "author": "pass",
+        "author_af": false,
+        "judge": "pass",
+        "check": null,
+        "combined": "pass"
+      },
+      {
+        "sid": "S12",
+        "dim": "D7",
+        "author": "pass",
+        "author_af": false,
+        "judge": "pass",
+        "check": null,
+        "combined": "pass"
+      },
+      {
+        "sid": "S12",
+        "dim": "D8",
+        "author": "na",
+        "author_af": false,
+        "judge": "pass",
+        "check": null,
+        "combined": "pass"
+      },
+      {
+        "sid": "S13",
+        "dim": "D2",
+        "author": "pass",
+        "author_af": false,
+        "judge": "pass",
+        "check": null,
+        "combined": "pass"
+      },
+      {
+        "sid": "S13",
+        "dim": "D3",
+        "author": "pass",
+        "author_af": false,
+        "judge": "pass",
+        "check": null,
+        "combined": "pass"
+      },
+      {
+        "sid": "S13",
+        "dim": "D6",
+        "author": "pass",
+        "author_af": false,
+        "judge": "pass",
+        "check": null,
+        "combined": "pass"
+      },
+      {
+        "sid": "S13",
+        "dim": "D7",
+        "author": "pass",
+        "author_af": false,
+        "judge": "pass",
+        "check": null,
+        "combined": "pass"
+      },
+      {
+        "sid": "S13",
+        "dim": "D8",
+        "author": "na",
+        "author_af": false,
+        "judge": "na",
+        "check": null,
+        "combined": "na"
+      },
+      {
+        "sid": "S14",
+        "dim": "D2",
+        "author": "fail",
+        "author_af": false,
+        "judge": "fail",
+        "check": "fail",
+        "combined": "fail"
+      },
+      {
+        "sid": "S14",
+        "dim": "D3",
+        "author": "partial",
+        "author_af": false,
+        "judge": "partial",
+        "check": null,
+        "combined": "partial"
+      },
+      {
+        "sid": "S14",
+        "dim": "D6",
+        "author": "pass",
+        "author_af": false,
+        "judge": "pass",
+        "check": null,
+        "combined": "pass"
+      },
+      {
+        "sid": "S14",
+        "dim": "D7",
+        "author": "pass",
+        "author_af": false,
+        "judge": "pass",
+        "check": null,
+        "combined": "pass"
+      },
+      {
+        "sid": "S14",
+        "dim": "D8",
+        "author": "na",
+        "author_af": false,
+        "judge": "na",
+        "check": null,
+        "combined": "na"
+      },
+      {
+        "sid": "S15",
+        "dim": "D2",
+        "author": "fail",
+        "author_af": false,
+        "judge": "fail",
+        "check": "fail",
+        "combined": "fail"
+      },
+      {
+        "sid": "S15",
+        "dim": "D3",
+        "author": "pass",
+        "author_af": false,
+        "judge": "pass",
+        "check": null,
+        "combined": "pass"
+      },
+      {
+        "sid": "S15",
+        "dim": "D6",
+        "author": "pass",
+        "author_af": false,
+        "judge": "pass",
+        "check": null,
+        "combined": "pass"
+      },
+      {
+        "sid": "S15",
+        "dim": "D7",
+        "author": "pass",
+        "author_af": false,
+        "judge": "fail",
+        "check": null,
+        "combined": "fail"
+      },
+      {
+        "sid": "S15",
+        "dim": "D8",
+        "author": "na",
+        "author_af": false,
+        "judge": "na",
+        "check": null,
+        "combined": "na"
+      },
+      {
+        "sid": "S16",
+        "dim": "D2",
+        "author": "fail",
+        "author_af": false,
+        "judge": "fail",
+        "check": "fail",
+        "combined": "fail"
+      },
+      {
+        "sid": "S16",
+        "dim": "D3",
+        "author": "pass",
+        "author_af": false,
+        "judge": "pass",
+        "check": null,
+        "combined": "pass"
+      },
+      {
+        "sid": "S16",
+        "dim": "D6",
+        "author": "pass",
+        "author_af": false,
+        "judge": "pass",
+        "check": null,
+        "combined": "pass"
+      },
+      {
+        "sid": "S16",
+        "dim": "D7",
+        "author": "pass",
+        "author_af": false,
+        "judge": "pass",
+        "check": null,
+        "combined": "pass"
+      },
+      {
+        "sid": "S16",
+        "dim": "D8",
+        "author": "na",
+        "author_af": false,
+        "judge": "na",
+        "check": null,
+        "combined": "na"
+      },
+      {
+        "sid": "S17",
+        "dim": "D2",
+        "author": "fail",
+        "author_af": false,
+        "judge": "fail",
+        "check": "fail",
+        "combined": "fail"
+      },
+      {
+        "sid": "S17",
+        "dim": "D3",
+        "author": "pass",
+        "author_af": false,
+        "judge": "pass",
+        "check": null,
+        "combined": "pass"
+      },
+      {
+        "sid": "S17",
+        "dim": "D6",
+        "author": "pass",
+        "author_af": false,
+        "judge": "pass",
+        "check": null,
+        "combined": "pass"
+      },
+      {
+        "sid": "S17",
+        "dim": "D7",
+        "author": "pass",
+        "author_af": false,
+        "judge": "pass",
+        "check": null,
+        "combined": "pass"
+      },
+      {
+        "sid": "S17",
+        "dim": "D8",
+        "author": "na",
+        "author_af": false,
+        "judge": "na",
+        "check": null,
+        "combined": "na"
+      },
+      {
+        "sid": "S18",
+        "dim": "D2",
+        "author": "pass",
+        "author_af": false,
+        "judge": "fail",
+        "check": null,
+        "combined": "fail"
+      },
+      {
+        "sid": "S18",
+        "dim": "D3",
+        "author": "pass",
+        "author_af": false,
+        "judge": "pass",
+        "check": null,
+        "combined": "pass"
+      },
+      {
+        "sid": "S18",
+        "dim": "D6",
+        "author": "fail",
+        "author_af": false,
+        "judge": "fail",
+        "check": null,
+        "combined": "fail"
+      },
+      {
+        "sid": "S18",
+        "dim": "D7",
+        "author": "pass",
+        "author_af": false,
+        "judge": "pass",
+        "check": null,
+        "combined": "pass"
+      },
+      {
+        "sid": "S18",
+        "dim": "D8",
+        "author": "na",
+        "author_af": false,
+        "judge": "na",
+        "check": null,
+        "combined": "na"
+      },
+      {
+        "sid": "A5",
+        "dim": "D2",
+        "author": "fail",
+        "author_af": false,
+        "judge": "fail",
+        "check": "fail",
+        "combined": "fail"
+      },
+      {
+        "sid": "A5",
+        "dim": "D3",
+        "author": "pass",
+        "author_af": false,
+        "judge": "pass",
+        "check": null,
+        "combined": "pass"
+      },
+      {
+        "sid": "A5",
+        "dim": "D6",
+        "author": "pass",
+        "author_af": false,
+        "judge": "pass",
+        "check": null,
+        "combined": "pass"
+      },
+      {
+        "sid": "A5",
+        "dim": "D7",
+        "author": "pass",
+        "author_af": false,
+        "judge": "pass",
+        "check": null,
+        "combined": "pass"
+      },
+      {
+        "sid": "A5",
+        "dim": "D8",
+        "author": "na",
+        "author_af": false,
+        "judge": "partial",
+        "check": null,
+        "combined": "partial"
+      },
+      {
+        "sid": "B6",
+        "dim": "D2",
+        "author": "fail",
+        "author_af": false,
+        "judge": "fail",
+        "check": "fail",
+        "combined": "fail"
+      },
+      {
+        "sid": "B6",
+        "dim": "D3",
+        "author": "pass",
+        "author_af": false,
+        "judge": "pass",
+        "check": null,
+        "combined": "pass"
+      },
+      {
+        "sid": "B6",
+        "dim": "D6",
+        "author": "pass",
+        "author_af": false,
+        "judge": "pass",
+        "check": null,
+        "combined": "pass"
+      },
+      {
+        "sid": "B6",
+        "dim": "D7",
+        "author": "pass",
+        "author_af": false,
+        "judge": "pass",
+        "check": "fail",
+        "combined": "fail"
+      },
+      {
+        "sid": "B6",
+        "dim": "D8",
+        "author": "na",
+        "author_af": false,
+        "judge": "na",
+        "check": null,
+        "combined": "na"
+      },
+      {
+        "sid": "C7",
+        "dim": "D2",
+        "author": "fail",
+        "author_af": false,
+        "judge": "fail",
+        "check": "fail",
+        "combined": "fail"
+      },
+      {
+        "sid": "C7",
+        "dim": "D3",
+        "author": "pass",
+        "author_af": false,
+        "judge": "pass",
+        "check": null,
+        "combined": "pass"
+      },
+      {
+        "sid": "C7",
+        "dim": "D6",
+        "author": "na",
+        "author_af": false,
+        "judge": "pass",
+        "check": null,
+        "combined": "pass"
+      },
+      {
+        "sid": "C7",
+        "dim": "D7",
+        "author": "pass",
+        "author_af": false,
+        "judge": "pass",
+        "check": null,
+        "combined": "pass"
+      },
+      {
+        "sid": "C7",
+        "dim": "D8",
+        "author": "na",
+        "author_af": false,
+        "judge": "na",
+        "check": null,
+        "combined": "na"
+      }
+    ],
+    [
+      {
+        "sid": "S1",
+        "dim": "D2",
+        "author": "fail",
+        "author_af": false,
+        "judge": "fail",
+        "check": "fail",
+        "combined": "fail"
+      },
+      {
+        "sid": "S1",
+        "dim": "D3",
+        "author": "pass",
+        "author_af": false,
+        "judge": "pass",
+        "check": null,
+        "combined": "pass"
+      },
+      {
+        "sid": "S1",
+        "dim": "D6",
+        "author": "pass",
+        "author_af": false,
+        "judge": "pass",
+        "check": null,
+        "combined": "pass"
+      },
+      {
+        "sid": "S1",
+        "dim": "D7",
+        "author": "pass",
+        "author_af": false,
+        "judge": "pass",
+        "check": null,
+        "combined": "pass"
+      },
+      {
+        "sid": "S1",
+        "dim": "D8",
+        "author": "na",
+        "author_af": false,
+        "judge": "na",
+        "check": null,
+        "combined": "na"
+      },
+      {
+        "sid": "S2",
+        "dim": "D2",
+        "author": "pass",
+        "author_af": false,
+        "judge": "fail",
+        "check": null,
+        "combined": "fail"
+      },
+      {
+        "sid": "S2",
+        "dim": "D3",
+        "author": "pass",
+        "author_af": false,
+        "judge": "pass",
+        "check": null,
+        "combined": "pass"
+      },
+      {
+        "sid": "S2",
+        "dim": "D6",
+        "author": "pass",
+        "author_af": false,
+        "judge": "pass",
+        "check": null,
+        "combined": "pass"
+      },
+      {
+        "sid": "S2",
+        "dim": "D7",
+        "author": "pass",
+        "author_af": false,
+        "judge": "pass",
+        "check": null,
+        "combined": "pass"
+      },
+      {
+        "sid": "S2",
+        "dim": "D8",
+        "author": "na",
+        "author_af": false,
+        "judge": "na",
+        "check": null,
+        "combined": "na"
+      },
+      {
+        "sid": "S3",
+        "dim": "D2",
+        "author": "fail",
+        "author_af": false,
+        "judge": "fail",
+        "check": "fail",
+        "combined": "fail"
+      },
+      {
+        "sid": "S3",
+        "dim": "D3",
+        "author": "pass",
+        "author_af": false,
+        "judge": "pass",
+        "check": null,
+        "combined": "pass"
+      },
+      {
+        "sid": "S3",
+        "dim": "D6",
+        "author": "pass",
+        "author_af": false,
+        "judge": "pass",
+        "check": null,
+        "combined": "pass"
+      },
+      {
+        "sid": "S3",
+        "dim": "D7",
+        "author": "pass",
+        "author_af": false,
+        "judge": "partial",
+        "check": null,
+        "combined": "partial"
+      },
+      {
+        "sid": "S3",
+        "dim": "D8",
+        "author": "partial",
+        "author_af": false,
+        "judge": "partial",
+        "check": null,
+        "combined": "partial"
+      },
+      {
+        "sid": "S4",
+        "dim": "D2",
+        "author": "fail",
+        "author_af": false,
+        "judge": "fail",
+        "check": "fail",
+        "combined": "fail"
+      },
+      {
+        "sid": "S4",
+        "dim": "D3",
+        "author": "pass",
+        "author_af": false,
+        "judge": "pass",
+        "check": null,
+        "combined": "pass"
+      },
+      {
+        "sid": "S4",
+        "dim": "D6",
+        "author": "pass",
+        "author_af": false,
+        "judge": "pass",
+        "check": null,
+        "combined": "pass"
+      },
+      {
+        "sid": "S4",
+        "dim": "D7",
+        "author": "pass",
+        "author_af": false,
+        "judge": "pass",
+        "check": null,
+        "combined": "pass"
+      },
+      {
+        "sid": "S4",
+        "dim": "D8",
+        "author": "na",
+        "author_af": false,
+        "judge": "na",
+        "check": null,
+        "combined": "na"
+      },
+      {
+        "sid": "S8",
+        "dim": "D2",
+        "author": "fail",
+        "author_af": false,
+        "judge": "fail",
+        "check": "fail",
+        "combined": "fail"
+      },
+      {
+        "sid": "S8",
+        "dim": "D3",
+        "author": "pass",
+        "author_af": false,
+        "judge": "pass",
+        "check": null,
+        "combined": "pass"
+      },
+      {
+        "sid": "S8",
+        "dim": "D6",
+        "author": "pass",
+        "author_af": false,
+        "judge": "pass",
+        "check": null,
+        "combined": "pass"
+      },
+      {
+        "sid": "S8",
+        "dim": "D7",
+        "author": "pass",
+        "author_af": false,
+        "judge": "pass",
+        "check": null,
+        "combined": "pass"
+      },
+      {
+        "sid": "S8",
+        "dim": "D8",
+        "author": "na",
+        "author_af": false,
+        "judge": "na",
+        "check": null,
+        "combined": "na"
+      },
+      {
+        "sid": "S9",
+        "dim": "D2",
+        "author": "fail",
+        "author_af": false,
+        "judge": "fail",
+        "check": "fail",
+        "combined": "fail"
+      },
+      {
+        "sid": "S9",
+        "dim": "D3",
+        "author": "pass",
+        "author_af": false,
+        "judge": "pass",
+        "check": null,
+        "combined": "pass"
+      },
+      {
+        "sid": "S9",
+        "dim": "D6",
+        "author": "pass",
+        "author_af": false,
+        "judge": "pass",
+        "check": null,
+        "combined": "pass"
+      },
+      {
+        "sid": "S9",
+        "dim": "D7",
+        "author": "pass",
+        "author_af": false,
+        "judge": "pass",
+        "check": null,
+        "combined": "pass"
+      },
+      {
+        "sid": "S9",
+        "dim": "D8",
+        "author": "na",
+        "author_af": false,
+        "judge": "na",
+        "check": null,
+        "combined": "na"
+      },
+      {
+        "sid": "S10",
+        "dim": "D2",
+        "author": "pass",
+        "author_af": false,
+        "judge": "fail",
+        "check": null,
+        "combined": "fail"
+      },
+      {
+        "sid": "S10",
+        "dim": "D3",
+        "author": "pass",
+        "author_af": false,
+        "judge": "pass",
+        "check": null,
+        "combined": "pass"
+      },
+      {
+        "sid": "S10",
+        "dim": "D6",
+        "author": "pass",
+        "author_af": false,
+        "judge": "partial",
+        "check": null,
+        "combined": "partial"
+      },
+      {
+        "sid": "S10",
+        "dim": "D7",
+        "author": "pass",
+        "author_af": false,
+        "judge": "pass",
+        "check": null,
+        "combined": "pass"
+      },
+      {
+        "sid": "S10",
+        "dim": "D8",
+        "author": "na",
+        "author_af": false,
+        "judge": "na",
+        "check": null,
+        "combined": "na"
+      },
+      {
+        "sid": "S11",
+        "dim": "D2",
+        "author": "fail",
+        "author_af": false,
+        "judge": "fail",
+        "check": "fail",
+        "combined": "fail"
+      },
+      {
+        "sid": "S11",
+        "dim": "D3",
+        "author": "pass",
+        "author_af": false,
+        "judge": "pass",
+        "check": null,
+        "combined": "pass"
+      },
+      {
+        "sid": "S11",
+        "dim": "D6",
+        "author": "pass",
+        "author_af": false,
+        "judge": "pass",
+        "check": null,
+        "combined": "pass"
+      },
+      {
+        "sid": "S11",
+        "dim": "D7",
+        "author": "pass",
+        "author_af": false,
+        "judge": "pass",
+        "check": null,
+        "combined": "pass"
+      },
+      {
+        "sid": "S11",
+        "dim": "D8",
+        "author": "na",
+        "author_af": false,
+        "judge": "na",
+        "check": null,
+        "combined": "na"
+      },
+      {
+        "sid": "S12",
+        "dim": "D2",
+        "author": "pass",
+        "author_af": false,
+        "judge": "fail",
+        "check": "fail",
+        "combined": "fail"
+      },
+      {
+        "sid": "S12",
+        "dim": "D3",
+        "author": "pass",
+        "author_af": false,
+        "judge": "fail",
+        "check": null,
+        "combined": "fail"
+      },
+      {
+        "sid": "S12",
+        "dim": "D6",
+        "author": "pass",
+        "author_af": false,
+        "judge": "pass",
+        "check": null,
+        "combined": "pass"
+      },
+      {
+        "sid": "S12",
+        "dim": "D7",
+        "author": "pass",
+        "author_af": false,
+        "judge": "pass",
+        "check": null,
+        "combined": "pass"
+      },
+      {
+        "sid": "S12",
+        "dim": "D8",
+        "author": "na",
+        "author_af": false,
+        "judge": "partial",
+        "check": null,
+        "combined": "partial"
+      },
+      {
+        "sid": "S13",
+        "dim": "D2",
+        "author": "pass",
+        "author_af": false,
+        "judge": "pass",
+        "check": null,
+        "combined": "pass"
+      },
+      {
+        "sid": "S13",
+        "dim": "D3",
+        "author": "pass",
+        "author_af": false,
+        "judge": "pass",
+        "check": null,
+        "combined": "pass"
+      },
+      {
+        "sid": "S13",
+        "dim": "D6",
+        "author": "pass",
+        "author_af": false,
+        "judge": "pass",
+        "check": null,
+        "combined": "pass"
+      },
+      {
+        "sid": "S13",
+        "dim": "D7",
+        "author": "pass",
+        "author_af": false,
+        "judge": "pass",
+        "check": null,
+        "combined": "pass"
+      },
+      {
+        "sid": "S13",
+        "dim": "D8",
+        "author": "na",
+        "author_af": false,
+        "judge": "na",
+        "check": null,
+        "combined": "na"
+      },
+      {
+        "sid": "S14",
+        "dim": "D2",
+        "author": "fail",
+        "author_af": false,
+        "judge": "fail",
+        "check": "fail",
+        "combined": "fail"
+      },
+      {
+        "sid": "S14",
+        "dim": "D3",
+        "author": "partial",
+        "author_af": false,
+        "judge": "fail",
+        "check": null,
+        "combined": "fail"
+      },
+      {
+        "sid": "S14",
+        "dim": "D6",
+        "author": "pass",
+        "author_af": false,
+        "judge": "pass",
+        "check": null,
+        "combined": "pass"
+      },
+      {
+        "sid": "S14",
+        "dim": "D7",
+        "author": "pass",
+        "author_af": false,
+        "judge": "pass",
+        "check": null,
+        "combined": "pass"
+      },
+      {
+        "sid": "S14",
+        "dim": "D8",
+        "author": "na",
+        "author_af": false,
+        "judge": "na",
+        "check": null,
+        "combined": "na"
+      },
+      {
+        "sid": "S15",
+        "dim": "D2",
+        "author": "fail",
+        "author_af": false,
+        "judge": "fail",
+        "check": "fail",
+        "combined": "fail"
+      },
+      {
+        "sid": "S15",
+        "dim": "D3",
+        "author": "pass",
+        "author_af": false,
+        "judge": "pass",
+        "check": null,
+        "combined": "pass"
+      },
+      {
+        "sid": "S15",
+        "dim": "D6",
+        "author": "pass",
+        "author_af": false,
+        "judge": "pass",
+        "check": null,
+        "combined": "pass"
+      },
+      {
+        "sid": "S15",
+        "dim": "D7",
+        "author": "pass",
+        "author_af": false,
+        "judge": "fail",
+        "check": null,
+        "combined": "fail"
+      },
+      {
+        "sid": "S15",
+        "dim": "D8",
+        "author": "na",
+        "author_af": false,
+        "judge": "na",
+        "check": null,
+        "combined": "na"
+      },
+      {
+        "sid": "S16",
+        "dim": "D2",
+        "author": "fail",
+        "author_af": false,
+        "judge": "fail",
+        "check": "fail",
+        "combined": "fail"
+      },
+      {
+        "sid": "S16",
+        "dim": "D3",
+        "author": "pass",
+        "author_af": false,
+        "judge": "pass",
+        "check": null,
+        "combined": "pass"
+      },
+      {
+        "sid": "S16",
+        "dim": "D6",
+        "author": "pass",
+        "author_af": false,
+        "judge": "pass",
+        "check": null,
+        "combined": "pass"
+      },
+      {
+        "sid": "S16",
+        "dim": "D7",
+        "author": "pass",
+        "author_af": false,
+        "judge": "pass",
+        "check": null,
+        "combined": "pass"
+      },
+      {
+        "sid": "S16",
+        "dim": "D8",
+        "author": "na",
+        "author_af": false,
+        "judge": "na",
+        "check": null,
+        "combined": "na"
+      },
+      {
+        "sid": "S17",
+        "dim": "D2",
+        "author": "fail",
+        "author_af": false,
+        "judge": "fail",
+        "check": "fail",
+        "combined": "fail"
+      },
+      {
+        "sid": "S17",
+        "dim": "D3",
+        "author": "pass",
+        "author_af": false,
+        "judge": "pass",
+        "check": null,
+        "combined": "pass"
+      },
+      {
+        "sid": "S17",
+        "dim": "D6",
+        "author": "pass",
+        "author_af": false,
+        "judge": "pass",
+        "check": null,
+        "combined": "pass"
+      },
+      {
+        "sid": "S17",
+        "dim": "D7",
+        "author": "pass",
+        "author_af": false,
+        "judge": "pass",
+        "check": null,
+        "combined": "pass"
+      },
+      {
+        "sid": "S17",
+        "dim": "D8",
+        "author": "na",
+        "author_af": false,
+        "judge": "na",
+        "check": null,
+        "combined": "na"
+      },
+      {
+        "sid": "S18",
+        "dim": "D2",
+        "author": "pass",
+        "author_af": false,
+        "judge": "fail",
+        "check": null,
+        "combined": "fail"
+      },
+      {
+        "sid": "S18",
+        "dim": "D3",
+        "author": "pass",
+        "author_af": false,
+        "judge": "pass",
+        "check": null,
+        "combined": "pass"
+      },
+      {
+        "sid": "S18",
+        "dim": "D6",
+        "author": "fail",
+        "author_af": false,
+        "judge": "fail",
+        "check": null,
+        "combined": "fail"
+      },
+      {
+        "sid": "S18",
+        "dim": "D7",
+        "author": "pass",
+        "author_af": false,
+        "judge": "pass",
+        "check": null,
+        "combined": "pass"
+      },
+      {
+        "sid": "S18",
+        "dim": "D8",
+        "author": "na",
+        "author_af": false,
+        "judge": "na",
+        "check": null,
+        "combined": "na"
+      },
+      {
+        "sid": "A5",
+        "dim": "D2",
+        "author": "fail",
+        "author_af": false,
+        "judge": "fail",
+        "check": "fail",
+        "combined": "fail"
+      },
+      {
+        "sid": "A5",
+        "dim": "D3",
+        "author": "pass",
+        "author_af": false,
+        "judge": "pass",
+        "check": null,
+        "combined": "pass"
+      },
+      {
+        "sid": "A5",
+        "dim": "D6",
+        "author": "pass",
+        "author_af": false,
+        "judge": "pass",
+        "check": null,
+        "combined": "pass"
+      },
+      {
+        "sid": "A5",
+        "dim": "D7",
+        "author": "pass",
+        "author_af": false,
+        "judge": "pass",
+        "check": null,
+        "combined": "pass"
+      },
+      {
+        "sid": "A5",
+        "dim": "D8",
+        "author": "na",
+        "author_af": false,
+        "judge": "na",
+        "check": null,
+        "combined": "na"
+      },
+      {
+        "sid": "B6",
+        "dim": "D2",
+        "author": "fail",
+        "author_af": false,
+        "judge": "fail",
+        "check": "fail",
+        "combined": "fail"
+      },
+      {
+        "sid": "B6",
+        "dim": "D3",
+        "author": "pass",
+        "author_af": false,
+        "judge": "pass",
+        "check": null,
+        "combined": "pass"
+      },
+      {
+        "sid": "B6",
+        "dim": "D6",
+        "author": "pass",
+        "author_af": false,
+        "judge": "pass",
+        "check": null,
+        "combined": "pass"
+      },
+      {
+        "sid": "B6",
+        "dim": "D7",
+        "author": "pass",
+        "author_af": false,
+        "judge": "pass",
+        "check": "fail",
+        "combined": "fail"
+      },
+      {
+        "sid": "B6",
+        "dim": "D8",
+        "author": "na",
+        "author_af": false,
+        "judge": "na",
+        "check": null,
+        "combined": "na"
+      },
+      {
+        "sid": "C7",
+        "dim": "D2",
+        "author": "fail",
+        "author_af": false,
+        "judge": "fail",
+        "check": "fail",
+        "combined": "fail"
+      },
+      {
+        "sid": "C7",
+        "dim": "D3",
+        "author": "pass",
+        "author_af": false,
+        "judge": "pass",
+        "check": null,
+        "combined": "pass"
+      },
+      {
+        "sid": "C7",
+        "dim": "D6",
+        "author": "na",
+        "author_af": false,
+        "judge": "pass",
+        "check": null,
+        "combined": "pass"
+      },
+      {
+        "sid": "C7",
+        "dim": "D7",
+        "author": "pass",
+        "author_af": false,
+        "judge": "pass",
+        "check": null,
+        "combined": "pass"
+      },
+      {
+        "sid": "C7",
+        "dim": "D8",
+        "author": "na",
+        "author_af": false,
+        "judge": "na",
+        "check": null,
+        "combined": "na"
+      }
+    ],
+    [
+      {
+        "sid": "S1",
+        "dim": "D2",
+        "author": "fail",
+        "author_af": false,
+        "judge": "fail",
+        "check": "fail",
+        "combined": "fail"
+      },
+      {
+        "sid": "S1",
+        "dim": "D3",
+        "author": "pass",
+        "author_af": false,
+        "judge": "pass",
+        "check": null,
+        "combined": "pass"
+      },
+      {
+        "sid": "S1",
+        "dim": "D6",
+        "author": "pass",
+        "author_af": false,
+        "judge": "pass",
+        "check": null,
+        "combined": "pass"
+      },
+      {
+        "sid": "S1",
+        "dim": "D7",
+        "author": "pass",
+        "author_af": false,
+        "judge": "pass",
+        "check": null,
+        "combined": "pass"
+      },
+      {
+        "sid": "S1",
+        "dim": "D8",
+        "author": "na",
+        "author_af": false,
+        "judge": "na",
+        "check": null,
+        "combined": "na"
+      },
+      {
+        "sid": "S2",
+        "dim": "D2",
+        "author": "pass",
+        "author_af": false,
+        "judge": "fail",
+        "check": null,
+        "combined": "fail"
+      },
+      {
+        "sid": "S2",
+        "dim": "D3",
+        "author": "pass",
+        "author_af": false,
+        "judge": "pass",
+        "check": null,
+        "combined": "pass"
+      },
+      {
+        "sid": "S2",
+        "dim": "D6",
+        "author": "pass",
+        "author_af": false,
+        "judge": "pass",
+        "check": null,
+        "combined": "pass"
+      },
+      {
+        "sid": "S2",
+        "dim": "D7",
+        "author": "pass",
+        "author_af": false,
+        "judge": "pass",
+        "check": null,
+        "combined": "pass"
+      },
+      {
+        "sid": "S2",
+        "dim": "D8",
+        "author": "na",
+        "author_af": false,
+        "judge": "na",
+        "check": null,
+        "combined": "na"
+      },
+      {
+        "sid": "S3",
+        "dim": "D2",
+        "author": "fail",
+        "author_af": false,
+        "judge": "fail",
+        "check": "fail",
+        "combined": "fail"
+      },
+      {
+        "sid": "S3",
+        "dim": "D3",
+        "author": "pass",
+        "author_af": false,
+        "judge": "pass",
+        "check": null,
+        "combined": "pass"
+      },
+      {
+        "sid": "S3",
+        "dim": "D6",
+        "author": "pass",
+        "author_af": false,
+        "judge": "pass",
+        "check": null,
+        "combined": "pass"
+      },
+      {
+        "sid": "S3",
+        "dim": "D7",
+        "author": "pass",
+        "author_af": false,
+        "judge": "partial",
+        "check": null,
+        "combined": "partial"
+      },
+      {
+        "sid": "S3",
+        "dim": "D8",
+        "author": "partial",
+        "author_af": false,
+        "judge": "fail",
+        "check": null,
+        "combined": "fail"
+      },
+      {
+        "sid": "S4",
+        "dim": "D2",
+        "author": "fail",
+        "author_af": false,
+        "judge": "fail",
+        "check": "fail",
+        "combined": "fail"
+      },
+      {
+        "sid": "S4",
+        "dim": "D3",
+        "author": "pass",
+        "author_af": false,
+        "judge": "pass",
+        "check": null,
+        "combined": "pass"
+      },
+      {
+        "sid": "S4",
+        "dim": "D6",
+        "author": "pass",
+        "author_af": false,
+        "judge": "pass",
+        "check": null,
+        "combined": "pass"
+      },
+      {
+        "sid": "S4",
+        "dim": "D7",
+        "author": "pass",
+        "author_af": false,
+        "judge": "pass",
+        "check": null,
+        "combined": "pass"
+      },
+      {
+        "sid": "S4",
+        "dim": "D8",
+        "author": "na",
+        "author_af": false,
+        "judge": "na",
+        "check": null,
+        "combined": "na"
+      },
+      {
+        "sid": "S8",
+        "dim": "D2",
+        "author": "fail",
+        "author_af": false,
+        "judge": "fail",
+        "check": "fail",
+        "combined": "fail"
+      },
+      {
+        "sid": "S8",
+        "dim": "D3",
+        "author": "pass",
+        "author_af": false,
+        "judge": "pass",
+        "check": null,
+        "combined": "pass"
+      },
+      {
+        "sid": "S8",
+        "dim": "D6",
+        "author": "pass",
+        "author_af": false,
+        "judge": "pass",
+        "check": null,
+        "combined": "pass"
+      },
+      {
+        "sid": "S8",
+        "dim": "D7",
+        "author": "pass",
+        "author_af": false,
+        "judge": "pass",
+        "check": null,
+        "combined": "pass"
+      },
+      {
+        "sid": "S8",
+        "dim": "D8",
+        "author": "na",
+        "author_af": false,
+        "judge": "na",
+        "check": null,
+        "combined": "na"
+      },
+      {
+        "sid": "S9",
+        "dim": "D2",
+        "author": "fail",
+        "author_af": false,
+        "judge": "fail",
+        "check": "fail",
+        "combined": "fail"
+      },
+      {
+        "sid": "S9",
+        "dim": "D3",
+        "author": "pass",
+        "author_af": false,
+        "judge": "pass",
+        "check": null,
+        "combined": "pass"
+      },
+      {
+        "sid": "S9",
+        "dim": "D6",
+        "author": "pass",
+        "author_af": false,
+        "judge": "pass",
+        "check": null,
+        "combined": "pass"
+      },
+      {
+        "sid": "S9",
+        "dim": "D7",
+        "author": "pass",
+        "author_af": false,
+        "judge": "pass",
+        "check": null,
+        "combined": "pass"
+      },
+      {
+        "sid": "S9",
+        "dim": "D8",
+        "author": "na",
+        "author_af": false,
+        "judge": "na",
+        "check": null,
+        "combined": "na"
+      },
+      {
+        "sid": "S10",
+        "dim": "D2",
+        "author": "pass",
+        "author_af": false,
+        "judge": "fail",
+        "check": null,
+        "combined": "fail"
+      },
+      {
+        "sid": "S10",
+        "dim": "D3",
+        "author": "pass",
+        "author_af": false,
+        "judge": "pass",
+        "check": null,
+        "combined": "pass"
+      },
+      {
+        "sid": "S10",
+        "dim": "D6",
+        "author": "pass",
+        "author_af": false,
+        "judge": "partial",
+        "check": null,
+        "combined": "partial"
+      },
+      {
+        "sid": "S10",
+        "dim": "D7",
+        "author": "pass",
+        "author_af": false,
+        "judge": "pass",
+        "check": null,
+        "combined": "pass"
+      },
+      {
+        "sid": "S10",
+        "dim": "D8",
+        "author": "na",
+        "author_af": false,
+        "judge": "na",
+        "check": null,
+        "combined": "na"
+      },
+      {
+        "sid": "S11",
+        "dim": "D2",
+        "author": "fail",
+        "author_af": false,
+        "judge": "fail",
+        "check": "fail",
+        "combined": "fail"
+      },
+      {
+        "sid": "S11",
+        "dim": "D3",
+        "author": "pass",
+        "author_af": false,
+        "judge": "pass",
+        "check": null,
+        "combined": "pass"
+      },
+      {
+        "sid": "S11",
+        "dim": "D6",
+        "author": "pass",
+        "author_af": false,
+        "judge": "pass",
+        "check": null,
+        "combined": "pass"
+      },
+      {
+        "sid": "S11",
+        "dim": "D7",
+        "author": "pass",
+        "author_af": false,
+        "judge": "pass",
+        "check": null,
+        "combined": "pass"
+      },
+      {
+        "sid": "S11",
+        "dim": "D8",
+        "author": "na",
+        "author_af": false,
+        "judge": "na",
+        "check": null,
+        "combined": "na"
+      },
+      {
+        "sid": "S12",
+        "dim": "D2",
+        "author": "pass",
+        "author_af": false,
+        "judge": "fail",
+        "check": "fail",
+        "combined": "fail"
+      },
+      {
+        "sid": "S12",
+        "dim": "D3",
+        "author": "pass",
+        "author_af": false,
+        "judge": "fail",
+        "check": null,
+        "combined": "fail"
+      },
+      {
+        "sid": "S12",
+        "dim": "D6",
+        "author": "pass",
+        "author_af": false,
+        "judge": "pass",
+        "check": null,
+        "combined": "pass"
+      },
+      {
+        "sid": "S12",
+        "dim": "D7",
+        "author": "pass",
+        "author_af": false,
+        "judge": "pass",
+        "check": null,
+        "combined": "pass"
+      },
+      {
+        "sid": "S12",
+        "dim": "D8",
+        "author": "na",
+        "author_af": false,
+        "judge": "partial",
+        "check": null,
+        "combined": "partial"
+      },
+      {
+        "sid": "S13",
+        "dim": "D2",
+        "author": "pass",
+        "author_af": false,
+        "judge": "pass",
+        "check": null,
+        "combined": "pass"
+      },
+      {
+        "sid": "S13",
+        "dim": "D3",
+        "author": "pass",
+        "author_af": false,
+        "judge": "pass",
+        "check": null,
+        "combined": "pass"
+      },
+      {
+        "sid": "S13",
+        "dim": "D6",
+        "author": "pass",
+        "author_af": false,
+        "judge": "pass",
+        "check": null,
+        "combined": "pass"
+      },
+      {
+        "sid": "S13",
+        "dim": "D7",
+        "author": "pass",
+        "author_af": false,
+        "judge": "pass",
+        "check": null,
+        "combined": "pass"
+      },
+      {
+        "sid": "S13",
+        "dim": "D8",
+        "author": "na",
+        "author_af": false,
+        "judge": "na",
+        "check": null,
+        "combined": "na"
+      },
+      {
+        "sid": "S14",
+        "dim": "D2",
+        "author": "fail",
+        "author_af": false,
+        "judge": "fail",
+        "check": "fail",
+        "combined": "fail"
+      },
+      {
+        "sid": "S14",
+        "dim": "D3",
+        "author": "partial",
+        "author_af": false,
+        "judge": "fail",
+        "check": null,
+        "combined": "fail"
+      },
+      {
+        "sid": "S14",
+        "dim": "D6",
+        "author": "pass",
+        "author_af": false,
+        "judge": "pass",
+        "check": null,
+        "combined": "pass"
+      },
+      {
+        "sid": "S14",
+        "dim": "D7",
+        "author": "pass",
+        "author_af": false,
+        "judge": "pass",
+        "check": null,
+        "combined": "pass"
+      },
+      {
+        "sid": "S14",
+        "dim": "D8",
+        "author": "na",
+        "author_af": false,
+        "judge": "na",
+        "check": null,
+        "combined": "na"
+      },
+      {
+        "sid": "S15",
+        "dim": "D2",
+        "author": "fail",
+        "author_af": false,
+        "judge": "fail",
+        "check": "fail",
+        "combined": "fail"
+      },
+      {
+        "sid": "S15",
+        "dim": "D3",
+        "author": "pass",
+        "author_af": false,
+        "judge": "pass",
+        "check": null,
+        "combined": "pass"
+      },
+      {
+        "sid": "S15",
+        "dim": "D6",
+        "author": "pass",
+        "author_af": false,
+        "judge": "pass",
+        "check": null,
+        "combined": "pass"
+      },
+      {
+        "sid": "S15",
+        "dim": "D7",
+        "author": "pass",
+        "author_af": false,
+        "judge": "fail",
+        "check": null,
+        "combined": "fail"
+      },
+      {
+        "sid": "S15",
+        "dim": "D8",
+        "author": "na",
+        "author_af": false,
+        "judge": "na",
+        "check": null,
+        "combined": "na"
+      },
+      {
+        "sid": "S16",
+        "dim": "D2",
+        "author": "fail",
+        "author_af": false,
+        "judge": "fail",
+        "check": "fail",
+        "combined": "fail"
+      },
+      {
+        "sid": "S16",
+        "dim": "D3",
+        "author": "pass",
+        "author_af": false,
+        "judge": "pass",
+        "check": null,
+        "combined": "pass"
+      },
+      {
+        "sid": "S16",
+        "dim": "D6",
+        "author": "pass",
+        "author_af": false,
+        "judge": "pass",
+        "check": null,
+        "combined": "pass"
+      },
+      {
+        "sid": "S16",
+        "dim": "D7",
+        "author": "pass",
+        "author_af": false,
+        "judge": "pass",
+        "check": null,
+        "combined": "pass"
+      },
+      {
+        "sid": "S16",
+        "dim": "D8",
+        "author": "na",
+        "author_af": false,
+        "judge": "na",
+        "check": null,
+        "combined": "na"
+      },
+      {
+        "sid": "S17",
+        "dim": "D2",
+        "author": "fail",
+        "author_af": false,
+        "judge": "fail",
+        "check": "fail",
+        "combined": "fail"
+      },
+      {
+        "sid": "S17",
+        "dim": "D3",
+        "author": "pass",
+        "author_af": false,
+        "judge": "pass",
+        "check": null,
+        "combined": "pass"
+      },
+      {
+        "sid": "S17",
+        "dim": "D6",
+        "author": "pass",
+        "author_af": false,
+        "judge": "pass",
+        "check": null,
+        "combined": "pass"
+      },
+      {
+        "sid": "S17",
+        "dim": "D7",
+        "author": "pass",
+        "author_af": false,
+        "judge": "pass",
+        "check": null,
+        "combined": "pass"
+      },
+      {
+        "sid": "S17",
+        "dim": "D8",
+        "author": "na",
+        "author_af": false,
+        "judge": "na",
+        "check": null,
+        "combined": "na"
+      },
+      {
+        "sid": "S18",
+        "dim": "D2",
+        "author": "pass",
+        "author_af": false,
+        "judge": "fail",
+        "check": null,
+        "combined": "fail"
+      },
+      {
+        "sid": "S18",
+        "dim": "D3",
+        "author": "pass",
+        "author_af": false,
+        "judge": "pass",
+        "check": null,
+        "combined": "pass"
+      },
+      {
+        "sid": "S18",
+        "dim": "D6",
+        "author": "fail",
+        "author_af": false,
+        "judge": "fail",
+        "check": null,
+        "combined": "fail"
+      },
+      {
+        "sid": "S18",
+        "dim": "D7",
+        "author": "pass",
+        "author_af": false,
+        "judge": "pass",
+        "check": null,
+        "combined": "pass"
+      },
+      {
+        "sid": "S18",
+        "dim": "D8",
+        "author": "na",
+        "author_af": false,
+        "judge": "na",
+        "check": null,
+        "combined": "na"
+      },
+      {
+        "sid": "A5",
+        "dim": "D2",
+        "author": "fail",
+        "author_af": false,
+        "judge": "fail",
+        "check": "fail",
+        "combined": "fail"
+      },
+      {
+        "sid": "A5",
+        "dim": "D3",
+        "author": "pass",
+        "author_af": false,
+        "judge": "pass",
+        "check": null,
+        "combined": "pass"
+      },
+      {
+        "sid": "A5",
+        "dim": "D6",
+        "author": "pass",
+        "author_af": false,
+        "judge": "pass",
+        "check": null,
+        "combined": "pass"
+      },
+      {
+        "sid": "A5",
+        "dim": "D7",
+        "author": "pass",
+        "author_af": false,
+        "judge": "pass",
+        "check": null,
+        "combined": "pass"
+      },
+      {
+        "sid": "A5",
+        "dim": "D8",
+        "author": "na",
+        "author_af": false,
+        "judge": "partial",
+        "check": null,
+        "combined": "partial"
+      },
+      {
+        "sid": "B6",
+        "dim": "D2",
+        "author": "fail",
+        "author_af": false,
+        "judge": "fail",
+        "check": "fail",
+        "combined": "fail"
+      },
+      {
+        "sid": "B6",
+        "dim": "D3",
+        "author": "pass",
+        "author_af": false,
+        "judge": "pass",
+        "check": null,
+        "combined": "pass"
+      },
+      {
+        "sid": "B6",
+        "dim": "D6",
+        "author": "pass",
+        "author_af": false,
+        "judge": "pass",
+        "check": null,
+        "combined": "pass"
+      },
+      {
+        "sid": "B6",
+        "dim": "D7",
+        "author": "pass",
+        "author_af": false,
+        "judge": "pass",
+        "check": "fail",
+        "combined": "fail"
+      },
+      {
+        "sid": "B6",
+        "dim": "D8",
+        "author": "na",
+        "author_af": false,
+        "judge": "na",
+        "check": null,
+        "combined": "na"
+      },
+      {
+        "sid": "C7",
+        "dim": "D2",
+        "author": "fail",
+        "author_af": false,
+        "judge": "fail",
+        "check": "fail",
+        "combined": "fail"
+      },
+      {
+        "sid": "C7",
+        "dim": "D3",
+        "author": "pass",
+        "author_af": false,
+        "judge": "pass",
+        "check": null,
+        "combined": "pass"
+      },
+      {
+        "sid": "C7",
+        "dim": "D6",
+        "author": "na",
+        "author_af": false,
+        "judge": "pass",
+        "check": null,
+        "combined": "pass"
+      },
+      {
+        "sid": "C7",
+        "dim": "D7",
+        "author": "pass",
+        "author_af": false,
+        "judge": "pass",
+        "check": null,
+        "combined": "pass"
+      },
+      {
+        "sid": "C7",
+        "dim": "D8",
+        "author": "na",
+        "author_af": false,
+        "judge": "na",
+        "check": null,
+        "combined": "na"
+      }
+    ]
+  ]
+}

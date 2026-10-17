@@ -11,7 +11,19 @@
                                       judge rules (structure matching is not code's job)
 
 A check only ever decides a FAILURE. No finding means "no decision" — the
-dimension goes to the judge — never "pass". Like the W4 scorers, results carry
+dimension goes to the judge — never "pass".
+
+Checks v2 (17 Oct 2026, both found by the W5 calibration, both bugs against
+the written rubric rather than judgement calls; disclosed in the ADR-009 W5
+build record):
+  - added_year: a 4-digit year the notes give as the 2-digit year of a date
+    (26/04/26 -> 2026) is documented, not added.
+  - allergy: an inversion is judged per PART, not per line. A part that says
+    NKDA is an inversion only if none of its allergy statements names a
+    documented allergen or states a conflict ("no conflicts" does not count).
+    v1 read a flagged conflict block line by line and failed the correct
+    behaviour. Narrowing a fail-deciding check can only hand the item to the
+    judge; it can never produce a pass. Like the W4 scorers, results carry
 labels, parts, character spans into the output and short fixed tokens (a year, a
 side) — never note text or output sentences; a report renders spans for review.
 """
@@ -25,7 +37,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import run_cold_eval as rce  # noqa: E402
 
-CHECKS_VERSION = 1
+CHECKS_VERSION = 2
 
 # ---------------------------------------------------------------------------
 # Parts
@@ -68,8 +80,20 @@ def _in_digit_run(text: str, start: int, end: int) -> bool:
     return bool(re.fullmatch(r"\d[\s-]", before) or re.fullmatch(r"[\s-]\d", after))
 
 
+_SHORT_YEAR_DATE = re.compile(r"(?<!\d)\d{1,2}[/.-]\d{1,2}[/.-](\d{2})(?!\d)")
+
+
+def documented_years(notes: str) -> set[str]:
+    """4-digit years the notes give: written in full, or as the 2-digit year of a
+    date (26/04/26 -> 1926 and 2026). A bare 2-digit number is not a year."""
+    years = set(_YEAR.findall(notes))
+    for yy in _SHORT_YEAR_DATE.findall(notes):
+        years |= {"19" + yy, "20" + yy}
+    return years
+
+
 def added_years(notes: str, output: str, parts: dict) -> list[dict]:
-    in_notes = set(_YEAR.findall(notes))
+    in_notes = documented_years(notes)
     found = []
     for m in _YEAR.finditer(output):
         if m.group() in in_notes or _in_digit_run(output, m.start(), m.end()):
@@ -128,6 +152,12 @@ _NOT_ALLERGENS = {"drug", "known", "allergies", "allergy", "food", "documented",
 _UNDOCUMENTED = re.compile(r"not\s+documented|not\s+recorded|unknown|not\s+stated|to\s+be\s+confirmed", re.I)
 _HEADING_ONLY = re.compile(r"^[\s#*>|-]*allerg(?:y|ies)(?:\s*status)?[\s:*|-]*$", re.I)
 _CONFLICT = re.compile(r"conflict|discrepan|inconsisten|contradict|differ", re.I)
+_NO_CONFLICT = re.compile(r"\bno\s+(?:\w+\s+){0,2}?(?:conflict|discrepan|inconsisten|contradict|differ)\w*", re.I)
+
+
+def _states_conflict(text: str) -> bool:
+    """'Conflicting allergy records' counts; 'no conflicts' does not."""
+    return bool(_CONFLICT.search(_NO_CONFLICT.sub(" ", text)))
 
 
 def named_allergens(text: str) -> set[str]:
@@ -176,12 +206,15 @@ def allergy(notes: str, output: str, parts: dict) -> list[dict]:
     st = allergy_status(notes)
     if not st["nkda"] and not st["allergens"]:
         return []
+    statements = [(s, e, t, _part_of(s, parts)) for s, e, t in _statements(output)]
+    # parts whose allergy statements show a documented allergen or a conflict
+    shown = {part for _, _, t, part in statements
+             if named_allergens(t) & st["allergens"] or {a for a in st["allergens"] if a in t.lower()}
+             or _states_conflict(t)}
     found = []
-    for s, e, text in _statements(output):
-        low = text.lower()
+    for s, e, text, part in statements:
         says_nkda = bool(_NKDA.search(text))
-        names = {a for a in st["allergens"] if a in low}
-        if st["allergens"] and says_nkda and not names and not _CONFLICT.search(text):
+        if st["allergens"] and says_nkda and part not in shown:
             found.append(_finding("allergy", "documented_allergy_shown_as_nkda", s, e, parts))
         elif (not st["allergens"] and st["nkda"] and not says_nkda
               and not _UNDOCUMENTED.search(text) and named_allergens(text)):

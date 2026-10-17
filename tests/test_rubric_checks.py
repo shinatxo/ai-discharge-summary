@@ -165,3 +165,59 @@ def test_results_carry_no_output_or_note_text():
     for fragment in ("Admitted", "penicillin", "Jeśli", "knee"):
         assert fragment not in text
     assert set(r) == {"checks_version", "parts_found", "D2", "D7", "flags"}
+
+
+# --- checks v2 (found by the W5 calibration) ------------------------------------
+def test_checks_version_is_2():
+    assert rc.run_checks(NOTES_NKDA, doc())["checks_version"] == 2
+
+
+def test_two_digit_year_of_a_note_date_written_in_full_is_not_added():
+    notes = "Day 1 (26/04/26) admitted.\nDay 3 (28.04.26) discharged."
+    r = rc.run_checks(notes, doc(a="Admitted 26/04/2026. Discharged 28/04/2026."))
+    assert r["D2"]["findings"] == []
+
+
+def test_two_digit_date_year_does_not_license_another_year():
+    r = rc.run_checks("Day 1 (26/04/26) admitted.", doc(a="Admitted 26/04/2025."))
+    assert [f["token"] for f in r["D2"]["findings"]] == ["2025"]
+
+
+def test_a_bare_two_digit_number_is_not_a_year():
+    r = rc.run_checks("Day 1 (26/04) admitted, aged 26.", doc(a="Admitted 26/04/2026."))
+    assert [f["token"] for f in r["D2"]["findings"]] == ["2026"]
+
+
+CONFLICT_BLOCK = ("ALLERGIES\nConflicting allergy information - clinician to clarify:\n"
+                  "  Day 1 notes record NKDA.\n  Day 2 records a latex allergy.\n"
+                  "  Do not assume NKDA.")
+
+
+@pytest.mark.parametrize("a", [CONFLICT_BLOCK,
+                               CONFLICT_BLOCK.replace("clarify:\n", "clarify:\n\n"),
+                               "Reconcile the allergy record (NKDA vs\n  patient-reported latex allergy)."])
+def test_a_part_that_shows_the_allergy_or_a_conflict_is_not_an_inversion(a):
+    assert rc.run_checks(NOTES_ALLERGY, doc(a=a))["D7"]["findings"] == []
+
+
+def test_a_conflict_outside_an_allergy_statement_does_not_count():
+    out = doc(a="Medication history: records conflict on dose.\n\nAllergies: NKDA")
+    assert reasons(rc.run_checks(NOTES_ALLERGY, out)["D7"]["findings"]) == ["documented_allergy_shown_as_nkda"]
+
+
+def test_conflict_in_part_a_does_not_cover_part_c():
+    out = doc(a="Allergies: conflicting records - confirm.", c="You have no known allergies.")
+    f = rc.run_checks(NOTES_ALLERGY, out)["D7"]["findings"]
+    assert reasons(f) == ["documented_allergy_shown_as_nkda"] and f[0]["part"] == "C"
+
+
+@pytest.mark.parametrize("a", ["Allergies: NKDA. No conflicts in the record.",
+                               "Allergies: NKDA\nNo allergy discrepancy found."])
+def test_no_conflict_is_not_a_stated_conflict(a):
+    assert reasons(rc.run_checks(NOTES_ALLERGY, doc(a=a))["D7"]["findings"]) == ["documented_allergy_shown_as_nkda"]
+
+
+def test_allergen_named_elsewhere_in_the_paragraph_does_not_excuse_nkda():
+    notes = "Day 1 NKDA on clerking.\nDay 2 nursing note: penicillin allergy, rash."
+    out = doc(a="Allergies: NKDA\nAntibiotics: penicillin V 500 mg QDS")
+    assert reasons(rc.run_checks(notes, out)["D7"]["findings"]) == ["documented_allergy_shown_as_nkda"]

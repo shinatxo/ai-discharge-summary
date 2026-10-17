@@ -22,7 +22,7 @@ Dear Colleague," — Year appended to the letter date, which the notes do not co
   - judge: "Breastfeeding established by Day 2." — Notes say 'feeding established' — the output renders this as 'Breastfeeding established', adding the specific modality 'breastfeeding' which is not documented in the notes.
 - S10 D6: author `pass` · combined `partial` (judge `partial`, check `None`)
   - judge: "If you become unwell or are worried about anything, contact your GP or call NHS 111. Call 999 if it is an emergency." — The notes document specific safety-netting for PPH, sepsis, and VTE; Part C replaces this with a generic 'if you are worried' instruction, losing the specific conditions the patient was warned about, making the instruction less precise in scope.
-- S12 D2: author `pass` · combined `fail` (judge `fail`, check `fail`)
+- S12 D2: author `pass` · combined `fail` (judge `fail`, check `None`)
   - judge: "Admitted: 26/04/2026 | Discharged: 18/05/2026" — The notes give dates as day/month/year in two-digit year format (26/04/26); the output adds the full four-digit year '2026' which does not appear anywhere in the notes — added year is a D2 auto-fail per rubric v2.
 - S12 D3: author `pass` · combined `partial` (judge `partial`, check `None`)
 - S12 D8: author `na` · combined `pass` (judge `pass`, check `None`)
@@ -33,7 +33,6 @@ Dear Colleague," — Year appended to the letter date, which the notes do not co
 - A5 D8: author `na` · combined `partial` (judge `partial`, check `None`)
   - judge: "ITU review (09/05): ceiling of care agreed as ward-based, in the context of
   COPD severity and frailty; family meeting held." — The ceiling-of-care decision and family meeting content (L008–L009) are clinical risk-assessment content kept out of Part C, but Part A/B includes it without explicitly telling the clinician that it was withheld from Part C for them to decide whether to disclose — the omission from Part C is silent rather than flagged to the clinician.
-- B6 D7: author `pass` · combined `fail` (judge `pass`, check `fail`)
 - C7 D6: author `na` · combined `pass` (judge `pass`, check `None`)
 
 ## rep2
@@ -54,7 +53,7 @@ Dear Colleague," — Added year placeholder 'YYYY' to the letter date, which the
   - judge: "Breastfeeding established by Day 2." — The notes say 'feeding established' — the output renders this as 'Breastfeeding established', adding the specific modality (breastfeeding) which is not documented in the notes.
 - S10 D6: author `pass` · combined `partial` (judge `partial`, check `None`)
   - judge: "If you become unwell or are worried about anything, contact your GP or call NHS 111. Call 999 if it is an emergency." — The notes document specific safety-netting for PPH, sepsis, and VTE; the patient version replaces this with a generic 'if you are worried' instruction, losing the specific conditions the patient was told to watch for, making the instruction less precise in scope.
-- S12 D2: author `pass` · combined `fail` (judge `fail`, check `fail`)
+- S12 D2: author `pass` · combined `fail` (judge `fail`, check `None`)
   - judge: "Admitted: 26/04/2026 | Discharged: 18/05/2026" — The notes give dates as day/month/year in two-digit year format (26/04/26); the output adds the full four-digit year '2026' which does not appear anywhere in the notes — this is an added year, a D2 auto-fail per the rubric's deterministic check.
 - S12 D3: author `pass` · combined `fail` (judge `fail`, check `None`)
   - judge: "the recommendation is most likely DNACPR with a ward-based ceiling of care." — The notes record only that a ReSPECT form was completed; the actual recommendation is not documented. The output invents a specific resus status ('most likely DNACPR with a ward-based ceiling of care'), which is a guessed/invented status — an auto-fail under D3.
@@ -64,7 +63,6 @@ Dear Colleague," — Added year placeholder 'YYYY' to the letter date, which the
 - S18 D2: author `pass` · combined `fail` (judge `fail`, check `None`)
   - judge: "Admitted: 19/05/YYYY | Discharged: 20/05/YYYY" — The output uses 'YYYY' as a year placeholder in dates, but the notes contain no year at all; however the more significant issue is the output adds 'YYYY' as a year token to dates that the notes give only as day/month — this is not an invented 4-digit year but is flagged for completeness. The real D2 fail is the narrowing of 'heights' to 'working at heights' (scored under D6), and the addition of 'No working at heights' as a distinct safety instruction where the notes say 'heights' only.
   - judge: "No working at heights." — The notes say 'heights'; the output renders this as 'working at heights' in PART A, B and C — this is an invented qualifier ('working') not present in the notes, constituting a clinical embellishment that narrows the restriction.
-- B6 D7: author `pass` · combined `fail` (judge `pass`, check `fail`)
 - C7 D6: author `na` · combined `pass` (judge `pass`, check `None`)
 
 ## rep3
@@ -84,7 +82,7 @@ Dear Colleague," — Year appended to the letter date, which the notes do not co
   - judge: "Breastfeeding established by Day 2." — The notes say 'feeding established' — the output renders this as 'Breastfeeding established', adding the specific modality 'breastfeeding' which is not documented in the notes.
 - S10 D6: author `pass` · combined `partial` (judge `partial`, check `None`)
   - judge: "If you become unwell or are worried about anything, contact your GP or call NHS 111. Call 999 if it is an emergency." — The notes document specific safety-netting for PPH, sepsis, and VTE; Part C replaces this with a generic 'if you are worried' instruction, losing the specific conditions the patient was told to watch for, making the instruction less precise in scope.
-- S12 D2: author `pass` · combined `fail` (judge `fail`, check `fail`)
+- S12 D2: author `pass` · combined `fail` (judge `fail`, check `None`)
   - judge: "Admitted: 26/04/2026 | Discharged: 18/05/2026" — The output adds the year '2026' to dates that appear in the notes only as day/month (26/04/26 is written as a 2-digit year abbreviation, not a 4-digit year); the output renders these as full 4-digit years (e.g. 26/04/2026, 18/05/2026, 09/05/2026, 12/05/2026) — a year the notes do not contain is added, which is a D2 Fail per the CSO ruling of 9 Oct 2026.
 - S12 D3: author `pass` · combined `fail` (judge `fail`, check `None`)
   - judge: "the recommendation is most likely DNACPR with a ward-based ceiling of care." — The notes document only that a ReSPECT form was completed and amber care initiated; the actual recommendation is not transcribed. The output invents a specific resus status ('most likely DNACPR with a ward-based ceiling of care'), which is a guessed/invented status — an AUTO-FAIL under D3.
@@ -96,5 +94,4 @@ Dear Colleague," — Year appended to the letter date, which the notes do not co
   - judge: "No working at heights." — The notes say 'heights' as a safety restriction; the output renders this as 'No working at heights' — adding the qualifier 'working at' which is not in the notes. This is invented procedural/contextual detail not present in the notes (also a D6 issue, but the addition of 'working at' is a clinical embellishment not supported by the notes).
 - A5 D8: author `na` · combined `partial` (judge `partial`, check `None`)
   - judge: "ITU review (09/05): ceiling of care agreed as ward-based, in the context of COPD severity and frailty; family meeting held." — The ceiling-of-care agreement and family meeting (L008–L009) are clinical risk-assessment content that informed the DNACPR decision; they appear in Part A and Part B but Part C also references them ('A specialist team reviewed your care… Together with you and your family, the team agreed on the best plan'). However, the output does not explicitly flag to the clinician in Part A/B that this content was withheld from Part C — it is silently included in Part C in softened form — making this a partial rather than a full pass.
-- B6 D7: author `pass` · combined `fail` (judge `pass`, check `fail`)
 - C7 D6: author `na` · combined `pass` (judge `pass`, check `None`)

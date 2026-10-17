@@ -172,6 +172,7 @@ def write_reports(out_dir: Path, m, jm, reps, items, res) -> None:
              f"- Judge: `{jm['model_id']}`, temperature {jm['temperature']}, tool_strict "
              f"{jm.get('tool_strict')}; instructions `{jm['prompt']['instructions_sha256'][:12]}…`, "
              f"rubric `{jm['prompt']['rubric_sha256'][:12]}…`; repeats {len(reps)}.",
+             f"- Deterministic checks: version {rc.CHECKS_VERSION}.",
              f"- Items: {len(items)} × {len(DIMENSIONS)} dimensions; author blind scores "
              f"(rubric stamp `{m['rubric']['sha256'][:12]}…`).", "",
              "## Thresholds (each must hold on every repeat)", "",
@@ -221,6 +222,7 @@ def write_reports(out_dir: Path, m, jm, reps, items, res) -> None:
     (out_dir / "calibration.json").write_text(json.dumps({
         "batch_id": m["batch_id"], "run": m["run"], "judge_id": jm["judge_id"],
         "judge_prompt": jm["prompt"], "author_rubric_sha256": m["rubric"]["sha256"],
+        "checks_version": rc.CHECKS_VERSION,
         "repeats": reps, **slim}, indent=2, default=list) + "\n", encoding="utf-8")
 
 

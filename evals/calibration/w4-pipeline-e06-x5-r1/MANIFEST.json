@@ -1,0 +1,101 @@
+{
+  "sheets_version": 1,
+  "batch_id": "w4-pipeline-e06-x5",
+  "run": 1,
+  "generator": "pipeline",
+  "created_at": "2026-10-19T14:33:54+01:00",
+  "rubric": {
+    "path": "evals/EVAL_RESULTS.md",
+    "section": "## 2. Scoring rubric",
+    "sha256": "f8291ae161363ad519507e4b921828ee2c1969272229d330700b7c6ff89a0b41"
+  },
+  "corpus_sha256": "d510623686bff3fd851e69dc3943e014aad9b4aff87417fd80e030c71f604321",
+  "dimensions": [
+    "D2",
+    "D3",
+    "D6",
+    "D7",
+    "D8"
+  ],
+  "verdicts": [
+    "pass",
+    "partial",
+    "fail",
+    "na"
+  ],
+  "na_allowed": [
+    "D6",
+    "D8"
+  ],
+  "excluded": [
+    "gate result",
+    "cost",
+    "deterministic scores",
+    "judge output"
+  ],
+  "view": {
+    "name": "pipeline-steps-1-5b",
+    "version": 1
+  },
+  "sample": {
+    "rule": "one in every 3 scenarios in corpus order, starting with the first",
+    "scenarios": [
+      "S1",
+      "S4",
+      "S10",
+      "S13",
+      "S16",
+      "A5"
+    ]
+  },
+  "items": [
+    {
+      "scenario_id": "S1",
+      "generation_id": "w4-pipeline-e06-x5/r1/S1",
+      "notes_sha256": "deacfb8fe45187fb890a33b6e0c8ad2f5e6902c825879bb20931a69f80969fa3",
+      "output_sha256": "63f7c8738188fef23135af171792c0131a526e2fbc6b63cddab55fcf86d34e33",
+      "sheet": "sheets/S1.md",
+      "scores": "scores/S1.json"
+    },
+    {
+      "scenario_id": "S4",
+      "generation_id": "w4-pipeline-e06-x5/r1/S4",
+      "notes_sha256": "647dbf1787d657773d262b81e9df534fdf54b57d06d61b8fa585b26bbcd9a6cc",
+      "output_sha256": "4c18ddaef214a5324ac632b5cda11f0c110bed948054bc3b426093cff8e7ac64",
+      "sheet": "sheets/S4.md",
+      "scores": "scores/S4.json"
+    },
+    {
+      "scenario_id": "S10",
+      "generation_id": "w4-pipeline-e06-x5/r1/S10",
+      "notes_sha256": "a00b5caaa8e251a370d8136857fd8a4d7969cc70de71013d55dbd99a5fd03229",
+      "output_sha256": "702ea53c0a7c61c13cace57a1cebaf6741f8108d8dd46a76a984559ca8e9759b",
+      "sheet": "sheets/S10.md",
+      "scores": "scores/S10.json"
+    },
+    {
+      "scenario_id": "S13",
+      "generation_id": "w4-pipeline-e06-x5/r1/S13",
+      "notes_sha256": "7bdbea67d99837b5ac07d98a1dac7f07026885128b3e5d533937cc8014c86971",
+      "output_sha256": "46943876f712186143651167a1cb1d7c8c066401e91cbb38165bc30d9c0aa672",
+      "sheet": "sheets/S13.md",
+      "scores": "scores/S13.json"
+    },
+    {
+      "scenario_id": "S16",
+      "generation_id": "w4-pipeline-e06-x5/r1/S16",
+      "notes_sha256": "d762fcf2443af7c65329f6b17d603be9d58f3d3ccdc4df81ce08db03201a197e",
+      "output_sha256": "c8976f4138006b8cc6e8b06b7f782bfa7161818a7698aa886ab78a4df9466dca",
+      "sheet": "sheets/S16.md",
+      "scores": "scores/S16.json"
+    },
+    {
+      "scenario_id": "A5",
+      "generation_id": "w4-pipeline-e06-x5/r1/A5",
+      "notes_sha256": "17990ee1d94abcc513c9b663863e4a9a92ef69d1a564f1544879be8404ae7092",
+      "output_sha256": "637591eb110ea4846ffd2150ec57f3ba78e2602c815d6f57dffe01be55abfcf7",
+      "sheet": "sheets/A5.md",
+      "scores": "scores/A5.json"
+    }
+  ]
+}

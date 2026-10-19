@@ -1,0 +1,43 @@
+{
+  "sheets_version": 1,
+  "generation_id": "w4-pipeline-e06-x5/r1/S1",
+  "scenario_id": "S1",
+  "scorer": "author_blind",
+  "scored_at": "2026-10-19",
+  "dimensions": {
+    "D2": {
+      "verdict": "pass",
+      "auto_fail": false,
+      "findings": []
+    },
+    "D3": {
+      "verdict": "pass",
+      "auto_fail": false,
+      "findings": []
+    },
+    "D6": {
+      "verdict": "na",
+      "auto_fail": false,
+      "findings": []
+    },
+    "D7": {
+      "verdict": "partial",
+      "auto_fail": false,
+      "findings": [
+        {
+          "output_quote": "",
+          "note_cites": [],
+          "reason": "\"x2/7\" to me reads as two days (specifically for me this is represented as \"2/7\"); I haven't seen two weeks expressed as \"x2/7\" before but I can understand it. However, I feel like it would be unusual for a patient to have two weeks of chest pain and breathlessness and not go to the hospital?"
+        }
+      ]
+    },
+    "D8": {
+      "verdict": "na",
+      "auto_fail": false,
+      "findings": []
+    }
+  },
+  "observations": [
+    "nil"
+  ]
+}

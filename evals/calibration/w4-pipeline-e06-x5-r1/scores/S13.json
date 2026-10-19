@@ -1,0 +1,37 @@
+{
+  "sheets_version": 1,
+  "generation_id": "w4-pipeline-e06-x5/r1/S13",
+  "scenario_id": "S13",
+  "scorer": "author_blind",
+  "scored_at": "2026-10-19",
+  "dimensions": {
+    "D2": {
+      "verdict": "pass",
+      "auto_fail": false,
+      "findings": []
+    },
+    "D3": {
+      "verdict": "pass",
+      "auto_fail": false,
+      "findings": []
+    },
+    "D6": {
+      "verdict": "pass",
+      "auto_fail": false,
+      "findings": []
+    },
+    "D7": {
+      "verdict": "pass",
+      "auto_fail": false,
+      "findings": []
+    },
+    "D8": {
+      "verdict": "na",
+      "auto_fail": false,
+      "findings": []
+    }
+  },
+  "observations": [
+    "nil"
+  ]
+}

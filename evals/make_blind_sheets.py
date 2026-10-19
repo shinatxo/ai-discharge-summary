@@ -2,7 +2,13 @@
 """Blind-scoring sheets for the rubric v2 calibration (W5).
 
     python evals/make_blind_sheets.py evals/runs/w4-baseline-v1-x5 --run 1
+    python evals/make_blind_sheets.py evals/runs/w4-pipeline-e06-x5 --run 1 --every 3
     python evals/make_blind_sheets.py --check evals/calibration/w4-baseline-v1-x5-r1
+
+Pipeline records are shown through evals/pipeline_view.py — the same view the
+judge scored — so author and judge score identical text. `--every N` takes a
+sample fixed by rule before anyone looks: every Nth scenario in corpus order,
+starting with the first.
 
 Writes evals/calibration/<batch>-r<run>/:
   sheets/<ID>.md    the notes, numbered as step 1 numbers them, and the output verbatim
@@ -28,6 +34,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import gold as G  # noqa: E402
+import pipeline_view as pv  # noqa: E402
 import run_cold_eval as rce  # noqa: E402
 
 SHEETS_VERSION = 1
@@ -120,7 +127,7 @@ Not on these sheets, deliberately: {excluded}.
 
 def build(batch_dir: Path, run: int, out_dir: Path | None = None,
           corpus_path: Path = rce.DEFAULT_CORPUS_PATH,
-          rubric_path: Path = RUBRIC_PATH) -> Path:
+          rubric_path: Path = RUBRIC_PATH, every: int | None = None) -> Path:
     manifest = json.loads((batch_dir / "manifest.json").read_text(encoding="utf-8"))
     index = json.loads((batch_dir / "batch.json").read_text(encoding="utf-8"))
     batch_id = manifest["batch_id"]
@@ -132,18 +139,28 @@ def build(batch_dir: Path, run: int, out_dir: Path | None = None,
     if corpus_sha != manifest["corpus"]["sha256"]:
         raise SheetError("the corpus has changed since this batch was generated")
     by_id = {s.id: s for s in corpus}
+    sample = None
+    if every is not None:
+        if every < 1:
+            raise SheetError("--every must be at least 1")
+        sample = [s.id for i, s in enumerate(corpus) if i % every == 0]
 
     # Read and check everything before writing anything.
     items = []
     for g in index["generations"]:
-        if g["run"] != run:
+        if g["run"] != run or (sample is not None and g["scenario_id"] not in sample):
             continue
         rec = json.loads((batch_dir / g["record"]).read_text(encoding="utf-8"))
         gid, sid = rec["generation_id"], rec["scenario_id"]
-        if rec["generator"] != "v1":
-            raise SheetError(f"{gid}: blind sheets are built for v1 records only")
+        if rec["generator"] not in ("v1", "pipeline"):
+            raise SheetError(f"{gid}: unknown generator {rec['generator']!r}")
         if rec["notes_sha256"] != by_id[sid].notes_sha256:
             raise SheetError(f"{gid}: notes_sha256 does not match the corpus")
+        if rec["generator"] == "pipeline":
+            try:
+                rec = pv.judgeable(rec)
+            except pv.ViewError:
+                raise SheetError(f"{gid}: no output to score") from None
         if rec.get("error") or not rec.get("output"):
             raise SheetError(f"{gid}: no output to score")
         items.append((rec, G.line_index(by_id[sid].notes)))
@@ -171,7 +188,12 @@ def build(batch_dir: Path, run: int, out_dir: Path | None = None,
                    "sha256": rubric_sha},
         "corpus_sha256": corpus_sha, "dimensions": list(DIMENSIONS),
         "verdicts": list(VERDICTS), "na_allowed": list(NA_ALLOWED),
-        "excluded": list(EXCLUDED), "items": entries}, indent=2) + "\n", encoding="utf-8")
+        "excluded": list(EXCLUDED),
+        "view": items[0][0].get("view"),
+        "sample": None if sample is None else {
+            "rule": f"one in every {every} scenarios in corpus order, starting with the first",
+            "scenarios": [sid for sid in sample if any(r["scenario_id"] == sid for r, _ in items)]},
+        "items": entries}, indent=2) + "\n", encoding="utf-8")
     (out_dir / "README.md").write_text(README.format(
         batch_id=batch_id, run=run, rubric12=rubric_sha[:12], excluded=", ".join(EXCLUDED),
         folder=rce._rel(out_dir)), encoding="utf-8")
@@ -228,6 +250,7 @@ def main(argv=None) -> int:
     ap.add_argument("batch_dir", nargs="?", type=Path)
     ap.add_argument("--run", type=int, default=1)
     ap.add_argument("--out", type=Path)
+    ap.add_argument("--every", type=int, help="sample: every Nth scenario in corpus order")
     ap.add_argument("--check", type=Path, metavar="FOLDER")
     a = ap.parse_args(argv)
     try:
@@ -240,7 +263,7 @@ def main(argv=None) -> int:
             return 0 if not problems else 1
         if a.batch_dir is None:
             ap.error("pass a batch folder, or --check FOLDER")
-        out = build(a.batch_dir, a.run, a.out)
+        out = build(a.batch_dir, a.run, a.out, every=a.every)
         n = len(json.loads((out / "MANIFEST.json").read_text(encoding="utf-8"))["items"])
         print(f"{n} blind sheets -> {rce._rel(out)}")
         return 0

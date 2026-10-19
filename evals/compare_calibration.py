@@ -34,6 +34,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import make_blind_sheets as mbs  # noqa: E402
+import pipeline_view as pv  # noqa: E402
 import rubric_checks as rc  # noqa: E402
 import run_cold_eval as rce  # noqa: E402
 from score_batch import wilson  # noqa: E402
@@ -98,6 +99,8 @@ def load(cal_dir: Path, judge_dir: Path, batch_dir: Path | None = None,
         sid, run = it["scenario_id"], m["run"]
         author = json.loads((cal_dir / it["scores"]).read_text(encoding="utf-8"))
         rec = json.loads((batch_dir / f"r{run}" / f"{sid}.json").read_text(encoding="utf-8"))
+        if rec.get("generator") == "pipeline":
+            rec = pv.judgeable(rec)            # the view the author and the judge both scored
         if rce.sha256_text(rec["output"]) != it["output_sha256"]:
             raise CalibrationError(f"{sid}: output changed since the blind sheets were made")
         judged = []

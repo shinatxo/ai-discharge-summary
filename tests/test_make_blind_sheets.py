@@ -104,7 +104,7 @@ def test_refuses_an_existing_folder(tmp_path):
 @pytest.mark.parametrize("bad, match", [
     ({"corpus_sha": "0" * 64}, "corpus has changed"),
     ({"notes_sha256": "0" * 64}, "notes_sha256"),
-    ({"generator": "pipeline"}, "v1 records only"),
+    ({"generator": "other"}, "unknown generator"),
     ({"output": None}, "no output"),
 ])
 def test_refuses_and_writes_nothing(tmp_path, bad, match):
@@ -166,3 +166,48 @@ def test_console_never_prints_note_text(tmp_path, capsys):
         for ln in BY_ID[sid].notes.splitlines():
             if len(ln.strip()) >= 15:
                 assert ln.strip() not in text
+
+
+# --- pipeline records and the fixed-rule sample ------------------------------------
+def _pipeline(sid, **over):
+    sys.path.insert(0, str(ROOT / "tests"))
+    from test_pipeline_view import record
+    rec = record()
+    rec.update(generation_id=f"t/r1/{sid}", scenario_id=sid, run=1,
+               notes_sha256=BY_ID[sid].notes_sha256, cost_usd_est=float(SENTINELS[2]))
+    rec.update(over)
+    return rec
+
+
+def test_pipeline_sheet_shows_the_view_the_judge_scored(tmp_path):
+    import pipeline_view as pv
+    rec = _pipeline("S1")
+    out = mbs.build(make_batch(tmp_path, [rec]), 1, tmp_path / "cal")
+    sheet = (out / "sheets" / "S1.md").read_text(encoding="utf-8")
+    assert pv.render(rec) in sheet
+    m = json.loads((out / "MANIFEST.json").read_text())
+    assert m["items"][0]["output_sha256"] == rce.sha256_text(pv.render(rec))
+    assert m["view"] == {"name": pv.VIEW_NAME, "version": pv.VIEW_VERSION}
+    assert SENTINELS[2] not in _all_written(out)
+
+
+def test_pipeline_record_that_stopped_early_is_refused(tmp_path):
+    b = make_batch(tmp_path, [_pipeline("S1", failed_step="extract_facts")])
+    with pytest.raises(mbs.SheetError, match="no output to score"):
+        mbs.build(b, 1, tmp_path / "cal")
+    assert not (tmp_path / "cal").exists()
+
+
+def test_every_n_is_a_fixed_rule_on_corpus_order(tmp_path):
+    ids = [s.id for s in CORPUS]
+    out = mbs.build(make_batch(tmp_path, [_record(s) for s in ids]), 1, tmp_path / "cal", every=3)
+    m = json.loads((out / "MANIFEST.json").read_text())
+    assert m["sample"]["scenarios"] == ids[::3]
+    assert [i["scenario_id"] for i in m["items"]] == ids[::3]
+    assert sorted(p.stem for p in (out / "sheets").iterdir()) == sorted(ids[::3])
+
+
+def test_no_sample_means_every_item_and_no_sample_record(tmp_path):
+    out = mbs.build(make_batch(tmp_path, [_record(s) for s in IDS]), 1, tmp_path / "cal")
+    m = json.loads((out / "MANIFEST.json").read_text())
+    assert m["sample"] is None and m["view"] is None and len(m["items"]) == 2

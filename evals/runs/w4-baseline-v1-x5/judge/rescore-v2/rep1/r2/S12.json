@@ -1,0 +1,201 @@
+{
+  "judge_version": 1,
+  "judge_id": "rescore-v2",
+  "repeat": 1,
+  "generation_id": "w4-baseline-v1-x5/r2/S12",
+  "scenario_id": "S12",
+  "run": 2,
+  "notes_sha256": "143db4ec88bb969841da8f67ae4e9cff993d97483c923700d3c320033a67f923",
+  "output_sha256": "2d9464181d1adb2fb7c066d04c201a83b441f628159cb2cfec0ce4aef886117b",
+  "view": null,
+  "model_id": "anthropic.claude-sonnet-4-6",
+  "region": "eu-west-2",
+  "temperature": 0.0,
+  "tool_strict": false,
+  "prompt": {
+    "path": "evals/judge/judge_prompt.md",
+    "file_sha256": "03905869e7beb80569e68a60d58cfab24fb1a70696a8829f7c53f83d005e8383",
+    "instructions_sha256": "7b251e319c0ea1c2f63cf2bb70c0df438e035807bb4db909ac0f2a071c88310f",
+    "rubric_sha256": "f8291ae161363ad519507e4b921828ee2c1969272229d330700b7c6ff89a0b41",
+    "system_sha256": "696c133b15c855845b776c1bb4fbe8dfd298e37f3f50daf90e6e136d5c394f0a"
+  },
+  "started_at": "2026-10-17T10:17:52+01:00",
+  "call": {
+    "stop_reason": "tool_use",
+    "throttle_retries": 0,
+    "latency_s": 10.213,
+    "input_tokens": 5762,
+    "output_tokens": 867,
+    "cache_read_tokens": 6108,
+    "cache_write_tokens": 0
+  },
+  "judgement": {
+    "dimensions": {
+      "D2": {
+        "verdict": "fail",
+        "auto_fail": false,
+        "findings": [
+          {
+            "output_quote": "Admitted: 26/04/2026 | Discharged: 18/05/2026",
+            "note_cites": [
+              {
+                "lines": [
+                  "L001"
+                ],
+                "quote": "(Day 1 - 26/04/26)"
+              }
+            ],
+            "reason": "The output adds the year '2026' to the admission date; the notes give only '26/04/26' without a four-digit year \u2014 an added year is a D2 Fail per the rubric's deterministic check."
+          },
+          {
+            "output_quote": "Both were found on a scan on 12 May 2026.",
+            "note_cites": [
+              {
+                "lines": [
+                  "L031",
+                  "L032",
+                  "L033",
+                  "L034"
+                ],
+                "quote": "(12/05/26)"
+              }
+            ],
+            "reason": "The output adds the year '2026' to the 12/05 date; the notes give only '12/05/26' without a four-digit year \u2014 added year is a D2 Fail."
+          },
+          {
+            "output_quote": "recommendation is most likely DNACPR with a ward-based ceiling of care",
+            "note_cites": [
+              {
+                "lines": [
+                  "L029"
+                ],
+                "quote": "RESPECT form"
+              }
+            ],
+            "reason": "The notes record only that a ReSPECT form was completed; the output invents a specific recommendation ('DNACPR with a ward-based ceiling of care') not documented anywhere in the notes \u2014 this is an invented clinical fact (resus recommendation)."
+          }
+        ]
+      },
+      "D3": {
+        "verdict": "partial",
+        "auto_fail": false,
+        "findings": [
+          {
+            "output_quote": "A ReSPECT form was completed on 09/05/2026 in the context of acute clinical deterioration (NEWS 9, possible aspiration pneumonia/sepsis) and a documented discussion with the patient's son, Steven, who was informed that she may not survive this admission. The Amber care pathway was also initiated at this time.\n\nThe explicit recommendation recorded on the ReSPECT form is **not transcribed** in these ward notes.",
+            "note_cites": [
+              {
+                "lines": [
+                  "L028",
+                  "L029"
+                ],
+                "quote": "Amber care\nRESPECT form"
+              }
+            ],
+            "reason": "The notes do not document a prior resus status, so a change cannot be confirmed; the output flags '\u26a0 CHANGED DURING ADMISSION \u26a0' without evidence of a prior status to compare against, making the change flag unsupported \u2014 the correct output would be 'Not documented' for prior status and note the ReSPECT form was completed, without asserting a change."
+          }
+        ]
+      },
+      "D6": {
+        "verdict": "pass",
+        "auto_fail": false,
+        "findings": []
+      },
+      "D7": {
+        "verdict": "pass",
+        "auto_fail": false,
+        "findings": []
+      },
+      "D8": {
+        "verdict": "na",
+        "auto_fail": false,
+        "findings": []
+      }
+    }
+  },
+  "verified": {
+    "dimensions": {
+      "D2": {
+        "verdict": "fail",
+        "auto_fail": false,
+        "findings": [
+          {
+            "output_quote": "Admitted: 26/04/2026 | Discharged: 18/05/2026",
+            "note_cites": [
+              {
+                "lines": [
+                  "L001"
+                ],
+                "quote": "(Day 1 - 26/04/26)"
+              }
+            ],
+            "reason": "The output adds the year '2026' to the admission date; the notes give only '26/04/26' without a four-digit year \u2014 an added year is a D2 Fail per the rubric's deterministic check."
+          }
+        ],
+        "discarded": [
+          {
+            "index": 1,
+            "reason": "note_cite_cite_too_many_lines"
+          },
+          {
+            "index": 2,
+            "reason": "output_quote_not_found"
+          }
+        ],
+        "evidence_ok": true
+      },
+      "D3": {
+        "verdict": "partial",
+        "auto_fail": false,
+        "findings": [],
+        "discarded": [
+          {
+            "index": 0,
+            "reason": "output_quote_too_long"
+          }
+        ],
+        "evidence_ok": false
+      },
+      "D6": {
+        "verdict": "pass",
+        "auto_fail": false,
+        "findings": [],
+        "discarded": [],
+        "evidence_ok": true
+      },
+      "D7": {
+        "verdict": "pass",
+        "auto_fail": false,
+        "findings": [],
+        "discarded": [],
+        "evidence_ok": true
+      },
+      "D8": {
+        "verdict": "na",
+        "auto_fail": false,
+        "findings": [],
+        "discarded": [],
+        "evidence_ok": true
+      }
+    },
+    "defects": [
+      {
+        "dimension": "D2",
+        "index": 1,
+        "reason": "note_cite_cite_too_many_lines"
+      },
+      {
+        "dimension": "D2",
+        "index": 2,
+        "reason": "output_quote_not_found"
+      },
+      {
+        "dimension": "D3",
+        "index": 0,
+        "reason": "output_quote_too_long"
+      }
+    ]
+  },
+  "error": null,
+  "cost_usd_est": 0.035336,
+  "elapsed_s": 10.213
+}

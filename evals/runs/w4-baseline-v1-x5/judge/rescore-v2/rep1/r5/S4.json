@@ -1,0 +1,152 @@
+{
+  "judge_version": 1,
+  "judge_id": "rescore-v2",
+  "repeat": 1,
+  "generation_id": "w4-baseline-v1-x5/r5/S4",
+  "scenario_id": "S4",
+  "run": 5,
+  "notes_sha256": "647dbf1787d657773d262b81e9df534fdf54b57d06d61b8fa585b26bbcd9a6cc",
+  "output_sha256": "434bdf988da3f981ca891882b920002bc3b85410914ffb12de9558374fe46ecf",
+  "view": null,
+  "model_id": "anthropic.claude-sonnet-4-6",
+  "region": "eu-west-2",
+  "temperature": 0.0,
+  "tool_strict": false,
+  "prompt": {
+    "path": "evals/judge/judge_prompt.md",
+    "file_sha256": "03905869e7beb80569e68a60d58cfab24fb1a70696a8829f7c53f83d005e8383",
+    "instructions_sha256": "7b251e319c0ea1c2f63cf2bb70c0df438e035807bb4db909ac0f2a071c88310f",
+    "rubric_sha256": "f8291ae161363ad519507e4b921828ee2c1969272229d330700b7c6ff89a0b41",
+    "system_sha256": "696c133b15c855845b776c1bb4fbe8dfd298e37f3f50daf90e6e136d5c394f0a"
+  },
+  "started_at": "2026-10-17T10:19:48+01:00",
+  "call": {
+    "stop_reason": "tool_use",
+    "throttle_retries": 0,
+    "latency_s": 6.041,
+    "input_tokens": 2473,
+    "output_tokens": 636,
+    "cache_read_tokens": 6108,
+    "cache_write_tokens": 0
+  },
+  "judgement": {
+    "dimensions": {
+      "D2": {
+        "verdict": "fail",
+        "auto_fail": false,
+        "findings": [
+          {
+            "output_quote": "Admitted: 19/05/[YYYY] | Discharged: 20/05/[YYYY]",
+            "note_cites": [],
+            "reason": "The output uses a year placeholder '[YYYY]' appended to dates that the notes give only as day/month (19/05, 20/05). While '[YYYY]' is not a 4-digit year, it is an invented year-slot assertion not present in the notes. However, reviewing strictly: the notes contain no year at all, and '[YYYY]' is a placeholder rather than an asserted year. This is a borderline case \u2014 flagging as a minor non-clinical embellishment rather than an auto-fail invented year, but it does assert a year field the notes do not contain."
+          },
+          {
+            "output_quote": "Specialty: Paediatrics (inferred \u2014 not documented, confirm)",
+            "note_cites": [],
+            "reason": "The specialty 'Paediatrics' is inferred and not documented in the notes; this is an invented clinical-administrative fact, though the output does flag it as inferred."
+          }
+        ]
+      },
+      "D3": {
+        "verdict": "pass",
+        "auto_fail": false,
+        "findings": []
+      },
+      "D6": {
+        "verdict": "partial",
+        "auto_fail": false,
+        "findings": [
+          {
+            "output_quote": "The team gave you safety-net advice before you left hospital. If you are unsure what you were told, or if you have any questions, please speak to your GP or call NHS 111.",
+            "note_cites": [
+              {
+                "lines": [
+                  "L015"
+                ],
+                "quote": "Parental safety-net advice given."
+              }
+            ],
+            "reason": "The notes record that safety-net advice was given but do not specify its content; the output faithfully acknowledges this in Parts A and B, and in Part C directs parents to seek help \u2014 this is less precise but not less restrictive, so partial rather than fail."
+          }
+        ]
+      },
+      "D7": {
+        "verdict": "pass",
+        "auto_fail": false,
+        "findings": []
+      },
+      "D8": {
+        "verdict": "na",
+        "auto_fail": false,
+        "findings": []
+      }
+    }
+  },
+  "verified": {
+    "dimensions": {
+      "D2": {
+        "verdict": "fail",
+        "auto_fail": false,
+        "findings": [
+          {
+            "output_quote": "Admitted: 19/05/[YYYY] | Discharged: 20/05/[YYYY]",
+            "note_cites": [],
+            "reason": "The output uses a year placeholder '[YYYY]' appended to dates that the notes give only as day/month (19/05, 20/05). While '[YYYY]' is not a 4-digit year, it is an invented year-slot assertion not present in the notes. However, reviewing strictly: the notes contain no year at all, and '[YYYY]' is a placeholder rather than an asserted year. This is a borderline case \u2014 flagging as a minor non-clinical embellishment rather than an auto-fail invented year, but it does assert a year field the notes do not contain."
+          },
+          {
+            "output_quote": "Specialty: Paediatrics (inferred \u2014 not documented, confirm)",
+            "note_cites": [],
+            "reason": "The specialty 'Paediatrics' is inferred and not documented in the notes; this is an invented clinical-administrative fact, though the output does flag it as inferred."
+          }
+        ],
+        "discarded": [],
+        "evidence_ok": true
+      },
+      "D3": {
+        "verdict": "pass",
+        "auto_fail": false,
+        "findings": [],
+        "discarded": [],
+        "evidence_ok": true
+      },
+      "D6": {
+        "verdict": "partial",
+        "auto_fail": false,
+        "findings": [
+          {
+            "output_quote": "The team gave you safety-net advice before you left hospital. If you are unsure what you were told, or if you have any questions, please speak to your GP or call NHS 111.",
+            "note_cites": [
+              {
+                "lines": [
+                  "L015"
+                ],
+                "quote": "Parental safety-net advice given."
+              }
+            ],
+            "reason": "The notes record that safety-net advice was given but do not specify its content; the output faithfully acknowledges this in Parts A and B, and in Part C directs parents to seek help \u2014 this is less precise but not less restrictive, so partial rather than fail."
+          }
+        ],
+        "discarded": [],
+        "evidence_ok": true
+      },
+      "D7": {
+        "verdict": "pass",
+        "auto_fail": false,
+        "findings": [],
+        "discarded": [],
+        "evidence_ok": true
+      },
+      "D8": {
+        "verdict": "na",
+        "auto_fail": false,
+        "findings": [],
+        "discarded": [],
+        "evidence_ok": true
+      }
+    },
+    "defects": []
+  },
+  "error": null,
+  "cost_usd_est": 0.020671,
+  "elapsed_s": 6.041
+}

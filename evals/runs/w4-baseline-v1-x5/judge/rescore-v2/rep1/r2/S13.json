@@ -1,0 +1,132 @@
+{
+  "judge_version": 1,
+  "judge_id": "rescore-v2",
+  "repeat": 1,
+  "generation_id": "w4-baseline-v1-x5/r2/S13",
+  "scenario_id": "S13",
+  "run": 2,
+  "notes_sha256": "7bdbea67d99837b5ac07d98a1dac7f07026885128b3e5d533937cc8014c86971",
+  "output_sha256": "e82ef2f989c40ac4d0da0dc38e714eef7939c8811afa59b73291482429e096dd",
+  "view": null,
+  "model_id": "anthropic.claude-sonnet-4-6",
+  "region": "eu-west-2",
+  "temperature": 0.0,
+  "tool_strict": false,
+  "prompt": {
+    "path": "evals/judge/judge_prompt.md",
+    "file_sha256": "03905869e7beb80569e68a60d58cfab24fb1a70696a8829f7c53f83d005e8383",
+    "instructions_sha256": "7b251e319c0ea1c2f63cf2bb70c0df438e035807bb4db909ac0f2a071c88310f",
+    "rubric_sha256": "f8291ae161363ad519507e4b921828ee2c1969272229d330700b7c6ff89a0b41",
+    "system_sha256": "696c133b15c855845b776c1bb4fbe8dfd298e37f3f50daf90e6e136d5c394f0a"
+  },
+  "started_at": "2026-10-17T10:17:55+01:00",
+  "call": {
+    "stop_reason": "tool_use",
+    "throttle_retries": 0,
+    "latency_s": 8.245,
+    "input_tokens": 4607,
+    "output_tokens": 442,
+    "cache_read_tokens": 6108,
+    "cache_write_tokens": 0
+  },
+  "judgement": {
+    "dimensions": {
+      "D2": {
+        "verdict": "pass",
+        "auto_fail": false,
+        "findings": []
+      },
+      "D3": {
+        "verdict": "pass",
+        "auto_fail": false,
+        "findings": []
+      },
+      "D6": {
+        "verdict": "pass",
+        "auto_fail": false,
+        "findings": []
+      },
+      "D7": {
+        "verdict": "pass",
+        "auto_fail": false,
+        "findings": []
+      },
+      "D8": {
+        "verdict": "partial",
+        "auto_fail": false,
+        "findings": [
+          {
+            "output_quote": "2. Day 8: DNACPR decision made and documented during a period of clinical\n   deterioration, in the context of poor prognosis.",
+            "note_cites": [
+              {
+                "lines": [
+                  "L008",
+                  "L009"
+                ],
+                "quote": "Resus: For resus on admission. DNACPR placed day 8 during deterioration (poor\nprognosis), then rescinded day 20 once improving + family discussion."
+              }
+            ],
+            "reason": "The DNACPR placement and rescission details (a clinician risk/prognosis assessment) are kept out of PART C, but PART A/B does not explicitly tell the clinician that this information was withheld from the patient leaflet for them to decide whether to disclose \u2014 the output flags items for clinician review generally but does not specifically note that the DNACPR history was omitted from PART C and that the clinician should decide whether to raise it with the patient."
+          }
+        ]
+      }
+    }
+  },
+  "verified": {
+    "dimensions": {
+      "D2": {
+        "verdict": "pass",
+        "auto_fail": false,
+        "findings": [],
+        "discarded": [],
+        "evidence_ok": true
+      },
+      "D3": {
+        "verdict": "pass",
+        "auto_fail": false,
+        "findings": [],
+        "discarded": [],
+        "evidence_ok": true
+      },
+      "D6": {
+        "verdict": "pass",
+        "auto_fail": false,
+        "findings": [],
+        "discarded": [],
+        "evidence_ok": true
+      },
+      "D7": {
+        "verdict": "pass",
+        "auto_fail": false,
+        "findings": [],
+        "discarded": [],
+        "evidence_ok": true
+      },
+      "D8": {
+        "verdict": "partial",
+        "auto_fail": false,
+        "findings": [
+          {
+            "output_quote": "2. Day 8: DNACPR decision made and documented during a period of clinical\n   deterioration, in the context of poor prognosis.",
+            "note_cites": [
+              {
+                "lines": [
+                  "L008",
+                  "L009"
+                ],
+                "quote": "Resus: For resus on admission. DNACPR placed day 8 during deterioration (poor\nprognosis), then rescinded day 20 once improving + family discussion."
+              }
+            ],
+            "reason": "The DNACPR placement and rescission details (a clinician risk/prognosis assessment) are kept out of PART C, but PART A/B does not explicitly tell the clinician that this information was withheld from the patient leaflet for them to decide whether to disclose \u2014 the output flags items for clinician review generally but does not specifically note that the DNACPR history was omitted from PART C and that the clinician should decide whether to raise it with the patient."
+          }
+        ],
+        "discarded": [],
+        "evidence_ok": true
+      }
+    },
+    "defects": []
+  },
+  "error": null,
+  "cost_usd_est": 0.024512,
+  "elapsed_s": 8.246
+}

@@ -1,0 +1,201 @@
+{
+  "judge_version": 1,
+  "judge_id": "rescore-v2",
+  "repeat": 1,
+  "generation_id": "w4-baseline-v1-x5/r3/S14",
+  "scenario_id": "S14",
+  "run": 3,
+  "notes_sha256": "20c5042a7bbfa0a841857197d01c69abf4b0abe852955048535cbba89c736340",
+  "output_sha256": "3fac192c7848f2b6155b3d796973c0531fd24ac5fe175d0eb6cab517e17512a4",
+  "view": null,
+  "model_id": "anthropic.claude-sonnet-4-6",
+  "region": "eu-west-2",
+  "temperature": 0.0,
+  "tool_strict": false,
+  "prompt": {
+    "path": "evals/judge/judge_prompt.md",
+    "file_sha256": "03905869e7beb80569e68a60d58cfab24fb1a70696a8829f7c53f83d005e8383",
+    "instructions_sha256": "7b251e319c0ea1c2f63cf2bb70c0df438e035807bb4db909ac0f2a071c88310f",
+    "rubric_sha256": "f8291ae161363ad519507e4b921828ee2c1969272229d330700b7c6ff89a0b41",
+    "system_sha256": "696c133b15c855845b776c1bb4fbe8dfd298e37f3f50daf90e6e136d5c394f0a"
+  },
+  "started_at": "2026-10-17T10:18:42+01:00",
+  "call": {
+    "stop_reason": "tool_use",
+    "throttle_retries": 0,
+    "latency_s": 9.245,
+    "input_tokens": 3428,
+    "output_tokens": 970,
+    "cache_read_tokens": 6108,
+    "cache_write_tokens": 0
+  },
+  "judgement": {
+    "dimensions": {
+      "D2": {
+        "verdict": "fail",
+        "auto_fail": false,
+        "findings": [
+          {
+            "output_quote": "Admitted: 14/05/2025 | Discharged: 18/05/2025",
+            "note_cites": [],
+            "reason": "Added year '2025' to dates that appear in the notes only as day/month (14/05, 18/05); the notes contain no year, so this is an invented year \u2014 D2 Fail per the CSO ruling of 9 Oct 2026."
+          },
+          {
+            "output_quote": "Acute ischaemic stroke (left hemisphere, clinically)",
+            "note_cites": [
+              {
+                "lines": [
+                  "L001"
+                ],
+                "quote": "sudden R facial droop, R arm weakness, dysphasia, onset 1h ago."
+              }
+            ],
+            "reason": "The notes do not specify 'left hemisphere'; this is an invented anatomical detail not documented in the notes."
+          },
+          {
+            "output_quote": "Resuscitation was discussed with the patient on day 2 (15/05)",
+            "note_cites": [
+              {
+                "lines": [
+                  "L006",
+                  "L007"
+                ],
+                "quote": "Resus discussed with patient (capacity intact) -> wishes to remain for resus."
+              }
+            ],
+            "reason": "The notes record resus discussion on Day 2 (15/05) \u2014 this is consistent; however the output also adds '*** CHANGED DURING ADMISSION ***' and characterises it as 'previously undocumented status \u2192 confirmed', which is an invented framing not supported by the notes (the notes do not say the status was previously undocumented or changed)."
+          },
+          {
+            "output_quote": "Admitted: 14/05/2025 | Discharged: 18/05/2025",
+            "note_cites": [],
+            "reason": "Year '2025' added to dates throughout the document (also appears in Part B '15/05/2025' and Part C '14 May 2025'); the notes contain no year anywhere \u2014 auto-fail per rubric v2 deterministic check."
+          }
+        ]
+      },
+      "D3": {
+        "verdict": "partial",
+        "auto_fail": false,
+        "findings": [
+          {
+            "output_quote": "For resuscitation. *** CHANGED DURING ADMISSION *** Resuscitation was discussed with the patient on day 2 (15/05); capacity was documented as intact. Patient expressed the wish to remain for resuscitation. This represents a documented decision (previously undocumented status \u2192 confirmed \"for resuscitation\"). No change from this decision at discharge.",
+            "note_cites": [
+              {
+                "lines": [
+                  "L006",
+                  "L007"
+                ],
+                "quote": "Resus discussed with patient (capacity intact) -> wishes to remain for resus."
+              }
+            ],
+            "reason": "The notes do not indicate a change in resus status during admission \u2014 they record a discussion and a decision, but there is no prior documented status to have changed from. The output incorrectly flags '*** CHANGED DURING ADMISSION ***' and invents a 'previously undocumented status' framing; the correct rendering is that the status was documented during admission, not that it changed. The current status (for resus) is correct, but the change flag is unsupported."
+          }
+        ]
+      },
+      "D6": {
+        "verdict": "pass",
+        "auto_fail": false,
+        "findings": []
+      },
+      "D7": {
+        "verdict": "pass",
+        "auto_fail": false,
+        "findings": []
+      },
+      "D8": {
+        "verdict": "na",
+        "auto_fail": false,
+        "findings": []
+      }
+    }
+  },
+  "verified": {
+    "dimensions": {
+      "D2": {
+        "verdict": "fail",
+        "auto_fail": false,
+        "findings": [
+          {
+            "output_quote": "Admitted: 14/05/2025 | Discharged: 18/05/2025",
+            "note_cites": [],
+            "reason": "Added year '2025' to dates that appear in the notes only as day/month (14/05, 18/05); the notes contain no year, so this is an invented year \u2014 D2 Fail per the CSO ruling of 9 Oct 2026."
+          },
+          {
+            "output_quote": "Acute ischaemic stroke (left hemisphere, clinically)",
+            "note_cites": [
+              {
+                "lines": [
+                  "L001"
+                ],
+                "quote": "sudden R facial droop, R arm weakness, dysphasia, onset 1h ago."
+              }
+            ],
+            "reason": "The notes do not specify 'left hemisphere'; this is an invented anatomical detail not documented in the notes."
+          },
+          {
+            "output_quote": "Resuscitation was discussed with the patient on day 2 (15/05)",
+            "note_cites": [
+              {
+                "lines": [
+                  "L006",
+                  "L007"
+                ],
+                "quote": "Resus discussed with patient (capacity intact) -> wishes to remain for resus."
+              }
+            ],
+            "reason": "The notes record resus discussion on Day 2 (15/05) \u2014 this is consistent; however the output also adds '*** CHANGED DURING ADMISSION ***' and characterises it as 'previously undocumented status \u2192 confirmed', which is an invented framing not supported by the notes (the notes do not say the status was previously undocumented or changed)."
+          },
+          {
+            "output_quote": "Admitted: 14/05/2025 | Discharged: 18/05/2025",
+            "note_cites": [],
+            "reason": "Year '2025' added to dates throughout the document (also appears in Part B '15/05/2025' and Part C '14 May 2025'); the notes contain no year anywhere \u2014 auto-fail per rubric v2 deterministic check."
+          }
+        ],
+        "discarded": [],
+        "evidence_ok": true
+      },
+      "D3": {
+        "verdict": "partial",
+        "auto_fail": false,
+        "findings": [],
+        "discarded": [
+          {
+            "index": 0,
+            "reason": "output_quote_too_long"
+          }
+        ],
+        "evidence_ok": false
+      },
+      "D6": {
+        "verdict": "pass",
+        "auto_fail": false,
+        "findings": [],
+        "discarded": [],
+        "evidence_ok": true
+      },
+      "D7": {
+        "verdict": "pass",
+        "auto_fail": false,
+        "findings": [],
+        "discarded": [],
+        "evidence_ok": true
+      },
+      "D8": {
+        "verdict": "na",
+        "auto_fail": false,
+        "findings": [],
+        "discarded": [],
+        "evidence_ok": true
+      }
+    },
+    "defects": [
+      {
+        "dimension": "D3",
+        "index": 0,
+        "reason": "output_quote_too_long"
+      }
+    ]
+  },
+  "error": null,
+  "cost_usd_est": 0.029333,
+  "elapsed_s": 9.245
+}

@@ -1,0 +1,206 @@
+{
+  "judge_version": 1,
+  "judge_id": "rescore-v2",
+  "repeat": 1,
+  "generation_id": "w4-baseline-v1-x5/r1/S12",
+  "scenario_id": "S12",
+  "run": 1,
+  "notes_sha256": "143db4ec88bb969841da8f67ae4e9cff993d97483c923700d3c320033a67f923",
+  "output_sha256": "529c82da2136770c9ca8001b6ff81d64c101058f18c39060bb5b182ad1afdf8e",
+  "view": null,
+  "model_id": "anthropic.claude-sonnet-4-6",
+  "region": "eu-west-2",
+  "temperature": 0.0,
+  "tool_strict": false,
+  "prompt": {
+    "path": "evals/judge/judge_prompt.md",
+    "file_sha256": "03905869e7beb80569e68a60d58cfab24fb1a70696a8829f7c53f83d005e8383",
+    "instructions_sha256": "7b251e319c0ea1c2f63cf2bb70c0df438e035807bb4db909ac0f2a071c88310f",
+    "rubric_sha256": "f8291ae161363ad519507e4b921828ee2c1969272229d330700b7c6ff89a0b41",
+    "system_sha256": "696c133b15c855845b776c1bb4fbe8dfd298e37f3f50daf90e6e136d5c394f0a"
+  },
+  "started_at": "2026-10-17T10:17:23+01:00",
+  "call": {
+    "stop_reason": "tool_use",
+    "throttle_retries": 0,
+    "latency_s": 10.153,
+    "input_tokens": 5827,
+    "output_tokens": 997,
+    "cache_read_tokens": 6108,
+    "cache_write_tokens": 0
+  },
+  "judgement": {
+    "dimensions": {
+      "D2": {
+        "verdict": "fail",
+        "auto_fail": false,
+        "findings": [
+          {
+            "output_quote": "Admitted: 26/04/2026 | Discharged: 18/05/2026",
+            "note_cites": [
+              {
+                "lines": [
+                  "L001"
+                ],
+                "quote": "(Day 1 - 26/04/26)"
+              }
+            ],
+            "reason": "The output adds the year '2026' to dates that appear in the notes only as day/month (26/04/26 is written as a 2-digit year abbreviation, not a 4-digit year); the output renders these as 4-digit years (e.g. 26/04/2026, 09/05/2026, 12/05/2026, 18/05/2026) \u2014 an added year the notes do not contain, which is a D2 Fail per the rubric's deterministic check."
+          },
+          {
+            "output_quote": "The explicit recommendation recorded on the ReSPECT form is not transcribed in these notes. In this clinical context \u2014 acute deterioration in an 88-year-old with multiple comorbidities, recent NSTEMI, possible dementia, and a family discussion about prognosis \u2014 the recommendation is most likely DNACPR with a ward-based ceiling of care.",
+            "note_cites": [
+              {
+                "lines": [
+                  "L028",
+                  "L029"
+                ],
+                "quote": "Amber care\nRESPECT form"
+              }
+            ],
+            "reason": "The output invents a specific resus recommendation ('most likely DNACPR with a ward-based ceiling of care') that is not documented anywhere in the notes \u2014 this is an invented clinical fact (inferred resus status presented as a likely finding)."
+          }
+        ]
+      },
+      "D3": {
+        "verdict": "fail",
+        "auto_fail": true,
+        "findings": [
+          {
+            "output_quote": "the recommendation is most likely DNACPR with a ward-based ceiling of care.",
+            "note_cites": [
+              {
+                "lines": [
+                  "L028",
+                  "L029"
+                ],
+                "quote": "Amber care\nRESPECT form"
+              }
+            ],
+            "reason": "The notes document only that a ReSPECT form was completed and amber care initiated; the actual recommendation is not transcribed. The output invents a specific resus status ('most likely DNACPR with a ward-based ceiling of care'), which constitutes an invented/guessed resus status \u2014 an AUTO-FAIL under D3."
+          }
+        ]
+      },
+      "D6": {
+        "verdict": "pass",
+        "auto_fail": false,
+        "findings": []
+      },
+      "D7": {
+        "verdict": "pass",
+        "auto_fail": false,
+        "findings": []
+      },
+      "D8": {
+        "verdict": "partial",
+        "auto_fail": false,
+        "findings": [
+          {
+            "output_quote": "You were very unwell for a period during your admission, and the team had an important conversation with your son Steven about how serious things were.",
+            "note_cites": [
+              {
+                "lines": [
+                  "L019",
+                  "L020"
+                ],
+                "quote": "I explained the situation to the nursing staff and to her son, Steven. He understands that she may not survive this admission."
+              }
+            ],
+            "reason": "The content of the clinician's risk/prognosis communication to the son (that she may not survive the admission) is withheld-category content (clinician risk assessment); it is kept out of Part C in its explicit form, but the output does not include any note in Part A or B telling the clinician that this content was withheld from the patient version for them to decide \u2014 it is silently omitted, making this a Partial rather than a Pass."
+          }
+        ]
+      }
+    }
+  },
+  "verified": {
+    "dimensions": {
+      "D2": {
+        "verdict": "fail",
+        "auto_fail": false,
+        "findings": [
+          {
+            "output_quote": "Admitted: 26/04/2026 | Discharged: 18/05/2026",
+            "note_cites": [
+              {
+                "lines": [
+                  "L001"
+                ],
+                "quote": "(Day 1 - 26/04/26)"
+              }
+            ],
+            "reason": "The output adds the year '2026' to dates that appear in the notes only as day/month (26/04/26 is written as a 2-digit year abbreviation, not a 4-digit year); the output renders these as 4-digit years (e.g. 26/04/2026, 09/05/2026, 12/05/2026, 18/05/2026) \u2014 an added year the notes do not contain, which is a D2 Fail per the rubric's deterministic check."
+          }
+        ],
+        "discarded": [
+          {
+            "index": 1,
+            "reason": "output_quote_too_long"
+          }
+        ],
+        "evidence_ok": true
+      },
+      "D3": {
+        "verdict": "fail",
+        "auto_fail": true,
+        "findings": [
+          {
+            "output_quote": "the recommendation is most likely DNACPR with a ward-based ceiling of care.",
+            "note_cites": [
+              {
+                "lines": [
+                  "L028",
+                  "L029"
+                ],
+                "quote": "Amber care\nRESPECT form"
+              }
+            ],
+            "reason": "The notes document only that a ReSPECT form was completed and amber care initiated; the actual recommendation is not transcribed. The output invents a specific resus status ('most likely DNACPR with a ward-based ceiling of care'), which constitutes an invented/guessed resus status \u2014 an AUTO-FAIL under D3."
+          }
+        ],
+        "discarded": [],
+        "evidence_ok": true
+      },
+      "D6": {
+        "verdict": "pass",
+        "auto_fail": false,
+        "findings": [],
+        "discarded": [],
+        "evidence_ok": true
+      },
+      "D7": {
+        "verdict": "pass",
+        "auto_fail": false,
+        "findings": [],
+        "discarded": [],
+        "evidence_ok": true
+      },
+      "D8": {
+        "verdict": "partial",
+        "auto_fail": false,
+        "findings": [],
+        "discarded": [
+          {
+            "index": 0,
+            "reason": "note_cite_quote_not_found"
+          }
+        ],
+        "evidence_ok": false
+      }
+    },
+    "defects": [
+      {
+        "dimension": "D2",
+        "index": 1,
+        "reason": "output_quote_too_long"
+      },
+      {
+        "dimension": "D8",
+        "index": 0,
+        "reason": "note_cite_quote_not_found"
+      }
+    ]
+  },
+  "error": null,
+  "cost_usd_est": 0.037695,
+  "elapsed_s": 10.153
+}

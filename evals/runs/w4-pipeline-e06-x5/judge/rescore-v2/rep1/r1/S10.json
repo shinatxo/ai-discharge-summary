@@ -1,0 +1,133 @@
+{
+  "judge_version": 1,
+  "judge_id": "rescore-v2",
+  "repeat": 1,
+  "generation_id": "w4-pipeline-e06-x5/r1/S10",
+  "scenario_id": "S10",
+  "run": 1,
+  "notes_sha256": "a00b5caaa8e251a370d8136857fd8a4d7969cc70de71013d55dbd99a5fd03229",
+  "output_sha256": "702ea53c0a7c61c13cace57a1cebaf6741f8108d8dd46a76a984559ca8e9759b",
+  "view": {
+    "name": "pipeline-steps-1-5b",
+    "version": 1
+  },
+  "model_id": "anthropic.claude-sonnet-4-6",
+  "region": "eu-west-2",
+  "temperature": 0.0,
+  "tool_strict": false,
+  "prompt": {
+    "path": "evals/judge/judge_prompt.md",
+    "file_sha256": "03905869e7beb80569e68a60d58cfab24fb1a70696a8829f7c53f83d005e8383",
+    "instructions_sha256": "7b251e319c0ea1c2f63cf2bb70c0df438e035807bb4db909ac0f2a071c88310f",
+    "rubric_sha256": "f8291ae161363ad519507e4b921828ee2c1969272229d330700b7c6ff89a0b41",
+    "system_sha256": "696c133b15c855845b776c1bb4fbe8dfd298e37f3f50daf90e6e136d5c394f0a"
+  },
+  "started_at": "2026-10-17T10:14:17+01:00",
+  "call": {
+    "stop_reason": "tool_use",
+    "throttle_retries": 0,
+    "latency_s": 3.305,
+    "input_tokens": 1513,
+    "output_tokens": 335,
+    "cache_read_tokens": 6108,
+    "cache_write_tokens": 0
+  },
+  "judgement": {
+    "dimensions": {
+      "D2": {
+        "verdict": "pass",
+        "auto_fail": false,
+        "findings": []
+      },
+      "D3": {
+        "verdict": "pass",
+        "auto_fail": false,
+        "findings": []
+      },
+      "D6": {
+        "verdict": "partial",
+        "auto_fail": false,
+        "findings": [
+          {
+            "output_quote": "Safety-net re PPH/sepsis/VTE",
+            "note_cites": [
+              {
+                "lines": [
+                  "L010"
+                ],
+                "quote": "Safety-net re PPH/sepsis/VTE"
+              }
+            ],
+            "reason": "The safety-netting instruction is reproduced verbatim as a label/abbreviation rather than as an actionable plain-English instruction for the patient in PART C, making it less precise and less actionable than the source, though not less restrictive."
+          }
+        ]
+      },
+      "D7": {
+        "verdict": "pass",
+        "auto_fail": false,
+        "findings": []
+      },
+      "D8": {
+        "verdict": "na",
+        "auto_fail": false,
+        "findings": []
+      }
+    }
+  },
+  "verified": {
+    "dimensions": {
+      "D2": {
+        "verdict": "pass",
+        "auto_fail": false,
+        "findings": [],
+        "discarded": [],
+        "evidence_ok": true
+      },
+      "D3": {
+        "verdict": "pass",
+        "auto_fail": false,
+        "findings": [],
+        "discarded": [],
+        "evidence_ok": true
+      },
+      "D6": {
+        "verdict": "partial",
+        "auto_fail": false,
+        "findings": [
+          {
+            "output_quote": "Safety-net re PPH/sepsis/VTE",
+            "note_cites": [
+              {
+                "lines": [
+                  "L010"
+                ],
+                "quote": "Safety-net re PPH/sepsis/VTE"
+              }
+            ],
+            "reason": "The safety-netting instruction is reproduced verbatim as a label/abbreviation rather than as an actionable plain-English instruction for the patient in PART C, making it less precise and less actionable than the source, though not less restrictive."
+          }
+        ],
+        "discarded": [],
+        "evidence_ok": true
+      },
+      "D7": {
+        "verdict": "pass",
+        "auto_fail": false,
+        "findings": [],
+        "discarded": [],
+        "evidence_ok": true
+      },
+      "D8": {
+        "verdict": "na",
+        "auto_fail": false,
+        "findings": [],
+        "discarded": [],
+        "evidence_ok": true
+      }
+    },
+    "defects": []
+  },
+  "error": null,
+  "cost_usd_est": 0.012536,
+  "elapsed_s": 3.305
+}

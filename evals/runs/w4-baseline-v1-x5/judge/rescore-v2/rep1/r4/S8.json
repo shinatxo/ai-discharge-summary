@@ -1,0 +1,132 @@
+{
+  "judge_version": 1,
+  "judge_id": "rescore-v2",
+  "repeat": 1,
+  "generation_id": "w4-baseline-v1-x5/r4/S8",
+  "scenario_id": "S8",
+  "run": 4,
+  "notes_sha256": "db5dc0237ea1d82ade478142d26845b1f5fda1c9c35512621c0f5aa23a5afca6",
+  "output_sha256": "7c285aae0d2936583ecefe444f80e6b6e9e75eddf2aa336421cf2ab75e79f331",
+  "view": null,
+  "model_id": "anthropic.claude-sonnet-4-6",
+  "region": "eu-west-2",
+  "temperature": 0.0,
+  "tool_strict": false,
+  "prompt": {
+    "path": "evals/judge/judge_prompt.md",
+    "file_sha256": "03905869e7beb80569e68a60d58cfab24fb1a70696a8829f7c53f83d005e8383",
+    "instructions_sha256": "7b251e319c0ea1c2f63cf2bb70c0df438e035807bb4db909ac0f2a071c88310f",
+    "rubric_sha256": "f8291ae161363ad519507e4b921828ee2c1969272229d330700b7c6ff89a0b41",
+    "system_sha256": "696c133b15c855845b776c1bb4fbe8dfd298e37f3f50daf90e6e136d5c394f0a"
+  },
+  "started_at": "2026-10-17T10:19:05+01:00",
+  "call": {
+    "stop_reason": "tool_use",
+    "throttle_retries": 0,
+    "latency_s": 3.682,
+    "input_tokens": 3477,
+    "output_tokens": 367,
+    "cache_read_tokens": 6108,
+    "cache_write_tokens": 0
+  },
+  "judgement": {
+    "dimensions": {
+      "D2": {
+        "verdict": "pass",
+        "auto_fail": false,
+        "findings": []
+      },
+      "D3": {
+        "verdict": "pass",
+        "auto_fail": false,
+        "findings": []
+      },
+      "D6": {
+        "verdict": "partial",
+        "auto_fail": false,
+        "findings": [
+          {
+            "output_quote": "If you are unsure what you were told, please ask your midwife, health visitor, or GP to go through this with you.",
+            "note_cites": [
+              {
+                "lines": [
+                  "L012",
+                  "L013"
+                ],
+                "quote": "Safety-net advice to parents re fever/feeding/breathing."
+              }
+            ],
+            "reason": "The safety-net advice (fever, feeding, breathing) is documented as having been given to parents; the output in Part C redirects parents to ask someone else if unsure, rather than conveying the instruction with the same force \u2014 making the advice less direct, though it does name the three topics in the preceding sentence."
+          }
+        ]
+      },
+      "D7": {
+        "verdict": "pass",
+        "auto_fail": false,
+        "findings": []
+      },
+      "D8": {
+        "verdict": "na",
+        "auto_fail": false,
+        "findings": []
+      }
+    }
+  },
+  "verified": {
+    "dimensions": {
+      "D2": {
+        "verdict": "pass",
+        "auto_fail": false,
+        "findings": [],
+        "discarded": [],
+        "evidence_ok": true
+      },
+      "D3": {
+        "verdict": "pass",
+        "auto_fail": false,
+        "findings": [],
+        "discarded": [],
+        "evidence_ok": true
+      },
+      "D6": {
+        "verdict": "partial",
+        "auto_fail": false,
+        "findings": [
+          {
+            "output_quote": "If you are unsure what you were told, please ask your midwife, health visitor, or GP to go through this with you.",
+            "note_cites": [
+              {
+                "lines": [
+                  "L012",
+                  "L013"
+                ],
+                "quote": "Safety-net advice to parents re fever/feeding/breathing."
+              }
+            ],
+            "reason": "The safety-net advice (fever, feeding, breathing) is documented as having been given to parents; the output in Part C redirects parents to ask someone else if unsure, rather than conveying the instruction with the same force \u2014 making the advice less direct, though it does name the three topics in the preceding sentence."
+          }
+        ],
+        "discarded": [],
+        "evidence_ok": true
+      },
+      "D7": {
+        "verdict": "pass",
+        "auto_fail": false,
+        "findings": [],
+        "discarded": [],
+        "evidence_ok": true
+      },
+      "D8": {
+        "verdict": "na",
+        "auto_fail": false,
+        "findings": [],
+        "discarded": [],
+        "evidence_ok": true
+      }
+    },
+    "defects": []
+  },
+  "error": null,
+  "cost_usd_est": 0.019545,
+  "elapsed_s": 3.682
+}

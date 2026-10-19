@@ -1,0 +1,270 @@
+{
+  "judge_version": 1,
+  "judge_id": "rescore-v2",
+  "repeat": 1,
+  "generation_id": "w4-pipeline-e06-x5/r1/B6",
+  "scenario_id": "B6",
+  "run": 1,
+  "notes_sha256": "fa57541fe0dd7d176b5b46020f94e83903003d8ff0d88cc4443cd33468c757ae",
+  "output_sha256": "0ef1c75f048838cce745f71a0ed2e6e68fe414305be2290f561a8ab7b3fd06cb",
+  "view": {
+    "name": "pipeline-steps-1-5b",
+    "version": 1
+  },
+  "model_id": "anthropic.claude-sonnet-4-6",
+  "region": "eu-west-2",
+  "temperature": 0.0,
+  "tool_strict": false,
+  "prompt": {
+    "path": "evals/judge/judge_prompt.md",
+    "file_sha256": "03905869e7beb80569e68a60d58cfab24fb1a70696a8829f7c53f83d005e8383",
+    "instructions_sha256": "7b251e319c0ea1c2f63cf2bb70c0df438e035807bb4db909ac0f2a071c88310f",
+    "rubric_sha256": "f8291ae161363ad519507e4b921828ee2c1969272229d330700b7c6ff89a0b41",
+    "system_sha256": "696c133b15c855845b776c1bb4fbe8dfd298e37f3f50daf90e6e136d5c394f0a"
+  },
+  "started_at": "2026-10-17T10:14:28+01:00",
+  "call": {
+    "stop_reason": "tool_use",
+    "throttle_retries": 0,
+    "latency_s": 14.64,
+    "input_tokens": 1780,
+    "output_tokens": 1582,
+    "cache_read_tokens": 6108,
+    "cache_write_tokens": 0
+  },
+  "judgement": {
+    "dimensions": {
+      "D2": {
+        "verdict": "fail",
+        "auto_fail": false,
+        "findings": [
+          {
+            "output_quote": "No known drug allergies (documented on admission) [L004]",
+            "note_cites": [
+              {
+                "lines": [
+                  "L004"
+                ],
+                "quote": "Allergies: NKDA."
+              }
+            ],
+            "reason": "The output presents NKDA as a standalone allergy entry alongside the penicillin allergy, which is accurate to the notes, but the framing 'documented on admission' adds a temporal qualifier the notes do not contain \u2014 however the more significant issue is that the output lists both NKDA and penicillin allergy without flagging a conflict, which is a D7 matter. The NKDA entry itself is not hallucinated. Reviewing further for other D2 issues."
+          },
+          {
+            "output_quote": "Bisoprolol increased to 5 mg once daily [L008]",
+            "note_cites": [
+              {
+                "lines": [
+                  "L003",
+                  "L008"
+                ],
+                "quote": "bisoprolol 2.5mg OD ... Bisoprolol increased to 5mg OD."
+              }
+            ],
+            "reason": "No hallucination here \u2014 this is faithful. Reviewing the resus section for added years or invented content."
+          },
+          {
+            "output_quote": "PART B \u2014 SAFETY-NETTING FOR THE CLINICIAN (step 5b)\nIf you have been given a number to call, use that first. Otherwise, if you are worried, contact your GP or call NHS 111. Call 999 if it is an emergency.",
+            "note_cites": [],
+            "reason": "The safety-netting advice in PART B ('If you have been given a number to call\u2026') is not documented in the notes \u2014 this is invented clinical/safety-net prose not present in the source notes, constituting a minor non-clinical embellishment."
+          }
+        ]
+      },
+      "D3": {
+        "verdict": "partial",
+        "auto_fail": false,
+        "findings": [
+          {
+            "output_quote": "For resuscitation. *** CHANGED DURING ADMISSION ***\nSource: [L005\u2013L006]: \"For resus.\"; [L011\u2013L012]: \"DNACPR form completed by Dr Lowe after an overnight deterioration.\"; [L014\u2013L015]: \"Patient and family wish for full active treatment \u2014 DNACPR revoked, for resuscitation.\"",
+            "note_cites": [
+              {
+                "lines": [
+                  "L011",
+                  "L012"
+                ],
+                "quote": "DNACPR form completed by Dr Lowe after an overnight deterioration."
+              }
+            ],
+            "reason": "The change is flagged and the direction, clinician (Dr Lowe), and reason are present, but the dates of the changes (Day 3 = 15/05 for DNACPR, Day 4 = 17/05 for revocation) are not explicitly stated on their own marker lines \u2014 they are embedded in source citations rather than clearly formatted as required date fields, making the change flag less precise than the rubric requires."
+          }
+        ]
+      },
+      "D6": {
+        "verdict": "fail",
+        "auto_fail": false,
+        "findings": [
+          {
+            "output_quote": "Warfarin 5 mg once daily (doctor TTO) [L017]\n- Warfarin 4 mg once daily (pharmacy reconciliation, as per anticoagulation clinic) [L017, L018]",
+            "note_cites": [
+              {
+                "lines": [
+                  "L017",
+                  "L018"
+                ],
+                "quote": "TTO (doctor): warfarin 5mg OD. Pharmacy reconciliation note the same day: warfarin 4mg OD as per anticoagulation clinic."
+              }
+            ],
+            "reason": "The conflicting warfarin doses are faithfully reproduced and flagged \u2014 this is a pass element. However, the output does not carry any documented instruction about the target INR range (2\u20133) from the pre-admission medication context, which was a documented qualifier for warfarin use. This is a borderline D1/D6 issue but the INR target is a documented condition on the anticoagulation that is dropped."
+          },
+          {
+            "output_quote": "Documented advice: None documented",
+            "note_cites": [
+              {
+                "lines": [
+                  "L020"
+                ],
+                "quote": "GP: monitor INR and digoxin level. Cardiology 6 weeks."
+              }
+            ],
+            "reason": "The GP actions (monitor INR and digoxin level) are listed under 'GP actions' but 'Documented advice: None documented' may mislead \u2014 however the GP actions field does carry the instruction. This is not a clear D6 failure on its own."
+          }
+        ]
+      },
+      "D7": {
+        "verdict": "fail",
+        "auto_fail": true,
+        "findings": [
+          {
+            "output_quote": "No known drug allergies (documented on admission) [L004]\n- Penicillin allergy \u2013 rash as a child (patient-reported, recorded by nursing note Day 3) [L010]",
+            "note_cites": [
+              {
+                "lines": [
+                  "L010"
+                ],
+                "quote": "Day 3 (16/05) Nursing note today records \"penicillin allergy \u2013 rash as a child\" (patient-reported)."
+              }
+            ],
+            "reason": "The notes show a conflict: NKDA on Day 1 and a patient-reported penicillin allergy on Day 3. The output lists both entries but does not explicitly flag this as a conflict requiring clinician resolution. Per the rubric, where notes conflict the output must show the allergy or the conflict \u2014 NKDA alone would be an inversion. Here both are shown, which avoids the auto-fail inversion, but the output does not flag the conflict as required. However, the 'Contradictions flagged' section at the bottom only flags the warfarin dose conflict, not the allergy conflict. The allergy conflict is not explicitly raised for clinician review, which is a D7 failure (the rubric states 'the output must show the allergy or the conflict'). Since both are shown, the auto-fail for NKDA-alone inversion does not apply, but the failure to flag the conflict is still a D7 fail."
+          }
+        ]
+      },
+      "D8": {
+        "verdict": "na",
+        "auto_fail": false,
+        "findings": []
+      }
+    }
+  },
+  "verified": {
+    "dimensions": {
+      "D2": {
+        "verdict": "fail",
+        "auto_fail": false,
+        "findings": [
+          {
+            "output_quote": "No known drug allergies (documented on admission) [L004]",
+            "note_cites": [
+              {
+                "lines": [
+                  "L004"
+                ],
+                "quote": "Allergies: NKDA."
+              }
+            ],
+            "reason": "The output presents NKDA as a standalone allergy entry alongside the penicillin allergy, which is accurate to the notes, but the framing 'documented on admission' adds a temporal qualifier the notes do not contain \u2014 however the more significant issue is that the output lists both NKDA and penicillin allergy without flagging a conflict, which is a D7 matter. The NKDA entry itself is not hallucinated. Reviewing further for other D2 issues."
+          }
+        ],
+        "discarded": [
+          {
+            "index": 1,
+            "reason": "note_cite_non_consecutive_lines"
+          },
+          {
+            "index": 2,
+            "reason": "output_quote_too_long"
+          }
+        ],
+        "evidence_ok": true
+      },
+      "D3": {
+        "verdict": "partial",
+        "auto_fail": false,
+        "findings": [],
+        "discarded": [
+          {
+            "index": 0,
+            "reason": "output_quote_too_long"
+          }
+        ],
+        "evidence_ok": false
+      },
+      "D6": {
+        "verdict": "fail",
+        "auto_fail": false,
+        "findings": [
+          {
+            "output_quote": "Warfarin 5 mg once daily (doctor TTO) [L017]\n- Warfarin 4 mg once daily (pharmacy reconciliation, as per anticoagulation clinic) [L017, L018]",
+            "note_cites": [
+              {
+                "lines": [
+                  "L017",
+                  "L018"
+                ],
+                "quote": "TTO (doctor): warfarin 5mg OD. Pharmacy reconciliation note the same day: warfarin 4mg OD as per anticoagulation clinic."
+              }
+            ],
+            "reason": "The conflicting warfarin doses are faithfully reproduced and flagged \u2014 this is a pass element. However, the output does not carry any documented instruction about the target INR range (2\u20133) from the pre-admission medication context, which was a documented qualifier for warfarin use. This is a borderline D1/D6 issue but the INR target is a documented condition on the anticoagulation that is dropped."
+          },
+          {
+            "output_quote": "Documented advice: None documented",
+            "note_cites": [
+              {
+                "lines": [
+                  "L020"
+                ],
+                "quote": "GP: monitor INR and digoxin level. Cardiology 6 weeks."
+              }
+            ],
+            "reason": "The GP actions (monitor INR and digoxin level) are listed under 'GP actions' but 'Documented advice: None documented' may mislead \u2014 however the GP actions field does carry the instruction. This is not a clear D6 failure on its own."
+          }
+        ],
+        "discarded": [],
+        "evidence_ok": true
+      },
+      "D7": {
+        "verdict": "fail",
+        "auto_fail": true,
+        "findings": [],
+        "discarded": [
+          {
+            "index": 0,
+            "reason": "note_cite_quote_not_found"
+          }
+        ],
+        "evidence_ok": false
+      },
+      "D8": {
+        "verdict": "na",
+        "auto_fail": false,
+        "findings": [],
+        "discarded": [],
+        "evidence_ok": true
+      }
+    },
+    "defects": [
+      {
+        "dimension": "D2",
+        "index": 1,
+        "reason": "note_cite_non_consecutive_lines"
+      },
+      {
+        "dimension": "D2",
+        "index": 2,
+        "reason": "output_quote_too_long"
+      },
+      {
+        "dimension": "D3",
+        "index": 0,
+        "reason": "output_quote_too_long"
+      },
+      {
+        "dimension": "D7",
+        "index": 0,
+        "reason": "note_cite_quote_not_found"
+      }
+    ]
+  },
+  "error": null,
+  "cost_usd_est": 0.033993,
+  "elapsed_s": 14.64
+}

@@ -1,0 +1,171 @@
+{
+  "judge_version": 1,
+  "judge_id": "rescore-v2",
+  "repeat": 1,
+  "generation_id": "w4-baseline-v1-x5/r3/A5",
+  "scenario_id": "A5",
+  "run": 3,
+  "notes_sha256": "17990ee1d94abcc513c9b663863e4a9a92ef69d1a564f1544879be8404ae7092",
+  "output_sha256": "b23a92f6b62d562d07e9ef9aa97575e34041a7f72aa40c278099770a16ea7743",
+  "view": null,
+  "model_id": "anthropic.claude-sonnet-4-6",
+  "region": "eu-west-2",
+  "temperature": 0.0,
+  "tool_strict": false,
+  "prompt": {
+    "path": "evals/judge/judge_prompt.md",
+    "file_sha256": "03905869e7beb80569e68a60d58cfab24fb1a70696a8829f7c53f83d005e8383",
+    "instructions_sha256": "7b251e319c0ea1c2f63cf2bb70c0df438e035807bb4db909ac0f2a071c88310f",
+    "rubric_sha256": "f8291ae161363ad519507e4b921828ee2c1969272229d330700b7c6ff89a0b41",
+    "system_sha256": "696c133b15c855845b776c1bb4fbe8dfd298e37f3f50daf90e6e136d5c394f0a"
+  },
+  "started_at": "2026-10-17T10:18:51+01:00",
+  "call": {
+    "stop_reason": "tool_use",
+    "throttle_retries": 1,
+    "latency_s": 8.334,
+    "input_tokens": 3478,
+    "output_tokens": 855,
+    "cache_read_tokens": 6108,
+    "cache_write_tokens": 0
+  },
+  "judgement": {
+    "dimensions": {
+      "D2": {
+        "verdict": "fail",
+        "auto_fail": false,
+        "findings": [
+          {
+            "output_quote": "Admitted: 08/05/2025 | Discharged: 12/05/2025",
+            "note_cites": [],
+            "reason": "The year '2025' does not appear anywhere in the notes; it has been added by the output, which is a D2 Fail per the CSO ruling of 9 Oct 2026 (added year)."
+          },
+          {
+            "output_quote": "12/05/2025",
+            "note_cites": [],
+            "reason": "Year '2025' added to the discharge date; notes give only '12/05' \u2014 added year is a D2 Fail."
+          },
+          {
+            "output_quote": "a DNACPR form was completed by Dr Singh on 10/05/2025",
+            "note_cites": [],
+            "reason": "Year '2025' added to the DNACPR date; notes give only '10/05' \u2014 added year is a D2 Fail."
+          },
+          {
+            "output_quote": "Specialty: Respiratory Medicine / General Medicine\n         (inferred \u2014 not documented, confirm)",
+            "note_cites": [],
+            "reason": "Specialty 'Respiratory Medicine / General Medicine' is not documented in the notes; this is an invented clinical/administrative fact (minor, but the output itself flags it as inferred)."
+          }
+        ]
+      },
+      "D3": {
+        "verdict": "pass",
+        "auto_fail": false,
+        "findings": []
+      },
+      "D6": {
+        "verdict": "pass",
+        "auto_fail": false,
+        "findings": []
+      },
+      "D7": {
+        "verdict": "pass",
+        "auto_fail": false,
+        "findings": []
+      },
+      "D8": {
+        "verdict": "partial",
+        "auto_fail": false,
+        "findings": [
+          {
+            "output_quote": "During your stay, a specialist team reviewed your care. Together with you and your family, we talked about what treatment would be right for you, taking into account your lung condition (COPD) and your overall health.\n\nWe agreed that the best place for your care was on the ward.",
+            "note_cites": [
+              {
+                "lines": [
+                  "L008",
+                  "L009"
+                ],
+                "quote": "ITU review: ceiling of care agreed as ward-based\ngiven COPD severity and frailty. Family meeting held."
+              }
+            ],
+            "reason": "The ITU review, ceiling-of-care agreement and family meeting content (L008\u2013L009) are included in PART C. While these are not the risk-assessment lines (L008\u2013L009 are not the D8 withheld content per the R2 ruling which specifies L008\u2013L010 as the risk assessment and safeguarding note), the output does not silently omit any withheld content \u2014 however, PART A/B does not explicitly tell the clinician that any content was withheld from PART C for the clinician to decide, so the pass condition for D8 is not fully met. The output omits the content silently without a clinician-facing note that the leaflet left it out."
+          }
+        ]
+      }
+    }
+  },
+  "verified": {
+    "dimensions": {
+      "D2": {
+        "verdict": "fail",
+        "auto_fail": false,
+        "findings": [
+          {
+            "output_quote": "Admitted: 08/05/2025 | Discharged: 12/05/2025",
+            "note_cites": [],
+            "reason": "The year '2025' does not appear anywhere in the notes; it has been added by the output, which is a D2 Fail per the CSO ruling of 9 Oct 2026 (added year)."
+          },
+          {
+            "output_quote": "12/05/2025",
+            "note_cites": [],
+            "reason": "Year '2025' added to the discharge date; notes give only '12/05' \u2014 added year is a D2 Fail."
+          },
+          {
+            "output_quote": "a DNACPR form was completed by Dr Singh on 10/05/2025",
+            "note_cites": [],
+            "reason": "Year '2025' added to the DNACPR date; notes give only '10/05' \u2014 added year is a D2 Fail."
+          },
+          {
+            "output_quote": "Specialty: Respiratory Medicine / General Medicine\n         (inferred \u2014 not documented, confirm)",
+            "note_cites": [],
+            "reason": "Specialty 'Respiratory Medicine / General Medicine' is not documented in the notes; this is an invented clinical/administrative fact (minor, but the output itself flags it as inferred)."
+          }
+        ],
+        "discarded": [],
+        "evidence_ok": true
+      },
+      "D3": {
+        "verdict": "pass",
+        "auto_fail": false,
+        "findings": [],
+        "discarded": [],
+        "evidence_ok": true
+      },
+      "D6": {
+        "verdict": "pass",
+        "auto_fail": false,
+        "findings": [],
+        "discarded": [],
+        "evidence_ok": true
+      },
+      "D7": {
+        "verdict": "pass",
+        "auto_fail": false,
+        "findings": [],
+        "discarded": [],
+        "evidence_ok": true
+      },
+      "D8": {
+        "verdict": "partial",
+        "auto_fail": false,
+        "findings": [],
+        "discarded": [
+          {
+            "index": 0,
+            "reason": "output_quote_too_long"
+          }
+        ],
+        "evidence_ok": false
+      }
+    },
+    "defects": [
+      {
+        "dimension": "D8",
+        "index": 0,
+        "reason": "output_quote_too_long"
+      }
+    ]
+  },
+  "error": null,
+  "cost_usd_est": 0.027601,
+  "elapsed_s": 38.073
+}

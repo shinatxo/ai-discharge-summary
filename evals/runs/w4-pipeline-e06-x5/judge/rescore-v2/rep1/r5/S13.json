@@ -1,0 +1,135 @@
+{
+  "judge_version": 1,
+  "judge_id": "rescore-v2",
+  "repeat": 1,
+  "generation_id": "w4-pipeline-e06-x5/r5/S13",
+  "scenario_id": "S13",
+  "run": 5,
+  "notes_sha256": "7bdbea67d99837b5ac07d98a1dac7f07026885128b3e5d533937cc8014c86971",
+  "output_sha256": "46943876f712186143651167a1cb1d7c8c066401e91cbb38165bc30d9c0aa672",
+  "view": {
+    "name": "pipeline-steps-1-5b",
+    "version": 1
+  },
+  "model_id": "anthropic.claude-sonnet-4-6",
+  "region": "eu-west-2",
+  "temperature": 0.0,
+  "tool_strict": false,
+  "prompt": {
+    "path": "evals/judge/judge_prompt.md",
+    "file_sha256": "03905869e7beb80569e68a60d58cfab24fb1a70696a8829f7c53f83d005e8383",
+    "instructions_sha256": "7b251e319c0ea1c2f63cf2bb70c0df438e035807bb4db909ac0f2a071c88310f",
+    "rubric_sha256": "f8291ae161363ad519507e4b921828ee2c1969272229d330700b7c6ff89a0b41",
+    "system_sha256": "696c133b15c855845b776c1bb4fbe8dfd298e37f3f50daf90e6e136d5c394f0a"
+  },
+  "started_at": "2026-10-17T10:16:26+01:00",
+  "call": {
+    "stop_reason": "tool_use",
+    "throttle_retries": 0,
+    "latency_s": 5.246,
+    "input_tokens": 2063,
+    "output_tokens": 482,
+    "cache_read_tokens": 6108,
+    "cache_write_tokens": 0
+  },
+  "judgement": {
+    "dimensions": {
+      "D2": {
+        "verdict": "pass",
+        "auto_fail": false,
+        "findings": []
+      },
+      "D3": {
+        "verdict": "pass",
+        "auto_fail": false,
+        "findings": []
+      },
+      "D6": {
+        "verdict": "na",
+        "auto_fail": false,
+        "findings": []
+      },
+      "D7": {
+        "verdict": "pass",
+        "auto_fail": false,
+        "findings": []
+      },
+      "D8": {
+        "verdict": "partial",
+        "auto_fail": false,
+        "findings": [
+          {
+            "output_quote": "DNACPR placed day 8 during deterioration (poor prognosis), then rescinded day 20 once improving following family discussion",
+            "note_cites": [
+              {
+                "lines": [
+                  "L008",
+                  "L009"
+                ],
+                "quote": "Resus: For resus on admission. DNACPR placed day 8 during deterioration (poor prognosis), then rescinded day 20 once improving + family discussion."
+              }
+            ],
+            "reason": "The DNACPR history (a clinician risk/prognosis assessment and family discussion detail) is included in PART A but also appears in PART C's structured facts section, which is the patient-facing part; however, PART C here is only a safety-netting boilerplate line and does not contain this content \u2014 but PART A does include it without a note to the clinician that this was withheld from PART C, and PART C is silent on it. The output silently omits the withheld content from PART C without telling the clinician in PART A/B that it was left out for them to decide, constituting a partial rather than a full pass."
+          }
+        ]
+      }
+    }
+  },
+  "verified": {
+    "dimensions": {
+      "D2": {
+        "verdict": "pass",
+        "auto_fail": false,
+        "findings": [],
+        "discarded": [],
+        "evidence_ok": true
+      },
+      "D3": {
+        "verdict": "pass",
+        "auto_fail": false,
+        "findings": [],
+        "discarded": [],
+        "evidence_ok": true
+      },
+      "D6": {
+        "verdict": "na",
+        "auto_fail": false,
+        "findings": [],
+        "discarded": [],
+        "evidence_ok": true
+      },
+      "D7": {
+        "verdict": "pass",
+        "auto_fail": false,
+        "findings": [],
+        "discarded": [],
+        "evidence_ok": true
+      },
+      "D8": {
+        "verdict": "partial",
+        "auto_fail": false,
+        "findings": [
+          {
+            "output_quote": "DNACPR placed day 8 during deterioration (poor prognosis), then rescinded day 20 once improving following family discussion",
+            "note_cites": [
+              {
+                "lines": [
+                  "L008",
+                  "L009"
+                ],
+                "quote": "Resus: For resus on admission. DNACPR placed day 8 during deterioration (poor prognosis), then rescinded day 20 once improving + family discussion."
+              }
+            ],
+            "reason": "The DNACPR history (a clinician risk/prognosis assessment and family discussion detail) is included in PART A but also appears in PART C's structured facts section, which is the patient-facing part; however, PART C here is only a safety-netting boilerplate line and does not contain this content \u2014 but PART A does include it without a note to the clinician that this was withheld from PART C, and PART C is silent on it. The output silently omits the withheld content from PART C without telling the clinician in PART A/B that it was left out for them to decide, constituting a partial rather than a full pass."
+          }
+        ],
+        "discarded": [],
+        "evidence_ok": true
+      }
+    },
+    "defects": []
+  },
+  "error": null,
+  "cost_usd_est": 0.016777,
+  "elapsed_s": 5.246
+}

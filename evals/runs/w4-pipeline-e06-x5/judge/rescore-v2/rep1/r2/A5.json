@@ -1,0 +1,163 @@
+{
+  "judge_version": 1,
+  "judge_id": "rescore-v2",
+  "repeat": 1,
+  "generation_id": "w4-pipeline-e06-x5/r2/A5",
+  "scenario_id": "A5",
+  "run": 2,
+  "notes_sha256": "17990ee1d94abcc513c9b663863e4a9a92ef69d1a564f1544879be8404ae7092",
+  "output_sha256": "f3ad46d1d75f3c3c118a20c13dea0031df50f4f133f5ac97545f233d8870b3b3",
+  "view": {
+    "name": "pipeline-steps-1-5b",
+    "version": 1
+  },
+  "model_id": "anthropic.claude-sonnet-4-6",
+  "region": "eu-west-2",
+  "temperature": 0.0,
+  "tool_strict": false,
+  "prompt": {
+    "path": "evals/judge/judge_prompt.md",
+    "file_sha256": "03905869e7beb80569e68a60d58cfab24fb1a70696a8829f7c53f83d005e8383",
+    "instructions_sha256": "7b251e319c0ea1c2f63cf2bb70c0df438e035807bb4db909ac0f2a071c88310f",
+    "rubric_sha256": "f8291ae161363ad519507e4b921828ee2c1969272229d330700b7c6ff89a0b41",
+    "system_sha256": "696c133b15c855845b776c1bb4fbe8dfd298e37f3f50daf90e6e136d5c394f0a"
+  },
+  "started_at": "2026-10-17T10:14:49+01:00",
+  "call": {
+    "stop_reason": "tool_use",
+    "throttle_retries": 0,
+    "latency_s": 5.92,
+    "input_tokens": 1847,
+    "output_tokens": 625,
+    "cache_read_tokens": 6108,
+    "cache_write_tokens": 0
+  },
+  "judgement": {
+    "dimensions": {
+      "D2": {
+        "verdict": "pass",
+        "auto_fail": false,
+        "findings": []
+      },
+      "D3": {
+        "verdict": "partial",
+        "auto_fail": false,
+        "findings": [
+          {
+            "output_quote": "DNACPR. *** CHANGED DURING ADMISSION ***\nSource: [L006]: \"For resus.\"; [L011\u2013L012]: \"DNACPR form completed by Dr Singh 10/05 after discussion with the patient (capacity intact) and family.\"",
+            "note_cites": [
+              {
+                "lines": [
+                  "L011",
+                  "L012"
+                ],
+                "quote": "DNACPR form completed by Dr Singh 10/05 after discussion with the patient (capacity intact) and family."
+              }
+            ],
+            "reason": "The change is flagged with direction, date and clinician (Dr Singh, 10/05) and reason (discussion with patient and family), but the change marker and supporting detail are embedded in a 'Source:' citation block rather than on a dedicated marker line; the reason is present but not clearly separated as a standalone field, making the flag less prominent than the rubric requires."
+          }
+        ]
+      },
+      "D6": {
+        "verdict": "na",
+        "auto_fail": false,
+        "findings": []
+      },
+      "D7": {
+        "verdict": "pass",
+        "auto_fail": false,
+        "findings": []
+      },
+      "D8": {
+        "verdict": "partial",
+        "auto_fail": false,
+        "findings": [
+          {
+            "output_quote": "ITU review day 2; ceiling of care agreed as ward-based given COPD severity and frailty; family meeting held [L008, L009]",
+            "note_cites": [
+              {
+                "lines": [
+                  "L008",
+                  "L009"
+                ],
+                "quote": "ITU review: ceiling of care agreed as ward-based given COPD severity and frailty. Family meeting held."
+              }
+            ],
+            "reason": "The ceiling-of-care decision and family meeting (clinician risk/care-planning assessment content) appear in PART A but PART C contains no such content \u2014 the withholding is silent; PART A/B does not explicitly tell the clinician that this content was withheld from PART C for them to decide how to communicate it."
+          }
+        ]
+      }
+    }
+  },
+  "verified": {
+    "dimensions": {
+      "D2": {
+        "verdict": "pass",
+        "auto_fail": false,
+        "findings": [],
+        "discarded": [],
+        "evidence_ok": true
+      },
+      "D3": {
+        "verdict": "partial",
+        "auto_fail": false,
+        "findings": [
+          {
+            "output_quote": "DNACPR. *** CHANGED DURING ADMISSION ***\nSource: [L006]: \"For resus.\"; [L011\u2013L012]: \"DNACPR form completed by Dr Singh 10/05 after discussion with the patient (capacity intact) and family.\"",
+            "note_cites": [
+              {
+                "lines": [
+                  "L011",
+                  "L012"
+                ],
+                "quote": "DNACPR form completed by Dr Singh 10/05 after discussion with the patient (capacity intact) and family."
+              }
+            ],
+            "reason": "The change is flagged with direction, date and clinician (Dr Singh, 10/05) and reason (discussion with patient and family), but the change marker and supporting detail are embedded in a 'Source:' citation block rather than on a dedicated marker line; the reason is present but not clearly separated as a standalone field, making the flag less prominent than the rubric requires."
+          }
+        ],
+        "discarded": [],
+        "evidence_ok": true
+      },
+      "D6": {
+        "verdict": "na",
+        "auto_fail": false,
+        "findings": [],
+        "discarded": [],
+        "evidence_ok": true
+      },
+      "D7": {
+        "verdict": "pass",
+        "auto_fail": false,
+        "findings": [],
+        "discarded": [],
+        "evidence_ok": true
+      },
+      "D8": {
+        "verdict": "partial",
+        "auto_fail": false,
+        "findings": [
+          {
+            "output_quote": "ITU review day 2; ceiling of care agreed as ward-based given COPD severity and frailty; family meeting held [L008, L009]",
+            "note_cites": [
+              {
+                "lines": [
+                  "L008",
+                  "L009"
+                ],
+                "quote": "ITU review: ceiling of care agreed as ward-based given COPD severity and frailty. Family meeting held."
+              }
+            ],
+            "reason": "The ceiling-of-care decision and family meeting (clinician risk/care-planning assessment content) appear in PART A but PART C contains no such content \u2014 the withholding is silent; PART A/B does not explicitly tell the clinician that this content was withheld from PART C for them to decide how to communicate it."
+          }
+        ],
+        "discarded": [],
+        "evidence_ok": true
+      }
+    },
+    "defects": []
+  },
+  "error": null,
+  "cost_usd_est": 0.018423,
+  "elapsed_s": 5.92
+}

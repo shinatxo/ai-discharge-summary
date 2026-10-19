@@ -1,0 +1,196 @@
+{
+  "judge_version": 1,
+  "judge_id": "rescore-v2",
+  "repeat": 1,
+  "generation_id": "w4-baseline-v1-x5/r2/S18",
+  "scenario_id": "S18",
+  "run": 2,
+  "notes_sha256": "3d7f06d1a5a414275df26db1863e10bc9e085fde839ae9021e97d5f16ebf659b",
+  "output_sha256": "42d2b0526d9d277b0c57cdf0018f9de2703f1ace3fde3b84f93ab6d2c7ffabfa",
+  "view": null,
+  "model_id": "anthropic.claude-sonnet-4-6",
+  "region": "eu-west-2",
+  "temperature": 0.0,
+  "tool_strict": false,
+  "prompt": {
+    "path": "evals/judge/judge_prompt.md",
+    "file_sha256": "03905869e7beb80569e68a60d58cfab24fb1a70696a8829f7c53f83d005e8383",
+    "instructions_sha256": "7b251e319c0ea1c2f63cf2bb70c0df438e035807bb4db909ac0f2a071c88310f",
+    "rubric_sha256": "f8291ae161363ad519507e4b921828ee2c1969272229d330700b7c6ff89a0b41",
+    "system_sha256": "696c133b15c855845b776c1bb4fbe8dfd298e37f3f50daf90e6e136d5c394f0a"
+  },
+  "started_at": "2026-10-17T10:18:03+01:00",
+  "call": {
+    "stop_reason": "tool_use",
+    "throttle_retries": 0,
+    "latency_s": 8.894,
+    "input_tokens": 2558,
+    "output_tokens": 663,
+    "cache_read_tokens": 6108,
+    "cache_write_tokens": 0
+  },
+  "judgement": {
+    "dimensions": {
+      "D2": {
+        "verdict": "fail",
+        "auto_fail": false,
+        "findings": [
+          {
+            "output_quote": "Admitted: 19/05/YYYY | Discharged: 20/05/YYYY",
+            "note_cites": [],
+            "reason": "Added a year placeholder 'YYYY' to dates that the notes give only as day/month (19/05, 20/05); the rubric treats any 4-digit year pattern added to a date as a D2 Fail even when represented as YYYY, because it asserts a year the notes do not contain."
+          },
+          {
+            "output_quote": "No working at heights.",
+            "note_cites": [
+              {
+                "lines": [
+                  "L007",
+                  "L008"
+                ],
+                "quote": "Safety advice (no swimming alone, heights, baths)."
+              }
+            ],
+            "reason": "The notes say 'heights' (a general restriction); the output narrows this to 'working at heights', which is an invented qualification not present in the notes \u2014 this is also a D6 narrowing."
+          }
+        ]
+      },
+      "D3": {
+        "verdict": "pass",
+        "auto_fail": false,
+        "findings": []
+      },
+      "D6": {
+        "verdict": "fail",
+        "auto_fail": false,
+        "findings": [
+          {
+            "output_quote": "No working at heights.",
+            "note_cites": [
+              {
+                "lines": [
+                  "L007",
+                  "L008"
+                ],
+                "quote": "Safety advice (no swimming alone, heights, baths)."
+              }
+            ],
+            "reason": "Restriction narrowed: 'heights' (general) changed to 'working at heights', resolving an ambiguity in the less restrictive direction."
+          },
+          {
+            "output_quote": "Do not work at heights.",
+            "note_cites": [
+              {
+                "lines": [
+                  "L007",
+                  "L008"
+                ],
+                "quote": "Safety advice (no swimming alone, heights, baths)."
+              }
+            ],
+            "reason": "Same narrowing repeated in Part C: 'heights' narrowed to 'work at heights', which is less restrictive than the documented instruction."
+          }
+        ]
+      },
+      "D7": {
+        "verdict": "pass",
+        "auto_fail": false,
+        "findings": []
+      },
+      "D8": {
+        "verdict": "na",
+        "auto_fail": false,
+        "findings": []
+      }
+    }
+  },
+  "verified": {
+    "dimensions": {
+      "D2": {
+        "verdict": "fail",
+        "auto_fail": false,
+        "findings": [
+          {
+            "output_quote": "Admitted: 19/05/YYYY | Discharged: 20/05/YYYY",
+            "note_cites": [],
+            "reason": "Added a year placeholder 'YYYY' to dates that the notes give only as day/month (19/05, 20/05); the rubric treats any 4-digit year pattern added to a date as a D2 Fail even when represented as YYYY, because it asserts a year the notes do not contain."
+          },
+          {
+            "output_quote": "No working at heights.",
+            "note_cites": [
+              {
+                "lines": [
+                  "L007",
+                  "L008"
+                ],
+                "quote": "Safety advice (no swimming alone, heights, baths)."
+              }
+            ],
+            "reason": "The notes say 'heights' (a general restriction); the output narrows this to 'working at heights', which is an invented qualification not present in the notes \u2014 this is also a D6 narrowing."
+          }
+        ],
+        "discarded": [],
+        "evidence_ok": true
+      },
+      "D3": {
+        "verdict": "pass",
+        "auto_fail": false,
+        "findings": [],
+        "discarded": [],
+        "evidence_ok": true
+      },
+      "D6": {
+        "verdict": "fail",
+        "auto_fail": false,
+        "findings": [
+          {
+            "output_quote": "No working at heights.",
+            "note_cites": [
+              {
+                "lines": [
+                  "L007",
+                  "L008"
+                ],
+                "quote": "Safety advice (no swimming alone, heights, baths)."
+              }
+            ],
+            "reason": "Restriction narrowed: 'heights' (general) changed to 'working at heights', resolving an ambiguity in the less restrictive direction."
+          },
+          {
+            "output_quote": "Do not work at heights.",
+            "note_cites": [
+              {
+                "lines": [
+                  "L007",
+                  "L008"
+                ],
+                "quote": "Safety advice (no swimming alone, heights, baths)."
+              }
+            ],
+            "reason": "Same narrowing repeated in Part C: 'heights' narrowed to 'work at heights', which is less restrictive than the documented instruction."
+          }
+        ],
+        "discarded": [],
+        "evidence_ok": true
+      },
+      "D7": {
+        "verdict": "pass",
+        "auto_fail": false,
+        "findings": [],
+        "discarded": [],
+        "evidence_ok": true
+      },
+      "D8": {
+        "verdict": "na",
+        "auto_fail": false,
+        "findings": [],
+        "discarded": [],
+        "evidence_ok": true
+      }
+    },
+    "defects": []
+  },
+  "error": null,
+  "cost_usd_est": 0.021397,
+  "elapsed_s": 8.894
+}

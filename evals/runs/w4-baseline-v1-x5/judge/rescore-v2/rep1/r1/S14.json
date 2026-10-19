@@ -1,0 +1,213 @@
+{
+  "judge_version": 1,
+  "judge_id": "rescore-v2",
+  "repeat": 1,
+  "generation_id": "w4-baseline-v1-x5/r1/S14",
+  "scenario_id": "S14",
+  "run": 1,
+  "notes_sha256": "20c5042a7bbfa0a841857197d01c69abf4b0abe852955048535cbba89c736340",
+  "output_sha256": "62495e3887c3d455c9c7dc92a33e41199329c86058d7f8c7728c549050c956ea",
+  "view": null,
+  "model_id": "anthropic.claude-sonnet-4-6",
+  "region": "eu-west-2",
+  "temperature": 0.0,
+  "tool_strict": false,
+  "prompt": {
+    "path": "evals/judge/judge_prompt.md",
+    "file_sha256": "03905869e7beb80569e68a60d58cfab24fb1a70696a8829f7c53f83d005e8383",
+    "instructions_sha256": "7b251e319c0ea1c2f63cf2bb70c0df438e035807bb4db909ac0f2a071c88310f",
+    "rubric_sha256": "f8291ae161363ad519507e4b921828ee2c1969272229d330700b7c6ff89a0b41",
+    "system_sha256": "696c133b15c855845b776c1bb4fbe8dfd298e37f3f50daf90e6e136d5c394f0a"
+  },
+  "started_at": "2026-10-17T10:17:24+01:00",
+  "call": {
+    "stop_reason": "tool_use",
+    "throttle_retries": 0,
+    "latency_s": 9.542,
+    "input_tokens": 3244,
+    "output_tokens": 1043,
+    "cache_read_tokens": 6108,
+    "cache_write_tokens": 0
+  },
+  "judgement": {
+    "dimensions": {
+      "D2": {
+        "verdict": "fail",
+        "auto_fail": false,
+        "findings": [
+          {
+            "output_quote": "Admitted: 14/05/2025 | Discharged: 18/05/2025",
+            "note_cites": [],
+            "reason": "Added year '2025' to dates that appear in the notes only as day/month (14/05, 18/05); the notes contain no year \u2014 this is an added year, a D2 Fail per the CSO ruling of 9 Oct 2026."
+          },
+          {
+            "output_quote": "Acute ischaemic stroke (left hemisphere, clinically)",
+            "note_cites": [
+              {
+                "lines": [
+                  "L001",
+                  "L002"
+                ],
+                "quote": "sudden R facial droop, R arm weakness, dysphasia, onset 1h ago. NIHSS 9. CT head no haemorrhage. Thrombolysed (alteplase) within window."
+              }
+            ],
+            "reason": "The notes do not specify 'left hemisphere'; this is invented diagnostic detail not documented in the notes."
+          },
+          {
+            "output_quote": "*** CHANGED DURING ADMISSION *** Resuscitation was discussed with the patient on 15/05 (day 2).",
+            "note_cites": [
+              {
+                "lines": [
+                  "L006",
+                  "L007"
+                ],
+                "quote": "Resus discussed with patient (capacity intact) -> wishes to remain for resus."
+              }
+            ],
+            "reason": "The notes record resus discussion on Day 2 (15/05) but do not document a prior resus status, so there is no documented change; the 'CHANGED DURING ADMISSION' flag is an invented assertion. Additionally, the date '15/05' is given without a year in the notes but the output adds '2025' elsewhere \u2014 the change flag itself is the primary issue here (D3 territory, but the invented 'changed' assertion is also a D2 hallucination)."
+          },
+          {
+            "output_quote": "Ward: Stroke Medicine | Discharged: 18 May 2025",
+            "note_cites": [],
+            "reason": "Added year '2025' to the discharge date in Part C; the notes contain no year."
+          },
+          {
+            "output_quote": "You came into hospital on 14 May 2025",
+            "note_cites": [],
+            "reason": "Added year '2025' to the admission date in Part C; the notes contain no year."
+          }
+        ]
+      },
+      "D3": {
+        "verdict": "fail",
+        "auto_fail": false,
+        "findings": [
+          {
+            "output_quote": "For resuscitation. *** CHANGED DURING ADMISSION *** Resuscitation was discussed with the patient on 15/05 (day 2). The patient had capacity at the time of discussion and expressed a wish to remain for resuscitation. No change from this decision documented prior to discharge.",
+            "note_cites": [
+              {
+                "lines": [
+                  "L006",
+                  "L007"
+                ],
+                "quote": "Resus discussed with patient (capacity intact) -> wishes to remain for resus."
+              }
+            ],
+            "reason": "The notes record a resus discussion and the patient's wish, but do not document any prior resus status; there is no evidence of a change during admission. Flagging '*** CHANGED DURING ADMISSION ***' is incorrect \u2014 the notes do not document a previous status that was changed, so this flag is unsupported and misleading. The correct output would be to state the current status (for resus) without a change flag, or note that no prior status was documented."
+          }
+        ]
+      },
+      "D6": {
+        "verdict": "pass",
+        "auto_fail": false,
+        "findings": []
+      },
+      "D7": {
+        "verdict": "pass",
+        "auto_fail": false,
+        "findings": []
+      },
+      "D8": {
+        "verdict": "na",
+        "auto_fail": false,
+        "findings": []
+      }
+    }
+  },
+  "verified": {
+    "dimensions": {
+      "D2": {
+        "verdict": "fail",
+        "auto_fail": false,
+        "findings": [
+          {
+            "output_quote": "Admitted: 14/05/2025 | Discharged: 18/05/2025",
+            "note_cites": [],
+            "reason": "Added year '2025' to dates that appear in the notes only as day/month (14/05, 18/05); the notes contain no year \u2014 this is an added year, a D2 Fail per the CSO ruling of 9 Oct 2026."
+          },
+          {
+            "output_quote": "Acute ischaemic stroke (left hemisphere, clinically)",
+            "note_cites": [
+              {
+                "lines": [
+                  "L001",
+                  "L002"
+                ],
+                "quote": "sudden R facial droop, R arm weakness, dysphasia, onset 1h ago. NIHSS 9. CT head no haemorrhage. Thrombolysed (alteplase) within window."
+              }
+            ],
+            "reason": "The notes do not specify 'left hemisphere'; this is invented diagnostic detail not documented in the notes."
+          },
+          {
+            "output_quote": "*** CHANGED DURING ADMISSION *** Resuscitation was discussed with the patient on 15/05 (day 2).",
+            "note_cites": [
+              {
+                "lines": [
+                  "L006",
+                  "L007"
+                ],
+                "quote": "Resus discussed with patient (capacity intact) -> wishes to remain for resus."
+              }
+            ],
+            "reason": "The notes record resus discussion on Day 2 (15/05) but do not document a prior resus status, so there is no documented change; the 'CHANGED DURING ADMISSION' flag is an invented assertion. Additionally, the date '15/05' is given without a year in the notes but the output adds '2025' elsewhere \u2014 the change flag itself is the primary issue here (D3 territory, but the invented 'changed' assertion is also a D2 hallucination)."
+          },
+          {
+            "output_quote": "Ward: Stroke Medicine | Discharged: 18 May 2025",
+            "note_cites": [],
+            "reason": "Added year '2025' to the discharge date in Part C; the notes contain no year."
+          },
+          {
+            "output_quote": "You came into hospital on 14 May 2025",
+            "note_cites": [],
+            "reason": "Added year '2025' to the admission date in Part C; the notes contain no year."
+          }
+        ],
+        "discarded": [],
+        "evidence_ok": true
+      },
+      "D3": {
+        "verdict": "fail",
+        "auto_fail": false,
+        "findings": [],
+        "discarded": [
+          {
+            "index": 0,
+            "reason": "output_quote_too_long"
+          }
+        ],
+        "evidence_ok": false
+      },
+      "D6": {
+        "verdict": "pass",
+        "auto_fail": false,
+        "findings": [],
+        "discarded": [],
+        "evidence_ok": true
+      },
+      "D7": {
+        "verdict": "pass",
+        "auto_fail": false,
+        "findings": [],
+        "discarded": [],
+        "evidence_ok": true
+      },
+      "D8": {
+        "verdict": "na",
+        "auto_fail": false,
+        "findings": [],
+        "discarded": [],
+        "evidence_ok": true
+      }
+    },
+    "defects": [
+      {
+        "dimension": "D3",
+        "index": 0,
+        "reason": "output_quote_too_long"
+      }
+    ]
+  },
+  "error": null,
+  "cost_usd_est": 0.02993,
+  "elapsed_s": 9.542
+}

@@ -1,0 +1,278 @@
+{
+  "judge_version": 1,
+  "judge_id": "rescore-v2",
+  "repeat": 1,
+  "generation_id": "w4-baseline-v1-x5/r2/S1",
+  "scenario_id": "S1",
+  "run": 2,
+  "notes_sha256": "deacfb8fe45187fb890a33b6e0c8ad2f5e6902c825879bb20931a69f80969fa3",
+  "output_sha256": "97872130690a1b1042969ae91451d0eaeefd1f6b7fabdf8fbf80c11051b8e5f2",
+  "view": null,
+  "model_id": "anthropic.claude-sonnet-4-6",
+  "region": "eu-west-2",
+  "temperature": 0.0,
+  "tool_strict": false,
+  "prompt": {
+    "path": "evals/judge/judge_prompt.md",
+    "file_sha256": "03905869e7beb80569e68a60d58cfab24fb1a70696a8829f7c53f83d005e8383",
+    "instructions_sha256": "7b251e319c0ea1c2f63cf2bb70c0df438e035807bb4db909ac0f2a071c88310f",
+    "rubric_sha256": "f8291ae161363ad519507e4b921828ee2c1969272229d330700b7c6ff89a0b41",
+    "system_sha256": "696c133b15c855845b776c1bb4fbe8dfd298e37f3f50daf90e6e136d5c394f0a"
+  },
+  "started_at": "2026-10-17T10:17:37+01:00",
+  "call": {
+    "stop_reason": "tool_use",
+    "throttle_retries": 0,
+    "latency_s": 10.749,
+    "input_tokens": 4332,
+    "output_tokens": 1071,
+    "cache_read_tokens": 6108,
+    "cache_write_tokens": 0
+  },
+  "judgement": {
+    "dimensions": {
+      "D2": {
+        "verdict": "fail",
+        "auto_fail": true,
+        "findings": [
+          {
+            "output_quote": "Admitted: 12/05/2025 | Discharged: 16/05/2025",
+            "note_cites": [
+              {
+                "lines": [
+                  "L001"
+                ],
+                "quote": "Day 1 (12/05) 82F via ED."
+              },
+              {
+                "lines": [
+                  "L021"
+                ],
+                "quote": "Day 5 (16/05) Fit for discharge."
+              }
+            ],
+            "reason": "Year '2025' added to dates that appear in the notes only as day/month \u2014 an added year the notes do not contain, which is a D2 auto-fail per the CSO ruling of 9 Oct 2026."
+          },
+          {
+            "output_quote": "A DNACPR decision was made on 14/05/2025 by Dr Patel",
+            "note_cites": [
+              {
+                "lines": [
+                  "L016"
+                ],
+                "quote": "DNACPR form completed by Dr Patel 14/05."
+              }
+            ],
+            "reason": "Year '2025' added to a date that appears in the notes only as day/month \u2014 added year is a D2 auto-fail."
+          },
+          {
+            "output_quote": "Fondaparinux \u2014 dose and intended duration\n    not documented                             (NEW \u2014 confirm whether to\n                                               continue or stop at discharge)",
+            "note_cites": [
+              {
+                "lines": [
+                  "L007"
+                ],
+                "quote": "Plan: add ticagrelor (DAPT), fondaparinux, cardiology r/v, monitor U&E."
+              }
+            ],
+            "reason": "Fondaparinux is an inpatient-only anticoagulant; carrying it onto the discharge medication list (even with a query) is an auto-fail per the rubric's rule on inpatient-only drugs wrongly carried onto the discharge list."
+          }
+        ]
+      },
+      "D3": {
+        "verdict": "pass",
+        "auto_fail": false,
+        "findings": []
+      },
+      "D6": {
+        "verdict": "partial",
+        "auto_fail": false,
+        "findings": [
+          {
+            "output_quote": "Uptitrate ramipril (ACE inhibitor) as tolerated.",
+            "note_cites": [
+              {
+                "lines": [
+                  "L021"
+                ],
+                "quote": "GP: monitor renal fn, uptitrate ACEi as tolerated."
+              }
+            ],
+            "reason": "The notes say 'uptitrate ACEi' \u2014 the output correctly identifies this as ramipril, which is faithful. However, the output in Part C says 'Your GP may also gradually adjust your ramipril dose over time', which weakens 'uptitrate as tolerated' (a directional instruction) to a vague 'may adjust', reducing the force of the instruction."
+          },
+          {
+            "output_quote": "Your GP may also gradually adjust your ramipril dose over time.",
+            "note_cites": [
+              {
+                "lines": [
+                  "L021"
+                ],
+                "quote": "uptitrate ACEi as tolerated"
+              }
+            ],
+            "reason": "Directional instruction 'uptitrate' weakened to 'may also gradually adjust' in Part C \u2014 force reduced and direction (increase) lost."
+          }
+        ]
+      },
+      "D7": {
+        "verdict": "partial",
+        "auto_fail": false,
+        "findings": [
+          {
+            "output_quote": "Creatinine: 168 \u00b5mol/L (Day 2) \u2192 142 \u00b5mol/L (Day 4)",
+            "note_cites": [
+              {
+                "lines": [
+                  "L011"
+                ],
+                "quote": "Watch renal fn w/ contrast. Creat 168."
+              },
+              {
+                "lines": [
+                  "L019"
+                ],
+                "quote": "Creat improving 142."
+              }
+            ],
+            "reason": "The creatinine of 168 is documented on Day 2 (L011) and the output correctly labels it Day 2; however the notes record the admission creatinine context on Day 2 \u2014 this is accurate. Minor timing imprecision only; no action-driving error."
+          }
+        ]
+      },
+      "D8": {
+        "verdict": "na",
+        "auto_fail": false,
+        "findings": []
+      }
+    }
+  },
+  "verified": {
+    "dimensions": {
+      "D2": {
+        "verdict": "fail",
+        "auto_fail": true,
+        "findings": [
+          {
+            "output_quote": "Admitted: 12/05/2025 | Discharged: 16/05/2025",
+            "note_cites": [
+              {
+                "lines": [
+                  "L001"
+                ],
+                "quote": "Day 1 (12/05) 82F via ED."
+              },
+              {
+                "lines": [
+                  "L021"
+                ],
+                "quote": "Day 5 (16/05) Fit for discharge."
+              }
+            ],
+            "reason": "Year '2025' added to dates that appear in the notes only as day/month \u2014 an added year the notes do not contain, which is a D2 auto-fail per the CSO ruling of 9 Oct 2026."
+          },
+          {
+            "output_quote": "A DNACPR decision was made on 14/05/2025 by Dr Patel",
+            "note_cites": [
+              {
+                "lines": [
+                  "L016"
+                ],
+                "quote": "DNACPR form completed by Dr Patel 14/05."
+              }
+            ],
+            "reason": "Year '2025' added to a date that appears in the notes only as day/month \u2014 added year is a D2 auto-fail."
+          },
+          {
+            "output_quote": "Fondaparinux \u2014 dose and intended duration\n    not documented                             (NEW \u2014 confirm whether to\n                                               continue or stop at discharge)",
+            "note_cites": [
+              {
+                "lines": [
+                  "L007"
+                ],
+                "quote": "Plan: add ticagrelor (DAPT), fondaparinux, cardiology r/v, monitor U&E."
+              }
+            ],
+            "reason": "Fondaparinux is an inpatient-only anticoagulant; carrying it onto the discharge medication list (even with a query) is an auto-fail per the rubric's rule on inpatient-only drugs wrongly carried onto the discharge list."
+          }
+        ],
+        "discarded": [],
+        "evidence_ok": true
+      },
+      "D3": {
+        "verdict": "pass",
+        "auto_fail": false,
+        "findings": [],
+        "discarded": [],
+        "evidence_ok": true
+      },
+      "D6": {
+        "verdict": "partial",
+        "auto_fail": false,
+        "findings": [
+          {
+            "output_quote": "Uptitrate ramipril (ACE inhibitor) as tolerated.",
+            "note_cites": [
+              {
+                "lines": [
+                  "L021"
+                ],
+                "quote": "GP: monitor renal fn, uptitrate ACEi as tolerated."
+              }
+            ],
+            "reason": "The notes say 'uptitrate ACEi' \u2014 the output correctly identifies this as ramipril, which is faithful. However, the output in Part C says 'Your GP may also gradually adjust your ramipril dose over time', which weakens 'uptitrate as tolerated' (a directional instruction) to a vague 'may adjust', reducing the force of the instruction."
+          },
+          {
+            "output_quote": "Your GP may also gradually adjust your ramipril dose over time.",
+            "note_cites": [
+              {
+                "lines": [
+                  "L021"
+                ],
+                "quote": "uptitrate ACEi as tolerated"
+              }
+            ],
+            "reason": "Directional instruction 'uptitrate' weakened to 'may also gradually adjust' in Part C \u2014 force reduced and direction (increase) lost."
+          }
+        ],
+        "discarded": [],
+        "evidence_ok": true
+      },
+      "D7": {
+        "verdict": "partial",
+        "auto_fail": false,
+        "findings": [
+          {
+            "output_quote": "Creatinine: 168 \u00b5mol/L (Day 2) \u2192 142 \u00b5mol/L (Day 4)",
+            "note_cites": [
+              {
+                "lines": [
+                  "L011"
+                ],
+                "quote": "Watch renal fn w/ contrast. Creat 168."
+              },
+              {
+                "lines": [
+                  "L019"
+                ],
+                "quote": "Creat improving 142."
+              }
+            ],
+            "reason": "The creatinine of 168 is documented on Day 2 (L011) and the output correctly labels it Day 2; however the notes record the admission creatinine context on Day 2 \u2014 this is accurate. Minor timing imprecision only; no action-driving error."
+          }
+        ],
+        "discarded": [],
+        "evidence_ok": true
+      },
+      "D8": {
+        "verdict": "na",
+        "auto_fail": false,
+        "findings": [],
+        "discarded": [],
+        "evidence_ok": true
+      }
+    },
+    "defects": []
+  },
+  "error": null,
+  "cost_usd_est": 0.033983,
+  "elapsed_s": 10.749
+}

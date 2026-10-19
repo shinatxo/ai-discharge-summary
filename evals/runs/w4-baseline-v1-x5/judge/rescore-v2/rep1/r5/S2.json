@@ -1,0 +1,166 @@
+{
+  "judge_version": 1,
+  "judge_id": "rescore-v2",
+  "repeat": 1,
+  "generation_id": "w4-baseline-v1-x5/r5/S2",
+  "scenario_id": "S2",
+  "run": 5,
+  "notes_sha256": "1b138eb44a03c3ac42c22625b36982e32d8a0eece4c7e63daa91a2aa836d3ed6",
+  "output_sha256": "18e004fd59f286f2e338d563817a0f2eb36ebbed9c95d38debd8b2023e588fe1",
+  "view": null,
+  "model_id": "anthropic.claude-sonnet-4-6",
+  "region": "eu-west-2",
+  "temperature": 0.0,
+  "tool_strict": false,
+  "prompt": {
+    "path": "evals/judge/judge_prompt.md",
+    "file_sha256": "03905869e7beb80569e68a60d58cfab24fb1a70696a8829f7c53f83d005e8383",
+    "instructions_sha256": "7b251e319c0ea1c2f63cf2bb70c0df438e035807bb4db909ac0f2a071c88310f",
+    "rubric_sha256": "f8291ae161363ad519507e4b921828ee2c1969272229d330700b7c6ff89a0b41",
+    "system_sha256": "696c133b15c855845b776c1bb4fbe8dfd298e37f3f50daf90e6e136d5c394f0a"
+  },
+  "started_at": "2026-10-17T10:19:43+01:00",
+  "call": {
+    "stop_reason": "tool_use",
+    "throttle_retries": 0,
+    "latency_s": 7.772,
+    "input_tokens": 3104,
+    "output_tokens": 677,
+    "cache_read_tokens": 6108,
+    "cache_write_tokens": 0
+  },
+  "judgement": {
+    "dimensions": {
+      "D2": {
+        "verdict": "fail",
+        "auto_fail": false,
+        "findings": [
+          {
+            "output_quote": "Admitted: 20/05/YYYY | Discharged: 21/05/YYYY",
+            "note_cites": [],
+            "reason": "The output uses the placeholder 'YYYY' as a year token appended to the dates; while not a real 4-digit year, the output also contains '20/05/YYYY' and '21/05/YYYY' in multiple places. More critically, the output explicitly adds a year placeholder where the notes give only day/month \u2014 however the deterministic check targets a 4-digit year 1900\u20132099. Flagging separately: the output states 'No change during admission' for resus status, which is an assertion the notes do not support (the notes only document 'For resus' on Day 1 with no subsequent entry confirming no change)."
+          },
+          {
+            "output_quote": "RESUSCITATION STATUS\nFor resuscitation. No change during admission.",
+            "note_cites": [
+              {
+                "lines": [
+                  "L006"
+                ],
+                "quote": "For resus."
+              }
+            ],
+            "reason": "The notes record only 'For resus' on Day 1; 'No change during admission' is an assertion not present in the notes \u2014 this is an invented clinical fact (a statement about the resus trajectory)."
+          }
+        ]
+      },
+      "D3": {
+        "verdict": "partial",
+        "auto_fail": false,
+        "findings": [
+          {
+            "output_quote": "RESUSCITATION STATUS\nFor resuscitation. No change during admission.",
+            "note_cites": [
+              {
+                "lines": [
+                  "L006"
+                ],
+                "quote": "For resus."
+              }
+            ],
+            "reason": "The current status 'For resuscitation' is correct, but 'No change during admission' is not documented in the notes \u2014 the notes contain only a single resus entry with no subsequent review documented, so this assertion is unsupported. The status itself is correct, making this a partial rather than a fail, but the added unverified qualifier is a problem."
+          }
+        ]
+      },
+      "D6": {
+        "verdict": "pass",
+        "auto_fail": false,
+        "findings": []
+      },
+      "D7": {
+        "verdict": "pass",
+        "auto_fail": false,
+        "findings": []
+      },
+      "D8": {
+        "verdict": "na",
+        "auto_fail": false,
+        "findings": []
+      }
+    }
+  },
+  "verified": {
+    "dimensions": {
+      "D2": {
+        "verdict": "fail",
+        "auto_fail": false,
+        "findings": [
+          {
+            "output_quote": "Admitted: 20/05/YYYY | Discharged: 21/05/YYYY",
+            "note_cites": [],
+            "reason": "The output uses the placeholder 'YYYY' as a year token appended to the dates; while not a real 4-digit year, the output also contains '20/05/YYYY' and '21/05/YYYY' in multiple places. More critically, the output explicitly adds a year placeholder where the notes give only day/month \u2014 however the deterministic check targets a 4-digit year 1900\u20132099. Flagging separately: the output states 'No change during admission' for resus status, which is an assertion the notes do not support (the notes only document 'For resus' on Day 1 with no subsequent entry confirming no change)."
+          },
+          {
+            "output_quote": "RESUSCITATION STATUS\nFor resuscitation. No change during admission.",
+            "note_cites": [
+              {
+                "lines": [
+                  "L006"
+                ],
+                "quote": "For resus."
+              }
+            ],
+            "reason": "The notes record only 'For resus' on Day 1; 'No change during admission' is an assertion not present in the notes \u2014 this is an invented clinical fact (a statement about the resus trajectory)."
+          }
+        ],
+        "discarded": [],
+        "evidence_ok": true
+      },
+      "D3": {
+        "verdict": "partial",
+        "auto_fail": false,
+        "findings": [
+          {
+            "output_quote": "RESUSCITATION STATUS\nFor resuscitation. No change during admission.",
+            "note_cites": [
+              {
+                "lines": [
+                  "L006"
+                ],
+                "quote": "For resus."
+              }
+            ],
+            "reason": "The current status 'For resuscitation' is correct, but 'No change during admission' is not documented in the notes \u2014 the notes contain only a single resus entry with no subsequent review documented, so this assertion is unsupported. The status itself is correct, making this a partial rather than a fail, but the added unverified qualifier is a problem."
+          }
+        ],
+        "discarded": [],
+        "evidence_ok": true
+      },
+      "D6": {
+        "verdict": "pass",
+        "auto_fail": false,
+        "findings": [],
+        "discarded": [],
+        "evidence_ok": true
+      },
+      "D7": {
+        "verdict": "pass",
+        "auto_fail": false,
+        "findings": [],
+        "discarded": [],
+        "evidence_ok": true
+      },
+      "D8": {
+        "verdict": "na",
+        "auto_fail": false,
+        "findings": [],
+        "discarded": [],
+        "evidence_ok": true
+      }
+    },
+    "defects": []
+  },
+  "error": null,
+  "cost_usd_est": 0.023429,
+  "elapsed_s": 7.772
+}

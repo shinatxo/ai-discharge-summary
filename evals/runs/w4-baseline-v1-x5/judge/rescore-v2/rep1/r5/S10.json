@@ -1,0 +1,200 @@
+{
+  "judge_version": 1,
+  "judge_id": "rescore-v2",
+  "repeat": 1,
+  "generation_id": "w4-baseline-v1-x5/r5/S10",
+  "scenario_id": "S10",
+  "run": 5,
+  "notes_sha256": "a00b5caaa8e251a370d8136857fd8a4d7969cc70de71013d55dbd99a5fd03229",
+  "output_sha256": "1f87f1fbd2ddb679bb2105817fba73d1a0750779dfde70df6e1d457b11c09b90",
+  "view": null,
+  "model_id": "anthropic.claude-sonnet-4-6",
+  "region": "eu-west-2",
+  "temperature": 0.0,
+  "tool_strict": false,
+  "prompt": {
+    "path": "evals/judge/judge_prompt.md",
+    "file_sha256": "03905869e7beb80569e68a60d58cfab24fb1a70696a8829f7c53f83d005e8383",
+    "instructions_sha256": "7b251e319c0ea1c2f63cf2bb70c0df438e035807bb4db909ac0f2a071c88310f",
+    "rubric_sha256": "f8291ae161363ad519507e4b921828ee2c1969272229d330700b7c6ff89a0b41",
+    "system_sha256": "696c133b15c855845b776c1bb4fbe8dfd298e37f3f50daf90e6e136d5c394f0a"
+  },
+  "started_at": "2026-10-17T10:19:55+01:00",
+  "call": {
+    "stop_reason": "tool_use",
+    "throttle_retries": 0,
+    "latency_s": 14.309,
+    "input_tokens": 4282,
+    "output_tokens": 908,
+    "cache_read_tokens": 6108,
+    "cache_write_tokens": 0
+  },
+  "judgement": {
+    "dimensions": {
+      "D2": {
+        "verdict": "fail",
+        "auto_fail": false,
+        "findings": [
+          {
+            "output_quote": "Admitted: 15/05/YYYY | Discharged: 17/05/YYYY",
+            "note_cites": [],
+            "reason": "The output uses a year placeholder 'YYYY' which is an invented year-like token; more critically the output repeatedly uses 'YYYY' as a stand-in year appended to dates the notes give without any year \u2014 this constitutes adding a year (even as a placeholder) to dates the notes do not contain a year for, which the rubric treats as a D2 fail (added year)."
+          },
+          {
+            "output_quote": "17/05/YYYY",
+            "note_cites": [],
+            "reason": "Year 'YYYY' appended to a date the notes give only as day/month (17/05); the notes contain no year at all, so any year token added to a date is a D2 fail per the CSO ruling of 9 Oct 2026."
+          },
+          {
+            "output_quote": "\u26a0 Clinician to confirm appropriateness of ibuprofen in context of breastfeeding and recent PPH / renal perfusion, as this is not addressed in the notes.",
+            "note_cites": [
+              {
+                "lines": [
+                  "L009"
+                ],
+                "quote": "oral iron, regular paracetamol + ibuprofen PRN."
+              }
+            ],
+            "reason": "The output asserts a clinical concern about ibuprofen and breastfeeding/renal perfusion that is not documented anywhere in the notes \u2014 this is an invented clinical fact/concern."
+          },
+          {
+            "output_quote": "Review and confirm ongoing oral iron requirement; check haemoglobin response at an appropriate interval (timing not specified in notes \u2014 clinical judgement required).",
+            "note_cites": [
+              {
+                "lines": [
+                  "L010"
+                ],
+                "quote": "GP/HV informed. Postnatal check 6/52 with GP."
+              }
+            ],
+            "reason": "The output adds a GP action to recheck haemoglobin that is not documented in the notes \u2014 an invented clinical instruction."
+          }
+        ]
+      },
+      "D3": {
+        "verdict": "pass",
+        "auto_fail": false,
+        "findings": []
+      },
+      "D6": {
+        "verdict": "partial",
+        "auto_fail": false,
+        "findings": [
+          {
+            "output_quote": "The team gave you advice before you left about what to look out for in relation to bleeding, infection, and blood clots. If you are unsure about any of that advice, please speak to your midwife or GP.",
+            "note_cites": [
+              {
+                "lines": [
+                  "L010"
+                ],
+                "quote": "Safety-net re PPH/sepsis/VTE."
+              }
+            ],
+            "reason": "The safety-net instruction is rendered as a vague suggestion to speak to a midwife/GP 'if unsure', which is less precise than the documented safety-netting on PPH/sepsis/VTE \u2014 the force is weakened from a direct safety-net warning to an optional query, making it less restrictive."
+          }
+        ]
+      },
+      "D7": {
+        "verdict": "pass",
+        "auto_fail": false,
+        "findings": []
+      },
+      "D8": {
+        "verdict": "na",
+        "auto_fail": false,
+        "findings": []
+      }
+    }
+  },
+  "verified": {
+    "dimensions": {
+      "D2": {
+        "verdict": "fail",
+        "auto_fail": false,
+        "findings": [
+          {
+            "output_quote": "Admitted: 15/05/YYYY | Discharged: 17/05/YYYY",
+            "note_cites": [],
+            "reason": "The output uses a year placeholder 'YYYY' which is an invented year-like token; more critically the output repeatedly uses 'YYYY' as a stand-in year appended to dates the notes give without any year \u2014 this constitutes adding a year (even as a placeholder) to dates the notes do not contain a year for, which the rubric treats as a D2 fail (added year)."
+          },
+          {
+            "output_quote": "17/05/YYYY",
+            "note_cites": [],
+            "reason": "Year 'YYYY' appended to a date the notes give only as day/month (17/05); the notes contain no year at all, so any year token added to a date is a D2 fail per the CSO ruling of 9 Oct 2026."
+          },
+          {
+            "output_quote": "\u26a0 Clinician to confirm appropriateness of ibuprofen in context of breastfeeding and recent PPH / renal perfusion, as this is not addressed in the notes.",
+            "note_cites": [
+              {
+                "lines": [
+                  "L009"
+                ],
+                "quote": "oral iron, regular paracetamol + ibuprofen PRN."
+              }
+            ],
+            "reason": "The output asserts a clinical concern about ibuprofen and breastfeeding/renal perfusion that is not documented anywhere in the notes \u2014 this is an invented clinical fact/concern."
+          },
+          {
+            "output_quote": "Review and confirm ongoing oral iron requirement; check haemoglobin response at an appropriate interval (timing not specified in notes \u2014 clinical judgement required).",
+            "note_cites": [
+              {
+                "lines": [
+                  "L010"
+                ],
+                "quote": "GP/HV informed. Postnatal check 6/52 with GP."
+              }
+            ],
+            "reason": "The output adds a GP action to recheck haemoglobin that is not documented in the notes \u2014 an invented clinical instruction."
+          }
+        ],
+        "discarded": [],
+        "evidence_ok": true
+      },
+      "D3": {
+        "verdict": "pass",
+        "auto_fail": false,
+        "findings": [],
+        "discarded": [],
+        "evidence_ok": true
+      },
+      "D6": {
+        "verdict": "partial",
+        "auto_fail": false,
+        "findings": [
+          {
+            "output_quote": "The team gave you advice before you left about what to look out for in relation to bleeding, infection, and blood clots. If you are unsure about any of that advice, please speak to your midwife or GP.",
+            "note_cites": [
+              {
+                "lines": [
+                  "L010"
+                ],
+                "quote": "Safety-net re PPH/sepsis/VTE."
+              }
+            ],
+            "reason": "The safety-net instruction is rendered as a vague suggestion to speak to a midwife/GP 'if unsure', which is less precise than the documented safety-netting on PPH/sepsis/VTE \u2014 the force is weakened from a direct safety-net warning to an optional query, making it less restrictive."
+          }
+        ],
+        "discarded": [],
+        "evidence_ok": true
+      },
+      "D7": {
+        "verdict": "pass",
+        "auto_fail": false,
+        "findings": [],
+        "discarded": [],
+        "evidence_ok": true
+      },
+      "D8": {
+        "verdict": "na",
+        "auto_fail": false,
+        "findings": [],
+        "discarded": [],
+        "evidence_ok": true
+      }
+    },
+    "defects": []
+  },
+  "error": null,
+  "cost_usd_est": 0.031128,
+  "elapsed_s": 14.309
+}

@@ -1,0 +1,159 @@
+{
+  "judge_version": 1,
+  "judge_id": "rescore-v2",
+  "repeat": 1,
+  "generation_id": "w4-pipeline-e06-x5/r3/S12",
+  "scenario_id": "S12",
+  "run": 3,
+  "notes_sha256": "143db4ec88bb969841da8f67ae4e9cff993d97483c923700d3c320033a67f923",
+  "output_sha256": "23c812ab887546909e82429c43e47ee6e385b56c1f74fe669b78e623340606de",
+  "view": {
+    "name": "pipeline-steps-1-5b",
+    "version": 1
+  },
+  "model_id": "anthropic.claude-sonnet-4-6",
+  "region": "eu-west-2",
+  "temperature": 0.0,
+  "tool_strict": false,
+  "prompt": {
+    "path": "evals/judge/judge_prompt.md",
+    "file_sha256": "03905869e7beb80569e68a60d58cfab24fb1a70696a8829f7c53f83d005e8383",
+    "instructions_sha256": "7b251e319c0ea1c2f63cf2bb70c0df438e035807bb4db909ac0f2a071c88310f",
+    "rubric_sha256": "f8291ae161363ad519507e4b921828ee2c1969272229d330700b7c6ff89a0b41",
+    "system_sha256": "696c133b15c855845b776c1bb4fbe8dfd298e37f3f50daf90e6e136d5c394f0a"
+  },
+  "started_at": "2026-10-17T10:15:02+01:00",
+  "call": {
+    "stop_reason": "tool_use",
+    "throttle_retries": 0,
+    "latency_s": 4.954,
+    "input_tokens": 2245,
+    "output_tokens": 508,
+    "cache_read_tokens": 6108,
+    "cache_write_tokens": 0
+  },
+  "judgement": {
+    "dimensions": {
+      "D2": {
+        "verdict": "partial",
+        "auto_fail": false,
+        "findings": [
+          {
+            "output_quote": "Tazocin (piperacillin-tazobactam) prescribed",
+            "note_cites": [
+              {
+                "lines": [
+                  "L022"
+                ],
+                "quote": "Tazocin"
+              }
+            ],
+            "reason": "The output adds the generic name expansion '(piperacillin-tazobactam)' which is not present in the notes \u2014 minor non-clinical embellishment that does not assert a new clinical fact beyond the brand name given."
+          }
+        ]
+      },
+      "D3": {
+        "verdict": "pass",
+        "auto_fail": false,
+        "findings": []
+      },
+      "D6": {
+        "verdict": "pass",
+        "auto_fail": false,
+        "findings": []
+      },
+      "D7": {
+        "verdict": "partial",
+        "auto_fail": false,
+        "findings": [
+          {
+            "output_quote": "AKI (previous) [L007]",
+            "note_cites": [
+              {
+                "lines": [
+                  "L007"
+                ],
+                "quote": "PMHx Hypertension, IHD, CKD, AKI, closed fracture of rib, fracture of neck"
+              }
+            ],
+            "reason": "AKI is listed in PMHx but the notes also document active AKI during this admission (L035: 'AKI and raised inflammatory markers'); labelling it as '(previous)' in the background section while also listing it as a secondary diagnosis is not wrong per se, but the background entry's '(previous)' qualifier could mislead \u2014 however this is a timing imprecision on a fact that is separately captured as active, so partial rather than fail."
+          }
+        ]
+      },
+      "D8": {
+        "verdict": "na",
+        "auto_fail": false,
+        "findings": []
+      }
+    }
+  },
+  "verified": {
+    "dimensions": {
+      "D2": {
+        "verdict": "partial",
+        "auto_fail": false,
+        "findings": [
+          {
+            "output_quote": "Tazocin (piperacillin-tazobactam) prescribed",
+            "note_cites": [
+              {
+                "lines": [
+                  "L022"
+                ],
+                "quote": "Tazocin"
+              }
+            ],
+            "reason": "The output adds the generic name expansion '(piperacillin-tazobactam)' which is not present in the notes \u2014 minor non-clinical embellishment that does not assert a new clinical fact beyond the brand name given."
+          }
+        ],
+        "discarded": [],
+        "evidence_ok": true
+      },
+      "D3": {
+        "verdict": "pass",
+        "auto_fail": false,
+        "findings": [],
+        "discarded": [],
+        "evidence_ok": true
+      },
+      "D6": {
+        "verdict": "pass",
+        "auto_fail": false,
+        "findings": [],
+        "discarded": [],
+        "evidence_ok": true
+      },
+      "D7": {
+        "verdict": "partial",
+        "auto_fail": false,
+        "findings": [
+          {
+            "output_quote": "AKI (previous) [L007]",
+            "note_cites": [
+              {
+                "lines": [
+                  "L007"
+                ],
+                "quote": "PMHx Hypertension, IHD, CKD, AKI, closed fracture of rib, fracture of neck"
+              }
+            ],
+            "reason": "AKI is listed in PMHx but the notes also document active AKI during this admission (L035: 'AKI and raised inflammatory markers'); labelling it as '(previous)' in the background section while also listing it as a secondary diagnosis is not wrong per se, but the background entry's '(previous)' qualifier could mislead \u2014 however this is a timing imprecision on a fact that is separately captured as active, so partial rather than fail."
+          }
+        ],
+        "discarded": [],
+        "evidence_ok": true
+      },
+      "D8": {
+        "verdict": "na",
+        "auto_fail": false,
+        "findings": [],
+        "discarded": [],
+        "evidence_ok": true
+      }
+    },
+    "defects": []
+  },
+  "error": null,
+  "cost_usd_est": 0.017806,
+  "elapsed_s": 4.954
+}

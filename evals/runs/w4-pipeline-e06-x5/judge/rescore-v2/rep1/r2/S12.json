@@ -1,0 +1,217 @@
+{
+  "judge_version": 1,
+  "judge_id": "rescore-v2",
+  "repeat": 1,
+  "generation_id": "w4-pipeline-e06-x5/r2/S12",
+  "scenario_id": "S12",
+  "run": 2,
+  "notes_sha256": "143db4ec88bb969841da8f67ae4e9cff993d97483c923700d3c320033a67f923",
+  "output_sha256": "94555522bb4c8cb3cf74b1e16c2f3368b0d36e861ac91e516cfc06f97d6cf61c",
+  "view": {
+    "name": "pipeline-steps-1-5b",
+    "version": 1
+  },
+  "model_id": "anthropic.claude-sonnet-4-6",
+  "region": "eu-west-2",
+  "temperature": 0.0,
+  "tool_strict": false,
+  "prompt": {
+    "path": "evals/judge/judge_prompt.md",
+    "file_sha256": "03905869e7beb80569e68a60d58cfab24fb1a70696a8829f7c53f83d005e8383",
+    "instructions_sha256": "7b251e319c0ea1c2f63cf2bb70c0df438e035807bb4db909ac0f2a071c88310f",
+    "rubric_sha256": "f8291ae161363ad519507e4b921828ee2c1969272229d330700b7c6ff89a0b41",
+    "system_sha256": "696c133b15c855845b776c1bb4fbe8dfd298e37f3f50daf90e6e136d5c394f0a"
+  },
+  "started_at": "2026-10-17T10:14:41+01:00",
+  "call": {
+    "stop_reason": "tool_use",
+    "throttle_retries": 0,
+    "latency_s": 8.902,
+    "input_tokens": 2149,
+    "output_tokens": 888,
+    "cache_read_tokens": 6108,
+    "cache_write_tokens": 0
+  },
+  "judgement": {
+    "dimensions": {
+      "D2": {
+        "verdict": "fail",
+        "auto_fail": true,
+        "findings": [
+          {
+            "output_quote": "Tazocin (piperacillin-tazobactam) prescribed [L022]",
+            "note_cites": [
+              {
+                "lines": [
+                  "L022"
+                ],
+                "quote": "Tazocin"
+              }
+            ],
+            "reason": "Tazocin is an inpatient-only IV antibiotic; it appears in the treatment section but is not a discharge medication \u2014 however the output does not carry it onto the discharge list, so this is not the auto-fail. Checking further for other hallucinations."
+          },
+          {
+            "output_quote": "Carcinoma of cervix [L008]",
+            "note_cites": [
+              {
+                "lines": [
+                  "L008"
+                ],
+                "quote": "Ca cervix."
+              }
+            ],
+            "reason": "Ca cervix is faithfully rendered as carcinoma of cervix \u2014 not a hallucination. No auto-fail here."
+          },
+          {
+            "output_quote": "Note on L017 contains patient first name \u2014 recorded in suspicious_text; clinical content extracted normally [L017] [citation unverified]",
+            "note_cites": [],
+            "reason": "This is an invented meta-commentary/processing note that does not appear in the notes and asserts a processing fact the notes do not contain; minor non-clinical embellishment but does not assert a clinical fact \u2014 partial at most."
+          }
+        ]
+      },
+      "D3": {
+        "verdict": "partial",
+        "auto_fail": false,
+        "findings": [
+          {
+            "output_quote": "A resuscitation form or discussion is documented ([L029]: \"RESPECT form\"). Its recommendation is not transcribed in these notes. Confirm against the completed form before relying on any resuscitation decision.",
+            "note_cites": [
+              {
+                "lines": [
+                  "L029"
+                ],
+                "quote": "RESPECT form"
+              }
+            ],
+            "reason": "The notes document that a ReSPECT form was completed but do not record its recommendation; the output correctly notes this but does not use the standard 'Not documented' phrasing and does not flag any change marker \u2014 the status is correctly handled as unknown but the presentation is non-standard and missing the required change flag structure (the form was completed during admission, implying a change from no form to a form, which is not flagged)."
+          }
+        ]
+      },
+      "D6": {
+        "verdict": "pass",
+        "auto_fail": false,
+        "findings": []
+      },
+      "D7": {
+        "verdict": "partial",
+        "auto_fail": false,
+        "findings": [
+          {
+            "output_quote": "AXR: dilated bowel loops concerning for obstruction; faecal loading [L031]",
+            "note_cites": [
+              {
+                "lines": [
+                  "L031"
+                ],
+                "quote": "AXR dilated bowel loops concerning for obstruction, faecal loading"
+              }
+            ],
+            "reason": "The AXR finding is listed under 'Secondary diagnoses' as if it is a current active diagnosis, when the notes show it as an investigation finding from 12/05/26 during admission; it is also listed again correctly under investigations \u2014 the dual listing under diagnoses implies it is an ongoing active condition rather than an inpatient finding, making the temporality imprecise, though it drives no specific discharge action."
+          }
+        ]
+      },
+      "D8": {
+        "verdict": "na",
+        "auto_fail": false,
+        "findings": []
+      }
+    }
+  },
+  "verified": {
+    "dimensions": {
+      "D2": {
+        "verdict": "fail",
+        "auto_fail": true,
+        "findings": [
+          {
+            "output_quote": "Tazocin (piperacillin-tazobactam) prescribed [L022]",
+            "note_cites": [
+              {
+                "lines": [
+                  "L022"
+                ],
+                "quote": "Tazocin"
+              }
+            ],
+            "reason": "Tazocin is an inpatient-only IV antibiotic; it appears in the treatment section but is not a discharge medication \u2014 however the output does not carry it onto the discharge list, so this is not the auto-fail. Checking further for other hallucinations."
+          },
+          {
+            "output_quote": "Carcinoma of cervix [L008]",
+            "note_cites": [
+              {
+                "lines": [
+                  "L008"
+                ],
+                "quote": "Ca cervix."
+              }
+            ],
+            "reason": "Ca cervix is faithfully rendered as carcinoma of cervix \u2014 not a hallucination. No auto-fail here."
+          },
+          {
+            "output_quote": "Note on L017 contains patient first name \u2014 recorded in suspicious_text; clinical content extracted normally [L017] [citation unverified]",
+            "note_cites": [],
+            "reason": "This is an invented meta-commentary/processing note that does not appear in the notes and asserts a processing fact the notes do not contain; minor non-clinical embellishment but does not assert a clinical fact \u2014 partial at most."
+          }
+        ],
+        "discarded": [],
+        "evidence_ok": true
+      },
+      "D3": {
+        "verdict": "partial",
+        "auto_fail": false,
+        "findings": [],
+        "discarded": [
+          {
+            "index": 0,
+            "reason": "output_quote_too_long"
+          }
+        ],
+        "evidence_ok": false
+      },
+      "D6": {
+        "verdict": "pass",
+        "auto_fail": false,
+        "findings": [],
+        "discarded": [],
+        "evidence_ok": true
+      },
+      "D7": {
+        "verdict": "partial",
+        "auto_fail": false,
+        "findings": [
+          {
+            "output_quote": "AXR: dilated bowel loops concerning for obstruction; faecal loading [L031]",
+            "note_cites": [
+              {
+                "lines": [
+                  "L031"
+                ],
+                "quote": "AXR dilated bowel loops concerning for obstruction, faecal loading"
+              }
+            ],
+            "reason": "The AXR finding is listed under 'Secondary diagnoses' as if it is a current active diagnosis, when the notes show it as an investigation finding from 12/05/26 during admission; it is also listed again correctly under investigations \u2014 the dual listing under diagnoses implies it is an ongoing active condition rather than an inpatient finding, making the temporality imprecise, though it drives no specific discharge action."
+          }
+        ],
+        "discarded": [],
+        "evidence_ok": true
+      },
+      "D8": {
+        "verdict": "na",
+        "auto_fail": false,
+        "findings": [],
+        "discarded": [],
+        "evidence_ok": true
+      }
+    },
+    "defects": [
+      {
+        "dimension": "D3",
+        "index": 0,
+        "reason": "output_quote_too_long"
+      }
+    ]
+  },
+  "error": null,
+  "cost_usd_est": 0.023759,
+  "elapsed_s": 8.902
+}

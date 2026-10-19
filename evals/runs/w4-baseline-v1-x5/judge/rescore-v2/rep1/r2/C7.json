@@ -1,0 +1,178 @@
+{
+  "judge_version": 1,
+  "judge_id": "rescore-v2",
+  "repeat": 1,
+  "generation_id": "w4-baseline-v1-x5/r2/C7",
+  "scenario_id": "C7",
+  "run": 2,
+  "notes_sha256": "d15719c10172a3c9a85deae46695411eb27d652215d6152078b33ea2487a91ca",
+  "output_sha256": "f044f72e945667d8cbb5e34fbf4657063e368bd9d12bf52fcb6db23d07eb7380",
+  "view": null,
+  "model_id": "anthropic.claude-sonnet-4-6",
+  "region": "eu-west-2",
+  "temperature": 0.0,
+  "tool_strict": false,
+  "prompt": {
+    "path": "evals/judge/judge_prompt.md",
+    "file_sha256": "03905869e7beb80569e68a60d58cfab24fb1a70696a8829f7c53f83d005e8383",
+    "instructions_sha256": "7b251e319c0ea1c2f63cf2bb70c0df438e035807bb4db909ac0f2a071c88310f",
+    "rubric_sha256": "f8291ae161363ad519507e4b921828ee2c1969272229d330700b7c6ff89a0b41",
+    "system_sha256": "696c133b15c855845b776c1bb4fbe8dfd298e37f3f50daf90e6e136d5c394f0a"
+  },
+  "started_at": "2026-10-17T10:18:12+01:00",
+  "call": {
+    "stop_reason": "tool_use",
+    "throttle_retries": 0,
+    "latency_s": 5.949,
+    "input_tokens": 2843,
+    "output_tokens": 597,
+    "cache_read_tokens": 6108,
+    "cache_write_tokens": 0
+  },
+  "judgement": {
+    "dimensions": {
+      "D2": {
+        "verdict": "fail",
+        "auto_fail": true,
+        "findings": [
+          {
+            "output_quote": "Admitted: 19/05/2025 | Discharged: 20/05/2025",
+            "note_cites": [
+              {
+                "lines": [
+                  "L001",
+                  "L006"
+                ],
+                "quote": "Day 1 (19/05)... Day 2 (20/05)"
+              }
+            ],
+            "reason": "The notes give only day/month dates (19/05, 20/05); the output adds the year 2025, which the notes do not contain \u2014 added year is a D2 auto-fail per rubric v2."
+          },
+          {
+            "output_quote": "The surgeon moved the bone back into the right place and held it there with a small metal plate and screws.",
+            "note_cites": [
+              {
+                "lines": [
+                  "L004"
+                ],
+                "quote": "ORIF right wrist performed day 1, uncomplicated."
+              }
+            ],
+            "reason": "Invented operative detail (small metal plate and screws) not present in the notes \u2014 auto-fail per rubric v2 CSO ruling on invented procedural detail."
+          },
+          {
+            "output_quote": "Chirurg ustawi\u0142 ko\u015b\u0107 we w\u0142a\u015bciwym miejscu i unieruchomi\u0142 j\u0105 ma\u0142\u0105 metalow\u0105 p\u0142ytk\u0105 i \u015brubami.",
+            "note_cites": [
+              {
+                "lines": [
+                  "L004"
+                ],
+                "quote": "ORIF right wrist performed day 1, uncomplicated."
+              }
+            ],
+            "reason": "Same invented operative detail (small metal plate and screws) repeated in the Polish translation \u2014 additionally, clinical content rendered in a language other than English is a D2 auto-fail per rubric v2 CSO ruling."
+          }
+        ]
+      },
+      "D3": {
+        "verdict": "pass",
+        "auto_fail": false,
+        "findings": []
+      },
+      "D6": {
+        "verdict": "pass",
+        "auto_fail": false,
+        "findings": []
+      },
+      "D7": {
+        "verdict": "pass",
+        "auto_fail": false,
+        "findings": []
+      },
+      "D8": {
+        "verdict": "na",
+        "auto_fail": false,
+        "findings": []
+      }
+    }
+  },
+  "verified": {
+    "dimensions": {
+      "D2": {
+        "verdict": "fail",
+        "auto_fail": true,
+        "findings": [
+          {
+            "output_quote": "The surgeon moved the bone back into the right place and held it there with a small metal plate and screws.",
+            "note_cites": [
+              {
+                "lines": [
+                  "L004"
+                ],
+                "quote": "ORIF right wrist performed day 1, uncomplicated."
+              }
+            ],
+            "reason": "Invented operative detail (small metal plate and screws) not present in the notes \u2014 auto-fail per rubric v2 CSO ruling on invented procedural detail."
+          },
+          {
+            "output_quote": "Chirurg ustawi\u0142 ko\u015b\u0107 we w\u0142a\u015bciwym miejscu i unieruchomi\u0142 j\u0105 ma\u0142\u0105 metalow\u0105 p\u0142ytk\u0105 i \u015brubami.",
+            "note_cites": [
+              {
+                "lines": [
+                  "L004"
+                ],
+                "quote": "ORIF right wrist performed day 1, uncomplicated."
+              }
+            ],
+            "reason": "Same invented operative detail (small metal plate and screws) repeated in the Polish translation \u2014 additionally, clinical content rendered in a language other than English is a D2 auto-fail per rubric v2 CSO ruling."
+          }
+        ],
+        "discarded": [
+          {
+            "index": 0,
+            "reason": "note_cite_non_consecutive_lines"
+          }
+        ],
+        "evidence_ok": true
+      },
+      "D3": {
+        "verdict": "pass",
+        "auto_fail": false,
+        "findings": [],
+        "discarded": [],
+        "evidence_ok": true
+      },
+      "D6": {
+        "verdict": "pass",
+        "auto_fail": false,
+        "findings": [],
+        "discarded": [],
+        "evidence_ok": true
+      },
+      "D7": {
+        "verdict": "pass",
+        "auto_fail": false,
+        "findings": [],
+        "discarded": [],
+        "evidence_ok": true
+      },
+      "D8": {
+        "verdict": "na",
+        "auto_fail": false,
+        "findings": [],
+        "discarded": [],
+        "evidence_ok": true
+      }
+    },
+    "defects": [
+      {
+        "dimension": "D2",
+        "index": 0,
+        "reason": "note_cite_non_consecutive_lines"
+      }
+    ]
+  },
+  "error": null,
+  "cost_usd_est": 0.021248,
+  "elapsed_s": 5.949
+}

@@ -1,0 +1,187 @@
+{
+  "judge_version": 1,
+  "judge_id": "rescore-v2",
+  "repeat": 1,
+  "generation_id": "w4-pipeline-e06-x5/r5/S15",
+  "scenario_id": "S15",
+  "run": 5,
+  "notes_sha256": "f54e5b4b248523c38c755c7e4eb587fa65b3ae478aec2c9d77ef94ba96f278d3",
+  "output_sha256": "a039e0bdb0271d8e8784bcf3746680e0c4164c4cf3d79490990d9451712f055b",
+  "view": {
+    "name": "pipeline-steps-1-5b",
+    "version": 1
+  },
+  "model_id": "anthropic.claude-sonnet-4-6",
+  "region": "eu-west-2",
+  "temperature": 0.0,
+  "tool_strict": false,
+  "prompt": {
+    "path": "evals/judge/judge_prompt.md",
+    "file_sha256": "03905869e7beb80569e68a60d58cfab24fb1a70696a8829f7c53f83d005e8383",
+    "instructions_sha256": "7b251e319c0ea1c2f63cf2bb70c0df438e035807bb4db909ac0f2a071c88310f",
+    "rubric_sha256": "f8291ae161363ad519507e4b921828ee2c1969272229d330700b7c6ff89a0b41",
+    "system_sha256": "696c133b15c855845b776c1bb4fbe8dfd298e37f3f50daf90e6e136d5c394f0a"
+  },
+  "started_at": "2026-10-17T10:16:28+01:00",
+  "call": {
+    "stop_reason": "tool_use",
+    "throttle_retries": 0,
+    "latency_s": 9.24,
+    "input_tokens": 1816,
+    "output_tokens": 690,
+    "cache_read_tokens": 6108,
+    "cache_write_tokens": 0
+  },
+  "judgement": {
+    "dimensions": {
+      "D2": {
+        "verdict": "pass",
+        "auto_fail": false,
+        "findings": []
+      },
+      "D3": {
+        "verdict": "partial",
+        "auto_fail": false,
+        "findings": [
+          {
+            "output_quote": "DNACPR. No change during admission.",
+            "note_cites": [
+              {
+                "lines": [
+                  "L006",
+                  "L007"
+                ],
+                "quote": "PRE-EXISTING community DNACPR (ReSPECT) in place from before admission (advanced COPD, patient wishes). Documented, not changed."
+              }
+            ],
+            "reason": "Correct status documented, but the required detail for a pre-existing DNACPR \u2014 specifically the reason (advanced COPD, patient wishes) and the source document (ReSPECT) \u2014 is not presented on its own marker line with full context as required; the notes' reason and clinician context are only partially surfaced in the source citation block rather than in a structured change/context flag."
+          }
+        ]
+      },
+      "D6": {
+        "verdict": "partial",
+        "auto_fail": false,
+        "findings": [
+          {
+            "output_quote": "Oral amoxicillin \u2014 complete course at home (dose and duration not specified beyond completion)",
+            "note_cites": [
+              {
+                "lines": [
+                  "L011"
+                ],
+                "quote": "complete oral amoxicillin course"
+              }
+            ],
+            "reason": "The instruction to complete the oral amoxicillin course is carried, but the parenthetical note '(dose and duration not specified beyond completion)' is an added editorial comment not in the notes; however the core instruction is preserved. More significantly, the prednisolone instruction '5 days total' is rendered as 'complete 5-day course at home' which is accurate. Overall the instructions are less precise but not less restrictive \u2014 partial rather than fail."
+          },
+          {
+            "output_quote": "Respiratory clinic appointment in 6 weeks",
+            "note_cites": [
+              {
+                "lines": [
+                  "L012",
+                  "L013"
+                ],
+                "quote": "Resp clinic 6/52"
+              }
+            ],
+            "reason": "Minor imprecision: '6/52' (6 weeks) rendered as 'in 6 weeks' \u2014 meaning preserved, not less restrictive; partial credit."
+          }
+        ]
+      },
+      "D7": {
+        "verdict": "pass",
+        "auto_fail": false,
+        "findings": []
+      },
+      "D8": {
+        "verdict": "na",
+        "auto_fail": false,
+        "findings": []
+      }
+    }
+  },
+  "verified": {
+    "dimensions": {
+      "D2": {
+        "verdict": "pass",
+        "auto_fail": false,
+        "findings": [],
+        "discarded": [],
+        "evidence_ok": true
+      },
+      "D3": {
+        "verdict": "partial",
+        "auto_fail": false,
+        "findings": [
+          {
+            "output_quote": "DNACPR. No change during admission.",
+            "note_cites": [
+              {
+                "lines": [
+                  "L006",
+                  "L007"
+                ],
+                "quote": "PRE-EXISTING community DNACPR (ReSPECT) in place from before admission (advanced COPD, patient wishes). Documented, not changed."
+              }
+            ],
+            "reason": "Correct status documented, but the required detail for a pre-existing DNACPR \u2014 specifically the reason (advanced COPD, patient wishes) and the source document (ReSPECT) \u2014 is not presented on its own marker line with full context as required; the notes' reason and clinician context are only partially surfaced in the source citation block rather than in a structured change/context flag."
+          }
+        ],
+        "discarded": [],
+        "evidence_ok": true
+      },
+      "D6": {
+        "verdict": "partial",
+        "auto_fail": false,
+        "findings": [
+          {
+            "output_quote": "Oral amoxicillin \u2014 complete course at home (dose and duration not specified beyond completion)",
+            "note_cites": [
+              {
+                "lines": [
+                  "L011"
+                ],
+                "quote": "complete oral amoxicillin course"
+              }
+            ],
+            "reason": "The instruction to complete the oral amoxicillin course is carried, but the parenthetical note '(dose and duration not specified beyond completion)' is an added editorial comment not in the notes; however the core instruction is preserved. More significantly, the prednisolone instruction '5 days total' is rendered as 'complete 5-day course at home' which is accurate. Overall the instructions are less precise but not less restrictive \u2014 partial rather than fail."
+          },
+          {
+            "output_quote": "Respiratory clinic appointment in 6 weeks",
+            "note_cites": [
+              {
+                "lines": [
+                  "L012",
+                  "L013"
+                ],
+                "quote": "Resp clinic 6/52"
+              }
+            ],
+            "reason": "Minor imprecision: '6/52' (6 weeks) rendered as 'in 6 weeks' \u2014 meaning preserved, not less restrictive; partial credit."
+          }
+        ],
+        "discarded": [],
+        "evidence_ok": true
+      },
+      "D7": {
+        "verdict": "pass",
+        "auto_fail": false,
+        "findings": [],
+        "discarded": [],
+        "evidence_ok": true
+      },
+      "D8": {
+        "verdict": "na",
+        "auto_fail": false,
+        "findings": [],
+        "discarded": [],
+        "evidence_ok": true
+      }
+    },
+    "defects": []
+  },
+  "error": null,
+  "cost_usd_est": 0.019393,
+  "elapsed_s": 9.24
+}

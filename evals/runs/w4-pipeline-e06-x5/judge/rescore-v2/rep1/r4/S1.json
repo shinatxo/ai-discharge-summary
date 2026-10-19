@@ -1,0 +1,161 @@
+{
+  "judge_version": 1,
+  "judge_id": "rescore-v2",
+  "repeat": 1,
+  "generation_id": "w4-pipeline-e06-x5/r4/S1",
+  "scenario_id": "S1",
+  "run": 4,
+  "notes_sha256": "deacfb8fe45187fb890a33b6e0c8ad2f5e6902c825879bb20931a69f80969fa3",
+  "output_sha256": "1538b47b0315f5f4dba11754a990716ef18ea22aba7a12980f022ae42ac002b4",
+  "view": {
+    "name": "pipeline-steps-1-5b",
+    "version": 1
+  },
+  "model_id": "anthropic.claude-sonnet-4-6",
+  "region": "eu-west-2",
+  "temperature": 0.0,
+  "tool_strict": false,
+  "prompt": {
+    "path": "evals/judge/judge_prompt.md",
+    "file_sha256": "03905869e7beb80569e68a60d58cfab24fb1a70696a8829f7c53f83d005e8383",
+    "instructions_sha256": "7b251e319c0ea1c2f63cf2bb70c0df438e035807bb4db909ac0f2a071c88310f",
+    "rubric_sha256": "f8291ae161363ad519507e4b921828ee2c1969272229d330700b7c6ff89a0b41",
+    "system_sha256": "696c133b15c855845b776c1bb4fbe8dfd298e37f3f50daf90e6e136d5c394f0a"
+  },
+  "started_at": "2026-10-17T10:15:19+01:00",
+  "call": {
+    "stop_reason": "tool_use",
+    "throttle_retries": 0,
+    "latency_s": 5.303,
+    "input_tokens": 2022,
+    "output_tokens": 542,
+    "cache_read_tokens": 6108,
+    "cache_write_tokens": 0
+  },
+  "judgement": {
+    "dimensions": {
+      "D2": {
+        "verdict": "fail",
+        "auto_fail": false,
+        "findings": [
+          {
+            "output_quote": "Previous myocardial infarction 2019 [L002]",
+            "note_cites": [
+              {
+                "lines": [
+                  "L002"
+                ],
+                "quote": "prev MI 2019."
+              }
+            ],
+            "reason": "The notes do contain '2019' for the previous MI, so this is not an added year \u2014 however, reviewing further: the notes do state 2019, so this is faithful. No D2 issue here."
+          }
+        ]
+      },
+      "D3": {
+        "verdict": "partial",
+        "auto_fail": false,
+        "findings": [
+          {
+            "output_quote": "DNACPR. *** CHANGED DURING ADMISSION ***\nSource: [L008]: \"For resus.\"; [L012]: \"For resus.\"; [L015\u2013L016]: \"DNACPR discussed + agreed w/ pt + family. DNACPR form completed by Dr Patel 14/05.\"",
+            "note_cites": [
+              {
+                "lines": [
+                  "L015",
+                  "L016"
+                ],
+                "quote": "DNACPR discussed +\nagreed w/ pt + family. DNACPR form completed by Dr Patel 14/05."
+              }
+            ],
+            "reason": "The change is flagged with direction, date and clinician, but the reason for the change (frailty, comorbidities, inoperable disease) is not explicitly stated on the resus status marker line or in the resus section itself \u2014 it appears only in the Treatment section, not as part of the resus status entry."
+          }
+        ]
+      },
+      "D6": {
+        "verdict": "pass",
+        "auto_fail": false,
+        "findings": []
+      },
+      "D7": {
+        "verdict": "pass",
+        "auto_fail": false,
+        "findings": []
+      },
+      "D8": {
+        "verdict": "na",
+        "auto_fail": false,
+        "findings": []
+      }
+    }
+  },
+  "verified": {
+    "dimensions": {
+      "D2": {
+        "verdict": "fail",
+        "auto_fail": false,
+        "findings": [
+          {
+            "output_quote": "Previous myocardial infarction 2019 [L002]",
+            "note_cites": [
+              {
+                "lines": [
+                  "L002"
+                ],
+                "quote": "prev MI 2019."
+              }
+            ],
+            "reason": "The notes do contain '2019' for the previous MI, so this is not an added year \u2014 however, reviewing further: the notes do state 2019, so this is faithful. No D2 issue here."
+          }
+        ],
+        "discarded": [],
+        "evidence_ok": true
+      },
+      "D3": {
+        "verdict": "partial",
+        "auto_fail": false,
+        "findings": [
+          {
+            "output_quote": "DNACPR. *** CHANGED DURING ADMISSION ***\nSource: [L008]: \"For resus.\"; [L012]: \"For resus.\"; [L015\u2013L016]: \"DNACPR discussed + agreed w/ pt + family. DNACPR form completed by Dr Patel 14/05.\"",
+            "note_cites": [
+              {
+                "lines": [
+                  "L015",
+                  "L016"
+                ],
+                "quote": "DNACPR discussed +\nagreed w/ pt + family. DNACPR form completed by Dr Patel 14/05."
+              }
+            ],
+            "reason": "The change is flagged with direction, date and clinician, but the reason for the change (frailty, comorbidities, inoperable disease) is not explicitly stated on the resus status marker line or in the resus section itself \u2014 it appears only in the Treatment section, not as part of the resus status entry."
+          }
+        ],
+        "discarded": [],
+        "evidence_ok": true
+      },
+      "D6": {
+        "verdict": "pass",
+        "auto_fail": false,
+        "findings": [],
+        "discarded": [],
+        "evidence_ok": true
+      },
+      "D7": {
+        "verdict": "pass",
+        "auto_fail": false,
+        "findings": [],
+        "discarded": [],
+        "evidence_ok": true
+      },
+      "D8": {
+        "verdict": "na",
+        "auto_fail": false,
+        "findings": [],
+        "discarded": [],
+        "evidence_ok": true
+      }
+    },
+    "defects": []
+  },
+  "error": null,
+  "cost_usd_est": 0.017631,
+  "elapsed_s": 5.303
+}

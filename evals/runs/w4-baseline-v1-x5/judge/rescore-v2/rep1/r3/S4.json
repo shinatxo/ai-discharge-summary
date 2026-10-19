@@ -1,0 +1,166 @@
+{
+  "judge_version": 1,
+  "judge_id": "rescore-v2",
+  "repeat": 1,
+  "generation_id": "w4-baseline-v1-x5/r3/S4",
+  "scenario_id": "S4",
+  "run": 3,
+  "notes_sha256": "647dbf1787d657773d262b81e9df534fdf54b57d06d61b8fa585b26bbcd9a6cc",
+  "output_sha256": "0e78c772cd9bd4823bd6dcabd3a69b6c101f859c9f6e33d54f7dfa4cbcb1fd31",
+  "view": null,
+  "model_id": "anthropic.claude-sonnet-4-6",
+  "region": "eu-west-2",
+  "temperature": 0.0,
+  "tool_strict": false,
+  "prompt": {
+    "path": "evals/judge/judge_prompt.md",
+    "file_sha256": "03905869e7beb80569e68a60d58cfab24fb1a70696a8829f7c53f83d005e8383",
+    "instructions_sha256": "7b251e319c0ea1c2f63cf2bb70c0df438e035807bb4db909ac0f2a071c88310f",
+    "rubric_sha256": "f8291ae161363ad519507e4b921828ee2c1969272229d330700b7c6ff89a0b41",
+    "system_sha256": "696c133b15c855845b776c1bb4fbe8dfd298e37f3f50daf90e6e136d5c394f0a"
+  },
+  "started_at": "2026-10-17T10:18:20+01:00",
+  "call": {
+    "stop_reason": "tool_use",
+    "throttle_retries": 0,
+    "latency_s": 4.849,
+    "input_tokens": 2821,
+    "output_tokens": 556,
+    "cache_read_tokens": 6108,
+    "cache_write_tokens": 0
+  },
+  "judgement": {
+    "dimensions": {
+      "D2": {
+        "verdict": "partial",
+        "auto_fail": false,
+        "findings": [
+          {
+            "output_quote": "admitted under your referral with a two-day history of worsening bronchiolitis",
+            "note_cites": [
+              {
+                "lines": [
+                  "L001"
+                ],
+                "quote": "3/7 coryza, worsening cough, noisy"
+              }
+            ],
+            "reason": "The GP letter states 'two-day history' but the notes document a three-day (3/7) history of symptoms."
+          },
+          {
+            "output_quote": "Admitted: 19/05/[YYYY] | Discharged: 20/05/[YYYY]",
+            "note_cites": [],
+            "reason": "The placeholder '[YYYY]' is not an invented year and does not assert a clinical fact; however, the output uses '[YYYY]' as a non-clinical prose framing device throughout \u2014 minor non-clinical embellishment that does not assert a clinical fact."
+          }
+        ]
+      },
+      "D3": {
+        "verdict": "pass",
+        "auto_fail": false,
+        "findings": []
+      },
+      "D6": {
+        "verdict": "pass",
+        "auto_fail": false,
+        "findings": []
+      },
+      "D7": {
+        "verdict": "fail",
+        "auto_fail": false,
+        "findings": [
+          {
+            "output_quote": "admitted under your referral with a two-day history of worsening bronchiolitis",
+            "note_cites": [
+              {
+                "lines": [
+                  "L001"
+                ],
+                "quote": "3/7 coryza, worsening cough, noisy"
+              }
+            ],
+            "reason": "The duration of symptoms is changed from three days (3/7) to two days \u2014 a temporality error that misrepresents the documented timeline."
+          }
+        ]
+      },
+      "D8": {
+        "verdict": "na",
+        "auto_fail": false,
+        "findings": []
+      }
+    }
+  },
+  "verified": {
+    "dimensions": {
+      "D2": {
+        "verdict": "partial",
+        "auto_fail": false,
+        "findings": [
+          {
+            "output_quote": "admitted under your referral with a two-day history of worsening bronchiolitis",
+            "note_cites": [
+              {
+                "lines": [
+                  "L001"
+                ],
+                "quote": "3/7 coryza, worsening cough, noisy"
+              }
+            ],
+            "reason": "The GP letter states 'two-day history' but the notes document a three-day (3/7) history of symptoms."
+          },
+          {
+            "output_quote": "Admitted: 19/05/[YYYY] | Discharged: 20/05/[YYYY]",
+            "note_cites": [],
+            "reason": "The placeholder '[YYYY]' is not an invented year and does not assert a clinical fact; however, the output uses '[YYYY]' as a non-clinical prose framing device throughout \u2014 minor non-clinical embellishment that does not assert a clinical fact."
+          }
+        ],
+        "discarded": [],
+        "evidence_ok": true
+      },
+      "D3": {
+        "verdict": "pass",
+        "auto_fail": false,
+        "findings": [],
+        "discarded": [],
+        "evidence_ok": true
+      },
+      "D6": {
+        "verdict": "pass",
+        "auto_fail": false,
+        "findings": [],
+        "discarded": [],
+        "evidence_ok": true
+      },
+      "D7": {
+        "verdict": "fail",
+        "auto_fail": false,
+        "findings": [
+          {
+            "output_quote": "admitted under your referral with a two-day history of worsening bronchiolitis",
+            "note_cites": [
+              {
+                "lines": [
+                  "L001"
+                ],
+                "quote": "3/7 coryza, worsening cough, noisy"
+              }
+            ],
+            "reason": "The duration of symptoms is changed from three days (3/7) to two days \u2014 a temporality error that misrepresents the documented timeline."
+          }
+        ],
+        "discarded": [],
+        "evidence_ok": true
+      },
+      "D8": {
+        "verdict": "na",
+        "auto_fail": false,
+        "findings": [],
+        "discarded": [],
+        "evidence_ok": true
+      }
+    },
+    "defects": []
+  },
+  "error": null,
+  "cost_usd_est": 0.020499,
+  "elapsed_s": 4.85
+}

@@ -1,0 +1,133 @@
+{
+  "judge_version": 1,
+  "judge_id": "rescore-v2",
+  "repeat": 1,
+  "generation_id": "w4-pipeline-e06-x5/r3/S15",
+  "scenario_id": "S15",
+  "run": 3,
+  "notes_sha256": "f54e5b4b248523c38c755c7e4eb587fa65b3ae478aec2c9d77ef94ba96f278d3",
+  "output_sha256": "9ab776c54c3876f67e9aff1adb5ae23e8b3386a9ffd51d1509bf1ab097dcf4c8",
+  "view": {
+    "name": "pipeline-steps-1-5b",
+    "version": 1
+  },
+  "model_id": "anthropic.claude-sonnet-4-6",
+  "region": "eu-west-2",
+  "temperature": 0.0,
+  "tool_strict": false,
+  "prompt": {
+    "path": "evals/judge/judge_prompt.md",
+    "file_sha256": "03905869e7beb80569e68a60d58cfab24fb1a70696a8829f7c53f83d005e8383",
+    "instructions_sha256": "7b251e319c0ea1c2f63cf2bb70c0df438e035807bb4db909ac0f2a071c88310f",
+    "rubric_sha256": "f8291ae161363ad519507e4b921828ee2c1969272229d330700b7c6ff89a0b41",
+    "system_sha256": "696c133b15c855845b776c1bb4fbe8dfd298e37f3f50daf90e6e136d5c394f0a"
+  },
+  "started_at": "2026-10-17T10:15:07+01:00",
+  "call": {
+    "stop_reason": "tool_use",
+    "throttle_retries": 2,
+    "latency_s": 3.328,
+    "input_tokens": 1864,
+    "output_tokens": 422,
+    "cache_read_tokens": 6108,
+    "cache_write_tokens": 0
+  },
+  "judgement": {
+    "dimensions": {
+      "D2": {
+        "verdict": "pass",
+        "auto_fail": false,
+        "findings": []
+      },
+      "D3": {
+        "verdict": "fail",
+        "auto_fail": false,
+        "findings": [
+          {
+            "output_quote": "the status could not be confirmed from them. Check the notes and any completed form before relying on any resuscitation decision.",
+            "note_cites": [
+              {
+                "lines": [
+                  "L006",
+                  "L007",
+                  "L008"
+                ],
+                "quote": "PRE-EXISTING community DNACPR (ReSPECT) in place from before admission (advanced COPD, patient wishes). Documented, not changed. Ceiling of care = ward-based NIV, not for intubation (per ReSPECT + patient)."
+              }
+            ],
+            "reason": "The notes clearly document a pre-existing community DNACPR (ReSPECT) that was not changed; the output refuses to confirm the status and says it 'could not be confirmed', which is equivalent to treating a documented status as 'Not documented' \u2014 a wrong rendering of the resus status."
+          }
+        ]
+      },
+      "D6": {
+        "verdict": "pass",
+        "auto_fail": false,
+        "findings": []
+      },
+      "D7": {
+        "verdict": "pass",
+        "auto_fail": false,
+        "findings": []
+      },
+      "D8": {
+        "verdict": "na",
+        "auto_fail": false,
+        "findings": []
+      }
+    }
+  },
+  "verified": {
+    "dimensions": {
+      "D2": {
+        "verdict": "pass",
+        "auto_fail": false,
+        "findings": [],
+        "discarded": [],
+        "evidence_ok": true
+      },
+      "D3": {
+        "verdict": "fail",
+        "auto_fail": false,
+        "findings": [],
+        "discarded": [
+          {
+            "index": 0,
+            "reason": "note_cite_quote_too_long"
+          }
+        ],
+        "evidence_ok": false
+      },
+      "D6": {
+        "verdict": "pass",
+        "auto_fail": false,
+        "findings": [],
+        "discarded": [],
+        "evidence_ok": true
+      },
+      "D7": {
+        "verdict": "pass",
+        "auto_fail": false,
+        "findings": [],
+        "discarded": [],
+        "evidence_ok": true
+      },
+      "D8": {
+        "verdict": "na",
+        "auto_fail": false,
+        "findings": [],
+        "discarded": [],
+        "evidence_ok": true
+      }
+    },
+    "defects": [
+      {
+        "dimension": "D3",
+        "index": 0,
+        "reason": "note_cite_quote_too_long"
+      }
+    ]
+  },
+  "error": null,
+  "cost_usd_est": 0.01513,
+  "elapsed_s": 79.846
+}

@@ -1,0 +1,171 @@
+{
+  "judge_version": 1,
+  "judge_id": "rescore-v2",
+  "repeat": 1,
+  "generation_id": "w4-pipeline-e06-x5/r1/A5",
+  "scenario_id": "A5",
+  "run": 1,
+  "notes_sha256": "17990ee1d94abcc513c9b663863e4a9a92ef69d1a564f1544879be8404ae7092",
+  "output_sha256": "637591eb110ea4846ffd2150ec57f3ba78e2602c815d6f57dffe01be55abfcf7",
+  "view": {
+    "name": "pipeline-steps-1-5b",
+    "version": 1
+  },
+  "model_id": "anthropic.claude-sonnet-4-6",
+  "region": "eu-west-2",
+  "temperature": 0.0,
+  "tool_strict": false,
+  "prompt": {
+    "path": "evals/judge/judge_prompt.md",
+    "file_sha256": "03905869e7beb80569e68a60d58cfab24fb1a70696a8829f7c53f83d005e8383",
+    "instructions_sha256": "7b251e319c0ea1c2f63cf2bb70c0df438e035807bb4db909ac0f2a071c88310f",
+    "rubric_sha256": "f8291ae161363ad519507e4b921828ee2c1969272229d330700b7c6ff89a0b41",
+    "system_sha256": "696c133b15c855845b776c1bb4fbe8dfd298e37f3f50daf90e6e136d5c394f0a"
+  },
+  "started_at": "2026-10-17T10:14:26+01:00",
+  "call": {
+    "stop_reason": "tool_use",
+    "throttle_retries": 0,
+    "latency_s": 5.749,
+    "input_tokens": 1840,
+    "output_tokens": 659,
+    "cache_read_tokens": 6108,
+    "cache_write_tokens": 0
+  },
+  "judgement": {
+    "dimensions": {
+      "D2": {
+        "verdict": "partial",
+        "auto_fail": false,
+        "findings": [
+          {
+            "output_quote": "Secondary diagnoses: Not documented",
+            "note_cites": [
+              {
+                "lines": [
+                  "L002"
+                ],
+                "quote": "PMH: COPD, AF (on apixaban), HTN."
+              }
+            ],
+            "reason": "COPD, AF, and HTN are listed under Background but not under Secondary diagnoses \u2014 minor structural inconsistency, not a clinical invention, but the output labels them 'Not documented' as secondary diagnoses while simultaneously listing them as background, creating a minor non-clinical framing inconsistency."
+          },
+          {
+            "output_quote": "Specialty: (inferred, flagged for clinician check)\n- Respiratory / General Medicine (inferred from CAP admission with ITU review and respiratory clinic follow-up) [L004, L005]",
+            "note_cites": [],
+            "reason": "Specialty is inferred and not documented in the notes; this is a minor non-clinical embellishment flagged as inferred, not a clinical fact assertion."
+          }
+        ]
+      },
+      "D3": {
+        "verdict": "pass",
+        "auto_fail": false,
+        "findings": []
+      },
+      "D6": {
+        "verdict": "pass",
+        "auto_fail": false,
+        "findings": []
+      },
+      "D7": {
+        "verdict": "pass",
+        "auto_fail": false,
+        "findings": []
+      },
+      "D8": {
+        "verdict": "partial",
+        "auto_fail": false,
+        "findings": [
+          {
+            "output_quote": "ITU review Day 2; ceiling of care agreed as ward-based given COPD severity and frailty. Family meeting held. [L008, L009]",
+            "note_cites": [
+              {
+                "lines": [
+                  "L008",
+                  "L009"
+                ],
+                "quote": "ITU review: ceiling of care agreed as ward-based given COPD severity and frailty. Family meeting held."
+              }
+            ],
+            "reason": "The ceiling-of-care decision and family meeting (clinician risk/care assessment content) are reproduced in PART A but PART C is a safety-netting boilerplate with no patient-facing content \u2014 the withheld content does not appear in PART C, satisfying the withholding requirement, but PART A/B does not explicitly tell the clinician that this content was withheld from PART C, making this a silent omission (partial rather than fail)."
+          }
+        ]
+      }
+    }
+  },
+  "verified": {
+    "dimensions": {
+      "D2": {
+        "verdict": "partial",
+        "auto_fail": false,
+        "findings": [
+          {
+            "output_quote": "Secondary diagnoses: Not documented",
+            "note_cites": [
+              {
+                "lines": [
+                  "L002"
+                ],
+                "quote": "PMH: COPD, AF (on apixaban), HTN."
+              }
+            ],
+            "reason": "COPD, AF, and HTN are listed under Background but not under Secondary diagnoses \u2014 minor structural inconsistency, not a clinical invention, but the output labels them 'Not documented' as secondary diagnoses while simultaneously listing them as background, creating a minor non-clinical framing inconsistency."
+          },
+          {
+            "output_quote": "Specialty: (inferred, flagged for clinician check)\n- Respiratory / General Medicine (inferred from CAP admission with ITU review and respiratory clinic follow-up) [L004, L005]",
+            "note_cites": [],
+            "reason": "Specialty is inferred and not documented in the notes; this is a minor non-clinical embellishment flagged as inferred, not a clinical fact assertion."
+          }
+        ],
+        "discarded": [],
+        "evidence_ok": true
+      },
+      "D3": {
+        "verdict": "pass",
+        "auto_fail": false,
+        "findings": [],
+        "discarded": [],
+        "evidence_ok": true
+      },
+      "D6": {
+        "verdict": "pass",
+        "auto_fail": false,
+        "findings": [],
+        "discarded": [],
+        "evidence_ok": true
+      },
+      "D7": {
+        "verdict": "pass",
+        "auto_fail": false,
+        "findings": [],
+        "discarded": [],
+        "evidence_ok": true
+      },
+      "D8": {
+        "verdict": "partial",
+        "auto_fail": false,
+        "findings": [
+          {
+            "output_quote": "ITU review Day 2; ceiling of care agreed as ward-based given COPD severity and frailty. Family meeting held. [L008, L009]",
+            "note_cites": [
+              {
+                "lines": [
+                  "L008",
+                  "L009"
+                ],
+                "quote": "ITU review: ceiling of care agreed as ward-based given COPD severity and frailty. Family meeting held."
+              }
+            ],
+            "reason": "The ceiling-of-care decision and family meeting (clinician risk/care assessment content) are reproduced in PART A but PART C is a safety-netting boilerplate with no patient-facing content \u2014 the withheld content does not appear in PART C, satisfying the withholding requirement, but PART A/B does not explicitly tell the clinician that this content was withheld from PART C, making this a silent omission (partial rather than fail)."
+          }
+        ],
+        "discarded": [],
+        "evidence_ok": true
+      }
+    },
+    "defects": []
+  },
+  "error": null,
+  "cost_usd_est": 0.018961,
+  "elapsed_s": 5.749
+}

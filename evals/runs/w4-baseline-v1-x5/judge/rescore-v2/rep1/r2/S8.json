@@ -1,0 +1,191 @@
+{
+  "judge_version": 1,
+  "judge_id": "rescore-v2",
+  "repeat": 1,
+  "generation_id": "w4-baseline-v1-x5/r2/S8",
+  "scenario_id": "S8",
+  "run": 2,
+  "notes_sha256": "db5dc0237ea1d82ade478142d26845b1f5fda1c9c35512621c0f5aa23a5afca6",
+  "output_sha256": "be6aa998b035d8e1c147a430b4990a1f5a0b6cf92fd556b45e046252724feaf7",
+  "view": null,
+  "model_id": "anthropic.claude-sonnet-4-6",
+  "region": "eu-west-2",
+  "temperature": 0.0,
+  "tool_strict": false,
+  "prompt": {
+    "path": "evals/judge/judge_prompt.md",
+    "file_sha256": "03905869e7beb80569e68a60d58cfab24fb1a70696a8829f7c53f83d005e8383",
+    "instructions_sha256": "7b251e319c0ea1c2f63cf2bb70c0df438e035807bb4db909ac0f2a071c88310f",
+    "rubric_sha256": "f8291ae161363ad519507e4b921828ee2c1969272229d330700b7c6ff89a0b41",
+    "system_sha256": "696c133b15c855845b776c1bb4fbe8dfd298e37f3f50daf90e6e136d5c394f0a"
+  },
+  "started_at": "2026-10-17T10:17:42+01:00",
+  "call": {
+    "stop_reason": "tool_use",
+    "throttle_retries": 0,
+    "latency_s": 9.461,
+    "input_tokens": 2920,
+    "output_tokens": 891,
+    "cache_read_tokens": 6108,
+    "cache_write_tokens": 0
+  },
+  "judgement": {
+    "dimensions": {
+      "D2": {
+        "verdict": "fail",
+        "auto_fail": false,
+        "findings": [
+          {
+            "output_quote": "DOB: 16/05/2025 (4 days)",
+            "note_cites": [],
+            "reason": "Added year '2025' to the date \u2014 the notes give only day/month (16/05); adding a year asserts a fact the notes do not contain, which is a D2 Fail per the CSO ruling of 9 Oct 2026."
+          },
+          {
+            "output_quote": "Admitted: 16/05/2025 | Discharged: 20/05/2025",
+            "note_cites": [],
+            "reason": "Added year '2025' to both admission and discharge dates \u2014 the notes give only day/month; this is an added year per the CSO ruling."
+          },
+          {
+            "output_quote": "DOB 16/05/2025, NHS No: Not documented\nAdmitted 16/05/2025, discharged 20/05/2025",
+            "note_cites": [],
+            "reason": "Added year '2025' to dates in Part B \u2014 the notes give only day/month."
+          },
+          {
+            "output_quote": "For the parents and carers of a baby boy born 16 May 2025",
+            "note_cites": [],
+            "reason": "Added year '2025' to the birth date in Part C \u2014 the notes give only day/month."
+          },
+          {
+            "output_quote": "Both antibiotic courses were fully completed in hospital before he was discharged.",
+            "note_cites": [],
+            "reason": "Added year '2025' appears in Part C ('20 May 2025') \u2014 the notes give only day/month (20/05)."
+          },
+          {
+            "output_quote": "Both antibiotics were finished on 20 May 2025.",
+            "note_cites": [],
+            "reason": "Added year '2025' to the completion date \u2014 the notes give only '20/05' (Day 5)."
+          }
+        ]
+      },
+      "D3": {
+        "verdict": "pass",
+        "auto_fail": false,
+        "findings": []
+      },
+      "D6": {
+        "verdict": "partial",
+        "auto_fail": false,
+        "findings": [
+          {
+            "output_quote": "The specific details of that advice were not written down in the notes we have, so we are not able to repeat them here. Please speak to your midwife, health visitor, or the neonatal team if you are unsure what you were told",
+            "note_cites": [
+              {
+                "lines": [
+                  "L012",
+                  "L013"
+                ],
+                "quote": "Safety-net advice to parents re fever/feeding/breathing. No routine follow-up."
+              }
+            ],
+            "reason": "The notes document that safety-net advice was given on the topics of fever, feeding, and breathing; the output acknowledges the topics but explicitly tells parents the specific details are unavailable and redirects them elsewhere, which weakens the force of the documented instruction by failing to convey even the documented scope clearly as actionable guidance."
+          }
+        ]
+      },
+      "D7": {
+        "verdict": "pass",
+        "auto_fail": false,
+        "findings": []
+      },
+      "D8": {
+        "verdict": "na",
+        "auto_fail": false,
+        "findings": []
+      }
+    }
+  },
+  "verified": {
+    "dimensions": {
+      "D2": {
+        "verdict": "fail",
+        "auto_fail": false,
+        "findings": [
+          {
+            "output_quote": "DOB: 16/05/2025 (4 days)",
+            "note_cites": [],
+            "reason": "Added year '2025' to the date \u2014 the notes give only day/month (16/05); adding a year asserts a fact the notes do not contain, which is a D2 Fail per the CSO ruling of 9 Oct 2026."
+          },
+          {
+            "output_quote": "Admitted: 16/05/2025 | Discharged: 20/05/2025",
+            "note_cites": [],
+            "reason": "Added year '2025' to both admission and discharge dates \u2014 the notes give only day/month; this is an added year per the CSO ruling."
+          },
+          {
+            "output_quote": "DOB 16/05/2025, NHS No: Not documented\nAdmitted 16/05/2025, discharged 20/05/2025",
+            "note_cites": [],
+            "reason": "Added year '2025' to dates in Part B \u2014 the notes give only day/month."
+          },
+          {
+            "output_quote": "For the parents and carers of a baby boy born 16 May 2025",
+            "note_cites": [],
+            "reason": "Added year '2025' to the birth date in Part C \u2014 the notes give only day/month."
+          },
+          {
+            "output_quote": "Both antibiotic courses were fully completed in hospital before he was discharged.",
+            "note_cites": [],
+            "reason": "Added year '2025' appears in Part C ('20 May 2025') \u2014 the notes give only day/month (20/05)."
+          },
+          {
+            "output_quote": "Both antibiotics were finished on 20 May 2025.",
+            "note_cites": [],
+            "reason": "Added year '2025' to the completion date \u2014 the notes give only '20/05' (Day 5)."
+          }
+        ],
+        "discarded": [],
+        "evidence_ok": true
+      },
+      "D3": {
+        "verdict": "pass",
+        "auto_fail": false,
+        "findings": [],
+        "discarded": [],
+        "evidence_ok": true
+      },
+      "D6": {
+        "verdict": "partial",
+        "auto_fail": false,
+        "findings": [],
+        "discarded": [
+          {
+            "index": 0,
+            "reason": "output_quote_too_long"
+          }
+        ],
+        "evidence_ok": false
+      },
+      "D7": {
+        "verdict": "pass",
+        "auto_fail": false,
+        "findings": [],
+        "discarded": [],
+        "evidence_ok": true
+      },
+      "D8": {
+        "verdict": "na",
+        "auto_fail": false,
+        "findings": [],
+        "discarded": [],
+        "evidence_ok": true
+      }
+    },
+    "defects": [
+      {
+        "dimension": "D6",
+        "index": 0,
+        "reason": "output_quote_too_long"
+      }
+    ]
+  },
+  "error": null,
+  "cost_usd_est": 0.026353,
+  "elapsed_s": 9.461
+}

@@ -1,0 +1,161 @@
+{
+  "judge_version": 1,
+  "judge_id": "rescore-v2",
+  "repeat": 1,
+  "generation_id": "w4-baseline-v1-x5/r5/S11",
+  "scenario_id": "S11",
+  "run": 5,
+  "notes_sha256": "ed2e3ee49d11c4bfb7eb6ca95f90d402685abec1913adce3b032619831a2a7d6",
+  "output_sha256": "2bf2b28c6f9041562828b1d6937aef33d5fea9eeb417f4604d250de41c7c5b3e",
+  "view": null,
+  "model_id": "anthropic.claude-sonnet-4-6",
+  "region": "eu-west-2",
+  "temperature": 0.0,
+  "tool_strict": false,
+  "prompt": {
+    "path": "evals/judge/judge_prompt.md",
+    "file_sha256": "03905869e7beb80569e68a60d58cfab24fb1a70696a8829f7c53f83d005e8383",
+    "instructions_sha256": "7b251e319c0ea1c2f63cf2bb70c0df438e035807bb4db909ac0f2a071c88310f",
+    "rubric_sha256": "f8291ae161363ad519507e4b921828ee2c1969272229d330700b7c6ff89a0b41",
+    "system_sha256": "696c133b15c855845b776c1bb4fbe8dfd298e37f3f50daf90e6e136d5c394f0a"
+  },
+  "started_at": "2026-10-17T10:19:57+01:00",
+  "call": {
+    "stop_reason": "tool_use",
+    "throttle_retries": 0,
+    "latency_s": 8.143,
+    "input_tokens": 4509,
+    "output_tokens": 704,
+    "cache_read_tokens": 6108,
+    "cache_write_tokens": 0
+  },
+  "judgement": {
+    "dimensions": {
+      "D2": {
+        "verdict": "fail",
+        "auto_fail": false,
+        "findings": [
+          {
+            "output_quote": "Admitted: 12/05/2025 | Discharged: 17/05/2025",
+            "note_cites": [],
+            "reason": "The year '2025' does not appear anywhere in the notes; adding it is a D2 Fail under the CSO ruling (9 Oct 2026) \u2014 an added year the notes do not contain."
+          },
+          {
+            "output_quote": "Orthopaedic fracture clinic \u2014 2 weeks post-discharge (approx. 31/05/2025).",
+            "note_cites": [],
+            "reason": "The year '2025' does not appear anywhere in the notes; adding it to the follow-up date is a D2 Fail under the CSO ruling."
+          },
+          {
+            "output_quote": "General surgery telephone review re splenic injury \u2014 6 weeks post-discharge\n   (approx. 28/06/2025)",
+            "note_cites": [],
+            "reason": "The year '2025' does not appear anywhere in the notes; adding it to the follow-up date is a D2 Fail under the CSO ruling."
+          }
+        ]
+      },
+      "D3": {
+        "verdict": "pass",
+        "auto_fail": false,
+        "findings": []
+      },
+      "D6": {
+        "verdict": "partial",
+        "auto_fail": false,
+        "findings": [
+          {
+            "output_quote": "splenic vaccination advice to be given at that review\n   (notes state \"splenic vaccination advice\" at this point \u2014 it is not entirely\n   clear whether this is in addition to or a follow-up of the vaccinations already\n   given; requires clarification).",
+            "note_cites": [
+              {
+                "lines": [
+                  "L013",
+                  "L014"
+                ],
+                "quote": "general surgery telephone review re spleen\n6/52 + splenic vaccination advice, resp/thoracic no routine f/u. Pneumococcal/Hib/"
+              }
+            ],
+            "reason": "The notes document 'splenic vaccination advice' as part of the 6-week general surgery telephone review; the output introduces uncertainty ('not entirely clear') and flags it as possibly duplicative, making the instruction less precise than documented, though not less restrictive."
+          }
+        ]
+      },
+      "D7": {
+        "verdict": "pass",
+        "auto_fail": false,
+        "findings": []
+      },
+      "D8": {
+        "verdict": "na",
+        "auto_fail": false,
+        "findings": []
+      }
+    }
+  },
+  "verified": {
+    "dimensions": {
+      "D2": {
+        "verdict": "fail",
+        "auto_fail": false,
+        "findings": [
+          {
+            "output_quote": "Admitted: 12/05/2025 | Discharged: 17/05/2025",
+            "note_cites": [],
+            "reason": "The year '2025' does not appear anywhere in the notes; adding it is a D2 Fail under the CSO ruling (9 Oct 2026) \u2014 an added year the notes do not contain."
+          },
+          {
+            "output_quote": "Orthopaedic fracture clinic \u2014 2 weeks post-discharge (approx. 31/05/2025).",
+            "note_cites": [],
+            "reason": "The year '2025' does not appear anywhere in the notes; adding it to the follow-up date is a D2 Fail under the CSO ruling."
+          },
+          {
+            "output_quote": "General surgery telephone review re splenic injury \u2014 6 weeks post-discharge\n   (approx. 28/06/2025)",
+            "note_cites": [],
+            "reason": "The year '2025' does not appear anywhere in the notes; adding it to the follow-up date is a D2 Fail under the CSO ruling."
+          }
+        ],
+        "discarded": [],
+        "evidence_ok": true
+      },
+      "D3": {
+        "verdict": "pass",
+        "auto_fail": false,
+        "findings": [],
+        "discarded": [],
+        "evidence_ok": true
+      },
+      "D6": {
+        "verdict": "partial",
+        "auto_fail": false,
+        "findings": [],
+        "discarded": [
+          {
+            "index": 0,
+            "reason": "output_quote_too_long"
+          }
+        ],
+        "evidence_ok": false
+      },
+      "D7": {
+        "verdict": "pass",
+        "auto_fail": false,
+        "findings": [],
+        "discarded": [],
+        "evidence_ok": true
+      },
+      "D8": {
+        "verdict": "na",
+        "auto_fail": false,
+        "findings": [],
+        "discarded": [],
+        "evidence_ok": true
+      }
+    },
+    "defects": [
+      {
+        "dimension": "D6",
+        "index": 0,
+        "reason": "output_quote_too_long"
+      }
+    ]
+  },
+  "error": null,
+  "cost_usd_est": 0.028511,
+  "elapsed_s": 8.143
+}

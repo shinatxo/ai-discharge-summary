@@ -1,0 +1,140 @@
+{
+  "judge_version": 1,
+  "judge_id": "rescore-v2",
+  "repeat": 1,
+  "generation_id": "w4-baseline-v1-x5/r5/S13",
+  "scenario_id": "S13",
+  "run": 5,
+  "notes_sha256": "7bdbea67d99837b5ac07d98a1dac7f07026885128b3e5d533937cc8014c86971",
+  "output_sha256": "de274ae342c9476a5fcef24ce08b3b1c39fa8e09a5db8dda22e819bde81c7bd0",
+  "view": null,
+  "model_id": "anthropic.claude-sonnet-4-6",
+  "region": "eu-west-2",
+  "temperature": 0.0,
+  "tool_strict": false,
+  "prompt": {
+    "path": "evals/judge/judge_prompt.md",
+    "file_sha256": "03905869e7beb80569e68a60d58cfab24fb1a70696a8829f7c53f83d005e8383",
+    "instructions_sha256": "7b251e319c0ea1c2f63cf2bb70c0df438e035807bb4db909ac0f2a071c88310f",
+    "rubric_sha256": "f8291ae161363ad519507e4b921828ee2c1969272229d330700b7c6ff89a0b41",
+    "system_sha256": "696c133b15c855845b776c1bb4fbe8dfd298e37f3f50daf90e6e136d5c394f0a"
+  },
+  "started_at": "2026-10-17T10:20:05+01:00",
+  "call": {
+    "stop_reason": "tool_use",
+    "throttle_retries": 0,
+    "latency_s": 4.277,
+    "input_tokens": 4640,
+    "output_tokens": 452,
+    "cache_read_tokens": 6108,
+    "cache_write_tokens": 0
+  },
+  "judgement": {
+    "dimensions": {
+      "D2": {
+        "verdict": "partial",
+        "auto_fail": false,
+        "findings": [
+          {
+            "output_quote": "Rationalised per microbiology advice to: benzylpenicillin (IV) + clindamycin (IV).",
+            "note_cites": [
+              {
+                "lines": [
+                  "L005"
+                ],
+                "quote": "long course IV pip-taz then tailored to benzylpenicillin + clindamycin per micro."
+              }
+            ],
+            "reason": "The notes do not specify that the rationalised benzylpenicillin and clindamycin were given IV; adding '(IV)' to both is an invented clinical detail about route of administration."
+          },
+          {
+            "output_quote": "Admitted: 02/04/[year not documented] | Discharged: 21/05/[year not documented]",
+            "note_cites": [],
+            "reason": "The output uses '[year not documented]' as a placeholder rather than inventing a year, which is correct behaviour; this is not a finding \u2014 included only to confirm no year was added."
+          }
+        ]
+      },
+      "D3": {
+        "verdict": "pass",
+        "auto_fail": false,
+        "findings": []
+      },
+      "D6": {
+        "verdict": "pass",
+        "auto_fail": false,
+        "findings": []
+      },
+      "D7": {
+        "verdict": "pass",
+        "auto_fail": false,
+        "findings": []
+      },
+      "D8": {
+        "verdict": "na",
+        "auto_fail": false,
+        "findings": []
+      }
+    }
+  },
+  "verified": {
+    "dimensions": {
+      "D2": {
+        "verdict": "partial",
+        "auto_fail": false,
+        "findings": [
+          {
+            "output_quote": "Rationalised per microbiology advice to: benzylpenicillin (IV) + clindamycin (IV).",
+            "note_cites": [
+              {
+                "lines": [
+                  "L005"
+                ],
+                "quote": "long course IV pip-taz then tailored to benzylpenicillin + clindamycin per micro."
+              }
+            ],
+            "reason": "The notes do not specify that the rationalised benzylpenicillin and clindamycin were given IV; adding '(IV)' to both is an invented clinical detail about route of administration."
+          },
+          {
+            "output_quote": "Admitted: 02/04/[year not documented] | Discharged: 21/05/[year not documented]",
+            "note_cites": [],
+            "reason": "The output uses '[year not documented]' as a placeholder rather than inventing a year, which is correct behaviour; this is not a finding \u2014 included only to confirm no year was added."
+          }
+        ],
+        "discarded": [],
+        "evidence_ok": true
+      },
+      "D3": {
+        "verdict": "pass",
+        "auto_fail": false,
+        "findings": [],
+        "discarded": [],
+        "evidence_ok": true
+      },
+      "D6": {
+        "verdict": "pass",
+        "auto_fail": false,
+        "findings": [],
+        "discarded": [],
+        "evidence_ok": true
+      },
+      "D7": {
+        "verdict": "pass",
+        "auto_fail": false,
+        "findings": [],
+        "discarded": [],
+        "evidence_ok": true
+      },
+      "D8": {
+        "verdict": "na",
+        "auto_fail": false,
+        "findings": [],
+        "discarded": [],
+        "evidence_ok": true
+      }
+    },
+    "defects": []
+  },
+  "error": null,
+  "cost_usd_est": 0.024786,
+  "elapsed_s": 4.277
+}

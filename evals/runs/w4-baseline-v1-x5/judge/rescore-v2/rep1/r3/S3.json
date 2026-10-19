@@ -1,0 +1,289 @@
+{
+  "judge_version": 1,
+  "judge_id": "rescore-v2",
+  "repeat": 1,
+  "generation_id": "w4-baseline-v1-x5/r3/S3",
+  "scenario_id": "S3",
+  "run": 3,
+  "notes_sha256": "c8882fcefb7f24fb39b45a7bb32cb6bfeb5481df37eff450606bec809ab51ef1",
+  "output_sha256": "16bd4f0a47442c63c17b5309537e2300dcabc933508a8e71f9e3abd3219df8a8",
+  "view": null,
+  "model_id": "anthropic.claude-sonnet-4-6",
+  "region": "eu-west-2",
+  "temperature": 0.0,
+  "tool_strict": false,
+  "prompt": {
+    "path": "evals/judge/judge_prompt.md",
+    "file_sha256": "03905869e7beb80569e68a60d58cfab24fb1a70696a8829f7c53f83d005e8383",
+    "instructions_sha256": "7b251e319c0ea1c2f63cf2bb70c0df438e035807bb4db909ac0f2a071c88310f",
+    "rubric_sha256": "f8291ae161363ad519507e4b921828ee2c1969272229d330700b7c6ff89a0b41",
+    "system_sha256": "696c133b15c855845b776c1bb4fbe8dfd298e37f3f50daf90e6e136d5c394f0a"
+  },
+  "started_at": "2026-10-17T10:18:18+01:00",
+  "call": {
+    "stop_reason": "tool_use",
+    "throttle_retries": 1,
+    "latency_s": 11.828,
+    "input_tokens": 3044,
+    "output_tokens": 1528,
+    "cache_read_tokens": 6108,
+    "cache_write_tokens": 0
+  },
+  "judgement": {
+    "dimensions": {
+      "D2": {
+        "verdict": "fail",
+        "auto_fail": false,
+        "findings": [
+          {
+            "output_quote": "Admitted: 18/05/2025 | Discharged: 23/05/2025",
+            "note_cites": [],
+            "reason": "Added year '2025' to dates that appear in the notes only as day/month (18/05, 23/05); the notes contain no year, so this is an invented year \u2014 D2 Fail per the CSO ruling of 9 Oct 2026."
+          },
+          {
+            "output_quote": "Sertraline 50 mg once daily commenced on Day 3 (20/05/2025).",
+            "note_cites": [],
+            "reason": "Added year '2025' to a date the notes give only as 20/05; invented year per CSO ruling."
+          },
+          {
+            "output_quote": "MDT review on Day 5 (22/05/2025)",
+            "note_cites": [],
+            "reason": "Added year '2025' to a date the notes give only as 22/05; invented year per CSO ruling."
+          },
+          {
+            "output_quote": "At admission (18/05/2025):",
+            "note_cites": [],
+            "reason": "Added year '2025' to a date the notes give only as 18/05; invented year per CSO ruling."
+          },
+          {
+            "output_quote": "At discharge (23/05/2025):",
+            "note_cites": [],
+            "reason": "Added year '2025' to a date the notes give only as 23/05; invented year per CSO ruling."
+          },
+          {
+            "output_quote": "NEW \u2014 Sertraline 50 mg orally once daily (commenced 20/05/2025).",
+            "note_cites": [],
+            "reason": "Added year '2025' to a date the notes give only as 20/05; invented year per CSO ruling."
+          },
+          {
+            "output_quote": "You were admitted on **18 May 2025** and went home on **23 May 2025**.",
+            "note_cites": [],
+            "reason": "Added year '2025' to dates the notes give only as 18/05 and 23/05; invented year per CSO ruling."
+          },
+          {
+            "output_quote": "*(This is a new medicine, started on 20 May 2025.)*",
+            "note_cites": [],
+            "reason": "Added year '2025' to a date the notes give only as 20/05; invented year per CSO ruling."
+          },
+          {
+            "output_quote": "approximately **20 June 2025**",
+            "note_cites": [],
+            "reason": "Added year '2025' to a derived date; the notes contain no year at all, so this is an invented year per CSO ruling."
+          }
+        ]
+      },
+      "D3": {
+        "verdict": "pass",
+        "auto_fail": false,
+        "findings": []
+      },
+      "D6": {
+        "verdict": "pass",
+        "auto_fail": false,
+        "findings": []
+      },
+      "D7": {
+        "verdict": "fail",
+        "auto_fail": false,
+        "findings": [
+          {
+            "output_quote": "Risk to self: Moderate-high. Active suicidal ideation with thoughts of overdose; no formed plan or intent at that time, but ideation escalating.",
+            "note_cites": [
+              {
+                "lines": [
+                  "L015"
+                ],
+                "quote": "SI less intense, now passive."
+              }
+            ],
+            "reason": "The output presents the admission risk assessment (moderate-high, active SI escalating) without clearly distinguishing it as a past/historical state versus the discharge state; however, the section is labelled 'At admission' so this is acceptable. No polarity inversion found here."
+          },
+          {
+            "output_quote": "Background: one previous depressive episode in 2018, managed in primary care with sertraline for approximately nine months.",
+            "note_cites": [
+              {
+                "lines": [
+                  "L004",
+                  "L005"
+                ],
+                "quote": "One prev depressive episode 2018, GP-managed w/ sertraline, stopped after ~9/12 when well."
+              }
+            ],
+            "reason": "The output states the previous episode was 'in 2018' \u2014 the notes do give 2018 here, so this is not an invented year. No polarity issue. Withdrawing this finding."
+          }
+        ]
+      },
+      "D8": {
+        "verdict": "fail",
+        "auto_fail": false,
+        "findings": [
+          {
+            "output_quote": "You were having thoughts of harming yourself, and the team wanted to make sure you were safe.",
+            "note_cites": [
+              {
+                "lines": [
+                  "L008",
+                  "L009"
+                ],
+                "quote": "Risk: self \u2014 moderate-high (active SI, escalating). Protective: 2 children, help-seeking, future-oriented. Others \u2014 nil. Safeguarding: 2 children at home (ages 8 + 11), social context to be explored"
+              }
+            ],
+            "reason": "The clinician's risk assessment (moderate-high risk to self, escalating SI) is withheld-category content per D8/R2; it appears in PART C in a softened but recognisable form, and the safeguarding note about the children and social context to be explored also appears in PART C \u2014 both are D8 withheld-category content that should not be in the patient version."
+          },
+          {
+            "output_quote": "You have an appointment in about one week (around **30 May 2025**). The exact date and time will be confirmed \u2014 please check any paperwork you were given when you left.",
+            "note_cites": [],
+            "reason": "This is not a D8 issue \u2014 withdrawing."
+          }
+        ]
+      }
+    }
+  },
+  "verified": {
+    "dimensions": {
+      "D2": {
+        "verdict": "fail",
+        "auto_fail": false,
+        "findings": [
+          {
+            "output_quote": "Admitted: 18/05/2025 | Discharged: 23/05/2025",
+            "note_cites": [],
+            "reason": "Added year '2025' to dates that appear in the notes only as day/month (18/05, 23/05); the notes contain no year, so this is an invented year \u2014 D2 Fail per the CSO ruling of 9 Oct 2026."
+          },
+          {
+            "output_quote": "Sertraline 50 mg once daily commenced on Day 3 (20/05/2025).",
+            "note_cites": [],
+            "reason": "Added year '2025' to a date the notes give only as 20/05; invented year per CSO ruling."
+          },
+          {
+            "output_quote": "At admission (18/05/2025):",
+            "note_cites": [],
+            "reason": "Added year '2025' to a date the notes give only as 18/05; invented year per CSO ruling."
+          },
+          {
+            "output_quote": "At discharge (23/05/2025):",
+            "note_cites": [],
+            "reason": "Added year '2025' to a date the notes give only as 23/05; invented year per CSO ruling."
+          },
+          {
+            "output_quote": "NEW \u2014 Sertraline 50 mg orally once daily (commenced 20/05/2025).",
+            "note_cites": [],
+            "reason": "Added year '2025' to a date the notes give only as 20/05; invented year per CSO ruling."
+          },
+          {
+            "output_quote": "You were admitted on **18 May 2025** and went home on **23 May 2025**.",
+            "note_cites": [],
+            "reason": "Added year '2025' to dates the notes give only as 18/05 and 23/05; invented year per CSO ruling."
+          },
+          {
+            "output_quote": "*(This is a new medicine, started on 20 May 2025.)*",
+            "note_cites": [],
+            "reason": "Added year '2025' to a date the notes give only as 20/05; invented year per CSO ruling."
+          },
+          {
+            "output_quote": "approximately **20 June 2025**",
+            "note_cites": [],
+            "reason": "Added year '2025' to a derived date; the notes contain no year at all, so this is an invented year per CSO ruling."
+          }
+        ],
+        "discarded": [
+          {
+            "index": 2,
+            "reason": "output_quote_not_found"
+          }
+        ],
+        "evidence_ok": true
+      },
+      "D3": {
+        "verdict": "pass",
+        "auto_fail": false,
+        "findings": [],
+        "discarded": [],
+        "evidence_ok": true
+      },
+      "D6": {
+        "verdict": "pass",
+        "auto_fail": false,
+        "findings": [],
+        "discarded": [],
+        "evidence_ok": true
+      },
+      "D7": {
+        "verdict": "fail",
+        "auto_fail": false,
+        "findings": [
+          {
+            "output_quote": "Risk to self: Moderate-high. Active suicidal ideation with thoughts of overdose; no formed plan or intent at that time, but ideation escalating.",
+            "note_cites": [
+              {
+                "lines": [
+                  "L015"
+                ],
+                "quote": "SI less intense, now passive."
+              }
+            ],
+            "reason": "The output presents the admission risk assessment (moderate-high, active SI escalating) without clearly distinguishing it as a past/historical state versus the discharge state; however, the section is labelled 'At admission' so this is acceptable. No polarity inversion found here."
+          },
+          {
+            "output_quote": "Background: one previous depressive episode in 2018, managed in primary care with sertraline for approximately nine months.",
+            "note_cites": [
+              {
+                "lines": [
+                  "L004",
+                  "L005"
+                ],
+                "quote": "One prev depressive episode 2018, GP-managed w/ sertraline, stopped after ~9/12 when well."
+              }
+            ],
+            "reason": "The output states the previous episode was 'in 2018' \u2014 the notes do give 2018 here, so this is not an invented year. No polarity issue. Withdrawing this finding."
+          }
+        ],
+        "discarded": [],
+        "evidence_ok": true
+      },
+      "D8": {
+        "verdict": "fail",
+        "auto_fail": false,
+        "findings": [
+          {
+            "output_quote": "You have an appointment in about one week (around **30 May 2025**). The exact date and time will be confirmed \u2014 please check any paperwork you were given when you left.",
+            "note_cites": [],
+            "reason": "This is not a D8 issue \u2014 withdrawing."
+          }
+        ],
+        "discarded": [
+          {
+            "index": 0,
+            "reason": "note_cite_quote_not_found"
+          }
+        ],
+        "evidence_ok": true
+      }
+    },
+    "defects": [
+      {
+        "dimension": "D2",
+        "index": 2,
+        "reason": "output_quote_not_found"
+      },
+      {
+        "dimension": "D8",
+        "index": 0,
+        "reason": "note_cite_quote_not_found"
+      }
+    ]
+  },
+  "error": null,
+  "cost_usd_est": 0.037273,
+  "elapsed_s": 42.795
+}

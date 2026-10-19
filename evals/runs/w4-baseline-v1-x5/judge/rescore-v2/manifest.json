@@ -1,0 +1,44 @@
+{
+  "judge_version": 1,
+  "judge_id": "rescore-v2",
+  "batch_id": "w4-baseline-v1-x5",
+  "created_at": "2026-10-17T10:17:06+01:00",
+  "model_id": "anthropic.claude-sonnet-4-6",
+  "region": "eu-west-2",
+  "temperature": 0.0,
+  "max_tokens": 4096,
+  "tool_strict": false,
+  "prompt": {
+    "path": "evals/judge/judge_prompt.md",
+    "file_sha256": "03905869e7beb80569e68a60d58cfab24fb1a70696a8829f7c53f83d005e8383",
+    "instructions_sha256": "7b251e319c0ea1c2f63cf2bb70c0df438e035807bb4db909ac0f2a071c88310f",
+    "rubric_sha256": "f8291ae161363ad519507e4b921828ee2c1969272229d330700b7c6ff89a0b41",
+    "system_sha256": "696c133b15c855845b776c1bb4fbe8dfd298e37f3f50daf90e6e136d5c394f0a"
+  },
+  "frozen": {
+    "judge_version": 1,
+    "model_id": "anthropic.claude-sonnet-4-6",
+    "temperature": 0.0,
+    "instructions_sha256": "7b251e319c0ea1c2f63cf2bb70c0df438e035807bb4db909ac0f2a071c88310f",
+    "rubric_sha256": "f8291ae161363ad519507e4b921828ee2c1969272229d330700b7c6ff89a0b41",
+    "system_sha256": "696c133b15c855845b776c1bb4fbe8dfd298e37f3f50daf90e6e136d5c394f0a",
+    "frozen_at": "2026-10-17T07:22:17+01:00"
+  },
+  "runs": [
+    1,
+    2,
+    3,
+    4,
+    5
+  ],
+  "repeats": 1,
+  "concurrency": 4,
+  "corpus_sha256": "d510623686bff3fd851e69dc3943e014aad9b4aff87417fd80e030c71f604321",
+  "views": [
+    "null"
+  ],
+  "estimate": {
+    "cost_usd_upper_bound": 5.643,
+    "seconds": 1012.5
+  }
+}

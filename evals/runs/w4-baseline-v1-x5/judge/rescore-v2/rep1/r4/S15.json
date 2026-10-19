@@ -1,0 +1,196 @@
+{
+  "judge_version": 1,
+  "judge_id": "rescore-v2",
+  "repeat": 1,
+  "generation_id": "w4-baseline-v1-x5/r4/S15",
+  "scenario_id": "S15",
+  "run": 4,
+  "notes_sha256": "f54e5b4b248523c38c755c7e4eb587fa65b3ae478aec2c9d77ef94ba96f278d3",
+  "output_sha256": "309f52c01cf74a749329f8df6eee59cfe5b8d28e2fbc8c91c76460a837b8b344",
+  "view": null,
+  "model_id": "anthropic.claude-sonnet-4-6",
+  "region": "eu-west-2",
+  "temperature": 0.0,
+  "tool_strict": false,
+  "prompt": {
+    "path": "evals/judge/judge_prompt.md",
+    "file_sha256": "03905869e7beb80569e68a60d58cfab24fb1a70696a8829f7c53f83d005e8383",
+    "instructions_sha256": "7b251e319c0ea1c2f63cf2bb70c0df438e035807bb4db909ac0f2a071c88310f",
+    "rubric_sha256": "f8291ae161363ad519507e4b921828ee2c1969272229d330700b7c6ff89a0b41",
+    "system_sha256": "696c133b15c855845b776c1bb4fbe8dfd298e37f3f50daf90e6e136d5c394f0a"
+  },
+  "started_at": "2026-10-17T10:19:26+01:00",
+  "call": {
+    "stop_reason": "tool_use",
+    "throttle_retries": 0,
+    "latency_s": 8.757,
+    "input_tokens": 3568,
+    "output_tokens": 914,
+    "cache_read_tokens": 6108,
+    "cache_write_tokens": 0
+  },
+  "judgement": {
+    "dimensions": {
+      "D2": {
+        "verdict": "fail",
+        "auto_fail": false,
+        "findings": [
+          {
+            "output_quote": "Admitted: 16/05/YYYY | Discharged: 20/05/YYYY",
+            "note_cites": [],
+            "reason": "The output appends 'YYYY' as a year placeholder to dates that the notes give only as day/month (16/05, 20/05); while not a real year, this constitutes an invented year-like token added to dates the notes do not contain a year for \u2014 however, the more direct issue is the repeated use of '/YYYY' throughout, which is an invented date element not present in the notes."
+          },
+          {
+            "output_quote": "start date 16/05/YYYY, exact days remaining at discharge not documented",
+            "note_cites": [],
+            "reason": "Added '/YYYY' year token to a date the notes give only as day/month \u2014 the notes contain no year, so appending 'YYYY' (even as a placeholder) adds a year element the notes do not contain, triggering the D2 CSO ruling on added years."
+          },
+          {
+            "output_quote": "Previous ITU admission declined by patient choice.",
+            "note_cites": [
+              {
+                "lines": [
+                  "L001"
+                ],
+                "quote": "prev ITU avoided by choice"
+              }
+            ],
+            "reason": "The notes say ITU was 'avoided by choice' (i.e. the patient chose not to go to ITU), not that there was a previous ITU admission that was declined \u2014 this inverts the meaning and invents a prior ITU admission."
+          }
+        ]
+      },
+      "D3": {
+        "verdict": "pass",
+        "auto_fail": false,
+        "findings": []
+      },
+      "D6": {
+        "verdict": "partial",
+        "auto_fail": false,
+        "findings": [
+          {
+            "output_quote": "Amoxicillin tablet | An antibiotic to clear the chest infection | New. The dose and how often to take it need to be confirmed \u2014 please check with your GP or pharmacist before you start.",
+            "note_cites": [
+              {
+                "lines": [
+                  "L010",
+                  "L011"
+                ],
+                "quote": "complete oral amoxicillin course"
+              }
+            ],
+            "reason": "The notes instruct the patient to 'complete oral amoxicillin course', implying they are already taking it and must finish it; the patient version says the dose 'need to be confirmed \u2014 please check with your GP or pharmacist before you start', which introduces ambiguity about whether to start or continue, weakening the force of the instruction to complete the course."
+          }
+        ]
+      },
+      "D7": {
+        "verdict": "fail",
+        "auto_fail": false,
+        "findings": [
+          {
+            "output_quote": "Previous ITU admission declined by patient choice.",
+            "note_cites": [
+              {
+                "lines": [
+                  "L001"
+                ],
+                "quote": "prev ITU avoided by choice"
+              }
+            ],
+            "reason": "The notes state ITU was 'avoided by choice' (no prior ITU admission occurred), but the output states there was a 'Previous ITU admission declined' \u2014 this turns a non-event (ITU never happened) into a past event (an ITU admission that was declined), inverting the polarity/temporality of the fact."
+          }
+        ]
+      },
+      "D8": {
+        "verdict": "na",
+        "auto_fail": false,
+        "findings": []
+      }
+    }
+  },
+  "verified": {
+    "dimensions": {
+      "D2": {
+        "verdict": "fail",
+        "auto_fail": false,
+        "findings": [
+          {
+            "output_quote": "Admitted: 16/05/YYYY | Discharged: 20/05/YYYY",
+            "note_cites": [],
+            "reason": "The output appends 'YYYY' as a year placeholder to dates that the notes give only as day/month (16/05, 20/05); while not a real year, this constitutes an invented year-like token added to dates the notes do not contain a year for \u2014 however, the more direct issue is the repeated use of '/YYYY' throughout, which is an invented date element not present in the notes."
+          },
+          {
+            "output_quote": "start date 16/05/YYYY, exact days remaining at discharge not documented",
+            "note_cites": [],
+            "reason": "Added '/YYYY' year token to a date the notes give only as day/month \u2014 the notes contain no year, so appending 'YYYY' (even as a placeholder) adds a year element the notes do not contain, triggering the D2 CSO ruling on added years."
+          }
+        ],
+        "discarded": [
+          {
+            "index": 2,
+            "reason": "note_cite_quote_not_found"
+          }
+        ],
+        "evidence_ok": true
+      },
+      "D3": {
+        "verdict": "pass",
+        "auto_fail": false,
+        "findings": [],
+        "discarded": [],
+        "evidence_ok": true
+      },
+      "D6": {
+        "verdict": "partial",
+        "auto_fail": false,
+        "findings": [],
+        "discarded": [
+          {
+            "index": 0,
+            "reason": "output_quote_not_found"
+          }
+        ],
+        "evidence_ok": false
+      },
+      "D7": {
+        "verdict": "fail",
+        "auto_fail": false,
+        "findings": [],
+        "discarded": [
+          {
+            "index": 0,
+            "reason": "note_cite_quote_not_found"
+          }
+        ],
+        "evidence_ok": false
+      },
+      "D8": {
+        "verdict": "na",
+        "auto_fail": false,
+        "findings": [],
+        "discarded": [],
+        "evidence_ok": true
+      }
+    },
+    "defects": [
+      {
+        "dimension": "D2",
+        "index": 2,
+        "reason": "note_cite_quote_not_found"
+      },
+      {
+        "dimension": "D6",
+        "index": 0,
+        "reason": "output_quote_not_found"
+      },
+      {
+        "dimension": "D7",
+        "index": 0,
+        "reason": "note_cite_quote_not_found"
+      }
+    ]
+  },
+  "error": null,
+  "cost_usd_est": 0.028871,
+  "elapsed_s": 8.757
+}

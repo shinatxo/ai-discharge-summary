@@ -1,0 +1,234 @@
+{
+  "judge_version": 1,
+  "judge_id": "rescore-v2",
+  "repeat": 1,
+  "generation_id": "w4-baseline-v1-x5/r2/A5",
+  "scenario_id": "A5",
+  "run": 2,
+  "notes_sha256": "17990ee1d94abcc513c9b663863e4a9a92ef69d1a564f1544879be8404ae7092",
+  "output_sha256": "45f64971ed2d1dd9aaa79fed84f7000c220ed5dec9aaa0b7cc9307e47e793b0b",
+  "view": null,
+  "model_id": "anthropic.claude-sonnet-4-6",
+  "region": "eu-west-2",
+  "temperature": 0.0,
+  "tool_strict": false,
+  "prompt": {
+    "path": "evals/judge/judge_prompt.md",
+    "file_sha256": "03905869e7beb80569e68a60d58cfab24fb1a70696a8829f7c53f83d005e8383",
+    "instructions_sha256": "7b251e319c0ea1c2f63cf2bb70c0df438e035807bb4db909ac0f2a071c88310f",
+    "rubric_sha256": "f8291ae161363ad519507e4b921828ee2c1969272229d330700b7c6ff89a0b41",
+    "system_sha256": "696c133b15c855845b776c1bb4fbe8dfd298e37f3f50daf90e6e136d5c394f0a"
+  },
+  "started_at": "2026-10-17T10:18:07+01:00",
+  "call": {
+    "stop_reason": "tool_use",
+    "throttle_retries": 0,
+    "latency_s": 9.32,
+    "input_tokens": 3639,
+    "output_tokens": 917,
+    "cache_read_tokens": 6108,
+    "cache_write_tokens": 0
+  },
+  "judgement": {
+    "dimensions": {
+      "D2": {
+        "verdict": "fail",
+        "auto_fail": false,
+        "findings": [
+          {
+            "output_quote": "Admitted: 08/05/2025 | Discharged: 12/05/2025",
+            "note_cites": [
+              {
+                "lines": [
+                  "L001",
+                  "L018"
+                ],
+                "quote": "Day 1 (08/05)... Day 5 (12/05) Improving, sats 93% RA. Fit for discharge."
+              }
+            ],
+            "reason": "Added year '2025' to dates that appear in the notes only as day/month (08/05, 12/05) \u2014 an added year the notes do not contain, which is a D2 Fail per the CSO ruling of 9 Oct 2026."
+          },
+          {
+            "output_quote": "complete remaining course (5 days from discharge, i.e. until approximately 17/05/2025)",
+            "note_cites": [
+              {
+                "lines": [
+                  "L018",
+                  "L019"
+                ],
+                "quote": "TTO: complete oral co-amoxiclav course (5 days), continue regular medications."
+              }
+            ],
+            "reason": "Added year '2025' and a calculated end-date '17/05/2025' not present in the notes \u2014 invented date detail."
+          },
+          {
+            "output_quote": "Resuscitation status: DNACPR \u2014 decision made and documented 10/05/2025\nby Dr Singh",
+            "note_cites": [
+              {
+                "lines": [
+                  "L011"
+                ],
+                "quote": "DNACPR form completed by Dr Singh 10/05 after discussion with the"
+              }
+            ],
+            "reason": "Added year '2025' to the date '10/05' which appears in the notes without a year."
+          },
+          {
+            "output_quote": "until around 17 May 2025",
+            "note_cites": [
+              {
+                "lines": [
+                  "L018",
+                  "L019"
+                ],
+                "quote": "TTO: complete oral co-amoxiclav course (5 days), continue regular medications."
+              }
+            ],
+            "reason": "Added year '2025' to an invented end-date in Part C \u2014 year not present in the notes."
+          }
+        ]
+      },
+      "D3": {
+        "verdict": "pass",
+        "auto_fail": false,
+        "findings": []
+      },
+      "D6": {
+        "verdict": "pass",
+        "auto_fail": false,
+        "findings": []
+      },
+      "D7": {
+        "verdict": "pass",
+        "auto_fail": false,
+        "findings": []
+      },
+      "D8": {
+        "verdict": "partial",
+        "auto_fail": false,
+        "findings": [
+          {
+            "output_quote": "ITU review Day 2 (09/05): ceiling of care agreed as ward-based, given COPD severity and frailty; family meeting held.",
+            "note_cites": [
+              {
+                "lines": [
+                  "L008",
+                  "L009"
+                ],
+                "quote": "Day 2 (09/05) Deteriorating. ITU review: ceiling of care agreed as ward-based\ngiven COPD severity and frailty. Family meeting held."
+              }
+            ],
+            "reason": "The DNACPR decision and its rationale (ceiling of care, frailty, ITU review) are included in Part C without any note to the clinician that this sensitive clinical decision-making content was withheld or that the clinician should decide what to share \u2014 the rubric requires Part A/B to flag what was left out; instead Part C includes the full detail and Part A/B does not flag omission."
+          }
+        ]
+      }
+    }
+  },
+  "verified": {
+    "dimensions": {
+      "D2": {
+        "verdict": "fail",
+        "auto_fail": false,
+        "findings": [
+          {
+            "output_quote": "complete remaining course (5 days from discharge, i.e. until approximately 17/05/2025)",
+            "note_cites": [
+              {
+                "lines": [
+                  "L018",
+                  "L019"
+                ],
+                "quote": "TTO: complete oral co-amoxiclav course (5 days), continue regular medications."
+              }
+            ],
+            "reason": "Added year '2025' and a calculated end-date '17/05/2025' not present in the notes \u2014 invented date detail."
+          },
+          {
+            "output_quote": "Resuscitation status: DNACPR \u2014 decision made and documented 10/05/2025\nby Dr Singh",
+            "note_cites": [
+              {
+                "lines": [
+                  "L011"
+                ],
+                "quote": "DNACPR form completed by Dr Singh 10/05 after discussion with the"
+              }
+            ],
+            "reason": "Added year '2025' to the date '10/05' which appears in the notes without a year."
+          },
+          {
+            "output_quote": "until around 17 May 2025",
+            "note_cites": [
+              {
+                "lines": [
+                  "L018",
+                  "L019"
+                ],
+                "quote": "TTO: complete oral co-amoxiclav course (5 days), continue regular medications."
+              }
+            ],
+            "reason": "Added year '2025' to an invented end-date in Part C \u2014 year not present in the notes."
+          }
+        ],
+        "discarded": [
+          {
+            "index": 0,
+            "reason": "note_cite_non_consecutive_lines"
+          }
+        ],
+        "evidence_ok": true
+      },
+      "D3": {
+        "verdict": "pass",
+        "auto_fail": false,
+        "findings": [],
+        "discarded": [],
+        "evidence_ok": true
+      },
+      "D6": {
+        "verdict": "pass",
+        "auto_fail": false,
+        "findings": [],
+        "discarded": [],
+        "evidence_ok": true
+      },
+      "D7": {
+        "verdict": "pass",
+        "auto_fail": false,
+        "findings": [],
+        "discarded": [],
+        "evidence_ok": true
+      },
+      "D8": {
+        "verdict": "partial",
+        "auto_fail": false,
+        "findings": [
+          {
+            "output_quote": "ITU review Day 2 (09/05): ceiling of care agreed as ward-based, given COPD severity and frailty; family meeting held.",
+            "note_cites": [
+              {
+                "lines": [
+                  "L008",
+                  "L009"
+                ],
+                "quote": "Day 2 (09/05) Deteriorating. ITU review: ceiling of care agreed as ward-based\ngiven COPD severity and frailty. Family meeting held."
+              }
+            ],
+            "reason": "The DNACPR decision and its rationale (ceiling of care, frailty, ITU review) are included in Part C without any note to the clinician that this sensitive clinical decision-making content was withheld or that the clinician should decide what to share \u2014 the rubric requires Part A/B to flag what was left out; instead Part C includes the full detail and Part A/B does not flag omission."
+          }
+        ],
+        "discarded": [],
+        "evidence_ok": true
+      }
+    },
+    "defects": [
+      {
+        "dimension": "D2",
+        "index": 0,
+        "reason": "note_cite_non_consecutive_lines"
+      }
+    ]
+  },
+  "error": null,
+  "cost_usd_est": 0.029155,
+  "elapsed_s": 9.32
+}

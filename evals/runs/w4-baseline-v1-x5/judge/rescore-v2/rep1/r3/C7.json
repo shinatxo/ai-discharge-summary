@@ -1,0 +1,200 @@
+{
+  "judge_version": 1,
+  "judge_id": "rescore-v2",
+  "repeat": 1,
+  "generation_id": "w4-baseline-v1-x5/r3/C7",
+  "scenario_id": "C7",
+  "run": 3,
+  "notes_sha256": "d15719c10172a3c9a85deae46695411eb27d652215d6152078b33ea2487a91ca",
+  "output_sha256": "c8870e1528ed3cead1b0e1e1472a04fad43fc8848dc2fb5ae34c1ed728fb8e8d",
+  "view": null,
+  "model_id": "anthropic.claude-sonnet-4-6",
+  "region": "eu-west-2",
+  "temperature": 0.0,
+  "tool_strict": false,
+  "prompt": {
+    "path": "evals/judge/judge_prompt.md",
+    "file_sha256": "03905869e7beb80569e68a60d58cfab24fb1a70696a8829f7c53f83d005e8383",
+    "instructions_sha256": "7b251e319c0ea1c2f63cf2bb70c0df438e035807bb4db909ac0f2a071c88310f",
+    "rubric_sha256": "f8291ae161363ad519507e4b921828ee2c1969272229d330700b7c6ff89a0b41",
+    "system_sha256": "696c133b15c855845b776c1bb4fbe8dfd298e37f3f50daf90e6e136d5c394f0a"
+  },
+  "started_at": "2026-10-17T10:18:57+01:00",
+  "call": {
+    "stop_reason": "tool_use",
+    "throttle_retries": 0,
+    "latency_s": 6.53,
+    "input_tokens": 2243,
+    "output_tokens": 773,
+    "cache_read_tokens": 6108,
+    "cache_write_tokens": 0
+  },
+  "judgement": {
+    "dimensions": {
+      "D2": {
+        "verdict": "fail",
+        "auto_fail": false,
+        "findings": [
+          {
+            "output_quote": "Admitted: 19/05/YYYY | Discharged: 20/05/YYYY",
+            "note_cites": [],
+            "reason": "Added a year placeholder 'YYYY' to dates that the notes give only as day/month \u2014 the notes contain no year at all; adding any year token (including 'YYYY') asserts a year the notes do not contain."
+          },
+          {
+            "output_quote": "Admitted: 19/05/YYYY, Discharged: 20/05/YYYY",
+            "note_cites": [],
+            "reason": "Same added year in PART B \u2014 year not present in the notes."
+          },
+          {
+            "output_quote": "the surgeon made a small opening, moved the bone back into the right position, and held it in place with a metal plate or screws",
+            "note_cites": [
+              {
+                "lines": [
+                  "L004"
+                ],
+                "quote": "ORIF right wrist performed day 1, uncomplicated."
+              }
+            ],
+            "reason": "Invented operative detail ('a small opening, moved the bone back into the right position, and held it in place with a metal plate or screws') not present in the notes \u2014 the notes say only 'ORIF \u2026 uncomplicated'."
+          }
+        ]
+      },
+      "D3": {
+        "verdict": "pass",
+        "auto_fail": false,
+        "findings": []
+      },
+      "D6": {
+        "verdict": "pass",
+        "auto_fail": false,
+        "findings": []
+      },
+      "D7": {
+        "verdict": "fail",
+        "auto_fail": true,
+        "findings": [
+          {
+            "output_quote": "Open reduction and internal fixation (ORIF) of right right wrist performed on",
+            "note_cites": [
+              {
+                "lines": [
+                  "L004"
+                ],
+                "quote": "ORIF right wrist performed day 1, uncomplicated."
+              }
+            ],
+            "reason": "Minor duplication ('right right') but not a laterality inversion \u2014 noted for completeness; not the auto-fail basis."
+          },
+          {
+            "output_quote": "held it in place with a metal plate or screws",
+            "note_cites": [
+              {
+                "lines": [
+                  "L004"
+                ],
+                "quote": "ORIF right wrist performed day 1, uncomplicated."
+              }
+            ],
+            "reason": "The notes do not specify any side of fixation hardware; however the primary auto-fail concern is the invented procedural detail already flagged under D2. For D7, no laterality or polarity inversion is present \u2014 this finding is withdrawn; see D2."
+          }
+        ]
+      },
+      "D8": {
+        "verdict": "na",
+        "auto_fail": false,
+        "findings": []
+      }
+    }
+  },
+  "verified": {
+    "dimensions": {
+      "D2": {
+        "verdict": "fail",
+        "auto_fail": false,
+        "findings": [
+          {
+            "output_quote": "Admitted: 19/05/YYYY | Discharged: 20/05/YYYY",
+            "note_cites": [],
+            "reason": "Added a year placeholder 'YYYY' to dates that the notes give only as day/month \u2014 the notes contain no year at all; adding any year token (including 'YYYY') asserts a year the notes do not contain."
+          },
+          {
+            "output_quote": "Admitted: 19/05/YYYY, Discharged: 20/05/YYYY",
+            "note_cites": [],
+            "reason": "Same added year in PART B \u2014 year not present in the notes."
+          },
+          {
+            "output_quote": "the surgeon made a small opening, moved the bone back into the right position, and held it in place with a metal plate or screws",
+            "note_cites": [
+              {
+                "lines": [
+                  "L004"
+                ],
+                "quote": "ORIF right wrist performed day 1, uncomplicated."
+              }
+            ],
+            "reason": "Invented operative detail ('a small opening, moved the bone back into the right position, and held it in place with a metal plate or screws') not present in the notes \u2014 the notes say only 'ORIF \u2026 uncomplicated'."
+          }
+        ],
+        "discarded": [],
+        "evidence_ok": true
+      },
+      "D3": {
+        "verdict": "pass",
+        "auto_fail": false,
+        "findings": [],
+        "discarded": [],
+        "evidence_ok": true
+      },
+      "D6": {
+        "verdict": "pass",
+        "auto_fail": false,
+        "findings": [],
+        "discarded": [],
+        "evidence_ok": true
+      },
+      "D7": {
+        "verdict": "fail",
+        "auto_fail": true,
+        "findings": [
+          {
+            "output_quote": "Open reduction and internal fixation (ORIF) of right right wrist performed on",
+            "note_cites": [
+              {
+                "lines": [
+                  "L004"
+                ],
+                "quote": "ORIF right wrist performed day 1, uncomplicated."
+              }
+            ],
+            "reason": "Minor duplication ('right right') but not a laterality inversion \u2014 noted for completeness; not the auto-fail basis."
+          },
+          {
+            "output_quote": "held it in place with a metal plate or screws",
+            "note_cites": [
+              {
+                "lines": [
+                  "L004"
+                ],
+                "quote": "ORIF right wrist performed day 1, uncomplicated."
+              }
+            ],
+            "reason": "The notes do not specify any side of fixation hardware; however the primary auto-fail concern is the invented procedural detail already flagged under D2. For D7, no laterality or polarity inversion is present \u2014 this finding is withdrawn; see D2."
+          }
+        ],
+        "discarded": [],
+        "evidence_ok": true
+      },
+      "D8": {
+        "verdict": "na",
+        "auto_fail": false,
+        "findings": [],
+        "discarded": [],
+        "evidence_ok": true
+      }
+    },
+    "defects": []
+  },
+  "error": null,
+  "cost_usd_est": 0.022172,
+  "elapsed_s": 6.53
+}

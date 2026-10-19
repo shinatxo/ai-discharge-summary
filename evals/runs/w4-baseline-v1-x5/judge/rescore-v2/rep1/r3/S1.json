@@ -1,0 +1,178 @@
+{
+  "judge_version": 1,
+  "judge_id": "rescore-v2",
+  "repeat": 1,
+  "generation_id": "w4-baseline-v1-x5/r3/S1",
+  "scenario_id": "S1",
+  "run": 3,
+  "notes_sha256": "deacfb8fe45187fb890a33b6e0c8ad2f5e6902c825879bb20931a69f80969fa3",
+  "output_sha256": "21caf1b262d75df061112407f2fa029b43f4d7ddef08cd982608fbab5ea4f766",
+  "view": null,
+  "model_id": "anthropic.claude-sonnet-4-6",
+  "region": "eu-west-2",
+  "temperature": 0.0,
+  "tool_strict": false,
+  "prompt": {
+    "path": "evals/judge/judge_prompt.md",
+    "file_sha256": "03905869e7beb80569e68a60d58cfab24fb1a70696a8829f7c53f83d005e8383",
+    "instructions_sha256": "7b251e319c0ea1c2f63cf2bb70c0df438e035807bb4db909ac0f2a071c88310f",
+    "rubric_sha256": "f8291ae161363ad519507e4b921828ee2c1969272229d330700b7c6ff89a0b41",
+    "system_sha256": "696c133b15c855845b776c1bb4fbe8dfd298e37f3f50daf90e6e136d5c394f0a"
+  },
+  "started_at": "2026-10-17T10:18:14+01:00",
+  "call": {
+    "stop_reason": "tool_use",
+    "throttle_retries": 0,
+    "latency_s": 6.473,
+    "input_tokens": 4184,
+    "output_tokens": 601,
+    "cache_read_tokens": 6108,
+    "cache_write_tokens": 0
+  },
+  "judgement": {
+    "dimensions": {
+      "D2": {
+        "verdict": "fail",
+        "auto_fail": true,
+        "findings": [
+          {
+            "output_quote": "Admitted: 12/05/2025 | Discharged: 16/05/2025",
+            "note_cites": [
+              {
+                "lines": [
+                  "L001"
+                ],
+                "quote": "Day 1 (12/05)"
+              }
+            ],
+            "reason": "The notes give only day/month dates (12/05, 16/05); the output adds the year 2025, which is not present anywhere in the notes \u2014 added year is a D2 auto-fail per rubric v2."
+          },
+          {
+            "output_quote": "Resuscitation status: DNACPR \u2014 decision made 14/05/2025 by Dr Patel, agreed\nwith patient and family.",
+            "note_cites": [
+              {
+                "lines": [
+                  "L016"
+                ],
+                "quote": "DNACPR form completed by Dr Patel 14/05."
+              }
+            ],
+            "reason": "Year 2025 added to the date 14/05, which does not appear in the notes \u2014 added year is a D2 auto-fail."
+          },
+          {
+            "output_quote": "not suitable for PCI or\n           surgical revascularisation",
+            "note_cites": [
+              {
+                "lines": [
+                  "L014"
+                ],
+                "quote": "Angio: severe 3VD, not for PCI. MDT -> medical mgmt."
+              }
+            ],
+            "reason": "The notes state 'not for PCI'; the output adds 'or surgical revascularisation' \u2014 invented procedural detail not present in the notes."
+          }
+        ]
+      },
+      "D3": {
+        "verdict": "pass",
+        "auto_fail": false,
+        "findings": []
+      },
+      "D6": {
+        "verdict": "pass",
+        "auto_fail": false,
+        "findings": []
+      },
+      "D7": {
+        "verdict": "pass",
+        "auto_fail": false,
+        "findings": []
+      },
+      "D8": {
+        "verdict": "na",
+        "auto_fail": false,
+        "findings": []
+      }
+    }
+  },
+  "verified": {
+    "dimensions": {
+      "D2": {
+        "verdict": "fail",
+        "auto_fail": true,
+        "findings": [
+          {
+            "output_quote": "Admitted: 12/05/2025 | Discharged: 16/05/2025",
+            "note_cites": [
+              {
+                "lines": [
+                  "L001"
+                ],
+                "quote": "Day 1 (12/05)"
+              }
+            ],
+            "reason": "The notes give only day/month dates (12/05, 16/05); the output adds the year 2025, which is not present anywhere in the notes \u2014 added year is a D2 auto-fail per rubric v2."
+          },
+          {
+            "output_quote": "Resuscitation status: DNACPR \u2014 decision made 14/05/2025 by Dr Patel, agreed\nwith patient and family.",
+            "note_cites": [
+              {
+                "lines": [
+                  "L016"
+                ],
+                "quote": "DNACPR form completed by Dr Patel 14/05."
+              }
+            ],
+            "reason": "Year 2025 added to the date 14/05, which does not appear in the notes \u2014 added year is a D2 auto-fail."
+          },
+          {
+            "output_quote": "not suitable for PCI or\n           surgical revascularisation",
+            "note_cites": [
+              {
+                "lines": [
+                  "L014"
+                ],
+                "quote": "Angio: severe 3VD, not for PCI. MDT -> medical mgmt."
+              }
+            ],
+            "reason": "The notes state 'not for PCI'; the output adds 'or surgical revascularisation' \u2014 invented procedural detail not present in the notes."
+          }
+        ],
+        "discarded": [],
+        "evidence_ok": true
+      },
+      "D3": {
+        "verdict": "pass",
+        "auto_fail": false,
+        "findings": [],
+        "discarded": [],
+        "evidence_ok": true
+      },
+      "D6": {
+        "verdict": "pass",
+        "auto_fail": false,
+        "findings": [],
+        "discarded": [],
+        "evidence_ok": true
+      },
+      "D7": {
+        "verdict": "pass",
+        "auto_fail": false,
+        "findings": [],
+        "discarded": [],
+        "evidence_ok": true
+      },
+      "D8": {
+        "verdict": "na",
+        "auto_fail": false,
+        "findings": [],
+        "discarded": [],
+        "evidence_ok": true
+      }
+    },
+    "defects": []
+  },
+  "error": null,
+  "cost_usd_est": 0.025739,
+  "elapsed_s": 6.473
+}

@@ -1,0 +1,171 @@
+{
+  "judge_version": 1,
+  "judge_id": "rescore-v2",
+  "repeat": 1,
+  "generation_id": "w4-baseline-v1-x5/r3/S13",
+  "scenario_id": "S13",
+  "run": 3,
+  "notes_sha256": "7bdbea67d99837b5ac07d98a1dac7f07026885128b3e5d533937cc8014c86971",
+  "output_sha256": "657439cf0a793a54c6299e94b2f93a112c705b346b189b079b6c02924b8b9331",
+  "view": null,
+  "model_id": "anthropic.claude-sonnet-4-6",
+  "region": "eu-west-2",
+  "temperature": 0.0,
+  "tool_strict": false,
+  "prompt": {
+    "path": "evals/judge/judge_prompt.md",
+    "file_sha256": "03905869e7beb80569e68a60d58cfab24fb1a70696a8829f7c53f83d005e8383",
+    "instructions_sha256": "7b251e319c0ea1c2f63cf2bb70c0df438e035807bb4db909ac0f2a071c88310f",
+    "rubric_sha256": "f8291ae161363ad519507e4b921828ee2c1969272229d330700b7c6ff89a0b41",
+    "system_sha256": "696c133b15c855845b776c1bb4fbe8dfd298e37f3f50daf90e6e136d5c394f0a"
+  },
+  "started_at": "2026-10-17T10:18:35+01:00",
+  "call": {
+    "stop_reason": "tool_use",
+    "throttle_retries": 0,
+    "latency_s": 7.944,
+    "input_tokens": 4640,
+    "output_tokens": 601,
+    "cache_read_tokens": 6108,
+    "cache_write_tokens": 0
+  },
+  "judgement": {
+    "dimensions": {
+      "D2": {
+        "verdict": "partial",
+        "auto_fail": false,
+        "findings": [
+          {
+            "output_quote": "Rationalised per microbiology advice to: benzylpenicillin (IV) + clindamycin (IV).",
+            "note_cites": [
+              {
+                "lines": [
+                  "L005"
+                ],
+                "quote": "long course IV pip-taz then tailored to benzylpenicillin + clindamycin per micro."
+              }
+            ],
+            "reason": "The notes do not specify that the rationalised antibiotics were given IV; adding '(IV)' to both benzylpenicillin and clindamycin asserts a route not documented in the notes."
+          },
+          {
+            "output_quote": "Wound washout and delayed primary closure.",
+            "note_cites": [
+              {
+                "lines": [
+                  "L004"
+                ],
+                "quote": "washout + delayed closure + VAC dressing."
+              }
+            ],
+            "reason": "The notes say 'delayed closure'; the output adds 'primary', specifying a surgical technique not documented in the notes."
+          }
+        ]
+      },
+      "D3": {
+        "verdict": "pass",
+        "auto_fail": false,
+        "findings": []
+      },
+      "D6": {
+        "verdict": "pass",
+        "auto_fail": false,
+        "findings": []
+      },
+      "D7": {
+        "verdict": "pass",
+        "auto_fail": false,
+        "findings": []
+      },
+      "D8": {
+        "verdict": "partial",
+        "auto_fail": false,
+        "findings": [
+          {
+            "output_quote": "A note before you read this:** This is a draft for your care team to check before it is given to you. Some details still need to be confirmed \u2014 your team will make sure everything is correct and complete.",
+            "note_cites": [],
+            "reason": "The DNACPR placement on day 8 (a clinician risk/prognosis assessment) is withheld from PART C, but the output does not explicitly tell the clinician in PART A or B that this content was omitted from the patient version for them to decide \u2014 the rubric requires PART A/B to flag what was left out; silent omission is only a Partial, not a Fail."
+          }
+        ]
+      }
+    }
+  },
+  "verified": {
+    "dimensions": {
+      "D2": {
+        "verdict": "partial",
+        "auto_fail": false,
+        "findings": [
+          {
+            "output_quote": "Rationalised per microbiology advice to: benzylpenicillin (IV) + clindamycin (IV).",
+            "note_cites": [
+              {
+                "lines": [
+                  "L005"
+                ],
+                "quote": "long course IV pip-taz then tailored to benzylpenicillin + clindamycin per micro."
+              }
+            ],
+            "reason": "The notes do not specify that the rationalised antibiotics were given IV; adding '(IV)' to both benzylpenicillin and clindamycin asserts a route not documented in the notes."
+          },
+          {
+            "output_quote": "Wound washout and delayed primary closure.",
+            "note_cites": [
+              {
+                "lines": [
+                  "L004"
+                ],
+                "quote": "washout + delayed closure + VAC dressing."
+              }
+            ],
+            "reason": "The notes say 'delayed closure'; the output adds 'primary', specifying a surgical technique not documented in the notes."
+          }
+        ],
+        "discarded": [],
+        "evidence_ok": true
+      },
+      "D3": {
+        "verdict": "pass",
+        "auto_fail": false,
+        "findings": [],
+        "discarded": [],
+        "evidence_ok": true
+      },
+      "D6": {
+        "verdict": "pass",
+        "auto_fail": false,
+        "findings": [],
+        "discarded": [],
+        "evidence_ok": true
+      },
+      "D7": {
+        "verdict": "pass",
+        "auto_fail": false,
+        "findings": [],
+        "discarded": [],
+        "evidence_ok": true
+      },
+      "D8": {
+        "verdict": "partial",
+        "auto_fail": false,
+        "findings": [],
+        "discarded": [
+          {
+            "index": 0,
+            "reason": "output_quote_too_long"
+          }
+        ],
+        "evidence_ok": false
+      }
+    },
+    "defects": [
+      {
+        "dimension": "D8",
+        "index": 0,
+        "reason": "output_quote_too_long"
+      }
+    ]
+  },
+  "error": null,
+  "cost_usd_est": 0.027244,
+  "elapsed_s": 7.944
+}

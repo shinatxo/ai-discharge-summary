@@ -1,0 +1,232 @@
+{
+  "judge_version": 1,
+  "judge_id": "rescore-v2",
+  "repeat": 1,
+  "generation_id": "w4-pipeline-e06-x5/r4/S12",
+  "scenario_id": "S12",
+  "run": 4,
+  "notes_sha256": "143db4ec88bb969841da8f67ae4e9cff993d97483c923700d3c320033a67f923",
+  "output_sha256": "94555522bb4c8cb3cf74b1e16c2f3368b0d36e861ac91e516cfc06f97d6cf61c",
+  "view": {
+    "name": "pipeline-steps-1-5b",
+    "version": 1
+  },
+  "model_id": "anthropic.claude-sonnet-4-6",
+  "region": "eu-west-2",
+  "temperature": 0.0,
+  "tool_strict": false,
+  "prompt": {
+    "path": "evals/judge/judge_prompt.md",
+    "file_sha256": "03905869e7beb80569e68a60d58cfab24fb1a70696a8829f7c53f83d005e8383",
+    "instructions_sha256": "7b251e319c0ea1c2f63cf2bb70c0df438e035807bb4db909ac0f2a071c88310f",
+    "rubric_sha256": "f8291ae161363ad519507e4b921828ee2c1969272229d330700b7c6ff89a0b41",
+    "system_sha256": "696c133b15c855845b776c1bb4fbe8dfd298e37f3f50daf90e6e136d5c394f0a"
+  },
+  "started_at": "2026-10-17T10:15:39+01:00",
+  "call": {
+    "stop_reason": "tool_use",
+    "throttle_retries": 0,
+    "latency_s": 17.904,
+    "input_tokens": 2149,
+    "output_tokens": 1053,
+    "cache_read_tokens": 6108,
+    "cache_write_tokens": 0
+  },
+  "judgement": {
+    "dimensions": {
+      "D2": {
+        "verdict": "fail",
+        "auto_fail": true,
+        "findings": [
+          {
+            "output_quote": "Tazocin (piperacillin-tazobactam) prescribed [L022]",
+            "note_cites": [
+              {
+                "lines": [
+                  "L022"
+                ],
+                "quote": "Tazocin"
+              }
+            ],
+            "reason": "Tazocin is an inpatient-only IV antibiotic; it appears in the treatment section but is not on the discharge medication list \u2014 however, the output carries it as a treatment fact without flagging it as inpatient-only, and the notes do not indicate it was continued to discharge. More critically, the output lists it under 'Treatment' in a discharge document context without clarifying it was inpatient-only, risking it being read as a discharge medication. This is borderline; the primary auto-fail concern is below."
+          },
+          {
+            "output_quote": "Carcinoma of cervix [L008]",
+            "note_cites": [
+              {
+                "lines": [
+                  "L007",
+                  "L008"
+                ],
+                "quote": "Ca cervix."
+              }
+            ],
+            "reason": "The notes state 'Ca cervix' which could mean carcinoma or calcium/other abbreviation in context; expanding to 'Carcinoma of cervix' is an invented clinical interpretation \u2014 however this is a reasonable expansion. The more clear D2 issue is the AXR date added below."
+          },
+          {
+            "output_quote": "AXR (12/05/26): dilated bowel loops concerning for obstruction; faecal loading [L031]",
+            "note_cites": [
+              {
+                "lines": [
+                  "L031"
+                ],
+                "quote": "(12/05/26) AXR dilated bowel loops concerning for obstruction, faecal loading"
+              }
+            ],
+            "reason": "The date 12/05/26 is inferred from the ward round header on L031 and is present in the notes, so this is acceptable. However, the output also adds 'CXR (12/05/26)' and 'Urine culture (12/05/26)' with dates \u2014 these dates come from the ward round header L031 context and are in the notes, so not invented."
+          },
+          {
+            "output_quote": "Non-contrast CT (12/05/26): consolidation right lower zone and sigmoid diverticulitis [L034]",
+            "note_cites": [
+              {
+                "lines": [
+                  "L034"
+                ],
+                "quote": "Non contrast CT showed some consolidation RLZ and sigmoid diverticulitis"
+              }
+            ],
+            "reason": "The date 12/05/26 is added to the non-contrast CT finding; this date appears in the ward round header L031 (same entry) and is present in the notes, so not invented."
+          }
+        ]
+      },
+      "D3": {
+        "verdict": "partial",
+        "auto_fail": false,
+        "findings": [
+          {
+            "output_quote": "A resuscitation form or discussion is documented ([L029]: \"RESPECT form\"). Its recommendation is not transcribed in these notes. Confirm against the completed form before relying on any resuscitation decision.",
+            "note_cites": [
+              {
+                "lines": [
+                  "L028",
+                  "L029"
+                ],
+                "quote": "Amber care\nRESPECT form"
+              }
+            ],
+            "reason": "The notes document that a ReSPECT form was completed (L029) and Amber care was initiated (L028), indicating a resuscitation/end-of-life decision was made, but the output correctly notes the specific recommendation is not transcribed. However, the output does not flag that this was a change during admission (the ReSPECT form was initiated during this admission, which is a significant change), nor does it provide date, clinician, or reason for the change \u2014 missing the change-flagging requirement."
+          }
+        ]
+      },
+      "D6": {
+        "verdict": "na",
+        "auto_fail": false,
+        "findings": []
+      },
+      "D7": {
+        "verdict": "pass",
+        "auto_fail": false,
+        "findings": []
+      },
+      "D8": {
+        "verdict": "na",
+        "auto_fail": false,
+        "findings": []
+      }
+    }
+  },
+  "verified": {
+    "dimensions": {
+      "D2": {
+        "verdict": "fail",
+        "auto_fail": true,
+        "findings": [
+          {
+            "output_quote": "Tazocin (piperacillin-tazobactam) prescribed [L022]",
+            "note_cites": [
+              {
+                "lines": [
+                  "L022"
+                ],
+                "quote": "Tazocin"
+              }
+            ],
+            "reason": "Tazocin is an inpatient-only IV antibiotic; it appears in the treatment section but is not on the discharge medication list \u2014 however, the output carries it as a treatment fact without flagging it as inpatient-only, and the notes do not indicate it was continued to discharge. More critically, the output lists it under 'Treatment' in a discharge document context without clarifying it was inpatient-only, risking it being read as a discharge medication. This is borderline; the primary auto-fail concern is below."
+          },
+          {
+            "output_quote": "Carcinoma of cervix [L008]",
+            "note_cites": [
+              {
+                "lines": [
+                  "L007",
+                  "L008"
+                ],
+                "quote": "Ca cervix."
+              }
+            ],
+            "reason": "The notes state 'Ca cervix' which could mean carcinoma or calcium/other abbreviation in context; expanding to 'Carcinoma of cervix' is an invented clinical interpretation \u2014 however this is a reasonable expansion. The more clear D2 issue is the AXR date added below."
+          },
+          {
+            "output_quote": "AXR (12/05/26): dilated bowel loops concerning for obstruction; faecal loading [L031]",
+            "note_cites": [
+              {
+                "lines": [
+                  "L031"
+                ],
+                "quote": "(12/05/26) AXR dilated bowel loops concerning for obstruction, faecal loading"
+              }
+            ],
+            "reason": "The date 12/05/26 is inferred from the ward round header on L031 and is present in the notes, so this is acceptable. However, the output also adds 'CXR (12/05/26)' and 'Urine culture (12/05/26)' with dates \u2014 these dates come from the ward round header L031 context and are in the notes, so not invented."
+          },
+          {
+            "output_quote": "Non-contrast CT (12/05/26): consolidation right lower zone and sigmoid diverticulitis [L034]",
+            "note_cites": [
+              {
+                "lines": [
+                  "L034"
+                ],
+                "quote": "Non contrast CT showed some consolidation RLZ and sigmoid diverticulitis"
+              }
+            ],
+            "reason": "The date 12/05/26 is added to the non-contrast CT finding; this date appears in the ward round header L031 (same entry) and is present in the notes, so not invented."
+          }
+        ],
+        "discarded": [],
+        "evidence_ok": true
+      },
+      "D3": {
+        "verdict": "partial",
+        "auto_fail": false,
+        "findings": [],
+        "discarded": [
+          {
+            "index": 0,
+            "reason": "output_quote_too_long"
+          }
+        ],
+        "evidence_ok": false
+      },
+      "D6": {
+        "verdict": "na",
+        "auto_fail": false,
+        "findings": [],
+        "discarded": [],
+        "evidence_ok": true
+      },
+      "D7": {
+        "verdict": "pass",
+        "auto_fail": false,
+        "findings": [],
+        "discarded": [],
+        "evidence_ok": true
+      },
+      "D8": {
+        "verdict": "na",
+        "auto_fail": false,
+        "findings": [],
+        "discarded": [],
+        "evidence_ok": true
+      }
+    },
+    "defects": [
+      {
+        "dimension": "D3",
+        "index": 0,
+        "reason": "output_quote_too_long"
+      }
+    ]
+  },
+  "error": null,
+  "cost_usd_est": 0.026482,
+  "elapsed_s": 17.904
+}

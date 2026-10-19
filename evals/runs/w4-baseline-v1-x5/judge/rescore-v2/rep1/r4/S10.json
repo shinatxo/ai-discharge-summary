@@ -1,0 +1,188 @@
+{
+  "judge_version": 1,
+  "judge_id": "rescore-v2",
+  "repeat": 1,
+  "generation_id": "w4-baseline-v1-x5/r4/S10",
+  "scenario_id": "S10",
+  "run": 4,
+  "notes_sha256": "a00b5caaa8e251a370d8136857fd8a4d7969cc70de71013d55dbd99a5fd03229",
+  "output_sha256": "b70c234edca492753376efb7973431dc861b001bc9c7c2366bb0c77b8a93c3db",
+  "view": null,
+  "model_id": "anthropic.claude-sonnet-4-6",
+  "region": "eu-west-2",
+  "temperature": 0.0,
+  "tool_strict": false,
+  "prompt": {
+    "path": "evals/judge/judge_prompt.md",
+    "file_sha256": "03905869e7beb80569e68a60d58cfab24fb1a70696a8829f7c53f83d005e8383",
+    "instructions_sha256": "7b251e319c0ea1c2f63cf2bb70c0df438e035807bb4db909ac0f2a071c88310f",
+    "rubric_sha256": "f8291ae161363ad519507e4b921828ee2c1969272229d330700b7c6ff89a0b41",
+    "system_sha256": "696c133b15c855845b776c1bb4fbe8dfd298e37f3f50daf90e6e136d5c394f0a"
+  },
+  "started_at": "2026-10-17T10:19:09+01:00",
+  "call": {
+    "stop_reason": "tool_use",
+    "throttle_retries": 0,
+    "latency_s": 9.884,
+    "input_tokens": 3454,
+    "output_tokens": 808,
+    "cache_read_tokens": 6108,
+    "cache_write_tokens": 0
+  },
+  "judgement": {
+    "dimensions": {
+      "D2": {
+        "verdict": "fail",
+        "auto_fail": false,
+        "findings": [
+          {
+            "output_quote": "Admitted: 15/05/YYYY | Discharged: 17/05/YYYY",
+            "note_cites": [],
+            "reason": "The output appends 'YYYY' as a year placeholder to dates that appear in the notes only as day/month (15/05, 17/05); while not a real year, this constitutes adding year-like content to dates the notes do not contain a year for. However, 'YYYY' is not a 4-digit year 1900\u20132099, so the deterministic check does not fire. Assessed as minor non-clinical embellishment rather than an asserted clinical fact \u2014 but see the breastfeeding finding below."
+          },
+          {
+            "output_quote": "Breastfeeding established by Day 2.",
+            "note_cites": [
+              {
+                "lines": [
+                  "L007"
+                ],
+                "quote": "Day 2 (16/05) Mobilising, feeding established, wound clean, lochia normal."
+              }
+            ],
+            "reason": "The notes say 'feeding established' \u2014 the output specifies 'Breastfeeding', which is an invented clinical detail not documented in the notes."
+          },
+          {
+            "output_quote": "Breastfeeding support \u2014 breastfeeding was going well by the time you went home.",
+            "note_cites": [
+              {
+                "lines": [
+                  "L007"
+                ],
+                "quote": "Day 2 (16/05) Mobilising, feeding established, wound clean, lochia normal."
+              }
+            ],
+            "reason": "Repeated invention of 'breastfeeding' where notes only say 'feeding established'; also adds 'breastfeeding support' as a treatment which is not documented."
+          }
+        ]
+      },
+      "D3": {
+        "verdict": "pass",
+        "auto_fail": false,
+        "findings": []
+      },
+      "D6": {
+        "verdict": "partial",
+        "auto_fail": false,
+        "findings": [
+          {
+            "output_quote": "The team gave you advice before you left about things to watch out for \u2014 including signs related to bleeding, infection, and blood clots. The specific details of that advice were not fully recorded in your notes.",
+            "note_cites": [
+              {
+                "lines": [
+                  "L010"
+                ],
+                "quote": "Safety-net re PPH/sepsis/VTE."
+              }
+            ],
+            "reason": "The safety-net instruction is documented and is carried into Part C, but the output explicitly states the specific details were not recorded and defers completion to the clinical team, leaving the patient without the actionable safety-net content. This makes the instruction less precise and potentially less effective, though it does not actively relax or contradict it."
+          }
+        ]
+      },
+      "D7": {
+        "verdict": "pass",
+        "auto_fail": false,
+        "findings": []
+      },
+      "D8": {
+        "verdict": "na",
+        "auto_fail": false,
+        "findings": []
+      }
+    }
+  },
+  "verified": {
+    "dimensions": {
+      "D2": {
+        "verdict": "fail",
+        "auto_fail": false,
+        "findings": [
+          {
+            "output_quote": "Admitted: 15/05/YYYY | Discharged: 17/05/YYYY",
+            "note_cites": [],
+            "reason": "The output appends 'YYYY' as a year placeholder to dates that appear in the notes only as day/month (15/05, 17/05); while not a real year, this constitutes adding year-like content to dates the notes do not contain a year for. However, 'YYYY' is not a 4-digit year 1900\u20132099, so the deterministic check does not fire. Assessed as minor non-clinical embellishment rather than an asserted clinical fact \u2014 but see the breastfeeding finding below."
+          },
+          {
+            "output_quote": "Breastfeeding established by Day 2.",
+            "note_cites": [
+              {
+                "lines": [
+                  "L007"
+                ],
+                "quote": "Day 2 (16/05) Mobilising, feeding established, wound clean, lochia normal."
+              }
+            ],
+            "reason": "The notes say 'feeding established' \u2014 the output specifies 'Breastfeeding', which is an invented clinical detail not documented in the notes."
+          },
+          {
+            "output_quote": "Breastfeeding support \u2014 breastfeeding was going well by the time you went home.",
+            "note_cites": [
+              {
+                "lines": [
+                  "L007"
+                ],
+                "quote": "Day 2 (16/05) Mobilising, feeding established, wound clean, lochia normal."
+              }
+            ],
+            "reason": "Repeated invention of 'breastfeeding' where notes only say 'feeding established'; also adds 'breastfeeding support' as a treatment which is not documented."
+          }
+        ],
+        "discarded": [],
+        "evidence_ok": true
+      },
+      "D3": {
+        "verdict": "pass",
+        "auto_fail": false,
+        "findings": [],
+        "discarded": [],
+        "evidence_ok": true
+      },
+      "D6": {
+        "verdict": "partial",
+        "auto_fail": false,
+        "findings": [],
+        "discarded": [
+          {
+            "index": 0,
+            "reason": "output_quote_too_long"
+          }
+        ],
+        "evidence_ok": false
+      },
+      "D7": {
+        "verdict": "pass",
+        "auto_fail": false,
+        "findings": [],
+        "discarded": [],
+        "evidence_ok": true
+      },
+      "D8": {
+        "verdict": "na",
+        "auto_fail": false,
+        "findings": [],
+        "discarded": [],
+        "evidence_ok": true
+      }
+    },
+    "defects": [
+      {
+        "dimension": "D6",
+        "index": 0,
+        "reason": "output_quote_too_long"
+      }
+    ]
+  },
+  "error": null,
+  "cost_usd_est": 0.026746,
+  "elapsed_s": 9.884
+}

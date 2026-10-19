@@ -1,0 +1,255 @@
+{
+  "judge_version": 1,
+  "judge_id": "rescore-v2",
+  "repeat": 1,
+  "generation_id": "w4-pipeline-e06-x5/r1/S3",
+  "scenario_id": "S3",
+  "run": 1,
+  "notes_sha256": "c8882fcefb7f24fb39b45a7bb32cb6bfeb5481df37eff450606bec809ab51ef1",
+  "output_sha256": "83a53d2290d0f0a172e16703c07dc455d8c2de3b973d3d4d9408f71809a98672",
+  "view": {
+    "name": "pipeline-steps-1-5b",
+    "version": 1
+  },
+  "model_id": "anthropic.claude-sonnet-4-6",
+  "region": "eu-west-2",
+  "temperature": 0.0,
+  "tool_strict": false,
+  "prompt": {
+    "path": "evals/judge/judge_prompt.md",
+    "file_sha256": "03905869e7beb80569e68a60d58cfab24fb1a70696a8829f7c53f83d005e8383",
+    "instructions_sha256": "7b251e319c0ea1c2f63cf2bb70c0df438e035807bb4db909ac0f2a071c88310f",
+    "rubric_sha256": "f8291ae161363ad519507e4b921828ee2c1969272229d330700b7c6ff89a0b41",
+    "system_sha256": "696c133b15c855845b776c1bb4fbe8dfd298e37f3f50daf90e6e136d5c394f0a"
+  },
+  "started_at": "2026-10-17T10:14:12+01:00",
+  "call": {
+    "stop_reason": "tool_use",
+    "throttle_retries": 0,
+    "latency_s": 12.911,
+    "input_tokens": 1801,
+    "output_tokens": 1407,
+    "cache_read_tokens": 0,
+    "cache_write_tokens": 6108
+  },
+  "judgement": {
+    "dimensions": {
+      "D2": {
+        "verdict": "partial",
+        "auto_fail": false,
+        "findings": [
+          {
+            "output_quote": "Previous depressive episode in 2018, GP-managed",
+            "note_cites": [
+              {
+                "lines": [
+                  "L004"
+                ],
+                "quote": "One prev depressive episode 2018, GP-managed"
+              }
+            ],
+            "reason": "The notes give '2018' as a year and the output faithfully reproduces it \u2014 this is not an added year. However, the output adds 'in 2018' as a specific year to the previous sertraline treatment context ('Previous treatment with sertraline for approximately 9 months in 2018') \u2014 the notes do not explicitly attach the year 2018 to the sertraline duration, only to the depressive episode. Minor non-clinical embellishment in framing; not a clinical fact invention."
+          },
+          {
+            "output_quote": "Previous treatment with sertraline for approximately 9 months in 2018, stopped when well [L004, L005]",
+            "note_cites": [
+              {
+                "lines": [
+                  "L004",
+                  "L005"
+                ],
+                "quote": "One prev depressive episode 2018, GP-managed w/ sertraline, stopped after ~9/12 when well."
+              }
+            ],
+            "reason": "The output adds 'in 2018' to the sertraline treatment duration; the notes attach 2018 only to the depressive episode, not explicitly to the sertraline course \u2014 minor embellishment associating the year with the medication duration, though the inference is reasonable. Scored as partial rather than auto-fail as 2018 does appear in the notes."
+          }
+        ]
+      },
+      "D3": {
+        "verdict": "pass",
+        "auto_fail": false,
+        "findings": []
+      },
+      "D6": {
+        "verdict": "pass",
+        "auto_fail": false,
+        "findings": []
+      },
+      "D7": {
+        "verdict": "fail",
+        "auto_fail": false,
+        "findings": [
+          {
+            "output_quote": "Day 3: sleep slightly improved; suicidal ideation less intense, now passive [L015]",
+            "note_cites": [
+              {
+                "lines": [
+                  "L015"
+                ],
+                "quote": "Sleep slightly improved. SI less intense, now passive."
+              }
+            ],
+            "reason": "This is placed under 'Key investigations' \u2014 a structural misclassification \u2014 but the clinical facts themselves are reproduced correctly; not a polarity/laterality/temporality error per se."
+          },
+          {
+            "output_quote": "Suicidal ideation fleeting/passive, no intent, future-oriented [L017]",
+            "note_cites": [
+              {
+                "lines": [
+                  "L017"
+                ],
+                "quote": "Mood improving, SI fleeting/passive, no intent, future-oriented"
+              }
+            ],
+            "reason": "The output omits 'Mood improving' from the Day 5 MDT entry in the Key investigations section, but this is a D1 omission issue rather than a polarity/temporality inversion. No actual polarity, laterality or temporality error found."
+          },
+          {
+            "output_quote": "Risk assessment: Risk to self: moderate-high (active SI, escalating).",
+            "note_cites": [
+              {
+                "lines": [
+                  "L008",
+                  "L017"
+                ],
+                "quote": "Risk: self \u2014 moderate-high (active SI, escalating)."
+              }
+            ],
+            "reason": "The risk assessment describes the Day 1 risk level ('active SI, escalating') but by discharge (Day 6) the SI is passive/fleeting with no intent. Presenting the Day 1 risk characterisation without temporal qualification could mislead a reader into thinking this is the current risk status rather than the admission risk \u2014 past state presented without clear temporal anchoring as current."
+          }
+        ]
+      },
+      "D8": {
+        "verdict": "fail",
+        "auto_fail": false,
+        "findings": [
+          {
+            "output_quote": "Risk assessment: Risk to self: moderate-high (active SI, escalating). Protective factors: 2 children, help-seeking, future-oriented. Risk to others: nil. Safeguarding: 2 children at home (ages 8 and 11), social context to be explored, no immediate concerns flagged [L008, L009, L010]",
+            "note_cites": [
+              {
+                "lines": [
+                  "L008",
+                  "L009",
+                  "L010"
+                ],
+                "quote": "Risk: self \u2014 moderate-high (active SI, escalating). Protective: 2 children, help-seeking, future-oriented. Others \u2014 nil. Safeguarding: 2 children at home (ages 8 + 11), social context to be explored, no immediate concerns flagged."
+              }
+            ],
+            "reason": "The full risk assessment (L008\u2013L010), including the safeguarding note about the children and the clinician's risk rating, is D8 withheld-category content per CSO ruling R2 (S3). This content appears in PART A, which is acceptable, but PART C does not contain it \u2014 however, PART B does not explicitly tell the clinician that this content was withheld from PART C for them to decide. The output's PART B only quotes the crisis team number and does not flag that the risk assessment and safeguarding content were omitted from PART C. This is a silent omission (Partial) rather than inclusion in PART C (Fail) \u2014 scored Partial."
+          }
+        ]
+      }
+    }
+  },
+  "verified": {
+    "dimensions": {
+      "D2": {
+        "verdict": "partial",
+        "auto_fail": false,
+        "findings": [
+          {
+            "output_quote": "Previous depressive episode in 2018, GP-managed",
+            "note_cites": [
+              {
+                "lines": [
+                  "L004"
+                ],
+                "quote": "One prev depressive episode 2018, GP-managed"
+              }
+            ],
+            "reason": "The notes give '2018' as a year and the output faithfully reproduces it \u2014 this is not an added year. However, the output adds 'in 2018' as a specific year to the previous sertraline treatment context ('Previous treatment with sertraline for approximately 9 months in 2018') \u2014 the notes do not explicitly attach the year 2018 to the sertraline duration, only to the depressive episode. Minor non-clinical embellishment in framing; not a clinical fact invention."
+          },
+          {
+            "output_quote": "Previous treatment with sertraline for approximately 9 months in 2018, stopped when well [L004, L005]",
+            "note_cites": [
+              {
+                "lines": [
+                  "L004",
+                  "L005"
+                ],
+                "quote": "One prev depressive episode 2018, GP-managed w/ sertraline, stopped after ~9/12 when well."
+              }
+            ],
+            "reason": "The output adds 'in 2018' to the sertraline treatment duration; the notes attach 2018 only to the depressive episode, not explicitly to the sertraline course \u2014 minor embellishment associating the year with the medication duration, though the inference is reasonable. Scored as partial rather than auto-fail as 2018 does appear in the notes."
+          }
+        ],
+        "discarded": [],
+        "evidence_ok": true
+      },
+      "D3": {
+        "verdict": "pass",
+        "auto_fail": false,
+        "findings": [],
+        "discarded": [],
+        "evidence_ok": true
+      },
+      "D6": {
+        "verdict": "pass",
+        "auto_fail": false,
+        "findings": [],
+        "discarded": [],
+        "evidence_ok": true
+      },
+      "D7": {
+        "verdict": "fail",
+        "auto_fail": false,
+        "findings": [
+          {
+            "output_quote": "Day 3: sleep slightly improved; suicidal ideation less intense, now passive [L015]",
+            "note_cites": [
+              {
+                "lines": [
+                  "L015"
+                ],
+                "quote": "Sleep slightly improved. SI less intense, now passive."
+              }
+            ],
+            "reason": "This is placed under 'Key investigations' \u2014 a structural misclassification \u2014 but the clinical facts themselves are reproduced correctly; not a polarity/laterality/temporality error per se."
+          }
+        ],
+        "discarded": [
+          {
+            "index": 1,
+            "reason": "output_quote_not_found"
+          },
+          {
+            "index": 2,
+            "reason": "note_cite_non_consecutive_lines"
+          }
+        ],
+        "evidence_ok": true
+      },
+      "D8": {
+        "verdict": "fail",
+        "auto_fail": false,
+        "findings": [],
+        "discarded": [
+          {
+            "index": 0,
+            "reason": "output_quote_too_long"
+          }
+        ],
+        "evidence_ok": false
+      }
+    },
+    "defects": [
+      {
+        "dimension": "D7",
+        "index": 1,
+        "reason": "output_quote_not_found"
+      },
+      {
+        "dimension": "D7",
+        "index": 2,
+        "reason": "note_cite_non_consecutive_lines"
+      },
+      {
+        "dimension": "D8",
+        "index": 0,
+        "reason": "output_quote_too_long"
+      }
+    ]
+  },
+  "error": null,
+  "cost_usd_est": 0.054354,
+  "elapsed_s": 12.911
+}

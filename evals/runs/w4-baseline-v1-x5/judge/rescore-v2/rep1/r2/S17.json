@@ -1,0 +1,126 @@
+{
+  "judge_version": 1,
+  "judge_id": "rescore-v2",
+  "repeat": 1,
+  "generation_id": "w4-baseline-v1-x5/r2/S17",
+  "scenario_id": "S17",
+  "run": 2,
+  "notes_sha256": "e3e6093b1af13ac9ae86dfab84056ca00f418c7112b956aba9373d9a8d8e40b4",
+  "output_sha256": "58c616f173013be64b3df0e836ecd1cba37f42acc7037e58e0d84107657fa848",
+  "view": null,
+  "model_id": "anthropic.claude-sonnet-4-6",
+  "region": "eu-west-2",
+  "temperature": 0.0,
+  "tool_strict": false,
+  "prompt": {
+    "path": "evals/judge/judge_prompt.md",
+    "file_sha256": "03905869e7beb80569e68a60d58cfab24fb1a70696a8829f7c53f83d005e8383",
+    "instructions_sha256": "7b251e319c0ea1c2f63cf2bb70c0df438e035807bb4db909ac0f2a071c88310f",
+    "rubric_sha256": "f8291ae161363ad519507e4b921828ee2c1969272229d330700b7c6ff89a0b41",
+    "system_sha256": "696c133b15c855845b776c1bb4fbe8dfd298e37f3f50daf90e6e136d5c394f0a"
+  },
+  "started_at": "2026-10-17T10:18:02+01:00",
+  "call": {
+    "stop_reason": "tool_use",
+    "throttle_retries": 0,
+    "latency_s": 5.231,
+    "input_tokens": 3984,
+    "output_tokens": 437,
+    "cache_read_tokens": 6108,
+    "cache_write_tokens": 0
+  },
+  "judgement": {
+    "dimensions": {
+      "D2": {
+        "verdict": "fail",
+        "auto_fail": false,
+        "findings": [
+          {
+            "output_quote": "Admitted: 15/05/YYYY | Discharged: 17/05/YYYY",
+            "note_cites": [],
+            "reason": "The output appends 'YYYY' as a year placeholder to dates that the notes give only as day/month (15/05, 17/05); while not a real year, this constitutes adding a year-like token the notes do not contain. More critically, the output consistently renders dates as '15/05/YYYY' and '17/05/YYYY' throughout Parts A and B \u2014 the notes contain no year at all."
+          },
+          {
+            "output_quote": "Gastroenterology (inferred \u2014 not documented, confirm)",
+            "note_cites": [],
+            "reason": "The specialty 'Gastroenterology' is not documented anywhere in the notes; this is an invented clinical detail (even though flagged as inferred, it asserts a specialty the notes do not contain)."
+          }
+        ]
+      },
+      "D3": {
+        "verdict": "pass",
+        "auto_fail": false,
+        "findings": []
+      },
+      "D6": {
+        "verdict": "pass",
+        "auto_fail": false,
+        "findings": []
+      },
+      "D7": {
+        "verdict": "pass",
+        "auto_fail": false,
+        "findings": []
+      },
+      "D8": {
+        "verdict": "na",
+        "auto_fail": false,
+        "findings": []
+      }
+    }
+  },
+  "verified": {
+    "dimensions": {
+      "D2": {
+        "verdict": "fail",
+        "auto_fail": false,
+        "findings": [
+          {
+            "output_quote": "Admitted: 15/05/YYYY | Discharged: 17/05/YYYY",
+            "note_cites": [],
+            "reason": "The output appends 'YYYY' as a year placeholder to dates that the notes give only as day/month (15/05, 17/05); while not a real year, this constitutes adding a year-like token the notes do not contain. More critically, the output consistently renders dates as '15/05/YYYY' and '17/05/YYYY' throughout Parts A and B \u2014 the notes contain no year at all."
+          },
+          {
+            "output_quote": "Gastroenterology (inferred \u2014 not documented, confirm)",
+            "note_cites": [],
+            "reason": "The specialty 'Gastroenterology' is not documented anywhere in the notes; this is an invented clinical detail (even though flagged as inferred, it asserts a specialty the notes do not contain)."
+          }
+        ],
+        "discarded": [],
+        "evidence_ok": true
+      },
+      "D3": {
+        "verdict": "pass",
+        "auto_fail": false,
+        "findings": [],
+        "discarded": [],
+        "evidence_ok": true
+      },
+      "D6": {
+        "verdict": "pass",
+        "auto_fail": false,
+        "findings": [],
+        "discarded": [],
+        "evidence_ok": true
+      },
+      "D7": {
+        "verdict": "pass",
+        "auto_fail": false,
+        "findings": [],
+        "discarded": [],
+        "evidence_ok": true
+      },
+      "D8": {
+        "verdict": "na",
+        "auto_fail": false,
+        "findings": [],
+        "discarded": [],
+        "evidence_ok": true
+      }
+    },
+    "defects": []
+  },
+  "error": null,
+  "cost_usd_est": 0.022373,
+  "elapsed_s": 5.231
+}

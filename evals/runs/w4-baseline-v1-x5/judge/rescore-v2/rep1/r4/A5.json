@@ -1,0 +1,174 @@
+{
+  "judge_version": 1,
+  "judge_id": "rescore-v2",
+  "repeat": 1,
+  "generation_id": "w4-baseline-v1-x5/r4/A5",
+  "scenario_id": "A5",
+  "run": 4,
+  "notes_sha256": "17990ee1d94abcc513c9b663863e4a9a92ef69d1a564f1544879be8404ae7092",
+  "output_sha256": "4406130325ce7a3a8c210b52311d497d9c4109d7b2fbb01c3cb80919663a04e5",
+  "view": null,
+  "model_id": "anthropic.claude-sonnet-4-6",
+  "region": "eu-west-2",
+  "temperature": 0.0,
+  "tool_strict": false,
+  "prompt": {
+    "path": "evals/judge/judge_prompt.md",
+    "file_sha256": "03905869e7beb80569e68a60d58cfab24fb1a70696a8829f7c53f83d005e8383",
+    "instructions_sha256": "7b251e319c0ea1c2f63cf2bb70c0df438e035807bb4db909ac0f2a071c88310f",
+    "rubric_sha256": "f8291ae161363ad519507e4b921828ee2c1969272229d330700b7c6ff89a0b41",
+    "system_sha256": "696c133b15c855845b776c1bb4fbe8dfd298e37f3f50daf90e6e136d5c394f0a"
+  },
+  "started_at": "2026-10-17T10:19:35+01:00",
+  "call": {
+    "stop_reason": "tool_use",
+    "throttle_retries": 0,
+    "latency_s": 7.143,
+    "input_tokens": 3353,
+    "output_tokens": 714,
+    "cache_read_tokens": 6108,
+    "cache_write_tokens": 0
+  },
+  "judgement": {
+    "dimensions": {
+      "D2": {
+        "verdict": "fail",
+        "auto_fail": false,
+        "findings": [
+          {
+            "output_quote": "Admitted: 08/05/2025 | Discharged: 12/05/2025",
+            "note_cites": [],
+            "reason": "Added year '2025' to dates that appear in the notes only as day/month (08/05, 12/05) \u2014 the notes contain no year; this is an added year per the D2 v2 CSO ruling."
+          },
+          {
+            "output_quote": "12/05/2025\n\nDear Colleague,",
+            "note_cites": [],
+            "reason": "Added year '2025' to the letter date; the notes contain no year."
+          },
+          {
+            "output_quote": "Resuscitation status: DNACPR \u2014 decision made and documented on 10/05/2025 by\nDr Singh",
+            "note_cites": [],
+            "reason": "Added year '2025' to the DNACPR date; the notes contain no year."
+          },
+          {
+            "output_quote": "You were in hospital from **8 May to 12 May 2025**.",
+            "note_cites": [],
+            "reason": "Added year '2025' in Part C; the notes contain no year."
+          }
+        ]
+      },
+      "D3": {
+        "verdict": "pass",
+        "auto_fail": false,
+        "findings": []
+      },
+      "D6": {
+        "verdict": "pass",
+        "auto_fail": false,
+        "findings": []
+      },
+      "D7": {
+        "verdict": "pass",
+        "auto_fail": false,
+        "findings": []
+      },
+      "D8": {
+        "verdict": "partial",
+        "auto_fail": false,
+        "findings": [
+          {
+            "output_quote": "A specialist team reviewed your care during your stay. Together with you and your family, the team agreed on the best plan for your care going forward.",
+            "note_cites": [
+              {
+                "lines": [
+                  "L008",
+                  "L009"
+                ],
+                "quote": "ITU review: ceiling of care agreed as ward-based given COPD severity and frailty. Family meeting held."
+              }
+            ],
+            "reason": "The ITU review, ceiling-of-care decision and family meeting content (L008\u2013L009) are included in Part C in softened form, but the output does not explicitly tell the clinician in Part A/B that any content was withheld from Part C for the clinician to decide \u2014 the withholding is silent rather than flagged, giving only a Partial rather than a Pass."
+          }
+        ]
+      }
+    }
+  },
+  "verified": {
+    "dimensions": {
+      "D2": {
+        "verdict": "fail",
+        "auto_fail": false,
+        "findings": [
+          {
+            "output_quote": "Admitted: 08/05/2025 | Discharged: 12/05/2025",
+            "note_cites": [],
+            "reason": "Added year '2025' to dates that appear in the notes only as day/month (08/05, 12/05) \u2014 the notes contain no year; this is an added year per the D2 v2 CSO ruling."
+          },
+          {
+            "output_quote": "12/05/2025\n\nDear Colleague,",
+            "note_cites": [],
+            "reason": "Added year '2025' to the letter date; the notes contain no year."
+          },
+          {
+            "output_quote": "Resuscitation status: DNACPR \u2014 decision made and documented on 10/05/2025 by\nDr Singh",
+            "note_cites": [],
+            "reason": "Added year '2025' to the DNACPR date; the notes contain no year."
+          },
+          {
+            "output_quote": "You were in hospital from **8 May to 12 May 2025**.",
+            "note_cites": [],
+            "reason": "Added year '2025' in Part C; the notes contain no year."
+          }
+        ],
+        "discarded": [],
+        "evidence_ok": true
+      },
+      "D3": {
+        "verdict": "pass",
+        "auto_fail": false,
+        "findings": [],
+        "discarded": [],
+        "evidence_ok": true
+      },
+      "D6": {
+        "verdict": "pass",
+        "auto_fail": false,
+        "findings": [],
+        "discarded": [],
+        "evidence_ok": true
+      },
+      "D7": {
+        "verdict": "pass",
+        "auto_fail": false,
+        "findings": [],
+        "discarded": [],
+        "evidence_ok": true
+      },
+      "D8": {
+        "verdict": "partial",
+        "auto_fail": false,
+        "findings": [
+          {
+            "output_quote": "A specialist team reviewed your care during your stay. Together with you and your family, the team agreed on the best plan for your care going forward.",
+            "note_cites": [
+              {
+                "lines": [
+                  "L008",
+                  "L009"
+                ],
+                "quote": "ITU review: ceiling of care agreed as ward-based given COPD severity and frailty. Family meeting held."
+              }
+            ],
+            "reason": "The ITU review, ceiling-of-care decision and family meeting content (L008\u2013L009) are included in Part C in softened form, but the output does not explicitly tell the clinician in Part A/B that any content was withheld from Part C for the clinician to decide \u2014 the withholding is silent rather than flagged, giving only a Partial rather than a Pass."
+          }
+        ],
+        "discarded": [],
+        "evidence_ok": true
+      }
+    },
+    "defects": []
+  },
+  "error": null,
+  "cost_usd_est": 0.024862,
+  "elapsed_s": 7.143
+}

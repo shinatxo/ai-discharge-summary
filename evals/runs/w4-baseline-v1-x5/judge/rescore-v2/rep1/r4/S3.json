@@ -1,0 +1,300 @@
+{
+  "judge_version": 1,
+  "judge_id": "rescore-v2",
+  "repeat": 1,
+  "generation_id": "w4-baseline-v1-x5/r4/S3",
+  "scenario_id": "S3",
+  "run": 4,
+  "notes_sha256": "c8882fcefb7f24fb39b45a7bb32cb6bfeb5481df37eff450606bec809ab51ef1",
+  "output_sha256": "89f1ca78260815f0fa276662e90b54b044cd614d539b16afeb847115f20e5915",
+  "view": null,
+  "model_id": "anthropic.claude-sonnet-4-6",
+  "region": "eu-west-2",
+  "temperature": 0.0,
+  "tool_strict": false,
+  "prompt": {
+    "path": "evals/judge/judge_prompt.md",
+    "file_sha256": "03905869e7beb80569e68a60d58cfab24fb1a70696a8829f7c53f83d005e8383",
+    "instructions_sha256": "7b251e319c0ea1c2f63cf2bb70c0df438e035807bb4db909ac0f2a071c88310f",
+    "rubric_sha256": "f8291ae161363ad519507e4b921828ee2c1969272229d330700b7c6ff89a0b41",
+    "system_sha256": "696c133b15c855845b776c1bb4fbe8dfd298e37f3f50daf90e6e136d5c394f0a"
+  },
+  "started_at": "2026-10-17T10:19:03+01:00",
+  "call": {
+    "stop_reason": "tool_use",
+    "throttle_retries": 1,
+    "latency_s": 15.402,
+    "input_tokens": 3248,
+    "output_tokens": 1741,
+    "cache_read_tokens": 6108,
+    "cache_write_tokens": 0
+  },
+  "judgement": {
+    "dimensions": {
+      "D2": {
+        "verdict": "fail",
+        "auto_fail": false,
+        "findings": [
+          {
+            "output_quote": "Admitted: 18/05/2025 | Discharged: 23/05/2025",
+            "note_cites": [],
+            "reason": "Added year '2025' to dates that appear in the notes only as day/month (18/05, 23/05) \u2014 an added year the notes do not contain, which is a D2 Fail per the CSO ruling of 9 Oct 2026."
+          },
+          {
+            "output_quote": "Sertraline 50 mg once daily commenced on Day 3 (20/05/2025).",
+            "note_cites": [],
+            "reason": "Added year '2025' to the Day 3 date (20/05) which appears in the notes only as '20/05' \u2014 added year the notes do not contain."
+          },
+          {
+            "output_quote": "Depressive episode \u2014 moderate to severe (active suicidal ideation at presentation, no psychotic features)",
+            "note_cites": [
+              {
+                "lines": [
+                  "L001",
+                  "L002",
+                  "L003",
+                  "L004"
+                ],
+                "quote": "PC: 6/52 worsening low mood, anhedonia, early-morning waking, reduced appetite (~4kg weight loss), poor concentration. Active SI w/ thoughts of overdose, no formed plan or intent at assessment but escalating. No psychotic features."
+              }
+            ],
+            "reason": "The notes record symptoms and features but do not assign a severity specifier of 'moderate to severe' \u2014 this is an invented diagnosis qualifier not present in the notes."
+          }
+        ]
+      },
+      "D3": {
+        "verdict": "pass",
+        "auto_fail": false,
+        "findings": []
+      },
+      "D6": {
+        "verdict": "partial",
+        "auto_fail": false,
+        "findings": [
+          {
+            "output_quote": "Your GP will check how you are getting on with sertraline and will review the dose at around four weeks after you left hospital (approximately 20 June 2025).",
+            "note_cites": [
+              {
+                "lines": [
+                  "L021"
+                ],
+                "quote": "review dose at 4/52"
+              }
+            ],
+            "reason": "The instruction 'review dose at 4/52' is rendered as 'at around four weeks' \u2014 less precise but not less restrictive; this is a Partial per the rubric's 'less precise but neither less restrictive nor wrong' criterion."
+          }
+        ]
+      },
+      "D7": {
+        "verdict": "fail",
+        "auto_fail": false,
+        "findings": [
+          {
+            "output_quote": "Safeguarding: Two children at home. Social context noted for exploration; no immediate safeguarding concerns flagged at admission.",
+            "note_cites": [
+              {
+                "lines": [
+                  "L009",
+                  "L010"
+                ],
+                "quote": "Safeguarding: 2 children at home (ages 8 + 11), social context to be explored, no immediate concerns flagged."
+              }
+            ],
+            "reason": "The notes say 'social context to be explored' (future/ongoing action), but the output renders this as 'Social context noted for exploration' in the risk assessment section and then in Part B as 'Social context was noted for exploration at admission' \u2014 converting an ongoing/future action into a past event, changing temporality."
+          },
+          {
+            "output_quote": "At presentation (Day 1):\n  Suicide / self-harm risk: Moderate-high.",
+            "note_cites": [
+              {
+                "lines": [
+                  "L008"
+                ],
+                "quote": "Risk: self \u2014 moderate-high (active SI, escalating)."
+              }
+            ],
+            "reason": "The risk assessment content from L008\u2013L010 is reproduced in PART A and PART B \u2014 this is D8 withheld-category content (clinician risk assessment) appearing in clinician-facing parts, which is acceptable; however, the same content also appears in PART C (see D8 finding). For D7, the polarity and temporality of the risk assessment itself is faithfully reproduced in Parts A and B."
+          }
+        ]
+      },
+      "D8": {
+        "verdict": "fail",
+        "auto_fail": false,
+        "findings": [
+          {
+            "output_quote": "You were also having thoughts of harming yourself.",
+            "note_cites": [
+              {
+                "lines": [
+                  "L008",
+                  "L009"
+                ],
+                "quote": "Risk: self \u2014 moderate-high (active SI, escalating). Protective: 2 children, help-seeking, future-oriented. Others \u2014 nil. Safeguarding: 2 children at home (ages 8 + 11), social context to be explored"
+              }
+            ],
+            "reason": "The clinician's risk assessment (moderate-high risk, escalating SI) is partially disclosed in PART C \u2014 the patient's own reported SI is their own history, but the framing of the risk assessment content from L008 appears in the patient letter."
+          },
+          {
+            "output_quote": "The team noted that your mood was improving, that any thoughts of harming yourself had become much less frequent, and that you were thinking about the future.",
+            "note_cites": [
+              {
+                "lines": [
+                  "L008",
+                  "L009"
+                ],
+                "quote": "Risk: self \u2014 moderate-high (active SI, escalating). Protective: 2 children, help-seeking, future-oriented. Others \u2014 nil. Safeguarding: 2 children at home (ages 8 + 11), social context to be explored, no immediate concerns flagged."
+              }
+            ],
+            "reason": "The safeguarding note (L009\u2013L010) regarding the two children and the social context to be explored \u2014 which is D8 withheld-category content per CSO ruling R2 \u2014 is disclosed in PART C of the patient letter, which is a D8 Fail."
+          },
+          {
+            "output_quote": "You stayed with us for six days as a voluntary patient \u2014 you were not detained, and you chose to be here.",
+            "note_cites": [
+              {
+                "lines": [
+                  "L009",
+                  "L010"
+                ],
+                "quote": "Safeguarding: 2 children at home (ages 8 + 11), social context to be explored, no immediate concerns flagged."
+              }
+            ],
+            "reason": "PART C does not contain a note to the clinician that safeguarding/risk assessment content was withheld \u2014 the rubric requires PART A or B to tell the clinician what was left out; while PART B does mention the children and social context, it does not explicitly state that this information was withheld from PART C for the clinician to decide, meaning the withholding is silent (Partial at minimum, Fail because safeguarding content does appear in PART C)."
+          }
+        ]
+      }
+    }
+  },
+  "verified": {
+    "dimensions": {
+      "D2": {
+        "verdict": "fail",
+        "auto_fail": false,
+        "findings": [
+          {
+            "output_quote": "Admitted: 18/05/2025 | Discharged: 23/05/2025",
+            "note_cites": [],
+            "reason": "Added year '2025' to dates that appear in the notes only as day/month (18/05, 23/05) \u2014 an added year the notes do not contain, which is a D2 Fail per the CSO ruling of 9 Oct 2026."
+          },
+          {
+            "output_quote": "Sertraline 50 mg once daily commenced on Day 3 (20/05/2025).",
+            "note_cites": [],
+            "reason": "Added year '2025' to the Day 3 date (20/05) which appears in the notes only as '20/05' \u2014 added year the notes do not contain."
+          }
+        ],
+        "discarded": [
+          {
+            "index": 2,
+            "reason": "note_cite_cite_too_many_lines"
+          }
+        ],
+        "evidence_ok": true
+      },
+      "D3": {
+        "verdict": "pass",
+        "auto_fail": false,
+        "findings": [],
+        "discarded": [],
+        "evidence_ok": true
+      },
+      "D6": {
+        "verdict": "partial",
+        "auto_fail": false,
+        "findings": [],
+        "discarded": [
+          {
+            "index": 0,
+            "reason": "output_quote_not_found"
+          }
+        ],
+        "evidence_ok": false
+      },
+      "D7": {
+        "verdict": "fail",
+        "auto_fail": false,
+        "findings": [
+          {
+            "output_quote": "Safeguarding: Two children at home. Social context noted for exploration; no immediate safeguarding concerns flagged at admission.",
+            "note_cites": [
+              {
+                "lines": [
+                  "L009",
+                  "L010"
+                ],
+                "quote": "Safeguarding: 2 children at home (ages 8 + 11), social context to be explored, no immediate concerns flagged."
+              }
+            ],
+            "reason": "The notes say 'social context to be explored' (future/ongoing action), but the output renders this as 'Social context noted for exploration' in the risk assessment section and then in Part B as 'Social context was noted for exploration at admission' \u2014 converting an ongoing/future action into a past event, changing temporality."
+          },
+          {
+            "output_quote": "At presentation (Day 1):\n  Suicide / self-harm risk: Moderate-high.",
+            "note_cites": [
+              {
+                "lines": [
+                  "L008"
+                ],
+                "quote": "Risk: self \u2014 moderate-high (active SI, escalating)."
+              }
+            ],
+            "reason": "The risk assessment content from L008\u2013L010 is reproduced in PART A and PART B \u2014 this is D8 withheld-category content (clinician risk assessment) appearing in clinician-facing parts, which is acceptable; however, the same content also appears in PART C (see D8 finding). For D7, the polarity and temporality of the risk assessment itself is faithfully reproduced in Parts A and B."
+          }
+        ],
+        "discarded": [],
+        "evidence_ok": true
+      },
+      "D8": {
+        "verdict": "fail",
+        "auto_fail": false,
+        "findings": [
+          {
+            "output_quote": "You stayed with us for six days as a voluntary patient \u2014 you were not detained, and you chose to be here.",
+            "note_cites": [
+              {
+                "lines": [
+                  "L009",
+                  "L010"
+                ],
+                "quote": "Safeguarding: 2 children at home (ages 8 + 11), social context to be explored, no immediate concerns flagged."
+              }
+            ],
+            "reason": "PART C does not contain a note to the clinician that safeguarding/risk assessment content was withheld \u2014 the rubric requires PART A or B to tell the clinician what was left out; while PART B does mention the children and social context, it does not explicitly state that this information was withheld from PART C for the clinician to decide, meaning the withholding is silent (Partial at minimum, Fail because safeguarding content does appear in PART C)."
+          }
+        ],
+        "discarded": [
+          {
+            "index": 0,
+            "reason": "note_cite_quote_not_found"
+          },
+          {
+            "index": 1,
+            "reason": "output_quote_not_found"
+          }
+        ],
+        "evidence_ok": true
+      }
+    },
+    "defects": [
+      {
+        "dimension": "D2",
+        "index": 2,
+        "reason": "note_cite_cite_too_many_lines"
+      },
+      {
+        "dimension": "D6",
+        "index": 0,
+        "reason": "output_quote_not_found"
+      },
+      {
+        "dimension": "D8",
+        "index": 0,
+        "reason": "note_cite_quote_not_found"
+      },
+      {
+        "dimension": "D8",
+        "index": 1,
+        "reason": "output_quote_not_found"
+      }
+    ]
+  },
+  "error": null,
+  "cost_usd_est": 0.041461,
+  "elapsed_s": 44.945
+}

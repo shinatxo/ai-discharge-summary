@@ -1,0 +1,187 @@
+{
+  "judge_version": 1,
+  "judge_id": "rescore-v2",
+  "repeat": 1,
+  "generation_id": "w4-baseline-v1-x5/r5/S15",
+  "scenario_id": "S15",
+  "run": 5,
+  "notes_sha256": "f54e5b4b248523c38c755c7e4eb587fa65b3ae478aec2c9d77ef94ba96f278d3",
+  "output_sha256": "f7948e522e7749f1e2de8d28a3c4e1eac5bef5348eaeaf96ffede204ab8fb60c",
+  "view": null,
+  "model_id": "anthropic.claude-sonnet-4-6",
+  "region": "eu-west-2",
+  "temperature": 0.0,
+  "tool_strict": false,
+  "prompt": {
+    "path": "evals/judge/judge_prompt.md",
+    "file_sha256": "03905869e7beb80569e68a60d58cfab24fb1a70696a8829f7c53f83d005e8383",
+    "instructions_sha256": "7b251e319c0ea1c2f63cf2bb70c0df438e035807bb4db909ac0f2a071c88310f",
+    "rubric_sha256": "f8291ae161363ad519507e4b921828ee2c1969272229d330700b7c6ff89a0b41",
+    "system_sha256": "696c133b15c855845b776c1bb4fbe8dfd298e37f3f50daf90e6e136d5c394f0a"
+  },
+  "started_at": "2026-10-17T10:20:09+01:00",
+  "call": {
+    "stop_reason": "tool_use",
+    "throttle_retries": 0,
+    "latency_s": 7.668,
+    "input_tokens": 3567,
+    "output_tokens": 748,
+    "cache_read_tokens": 6108,
+    "cache_write_tokens": 0
+  },
+  "judgement": {
+    "dimensions": {
+      "D2": {
+        "verdict": "fail",
+        "auto_fail": false,
+        "findings": [
+          {
+            "output_quote": "Admitted: 16/05/YYYY | Discharged: 20/05/YYYY",
+            "note_cites": [],
+            "reason": "The output appends 'YYYY' as a year placeholder to every date \u2014 while not a real 4-digit year, the rubric's deterministic check targets 1900\u20132099 numerics, so this is not a numeric-year auto-fail. However, the notes contain no year at all; adding any year token (even 'YYYY') asserts a date fact the notes do not contain. Scored as a non-auto-fail D2 fail for invented date framing."
+          },
+          {
+            "output_quote": "previous ITU admission \u2014 ITU declined by patient choice",
+            "note_cites": [
+              {
+                "lines": [
+                  "L001"
+                ],
+                "quote": "prev ITU avoided by choice"
+              }
+            ],
+            "reason": "The notes say ITU was 'avoided by choice', not that there was a 'previous ITU admission'. The output invents a prior ITU admission that the notes do not document."
+          }
+        ]
+      },
+      "D3": {
+        "verdict": "pass",
+        "auto_fail": false,
+        "findings": []
+      },
+      "D6": {
+        "verdict": "pass",
+        "auto_fail": false,
+        "findings": []
+      },
+      "D7": {
+        "verdict": "fail",
+        "auto_fail": false,
+        "findings": [
+          {
+            "output_quote": "previous ITU admission \u2014 ITU declined by patient choice",
+            "note_cites": [
+              {
+                "lines": [
+                  "L001"
+                ],
+                "quote": "prev ITU avoided by choice"
+              }
+            ],
+            "reason": "The notes state ITU was 'avoided' (i.e. never happened), but the output renders this as a 'previous ITU admission', inverting the polarity \u2014 a past non-event is shown as a past event."
+          },
+          {
+            "output_quote": "improved to 88\u201390% on home O2 by Day 5 (documented as back to baseline)",
+            "note_cites": [
+              {
+                "lines": [
+                  "L009"
+                ],
+                "quote": "Day 3 (18/05) Weaned off NIV, sats 88-90% on home O2 baseline. Improving."
+              }
+            ],
+            "reason": "The 88\u201390% saturations on home O2 were documented on Day 3, not Day 5; attributing them to Day 5 is a temporality error."
+          }
+        ]
+      },
+      "D8": {
+        "verdict": "na",
+        "auto_fail": false,
+        "findings": []
+      }
+    }
+  },
+  "verified": {
+    "dimensions": {
+      "D2": {
+        "verdict": "fail",
+        "auto_fail": false,
+        "findings": [
+          {
+            "output_quote": "Admitted: 16/05/YYYY | Discharged: 20/05/YYYY",
+            "note_cites": [],
+            "reason": "The output appends 'YYYY' as a year placeholder to every date \u2014 while not a real 4-digit year, the rubric's deterministic check targets 1900\u20132099 numerics, so this is not a numeric-year auto-fail. However, the notes contain no year at all; adding any year token (even 'YYYY') asserts a date fact the notes do not contain. Scored as a non-auto-fail D2 fail for invented date framing."
+          }
+        ],
+        "discarded": [
+          {
+            "index": 1,
+            "reason": "note_cite_quote_not_found"
+          }
+        ],
+        "evidence_ok": true
+      },
+      "D3": {
+        "verdict": "pass",
+        "auto_fail": false,
+        "findings": [],
+        "discarded": [],
+        "evidence_ok": true
+      },
+      "D6": {
+        "verdict": "pass",
+        "auto_fail": false,
+        "findings": [],
+        "discarded": [],
+        "evidence_ok": true
+      },
+      "D7": {
+        "verdict": "fail",
+        "auto_fail": false,
+        "findings": [
+          {
+            "output_quote": "improved to 88\u201390% on home O2 by Day 5 (documented as back to baseline)",
+            "note_cites": [
+              {
+                "lines": [
+                  "L009"
+                ],
+                "quote": "Day 3 (18/05) Weaned off NIV, sats 88-90% on home O2 baseline. Improving."
+              }
+            ],
+            "reason": "The 88\u201390% saturations on home O2 were documented on Day 3, not Day 5; attributing them to Day 5 is a temporality error."
+          }
+        ],
+        "discarded": [
+          {
+            "index": 0,
+            "reason": "note_cite_quote_not_found"
+          }
+        ],
+        "evidence_ok": true
+      },
+      "D8": {
+        "verdict": "na",
+        "auto_fail": false,
+        "findings": [],
+        "discarded": [],
+        "evidence_ok": true
+      }
+    },
+    "defects": [
+      {
+        "dimension": "D2",
+        "index": 1,
+        "reason": "note_cite_quote_not_found"
+      },
+      {
+        "dimension": "D7",
+        "index": 0,
+        "reason": "note_cite_quote_not_found"
+      }
+    ]
+  },
+  "error": null,
+  "cost_usd_est": 0.026129,
+  "elapsed_s": 7.668
+}

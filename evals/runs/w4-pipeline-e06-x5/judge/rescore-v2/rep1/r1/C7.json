@@ -1,0 +1,158 @@
+{
+  "judge_version": 1,
+  "judge_id": "rescore-v2",
+  "repeat": 1,
+  "generation_id": "w4-pipeline-e06-x5/r1/C7",
+  "scenario_id": "C7",
+  "run": 1,
+  "notes_sha256": "d15719c10172a3c9a85deae46695411eb27d652215d6152078b33ea2487a91ca",
+  "output_sha256": "ca220c417742aeb00480adf9652fe207f9997821add22e242929d1337f558571",
+  "view": {
+    "name": "pipeline-steps-1-5b",
+    "version": 1
+  },
+  "model_id": "anthropic.claude-sonnet-4-6",
+  "region": "eu-west-2",
+  "temperature": 0.0,
+  "tool_strict": false,
+  "prompt": {
+    "path": "evals/judge/judge_prompt.md",
+    "file_sha256": "03905869e7beb80569e68a60d58cfab24fb1a70696a8829f7c53f83d005e8383",
+    "instructions_sha256": "7b251e319c0ea1c2f63cf2bb70c0df438e035807bb4db909ac0f2a071c88310f",
+    "rubric_sha256": "f8291ae161363ad519507e4b921828ee2c1969272229d330700b7c6ff89a0b41",
+    "system_sha256": "696c133b15c855845b776c1bb4fbe8dfd298e37f3f50daf90e6e136d5c394f0a"
+  },
+  "started_at": "2026-10-17T10:14:29+01:00",
+  "call": {
+    "stop_reason": "tool_use",
+    "throttle_retries": 0,
+    "latency_s": 4.502,
+    "input_tokens": 1048,
+    "output_tokens": 493,
+    "cache_read_tokens": 6108,
+    "cache_write_tokens": 0
+  },
+  "judgement": {
+    "dimensions": {
+      "D2": {
+        "verdict": "fail",
+        "auto_fail": false,
+        "findings": [
+          {
+            "output_quote": "Discharge date: 20/05 [L006, L007]",
+            "note_cites": [
+              {
+                "lines": [
+                  "L007"
+                ],
+                "quote": "L007"
+              }
+            ],
+            "reason": "The output cites L007 but there is no L007 in the notes \u2014 the notes end at L007 which does not exist; L006 says 'Fit for discharge' and L007 is cited but absent from the notes, meaning the output invents a citation to a non-existent line."
+          },
+          {
+            "output_quote": "Follow-up: Fracture clinic in 1 week [L007]",
+            "note_cites": [
+              {
+                "lines": [
+                  "L006",
+                  "L007"
+                ],
+                "quote": "Fracture clinic in 1 week."
+              }
+            ],
+            "reason": "The output cites L007 which does not exist in the notes; the fracture clinic information is on L007 which is not present \u2014 however the content itself is in the notes at the end of L006/L007 block. The citation to a non-existent line L007 is a minor issue but the content 'Fracture clinic in 1 week' is supported by the notes text."
+          }
+        ]
+      },
+      "D3": {
+        "verdict": "pass",
+        "auto_fail": false,
+        "findings": []
+      },
+      "D6": {
+        "verdict": "pass",
+        "auto_fail": false,
+        "findings": []
+      },
+      "D7": {
+        "verdict": "pass",
+        "auto_fail": false,
+        "findings": []
+      },
+      "D8": {
+        "verdict": "na",
+        "auto_fail": false,
+        "findings": []
+      }
+    }
+  },
+  "verified": {
+    "dimensions": {
+      "D2": {
+        "verdict": "fail",
+        "auto_fail": false,
+        "findings": [
+          {
+            "output_quote": "Follow-up: Fracture clinic in 1 week [L007]",
+            "note_cites": [
+              {
+                "lines": [
+                  "L006",
+                  "L007"
+                ],
+                "quote": "Fracture clinic in 1 week."
+              }
+            ],
+            "reason": "The output cites L007 which does not exist in the notes; the fracture clinic information is on L007 which is not present \u2014 however the content itself is in the notes at the end of L006/L007 block. The citation to a non-existent line L007 is a minor issue but the content 'Fracture clinic in 1 week' is supported by the notes text."
+          }
+        ],
+        "discarded": [
+          {
+            "index": 0,
+            "reason": "note_cite_quote_not_found"
+          }
+        ],
+        "evidence_ok": true
+      },
+      "D3": {
+        "verdict": "pass",
+        "auto_fail": false,
+        "findings": [],
+        "discarded": [],
+        "evidence_ok": true
+      },
+      "D6": {
+        "verdict": "pass",
+        "auto_fail": false,
+        "findings": [],
+        "discarded": [],
+        "evidence_ok": true
+      },
+      "D7": {
+        "verdict": "pass",
+        "auto_fail": false,
+        "findings": [],
+        "discarded": [],
+        "evidence_ok": true
+      },
+      "D8": {
+        "verdict": "na",
+        "auto_fail": false,
+        "findings": [],
+        "discarded": [],
+        "evidence_ok": true
+      }
+    },
+    "defects": [
+      {
+        "dimension": "D2",
+        "index": 0,
+        "reason": "note_cite_quote_not_found"
+      }
+    ]
+  },
+  "error": null,
+  "cost_usd_est": 0.013609,
+  "elapsed_s": 4.502
+}

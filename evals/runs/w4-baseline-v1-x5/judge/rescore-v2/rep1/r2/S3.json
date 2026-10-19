@@ -1,0 +1,299 @@
+{
+  "judge_version": 1,
+  "judge_id": "rescore-v2",
+  "repeat": 1,
+  "generation_id": "w4-baseline-v1-x5/r2/S3",
+  "scenario_id": "S3",
+  "run": 2,
+  "notes_sha256": "c8882fcefb7f24fb39b45a7bb32cb6bfeb5481df37eff450606bec809ab51ef1",
+  "output_sha256": "7d33eaebc9648fc4150caf52bd263f308392e03732dfeae7d8b5bc9931d6db62",
+  "view": null,
+  "model_id": "anthropic.claude-sonnet-4-6",
+  "region": "eu-west-2",
+  "temperature": 0.0,
+  "tool_strict": false,
+  "prompt": {
+    "path": "evals/judge/judge_prompt.md",
+    "file_sha256": "03905869e7beb80569e68a60d58cfab24fb1a70696a8829f7c53f83d005e8383",
+    "instructions_sha256": "7b251e319c0ea1c2f63cf2bb70c0df438e035807bb4db909ac0f2a071c88310f",
+    "rubric_sha256": "f8291ae161363ad519507e4b921828ee2c1969272229d330700b7c6ff89a0b41",
+    "system_sha256": "696c133b15c855845b776c1bb4fbe8dfd298e37f3f50daf90e6e136d5c394f0a"
+  },
+  "started_at": "2026-10-17T10:17:40+01:00",
+  "call": {
+    "stop_reason": "tool_use",
+    "throttle_retries": 0,
+    "latency_s": 14.733,
+    "input_tokens": 3208,
+    "output_tokens": 1672,
+    "cache_read_tokens": 6108,
+    "cache_write_tokens": 0
+  },
+  "judgement": {
+    "dimensions": {
+      "D2": {
+        "verdict": "fail",
+        "auto_fail": false,
+        "findings": [
+          {
+            "output_quote": "Admitted: 18/05/2025 | Discharged: 23/05/2025",
+            "note_cites": [],
+            "reason": "Added year '2025' to dates that appear in the notes only as day/month (18/05, 23/05) \u2014 the notes contain no year; this is an added year per the D2 v2 CSO ruling."
+          },
+          {
+            "output_quote": "Sertraline 50 mg once daily commenced on Day 3 (20/05/2025).",
+            "note_cites": [],
+            "reason": "Added year '2025' to a date the notes give only as 20/05 \u2014 notes contain no year."
+          },
+          {
+            "output_quote": "Depressive episode \u2014 moderate to severe (active suicidal ideation at presentation, no psychotic features)",
+            "note_cites": [
+              {
+                "lines": [
+                  "L001",
+                  "L002",
+                  "L003",
+                  "L004"
+                ],
+                "quote": "PC: 6/52 worsening low mood, anhedonia, early-morning waking, reduced appetite (~4kg weight loss), poor concentration. Active SI w/ thoughts of overdose, no formed plan or intent at assessment but escalating. No psychotic features."
+              }
+            ],
+            "reason": "The notes record symptoms and SI but do not assign a severity specifier of 'moderate to severe'; this is an invented diagnostic qualifier not present in the notes."
+          }
+        ]
+      },
+      "D3": {
+        "verdict": "pass",
+        "auto_fail": false,
+        "findings": []
+      },
+      "D6": {
+        "verdict": "partial",
+        "auto_fail": false,
+        "findings": [
+          {
+            "output_quote": "review the dose at around four weeks after you left hospital (around 20 June 2025)",
+            "note_cites": [
+              {
+                "lines": [
+                  "L021"
+                ],
+                "quote": "review dose at 4/52"
+              }
+            ],
+            "reason": "The instruction 'review dose at 4/52' is rendered as 'around four weeks' which is less precise but not less restrictive; however the addition of a specific calendar date '20 June 2025' is an invented date (year added) \u2014 the imprecision is minor and the force is preserved, so this is partial rather than fail on D6 grounds alone."
+          },
+          {
+            "output_quote": "CMHT follow-up in one week (approximately 30/05/2025 \u2014 confirm exact date).",
+            "note_cites": [
+              {
+                "lines": [
+                  "L021"
+                ],
+                "quote": "CMHT f/u 1/52"
+              }
+            ],
+            "reason": "The instruction 'CMHT f/u 1/52' is faithfully rendered as 'one week' but a specific calendar date '30/05/2025' with an added year is appended \u2014 the core instruction is preserved but the added date introduces an invented fact; the force is not weakened so this is partial."
+          }
+        ]
+      },
+      "D7": {
+        "verdict": "fail",
+        "auto_fail": false,
+        "findings": [
+          {
+            "output_quote": "Safeguarding: Two children at home. Social context noted for exploration; no immediate safeguarding concerns flagged at admission.",
+            "note_cites": [
+              {
+                "lines": [
+                  "L009",
+                  "L010"
+                ],
+                "quote": "Safeguarding: 2 children at home (ages 8 + 11), social context to be explored, no immediate concerns flagged."
+              }
+            ],
+            "reason": "The notes say 'social context to be explored' (future/ongoing), but the output renders this as 'Social context noted for exploration' in Part A and Part B \u2014 this is acceptable. However, in Part B the output states 'You may wish to satisfy yourself that this has been adequately addressed through the CMHT follow-up', implying the exploration may already be complete, which changes the temporality from an open action to a potentially resolved one."
+          },
+          {
+            "output_quote": "Please note: two dependent children (ages 8 and 11) are at home. Social context was noted for exploration at admission; no immediate safeguarding concerns were flagged. You may wish to satisfy yourself that this has been adequately addressed through the CMHT follow-up.",
+            "note_cites": [
+              {
+                "lines": [
+                  "L009",
+                  "L010"
+                ],
+                "quote": "social context to be explored, no immediate concerns flagged."
+              }
+            ],
+            "reason": "Notes state social context 'to be explored' (open, unresolved action), but output implies it may have been addressed ('adequately addressed through the CMHT follow-up'), changing an open action to a potentially resolved past state \u2014 temporality altered."
+          }
+        ]
+      },
+      "D8": {
+        "verdict": "fail",
+        "auto_fail": false,
+        "findings": [
+          {
+            "output_quote": "Your diagnosis is a moderate to severe depressive episode. You have had a similar episode before, in 2018, and you recovered well from that.",
+            "note_cites": [
+              {
+                "lines": [
+                  "L008",
+                  "L009"
+                ],
+                "quote": "Risk: self \u2014 moderate-high (active SI, escalating). Protective: 2 children, help-seeking, future-oriented. Others \u2014 nil. Safeguarding: 2 children at home (ages 8 + 11), social context to be explored, no immediate concerns flagged."
+              }
+            ],
+            "reason": "Part C includes the clinician's risk assessment ('moderate-high' risk, protective factors, safeguarding note about children) \u2014 L008\u2013L010 are D8 withheld-category content per the R2 ruling; the risk assessment and safeguarding content appear in Part C and should have been withheld."
+          },
+          {
+            "output_quote": "The team noted that you were thinking about the future, including your children.",
+            "note_cites": [
+              {
+                "lines": [
+                  "L008",
+                  "L009"
+                ],
+                "quote": "Protective: 2 children, help-seeking, future-oriented. Others \u2014 nil. Safeguarding: 2 children at home (ages 8 + 11), social context to be explored"
+              }
+            ],
+            "reason": "Part C references the clinician's risk assessment protective factors (children as protective factor) which is part of the withheld risk assessment content from L008\u2013L010."
+          }
+        ]
+      }
+    }
+  },
+  "verified": {
+    "dimensions": {
+      "D2": {
+        "verdict": "fail",
+        "auto_fail": false,
+        "findings": [
+          {
+            "output_quote": "Admitted: 18/05/2025 | Discharged: 23/05/2025",
+            "note_cites": [],
+            "reason": "Added year '2025' to dates that appear in the notes only as day/month (18/05, 23/05) \u2014 the notes contain no year; this is an added year per the D2 v2 CSO ruling."
+          },
+          {
+            "output_quote": "Sertraline 50 mg once daily commenced on Day 3 (20/05/2025).",
+            "note_cites": [],
+            "reason": "Added year '2025' to a date the notes give only as 20/05 \u2014 notes contain no year."
+          }
+        ],
+        "discarded": [
+          {
+            "index": 2,
+            "reason": "note_cite_cite_too_many_lines"
+          }
+        ],
+        "evidence_ok": true
+      },
+      "D3": {
+        "verdict": "pass",
+        "auto_fail": false,
+        "findings": [],
+        "discarded": [],
+        "evidence_ok": true
+      },
+      "D6": {
+        "verdict": "partial",
+        "auto_fail": false,
+        "findings": [
+          {
+            "output_quote": "review the dose at around four weeks after you left hospital (around 20 June 2025)",
+            "note_cites": [
+              {
+                "lines": [
+                  "L021"
+                ],
+                "quote": "review dose at 4/52"
+              }
+            ],
+            "reason": "The instruction 'review dose at 4/52' is rendered as 'around four weeks' which is less precise but not less restrictive; however the addition of a specific calendar date '20 June 2025' is an invented date (year added) \u2014 the imprecision is minor and the force is preserved, so this is partial rather than fail on D6 grounds alone."
+          },
+          {
+            "output_quote": "CMHT follow-up in one week (approximately 30/05/2025 \u2014 confirm exact date).",
+            "note_cites": [
+              {
+                "lines": [
+                  "L021"
+                ],
+                "quote": "CMHT f/u 1/52"
+              }
+            ],
+            "reason": "The instruction 'CMHT f/u 1/52' is faithfully rendered as 'one week' but a specific calendar date '30/05/2025' with an added year is appended \u2014 the core instruction is preserved but the added date introduces an invented fact; the force is not weakened so this is partial."
+          }
+        ],
+        "discarded": [],
+        "evidence_ok": true
+      },
+      "D7": {
+        "verdict": "fail",
+        "auto_fail": false,
+        "findings": [
+          {
+            "output_quote": "Safeguarding: Two children at home. Social context noted for exploration; no immediate safeguarding concerns flagged at admission.",
+            "note_cites": [
+              {
+                "lines": [
+                  "L009",
+                  "L010"
+                ],
+                "quote": "Safeguarding: 2 children at home (ages 8 + 11), social context to be explored, no immediate concerns flagged."
+              }
+            ],
+            "reason": "The notes say 'social context to be explored' (future/ongoing), but the output renders this as 'Social context noted for exploration' in Part A and Part B \u2014 this is acceptable. However, in Part B the output states 'You may wish to satisfy yourself that this has been adequately addressed through the CMHT follow-up', implying the exploration may already be complete, which changes the temporality from an open action to a potentially resolved one."
+          }
+        ],
+        "discarded": [
+          {
+            "index": 1,
+            "reason": "output_quote_too_long"
+          }
+        ],
+        "evidence_ok": true
+      },
+      "D8": {
+        "verdict": "fail",
+        "auto_fail": false,
+        "findings": [],
+        "discarded": [
+          {
+            "index": 0,
+            "reason": "output_quote_not_found"
+          },
+          {
+            "index": 1,
+            "reason": "note_cite_quote_not_found"
+          }
+        ],
+        "evidence_ok": false
+      }
+    },
+    "defects": [
+      {
+        "dimension": "D2",
+        "index": 2,
+        "reason": "note_cite_cite_too_many_lines"
+      },
+      {
+        "dimension": "D7",
+        "index": 1,
+        "reason": "output_quote_too_long"
+      },
+      {
+        "dimension": "D8",
+        "index": 0,
+        "reason": "output_quote_not_found"
+      },
+      {
+        "dimension": "D8",
+        "index": 1,
+        "reason": "note_cite_quote_not_found"
+      }
+    ]
+  },
+  "error": null,
+  "cost_usd_est": 0.04019,
+  "elapsed_s": 14.733
+}

@@ -1,0 +1,204 @@
+{
+  "judge_version": 1,
+  "judge_id": "rescore-v2",
+  "repeat": 1,
+  "generation_id": "w4-baseline-v1-x5/r3/S8",
+  "scenario_id": "S8",
+  "run": 3,
+  "notes_sha256": "db5dc0237ea1d82ade478142d26845b1f5fda1c9c35512621c0f5aa23a5afca6",
+  "output_sha256": "3eb943ab435435da94f2827620112898832c49c4ecb71da4c66e51552dbb8f09",
+  "view": null,
+  "model_id": "anthropic.claude-sonnet-4-6",
+  "region": "eu-west-2",
+  "temperature": 0.0,
+  "tool_strict": false,
+  "prompt": {
+    "path": "evals/judge/judge_prompt.md",
+    "file_sha256": "03905869e7beb80569e68a60d58cfab24fb1a70696a8829f7c53f83d005e8383",
+    "instructions_sha256": "7b251e319c0ea1c2f63cf2bb70c0df438e035807bb4db909ac0f2a071c88310f",
+    "rubric_sha256": "f8291ae161363ad519507e4b921828ee2c1969272229d330700b7c6ff89a0b41",
+    "system_sha256": "696c133b15c855845b776c1bb4fbe8dfd298e37f3f50daf90e6e136d5c394f0a"
+  },
+  "started_at": "2026-10-17T10:18:21+01:00",
+  "call": {
+    "stop_reason": "tool_use",
+    "throttle_retries": 0,
+    "latency_s": 10.502,
+    "input_tokens": 3145,
+    "output_tokens": 884,
+    "cache_read_tokens": 6108,
+    "cache_write_tokens": 0
+  },
+  "judgement": {
+    "dimensions": {
+      "D2": {
+        "verdict": "partial",
+        "auto_fail": false,
+        "findings": [
+          {
+            "output_quote": "DOB: 16/05/[year not documented]",
+            "note_cites": [],
+            "reason": "The output adds a DOB field with a day/month date for the neonate; the notes do not contain a DOB field \u2014 the date 16/05 is the admission/birth date, but presenting it as a DOB is a minor non-clinical embellishment framing a documented date in an undocumented way. No year is actually inserted (placeholder used), so no auto-fail year addition."
+          },
+          {
+            "output_quote": "20/05/[year]\n\nDear Colleague,",
+            "note_cites": [],
+            "reason": "Minor non-clinical prose framing (letter date with placeholder) \u2014 no clinical fact invented, but the output adds structural prose not in the notes."
+          },
+          {
+            "output_quote": "Repeat CRP trend: 28 \u2192 41 \u2192 18 mg/L",
+            "note_cites": [
+              {
+                "lines": [
+                  "L005",
+                  "L007"
+                ],
+                "quote": "CRP 28 -> 41.\nRepeat CRP 18."
+              }
+            ],
+            "reason": "The CRP trend is faithfully reproduced from the notes; this is not a hallucination. No finding needed \u2014 included only for completeness check."
+          }
+        ]
+      },
+      "D3": {
+        "verdict": "pass",
+        "auto_fail": false,
+        "findings": []
+      },
+      "D6": {
+        "verdict": "partial",
+        "auto_fail": false,
+        "findings": [
+          {
+            "output_quote": "If you become unwell or are worried about anything, contact your GP or call NHS 111. Call 999 if it is an emergency.",
+            "note_cites": [
+              {
+                "lines": [
+                  "L012",
+                  "L013"
+                ],
+                "quote": "Safety-net advice to parents re fever/feeding/breathing. No routine follow-up."
+              }
+            ],
+            "reason": "The notes document safety-net advice specifically covering fever, feeding, and breathing. Part C does not reproduce these three specific topics as actionable instructions; instead it defers to what the team told parents verbally and adds generic NHS 111/999 advice not in the notes. The documented scope (fever/feeding/breathing) is not carried with the same force in the patient version \u2014 it is less precise, though not less restrictive in a dangerous direction."
+          },
+          {
+            "output_quote": "The team gave you advice before you left about what to look out for \u2014 including your baby's temperature, feeding, and breathing.",
+            "note_cites": [
+              {
+                "lines": [
+                  "L012",
+                  "L013"
+                ],
+                "quote": "Safety-net advice to parents re fever/feeding/breathing."
+              }
+            ],
+            "reason": "Part C references the three topics (temperature/feeding/breathing) but frames them as advice already given verbally rather than restating them as actionable instructions, making the instruction less precise in force for a reader who may not recall what was said."
+          }
+        ]
+      },
+      "D7": {
+        "verdict": "pass",
+        "auto_fail": false,
+        "findings": []
+      },
+      "D8": {
+        "verdict": "na",
+        "auto_fail": false,
+        "findings": []
+      }
+    }
+  },
+  "verified": {
+    "dimensions": {
+      "D2": {
+        "verdict": "partial",
+        "auto_fail": false,
+        "findings": [
+          {
+            "output_quote": "DOB: 16/05/[year not documented]",
+            "note_cites": [],
+            "reason": "The output adds a DOB field with a day/month date for the neonate; the notes do not contain a DOB field \u2014 the date 16/05 is the admission/birth date, but presenting it as a DOB is a minor non-clinical embellishment framing a documented date in an undocumented way. No year is actually inserted (placeholder used), so no auto-fail year addition."
+          },
+          {
+            "output_quote": "20/05/[year]\n\nDear Colleague,",
+            "note_cites": [],
+            "reason": "Minor non-clinical prose framing (letter date with placeholder) \u2014 no clinical fact invented, but the output adds structural prose not in the notes."
+          }
+        ],
+        "discarded": [
+          {
+            "index": 2,
+            "reason": "note_cite_non_consecutive_lines"
+          }
+        ],
+        "evidence_ok": true
+      },
+      "D3": {
+        "verdict": "pass",
+        "auto_fail": false,
+        "findings": [],
+        "discarded": [],
+        "evidence_ok": true
+      },
+      "D6": {
+        "verdict": "partial",
+        "auto_fail": false,
+        "findings": [
+          {
+            "output_quote": "If you become unwell or are worried about anything, contact your GP or call NHS 111. Call 999 if it is an emergency.",
+            "note_cites": [
+              {
+                "lines": [
+                  "L012",
+                  "L013"
+                ],
+                "quote": "Safety-net advice to parents re fever/feeding/breathing. No routine follow-up."
+              }
+            ],
+            "reason": "The notes document safety-net advice specifically covering fever, feeding, and breathing. Part C does not reproduce these three specific topics as actionable instructions; instead it defers to what the team told parents verbally and adds generic NHS 111/999 advice not in the notes. The documented scope (fever/feeding/breathing) is not carried with the same force in the patient version \u2014 it is less precise, though not less restrictive in a dangerous direction."
+          },
+          {
+            "output_quote": "The team gave you advice before you left about what to look out for \u2014 including your baby's temperature, feeding, and breathing.",
+            "note_cites": [
+              {
+                "lines": [
+                  "L012",
+                  "L013"
+                ],
+                "quote": "Safety-net advice to parents re fever/feeding/breathing."
+              }
+            ],
+            "reason": "Part C references the three topics (temperature/feeding/breathing) but frames them as advice already given verbally rather than restating them as actionable instructions, making the instruction less precise in force for a reader who may not recall what was said."
+          }
+        ],
+        "discarded": [],
+        "evidence_ok": true
+      },
+      "D7": {
+        "verdict": "pass",
+        "auto_fail": false,
+        "findings": [],
+        "discarded": [],
+        "evidence_ok": true
+      },
+      "D8": {
+        "verdict": "na",
+        "auto_fail": false,
+        "findings": [],
+        "discarded": [],
+        "evidence_ok": true
+      }
+    },
+    "defects": [
+      {
+        "dimension": "D2",
+        "index": 2,
+        "reason": "note_cite_non_consecutive_lines"
+      }
+    ]
+  },
+  "error": null,
+  "cost_usd_est": 0.02698,
+  "elapsed_s": 10.502
+}

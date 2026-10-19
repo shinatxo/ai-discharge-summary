@@ -1,0 +1,275 @@
+{
+  "judge_version": 1,
+  "judge_id": "rescore-v2",
+  "repeat": 1,
+  "generation_id": "w4-baseline-v1-x5/r5/S3",
+  "scenario_id": "S3",
+  "run": 5,
+  "notes_sha256": "c8882fcefb7f24fb39b45a7bb32cb6bfeb5481df37eff450606bec809ab51ef1",
+  "output_sha256": "763ad2a300052672a0be2662318e2c010adad348bc2e4442ed4f3dcd48bd3362",
+  "view": null,
+  "model_id": "anthropic.claude-sonnet-4-6",
+  "region": "eu-west-2",
+  "temperature": 0.0,
+  "tool_strict": false,
+  "prompt": {
+    "path": "evals/judge/judge_prompt.md",
+    "file_sha256": "03905869e7beb80569e68a60d58cfab24fb1a70696a8829f7c53f83d005e8383",
+    "instructions_sha256": "7b251e319c0ea1c2f63cf2bb70c0df438e035807bb4db909ac0f2a071c88310f",
+    "rubric_sha256": "f8291ae161363ad519507e4b921828ee2c1969272229d330700b7c6ff89a0b41",
+    "system_sha256": "696c133b15c855845b776c1bb4fbe8dfd298e37f3f50daf90e6e136d5c394f0a"
+  },
+  "started_at": "2026-10-17T10:19:48+01:00",
+  "call": {
+    "stop_reason": "tool_use",
+    "throttle_retries": 0,
+    "latency_s": 16.746,
+    "input_tokens": 3178,
+    "output_tokens": 1692,
+    "cache_read_tokens": 6108,
+    "cache_write_tokens": 0
+  },
+  "judgement": {
+    "dimensions": {
+      "D2": {
+        "verdict": "fail",
+        "auto_fail": false,
+        "findings": [
+          {
+            "output_quote": "Admitted: 18/05/2025 | Discharged: 23/05/2025",
+            "note_cites": [],
+            "reason": "Added year '2025' to dates that appear in the notes only as day/month (18/05, 23/05) \u2014 an added year the notes do not contain, which is a D2 Fail per the CSO ruling of 9 Oct 2026."
+          },
+          {
+            "output_quote": "Sertraline 50 mg once daily was commenced on 20/05/2025.",
+            "note_cites": [],
+            "reason": "Added year '2025' to a date the notes give only as 20/05 \u2014 same CSO ruling."
+          },
+          {
+            "output_quote": "approximately 30/05/2025 \u2014 exact date not documented",
+            "note_cites": [],
+            "reason": "Invented a specific date (30/05/2025) not present anywhere in the notes \u2014 added year and specific date fabricated."
+          },
+          {
+            "output_quote": "You were admitted to the acute mental health unit on **18 May 2025** and went home on **23 May 2025**.",
+            "note_cites": [],
+            "reason": "Added year '2025' to dates the notes give only as 18/05 and 23/05 \u2014 repeated in PART C."
+          }
+        ]
+      },
+      "D3": {
+        "verdict": "pass",
+        "auto_fail": false,
+        "findings": []
+      },
+      "D6": {
+        "verdict": "fail",
+        "auto_fail": false,
+        "findings": [
+          {
+            "output_quote": "Risk to self at admission: Moderate-high (active suicidal ideation with\n  thoughts of overdose, escalating; no formed plan or intent).\nProtective factors: Two dependent children (ages 8 and 11); help-seeking\n  behaviour; future-oriented thinking.\nRisk to others: None identified.\nSafeguarding: Two children at home (ages 8 and 11). Social context noted for\n  exploration; no immediate safeguarding concerns flagged at time of admission.",
+            "note_cites": [
+              {
+                "lines": [
+                  "L008",
+                  "L009",
+                  "L010"
+                ],
+                "quote": "Risk: self \u2014 moderate-high (active SI, escalating). Protective: 2 children, help-seeking,\nfuture-oriented. Others \u2014 nil. Safeguarding: 2 children at home (ages 8 + 11), social\ncontext to be explored, no immediate concerns flagged."
+              }
+            ],
+            "reason": "The risk assessment and safeguarding content (L008\u2013L010) is D8 withheld-category content per CSO ruling R2 (S3, 12 Oct 2026); reproducing it in PART A/B is not itself a D6 issue, but the same content is also reproduced in PART C (see D8). For D6: the instruction 'social context to be explored' is rendered as 'Social context noted for exploration' \u2014 the active obligation ('to be explored') is softened to a passive observation, weakening the force of the documented instruction."
+          },
+          {
+            "output_quote": "CMHT appointment in one week\n   (approximately 30/05/2025 \u2014 exact date not documented).",
+            "note_cites": [
+              {
+                "lines": [
+                  "L021"
+                ],
+                "quote": "CMHT f/u 1/52."
+              }
+            ],
+            "reason": "The notes say CMHT follow-up in 1 week; the output adds 'approximately 30/05/2025' \u2014 an invented specific date that resolves the instruction in a potentially misleading way (patient may rely on the invented date)."
+          }
+        ]
+      },
+      "D7": {
+        "verdict": "fail",
+        "auto_fail": false,
+        "findings": [
+          {
+            "output_quote": "Diagnosis: Depressive episode with active suicidal ideation (resolving at\ndischarge).",
+            "note_cites": [
+              {
+                "lines": [
+                  "L017",
+                  "L018"
+                ],
+                "quote": "Mood improving, SI fleeting/passive, no intent, future-oriented\n(talking re children). Collaborative safety plan completed w/ pt."
+              }
+            ],
+            "reason": "The notes describe SI as 'fleeting/passive, no intent' at discharge \u2014 it is still present but diminished; the parenthetical '(resolving at discharge)' characterises the diagnosis as resolving, which overstates the change and alters the temporal status of the condition."
+          }
+        ]
+      },
+      "D8": {
+        "verdict": "fail",
+        "auto_fail": false,
+        "findings": [
+          {
+            "output_quote": "You came to A&E because you had been feeling very low for around six weeks. You were having thoughts of harming yourself, and those thoughts had been getting stronger.",
+            "note_cites": [
+              {
+                "lines": [
+                  "L008",
+                  "L009"
+                ],
+                "quote": "Risk: self \u2014 moderate-high (active SI, escalating). Protective: 2 children, help-seeking,\nfuture-oriented. Others \u2014 nil. Safeguarding: 2 children at home (ages 8 + 11), social"
+              }
+            ],
+            "reason": "The clinician's risk assessment (moderate-high risk, escalating SI) is withheld-category content per CSO ruling R2 (S3); the patient version reproduces the substance of this risk assessment ('thoughts had been getting stronger') \u2014 clinical risk assessment content placed in PART C."
+          },
+          {
+            "output_quote": "You and the team worked together to make a **safety plan** \u2014 a personal guide to help you if things feel hard again. You have a copy of this.",
+            "note_cites": [
+              {
+                "lines": [
+                  "L009",
+                  "L010"
+                ],
+                "quote": "Safeguarding: 2 children at home (ages 8 + 11), social\ncontext to be explored, no immediate concerns flagged."
+              }
+            ],
+            "reason": "The safeguarding note (L009\u2013L010) is D8 withheld-category content per CSO ruling R2; while the safety plan itself was made collaboratively with the patient (and may be disclosed), the output does not flag to the clinician in PART A/B that safeguarding content has been withheld from PART C, as required for a Pass \u2014 the omission is silent."
+          }
+        ]
+      }
+    }
+  },
+  "verified": {
+    "dimensions": {
+      "D2": {
+        "verdict": "fail",
+        "auto_fail": false,
+        "findings": [
+          {
+            "output_quote": "Admitted: 18/05/2025 | Discharged: 23/05/2025",
+            "note_cites": [],
+            "reason": "Added year '2025' to dates that appear in the notes only as day/month (18/05, 23/05) \u2014 an added year the notes do not contain, which is a D2 Fail per the CSO ruling of 9 Oct 2026."
+          },
+          {
+            "output_quote": "Sertraline 50 mg once daily was commenced on 20/05/2025.",
+            "note_cites": [],
+            "reason": "Added year '2025' to a date the notes give only as 20/05 \u2014 same CSO ruling."
+          },
+          {
+            "output_quote": "approximately 30/05/2025 \u2014 exact date not documented",
+            "note_cites": [],
+            "reason": "Invented a specific date (30/05/2025) not present anywhere in the notes \u2014 added year and specific date fabricated."
+          },
+          {
+            "output_quote": "You were admitted to the acute mental health unit on **18 May 2025** and went home on **23 May 2025**.",
+            "note_cites": [],
+            "reason": "Added year '2025' to dates the notes give only as 18/05 and 23/05 \u2014 repeated in PART C."
+          }
+        ],
+        "discarded": [],
+        "evidence_ok": true
+      },
+      "D3": {
+        "verdict": "pass",
+        "auto_fail": false,
+        "findings": [],
+        "discarded": [],
+        "evidence_ok": true
+      },
+      "D6": {
+        "verdict": "fail",
+        "auto_fail": false,
+        "findings": [],
+        "discarded": [
+          {
+            "index": 0,
+            "reason": "output_quote_too_long"
+          },
+          {
+            "index": 1,
+            "reason": "output_quote_not_found"
+          }
+        ],
+        "evidence_ok": false
+      },
+      "D7": {
+        "verdict": "fail",
+        "auto_fail": false,
+        "findings": [
+          {
+            "output_quote": "Diagnosis: Depressive episode with active suicidal ideation (resolving at\ndischarge).",
+            "note_cites": [
+              {
+                "lines": [
+                  "L017",
+                  "L018"
+                ],
+                "quote": "Mood improving, SI fleeting/passive, no intent, future-oriented\n(talking re children). Collaborative safety plan completed w/ pt."
+              }
+            ],
+            "reason": "The notes describe SI as 'fleeting/passive, no intent' at discharge \u2014 it is still present but diminished; the parenthetical '(resolving at discharge)' characterises the diagnosis as resolving, which overstates the change and alters the temporal status of the condition."
+          }
+        ],
+        "discarded": [],
+        "evidence_ok": true
+      },
+      "D8": {
+        "verdict": "fail",
+        "auto_fail": false,
+        "findings": [
+          {
+            "output_quote": "You came to A&E because you had been feeling very low for around six weeks. You were having thoughts of harming yourself, and those thoughts had been getting stronger.",
+            "note_cites": [
+              {
+                "lines": [
+                  "L008",
+                  "L009"
+                ],
+                "quote": "Risk: self \u2014 moderate-high (active SI, escalating). Protective: 2 children, help-seeking,\nfuture-oriented. Others \u2014 nil. Safeguarding: 2 children at home (ages 8 + 11), social"
+              }
+            ],
+            "reason": "The clinician's risk assessment (moderate-high risk, escalating SI) is withheld-category content per CSO ruling R2 (S3); the patient version reproduces the substance of this risk assessment ('thoughts had been getting stronger') \u2014 clinical risk assessment content placed in PART C."
+          },
+          {
+            "output_quote": "You and the team worked together to make a **safety plan** \u2014 a personal guide to help you if things feel hard again. You have a copy of this.",
+            "note_cites": [
+              {
+                "lines": [
+                  "L009",
+                  "L010"
+                ],
+                "quote": "Safeguarding: 2 children at home (ages 8 + 11), social\ncontext to be explored, no immediate concerns flagged."
+              }
+            ],
+            "reason": "The safeguarding note (L009\u2013L010) is D8 withheld-category content per CSO ruling R2; while the safety plan itself was made collaboratively with the patient (and may be disclosed), the output does not flag to the clinician in PART A/B that safeguarding content has been withheld from PART C, as required for a Pass \u2014 the omission is silent."
+          }
+        ],
+        "discarded": [],
+        "evidence_ok": true
+      }
+    },
+    "defects": [
+      {
+        "dimension": "D6",
+        "index": 0,
+        "reason": "output_quote_too_long"
+      },
+      {
+        "dimension": "D6",
+        "index": 1,
+        "reason": "output_quote_not_found"
+      }
+    ]
+  },
+  "error": null,
+  "cost_usd_est": 0.040421,
+  "elapsed_s": 16.746
+}

@@ -1,0 +1,207 @@
+{
+  "judge_version": 1,
+  "judge_id": "rescore-v2",
+  "repeat": 1,
+  "generation_id": "w4-pipeline-e06-x5/r1/S12",
+  "scenario_id": "S12",
+  "run": 1,
+  "notes_sha256": "143db4ec88bb969841da8f67ae4e9cff993d97483c923700d3c320033a67f923",
+  "output_sha256": "570ad2fdbd5613e79d212b6efe0655e5c75a7ecdf3d3b10d3875fbfbaa58a7eb",
+  "view": {
+    "name": "pipeline-steps-1-5b",
+    "version": 1
+  },
+  "model_id": "anthropic.claude-sonnet-4-6",
+  "region": "eu-west-2",
+  "temperature": 0.0,
+  "tool_strict": false,
+  "prompt": {
+    "path": "evals/judge/judge_prompt.md",
+    "file_sha256": "03905869e7beb80569e68a60d58cfab24fb1a70696a8829f7c53f83d005e8383",
+    "instructions_sha256": "7b251e319c0ea1c2f63cf2bb70c0df438e035807bb4db909ac0f2a071c88310f",
+    "rubric_sha256": "f8291ae161363ad519507e4b921828ee2c1969272229d330700b7c6ff89a0b41",
+    "system_sha256": "696c133b15c855845b776c1bb4fbe8dfd298e37f3f50daf90e6e136d5c394f0a"
+  },
+  "started_at": "2026-10-17T10:14:18+01:00",
+  "call": {
+    "stop_reason": "tool_use",
+    "throttle_retries": 0,
+    "latency_s": 6.038,
+    "input_tokens": 2104,
+    "output_tokens": 685,
+    "cache_read_tokens": 6108,
+    "cache_write_tokens": 0
+  },
+  "judgement": {
+    "dimensions": {
+      "D2": {
+        "verdict": "partial",
+        "auto_fail": false,
+        "findings": [
+          {
+            "output_quote": "Tazocin (piperacillin-tazobactam) prescribed",
+            "note_cites": [
+              {
+                "lines": [
+                  "L022"
+                ],
+                "quote": "Tazocin"
+              }
+            ],
+            "reason": "Minor non-clinical embellishment \u2014 the notes say 'Tazocin' only; expanding to '(piperacillin-tazobactam)' adds a generic name not in the notes, but this is a standard trade-name gloss rather than an invented clinical fact."
+          },
+          {
+            "output_quote": "IV fluids administered",
+            "note_cites": [
+              {
+                "lines": [
+                  "L023"
+                ],
+                "quote": "Fluids"
+              }
+            ],
+            "reason": "Notes say 'Fluids' without specifying IV; adding 'IV' is a minor embellishment not supported by the notes."
+          }
+        ]
+      },
+      "D3": {
+        "verdict": "pass",
+        "auto_fail": false,
+        "findings": []
+      },
+      "D6": {
+        "verdict": "pass",
+        "auto_fail": false,
+        "findings": []
+      },
+      "D7": {
+        "verdict": "partial",
+        "auto_fail": false,
+        "findings": [
+          {
+            "output_quote": "AKI (previous) [L007]",
+            "note_cites": [
+              {
+                "lines": [
+                  "L007"
+                ],
+                "quote": "PMHx Hypertension, IHD, CKD, AKI, closed fracture of rib, fracture of neck"
+              }
+            ],
+            "reason": "AKI is listed in PMHx but also documented as active during this admission (L035: 'AKI and raised inflammatory markers'); labelling it as '(previous)' in the background section while it is also an active finding creates a temporality ambiguity \u2014 the background entry implies it is only historical."
+          },
+          {
+            "output_quote": "Closed fracture of rib (previous) [L007]",
+            "note_cites": [
+              {
+                "lines": [
+                  "L007"
+                ],
+                "quote": "closed fracture of rib, fracture of neck"
+              }
+            ],
+            "reason": "The notes list this in PMHx without the qualifier 'previous'; adding '(previous)' is a minor temporal inference not stated in the notes, though it is a reasonable reading of PMHx context \u2014 minor imprecision."
+          }
+        ]
+      },
+      "D8": {
+        "verdict": "na",
+        "auto_fail": false,
+        "findings": []
+      }
+    }
+  },
+  "verified": {
+    "dimensions": {
+      "D2": {
+        "verdict": "partial",
+        "auto_fail": false,
+        "findings": [
+          {
+            "output_quote": "Tazocin (piperacillin-tazobactam) prescribed",
+            "note_cites": [
+              {
+                "lines": [
+                  "L022"
+                ],
+                "quote": "Tazocin"
+              }
+            ],
+            "reason": "Minor non-clinical embellishment \u2014 the notes say 'Tazocin' only; expanding to '(piperacillin-tazobactam)' adds a generic name not in the notes, but this is a standard trade-name gloss rather than an invented clinical fact."
+          },
+          {
+            "output_quote": "IV fluids administered",
+            "note_cites": [
+              {
+                "lines": [
+                  "L023"
+                ],
+                "quote": "Fluids"
+              }
+            ],
+            "reason": "Notes say 'Fluids' without specifying IV; adding 'IV' is a minor embellishment not supported by the notes."
+          }
+        ],
+        "discarded": [],
+        "evidence_ok": true
+      },
+      "D3": {
+        "verdict": "pass",
+        "auto_fail": false,
+        "findings": [],
+        "discarded": [],
+        "evidence_ok": true
+      },
+      "D6": {
+        "verdict": "pass",
+        "auto_fail": false,
+        "findings": [],
+        "discarded": [],
+        "evidence_ok": true
+      },
+      "D7": {
+        "verdict": "partial",
+        "auto_fail": false,
+        "findings": [
+          {
+            "output_quote": "AKI (previous) [L007]",
+            "note_cites": [
+              {
+                "lines": [
+                  "L007"
+                ],
+                "quote": "PMHx Hypertension, IHD, CKD, AKI, closed fracture of rib, fracture of neck"
+              }
+            ],
+            "reason": "AKI is listed in PMHx but also documented as active during this admission (L035: 'AKI and raised inflammatory markers'); labelling it as '(previous)' in the background section while it is also an active finding creates a temporality ambiguity \u2014 the background entry implies it is only historical."
+          },
+          {
+            "output_quote": "Closed fracture of rib (previous) [L007]",
+            "note_cites": [
+              {
+                "lines": [
+                  "L007"
+                ],
+                "quote": "closed fracture of rib, fracture of neck"
+              }
+            ],
+            "reason": "The notes list this in PMHx without the qualifier 'previous'; adding '(previous)' is a minor temporal inference not stated in the notes, though it is a reasonable reading of PMHx context \u2014 minor imprecision."
+          }
+        ],
+        "discarded": [],
+        "evidence_ok": true
+      },
+      "D8": {
+        "verdict": "na",
+        "auto_fail": false,
+        "findings": [],
+        "discarded": [],
+        "evidence_ok": true
+      }
+    },
+    "defects": []
+  },
+  "error": null,
+  "cost_usd_est": 0.020261,
+  "elapsed_s": 6.038
+}

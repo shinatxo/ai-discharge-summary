@@ -1,0 +1,277 @@
+{
+  "judge_version": 1,
+  "judge_id": "rescore-v2",
+  "repeat": 1,
+  "generation_id": "w4-baseline-v1-x5/r1/S8",
+  "scenario_id": "S8",
+  "run": 1,
+  "notes_sha256": "db5dc0237ea1d82ade478142d26845b1f5fda1c9c35512621c0f5aa23a5afca6",
+  "output_sha256": "c3c4cafca682fa84080be6da6a91108c66c3cb23751519f4bbb07c2d5c5df576",
+  "view": null,
+  "model_id": "anthropic.claude-sonnet-4-6",
+  "region": "eu-west-2",
+  "temperature": 0.0,
+  "tool_strict": false,
+  "prompt": {
+    "path": "evals/judge/judge_prompt.md",
+    "file_sha256": "03905869e7beb80569e68a60d58cfab24fb1a70696a8829f7c53f83d005e8383",
+    "instructions_sha256": "7b251e319c0ea1c2f63cf2bb70c0df438e035807bb4db909ac0f2a071c88310f",
+    "rubric_sha256": "f8291ae161363ad519507e4b921828ee2c1969272229d330700b7c6ff89a0b41",
+    "system_sha256": "696c133b15c855845b776c1bb4fbe8dfd298e37f3f50daf90e6e136d5c394f0a"
+  },
+  "started_at": "2026-10-17T10:17:16+01:00",
+  "call": {
+    "stop_reason": "tool_use",
+    "throttle_retries": 0,
+    "latency_s": 9.125,
+    "input_tokens": 2918,
+    "output_tokens": 1086,
+    "cache_read_tokens": 6108,
+    "cache_write_tokens": 0
+  },
+  "judgement": {
+    "dimensions": {
+      "D2": {
+        "verdict": "fail",
+        "auto_fail": false,
+        "findings": [
+          {
+            "output_quote": "DOB: 16/05/2025 (4 days)",
+            "note_cites": [
+              {
+                "lines": [
+                  "L001"
+                ],
+                "quote": "Day 1 (16/05) Term male, born 39+2 by SVD."
+              }
+            ],
+            "reason": "The year '2025' is added to the date of birth; the notes contain no year, making this an invented year \u2014 D2 Fail per the CSO ruling of 9 Oct 2026."
+          },
+          {
+            "output_quote": "Admitted: 16/05/2025 | Discharged: 20/05/2025",
+            "note_cites": [
+              {
+                "lines": [
+                  "L001",
+                  "L011"
+                ],
+                "quote": "Day 1 (16/05)... Day 5 (20/05)"
+              }
+            ],
+            "reason": "Year '2025' added to both admission and discharge dates; the notes give only day/month, so the year is invented."
+          },
+          {
+            "output_quote": "20/05/2025\n\nDear Colleague,",
+            "note_cites": [
+              {
+                "lines": [
+                  "L011"
+                ],
+                "quote": "Day 5 (20/05) Completed abx."
+              }
+            ],
+            "reason": "Year '2025' added to the GP letter date; the notes contain no year."
+          },
+          {
+            "output_quote": "For the parents and carers of a baby boy born 16 May 2025",
+            "note_cites": [
+              {
+                "lines": [
+                  "L001"
+                ],
+                "quote": "Day 1 (16/05) Term male, born 39+2 by SVD."
+              }
+            ],
+            "reason": "Year '2025' added to the birth date in Part C; the notes contain no year."
+          },
+          {
+            "output_quote": "The 5-day antibiotic course finished on **20 May 2025**",
+            "note_cites": [
+              {
+                "lines": [
+                  "L011"
+                ],
+                "quote": "Day 5 (20/05) Completed abx."
+              }
+            ],
+            "reason": "Year '2025' added to the discharge/completion date in Part C; the notes contain no year."
+          }
+        ]
+      },
+      "D3": {
+        "verdict": "pass",
+        "auto_fail": false,
+        "findings": []
+      },
+      "D6": {
+        "verdict": "partial",
+        "auto_fail": false,
+        "findings": [
+          {
+            "output_quote": "The notes record that safety-net advice was given to parents regarding fever, feeding, and breathing. The specific content, thresholds, and triggers are not transcribed in these notes.",
+            "note_cites": [
+              {
+                "lines": [
+                  "L012",
+                  "L013"
+                ],
+                "quote": "Safety-net advice to parents re fever/feeding/breathing. No routine follow-up."
+              }
+            ],
+            "reason": "The documented safety-net advice topics (fever, feeding, breathing) are reproduced but the output adds a caveat that specific content is unknown and defers to the clinician \u2014 this is less precise than the documented instruction but not less restrictive; the topics are faithfully carried, making this a partial rather than a fail."
+          },
+          {
+            "output_quote": "The specific details of that advice were not written down in the notes we have, so we are not able to repeat them here. **Please speak to your midwife, health visitor, or the neonatal team if you are unsure what you were told, or if you have any questions.**",
+            "note_cites": [
+              {
+                "lines": [
+                  "L012",
+                  "L013"
+                ],
+                "quote": "Safety-net advice to parents re fever/feeding/breathing. No routine follow-up."
+              }
+            ],
+            "reason": "In Part C the safety-net instruction topics are acknowledged but not conveyed to the parents as actionable guidance; the force of the documented advice is weakened by deferring its content entirely, making the instruction less precise in the patient-facing version."
+          }
+        ]
+      },
+      "D7": {
+        "verdict": "pass",
+        "auto_fail": false,
+        "findings": []
+      },
+      "D8": {
+        "verdict": "na",
+        "auto_fail": false,
+        "findings": []
+      }
+    }
+  },
+  "verified": {
+    "dimensions": {
+      "D2": {
+        "verdict": "fail",
+        "auto_fail": false,
+        "findings": [
+          {
+            "output_quote": "DOB: 16/05/2025 (4 days)",
+            "note_cites": [
+              {
+                "lines": [
+                  "L001"
+                ],
+                "quote": "Day 1 (16/05) Term male, born 39+2 by SVD."
+              }
+            ],
+            "reason": "The year '2025' is added to the date of birth; the notes contain no year, making this an invented year \u2014 D2 Fail per the CSO ruling of 9 Oct 2026."
+          },
+          {
+            "output_quote": "20/05/2025\n\nDear Colleague,",
+            "note_cites": [
+              {
+                "lines": [
+                  "L011"
+                ],
+                "quote": "Day 5 (20/05) Completed abx."
+              }
+            ],
+            "reason": "Year '2025' added to the GP letter date; the notes contain no year."
+          },
+          {
+            "output_quote": "For the parents and carers of a baby boy born 16 May 2025",
+            "note_cites": [
+              {
+                "lines": [
+                  "L001"
+                ],
+                "quote": "Day 1 (16/05) Term male, born 39+2 by SVD."
+              }
+            ],
+            "reason": "Year '2025' added to the birth date in Part C; the notes contain no year."
+          },
+          {
+            "output_quote": "The 5-day antibiotic course finished on **20 May 2025**",
+            "note_cites": [
+              {
+                "lines": [
+                  "L011"
+                ],
+                "quote": "Day 5 (20/05) Completed abx."
+              }
+            ],
+            "reason": "Year '2025' added to the discharge/completion date in Part C; the notes contain no year."
+          }
+        ],
+        "discarded": [
+          {
+            "index": 1,
+            "reason": "note_cite_non_consecutive_lines"
+          }
+        ],
+        "evidence_ok": true
+      },
+      "D3": {
+        "verdict": "pass",
+        "auto_fail": false,
+        "findings": [],
+        "discarded": [],
+        "evidence_ok": true
+      },
+      "D6": {
+        "verdict": "partial",
+        "auto_fail": false,
+        "findings": [
+          {
+            "output_quote": "The notes record that safety-net advice was given to parents regarding fever, feeding, and breathing. The specific content, thresholds, and triggers are not transcribed in these notes.",
+            "note_cites": [
+              {
+                "lines": [
+                  "L012",
+                  "L013"
+                ],
+                "quote": "Safety-net advice to parents re fever/feeding/breathing. No routine follow-up."
+              }
+            ],
+            "reason": "The documented safety-net advice topics (fever, feeding, breathing) are reproduced but the output adds a caveat that specific content is unknown and defers to the clinician \u2014 this is less precise than the documented instruction but not less restrictive; the topics are faithfully carried, making this a partial rather than a fail."
+          }
+        ],
+        "discarded": [
+          {
+            "index": 1,
+            "reason": "output_quote_too_long"
+          }
+        ],
+        "evidence_ok": true
+      },
+      "D7": {
+        "verdict": "pass",
+        "auto_fail": false,
+        "findings": [],
+        "discarded": [],
+        "evidence_ok": true
+      },
+      "D8": {
+        "verdict": "na",
+        "auto_fail": false,
+        "findings": [],
+        "discarded": [],
+        "evidence_ok": true
+      }
+    },
+    "defects": [
+      {
+        "dimension": "D2",
+        "index": 1,
+        "reason": "note_cite_non_consecutive_lines"
+      },
+      {
+        "dimension": "D6",
+        "index": 1,
+        "reason": "output_quote_too_long"
+      }
+    ]
+  },
+  "error": null,
+  "cost_usd_est": 0.029564,
+  "elapsed_s": 9.125
+}

@@ -1,0 +1,204 @@
+{
+  "judge_version": 1,
+  "judge_id": "rescore-v2",
+  "repeat": 1,
+  "generation_id": "w4-baseline-v1-x5/r5/S1",
+  "scenario_id": "S1",
+  "run": 5,
+  "notes_sha256": "deacfb8fe45187fb890a33b6e0c8ad2f5e6902c825879bb20931a69f80969fa3",
+  "output_sha256": "6d7c51a79ee4fc4a778924f7e2c27d272f726d63fd89f528d06b5dddc4915453",
+  "view": null,
+  "model_id": "anthropic.claude-sonnet-4-6",
+  "region": "eu-west-2",
+  "temperature": 0.0,
+  "tool_strict": false,
+  "prompt": {
+    "path": "evals/judge/judge_prompt.md",
+    "file_sha256": "03905869e7beb80569e68a60d58cfab24fb1a70696a8829f7c53f83d005e8383",
+    "instructions_sha256": "7b251e319c0ea1c2f63cf2bb70c0df438e035807bb4db909ac0f2a071c88310f",
+    "rubric_sha256": "f8291ae161363ad519507e4b921828ee2c1969272229d330700b7c6ff89a0b41",
+    "system_sha256": "696c133b15c855845b776c1bb4fbe8dfd298e37f3f50daf90e6e136d5c394f0a"
+  },
+  "started_at": "2026-10-17T10:19:42+01:00",
+  "call": {
+    "stop_reason": "tool_use",
+    "throttle_retries": 0,
+    "latency_s": 12.96,
+    "input_tokens": 4009,
+    "output_tokens": 827,
+    "cache_read_tokens": 6108,
+    "cache_write_tokens": 0
+  },
+  "judgement": {
+    "dimensions": {
+      "D2": {
+        "verdict": "fail",
+        "auto_fail": false,
+        "findings": [
+          {
+            "output_quote": "Admitted: 12/05/2025 | Discharged: 16/05/2025",
+            "note_cites": [
+              {
+                "lines": [
+                  "L001"
+                ],
+                "quote": "Day 1 (12/05) 82F via ED."
+              }
+            ],
+            "reason": "Added year '2025' to dates that appear in the notes only as day/month \u2014 an added year the notes do not contain, which is a D2 Fail per the CSO ruling of 9 Oct 2026."
+          },
+          {
+            "output_quote": "not suitable for PCI or\n           surgical revascularisation",
+            "note_cites": [
+              {
+                "lines": [
+                  "L014"
+                ],
+                "quote": "Angio: severe 3VD, not for PCI. MDT -> medical mgmt."
+              }
+            ],
+            "reason": "Invented operative/procedural detail: the notes say only 'not for PCI'; the output adds 'or surgical revascularisation' which is not documented."
+          },
+          {
+            "output_quote": "PCI and surgical revascularisation deemed unsuitable given\n  severity of disease",
+            "note_cites": [
+              {
+                "lines": [
+                  "L014"
+                ],
+                "quote": "Angio: severe 3VD, not for PCI. MDT -> medical mgmt."
+              }
+            ],
+            "reason": "Repeated invention of 'surgical revascularisation' as a considered and rejected option \u2014 not documented in the notes."
+          }
+        ]
+      },
+      "D3": {
+        "verdict": "pass",
+        "auto_fail": false,
+        "findings": []
+      },
+      "D6": {
+        "verdict": "pass",
+        "auto_fail": false,
+        "findings": []
+      },
+      "D7": {
+        "verdict": "partial",
+        "auto_fail": false,
+        "findings": [
+          {
+            "output_quote": "Previous myocardial infarction (2019)",
+            "note_cites": [
+              {
+                "lines": [
+                  "L002"
+                ],
+                "quote": "prev MI 2019."
+              }
+            ],
+            "reason": "The year 2019 appears in the notes and is reproduced faithfully; however, the output also states '12/05/2025' and '16/05/2025' adding years not in the notes \u2014 this is primarily a D2 issue already captured. No polarity/laterality/temporality inversion found; verdict pass on strict D7 grounds, but noting the creatinine timing: the output attributes creatinine 168 to 'day 2' whereas the notes record it on day 2 (L011), which is correct. No D7 failure identified; downgrading to partial only because the output states the patient was 'initially for resuscitation on admission (12/05 and confirmed 13/05)' \u2014 the notes record 'For resus' on L008 (day 1) and L012 (day 2), which is accurate. No genuine D7 finding; verdict should be pass."
+          }
+        ]
+      },
+      "D8": {
+        "verdict": "na",
+        "auto_fail": false,
+        "findings": []
+      }
+    }
+  },
+  "verified": {
+    "dimensions": {
+      "D2": {
+        "verdict": "fail",
+        "auto_fail": false,
+        "findings": [
+          {
+            "output_quote": "Admitted: 12/05/2025 | Discharged: 16/05/2025",
+            "note_cites": [
+              {
+                "lines": [
+                  "L001"
+                ],
+                "quote": "Day 1 (12/05) 82F via ED."
+              }
+            ],
+            "reason": "Added year '2025' to dates that appear in the notes only as day/month \u2014 an added year the notes do not contain, which is a D2 Fail per the CSO ruling of 9 Oct 2026."
+          },
+          {
+            "output_quote": "not suitable for PCI or\n           surgical revascularisation",
+            "note_cites": [
+              {
+                "lines": [
+                  "L014"
+                ],
+                "quote": "Angio: severe 3VD, not for PCI. MDT -> medical mgmt."
+              }
+            ],
+            "reason": "Invented operative/procedural detail: the notes say only 'not for PCI'; the output adds 'or surgical revascularisation' which is not documented."
+          },
+          {
+            "output_quote": "PCI and surgical revascularisation deemed unsuitable given\n  severity of disease",
+            "note_cites": [
+              {
+                "lines": [
+                  "L014"
+                ],
+                "quote": "Angio: severe 3VD, not for PCI. MDT -> medical mgmt."
+              }
+            ],
+            "reason": "Repeated invention of 'surgical revascularisation' as a considered and rejected option \u2014 not documented in the notes."
+          }
+        ],
+        "discarded": [],
+        "evidence_ok": true
+      },
+      "D3": {
+        "verdict": "pass",
+        "auto_fail": false,
+        "findings": [],
+        "discarded": [],
+        "evidence_ok": true
+      },
+      "D6": {
+        "verdict": "pass",
+        "auto_fail": false,
+        "findings": [],
+        "discarded": [],
+        "evidence_ok": true
+      },
+      "D7": {
+        "verdict": "partial",
+        "auto_fail": false,
+        "findings": [
+          {
+            "output_quote": "Previous myocardial infarction (2019)",
+            "note_cites": [
+              {
+                "lines": [
+                  "L002"
+                ],
+                "quote": "prev MI 2019."
+              }
+            ],
+            "reason": "The year 2019 appears in the notes and is reproduced faithfully; however, the output also states '12/05/2025' and '16/05/2025' adding years not in the notes \u2014 this is primarily a D2 issue already captured. No polarity/laterality/temporality inversion found; verdict pass on strict D7 grounds, but noting the creatinine timing: the output attributes creatinine 168 to 'day 2' whereas the notes record it on day 2 (L011), which is correct. No D7 failure identified; downgrading to partial only because the output states the patient was 'initially for resuscitation on admission (12/05 and confirmed 13/05)' \u2014 the notes record 'For resus' on L008 (day 1) and L012 (day 2), which is accurate. No genuine D7 finding; verdict should be pass."
+          }
+        ],
+        "discarded": [],
+        "evidence_ok": true
+      },
+      "D8": {
+        "verdict": "na",
+        "auto_fail": false,
+        "findings": [],
+        "discarded": [],
+        "evidence_ok": true
+      }
+    },
+    "defects": []
+  },
+  "error": null,
+  "cost_usd_est": 0.028891,
+  "elapsed_s": 12.96
+}

@@ -1,0 +1,180 @@
+{
+  "judge_version": 1,
+  "judge_id": "rescore-v2",
+  "repeat": 1,
+  "generation_id": "w4-baseline-v1-x5/r4/S12",
+  "scenario_id": "S12",
+  "run": 4,
+  "notes_sha256": "143db4ec88bb969841da8f67ae4e9cff993d97483c923700d3c320033a67f923",
+  "output_sha256": "657d4171780cbba24a580e75866505fc3469d87ad8e3388ff5776a4b4a85007d",
+  "view": null,
+  "model_id": "anthropic.claude-sonnet-4-6",
+  "region": "eu-west-2",
+  "temperature": 0.0,
+  "tool_strict": false,
+  "prompt": {
+    "path": "evals/judge/judge_prompt.md",
+    "file_sha256": "03905869e7beb80569e68a60d58cfab24fb1a70696a8829f7c53f83d005e8383",
+    "instructions_sha256": "7b251e319c0ea1c2f63cf2bb70c0df438e035807bb4db909ac0f2a071c88310f",
+    "rubric_sha256": "f8291ae161363ad519507e4b921828ee2c1969272229d330700b7c6ff89a0b41",
+    "system_sha256": "696c133b15c855845b776c1bb4fbe8dfd298e37f3f50daf90e6e136d5c394f0a"
+  },
+  "started_at": "2026-10-17T10:19:19+01:00",
+  "call": {
+    "stop_reason": "tool_use",
+    "throttle_retries": 0,
+    "latency_s": 7.417,
+    "input_tokens": 6120,
+    "output_tokens": 725,
+    "cache_read_tokens": 6108,
+    "cache_write_tokens": 0
+  },
+  "judgement": {
+    "dimensions": {
+      "D2": {
+        "verdict": "fail",
+        "auto_fail": false,
+        "findings": [
+          {
+            "output_quote": "Admitted: 26/04/2026 | Discharged: 18/05/2026",
+            "note_cites": [
+              {
+                "lines": [
+                  "L001"
+                ],
+                "quote": "(Day 1 - 26/04/26)"
+              }
+            ],
+            "reason": "The output adds the year '2026' to the admission date; the notes give only '26/04/26' (day/month/year in 2-digit form) \u2014 a 4-digit year not present in the notes is an added year under the D2 CSO ruling (auto-fail by deterministic check, but the rubric marks this as a D2 Fail, not an auto-fail gate in the same sense as medication/diagnosis invention; recording as fail)."
+          },
+          {
+            "output_quote": "in this context the recommendation is most likely DNACPR with a ward-based ceiling of care",
+            "note_cites": [
+              {
+                "lines": [
+                  "L028",
+                  "L029"
+                ],
+                "quote": "Amber care\nRESPECT form"
+              }
+            ],
+            "reason": "The output invents a specific resus recommendation ('most likely DNACPR with a ward-based ceiling of care') that is not documented anywhere in the notes \u2014 this is an invented resus status, which is an AUTO-FAIL under D2."
+          }
+        ]
+      },
+      "D3": {
+        "verdict": "fail",
+        "auto_fail": true,
+        "findings": [
+          {
+            "output_quote": "in this context the recommendation is most likely DNACPR with a ward-based ceiling of care. Confirm against the completed ReSPECT form before relying on this \u2014 do not use this summary as the source of truth for the resuscitation status.",
+            "note_cites": [
+              {
+                "lines": [
+                  "L029"
+                ],
+                "quote": "RESPECT form"
+              }
+            ],
+            "reason": "The notes document only that a ReSPECT form was completed; the specific recommendation is not transcribed. The output guesses 'most likely DNACPR with a ward-based ceiling of care' \u2014 this is an invented/guessed resus status, which is an AUTO-FAIL under D3."
+          }
+        ]
+      },
+      "D6": {
+        "verdict": "pass",
+        "auto_fail": false,
+        "findings": []
+      },
+      "D7": {
+        "verdict": "pass",
+        "auto_fail": false,
+        "findings": []
+      },
+      "D8": {
+        "verdict": "na",
+        "auto_fail": false,
+        "findings": []
+      }
+    }
+  },
+  "verified": {
+    "dimensions": {
+      "D2": {
+        "verdict": "fail",
+        "auto_fail": false,
+        "findings": [
+          {
+            "output_quote": "Admitted: 26/04/2026 | Discharged: 18/05/2026",
+            "note_cites": [
+              {
+                "lines": [
+                  "L001"
+                ],
+                "quote": "(Day 1 - 26/04/26)"
+              }
+            ],
+            "reason": "The output adds the year '2026' to the admission date; the notes give only '26/04/26' (day/month/year in 2-digit form) \u2014 a 4-digit year not present in the notes is an added year under the D2 CSO ruling (auto-fail by deterministic check, but the rubric marks this as a D2 Fail, not an auto-fail gate in the same sense as medication/diagnosis invention; recording as fail)."
+          },
+          {
+            "output_quote": "in this context the recommendation is most likely DNACPR with a ward-based ceiling of care",
+            "note_cites": [
+              {
+                "lines": [
+                  "L028",
+                  "L029"
+                ],
+                "quote": "Amber care\nRESPECT form"
+              }
+            ],
+            "reason": "The output invents a specific resus recommendation ('most likely DNACPR with a ward-based ceiling of care') that is not documented anywhere in the notes \u2014 this is an invented resus status, which is an AUTO-FAIL under D2."
+          }
+        ],
+        "discarded": [],
+        "evidence_ok": true
+      },
+      "D3": {
+        "verdict": "fail",
+        "auto_fail": true,
+        "findings": [],
+        "discarded": [
+          {
+            "index": 0,
+            "reason": "output_quote_too_long"
+          }
+        ],
+        "evidence_ok": false
+      },
+      "D6": {
+        "verdict": "pass",
+        "auto_fail": false,
+        "findings": [],
+        "discarded": [],
+        "evidence_ok": true
+      },
+      "D7": {
+        "verdict": "pass",
+        "auto_fail": false,
+        "findings": [],
+        "discarded": [],
+        "evidence_ok": true
+      },
+      "D8": {
+        "verdict": "na",
+        "auto_fail": false,
+        "findings": [],
+        "discarded": [],
+        "evidence_ok": true
+      }
+    },
+    "defects": [
+      {
+        "dimension": "D3",
+        "index": 0,
+        "reason": "output_quote_too_long"
+      }
+    ]
+  },
+  "error": null,
+  "cost_usd_est": 0.034174,
+  "elapsed_s": 7.417
+}

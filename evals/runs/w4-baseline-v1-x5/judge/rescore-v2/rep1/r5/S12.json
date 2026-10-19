@@ -1,0 +1,205 @@
+{
+  "judge_version": 1,
+  "judge_id": "rescore-v2",
+  "repeat": 1,
+  "generation_id": "w4-baseline-v1-x5/r5/S12",
+  "scenario_id": "S12",
+  "run": 5,
+  "notes_sha256": "143db4ec88bb969841da8f67ae4e9cff993d97483c923700d3c320033a67f923",
+  "output_sha256": "feecd1c054f0d8a01e42831ad067dce3eb4d4a3dda0f5c0f8ea672b11bc3c952",
+  "view": null,
+  "model_id": "anthropic.claude-sonnet-4-6",
+  "region": "eu-west-2",
+  "temperature": 0.0,
+  "tool_strict": false,
+  "prompt": {
+    "path": "evals/judge/judge_prompt.md",
+    "file_sha256": "03905869e7beb80569e68a60d58cfab24fb1a70696a8829f7c53f83d005e8383",
+    "instructions_sha256": "7b251e319c0ea1c2f63cf2bb70c0df438e035807bb4db909ac0f2a071c88310f",
+    "rubric_sha256": "f8291ae161363ad519507e4b921828ee2c1969272229d330700b7c6ff89a0b41",
+    "system_sha256": "696c133b15c855845b776c1bb4fbe8dfd298e37f3f50daf90e6e136d5c394f0a"
+  },
+  "started_at": "2026-10-17T10:20:00+01:00",
+  "call": {
+    "stop_reason": "tool_use",
+    "throttle_retries": 1,
+    "latency_s": 9.469,
+    "input_tokens": 5900,
+    "output_tokens": 918,
+    "cache_read_tokens": 6108,
+    "cache_write_tokens": 0
+  },
+  "judgement": {
+    "dimensions": {
+      "D2": {
+        "verdict": "fail",
+        "auto_fail": true,
+        "findings": [
+          {
+            "output_quote": "Admitted: 26/04/2026 | Discharged: 18/05/2026",
+            "note_cites": [
+              {
+                "lines": [
+                  "L001"
+                ],
+                "quote": "(Day 1 - 26/04/26)"
+              }
+            ],
+            "reason": "The notes give dates as 26/04/26, 09/05/26, 12/05/26, 18/05/26 \u2014 no year is documented anywhere in the notes; the output adds '2026' throughout, which is an added year the notes do not contain (D2 auto-fail per CSO ruling 9 Oct 2026)."
+          }
+        ]
+      },
+      "D3": {
+        "verdict": "partial",
+        "auto_fail": false,
+        "findings": [
+          {
+            "output_quote": "The explicit recommendation recorded on the ReSPECT form is not transcribed in these notes; given the documented context (acute deterioration, Amber care pathway, family counselled regarding possible death), the recommendation is most likely DNACPR with a ward-based ceiling of care.",
+            "note_cites": [
+              {
+                "lines": [
+                  "L028",
+                  "L029"
+                ],
+                "quote": "Amber care\nRESPECT form"
+              }
+            ],
+            "reason": "The notes document that a ReSPECT form was completed but do not transcribe its recommendation; the output correctly flags the status as not transcribed but then speculates it 'most likely' reflects DNACPR \u2014 this goes beyond 'Not documented' and risks being acted upon as if it were confirmed, though it does not invent a definitive status. The output does flag the change during admission and urges verification, so this is partial rather than fail."
+          }
+        ]
+      },
+      "D6": {
+        "verdict": "pass",
+        "auto_fail": false,
+        "findings": []
+      },
+      "D7": {
+        "verdict": "partial",
+        "auto_fail": false,
+        "findings": [
+          {
+            "output_quote": "CT Thorax (26/04/2026): No acute abnormality documented at this time",
+            "note_cites": [
+              {
+                "lines": [
+                  "L015"
+                ],
+                "quote": "CT C-spine and CT thorax nil acute"
+              }
+            ],
+            "reason": "The notes record CT thorax as 'nil acute' (a definitive finding at the time); the output adds the qualifier 'at this time', implying the finding was provisional or time-limited, which subtly alters the temporality of a documented result."
+          },
+          {
+            "output_quote": "CXR (09/05/2026): Negative (no consolidation documented at this point)",
+            "note_cites": [
+              {
+                "lines": [
+                  "L032"
+                ],
+                "quote": "CXR negative"
+              }
+            ],
+            "reason": "The CXR negative result is documented on 12/05/26 in the notes (L032), not on 09/05/26; the output misattributes this result to 09/05/26, making the timing imprecise \u2014 though a CXR was also ordered on 09/05/26 (L027), the documented negative result belongs to 12/05/26."
+          }
+        ]
+      },
+      "D8": {
+        "verdict": "na",
+        "auto_fail": false,
+        "findings": []
+      }
+    }
+  },
+  "verified": {
+    "dimensions": {
+      "D2": {
+        "verdict": "fail",
+        "auto_fail": true,
+        "findings": [
+          {
+            "output_quote": "Admitted: 26/04/2026 | Discharged: 18/05/2026",
+            "note_cites": [
+              {
+                "lines": [
+                  "L001"
+                ],
+                "quote": "(Day 1 - 26/04/26)"
+              }
+            ],
+            "reason": "The notes give dates as 26/04/26, 09/05/26, 12/05/26, 18/05/26 \u2014 no year is documented anywhere in the notes; the output adds '2026' throughout, which is an added year the notes do not contain (D2 auto-fail per CSO ruling 9 Oct 2026)."
+          }
+        ],
+        "discarded": [],
+        "evidence_ok": true
+      },
+      "D3": {
+        "verdict": "partial",
+        "auto_fail": false,
+        "findings": [],
+        "discarded": [
+          {
+            "index": 0,
+            "reason": "output_quote_too_long"
+          }
+        ],
+        "evidence_ok": false
+      },
+      "D6": {
+        "verdict": "pass",
+        "auto_fail": false,
+        "findings": [],
+        "discarded": [],
+        "evidence_ok": true
+      },
+      "D7": {
+        "verdict": "partial",
+        "auto_fail": false,
+        "findings": [
+          {
+            "output_quote": "CT Thorax (26/04/2026): No acute abnormality documented at this time",
+            "note_cites": [
+              {
+                "lines": [
+                  "L015"
+                ],
+                "quote": "CT C-spine and CT thorax nil acute"
+              }
+            ],
+            "reason": "The notes record CT thorax as 'nil acute' (a definitive finding at the time); the output adds the qualifier 'at this time', implying the finding was provisional or time-limited, which subtly alters the temporality of a documented result."
+          },
+          {
+            "output_quote": "CXR (09/05/2026): Negative (no consolidation documented at this point)",
+            "note_cites": [
+              {
+                "lines": [
+                  "L032"
+                ],
+                "quote": "CXR negative"
+              }
+            ],
+            "reason": "The CXR negative result is documented on 12/05/26 in the notes (L032), not on 09/05/26; the output misattributes this result to 09/05/26, making the timing imprecise \u2014 though a CXR was also ordered on 09/05/26 (L027), the documented negative result belongs to 12/05/26."
+          }
+        ],
+        "discarded": [],
+        "evidence_ok": true
+      },
+      "D8": {
+        "verdict": "na",
+        "auto_fail": false,
+        "findings": [],
+        "discarded": [],
+        "evidence_ok": true
+      }
+    },
+    "defects": [
+      {
+        "dimension": "D3",
+        "index": 0,
+        "reason": "output_quote_too_long"
+      }
+    ]
+  },
+  "error": null,
+  "cost_usd_est": 0.036633,
+  "elapsed_s": 46.49
+}

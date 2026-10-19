@@ -1,0 +1,143 @@
+{
+  "judge_version": 1,
+  "judge_id": "rescore-v2",
+  "repeat": 1,
+  "generation_id": "w4-pipeline-e06-x5/r5/A5",
+  "scenario_id": "A5",
+  "run": 5,
+  "notes_sha256": "17990ee1d94abcc513c9b663863e4a9a92ef69d1a564f1544879be8404ae7092",
+  "output_sha256": "d2978400d562ebc93bfe71ffad96c55c7cf7bc2f373fab6d2586a4958991ece6",
+  "view": {
+    "name": "pipeline-steps-1-5b",
+    "version": 1
+  },
+  "model_id": "anthropic.claude-sonnet-4-6",
+  "region": "eu-west-2",
+  "temperature": 0.0,
+  "tool_strict": false,
+  "prompt": {
+    "path": "evals/judge/judge_prompt.md",
+    "file_sha256": "03905869e7beb80569e68a60d58cfab24fb1a70696a8829f7c53f83d005e8383",
+    "instructions_sha256": "7b251e319c0ea1c2f63cf2bb70c0df438e035807bb4db909ac0f2a071c88310f",
+    "rubric_sha256": "f8291ae161363ad519507e4b921828ee2c1969272229d330700b7c6ff89a0b41",
+    "system_sha256": "696c133b15c855845b776c1bb4fbe8dfd298e37f3f50daf90e6e136d5c394f0a"
+  },
+  "started_at": "2026-10-17T10:16:38+01:00",
+  "call": {
+    "stop_reason": "tool_use",
+    "throttle_retries": 0,
+    "latency_s": 10.214,
+    "input_tokens": 1827,
+    "output_tokens": 409,
+    "cache_read_tokens": 6108,
+    "cache_write_tokens": 0
+  },
+  "judgement": {
+    "dimensions": {
+      "D2": {
+        "verdict": "partial",
+        "auto_fail": false,
+        "findings": [
+          {
+            "output_quote": "Secondary diagnoses: Not documented",
+            "note_cites": [
+              {
+                "lines": [
+                  "L002"
+                ],
+                "quote": "PMH: COPD, AF (on apixaban), HTN."
+              }
+            ],
+            "reason": "COPD, AF, and HTN are listed under Background but omitted from Secondary diagnoses \u2014 minor structural embellishment in labelling, though the clinical facts are present elsewhere; no invented clinical fact here, so this is a minor framing issue rather than hallucination."
+          },
+          {
+            "output_quote": "Respiratory / General Medicine (inferred from CAP admission with ITU review and respiratory clinic follow-up)",
+            "note_cites": [],
+            "reason": "Specialty is inferred and not documented in the notes \u2014 minor non-clinical embellishment flagged as inferred, not a clinical fact assertion."
+          }
+        ]
+      },
+      "D3": {
+        "verdict": "pass",
+        "auto_fail": false,
+        "findings": []
+      },
+      "D6": {
+        "verdict": "pass",
+        "auto_fail": false,
+        "findings": []
+      },
+      "D7": {
+        "verdict": "pass",
+        "auto_fail": false,
+        "findings": []
+      },
+      "D8": {
+        "verdict": "na",
+        "auto_fail": false,
+        "findings": []
+      }
+    }
+  },
+  "verified": {
+    "dimensions": {
+      "D2": {
+        "verdict": "partial",
+        "auto_fail": false,
+        "findings": [
+          {
+            "output_quote": "Secondary diagnoses: Not documented",
+            "note_cites": [
+              {
+                "lines": [
+                  "L002"
+                ],
+                "quote": "PMH: COPD, AF (on apixaban), HTN."
+              }
+            ],
+            "reason": "COPD, AF, and HTN are listed under Background but omitted from Secondary diagnoses \u2014 minor structural embellishment in labelling, though the clinical facts are present elsewhere; no invented clinical fact here, so this is a minor framing issue rather than hallucination."
+          },
+          {
+            "output_quote": "Respiratory / General Medicine (inferred from CAP admission with ITU review and respiratory clinic follow-up)",
+            "note_cites": [],
+            "reason": "Specialty is inferred and not documented in the notes \u2014 minor non-clinical embellishment flagged as inferred, not a clinical fact assertion."
+          }
+        ],
+        "discarded": [],
+        "evidence_ok": true
+      },
+      "D3": {
+        "verdict": "pass",
+        "auto_fail": false,
+        "findings": [],
+        "discarded": [],
+        "evidence_ok": true
+      },
+      "D6": {
+        "verdict": "pass",
+        "auto_fail": false,
+        "findings": [],
+        "discarded": [],
+        "evidence_ok": true
+      },
+      "D7": {
+        "verdict": "pass",
+        "auto_fail": false,
+        "findings": [],
+        "discarded": [],
+        "evidence_ok": true
+      },
+      "D8": {
+        "verdict": "na",
+        "auto_fail": false,
+        "findings": [],
+        "discarded": [],
+        "evidence_ok": true
+      }
+    },
+    "defects": []
+  },
+  "error": null,
+  "cost_usd_est": 0.014793,
+  "elapsed_s": 10.214
+}

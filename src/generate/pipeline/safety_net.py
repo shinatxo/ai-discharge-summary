@@ -1,9 +1,14 @@
-"""Step 5b — select_safety_net (ADR-009 [A1], (e); decision of 1 Oct 2026, CSO; HAZ-01, HAZ-03).
+"""Step 5b — select_safety_net (ADR-009 [A1], (e); CSO decisions of 1 and 23 Oct 2026; HAZ-01, HAZ-03).
 
 Code, no model. Returns TWO renderings:
 
-  PART A / B  documented advice verbatim with its citations — or, if none is
-              documented, the pinned line. Unchanged from (e).
+  PART A / B  documented advice verbatim with its citations, then AB_PINNED_LABEL
+              and the pinned line — or, if none is documented, the pinned line
+              alone. (23 Oct, amending 1 Oct: documented advice is not
+              safety-netting — S15 — so without this the clinician's summary and
+              GP letter carried no seek-help line on the documented route, 48/90
+              W4 records. The label marks the line as fixed wording addressed to
+              the patient, not something the notes or the team documented.)
   PART C      the pinned line ALWAYS, with any documented advice above it,
               verbatim. (1 Oct: a record that advice was given — S8's "Safety-net
               advice to parents re fever/feeding/breathing" — is not something a
@@ -43,6 +48,10 @@ PAEDIATRIC_LINE = (
     "worried about your child, contact your GP or call NHS 111. Call 999 if it is an "
     "emergency."
 )
+
+# CSO, 23 Oct 2026. A provenance note, not clinical content: it must carry no
+# signposting token (111 / 999 / A&E), or the gate and scorer would count it as one.
+AB_PINNED_LABEL = "Standard seek-help line in the patient version (fixed wording, not from the notes):"
 
 PAEDIATRIC_GROUPS = ("neonate", "infant", "child")
 AGE_GROUPS = PAEDIATRIC_GROUPS + ("adult", "not_documented")
@@ -88,7 +97,8 @@ def select_safety_net(inp: dict) -> dict:
     route = DOCUMENTED if advice else FALLBACK
 
     if advice:
-        part_ab = "\n".join(f'- "{a["quote"]}" {_span(a["lines"])}' for a in advice)
+        part_ab = ("\n".join(f'- "{a["quote"]}" {_span(a["lines"])}' for a in advice)
+                   + "\n\n" + AB_PINNED_LABEL + "\n" + pinned)
         part_c = "\n".join(a["quote"] for a in advice) + "\n\n" + pinned
     else:
         part_ab = pinned

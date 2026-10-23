@@ -1,0 +1,175 @@
+{
+  "judge_version": 1,
+  "judge_id": "calib-r1-x3b",
+  "repeat": 2,
+  "generation_id": "w4-baseline-v1-x5/r1/S10",
+  "scenario_id": "S10",
+  "run": 1,
+  "notes_sha256": "a00b5caaa8e251a370d8136857fd8a4d7969cc70de71013d55dbd99a5fd03229",
+  "output_sha256": "bea5fc0856f465d80dd916cc5475f4dc074bdeb82c42e86db1ea60d98797dfab",
+  "model_id": "anthropic.claude-sonnet-4-6",
+  "region": "eu-west-2",
+  "temperature": 0.0,
+  "tool_strict": false,
+  "prompt": {
+    "path": "evals/judge/judge_prompt.md",
+    "file_sha256": "03905869e7beb80569e68a60d58cfab24fb1a70696a8829f7c53f83d005e8383",
+    "instructions_sha256": "7b251e319c0ea1c2f63cf2bb70c0df438e035807bb4db909ac0f2a071c88310f",
+    "rubric_sha256": "f8291ae161363ad519507e4b921828ee2c1969272229d330700b7c6ff89a0b41",
+    "system_sha256": "696c133b15c855845b776c1bb4fbe8dfd298e37f3f50daf90e6e136d5c394f0a"
+  },
+  "started_at": "2026-10-17T08:26:05+01:00",
+  "call": {
+    "stop_reason": "tool_use",
+    "throttle_retries": 0,
+    "latency_s": 6.905,
+    "input_tokens": 4193,
+    "output_tokens": 692,
+    "cache_read_tokens": 6108,
+    "cache_write_tokens": 0
+  },
+  "judgement": {
+    "dimensions": {
+      "D2": {
+        "verdict": "fail",
+        "auto_fail": false,
+        "findings": [
+          {
+            "output_quote": "Admitted: 15/05/YYYY | Discharged: 17/05/YYYY",
+            "note_cites": [],
+            "reason": "The output uses a year placeholder 'YYYY' which, while not a specific 4-digit year, is not present in the notes; however the more significant issue is the output adds 'YYYY' as a year token to dates the notes give only as day/month. More critically, the output invents clinical content not in the notes."
+          },
+          {
+            "output_quote": "Review and confirm ongoing oral iron requirement; check haemoglobin response at an appropriate interval (timing not specified in notes \u2014 clinical judgement required).",
+            "note_cites": [],
+            "reason": "The output invents a GP action (Hb recheck) that is not documented in the notes, even though it flags it \u2014 it still asserts a clinical recommendation not present in the notes."
+          },
+          {
+            "output_quote": "Breastfeeding established by Day 2.",
+            "note_cites": [
+              {
+                "lines": [
+                  "L007"
+                ],
+                "quote": "Day 2 (16/05) Mobilising, feeding established, wound clean, lochia normal."
+              }
+            ],
+            "reason": "The notes say 'feeding established' \u2014 the output renders this as 'Breastfeeding established', adding the specific modality (breastfeeding) which is not documented in the notes."
+          }
+        ]
+      },
+      "D3": {
+        "verdict": "pass",
+        "auto_fail": false,
+        "findings": []
+      },
+      "D6": {
+        "verdict": "partial",
+        "auto_fail": false,
+        "findings": [
+          {
+            "output_quote": "If you become unwell or are worried about anything, contact your GP or call NHS 111. Call 999 if it is an emergency.",
+            "note_cites": [
+              {
+                "lines": [
+                  "L010"
+                ],
+                "quote": "Safety-net re PPH/sepsis/VTE."
+              }
+            ],
+            "reason": "The notes document specific safety-netting for PPH, sepsis, and VTE; the patient version replaces this with a generic 'if you are worried' instruction, losing the specific conditions the patient was told to watch for, making the instruction less precise in scope."
+          }
+        ]
+      },
+      "D7": {
+        "verdict": "pass",
+        "auto_fail": false,
+        "findings": []
+      },
+      "D8": {
+        "verdict": "na",
+        "auto_fail": false,
+        "findings": []
+      }
+    }
+  },
+  "verified": {
+    "dimensions": {
+      "D2": {
+        "verdict": "fail",
+        "auto_fail": false,
+        "findings": [
+          {
+            "output_quote": "Admitted: 15/05/YYYY | Discharged: 17/05/YYYY",
+            "note_cites": [],
+            "reason": "The output uses a year placeholder 'YYYY' which, while not a specific 4-digit year, is not present in the notes; however the more significant issue is the output adds 'YYYY' as a year token to dates the notes give only as day/month. More critically, the output invents clinical content not in the notes."
+          },
+          {
+            "output_quote": "Review and confirm ongoing oral iron requirement; check haemoglobin response at an appropriate interval (timing not specified in notes \u2014 clinical judgement required).",
+            "note_cites": [],
+            "reason": "The output invents a GP action (Hb recheck) that is not documented in the notes, even though it flags it \u2014 it still asserts a clinical recommendation not present in the notes."
+          },
+          {
+            "output_quote": "Breastfeeding established by Day 2.",
+            "note_cites": [
+              {
+                "lines": [
+                  "L007"
+                ],
+                "quote": "Day 2 (16/05) Mobilising, feeding established, wound clean, lochia normal."
+              }
+            ],
+            "reason": "The notes say 'feeding established' \u2014 the output renders this as 'Breastfeeding established', adding the specific modality (breastfeeding) which is not documented in the notes."
+          }
+        ],
+        "discarded": [],
+        "evidence_ok": true
+      },
+      "D3": {
+        "verdict": "pass",
+        "auto_fail": false,
+        "findings": [],
+        "discarded": [],
+        "evidence_ok": true
+      },
+      "D6": {
+        "verdict": "partial",
+        "auto_fail": false,
+        "findings": [
+          {
+            "output_quote": "If you become unwell or are worried about anything, contact your GP or call NHS 111. Call 999 if it is an emergency.",
+            "note_cites": [
+              {
+                "lines": [
+                  "L010"
+                ],
+                "quote": "Safety-net re PPH/sepsis/VTE."
+              }
+            ],
+            "reason": "The notes document specific safety-netting for PPH, sepsis, and VTE; the patient version replaces this with a generic 'if you are worried' instruction, losing the specific conditions the patient was told to watch for, making the instruction less precise in scope."
+          }
+        ],
+        "discarded": [],
+        "evidence_ok": true
+      },
+      "D7": {
+        "verdict": "pass",
+        "auto_fail": false,
+        "findings": [],
+        "discarded": [],
+        "evidence_ok": true
+      },
+      "D8": {
+        "verdict": "na",
+        "auto_fail": false,
+        "findings": [],
+        "discarded": [],
+        "evidence_ok": true
+      }
+    },
+    "defects": []
+  },
+  "error": null,
+  "cost_usd_est": 0.027271,
+  "elapsed_s": 6.905
+}

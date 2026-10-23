@@ -1,0 +1,279 @@
+{
+  "judge_version": 1,
+  "judge_id": "calib-r1-x3b",
+  "repeat": 2,
+  "generation_id": "w4-baseline-v1-x5/r1/S3",
+  "scenario_id": "S3",
+  "run": 1,
+  "notes_sha256": "c8882fcefb7f24fb39b45a7bb32cb6bfeb5481df37eff450606bec809ab51ef1",
+  "output_sha256": "0c22381f12d30badc3f372cdac9d899f533a3d8144bd0efb7b6bd4153c13a138",
+  "model_id": "anthropic.claude-sonnet-4-6",
+  "region": "eu-west-2",
+  "temperature": 0.0,
+  "tool_strict": false,
+  "prompt": {
+    "path": "evals/judge/judge_prompt.md",
+    "file_sha256": "03905869e7beb80569e68a60d58cfab24fb1a70696a8829f7c53f83d005e8383",
+    "instructions_sha256": "7b251e319c0ea1c2f63cf2bb70c0df438e035807bb4db909ac0f2a071c88310f",
+    "rubric_sha256": "f8291ae161363ad519507e4b921828ee2c1969272229d330700b7c6ff89a0b41",
+    "system_sha256": "696c133b15c855845b776c1bb4fbe8dfd298e37f3f50daf90e6e136d5c394f0a"
+  },
+  "started_at": "2026-10-17T08:25:59+01:00",
+  "call": {
+    "stop_reason": "tool_use",
+    "throttle_retries": 0,
+    "latency_s": 12.28,
+    "input_tokens": 3644,
+    "output_tokens": 1247,
+    "cache_read_tokens": 6108,
+    "cache_write_tokens": 0
+  },
+  "judgement": {
+    "dimensions": {
+      "D2": {
+        "verdict": "fail",
+        "auto_fail": false,
+        "findings": [
+          {
+            "output_quote": "Admitted: 18/05/2025 | Discharged: 23/05/2025",
+            "note_cites": [
+              {
+                "lines": [
+                  "L001"
+                ],
+                "quote": "Day 1 (18/05)"
+              }
+            ],
+            "reason": "Added year '2025' to dates that appear in the notes only as day/month \u2014 the notes contain no year."
+          },
+          {
+            "output_quote": "Sertraline 50 mg once daily commenced on Day 3 (20/05/2025).",
+            "note_cites": [
+              {
+                "lines": [
+                  "L014"
+                ],
+                "quote": "Day 3 (20/05) Engaging well w/ ward. Started sertraline 50mg OD."
+              }
+            ],
+            "reason": "Added year '2025' to a date the notes give only as day/month."
+          },
+          {
+            "output_quote": "approximately 30/05/2025",
+            "note_cites": [
+              {
+                "lines": [
+                  "L021"
+                ],
+                "quote": "CMHT f/u 1/52"
+              }
+            ],
+            "reason": "Added year '2025' to a derived date not present in the notes at all."
+          },
+          {
+            "output_quote": "approximately 20/06/2025",
+            "note_cites": [
+              {
+                "lines": [
+                  "L021"
+                ],
+                "quote": "review dose at 4/52"
+              }
+            ],
+            "reason": "Added year '2025' to a derived date not present in the notes at all."
+          }
+        ]
+      },
+      "D3": {
+        "verdict": "pass",
+        "auto_fail": false,
+        "findings": []
+      },
+      "D6": {
+        "verdict": "pass",
+        "auto_fail": false,
+        "findings": []
+      },
+      "D7": {
+        "verdict": "partial",
+        "auto_fail": false,
+        "findings": [
+          {
+            "output_quote": "At admission (18/05/2025):\n  Self-harm / suicide risk: Moderate-high. Active suicidal ideation with\n  thoughts of overdose; no formed plan or intent at that time, but ideation\n  escalating.",
+            "note_cites": [
+              {
+                "lines": [
+                  "L015"
+                ],
+                "quote": "SI less intense, now passive."
+              }
+            ],
+            "reason": "The risk assessment section in PART A presents the admission risk status without clearly distinguishing it from the discharge status in a way that could mislead; however the document does separately document the discharge status, so this is imprecision in temporal framing rather than a polarity inversion \u2014 partial rather than fail."
+          },
+          {
+            "output_quote": "Suicidal ideation reduced from active to fleeting and passive by Day 5, with no intent and future-oriented thinking",
+            "note_cites": [
+              {
+                "lines": [
+                  "L017",
+                  "L018"
+                ],
+                "quote": "Day 5 (22/05) MDT. Mood improving, SI fleeting/passive, no intent, future-oriented"
+              }
+            ],
+            "reason": "Day 5 SI status is correctly captured; however the output omits the intermediate Day 3 improvement ('SI less intense, now passive') making the temporal progression imprecise \u2014 a minor timing imprecision on a fact that does not drive action."
+          }
+        ]
+      },
+      "D8": {
+        "verdict": "partial",
+        "auto_fail": false,
+        "findings": [
+          {
+            "output_quote": "Safeguarding note: Two children at home (ages 8 and 11). Social context was\nnoted for exploration at admission. Please confirm with the inpatient team\nwhether any safeguarding actions were taken or remain outstanding, as this is\nnot documented in the discharge notes.",
+            "note_cites": [
+              {
+                "lines": [
+                  "L008",
+                  "L009",
+                  "L010"
+                ],
+                "quote": "Risk: self \u2014 moderate-high (active SI, escalating). Protective: 2 children, help-seeking,\nfuture-oriented. Others \u2014 nil. Safeguarding: 2 children at home (ages 8 + 11), social\ncontext to be explored, no immediate concerns flagged."
+              }
+            ],
+            "reason": "The safeguarding note (D8 withheld-category content per R2) is included in PART B (the GP letter), which is visible to the patient in PART C context \u2014 however PART C itself does not contain the safeguarding content. The risk assessment content (L008\u2013L010) is also reproduced in PART A in full detail. PART C correctly omits the safeguarding and risk assessment content, but the document does not explicitly tell the clinician in PART A/B that this content was withheld from PART C \u2014 the flags section mentions safeguarding but not that it was deliberately kept from the patient version. This is a silent omission from PART C without the required clinician notification."
+          }
+        ]
+      }
+    }
+  },
+  "verified": {
+    "dimensions": {
+      "D2": {
+        "verdict": "fail",
+        "auto_fail": false,
+        "findings": [
+          {
+            "output_quote": "Admitted: 18/05/2025 | Discharged: 23/05/2025",
+            "note_cites": [
+              {
+                "lines": [
+                  "L001"
+                ],
+                "quote": "Day 1 (18/05)"
+              }
+            ],
+            "reason": "Added year '2025' to dates that appear in the notes only as day/month \u2014 the notes contain no year."
+          },
+          {
+            "output_quote": "Sertraline 50 mg once daily commenced on Day 3 (20/05/2025).",
+            "note_cites": [
+              {
+                "lines": [
+                  "L014"
+                ],
+                "quote": "Day 3 (20/05) Engaging well w/ ward. Started sertraline 50mg OD."
+              }
+            ],
+            "reason": "Added year '2025' to a date the notes give only as day/month."
+          },
+          {
+            "output_quote": "approximately 30/05/2025",
+            "note_cites": [
+              {
+                "lines": [
+                  "L021"
+                ],
+                "quote": "CMHT f/u 1/52"
+              }
+            ],
+            "reason": "Added year '2025' to a derived date not present in the notes at all."
+          },
+          {
+            "output_quote": "approximately 20/06/2025",
+            "note_cites": [
+              {
+                "lines": [
+                  "L021"
+                ],
+                "quote": "review dose at 4/52"
+              }
+            ],
+            "reason": "Added year '2025' to a derived date not present in the notes at all."
+          }
+        ],
+        "discarded": [],
+        "evidence_ok": true
+      },
+      "D3": {
+        "verdict": "pass",
+        "auto_fail": false,
+        "findings": [],
+        "discarded": [],
+        "evidence_ok": true
+      },
+      "D6": {
+        "verdict": "pass",
+        "auto_fail": false,
+        "findings": [],
+        "discarded": [],
+        "evidence_ok": true
+      },
+      "D7": {
+        "verdict": "partial",
+        "auto_fail": false,
+        "findings": [
+          {
+            "output_quote": "At admission (18/05/2025):\n  Self-harm / suicide risk: Moderate-high. Active suicidal ideation with\n  thoughts of overdose; no formed plan or intent at that time, but ideation\n  escalating.",
+            "note_cites": [
+              {
+                "lines": [
+                  "L015"
+                ],
+                "quote": "SI less intense, now passive."
+              }
+            ],
+            "reason": "The risk assessment section in PART A presents the admission risk status without clearly distinguishing it from the discharge status in a way that could mislead; however the document does separately document the discharge status, so this is imprecision in temporal framing rather than a polarity inversion \u2014 partial rather than fail."
+          },
+          {
+            "output_quote": "Suicidal ideation reduced from active to fleeting and passive by Day 5, with no intent and future-oriented thinking",
+            "note_cites": [
+              {
+                "lines": [
+                  "L017",
+                  "L018"
+                ],
+                "quote": "Day 5 (22/05) MDT. Mood improving, SI fleeting/passive, no intent, future-oriented"
+              }
+            ],
+            "reason": "Day 5 SI status is correctly captured; however the output omits the intermediate Day 3 improvement ('SI less intense, now passive') making the temporal progression imprecise \u2014 a minor timing imprecision on a fact that does not drive action."
+          }
+        ],
+        "discarded": [],
+        "evidence_ok": true
+      },
+      "D8": {
+        "verdict": "partial",
+        "auto_fail": false,
+        "findings": [],
+        "discarded": [
+          {
+            "index": 0,
+            "reason": "output_quote_too_long"
+          }
+        ],
+        "evidence_ok": false
+      }
+    },
+    "defects": [
+      {
+        "dimension": "D8",
+        "index": 0,
+        "reason": "output_quote_too_long"
+      }
+    ]
+  },
+  "error": null,
+  "cost_usd_est": 0.034616,
+  "elapsed_s": 12.28
+}

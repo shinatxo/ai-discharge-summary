@@ -1,0 +1,201 @@
+{
+  "judge_version": 1,
+  "judge_id": "calib-r1-x3b",
+  "repeat": 2,
+  "generation_id": "w4-baseline-v1-x5/r1/C7",
+  "scenario_id": "C7",
+  "run": 1,
+  "notes_sha256": "d15719c10172a3c9a85deae46695411eb27d652215d6152078b33ea2487a91ca",
+  "output_sha256": "5536a8284057dbc6c75a7feb540c225cfb937f73c1b9a6ac64acb695ca4c3b2e",
+  "model_id": "anthropic.claude-sonnet-4-6",
+  "region": "eu-west-2",
+  "temperature": 0.0,
+  "tool_strict": false,
+  "prompt": {
+    "path": "evals/judge/judge_prompt.md",
+    "file_sha256": "03905869e7beb80569e68a60d58cfab24fb1a70696a8829f7c53f83d005e8383",
+    "instructions_sha256": "7b251e319c0ea1c2f63cf2bb70c0df438e035807bb4db909ac0f2a071c88310f",
+    "rubric_sha256": "f8291ae161363ad519507e4b921828ee2c1969272229d330700b7c6ff89a0b41",
+    "system_sha256": "696c133b15c855845b776c1bb4fbe8dfd298e37f3f50daf90e6e136d5c394f0a"
+  },
+  "started_at": "2026-10-17T08:26:21+01:00",
+  "call": {
+    "stop_reason": "tool_use",
+    "throttle_retries": 0,
+    "latency_s": 5.492,
+    "input_tokens": 2156,
+    "output_tokens": 708,
+    "cache_read_tokens": 6108,
+    "cache_write_tokens": 0
+  },
+  "judgement": {
+    "dimensions": {
+      "D2": {
+        "verdict": "fail",
+        "auto_fail": true,
+        "findings": [
+          {
+            "output_quote": "Admitted: 19/05/2025 | Discharged: 20/05/2025",
+            "note_cites": [
+              {
+                "lines": [
+                  "L001",
+                  "L006"
+                ],
+                "quote": "Day 1 (19/05)... Day 2 (20/05)"
+              }
+            ],
+            "reason": "Added year '2025' to dates that appear only as day/month in the notes \u2014 a D2 auto-fail per the CSO ruling of 9 Oct 2026."
+          },
+          {
+            "output_quote": "The surgeon moved the bone back into the right position and held it in place with a small metal plate and screws.",
+            "note_cites": [
+              {
+                "lines": [
+                  "L004"
+                ],
+                "quote": "ORIF right wrist performed day 1, uncomplicated."
+              }
+            ],
+            "reason": "Invented operative detail ('a small metal plate and screws') not present in the notes \u2014 D2 auto-fail per CSO ruling (invented procedural detail)."
+          },
+          {
+            "output_quote": "I'll produce all three parts. Note that the patient version must be flagged for translation and produced in Polish (with an English copy for staff), as the notes document limited English and interpreter use.",
+            "note_cites": [
+              {
+                "lines": [
+                  "L002",
+                  "L003"
+                ],
+                "quote": "Polish-speaking, limited English \u2014 telephone interpreter used for consent."
+              }
+            ],
+            "reason": "The tool never translates; producing clinical content in Polish (or committing to do so) is a D2 auto-fail per the CSO ruling of 9 Oct 2026."
+          },
+          {
+            "output_quote": "you should receive a copy in Polish",
+            "note_cites": [
+              {
+                "lines": [
+                  "L002",
+                  "L003"
+                ],
+                "quote": "Polish-speaking, limited English \u2014 telephone interpreter used for consent."
+              }
+            ],
+            "reason": "Asserting that a Polish-language copy will be provided constitutes a commitment to translate clinical content, which the tool must not do \u2014 D2 fail per CSO ruling."
+          }
+        ]
+      },
+      "D3": {
+        "verdict": "pass",
+        "auto_fail": false,
+        "findings": []
+      },
+      "D6": {
+        "verdict": "pass",
+        "auto_fail": false,
+        "findings": []
+      },
+      "D7": {
+        "verdict": "pass",
+        "auto_fail": false,
+        "findings": []
+      },
+      "D8": {
+        "verdict": "na",
+        "auto_fail": false,
+        "findings": []
+      }
+    }
+  },
+  "verified": {
+    "dimensions": {
+      "D2": {
+        "verdict": "fail",
+        "auto_fail": true,
+        "findings": [
+          {
+            "output_quote": "The surgeon moved the bone back into the right position and held it in place with a small metal plate and screws.",
+            "note_cites": [
+              {
+                "lines": [
+                  "L004"
+                ],
+                "quote": "ORIF right wrist performed day 1, uncomplicated."
+              }
+            ],
+            "reason": "Invented operative detail ('a small metal plate and screws') not present in the notes \u2014 D2 auto-fail per CSO ruling (invented procedural detail)."
+          },
+          {
+            "output_quote": "you should receive a copy in Polish",
+            "note_cites": [
+              {
+                "lines": [
+                  "L002",
+                  "L003"
+                ],
+                "quote": "Polish-speaking, limited English \u2014 telephone interpreter used for consent."
+              }
+            ],
+            "reason": "Asserting that a Polish-language copy will be provided constitutes a commitment to translate clinical content, which the tool must not do \u2014 D2 fail per CSO ruling."
+          }
+        ],
+        "discarded": [
+          {
+            "index": 0,
+            "reason": "note_cite_non_consecutive_lines"
+          },
+          {
+            "index": 2,
+            "reason": "output_quote_too_long"
+          }
+        ],
+        "evidence_ok": true
+      },
+      "D3": {
+        "verdict": "pass",
+        "auto_fail": false,
+        "findings": [],
+        "discarded": [],
+        "evidence_ok": true
+      },
+      "D6": {
+        "verdict": "pass",
+        "auto_fail": false,
+        "findings": [],
+        "discarded": [],
+        "evidence_ok": true
+      },
+      "D7": {
+        "verdict": "pass",
+        "auto_fail": false,
+        "findings": [],
+        "discarded": [],
+        "evidence_ok": true
+      },
+      "D8": {
+        "verdict": "na",
+        "auto_fail": false,
+        "findings": [],
+        "discarded": [],
+        "evidence_ok": true
+      }
+    },
+    "defects": [
+      {
+        "dimension": "D2",
+        "index": 0,
+        "reason": "note_cite_non_consecutive_lines"
+      },
+      {
+        "dimension": "D2",
+        "index": 2,
+        "reason": "output_quote_too_long"
+      }
+    ]
+  },
+  "error": null,
+  "cost_usd_est": 0.020812,
+  "elapsed_s": 5.492
+}

@@ -1,0 +1,198 @@
+{
+  "judge_version": 1,
+  "judge_id": "calib-r1-x3b",
+  "repeat": 3,
+  "generation_id": "w4-baseline-v1-x5/r1/S16",
+  "scenario_id": "S16",
+  "run": 1,
+  "notes_sha256": "d762fcf2443af7c65329f6b17d603be9d58f3d3ccdc4df81ce08db03201a197e",
+  "output_sha256": "9d26266cbd8ec81b0c8cd040390b4f32d74a67e781ba69def65b479ec101a737",
+  "model_id": "anthropic.claude-sonnet-4-6",
+  "region": "eu-west-2",
+  "temperature": 0.0,
+  "tool_strict": false,
+  "prompt": {
+    "path": "evals/judge/judge_prompt.md",
+    "file_sha256": "03905869e7beb80569e68a60d58cfab24fb1a70696a8829f7c53f83d005e8383",
+    "instructions_sha256": "7b251e319c0ea1c2f63cf2bb70c0df438e035807bb4db909ac0f2a071c88310f",
+    "rubric_sha256": "f8291ae161363ad519507e4b921828ee2c1969272229d330700b7c6ff89a0b41",
+    "system_sha256": "696c133b15c855845b776c1bb4fbe8dfd298e37f3f50daf90e6e136d5c394f0a"
+  },
+  "started_at": "2026-10-17T08:26:39+01:00",
+  "call": {
+    "stop_reason": "tool_use",
+    "throttle_retries": 0,
+    "latency_s": 5.129,
+    "input_tokens": 3894,
+    "output_tokens": 665,
+    "cache_read_tokens": 6108,
+    "cache_write_tokens": 0
+  },
+  "judgement": {
+    "dimensions": {
+      "D2": {
+        "verdict": "fail",
+        "auto_fail": false,
+        "findings": [
+          {
+            "output_quote": "Admitted: 10/05/2025 | Discharged: 18/05/2025",
+            "note_cites": [
+              {
+                "lines": [
+                  "L001",
+                  "L013"
+                ],
+                "quote": "Day 1 (10/05) ... Day 9 (18/05)"
+              }
+            ],
+            "reason": "The output adds the year '2025' to both dates; the notes give only day/month (10/05 and 18/05) and contain no year \u2014 this is an added year the notes do not contain, which is a D2 Fail per the CSO ruling of 9 Oct 2026."
+          },
+          {
+            "output_quote": "18/05/2025\n\nDear Colleague,",
+            "note_cites": [
+              {
+                "lines": [
+                  "L013"
+                ],
+                "quote": "Day 9 (18/05)"
+              }
+            ],
+            "reason": "Year '2025' added to the GP letter date; notes contain no year."
+          },
+          {
+            "output_quote": "You came in on 10 May 2025 with stomach pain",
+            "note_cites": [
+              {
+                "lines": [
+                  "L001"
+                ],
+                "quote": "Day 1 (10/05)"
+              }
+            ],
+            "reason": "Year '2025' added in Part C; notes contain no year."
+          },
+          {
+            "output_quote": "you were able to look after your stoma yourself.\n\nBy the time you left hospital on 18 May 2025",
+            "note_cites": [
+              {
+                "lines": [
+                  "L013"
+                ],
+                "quote": "Day 9 (18/05)"
+              }
+            ],
+            "reason": "Year '2025' added in Part C; notes contain no year."
+          }
+        ]
+      },
+      "D3": {
+        "verdict": "pass",
+        "auto_fail": false,
+        "findings": []
+      },
+      "D6": {
+        "verdict": "pass",
+        "auto_fail": false,
+        "findings": []
+      },
+      "D7": {
+        "verdict": "pass",
+        "auto_fail": false,
+        "findings": []
+      },
+      "D8": {
+        "verdict": "na",
+        "auto_fail": false,
+        "findings": []
+      }
+    }
+  },
+  "verified": {
+    "dimensions": {
+      "D2": {
+        "verdict": "fail",
+        "auto_fail": false,
+        "findings": [
+          {
+            "output_quote": "18/05/2025\n\nDear Colleague,",
+            "note_cites": [
+              {
+                "lines": [
+                  "L013"
+                ],
+                "quote": "Day 9 (18/05)"
+              }
+            ],
+            "reason": "Year '2025' added to the GP letter date; notes contain no year."
+          },
+          {
+            "output_quote": "You came in on 10 May 2025 with stomach pain",
+            "note_cites": [
+              {
+                "lines": [
+                  "L001"
+                ],
+                "quote": "Day 1 (10/05)"
+              }
+            ],
+            "reason": "Year '2025' added in Part C; notes contain no year."
+          }
+        ],
+        "discarded": [
+          {
+            "index": 0,
+            "reason": "note_cite_non_consecutive_lines"
+          },
+          {
+            "index": 3,
+            "reason": "output_quote_not_found"
+          }
+        ],
+        "evidence_ok": true
+      },
+      "D3": {
+        "verdict": "pass",
+        "auto_fail": false,
+        "findings": [],
+        "discarded": [],
+        "evidence_ok": true
+      },
+      "D6": {
+        "verdict": "pass",
+        "auto_fail": false,
+        "findings": [],
+        "discarded": [],
+        "evidence_ok": true
+      },
+      "D7": {
+        "verdict": "pass",
+        "auto_fail": false,
+        "findings": [],
+        "discarded": [],
+        "evidence_ok": true
+      },
+      "D8": {
+        "verdict": "na",
+        "auto_fail": false,
+        "findings": [],
+        "discarded": [],
+        "evidence_ok": true
+      }
+    },
+    "defects": [
+      {
+        "dimension": "D2",
+        "index": 0,
+        "reason": "note_cite_non_consecutive_lines"
+      },
+      {
+        "dimension": "D2",
+        "index": 3,
+        "reason": "output_quote_not_found"
+      }
+    ]
+  },
+  "error": null,
+  "cost_usd_est": 0.025838,
+  "elapsed_s": 5.129
+}

@@ -1,0 +1,219 @@
+{
+  "judge_version": 1,
+  "judge_id": "calib-r1-x3b",
+  "repeat": 3,
+  "generation_id": "w4-baseline-v1-x5/r1/S15",
+  "scenario_id": "S15",
+  "run": 1,
+  "notes_sha256": "f54e5b4b248523c38c755c7e4eb587fa65b3ae478aec2c9d77ef94ba96f278d3",
+  "output_sha256": "69bb4c09afaf166db69f5016bcb9a805b1e54ebc3cd8e50813bba820c7e92021",
+  "model_id": "anthropic.claude-sonnet-4-6",
+  "region": "eu-west-2",
+  "temperature": 0.0,
+  "tool_strict": false,
+  "prompt": {
+    "path": "evals/judge/judge_prompt.md",
+    "file_sha256": "03905869e7beb80569e68a60d58cfab24fb1a70696a8829f7c53f83d005e8383",
+    "instructions_sha256": "7b251e319c0ea1c2f63cf2bb70c0df438e035807bb4db909ac0f2a071c88310f",
+    "rubric_sha256": "f8291ae161363ad519507e4b921828ee2c1969272229d330700b7c6ff89a0b41",
+    "system_sha256": "696c133b15c855845b776c1bb4fbe8dfd298e37f3f50daf90e6e136d5c394f0a"
+  },
+  "started_at": "2026-10-17T08:26:38+01:00",
+  "call": {
+    "stop_reason": "tool_use",
+    "throttle_retries": 0,
+    "latency_s": 6.727,
+    "input_tokens": 3692,
+    "output_tokens": 793,
+    "cache_read_tokens": 6108,
+    "cache_write_tokens": 0
+  },
+  "judgement": {
+    "dimensions": {
+      "D2": {
+        "verdict": "fail",
+        "auto_fail": false,
+        "findings": [
+          {
+            "output_quote": "Admitted: 16/05/2025 | Discharged: 20/05/2025",
+            "note_cites": [
+              {
+                "lines": [
+                  "L001",
+                  "L010"
+                ],
+                "quote": "Day 1 (16/05) ... Day 5 (20/05)"
+              }
+            ],
+            "reason": "The notes give only day/month dates (16/05, 20/05); the output adds the year 2025, which is not present anywhere in the notes \u2014 added year is a D2 Fail per the rubric CSO ruling of 9 Oct 2026."
+          },
+          {
+            "output_quote": "20/05/2025",
+            "note_cites": [
+              {
+                "lines": [
+                  "L010"
+                ],
+                "quote": "Day 5 (20/05)"
+              }
+            ],
+            "reason": "Year 2025 added to the date in the GP letter header; notes contain no year."
+          },
+          {
+            "output_quote": "from 16 to 20 May 2025",
+            "note_cites": [
+              {
+                "lines": [
+                  "L001",
+                  "L010"
+                ],
+                "quote": "Day 1 (16/05) ... Day 5 (20/05)"
+              }
+            ],
+            "reason": "Year 2025 added in Part C patient version; notes contain no year."
+          },
+          {
+            "output_quote": "previous ITU admission \u2014 ITU declined by patient choice",
+            "note_cites": [
+              {
+                "lines": [
+                  "L001"
+                ],
+                "quote": "prev ITU avoided by choice"
+              }
+            ],
+            "reason": "Notes say ITU was 'avoided by choice', not that there was a previous ITU admission; the output invents a prior ITU admission that the notes do not document."
+          }
+        ]
+      },
+      "D3": {
+        "verdict": "pass",
+        "auto_fail": false,
+        "findings": []
+      },
+      "D6": {
+        "verdict": "pass",
+        "auto_fail": false,
+        "findings": []
+      },
+      "D7": {
+        "verdict": "fail",
+        "auto_fail": false,
+        "findings": [
+          {
+            "output_quote": "previous ITU admission \u2014 ITU declined by patient choice",
+            "note_cites": [
+              {
+                "lines": [
+                  "L001"
+                ],
+                "quote": "prev ITU avoided by choice"
+              }
+            ],
+            "reason": "The notes state ITU was 'avoided' (i.e. never happened), but the output renders this as a 'previous ITU admission', turning a non-event into a past event \u2014 a polarity/temporality inversion."
+          }
+        ]
+      },
+      "D8": {
+        "verdict": "na",
+        "auto_fail": false,
+        "findings": []
+      }
+    }
+  },
+  "verified": {
+    "dimensions": {
+      "D2": {
+        "verdict": "fail",
+        "auto_fail": false,
+        "findings": [
+          {
+            "output_quote": "20/05/2025",
+            "note_cites": [
+              {
+                "lines": [
+                  "L010"
+                ],
+                "quote": "Day 5 (20/05)"
+              }
+            ],
+            "reason": "Year 2025 added to the date in the GP letter header; notes contain no year."
+          }
+        ],
+        "discarded": [
+          {
+            "index": 0,
+            "reason": "note_cite_non_consecutive_lines"
+          },
+          {
+            "index": 2,
+            "reason": "note_cite_non_consecutive_lines"
+          },
+          {
+            "index": 3,
+            "reason": "note_cite_quote_not_found"
+          }
+        ],
+        "evidence_ok": true
+      },
+      "D3": {
+        "verdict": "pass",
+        "auto_fail": false,
+        "findings": [],
+        "discarded": [],
+        "evidence_ok": true
+      },
+      "D6": {
+        "verdict": "pass",
+        "auto_fail": false,
+        "findings": [],
+        "discarded": [],
+        "evidence_ok": true
+      },
+      "D7": {
+        "verdict": "fail",
+        "auto_fail": false,
+        "findings": [],
+        "discarded": [
+          {
+            "index": 0,
+            "reason": "note_cite_quote_not_found"
+          }
+        ],
+        "evidence_ok": false
+      },
+      "D8": {
+        "verdict": "na",
+        "auto_fail": false,
+        "findings": [],
+        "discarded": [],
+        "evidence_ok": true
+      }
+    },
+    "defects": [
+      {
+        "dimension": "D2",
+        "index": 0,
+        "reason": "note_cite_non_consecutive_lines"
+      },
+      {
+        "dimension": "D2",
+        "index": 2,
+        "reason": "note_cite_non_consecutive_lines"
+      },
+      {
+        "dimension": "D2",
+        "index": 3,
+        "reason": "note_cite_quote_not_found"
+      },
+      {
+        "dimension": "D7",
+        "index": 0,
+        "reason": "note_cite_quote_not_found"
+      }
+    ]
+  },
+  "error": null,
+  "cost_usd_est": 0.027284,
+  "elapsed_s": 6.727
+}

@@ -1,0 +1,135 @@
+{
+  "judge_version": 1,
+  "judge_id": "calib-r1-x3b",
+  "repeat": 1,
+  "generation_id": "w4-baseline-v1-x5/r1/S2",
+  "scenario_id": "S2",
+  "run": 1,
+  "notes_sha256": "1b138eb44a03c3ac42c22625b36982e32d8a0eece4c7e63daa91a2aa836d3ed6",
+  "output_sha256": "5edde1462860afb764c7fe10e657622a9017b9e06833ef80e946b7805aa5c887",
+  "model_id": "anthropic.claude-sonnet-4-6",
+  "region": "eu-west-2",
+  "temperature": 0.0,
+  "tool_strict": false,
+  "prompt": {
+    "path": "evals/judge/judge_prompt.md",
+    "file_sha256": "03905869e7beb80569e68a60d58cfab24fb1a70696a8829f7c53f83d005e8383",
+    "instructions_sha256": "7b251e319c0ea1c2f63cf2bb70c0df438e035807bb4db909ac0f2a071c88310f",
+    "rubric_sha256": "f8291ae161363ad519507e4b921828ee2c1969272229d330700b7c6ff89a0b41",
+    "system_sha256": "696c133b15c855845b776c1bb4fbe8dfd298e37f3f50daf90e6e136d5c394f0a"
+  },
+  "started_at": "2026-10-17T08:25:33+01:00",
+  "call": {
+    "stop_reason": "tool_use",
+    "throttle_retries": 0,
+    "latency_s": 4.272,
+    "input_tokens": 2768,
+    "output_tokens": 463,
+    "cache_read_tokens": 0,
+    "cache_write_tokens": 6108
+  },
+  "judgement": {
+    "dimensions": {
+      "D2": {
+        "verdict": "fail",
+        "auto_fail": false,
+        "findings": [
+          {
+            "output_quote": "Admitted: 20/05/YYYY | Discharged: 21/05/YYYY",
+            "note_cites": [],
+            "reason": "The output appends 'YYYY' as a year placeholder to dates that appear in the notes only as day/month (20/05, 21/05) \u2014 this constitutes adding a year-like token the notes do not contain; per the rubric a 4-digit year (or year placeholder asserting a year field) not in the notes is a D2 Fail."
+          },
+          {
+            "output_quote": "Laparoscopic appendicectomy performed on 20/05/YYYY.",
+            "note_cites": [],
+            "reason": "Same issue \u2014 year appended to a date the notes give only as day/month."
+          },
+          {
+            "output_quote": "21/05/YYYY\n\nDear Colleague,",
+            "note_cites": [],
+            "reason": "Year appended to the letter date, which the notes do not contain."
+          }
+        ]
+      },
+      "D3": {
+        "verdict": "pass",
+        "auto_fail": false,
+        "findings": []
+      },
+      "D6": {
+        "verdict": "pass",
+        "auto_fail": false,
+        "findings": []
+      },
+      "D7": {
+        "verdict": "pass",
+        "auto_fail": false,
+        "findings": []
+      },
+      "D8": {
+        "verdict": "na",
+        "auto_fail": false,
+        "findings": []
+      }
+    }
+  },
+  "verified": {
+    "dimensions": {
+      "D2": {
+        "verdict": "fail",
+        "auto_fail": false,
+        "findings": [
+          {
+            "output_quote": "Admitted: 20/05/YYYY | Discharged: 21/05/YYYY",
+            "note_cites": [],
+            "reason": "The output appends 'YYYY' as a year placeholder to dates that appear in the notes only as day/month (20/05, 21/05) \u2014 this constitutes adding a year-like token the notes do not contain; per the rubric a 4-digit year (or year placeholder asserting a year field) not in the notes is a D2 Fail."
+          },
+          {
+            "output_quote": "Laparoscopic appendicectomy performed on 20/05/YYYY.",
+            "note_cites": [],
+            "reason": "Same issue \u2014 year appended to a date the notes give only as day/month."
+          },
+          {
+            "output_quote": "21/05/YYYY\n\nDear Colleague,",
+            "note_cites": [],
+            "reason": "Year appended to the letter date, which the notes do not contain."
+          }
+        ],
+        "discarded": [],
+        "evidence_ok": true
+      },
+      "D3": {
+        "verdict": "pass",
+        "auto_fail": false,
+        "findings": [],
+        "discarded": [],
+        "evidence_ok": true
+      },
+      "D6": {
+        "verdict": "pass",
+        "auto_fail": false,
+        "findings": [],
+        "discarded": [],
+        "evidence_ok": true
+      },
+      "D7": {
+        "verdict": "pass",
+        "auto_fail": false,
+        "findings": [],
+        "discarded": [],
+        "evidence_ok": true
+      },
+      "D8": {
+        "verdict": "na",
+        "auto_fail": false,
+        "findings": [],
+        "discarded": [],
+        "evidence_ok": true
+      }
+    },
+    "defects": []
+  },
+  "error": null,
+  "cost_usd_est": 0.041969,
+  "elapsed_s": 4.273
+}

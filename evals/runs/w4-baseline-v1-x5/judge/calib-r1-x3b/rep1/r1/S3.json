@@ -1,0 +1,239 @@
+{
+  "judge_version": 1,
+  "judge_id": "calib-r1-x3b",
+  "repeat": 1,
+  "generation_id": "w4-baseline-v1-x5/r1/S3",
+  "scenario_id": "S3",
+  "run": 1,
+  "notes_sha256": "c8882fcefb7f24fb39b45a7bb32cb6bfeb5481df37eff450606bec809ab51ef1",
+  "output_sha256": "0c22381f12d30badc3f372cdac9d899f533a3d8144bd0efb7b6bd4153c13a138",
+  "model_id": "anthropic.claude-sonnet-4-6",
+  "region": "eu-west-2",
+  "temperature": 0.0,
+  "tool_strict": false,
+  "prompt": {
+    "path": "evals/judge/judge_prompt.md",
+    "file_sha256": "03905869e7beb80569e68a60d58cfab24fb1a70696a8829f7c53f83d005e8383",
+    "instructions_sha256": "7b251e319c0ea1c2f63cf2bb70c0df438e035807bb4db909ac0f2a071c88310f",
+    "rubric_sha256": "f8291ae161363ad519507e4b921828ee2c1969272229d330700b7c6ff89a0b41",
+    "system_sha256": "696c133b15c855845b776c1bb4fbe8dfd298e37f3f50daf90e6e136d5c394f0a"
+  },
+  "started_at": "2026-10-17T08:25:33+01:00",
+  "call": {
+    "stop_reason": "tool_use",
+    "throttle_retries": 0,
+    "latency_s": 11.541,
+    "input_tokens": 3644,
+    "output_tokens": 1196,
+    "cache_read_tokens": 0,
+    "cache_write_tokens": 6108
+  },
+  "judgement": {
+    "dimensions": {
+      "D2": {
+        "verdict": "fail",
+        "auto_fail": false,
+        "findings": [
+          {
+            "output_quote": "Admitted: 18/05/2025 | Discharged: 23/05/2025",
+            "note_cites": [],
+            "reason": "Added year '2025' to dates that appear in the notes only as day/month (18/05, 23/05); the notes contain no year, so this is an invented year \u2014 D2 Fail per the CSO ruling of 9 Oct 2026."
+          },
+          {
+            "output_quote": "Sertraline 50 mg once daily commenced on Day 3 (20/05/2025).",
+            "note_cites": [],
+            "reason": "Added year '2025' to a date the notes give only as '20/05' \u2014 invented year."
+          },
+          {
+            "output_quote": "MDT review on Day 5 (22/05/2025)",
+            "note_cites": [],
+            "reason": "Added year '2025' to a date the notes give only as '22/05' \u2014 invented year."
+          }
+        ]
+      },
+      "D3": {
+        "verdict": "pass",
+        "auto_fail": false,
+        "findings": []
+      },
+      "D6": {
+        "verdict": "partial",
+        "auto_fail": false,
+        "findings": [
+          {
+            "output_quote": "review the dose at around 4 weeks (approximately 20 June 2025).",
+            "note_cites": [
+              {
+                "lines": [
+                  "L021"
+                ],
+                "quote": "review dose at 4/52"
+              }
+            ],
+            "reason": "The instruction 'review dose at 4/52' is rendered as 'review the dose at around 4 weeks' \u2014 the qualifier 'approximately' makes it slightly less precise but not less restrictive; this is a partial rather than a fail."
+          }
+        ]
+      },
+      "D7": {
+        "verdict": "partial",
+        "auto_fail": false,
+        "findings": [
+          {
+            "output_quote": "At admission (18/05/2025):\n  Self-harm / suicide risk: Moderate-high. Active suicidal ideation with\n  thoughts of overdose; no formed plan or intent at that time, but ideation\n  escalating.",
+            "note_cites": [
+              {
+                "lines": [
+                  "L017",
+                  "L018"
+                ],
+                "quote": "Mood improving, SI fleeting/passive, no intent, future-oriented"
+              }
+            ],
+            "reason": "The risk assessment section correctly labels the admission risk as moderate-high and the discharge status as fleeting/passive \u2014 polarity and temporality are preserved. No inversion found; this is a pass on polarity. However, the output places the full risk assessment (including safeguarding detail) in PART A and PART B, which is noted for D8 purposes."
+          }
+        ]
+      },
+      "D8": {
+        "verdict": "fail",
+        "auto_fail": false,
+        "findings": [
+          {
+            "output_quote": "You came to A&E because you had been feeling very low for around six weeks. You were having thoughts of harming yourself, and those thoughts had been getting stronger.",
+            "note_cites": [
+              {
+                "lines": [
+                  "L008",
+                  "L009",
+                  "L010"
+                ],
+                "quote": "Risk: self \u2014 moderate-high (active SI, escalating). Protective: 2 children, help-seeking, future-oriented. Others \u2014 nil. Safeguarding: 2 children at home (ages 8 + 11), social context to be explored, no immediate concerns flagged."
+              }
+            ],
+            "reason": "PART C discloses the clinician's risk assessment content (active SI escalating, thoughts of harming herself) which is D8 withheld-category content per R2 \u2014 a clinical professional's assessment, not merely the patient's own history as they gave it."
+          },
+          {
+            "output_quote": "You have no known allergies.",
+            "note_cites": [
+              {
+                "lines": [
+                  "L009",
+                  "L010"
+                ],
+                "quote": "Safeguarding: 2 children at home (ages 8 + 11), social context to be explored, no immediate concerns flagged."
+              }
+            ],
+            "reason": "While the safeguarding detail itself is not reproduced in PART C, the risk assessment framing ('thoughts of harming yourself, those thoughts had been getting stronger') constitutes disclosure of the clinician's risk assessment in PART C, which is withheld-category content under D8/R2."
+          }
+        ]
+      }
+    }
+  },
+  "verified": {
+    "dimensions": {
+      "D2": {
+        "verdict": "fail",
+        "auto_fail": false,
+        "findings": [
+          {
+            "output_quote": "Admitted: 18/05/2025 | Discharged: 23/05/2025",
+            "note_cites": [],
+            "reason": "Added year '2025' to dates that appear in the notes only as day/month (18/05, 23/05); the notes contain no year, so this is an invented year \u2014 D2 Fail per the CSO ruling of 9 Oct 2026."
+          },
+          {
+            "output_quote": "Sertraline 50 mg once daily commenced on Day 3 (20/05/2025).",
+            "note_cites": [],
+            "reason": "Added year '2025' to a date the notes give only as '20/05' \u2014 invented year."
+          },
+          {
+            "output_quote": "MDT review on Day 5 (22/05/2025)",
+            "note_cites": [],
+            "reason": "Added year '2025' to a date the notes give only as '22/05' \u2014 invented year."
+          }
+        ],
+        "discarded": [],
+        "evidence_ok": true
+      },
+      "D3": {
+        "verdict": "pass",
+        "auto_fail": false,
+        "findings": [],
+        "discarded": [],
+        "evidence_ok": true
+      },
+      "D6": {
+        "verdict": "partial",
+        "auto_fail": false,
+        "findings": [],
+        "discarded": [
+          {
+            "index": 0,
+            "reason": "output_quote_not_found"
+          }
+        ],
+        "evidence_ok": false
+      },
+      "D7": {
+        "verdict": "partial",
+        "auto_fail": false,
+        "findings": [
+          {
+            "output_quote": "At admission (18/05/2025):\n  Self-harm / suicide risk: Moderate-high. Active suicidal ideation with\n  thoughts of overdose; no formed plan or intent at that time, but ideation\n  escalating.",
+            "note_cites": [
+              {
+                "lines": [
+                  "L017",
+                  "L018"
+                ],
+                "quote": "Mood improving, SI fleeting/passive, no intent, future-oriented"
+              }
+            ],
+            "reason": "The risk assessment section correctly labels the admission risk as moderate-high and the discharge status as fleeting/passive \u2014 polarity and temporality are preserved. No inversion found; this is a pass on polarity. However, the output places the full risk assessment (including safeguarding detail) in PART A and PART B, which is noted for D8 purposes."
+          }
+        ],
+        "discarded": [],
+        "evidence_ok": true
+      },
+      "D8": {
+        "verdict": "fail",
+        "auto_fail": false,
+        "findings": [
+          {
+            "output_quote": "You have no known allergies.",
+            "note_cites": [
+              {
+                "lines": [
+                  "L009",
+                  "L010"
+                ],
+                "quote": "Safeguarding: 2 children at home (ages 8 + 11), social context to be explored, no immediate concerns flagged."
+              }
+            ],
+            "reason": "While the safeguarding detail itself is not reproduced in PART C, the risk assessment framing ('thoughts of harming yourself, those thoughts had been getting stronger') constitutes disclosure of the clinician's risk assessment in PART C, which is withheld-category content under D8/R2."
+          }
+        ],
+        "discarded": [
+          {
+            "index": 0,
+            "reason": "note_cite_quote_too_long"
+          }
+        ],
+        "evidence_ok": true
+      }
+    },
+    "defects": [
+      {
+        "dimension": "D6",
+        "index": 0,
+        "reason": "output_quote_not_found"
+      },
+      {
+        "dimension": "D8",
+        "index": 0,
+        "reason": "note_cite_quote_too_long"
+      }
+    ]
+  },
+  "error": null,
+  "cost_usd_est": 0.056955,
+  "elapsed_s": 11.541
+}

@@ -1,0 +1,177 @@
+{
+  "judge_version": 1,
+  "judge_id": "calib-r1-x3b",
+  "repeat": 1,
+  "generation_id": "w4-baseline-v1-x5/r1/S12",
+  "scenario_id": "S12",
+  "run": 1,
+  "notes_sha256": "143db4ec88bb969841da8f67ae4e9cff993d97483c923700d3c320033a67f923",
+  "output_sha256": "529c82da2136770c9ca8001b6ff81d64c101058f18c39060bb5b182ad1afdf8e",
+  "model_id": "anthropic.claude-sonnet-4-6",
+  "region": "eu-west-2",
+  "temperature": 0.0,
+  "tool_strict": false,
+  "prompt": {
+    "path": "evals/judge/judge_prompt.md",
+    "file_sha256": "03905869e7beb80569e68a60d58cfab24fb1a70696a8829f7c53f83d005e8383",
+    "instructions_sha256": "7b251e319c0ea1c2f63cf2bb70c0df438e035807bb4db909ac0f2a071c88310f",
+    "rubric_sha256": "f8291ae161363ad519507e4b921828ee2c1969272229d330700b7c6ff89a0b41",
+    "system_sha256": "696c133b15c855845b776c1bb4fbe8dfd298e37f3f50daf90e6e136d5c394f0a"
+  },
+  "started_at": "2026-10-17T08:25:43+01:00",
+  "call": {
+    "stop_reason": "tool_use",
+    "throttle_retries": 0,
+    "latency_s": 8.301,
+    "input_tokens": 5827,
+    "output_tokens": 828,
+    "cache_read_tokens": 6108,
+    "cache_write_tokens": 0
+  },
+  "judgement": {
+    "dimensions": {
+      "D2": {
+        "verdict": "fail",
+        "auto_fail": true,
+        "findings": [
+          {
+            "output_quote": "Admitted: 26/04/2026 | Discharged: 18/05/2026",
+            "note_cites": [
+              {
+                "lines": [
+                  "L001"
+                ],
+                "quote": "(Day 1 - 26/04/26)"
+              }
+            ],
+            "reason": "The notes give dates as day/month/year in two-digit year format (26/04/26); the output adds the full four-digit year '2026' which does not appear anywhere in the notes \u2014 added year is a D2 auto-fail per rubric v2."
+          },
+          {
+            "output_quote": "The explicit recommendation recorded on the ReSPECT form is not transcribed in these notes. In this clinical context \u2014 acute deterioration in an 88-year-old with multiple comorbidities, recent NSTEMI, possible dementia, and a family discussion about prognosis \u2014 the recommendation is most likely DNACPR with a ward-based ceiling of care.",
+            "note_cites": [
+              {
+                "lines": [
+                  "L028",
+                  "L029"
+                ],
+                "quote": "Amber care\nRESPECT form"
+              }
+            ],
+            "reason": "The notes do not document any ReSPECT recommendation; the output invents a specific clinical inference ('most likely DNACPR with a ward-based ceiling of care') \u2014 this is an invented clinical fact (effectively an invented resus status/diagnosis) not present in the notes."
+          }
+        ]
+      },
+      "D3": {
+        "verdict": "partial",
+        "auto_fail": false,
+        "findings": [
+          {
+            "output_quote": "A ReSPECT form was completed on 09/05/2026 in the context of acute clinical deterioration (NEWS 9, sepsis, possible aspiration pneumonia) and a family discussion with the patient's son (Steven), who was informed that the patient may not survive this admission. Amber care was also initiated at this time.\n\nThe explicit recommendation recorded on the ReSPECT form is not transcribed in these notes.",
+            "note_cites": [
+              {
+                "lines": [
+                  "L028",
+                  "L029"
+                ],
+                "quote": "Amber care\nRESPECT form"
+              }
+            ],
+            "reason": "The notes do not document a prior resus status, so a change cannot be confirmed; the output correctly notes the ReSPECT form was completed but then speculates on the recommendation ('most likely DNACPR with a ward-based ceiling of care'), which goes beyond what is documented \u2014 the status is not confirmed as 'Not documented' cleanly, and the speculative inference undermines accuracy, warranting at minimum a partial."
+          }
+        ]
+      },
+      "D6": {
+        "verdict": "pass",
+        "auto_fail": false,
+        "findings": []
+      },
+      "D7": {
+        "verdict": "pass",
+        "auto_fail": false,
+        "findings": []
+      },
+      "D8": {
+        "verdict": "pass",
+        "auto_fail": false,
+        "findings": []
+      }
+    }
+  },
+  "verified": {
+    "dimensions": {
+      "D2": {
+        "verdict": "fail",
+        "auto_fail": true,
+        "findings": [
+          {
+            "output_quote": "Admitted: 26/04/2026 | Discharged: 18/05/2026",
+            "note_cites": [
+              {
+                "lines": [
+                  "L001"
+                ],
+                "quote": "(Day 1 - 26/04/26)"
+              }
+            ],
+            "reason": "The notes give dates as day/month/year in two-digit year format (26/04/26); the output adds the full four-digit year '2026' which does not appear anywhere in the notes \u2014 added year is a D2 auto-fail per rubric v2."
+          }
+        ],
+        "discarded": [
+          {
+            "index": 1,
+            "reason": "output_quote_too_long"
+          }
+        ],
+        "evidence_ok": true
+      },
+      "D3": {
+        "verdict": "partial",
+        "auto_fail": false,
+        "findings": [],
+        "discarded": [
+          {
+            "index": 0,
+            "reason": "output_quote_too_long"
+          }
+        ],
+        "evidence_ok": false
+      },
+      "D6": {
+        "verdict": "pass",
+        "auto_fail": false,
+        "findings": [],
+        "discarded": [],
+        "evidence_ok": true
+      },
+      "D7": {
+        "verdict": "pass",
+        "auto_fail": false,
+        "findings": [],
+        "discarded": [],
+        "evidence_ok": true
+      },
+      "D8": {
+        "verdict": "pass",
+        "auto_fail": false,
+        "findings": [],
+        "discarded": [],
+        "evidence_ok": true
+      }
+    },
+    "defects": [
+      {
+        "dimension": "D2",
+        "index": 1,
+        "reason": "output_quote_too_long"
+      },
+      {
+        "dimension": "D3",
+        "index": 0,
+        "reason": "output_quote_too_long"
+      }
+    ]
+  },
+  "error": null,
+  "cost_usd_est": 0.034907,
+  "elapsed_s": 8.301
+}

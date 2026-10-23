@@ -1104,10 +1104,10 @@ canary run could not fit its Lambda; that rested on a stale 5 requests/min quota
 
 ## ADR-009 — The agentic pipeline: named steps, step traces, a review-gate seam, and a branch-isolated build
 
-> **Version 1.4 · 8 Oct 2026.** *(v1.1, 24 Sep: accepted with the author's rulings; reconciled
+> **Version 1.5 · 23 Oct 2026.** *(v1.1, 24 Sep: accepted with the author's rulings; reconciled
 > against the live account — see "Live-state reconciliation" below. v1.2, 30 Sep: the W2 part-1
 > build decisions — see "Build record — W2 part 1". v1.3, 1 Oct: the W2 part-2 build decisions
-> and first live measurements — see "Build record — W2 part 2".; v1.4, 8 Oct: the W3 and W4 build records — see "Build record — W3" and "Build record — W4".)* Records the author's design of 23 Sep 2026, pressure-tested
+> and first live measurements — see "Build record — W2 part 2".; v1.4, 8 Oct: the W3 and W4 build records — see "Build record — W3" and "Build record — W4".; v1.5, 23 Oct: the W5 build record — see "Build record — W5".)* Records the author's design of 23 Sep 2026, pressure-tested
 > against the repository on 24 Sep 2026, then checked by an independent verification pass the same
 > day (findings applied; see *Verification* at the end). Where the test found that part of the
 > design cannot work as written, the evidence is shown and the amendment is marked **[A1]–[A7]**
@@ -2588,6 +2588,172 @@ adjudications · `6186760` extraction e0.6 · then the pipeline runner and the p
 tests green on Python 3.13 at the end of W4 (370 at the start). Code, gold and scorers drafted by
 Claude; every piece reviewed and run by the author; the gold, rulings and adjudications are the
 author's as CSO. **Hours:** ~8 h of author time against W4's 15 h.
+
+### Build record — W5 (9–23 Oct 2026)
+
+**Step 5b — PART A/B always carries the pinned line — decided 23 Oct 2026 by the author as CSO (amends the decision of 1 Oct 2026).**
+**The problem.** Under 1 Oct, PART A/B on the documented route carries only the cited documented
+advice. Since the W4 gold rulings that documented advice and safety-netting are distinct (S15) and that
+a bare "safety-net advice given" is documented advice (S2, S4), that advice can carry no seek-help line
+at all: in 48/90 W4 pipeline records the clinician's summary and GP letter carried none, while the
+patient version did.
+**Decision.** On the documented route, `part_ab` is the documented advice as now (verbatim quotes with
+line citations), then a blank line, the fixed label *"Standard seek-help line in the patient version
+(fixed wording, not from the notes):"*, then the audience's pinned line verbatim. **Unchanged:** the
+fall-back route (the pinned line alone); PART C; the two pinned lines' wording (1 Oct); audience
+selection on `age_group`; which advice counts as documented (unverified or flagged items are excluded
+and counted, never printed).
+**Why.** (1) It closes the gap between what the clinician and GP see and what the patient is told.
+(2) "Always" needs no facts-schema flag (W4 build record item 9) and is safe beside a specific
+documented route because the line defers to any number given (1 Oct reasoning). (3) The label: the
+line is uncited and second-person — unlabelled, a GP could read it as addressed to them, or as advice
+the team documented. *Rejected:* unlabelled (provenance); only when no trigger is documented (needs a
+schema flag); leave as is (the gap stays).
+**Still outside WS2a §6 item 3:** no new advice wording; the label is a provenance note, not clinical
+content.
+**Consequences.** 5b code + docstring; tests; `haz03_check` v2 also requires the expected line in
+`part_ab`; `score_safety_net` unchanged; `pipeline_view` PART B changes — the W5 pipeline rescore stands
+as made on the earlier 5b; offline re-run of 5b over saved W4 step-3 facts to a new output. HAZ-01/HAZ-03
+control wording carried to the W11 hazard-log re-issue (WS4 v2.0), not a new document now.
+**Residual, unchanged.** The pinned line defers to "a number"; a documented place-based route is not
+explicitly put first.
+
+**What W5 had to produce.** Measured against the sources: (1) safety case §12.3 Tier 1 #3 — *"Three new
+scored dimensions with scenarios and a baseline result"* for meaning preservation (HAZ-17), polarity /
+laterality / temporality (HAZ-18) and withholding (HAZ-16), due W5 for the dimensions and Jan 2027 for
+the scenarios; (2) an instrument to score them, calibrated against the author's blind scores to a
+threshold set in advance before any judge score counts (`EVAL_RESULTS.md` §2). Carried from W4: the 5b
+A/B pinned line (W4 item 9) and the extraction carry-ins, measured on this harness. All of it on
+`feat/agentic-pipeline`; this record and the v1.5 header are the only change to `main`.
+
+**Rubric v2 (`EVAL_RESULTS.md` §2, 9 Oct; `ce06fe2`).** D6 meaning preservation, D7 polarity /
+laterality / temporality, D8 withholding — Pass / Partial / Fail, D6 and D8 also N/A. D2 adds the
+invented year and translated clinical content. **R2** (S3, 12 Oct): the risk assessment and safeguarding
+lines are D8 withheld-category content. **R1** (S18) **revised 16 Oct**: "alone" governs all three
+items, so "no *unsupervised* baths" keeps the meaning (D6 Pass); "*working* at heights" is still a
+narrowing (D6 Fail). The revision came during blind scoring and **before any judge run** — and the judge
+was re-frozen on the revised rubric (`2a36345`). Rubric sha `f8291ae16136`.
+
+**The instrument** (`EVAL_RESULTS.md` §2). Checks (`evals/rubric_checks.py`, `967d49c`) decide where
+code can — an added year, a non-English sentence in PART C, an allergy inversion — and flag laterality.
+The judge (`evals/run_judge.py`, `23aade5`; `anthropic.claude-sonnet-4-6`, eu-west-2, temperature 0,
+instructions `7b251e319c0e`) scores D2, D3, D6, D7 and D8 blind to the checks; every finding must quote
+the output and cite note lines, checked verbatim, or it is discarded as a judge defect; the worse of
+check and judge counts. **Strict tool → not strict (`7ce95cb`):** the first calibration attempt (17 Oct)
+failed 54/54 before inference, $0 — Bedrock's grammar for the strict tool was too large; the tool is
+still forced and `verify()` enforces its shape. **Evidence defects, not loosened:** calibration
+discarded 44 findings across 33 of 270 verdicts, leaving 12 with no verified evidence; none changed a
+verdict (rescore-v2: 27/450 baseline and 20/450 pipeline verdicts left without evidence).
+
+**Calibration — MET (`b973f51`, 17 Oct).** Items: r1 of `w4-baseline-v1-x5`, 18 generations × 5
+dimensions, scored blind by the author on sheets showing notes and output only (`115de6f`). Judge run
+`calib-r1-x3b`: 3 repeats, 54 calls, 0 errors, ~$1.42.
+
+| Repeat | Missed Fails | κw, combined (n = 72) | Raw agreement (95% CI) | N/A mismatches |
+|---|---|---|---|---|
+| rep1 | 0 | 0.76 | 77/90 (77–91%) | 3 |
+| rep2 | 0 | 0.75 | 79/90 (79–93%) | 2 |
+| rep3 | 0 | 0.74 | 77/90 (77–91%) | 3 |
+
+Self-disagreement 6/90 (6.7%). All three thresholds met on every repeat, under checks v2; under v1, κw
+was 0.73 / 0.72 / 0.71, also MET. Under v2 the combined instrument equals the judge alone on this set.
+**Where author and instrument disagree on a graded verdict, the instrument is harsher every time** (10 /
+9 / 10 cells; never softer).
+
+**Checks v2 — two false Fails found by calibration (`ed07acc`).** Both were bugs against rules already
+written: a year the notes give as dd/mm/yy, written out as 20yy, is documented, not added (S12 D2, every
+run); an allergy inversion is judged per PART, not per line (B6 D7, every run). Across the 90 baseline
+records v1 → v2 changes exactly 10 cells, all Fail → no decision. **Disclosed:** the first fix
+(paragraph scope) fixed r1 but still failed B6 r3 and r4, and the r2–r5 outputs were looked at to find
+the wider rule. S12 D2 stays a Fail because the frozen judge also reads the expanded year as added — a
+recorded judge limitation.
+
+**Limits of the calibration evidence.**
+- **T1 is weak evidence.** 13 of the author's 14 Fails were the invented year, which the check decides
+  anyway; the 14th was S18 D6. The author gave no Fail on D3, D7 or D8 (D7 18/18 Pass; D8 N/A on 17/18).
+  D7 and D8 agreement rests mostly on agreeing on Pass and N/A.
+- **The raw verdicts were committed late** — `ea14681`, 23 Oct, as written on 17 Oct, no verdict edited.
+  Until then the calibration result was in git and its inputs were not. A temperature-0 re-run is not
+  guaranteed identical, so they could not have been regenerated, only re-sampled.
+- **S12** was first shown to the author in a chat copy that misquoted one line of the output; the author
+  re-checked the original file, confirmed the scores unchanged, and scored every later item from the
+  files directly.
+
+**Rescore-v2 (`52528d3`, 19 Oct).** Both W4 batches, runs 1–5, the pipeline through a judgeable view
+(`evals/pipeline_view.py`, `812944a`). 180 calls, 0 errors, ~$3.84 (baseline $2.31, pipeline $1.53).
+**Baseline, judge alone, counted from the records:**
+
+| | Pass | Partial | Fail | N/A |
+|---|---|---|---|---|
+| D2 | 3 | 9 | 78 | — |
+| D3 | 79 | 7 | 4 | — |
+| D6 | 68 | 16 | 6 | — |
+| D7 | 72 | 8 | 10 | — |
+| D8 | — | 9 | 4 | 77 |
+
+D2's 78 include, but are not only, the invented year (54/90 in W4's count). The combined count (worse of
+judge and checks v2) has not been computed, and W5 has no results file or run-log row — open.
+
+**Pipeline spot-check — NOT MET (`edb5efb`, 20 Oct).** Six pipeline items chosen by a fixed rule (S1,
+S4, S10, S13, S16, A5, r1; `f5c9adc`, `5274f86`), one repeat: κw 0.29 (n = 21), raw 21/30 (52–83%). **T1
+is untested, not met** — the author gave no Fails, so there was nothing to miss (`CALIBRATION.md` prints
+MET); T3 cannot be tested on one repeat. Nine disagreements: five with the instrument harsher, four N/A
+mismatches. A judge calibrated on v1 letters is not validated on the pipeline view. **Pipeline rescore
+numbers are recorded but not usable as absolute rates; the baseline numbers stand.** The judge stays
+frozen; the pipeline gets its own calibration at W11. Pipeline defect found: S1 step 2 rendered "x2/7"
+as "2 weeks" (temporality). Open: is a resus or ceiling-of-care decision in PART A withheld-category
+content (S13, A5)? Parked for the January scenario sets.
+
+**HAZ-03 assertion (`f1fa92a`, 22 Oct).** `evals/haz03_check.py`: PART C carries the audience's pinned
+line verbatim (paediatric: S4, S8, S9), never the other audience's line, and `age_group` equals gold.
+Found: `score_safety_net`'s `audience_ok` read only 5b's `pinned_line` field — the patient-facing text,
+the wrong line and `age_group` were unchecked until 22 Oct. W4 pipeline 90/90 pass under v1 of the
+check. HAZ-03's residual is re-scored at W11, on evidence.
+
+**Step-level metric for step 2 (`c804c12`, 22 Oct).** `evals/score_step2_advice.py` scores step 2's
+documented advice against gold items by cited line, as extracted and after step 3. It reproduces 74/90
+and the 16 route errors (non-advice as advice 7, not extracted 6, lost at verification 3), and shows
+what the route score hides: **item recall 56/85 (66%)**; precision 50/61 extracted, 48/56 verified;
+right route, wrong item 0. S11 gets the route right 5/5 and misses 5 of 10 gold items; verified misses
+are S3 9/10, S9 8/10, S15 7/10. W4's extraction carry-ins map to classes: "cite the quote's own line" →
+lost at verification (3); "status and communication notes are not advice" → non-advice as advice (7).
+Not extracted (6) has no carry-in yet.
+
+**Carry-in 1 — the 23 Oct decision, built (`4c83577`, `106a0e7`, `476c09e`).** The 1 Oct decision fixed
+PART C only; W4 gold ruling 3 (advice is not safety-netting, S15) is what exposed A/B — 48/90 W4 records
+gave the clinician and GP no seek-help line.  5b gains `AB_PINNED_LABEL` (never to carry 111 / 999 /
+A&E); `haz03_check` v2 requires the expected line in `part_ab` on both routes.
+`evals/rerun_5b_offline.py` recomputes 5b offline (no Bedrock; source never written) into
+`w4-pipeline-e06-x5-5b-w5`: 90 records; every 5b field but `part_ab` unchanged 90/90; `part_ab` changed
+on 48 documented, 0 fall-back; pinned line in `part_ab` 42 → 90; HAZ-03 v2 42 → 90; safety-net score 74
+pass / 16 fail / 0 invented, as W4. **Disclosed:** the reported `n_signposts` rises by exactly 2 on the
+documented route (the line's 111 / 999 sentences now in `part_ab`) — not gated, none invented; the first
+version of the re-run test wrongly pinned it unchanged. The pipeline view's PART B changes with 5b, so
+the W5 pipeline rescore stands as made on the earlier 5b (not re-judged).
+
+**Safety case Tier 1.** **#3 partially met:** the three dimensions are in the rubric, the instrument is
+calibrated on v1 output, and a baseline result exists (judge alone, above); scenarios that carry each
+are Jan 2027 — the 18 seldom exercise D7 or D8. **#5 stays NOT MET** (W4, C7 r2); its next real test is
+the pipeline's PART C at the W11 release gate.
+
+**Corrections and notes.** W4's "543 tests green on Python 3.13" was likely 3.14; W5's count is on 3.13
+(venv `d313`). iCloud created duplicate files in the working copy; W5 continued from a fresh clone (9
+Oct). A PART C that carries a bare "safety-net advice given" record tells the patient nothing — the
+pinned line is what they can act on; noted for 5b, not changed.
+
+**Open for W6+:** W5's run-log rows and a combined baseline summary (feature branch) · the pipeline's
+own calibration (W11) · D8 scope · the not-extracted class · HAZ-01 / HAZ-03 control wording → the W11
+hazard-log re-issue (WS4 v2.0), not a new document now.
+
+**Commits** on `feat/agentic-pipeline` (20, 9–23 Oct): `ce06fe2` rubric v2 + blind sheets · `967d49c`
+checks · `23aade5` judge · `2a36345` R1 revised, re-freeze · `115de6f` blind scores · `7ce95cb` not
+strict · `4221239` comparison · `b973f51` calibration MET · `ed07acc` checks v2 · `812944a` pipeline
+view · `52528d3` rescore-v2 · `f5c9adc` pipeline sheets · `5274f86` pipeline blind scores · `edb5efb`
+spot-check NOT MET · `f1fa92a` HAZ-03 check · `c804c12` step-2 metric · `4c83577` 5b A/B line ·
+`106a0e7` HAZ-03 v2 · `476c09e` offline 5b re-run · `ea14681` raw calibration verdicts. **793 tests
+green on Python 3.13.** Code, checks and judge drafted by Claude; every piece reviewed and run by the
+author; the blind scores, rulings and decisions are the author's as CSO. **Hours:** ~20 h of author
+time, reconstructed from commit times (range 18–23 h; not tracked at the time).
 
 ### Ephemeral stack log
 

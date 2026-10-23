@@ -18,7 +18,8 @@ sys.path.insert(0, str(ROOT / "src" / "generate"))
 
 import gold as G  # noqa: E402
 import haz03_check as H  # noqa: E402
-from pipeline.safety_net import ADULT_LINE, PAEDIATRIC_LINE, select_safety_net  # noqa: E402
+from pipeline.safety_net import (AB_PINNED_LABEL, ADULT_LINE, PAEDIATRIC_LINE,  # noqa: E402
+                                 select_safety_net)
 
 GOLD_IDS = sorted(p.stem for p in G.GOLD_DIR.glob("*.json"))
 PAEDIATRIC_IDS = ["S4", "S8", "S9"]
@@ -74,8 +75,8 @@ def test_correct_5b_output_passes(sid, advice):
 def test_paediatric_scenario_read_as_adult_fails(sid):
     r = check(sid, age_group="adult")
     assert set(r["failures"]) == {"age_group_mismatch", "wrong_audience_label", "wrong_pinned_line",
-                                  "expected_line_missing_part_c", "other_line_in_part_ab",
-                                  "other_line_in_part_c"}
+                                  "expected_line_missing_part_c", "expected_line_missing_part_ab",
+                                  "other_line_in_part_ab", "other_line_in_part_c"}
 
 
 @pytest.mark.parametrize("sid", PAEDIATRIC_IDS)
@@ -124,6 +125,30 @@ def test_reformatted_wrong_line_is_still_caught():
     assert check("S8", sn=sn)["failures"] == ["other_line_in_part_ab"]
 
 
+@pytest.mark.parametrize("advice", [False, True], ids=["fallback", "documented"])
+def test_expected_line_missing_from_part_ab_fails(advice):
+    # v2 (CSO 23 Oct 2026): part_ab must carry the audience's line on both routes.
+    sn = run_5b("child", advice)
+    sn["part_ab"] = sn["part_ab"].replace(PAEDIATRIC_LINE, "")
+    assert check("S9", sn=sn)["failures"] == ["expected_line_missing_part_ab"]
+
+
+def test_expected_line_in_part_ab_must_be_verbatim():
+    sn = run_5b("adult", advice=True)
+    sn["part_ab"] = sn["part_ab"].replace("NHS 111", "NHS  111")
+    assert check("S1", sn=sn)["failures"] == ["expected_line_missing_part_ab"]
+
+
+def test_label_alone_does_not_satisfy_part_ab():
+    sn = run_5b("adult", advice=True)
+    sn["part_ab"] = sn["part_ab"].split(AB_PINNED_LABEL)[0] + AB_PINNED_LABEL
+    assert check("S1", sn=sn)["failures"] == ["expected_line_missing_part_ab"]
+
+
+def test_result_names_check_version_2():
+    assert check("S1")["check_version"] == 2
+
+
 def test_paediatric_line_in_an_adult_part_c_fails():
     sn = run_5b("adult")
     sn["part_c"] += "\n" + PAEDIATRIC_LINE
@@ -149,13 +174,35 @@ def test_result_carries_no_output_text():
     assert "Synthetic advice" not in blob and "NHS 111" not in blob
 
 
+def _w4_records():
+    return [json.loads(p.read_text()) for p in sorted(W4_PIPELINE.glob("r*/*.json"))]
+
+
 @pytest.mark.skipif(not W4_PIPELINE.is_dir(), reason="saved W4 pipeline runs not present")
-def test_saved_w4_pipeline_records_all_pass_haz03():
-    results = []
-    for p in sorted(W4_PIPELINE.glob("r*/*.json")):
-        rec = json.loads(p.read_text())
-        results.append(H.check_record(rec, G.load(rec["scenario_id"])))
+def test_saved_w4_records_fail_v2_only_on_part_ab_and_only_on_the_documented_route():
+    # Made before the 23 Oct decision: the 48 documented-route records lack the line
+    # in part_ab, and that is their ONLY failure; the 42 fall-back records pass.
+    recs = _w4_records()
+    results = [H.check_record(rec, G.load(rec["scenario_id"])) for rec in recs]
     assert len(results) == 90
-    bad = [(r["scenario_id"], r["failures"]) for r in results if r["verdict"] != "pass"]
-    assert bad == []
     assert sum(r["expected_audience"] == "paediatric" for r in results) == 15
+    routes = [rec["steps"]["select_safety_net"]["route"] for rec in recs]
+    for route, r in zip(routes, results):
+        if route == "documented":
+            assert r["failures"] == ["expected_line_missing_part_ab"], r["scenario_id"]
+        else:
+            assert r["verdict"] == "pass", (r["scenario_id"], r["failures"])
+    assert routes.count("documented") == 48
+
+
+@pytest.mark.skipif(not W4_PIPELINE.is_dir(), reason="saved W4 pipeline runs not present")
+def test_saved_w4_facts_through_current_5b_all_pass_v2():
+    # The offline re-run in miniature: step-3 facts + step-1 flags from each saved
+    # record, through today's 5b. No Bedrock, nothing written.
+    for rec in _w4_records():
+        steps = rec["steps"]
+        sn = select_safety_net({"facts": steps["validate_facts"]["facts"],
+                                "flags": steps["guard_input"]["flags"]})
+        assert sn["route"] == steps["select_safety_net"]["route"], rec["scenario_id"]
+        r = H.check(G.load(rec["scenario_id"]), steps["validate_facts"]["facts"]["age_group"], sn)
+        assert r["verdict"] == "pass", (rec["scenario_id"], r["failures"])

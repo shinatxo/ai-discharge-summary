@@ -16,6 +16,9 @@ For each scenario, the gold `age_group` sets the expected audience
   expected_line_missing_part_c  PART C does not contain the expected line VERBATIM
                                 (raw substring: 5b inserts it by code, so any
                                 difference at all means something rewrote it)
+  expected_line_missing_part_ab the same, for PART A/B (v2: CSO 23 Oct 2026 —
+                                5b's part_ab carries the pinned line on both
+                                routes, after a fixed label on the documented one)
   other_line_in_part_ab /       the OTHER audience's line appears anywhere in that
   other_line_in_part_c          part — matched after the gate's normalisation, so
                                 markdown or curly quotes do not hide it
@@ -24,8 +27,10 @@ Why beside score_safety_net's `audience_ok`: that check compares only 5b's
 `pinned_line` FIELD. It never reads the text that reaches the patient, never looks
 for the wrong line, and never checks age_group. This one does all three.
 
-Not covered here: whether part_ab must ALWAYS carry the pinned line (W5 carry-in 1);
-v1 outputs (one pinned line, no age_group — the W4 baseline, removed at W11).
+v2 (23 Oct 2026) adds expected_line_missing_part_ab. Records made before that
+decision (the W4 pipeline batch) fail it on the documented route, by design.
+
+Not covered here: v1 outputs (one pinned line, no age_group — the W4 baseline, removed at W11).
 
 Results carry the scenario ID, enum values and fixed labels — never note or output text.
 """
@@ -34,7 +39,7 @@ from __future__ import annotations
 
 import safety_net_gate as gate
 
-CHECK_VERSION = 1
+CHECK_VERSION = 2
 PAEDIATRIC_GROUPS = ("neonate", "infant", "child")
 LINES = {"paediatric": gate.CANONICAL_PAEDIATRIC, "adult": gate.CANONICAL_ADULT}
 
@@ -64,6 +69,8 @@ def check(gold: dict, facts_age_group: str | None, sn: dict) -> dict:
         failures.append("wrong_pinned_line")
     if expected not in (sn.get("part_c") or ""):
         failures.append("expected_line_missing_part_c")
+    if expected not in (sn.get("part_ab") or ""):
+        failures.append("expected_line_missing_part_ab")
     for part in ("part_ab", "part_c"):
         if _contains(other, sn.get(part)):
             failures.append(f"other_line_in_{part}")

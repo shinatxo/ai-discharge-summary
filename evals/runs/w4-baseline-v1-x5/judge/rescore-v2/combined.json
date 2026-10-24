@@ -1,0 +1,438 @@
+{
+  "combine_version": 1,
+  "checks_version": 2,
+  "batch_id": "w4-baseline-v1-x5",
+  "judge_id": "rescore-v2",
+  "model_id": "anthropic.claude-sonnet-4-6",
+  "judge_prompt": {
+    "path": "evals/judge/judge_prompt.md",
+    "file_sha256": "03905869e7beb80569e68a60d58cfab24fb1a70696a8829f7c53f83d005e8383",
+    "instructions_sha256": "7b251e319c0ea1c2f63cf2bb70c0df438e035807bb4db909ac0f2a071c88310f",
+    "rubric_sha256": "f8291ae161363ad519507e4b921828ee2c1969272229d330700b7c6ff89a0b41",
+    "system_sha256": "696c133b15c855845b776c1bb4fbe8dfd298e37f3f50daf90e6e136d5c394f0a"
+  },
+  "flags": 130,
+  "records": 90,
+  "judge_errors": 0,
+  "judge_alone": {
+    "D2": {
+      "pass": 3,
+      "partial": 9,
+      "fail": 78,
+      "na": 0
+    },
+    "D3": {
+      "pass": 79,
+      "partial": 7,
+      "fail": 4,
+      "na": 0
+    },
+    "D6": {
+      "pass": 68,
+      "partial": 16,
+      "fail": 6,
+      "na": 0
+    },
+    "D7": {
+      "pass": 72,
+      "partial": 8,
+      "fail": 10,
+      "na": 0
+    },
+    "D8": {
+      "pass": 0,
+      "partial": 9,
+      "fail": 4,
+      "na": 77
+    }
+  },
+  "combined": {
+    "D2": {
+      "pass": 3,
+      "partial": 9,
+      "fail": 78,
+      "na": 0
+    },
+    "D3": {
+      "pass": 79,
+      "partial": 7,
+      "fail": 4,
+      "na": 0
+    },
+    "D6": {
+      "pass": 68,
+      "partial": 16,
+      "fail": 6,
+      "na": 0
+    },
+    "D7": {
+      "pass": 72,
+      "partial": 8,
+      "fail": 10,
+      "na": 0
+    },
+    "D8": {
+      "pass": 0,
+      "partial": 9,
+      "fail": 4,
+      "na": 77
+    }
+  },
+  "auto_fail": {
+    "judge": {
+      "D2": 6,
+      "D3": 3,
+      "D6": 0,
+      "D7": 1,
+      "D8": 0
+    },
+    "combined": {
+      "D2": 6,
+      "D3": 3,
+      "D6": 0,
+      "D7": 1,
+      "D8": 0
+    }
+  },
+  "check_fails": {
+    "D2": 54,
+    "D7": 0
+  },
+  "changed_by_checks": [],
+  "by_scenario": {
+    "S1": {
+      "D2": {
+        "fail": 5
+      },
+      "D3": {
+        "pass": 5
+      },
+      "D6": {
+        "pass": 4,
+        "partial": 1
+      },
+      "D7": {
+        "pass": 3,
+        "partial": 2
+      },
+      "D8": {
+        "na": 5
+      }
+    },
+    "S2": {
+      "D2": {
+        "fail": 5
+      },
+      "D3": {
+        "pass": 4,
+        "partial": 1
+      },
+      "D6": {
+        "pass": 5
+      },
+      "D7": {
+        "pass": 5
+      },
+      "D8": {
+        "na": 5
+      }
+    },
+    "S3": {
+      "D2": {
+        "fail": 5
+      },
+      "D3": {
+        "pass": 5
+      },
+      "D6": {
+        "partial": 3,
+        "pass": 1,
+        "fail": 1
+      },
+      "D7": {
+        "partial": 1,
+        "fail": 4
+      },
+      "D8": {
+        "partial": 1,
+        "fail": 4
+      }
+    },
+    "S4": {
+      "D2": {
+        "fail": 3,
+        "partial": 2
+      },
+      "D3": {
+        "pass": 5
+      },
+      "D6": {
+        "pass": 4,
+        "partial": 1
+      },
+      "D7": {
+        "pass": 4,
+        "fail": 1
+      },
+      "D8": {
+        "na": 5
+      }
+    },
+    "S8": {
+      "D2": {
+        "fail": 2,
+        "partial": 2,
+        "pass": 1
+      },
+      "D3": {
+        "pass": 5
+      },
+      "D6": {
+        "partial": 4,
+        "pass": 1
+      },
+      "D7": {
+        "pass": 5
+      },
+      "D8": {
+        "na": 5
+      }
+    },
+    "S9": {
+      "D2": {
+        "fail": 3,
+        "partial": 2
+      },
+      "D3": {
+        "pass": 5
+      },
+      "D6": {
+        "pass": 5
+      },
+      "D7": {
+        "pass": 5
+      },
+      "D8": {
+        "na": 5
+      }
+    },
+    "S10": {
+      "D2": {
+        "fail": 5
+      },
+      "D3": {
+        "pass": 5
+      },
+      "D6": {
+        "partial": 4,
+        "pass": 1
+      },
+      "D7": {
+        "pass": 5
+      },
+      "D8": {
+        "na": 5
+      }
+    },
+    "S11": {
+      "D2": {
+        "fail": 5
+      },
+      "D3": {
+        "pass": 5
+      },
+      "D6": {
+        "pass": 4,
+        "partial": 1
+      },
+      "D7": {
+        "pass": 5
+      },
+      "D8": {
+        "na": 5
+      }
+    },
+    "S12": {
+      "D2": {
+        "fail": 5
+      },
+      "D3": {
+        "fail": 3,
+        "partial": 2
+      },
+      "D6": {
+        "pass": 5
+      },
+      "D7": {
+        "pass": 4,
+        "partial": 1
+      },
+      "D8": {
+        "partial": 1,
+        "na": 4
+      }
+    },
+    "S13": {
+      "D2": {
+        "pass": 2,
+        "partial": 3
+      },
+      "D3": {
+        "pass": 5
+      },
+      "D6": {
+        "pass": 5
+      },
+      "D7": {
+        "pass": 5
+      },
+      "D8": {
+        "na": 3,
+        "partial": 2
+      }
+    },
+    "S14": {
+      "D2": {
+        "fail": 5
+      },
+      "D3": {
+        "fail": 1,
+        "partial": 4
+      },
+      "D6": {
+        "pass": 5
+      },
+      "D7": {
+        "pass": 4,
+        "partial": 1
+      },
+      "D8": {
+        "na": 5
+      }
+    },
+    "S15": {
+      "D2": {
+        "fail": 5
+      },
+      "D3": {
+        "pass": 5
+      },
+      "D6": {
+        "pass": 4,
+        "partial": 1
+      },
+      "D7": {
+        "fail": 4,
+        "partial": 1
+      },
+      "D8": {
+        "na": 5
+      }
+    },
+    "S16": {
+      "D2": {
+        "fail": 5
+      },
+      "D3": {
+        "pass": 5
+      },
+      "D6": {
+        "pass": 5
+      },
+      "D7": {
+        "pass": 3,
+        "partial": 2
+      },
+      "D8": {
+        "na": 5
+      }
+    },
+    "S17": {
+      "D2": {
+        "fail": 5
+      },
+      "D3": {
+        "pass": 5
+      },
+      "D6": {
+        "pass": 4,
+        "partial": 1
+      },
+      "D7": {
+        "pass": 5
+      },
+      "D8": {
+        "na": 5
+      }
+    },
+    "S18": {
+      "D2": {
+        "fail": 5
+      },
+      "D3": {
+        "pass": 5
+      },
+      "D6": {
+        "fail": 5
+      },
+      "D7": {
+        "pass": 5
+      },
+      "D8": {
+        "na": 5
+      }
+    },
+    "A5": {
+      "D2": {
+        "fail": 5
+      },
+      "D3": {
+        "pass": 5
+      },
+      "D6": {
+        "pass": 5
+      },
+      "D7": {
+        "pass": 5
+      },
+      "D8": {
+        "partial": 5
+      }
+    },
+    "B6": {
+      "D2": {
+        "fail": 5
+      },
+      "D3": {
+        "pass": 5
+      },
+      "D6": {
+        "pass": 5
+      },
+      "D7": {
+        "pass": 5
+      },
+      "D8": {
+        "na": 5
+      }
+    },
+    "C7": {
+      "D2": {
+        "fail": 5
+      },
+      "D3": {
+        "pass": 5
+      },
+      "D6": {
+        "pass": 5
+      },
+      "D7": {
+        "pass": 4,
+        "fail": 1
+      },
+      "D8": {
+        "na": 5
+      }
+    }
+  }
+}

@@ -1,0 +1,41 @@
+# Only what the image needs should reach the builder (the "build context").
+# The Dockerfile COPYs named folders; this file is the second line of defence.
+
+# Version control, CI, editor and OS clutter
+.git
+.github
+.vscode
+**/.DS_Store
+
+# Python caches and virtual environments
+**/__pycache__
+**/*.pyc
+**/.pytest_cache
+**/.venv
+**/venv
+
+# Saved runs: mounted at run time, never baked into the image
+evals/runs
+
+# Not needed by the scorer or the tests
+docs
+infra
+ui
+ui-spa
+clinician-review
+**/.aws-sam
+
+# Anything credential-like, wherever it is
+**/.env
+**/.env.*
+**/*.pem
+**/*.key
+**/*.p12
+**/samconfig*
+**/.aws
+**/*credential*
+**/*secret*
+
+# Media
+**/*.mov
+**/*.mp4

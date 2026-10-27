@@ -306,13 +306,36 @@ def view_from_v1(combined: str) -> MedView:
                    bool(_SECTION_CONFIRM.search(section)), warn)
 
 
+# How 5a's extra fields read in an entry — the words v1 writes for the same facts,
+# so the unchanged rules in score() see them the same way (27 Oct 2026, step build
+# piece 1): "INCREASED from [old dose]" (v0.7); "confirm against the TTO" for a
+# drug continued from the drug history (W4 gold decision 1); a conflict named,
+# never resolved (B6). section_confirm stays False: a section-level "confirm"
+# would come from step 8a, which is not built, so 5a gets no credit for it.
+INFERRED_TEXT = "(continued from drug history — confirm against the TTO)"
+CONFLICT_TEXT = "(conflict in the notes — see the cited lines)"
+
+
+def render_5a_entry(d: dict) -> str:
+    """One 5a entry as text. Older fixtures carry only the ADR-009 step-table
+    fields; the extra fields are read only when present."""
+    parts = [d.get("drug"), d.get("dose"), d.get("route"), d.get("frequency"), d.get("tag")]
+    prev = d.get("previous") or {}
+    if prev.get("dose") or prev.get("frequency"):
+        parts += ["from", prev.get("dose"), prev.get("frequency")]
+    if d.get("basis") == "inferred_from_dh":
+        parts.append(INFERRED_TEXT)
+    if d.get("conflict"):
+        parts.append(CONFLICT_TEXT)
+    return " ".join(str(x) for x in parts if x)
+
+
 def view_from_5a(reconciliation: list[dict], discharge_status: str | None = None) -> MedView:
-    """Step 5a's list — per drug {drug, dose, route, frequency, tag, ...} (ADR-009
-    step table). Rendered to the same Entry form; nothing is parsed."""
+    """Step 5a's list — per drug {drug, dose, route, frequency, tag, basis,
+    previous, conflict, ...}. Rendered to the same Entry form; nothing is parsed."""
     entries = []
     for d in reconciliation:
-        text = " ".join(str(x) for x in (d.get("drug"), d.get("dose"), d.get("route"),
-                                          d.get("frequency"), d.get("tag")) if x)
+        text = render_5a_entry(d)
         e = _entry(text)
         e.tag = (d.get("tag") or "").lower() or None
         entries.append(e)

@@ -194,3 +194,55 @@ def test_a_numbered_item_saying_confirm_is_still_a_drug_entry():
     meds = S1_GOOD.replace("5. Ramipril 5 mg OD (continued)",
                            "5. Ramipril 5 mg OD (continued) — confirm against the discharge prescription")
     assert kinds("S1", meds) == ("pass", [])
+
+
+# --- step 5a's full output (27 Oct 2026, step build piece 1) ----------------------
+
+def _from_gold(sid):
+    """A 5a reconciliation that says exactly what the gold says."""
+    m = G.load(sid)["medications"]
+    return [{"drug": d["drug"], "dose": d["dose"], "route": d["route"], "frequency": d["frequency"],
+             "tag": d["tag"], "basis": d["basis"], "previous": d["previous"], "conflict": "conflict" in d}
+            for d in m["drugs"]], m["discharge_status"]
+
+
+@pytest.mark.parametrize("sid", sorted(p.stem for p in (Path(G.GOLD_DIR)).glob("*.json")))
+def test_a_gold_perfect_5a_output_passes_every_scenario(sid):
+    # The instrument's self-test: if a 5a output that says exactly what the gold
+    # says does not pass, the scorer is wrong, not 5a. Before 27 Oct the view read
+    # only drug/dose/route/frequency/tag: B6 failed (conflict_resolved) and S1 was
+    # partial (previous_dose_missing) on a perfect output.
+    rec, status = _from_gold(sid)
+    r = M.score(M.view_from_5a(rec, status), G.load(sid))
+    assert (r["verdict"], r["findings"], r["extras"]) == ("pass", [], [])
+
+
+def test_5a_rendering_uses_v1s_words():
+    t = M.render_5a_entry({"drug": "bisoprolol", "dose": "7.5mg", "frequency": "OD", "tag": "increased",
+                           "previous": {"dose": "5mg", "frequency": "OD"}})
+    assert t == "bisoprolol 7.5mg OD increased from 5mg OD"
+    assert M.INFERRED_TEXT in M.render_5a_entry({"drug": "ramipril", "tag": "continued", "basis": "inferred_from_dh"})
+    assert M.CONFLICT_TEXT in M.render_5a_entry({"drug": "warfarin", "tag": "increased", "conflict": True})
+
+
+def test_5a_resolving_b6s_conflict_still_fails():
+    rec, status = _from_gold("B6")
+    w = next(d for d in rec if d["drug"] == "warfarin")
+    w.update(dose="5mg", conflict=False)                       # picked the doctor's TTO
+    r = M.score(M.view_from_5a(rec, status), G.load("B6"))
+    assert r["verdict"] == "fail" and ("warfarin", "conflict_resolved") in [(f["drug"], f["kind"]) for f in r["findings"]]
+
+
+def test_5a_dropping_an_inferred_dh_drug_fails_no_section_credit():
+    # section_confirm stays False for 5a: a section-level "confirm" would be 8a's.
+    rec, status = _from_gold("S1")
+    rec = [d for d in rec if d["drug"] != "ramipril"]
+    r = M.score(M.view_from_5a(rec, status), G.load("S1"))
+    assert ("ramipril", "dropped") in [(f["drug"], f["kind"]) for f in r["findings"]]
+
+
+def test_5a_withheld_shown_stopped_fails():
+    rec, status = _from_gold("S17")
+    next(d for d in rec if d["drug"] == "apixaban")["tag"] = "stopped"
+    r = M.score(M.view_from_5a(rec, status), G.load("S17"))
+    assert ("apixaban", "withheld_shown_stopped") in [(f["drug"], f["kind"]) for f in r["findings"]]

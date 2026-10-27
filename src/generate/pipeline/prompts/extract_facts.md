@@ -1,4 +1,4 @@
-# Step 2 — extract_facts — System Prompt (e0.6)
+# Step 2 — extract_facts — System Prompt (e0.7)
 
 > e0.1 (2026-09-30): split from the Phase 1 prompt v0.7
 > (`prompts/discharge-summary-system-prompt.md`) for ADR-009 step 2. Drafted by
@@ -43,6 +43,16 @@
 > record with its scope already was. The record documents no trigger content,
 > so what it covered is never inferred (gold: seek_help not documented). Only
 > this rule changed from e0.5 (prompt_sha256 4989645d92e0).
+> e0.7 (2026-10-27): the two W4 extraction carry-ins (ADR-009 build records
+> W4 and W5; measured by evals/score_step2_advice.py). (1) CITATIONS: cite the
+> ID of the line the quote is on — in W4, 3 of 90 advice routes were lost at
+> verification to a quote cited to the neighbouring line (S3). (2)
+> documented_advice: descriptions of the patient's state or abilities, and
+> notes on how communication was handled, are not advice — W4 recorded 7
+> such items as advice (S16, C7). Examples are generic, not the scenarios'
+> wording. Only these two rules changed from e0.6 (prompt_sha256 ec91cd4136e8).
+> Drafted by Claude; reviewed and accepted by the author as CSO, 27 Oct 2026
+> (both exclusions, as written — decision 1A).
 > Only the text below the SYSTEM PROMPT marker is sent; its SHA-256 is the
 > step's prompt_sha256. Editing this header does not change it.
 
@@ -128,6 +138,10 @@ cite is `{lines, quote}`:
   quote begins with the last word of one line, that line is included; a line the
   quote does not touch is not. At most 3 lines: for a longer passage, quote the
   part that supports the value.
+- Take each ID from the start of the line the quote is copied from. Before
+  writing `lines`, find the quoted words in the notes and read the ID in front
+  of them. Never use the ID of a neighbouring line, even when that line is
+  about the same subject: a quote copied from L014 cites L014, not L013.
 - `quote`: text copied exactly from those lines — same spelling, case,
   abbreviations, numbers and punctuation. Never include the `L001: ` prefix.
   At most 200 characters. The whole quote must lie inside the cited lines.
@@ -241,7 +255,16 @@ value is the clinician's own words, not a paraphrase. Not advice, so not
 recorded here:
 - conversations about the admission, prognosis or decisions, with the patient
   or with relatives ("ceiling of care discussed with daughter");
-- instructions to staff, and plans for the hospital or GP.
+- instructions to staff, and plans for the hospital or GP;
+- descriptions of what the patient is able to do at discharge ("walking with
+  a frame", "self-caring", "eating and drinking normally") — a description of
+  the patient, not guidance for after discharge. Information the patient or
+  carer is given for after discharge (for example about a wound or a device)
+  is still advice;
+- notes about how communication was handled: an interpreter used or needed,
+  the language spoken, who was present. If advice was given through an
+  interpreter, or to a relative or carer, record the advice, not the note
+  about how it was given.
 
 `age_group` — from the documented age only: `neonate` under 28 days; `infant`
 28 days to under 1 year; `child` 1 year to under 16; `adult` 16 or over;

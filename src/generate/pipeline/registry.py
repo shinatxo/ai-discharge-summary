@@ -16,6 +16,7 @@ from .context import StepContext
 from .errors import StepError
 from .extract import extract_facts
 from .guard import guard_input
+from .reconcile import reconcile_medications
 from .retrieve import retrieve_evidence
 from .route import route_resus
 from .safety_net import select_safety_net
@@ -40,6 +41,7 @@ _ALL_STEPS = (
     Step("validate_facts", "03", "code", validate_facts),
     Step("retrieve_evidence", "03b", "code", retrieve_evidence),
     Step("route_resus", "04", "code", route_resus),
+    Step("reconcile_medications", "05a", "model", reconcile_medications),
     Step("select_safety_net", "05b", "code", select_safety_net),
 )
 

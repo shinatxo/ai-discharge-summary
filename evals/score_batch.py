@@ -27,6 +27,7 @@ import gold as G  # noqa: E402
 import run_cold_eval as rce  # noqa: E402
 import score_meds as MD  # noqa: E402
 import score_safety_net as SN  # noqa: E402
+import score_step2_advice as S2  # noqa: E402
 
 SCORER_VERSION = 2
 ADJUDICATIONS_DIR = G.GOLD_DIR / "adjudications"
@@ -96,17 +97,34 @@ def score_batch(batch_dir: Path, gold_dir: Path = G.GOLD_DIR,
         gold_meta[sid] = {"status": golds[sid]["status"],
                           "sha256": hashlib.sha256((gold_dir / f"{sid}.json").read_bytes()).hexdigest()}
 
-    results, med_results, skipped = [], [], []
+    # A pipeline batch whose runner includes step 5a (27 Oct 2026) — the only
+    # kind in which a missing 5a output is a skip rather than "5a not built".
+    expects_5a = "reconcile_medications" in (manifest.get("prompts") or {})
+    results, med_results, skipped, med_skipped, step2_results = [], [], [], [], []
     for g in index["generations"]:
         rec = json.loads((batch_dir / g["record"]).read_text(encoding="utf-8"))
         sid = rec["scenario_id"]
         if rec["notes_sha256"] != by_id[sid].notes_sha256:
             raise ScoreError(f"{rec['generation_id']}: notes_sha256 does not match the corpus")
-        if rec["error"] or rec.get("output") is None and rec["generator"] == "v1":
-            skipped.append({"generation_id": rec["generation_id"],
-                            "error_code": (rec["error"] or {}).get("code")})
-            continue
         ids = {"generation_id": rec["generation_id"], "scenario_id": sid, "run": rec["run"]}
+        skip = {"generation_id": rec["generation_id"], "error_code": (rec["error"] or {}).get("code")}
+        if rec["generator"] == "pipeline":
+            # Per measure (27 Oct 2026): each is scored if ITS step finished, so a
+            # failure in 5a (which runs last) never removes a record from the
+            # step-2 or 5b scores. A record with no error scores exactly as before.
+            steps = rec.get("steps") or {}
+            if "validate_facts" in steps:
+                s2 = S2.score_record(rec, golds[sid])
+                s2.update(ids)
+                step2_results.append(s2)
+            if expects_5a and "reconcile_medications" not in steps:
+                med_skipped.append(skip)
+            if "select_safety_net" not in steps:
+                skipped.append(skip)
+                continue
+        elif rec["error"] or rec.get("output") is None:
+            skipped.append(skip)
+            continue
         r = SN.score(view_for(rec), golds[sid], lines[sid], adj[sid][0])
         r.update(ids)
         if rec["generator"] == "v1":
@@ -122,11 +140,16 @@ def score_batch(batch_dir: Path, gold_dir: Path = G.GOLD_DIR,
             m = MD.score(mv, golds[sid], adj[sid][1])
             m.update(ids)
             med_results.append(m)
-    return {"scorer": "safety_net", "scorer_version": SCORER_VERSION,
-            "batch_id": manifest["batch_id"], "generator": manifest["generator"],
-            "gold": gold_meta, "results": results, "skipped": skipped,
-            "meds": {"scorer": "d4_medications", "scorer_version": SCORER_VERSION,
-                     "results": med_results}}
+    meds = {"scorer": "d4_medications", "scorer_version": SCORER_VERSION, "results": med_results}
+    if expects_5a:
+        meds["skipped"] = med_skipped     # key absent for older batches: their files stay identical
+    out = {"scorer": "safety_net", "scorer_version": SCORER_VERSION,
+           "batch_id": manifest["batch_id"], "generator": manifest["generator"],
+           "gold": gold_meta, "results": results, "skipped": skipped, "meds": meds}
+    if manifest["generator"] == "pipeline":
+        out["step2_advice"] = {"metric": "step2_advice", "metric_version": S2.METRIC_VERSION,
+                               "results": step2_results, "summary": S2.summarise(step2_results)}
+    return out
 
 
 def med_view_for(record: dict) -> MD.MedView | None:
@@ -135,7 +158,7 @@ def med_view_for(record: dict) -> MD.MedView | None:
     if record["generator"] == "pipeline":
         st = record["steps"].get("reconcile_medications")
         if st is None:
-            return None                      # step 5a not built yet: D4 is not scored
+            return None                      # no 5a output (older batch, or 5a failed): not scored
         return MD.view_from_5a(st["reconciliation"], st.get("discharge_status"))
     raise ScoreError(f"{record['generation_id']}: unknown generator")
 
@@ -143,7 +166,9 @@ def med_view_for(record: dict) -> MD.MedView | None:
 def write_reports(batch_dir: Path, scored: dict, corpus_path: Path = rce.DEFAULT_CORPUS_PATH) -> Path:
     out = batch_dir / "scores"
     out.mkdir(exist_ok=True)
-    (out / "safety_net.json").write_text(json.dumps(scored, indent=2) + "\n", encoding="utf-8")
+    # step2_advice has its own files (below), so safety_net.json is unchanged for older batches.
+    sn_json = {k: v for k, v in scored.items() if k != "step2_advice"}
+    (out / "safety_net.json").write_text(json.dumps(sn_json, indent=2) + "\n", encoding="utf-8")
     res = scored["results"]
     n = len(res)
     drafts = sorted(sid for sid, m in scored["gold"].items() if m["status"] != "approved")
@@ -222,7 +247,51 @@ def write_reports(batch_dir: Path, scored: dict, corpus_path: Path = rce.DEFAULT
         rv.append("Nothing to adjudicate.")
     (out / "review_safety_net.md").write_text("\n".join(rv) + "\n", encoding="utf-8")
     _write_med_reports(batch_dir, out, scored, corpus)
+    if "step2_advice" in scored:
+        _write_step2_reports(out, scored)
     return out
+
+
+def _write_step2_reports(out: Path, scored: dict) -> None:
+    """Step 2's documented advice vs gold (score_step2_advice.py) — IDs, counts,
+    line-free labels only. Added 27 Oct 2026: before this the W5 figures (56/85;
+    route errors 3/7/6) existed only as a test pin and in the build record."""
+    s2 = scored["step2_advice"]
+    (out / "step2_advice.json").write_text(json.dumps(
+        {"batch_id": scored["batch_id"], "gold": scored["gold"], **s2}, indent=2) + "\n", encoding="utf-8")
+    sm, res = s2["summary"], s2["results"]
+
+    rows_scored = [q for q in res if "not_scored" not in q]
+
+    def ratio(stage: str) -> str:
+        matched = sum(q[stage]["n_gold_matched"] for q in rows_scored)
+        correct = sum(q[stage]["n_correct"] for q in rows_scored)
+        return (f"item recall {_pct(matched, sm[stage]['n_gold'])}; "
+                f"precision {correct}/{sm[stage]['n_items']}")
+    lines = [f"# Step 2 documented advice — batch `{scored['batch_id']}`", "",
+             f"Step-level metric for extract_facts, metric v{s2['metric_version']}. Definition: "
+             "`evals/score_step2_advice.py` (matching by cited line ID; no text read or written).", "",
+             "| Measure | Result |", "| --- | --- |",
+             f"| Records scored | {sm['n_scored']} of {sm['n_records']} |",
+             f"| Route correct (verified items, = 5b's route) | {_pct(sm['route_correct'], sm['n_scored'])} |",
+             f"| Route errors — not extracted | {sm['route_errors']['not_extracted']} |",
+             f"| Route errors — lost at verification | {sm['route_errors']['lost_at_verification']} |",
+             f"| Route errors — non-advice as advice | {sm['route_errors']['non_advice_as_advice']} |",
+             f"| Right route, wrong item | {sm['right_route_wrong_item']} |",
+             f"| As extracted (step 2) | {ratio('extracted')} |",
+             f"| **After step 3 (verified)** | **{ratio('verified')}** |",
+             "", "## Per scenario", "",
+             "| Scenario | Gold route | Route correct | Not extracted | Lost at verification | Non-advice | Verified recall |",
+             "| --- | --- | --- | --- | --- | --- | --- |"]
+    for sid in dict.fromkeys(r["scenario_id"] for r in res):
+        rows = [r for r in res if r["scenario_id"] == sid and "not_scored" not in r]
+        if not rows:
+            continue
+        err = lambda e: sum(1 for r in rows if r["route_error"] == e)  # noqa: E731
+        lines.append(f"| {sid} | {rows[0]['gold_route']} | {sum(r['route_correct'] for r in rows)}/{len(rows)} | "
+                     f"{err('not_extracted')} | {err('lost_at_verification')} | {err('non_advice_as_advice')} | "
+                     f"{sum(r['verified']['n_gold_matched'] for r in rows)}/{sum(r['verified']['n_gold'] for r in rows)} |")
+    (out / "STEP2_ADVICE.md").write_text("\n".join(lines) + "\n", encoding="utf-8")
 
 
 def _write_med_reports(batch_dir: Path, out: Path, scored: dict, corpus: dict) -> None:
@@ -248,7 +317,8 @@ def _write_med_reports(batch_dir: Path, out: Path, scored: dict, corpus: dict) -
              f"Second step-level metric (ADR-009 (e)), scorer v{meds['scorer_version']}, generator "
              f"`{scored['generator']}`. Definition: `evals/score_meds.py`; gold: `evals/gold/`.", "",
              "| Measure | Result |", "| --- | --- |",
-             f"| Generations scored | {n} |",
+             f"| Generations scored | {n}" + (f" (5a failed or did not run: {len(meds['skipped'])})"
+                                                if meds.get("skipped") else "") + " |",
              f"| **Pass** | {_pct(v('pass'), n)} |",
              f"| Partial (tag missing or imprecise only) | {_pct(v('partial'), n)} |",
              f"| Fail | {_pct(v('fail'), n)} |",
@@ -311,6 +381,12 @@ def main(argv=None) -> int:
           f"{sum(r['verdict'] == 'partial' for r in mres)}, fail {sum(r['verdict'] == 'fail' for r in mres)}, "
           f"review {sum(r['verdict'] == 'review' for r in mres)}; invented doses "
           f"{sum(r['invented_doses'] for r in mres)}.")
+    if "step2_advice" in scored:
+        sm = scored["step2_advice"]["summary"]
+        re_ = sm["route_errors"]
+        print(f"Step 2 advice: verified recall {sm['verified']['n_gold'] and round(100 * (sm['verified']['recall'] or 0))}% "
+              f"of {sm['verified']['n_gold']} gold items; route errors not extracted {re_['not_extracted']}, "
+              f"lost at verification {re_['lost_at_verification']}, non-advice {re_['non_advice_as_advice']}.")
     drafts = sum(1 for m in scored["gold"].values() if m["status"] != "approved")
     if drafts:
         print(f"Provisional: {drafts} gold record(s) are drafts.")

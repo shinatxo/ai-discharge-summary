@@ -231,3 +231,60 @@ def shape_errors(instance, schema: dict | None = None, path: str = "$") -> list[
     if kind == "boolean":
         return [] if isinstance(instance, bool) else [f"{path}: expected boolean"]
     return [f"{path}: unsupported schema type"]
+
+
+# =============================================================================
+# Step 5a — the record_reconciliation input schema (ADR-009 step table, row 5a)
+# =============================================================================
+#
+# Same rules as record_facts above: strict tool, forced; field names and fixed
+# enums only (DPIA Annex C.2 — nothing from notes, no descriptions); every
+# property required; no nullables ("" means "not written" — the step maps it to
+# None); no length or number constraints.
+#
+# WIRE FORM vs GROUPED FORM, as for step 2. The model emits one `cites` list per
+# drug, each cite tagged with its `role`, so the citation shape occurs ONCE in
+# the grammar (the W2 part 2 finding: the grammar grows with the number of
+# places a shape occurs). Step 5a's code splits it into the ADR-009 / gold
+# shape — dh_cites, discharge_cites — and re-verifies every quote with step 3's
+# verify_cite.
+#
+# Property ORDER is deliberate: the model fills the schema in order (W2 part 2),
+# so it writes the evidence (`cites`) before the values read from it.
+#
+# Beyond the ADR-009 step table's {drug, dose, route, frequency, tag, dh_cites,
+# discharge_cites}: `basis`, `previous_dose`, `previous_frequency` and
+# `conflict` — the fields the W4 gold already records per drug
+# (evals/gold/README.md), decided 27 Oct 2026 (step build piece 1, round 1).
+
+RECON_TAGS = ("new", "continued", "increased", "decreased", "changed", "stopped", "withheld")
+RECON_BASIS = ("documented", "inferred_from_dh")
+RECON_ROLES = ("dh", "discharge")
+
+RECON_CITE = _obj({
+    "role": _enum(*RECON_ROLES),
+    "lines": _arr(_str()),
+    "quote": _str(),
+})
+
+RECON_DRUG = _obj({
+    "drug": _str(),
+    "cites": _arr(RECON_CITE),
+    "tag": _enum(*RECON_TAGS),
+    "basis": _enum(*RECON_BASIS),
+    "dose": _str(),
+    "route": _str(),
+    "frequency": _str(),
+    "previous_dose": _str(),
+    "previous_frequency": _str(),
+    "conflict": _bool(),
+})
+
+
+def _build_reconciliation() -> dict:
+    return _obj({"drugs": _arr(RECON_DRUG)})
+
+
+def record_reconciliation_schema() -> dict:
+    """A fresh copy each call (as record_facts_schema)."""
+    return copy.deepcopy(_build_reconciliation())

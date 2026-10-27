@@ -36,9 +36,9 @@ import re
 from functools import lru_cache
 from pathlib import Path
 
-from botocore.exceptions import ClientError, ParamValidationError, ReadTimeoutError
-
 from .context import StepContext
+from .converse import THROTTLE_RETRIES, THROTTLE_WAIT_S  # noqa: F401  (re-exported)
+from .converse import converse_with_throttle_retry as _converse_with_throttle_retry
 from .errors import StepError
 from .schemas import record_facts_schema
 
@@ -75,8 +75,6 @@ def tool_config() -> dict:
 MAX_TOKENS = 8192          # 30 Sep 2026: truncation fails the job, so generous; at
                            # ~63 tok/s the 90 s read timeout binds first (~5.7k out)
 TEMPERATURE = 0
-THROTTLE_RETRIES = 2       # ADR-009 Q3 (3): ThrottlingException only, at most twice
-THROTTLE_WAIT_S = (20.0, 30.0)
 
 PROMPT_PATH = Path(__file__).resolve().parent / "prompts" / "extract_facts.md"
 PROMPT_MARKER = "## SYSTEM PROMPT"
@@ -107,31 +105,6 @@ def _check_lines(inp) -> dict:
                    for k, v in lines.items())):
         raise StepError("bad_input")
     return lines
-
-
-def _converse_with_throttle_retry(ctx: StepContext, request: dict) -> tuple[dict, int]:
-    attempts = 0
-    while True:
-        attempts += 1
-        try:
-            return ctx.bedrock.converse(**request), attempts
-        except ClientError as exc:
-            code = exc.response.get("Error", {}).get("Code", "")
-            if code == "ThrottlingException":
-                if attempts > THROTTLE_RETRIES:
-                    raise StepError("throttled") from None
-                ctx.sleep(ctx.jitter(*THROTTLE_WAIT_S))
-                continue
-            if code == "ValidationException":
-                raise StepError("request_rejected") from None   # Bedrock refused the request
-            raise StepError("bedrock_error") from None
-        except ParamValidationError:
-            # botocore refused before sending — e.g. an SDK too old to know toolSpec.strict
-            raise StepError("request_invalid") from None
-        except ReadTimeoutError:
-            raise StepError("read_timeout") from None     # never retried: the 6 Jun lesson
-        except Exception:
-            raise StepError("bedrock_error") from None
 
 
 def extract_facts(inp: dict, ctx: StepContext) -> dict:

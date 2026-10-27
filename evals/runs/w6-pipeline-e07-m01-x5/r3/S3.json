@@ -1,0 +1,781 @@
+{
+  "record_version": 1,
+  "generation_id": "w6-pipeline-e07-m01-x5/r3/S3",
+  "batch_id": "w6-pipeline-e07-m01-x5",
+  "run": 3,
+  "scenario_id": "S3",
+  "generator": "pipeline",
+  "path": "steps-1-5b-5a",
+  "model_id": "anthropic.claude-sonnet-4-6",
+  "region": "eu-west-2",
+  "prompts": {
+    "extract_facts": {
+      "path": "src/generate/pipeline/prompts/extract_facts.md",
+      "file_sha256": "378df3fefedc74177c9dd51c9c8827b86080f632fb3daa734a07c3462ccd760e",
+      "body_sha256": "208ac00d3d6096f05c4ba91137e923aec4054651c042f55d9e7c089bcd7675a2"
+    },
+    "reconcile_medications": {
+      "path": "src/generate/pipeline/prompts/reconcile_medications.md",
+      "file_sha256": "5006968b7010560f437e0eb31f55e9092baebc7a4adf347667bfcb154e8708a0",
+      "body_sha256": "b06f8c12a739b80c3d57f41ceada7dd7b1c2af38bc53159353b68425d09d5acf"
+    }
+  },
+  "prompt_caching": true,
+  "notes_sha256": "c8882fcefb7f24fb39b45a7bb32cb6bfeb5481df37eff450606bec809ab51ef1",
+  "started_at": "2026-10-27T14:22:44+00:00",
+  "elapsed_s": 22.221,
+  "calls": [
+    {
+      "name": "extract_facts",
+      "input_tokens": 918,
+      "output_tokens": 2108,
+      "cache_read_tokens": 4183,
+      "cache_write_tokens": 0,
+      "stop_reason": "tool_use",
+      "latency_s": 19.098,
+      "throttle_retries": 0
+    },
+    {
+      "name": "reconcile_medications",
+      "input_tokens": 987,
+      "output_tokens": 116,
+      "cache_read_tokens": 2290,
+      "cache_write_tokens": 0,
+      "stop_reason": "tool_use",
+      "latency_s": 2.86,
+      "throttle_retries": 0
+    }
+  ],
+  "steps": {
+    "guard_input": {
+      "notes_sha256": "c8882fcefb7f24fb39b45a7bb32cb6bfeb5481df37eff450606bec809ab51ef1",
+      "line_count": 22,
+      "flags": []
+    },
+    "extract_facts": {
+      "call": {
+        "model_id": "anthropic.claude-sonnet-4-6",
+        "prompt_sha256": "208ac00d3d6096f05c4ba91137e923aec4054651c042f55d9e7c089bcd7675a2",
+        "stop_reason": "tool_use",
+        "attempts": 1,
+        "input_tokens": 918,
+        "output_tokens": 2108,
+        "cache_read_tokens": 4183,
+        "cache_write_tokens": 0,
+        "latency_ms": 19098
+      }
+    },
+    "validate_facts": {
+      "facts": {
+        "fields": {
+          "age_sex": {
+            "status": "documented",
+            "items": [
+              {
+                "value": "45-year-old female",
+                "cites": [
+                  {
+                    "lines": [
+                      "L001"
+                    ],
+                    "quote": "45F",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "age_sex.0",
+                "citation_status": "verified",
+                "reason": null
+              }
+            ],
+            "field_check": "ok"
+          },
+          "specialty": {
+            "status": "inferred_flagged",
+            "items": [
+              {
+                "value": "Acute Mental Health Unit / Liaison Psychiatry",
+                "cites": [
+                  {
+                    "lines": [
+                      "L011"
+                    ],
+                    "quote": "admission to acute MH unit",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "specialty.0",
+                "citation_status": "verified",
+                "reason": null
+              }
+            ],
+            "field_check": "ok"
+          },
+          "legal_status": {
+            "status": "documented",
+            "items": [
+              {
+                "value": "Informal (voluntary) admission; not detained under the Mental Health Act",
+                "cites": [
+                  {
+                    "lines": [
+                      "L011"
+                    ],
+                    "quote": "Agreed informal (voluntary) admission to acute MH unit.",
+                    "verified": true,
+                    "reason": null
+                  },
+                  {
+                    "lines": [
+                      "L012"
+                    ],
+                    "quote": "NOT detained under MHA.",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "legal_status.0",
+                "citation_status": "verified",
+                "reason": null
+              }
+            ],
+            "field_check": "ok"
+          },
+          "weight": {
+            "status": "inferred_flagged",
+            "items": [
+              {
+                "value": "Approximately 4 kg weight loss reported (no admission weight documented)",
+                "cites": [
+                  {
+                    "lines": [
+                      "L001",
+                      "L002"
+                    ],
+                    "quote": "~4kg weight loss",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "weight.0",
+                "citation_status": "verified",
+                "reason": null
+              }
+            ],
+            "field_check": "ok"
+          },
+          "admission_date": {
+            "status": "documented",
+            "items": [
+              {
+                "value": "18/05",
+                "cites": [
+                  {
+                    "lines": [
+                      "L001"
+                    ],
+                    "quote": "18/05",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "admission_date.0",
+                "citation_status": "verified",
+                "reason": null
+              }
+            ],
+            "field_check": "ok"
+          },
+          "discharge_date": {
+            "status": "documented",
+            "items": [
+              {
+                "value": "23/05",
+                "cites": [
+                  {
+                    "lines": [
+                      "L021"
+                    ],
+                    "quote": "Day 6 (23/05) Discharged.",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "discharge_date.0",
+                "citation_status": "verified",
+                "reason": null
+              }
+            ],
+            "field_check": "ok"
+          },
+          "presenting_complaint": {
+            "status": "documented",
+            "items": [
+              {
+                "value": "6-week history of worsening low mood, anhedonia, early-morning waking, reduced appetite with approximately 4 kg weight loss, poor concentration, and active suicidal ideation with thoughts of overdose",
+                "cites": [
+                  {
+                    "lines": [
+                      "L001",
+                      "L002",
+                      "L003"
+                    ],
+                    "quote": "6/52 worsening low mood, anhedonia,\nearly-morning waking, reduced appetite (~4kg weight loss), poor concentration.\nActive SI w/ thoughts of overdose",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "presenting_complaint.0",
+                "citation_status": "verified",
+                "reason": null
+              }
+            ],
+            "field_check": "ok"
+          },
+          "diagnosis_primary": {
+            "status": "documented",
+            "items": [
+              {
+                "value": "Depressive episode with active suicidal ideation",
+                "cites": [
+                  {
+                    "lines": [
+                      "L001",
+                      "L002",
+                      "L003"
+                    ],
+                    "quote": "",
+                    "verified": false,
+                    "reason": "quote_too_long"
+                  }
+                ],
+                "fact_id": "diagnosis_primary.0",
+                "citation_status": "citation_unverified",
+                "reason": "quote_too_long"
+              }
+            ],
+            "field_check": "ok"
+          },
+          "diagnosis_secondary": {
+            "status": "documented",
+            "items": [
+              {
+                "value": "Identified psychosocial triggers: recent relationship breakdown and work stress",
+                "cites": [
+                  {
+                    "lines": [
+                      "L006"
+                    ],
+                    "quote": "Triggers: recent relationship breakdown + work stress.",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "diagnosis_secondary.0",
+                "citation_status": "verified",
+                "reason": null
+              }
+            ],
+            "field_check": "ok"
+          },
+          "diagnosis_background": {
+            "status": "documented",
+            "items": [
+              {
+                "value": "Previous depressive episode in 2018, GP-managed with sertraline, stopped after approximately 9 months when well",
+                "cites": [
+                  {
+                    "lines": [
+                      "L004",
+                      "L005"
+                    ],
+                    "quote": "One prev depressive episode 2018, GP-managed\nw/ sertraline, stopped after ~9/12 when well.",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "diagnosis_background.0",
+                "citation_status": "verified",
+                "reason": null
+              },
+              {
+                "value": "No physical past medical history",
+                "cites": [
+                  {
+                    "lines": [
+                      "L007"
+                    ],
+                    "quote": "PMH: nil physical.",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "diagnosis_background.1",
+                "citation_status": "verified",
+                "reason": null
+              },
+              {
+                "value": "Non-smoker; alcohol approximately 14 units per week; no illicit drug use",
+                "cites": [
+                  {
+                    "lines": [
+                      "L007"
+                    ],
+                    "quote": "Non-smoker, alcohol ~14u/wk, no illicit drugs.",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "diagnosis_background.2",
+                "citation_status": "verified",
+                "reason": null
+              }
+            ],
+            "field_check": "ok"
+          },
+          "key_investigations": {
+            "status": "documented",
+            "items": [
+              {
+                "value": "No psychotic features identified at assessment",
+                "cites": [
+                  {
+                    "lines": [
+                      "L003"
+                    ],
+                    "quote": "No psychotic features.",
+                    "verified": false,
+                    "reason": "quote_not_found"
+                  }
+                ],
+                "fact_id": "key_investigations.0",
+                "citation_status": "citation_unverified",
+                "reason": "quote_not_found"
+              },
+              {
+                "value": "No previous mental health admissions",
+                "cites": [
+                  {
+                    "lines": [
+                      "L004"
+                    ],
+                    "quote": "No prev MH admissions.",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "key_investigations.1",
+                "citation_status": "verified",
+                "reason": null
+              },
+              {
+                "value": "Day 3: sleep slightly improved; suicidal ideation less intense, now passive",
+                "cites": [
+                  {
+                    "lines": [
+                      "L015"
+                    ],
+                    "quote": "Sleep slightly improved. SI less intense, now passive.",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "key_investigations.2",
+                "citation_status": "verified",
+                "reason": null
+              },
+              {
+                "value": "Day 5 MDT: mood improving, suicidal ideation fleeting/passive, no intent, future-oriented",
+                "cites": [
+                  {
+                    "lines": [
+                      "L017"
+                    ],
+                    "quote": "Mood improving, SI fleeting/passive, no intent, future-oriented",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "key_investigations.3",
+                "citation_status": "verified",
+                "reason": null
+              }
+            ],
+            "field_check": "ok"
+          },
+          "treatment": {
+            "status": "documented",
+            "items": [
+              {
+                "value": "Sertraline 50 mg once daily started (Day 3, 20/05)",
+                "cites": [
+                  {
+                    "lines": [
+                      "L014"
+                    ],
+                    "quote": "Started sertraline 50mg OD.",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "treatment.0",
+                "citation_status": "verified",
+                "reason": null
+              },
+              {
+                "value": "Psychoeducation given",
+                "cites": [
+                  {
+                    "lines": [
+                      "L014"
+                    ],
+                    "quote": "Psychoeducation given.",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "treatment.1",
+                "citation_status": "verified",
+                "reason": null
+              },
+              {
+                "value": "MDT review Day 5; collaborative safety plan completed with patient",
+                "cites": [
+                  {
+                    "lines": [
+                      "L017",
+                      "L018"
+                    ],
+                    "quote": "MDT. Mood improving, SI fleeting/passive, no intent, future-oriented\n(talking re children). Collaborative safety plan completed w/ pt.",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "treatment.2",
+                "citation_status": "verified",
+                "reason": null
+              }
+            ],
+            "field_check": "ok"
+          },
+          "risk_assessment": {
+            "status": "documented",
+            "items": [
+              {
+                "value": "Risk to self: moderate-high (active suicidal ideation, escalating). Protective factors: 2 children, help-seeking behaviour, future-oriented. Risk to others: nil. Safeguarding: 2 children at home (ages 8 and 11), social context to be explored, no immediate concerns flagged",
+                "cites": [
+                  {
+                    "lines": [
+                      "L008",
+                      "L009",
+                      "L010"
+                    ],
+                    "quote": "",
+                    "verified": false,
+                    "reason": "quote_too_long"
+                  }
+                ],
+                "fact_id": "risk_assessment.0",
+                "citation_status": "citation_unverified",
+                "reason": "quote_too_long"
+              }
+            ],
+            "field_check": "ok"
+          },
+          "allergies": {
+            "status": "documented",
+            "items": [
+              {
+                "value": "No known drug allergies",
+                "cites": [
+                  {
+                    "lines": [
+                      "L007"
+                    ],
+                    "quote": "NKDA.",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "allergies.0",
+                "citation_status": "verified",
+                "reason": null
+              }
+            ],
+            "field_check": "ok"
+          },
+          "follow_up": {
+            "status": "documented",
+            "items": [
+              {
+                "value": "CMHT follow-up in 1 week",
+                "cites": [
+                  {
+                    "lines": [
+                      "L021"
+                    ],
+                    "quote": "CMHT f/u 1/52.",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "follow_up.0",
+                "citation_status": "verified",
+                "reason": null
+              },
+              {
+                "value": "Sertraline dose review at 4 weeks",
+                "cites": [
+                  {
+                    "lines": [
+                      "L021"
+                    ],
+                    "quote": "review dose at 4/52.",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "follow_up.1",
+                "citation_status": "verified",
+                "reason": null
+              }
+            ],
+            "field_check": "ok"
+          },
+          "gp_actions": {
+            "status": "documented",
+            "items": [
+              {
+                "value": "GP to monitor mood and tolerability of sertraline",
+                "cites": [
+                  {
+                    "lines": [
+                      "L022"
+                    ],
+                    "quote": "GP to monitor mood + tolerability.",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "gp_actions.0",
+                "citation_status": "verified",
+                "reason": null
+              }
+            ],
+            "field_check": "ok"
+          },
+          "vte_assessment": {
+            "status": "not_documented",
+            "items": [],
+            "field_check": "ok"
+          }
+        },
+        "medications": {
+          "pre_admission": [
+            {
+              "value": "No regular medications on admission",
+              "cites": [
+                {
+                  "lines": [
+                    "L007"
+                  ],
+                  "quote": "DH: nil regular.",
+                  "verified": true,
+                  "reason": null
+                }
+              ],
+              "fact_id": "medications.pre_admission.0",
+              "citation_status": "verified",
+              "reason": null
+            }
+          ],
+          "discharge": [
+            {
+              "value": "Sertraline 50 mg once daily",
+              "cites": [
+                {
+                  "lines": [
+                    "L021"
+                  ],
+                  "quote": "Sertraline 50mg OD",
+                  "verified": true,
+                  "reason": null
+                }
+              ],
+              "fact_id": "medications.discharge.0",
+              "citation_status": "verified",
+              "reason": null
+            }
+          ],
+          "discharge_status": "listed",
+          "medications_check": "ok"
+        },
+        "resus": {
+          "changed": "not_documented",
+          "cites": [],
+          "form_or_discussion_documented": false,
+          "status_documented": "not_documented",
+          "fact_id": "resus",
+          "citation_status": "verified",
+          "reason": null
+        },
+        "documented_advice": [
+          {
+            "value": "Crisis team number given",
+            "cites": [
+              {
+                "lines": [
+                  "L021",
+                  "L022"
+                ],
+                "quote": "Crisis team number given.",
+                "verified": true,
+                "reason": null
+              }
+            ],
+            "fact_id": "documented_advice.0",
+            "citation_status": "verified",
+            "reason": null
+          }
+        ],
+        "age_group": "adult",
+        "contradictions": [],
+        "suspicious_text": []
+      },
+      "uncited_lines": [
+        "L008",
+        "L009",
+        "L010",
+        "L019"
+      ],
+      "counts": {
+        "cites_total": 28,
+        "cites_verified": 25,
+        "items_unverified": 3,
+        "fields_inconsistent": 0,
+        "medications_inconsistent": 0
+      }
+    },
+    "retrieve_evidence": {
+      "medication": [
+        {
+          "line": "L007",
+          "sources": [
+            "cited",
+            "med_header"
+          ],
+          "fact_ids": [
+            "medications.pre_admission.0"
+          ],
+          "flagged": false
+        },
+        {
+          "line": "L021",
+          "sources": [
+            "cited"
+          ],
+          "fact_ids": [
+            "medications.discharge.0"
+          ],
+          "flagged": false
+        }
+      ],
+      "resus": [],
+      "counts": {
+        "medication_lines": 2,
+        "resus_lines": 0,
+        "medication_matched_not_cited": 0,
+        "resus_matched_not_cited": 0
+      }
+    },
+    "route_resus": {
+      "route": "absent",
+      "forced": "no",
+      "status": "not_documented",
+      "changed": "not_documented",
+      "cited_lines": [],
+      "rendered": "RESUSCITATION STATUS\nNot documented."
+    },
+    "select_safety_net": {
+      "route": "documented",
+      "audience": "adult",
+      "pinned_line": "If you have been given a number to call, use that first. Otherwise, if you are worried, contact your GP or call NHS 111. Call 999 if it is an emergency.",
+      "advice": [
+        {
+          "fact_id": "documented_advice.0",
+          "lines": [
+            "L021",
+            "L022"
+          ],
+          "quote": "Crisis team number given."
+        }
+      ],
+      "advice_excluded": 0,
+      "cited_lines": [
+        "L021",
+        "L022"
+      ],
+      "part_ab": "- \"Crisis team number given.\" [L021–L022]\n\nStandard seek-help line in the patient version (fixed wording, not from the notes):\nIf you have been given a number to call, use that first. Otherwise, if you are worried, contact your GP or call NHS 111. Call 999 if it is an emergency.",
+      "part_c": "Crisis team number given.\n\nIf you have been given a number to call, use that first. Otherwise, if you are worried, contact your GP or call NHS 111. Call 999 if it is an emergency."
+    },
+    "reconcile_medications": {
+      "reconciliation": [
+        {
+          "entry_id": "reconciliation.0",
+          "drug": "sertraline",
+          "tag": "new",
+          "basis": "documented",
+          "dose": "50mg",
+          "route": null,
+          "frequency": "OD",
+          "previous": null,
+          "conflict": false,
+          "dh_cites": [],
+          "discharge_cites": [
+            {
+              "lines": [
+                "L021"
+              ],
+              "quote": "Sertraline 50mg OD, review dose at 4/52",
+              "verified": true,
+              "reason": null
+            }
+          ],
+          "citation_status": "verified",
+          "reason": null,
+          "checks": []
+        }
+      ],
+      "discharge_status": "listed",
+      "reconciliation_check": "ok",
+      "dh_lines_unreconciled": [
+        "L007"
+      ],
+      "counts": {
+        "entries": 1,
+        "cites_total": 1,
+        "cites_verified": 1,
+        "entries_unverified": 0,
+        "entries_flagged": 0,
+        "dh_lines_unreconciled": 1
+      },
+      "call": {
+        "model_id": "anthropic.claude-sonnet-4-6",
+        "prompt_sha256": "b06f8c12a739b80c3d57f41ceada7dd7b1c2af38bc53159353b68425d09d5acf",
+        "stop_reason": "tool_use",
+        "attempts": 1,
+        "input_tokens": 987,
+        "output_tokens": 116,
+        "cache_read_tokens": 2290,
+        "cache_write_tokens": 0,
+        "latency_ms": 2860
+      }
+    }
+  },
+  "output": null,
+  "gate": null,
+  "failed_step": null,
+  "error": null,
+  "cost_usd_est": 0.045119
+}

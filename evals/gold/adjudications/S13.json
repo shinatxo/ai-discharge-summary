@@ -25,6 +25,14 @@
       "by": "Shina Oguntoye (CSO)",
       "on": "2026-10-07",
       "source": "w4-baseline-v1-x5 (proposed by Claude, approved by the CSO)"
+    },
+    "5e11a9174d6f5449a37cb84401b16d7531114f3b6ddf2285b6a214a1ade6458b": {
+      "text": "wound care new",
+      "verdict": "acceptable",
+      "reason": "a documented TTO item (\"plus wound care\"), verbatim and verified — not a drug, not invented",
+      "by": "Shina Oguntoye (CSO)",
+      "on": "2026-10-27",
+      "source": "w6-pipeline-e07-m01-x5, step 5a (proposed by Claude, approved by the CSO — decision 1A)"
     }
   }
 }

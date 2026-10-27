@@ -1,0 +1,2714 @@
+{
+  "batch_id": "w4-pipeline-e06-x5",
+  "gold": {
+    "S8": {
+      "status": "approved",
+      "sha256": "1750729bbff29dcf405a6e4759ddf7be6a7f6dcd16dbbac99acb5f823f4798a6"
+    },
+    "S15": {
+      "status": "approved",
+      "sha256": "b61d05b40648a2b7a749463ca87f170511806a81eadf44feeec4686daf63390d"
+    },
+    "S4": {
+      "status": "approved",
+      "sha256": "7d837e9dbc286bfc7e5758ba1f253286bf47327bd1c391f9946a720cd47a8208"
+    },
+    "A5": {
+      "status": "approved",
+      "sha256": "80d0adab601df1792cf3627f394ebbc8843500ec7d9763277e376948f0e3e0e4"
+    },
+    "S1": {
+      "status": "approved",
+      "sha256": "17c1a71d3422d157cd75942acec635e4dc588eea7c60c6278efb3e6cb7245ff4"
+    },
+    "S12": {
+      "status": "approved",
+      "sha256": "5d61299a2f0ebb04eb5b6ccc248ea03413bf17a04d0bb3197876f13bceb4903f"
+    },
+    "S18": {
+      "status": "approved",
+      "sha256": "5086d224b0a5ab587cf5802e748f75f7b28f85c6f966b7e91c1a967cdb0d5df9"
+    },
+    "C7": {
+      "status": "approved",
+      "sha256": "1967d054fcd90565e7851ab3932127a79b51a5edecf5cc52f2c374e591b5df0f"
+    },
+    "S10": {
+      "status": "approved",
+      "sha256": "9200c327d753efae6d9dbd1a0fa0ec286b68f61a0d38996b6660f74faea0342d"
+    },
+    "S9": {
+      "status": "approved",
+      "sha256": "5a395e104b7a98f4f818578d2e61555e11efe4b499be1e7a9faf86d574264126"
+    },
+    "S14": {
+      "status": "approved",
+      "sha256": "11ac78ee87c168a9e2653afc0b12cb08de6d02493ccceae0a505e9200846175f"
+    },
+    "S16": {
+      "status": "approved",
+      "sha256": "dd05baaad97444d727d611113bd2b1ac9bbb57d960cfdb9e996a860214b3060e"
+    },
+    "S13": {
+      "status": "approved",
+      "sha256": "34f0dfcbb5fadda073991ced1955b2de90621a33f38663c3fbc033a4735f847a"
+    },
+    "B6": {
+      "status": "approved",
+      "sha256": "fba7dc568098c106ab9002b171622c602fd77e869b99d1857ddb2582762c7124"
+    },
+    "S17": {
+      "status": "approved",
+      "sha256": "1cd17a625573c85e980538e3b5580370f92f4685adfa5e530d32d4f2bfbed145"
+    },
+    "S2": {
+      "status": "approved",
+      "sha256": "4ea0940764ea8104f40b06321685cbbbfae43fa240340483733125eb046434d2"
+    },
+    "S11": {
+      "status": "approved",
+      "sha256": "20f52f3a721a8c0f4f923e60a22948bf6cd17224206d57885a3dab7897de8a0d"
+    },
+    "S3": {
+      "status": "approved",
+      "sha256": "19c67912c3e49e17750982df362b3075e82874ca57363e72d5ab7708b235f0a6"
+    }
+  },
+  "metric": "step2_advice",
+  "metric_version": 1,
+  "results": [
+    {
+      "metric": "step2_advice",
+      "metric_version": 1,
+      "scenario_id": "S1",
+      "gold_route": "fallback",
+      "extracted": {
+        "n_items": 0,
+        "n_correct": 0,
+        "n_gold": 0,
+        "n_gold_matched": 0,
+        "recall": null,
+        "precision": null,
+        "route": "fallback"
+      },
+      "verified": {
+        "n_items": 0,
+        "n_correct": 0,
+        "n_gold": 0,
+        "n_gold_matched": 0,
+        "recall": null,
+        "precision": null,
+        "route": "fallback"
+      },
+      "route_correct": true,
+      "route_error": null,
+      "right_route_wrong_item": false,
+      "generation_id": "w4-pipeline-e06-x5/r1/S1",
+      "run": 1
+    },
+    {
+      "metric": "step2_advice",
+      "metric_version": 1,
+      "scenario_id": "S2",
+      "gold_route": "documented",
+      "extracted": {
+        "n_items": 2,
+        "n_correct": 2,
+        "n_gold": 2,
+        "n_gold_matched": 2,
+        "recall": 1.0,
+        "precision": 1.0,
+        "route": "documented"
+      },
+      "verified": {
+        "n_items": 2,
+        "n_correct": 2,
+        "n_gold": 2,
+        "n_gold_matched": 2,
+        "recall": 1.0,
+        "precision": 1.0,
+        "route": "documented"
+      },
+      "route_correct": true,
+      "route_error": null,
+      "right_route_wrong_item": false,
+      "generation_id": "w4-pipeline-e06-x5/r1/S2",
+      "run": 1
+    },
+    {
+      "metric": "step2_advice",
+      "metric_version": 1,
+      "scenario_id": "S3",
+      "gold_route": "documented",
+      "extracted": {
+        "n_items": 1,
+        "n_correct": 1,
+        "n_gold": 2,
+        "n_gold_matched": 1,
+        "recall": 0.5,
+        "precision": 1.0,
+        "route": "documented"
+      },
+      "verified": {
+        "n_items": 1,
+        "n_correct": 1,
+        "n_gold": 2,
+        "n_gold_matched": 1,
+        "recall": 0.5,
+        "precision": 1.0,
+        "route": "documented"
+      },
+      "route_correct": true,
+      "route_error": null,
+      "right_route_wrong_item": false,
+      "generation_id": "w4-pipeline-e06-x5/r1/S3",
+      "run": 1
+    },
+    {
+      "metric": "step2_advice",
+      "metric_version": 1,
+      "scenario_id": "S4",
+      "gold_route": "documented",
+      "extracted": {
+        "n_items": 1,
+        "n_correct": 1,
+        "n_gold": 1,
+        "n_gold_matched": 1,
+        "recall": 1.0,
+        "precision": 1.0,
+        "route": "documented"
+      },
+      "verified": {
+        "n_items": 1,
+        "n_correct": 1,
+        "n_gold": 1,
+        "n_gold_matched": 1,
+        "recall": 1.0,
+        "precision": 1.0,
+        "route": "documented"
+      },
+      "route_correct": true,
+      "route_error": null,
+      "right_route_wrong_item": false,
+      "generation_id": "w4-pipeline-e06-x5/r1/S4",
+      "run": 1
+    },
+    {
+      "metric": "step2_advice",
+      "metric_version": 1,
+      "scenario_id": "S8",
+      "gold_route": "documented",
+      "extracted": {
+        "n_items": 1,
+        "n_correct": 1,
+        "n_gold": 1,
+        "n_gold_matched": 1,
+        "recall": 1.0,
+        "precision": 1.0,
+        "route": "documented"
+      },
+      "verified": {
+        "n_items": 1,
+        "n_correct": 1,
+        "n_gold": 1,
+        "n_gold_matched": 1,
+        "recall": 1.0,
+        "precision": 1.0,
+        "route": "documented"
+      },
+      "route_correct": true,
+      "route_error": null,
+      "right_route_wrong_item": false,
+      "generation_id": "w4-pipeline-e06-x5/r1/S8",
+      "run": 1
+    },
+    {
+      "metric": "step2_advice",
+      "metric_version": 1,
+      "scenario_id": "S9",
+      "gold_route": "documented",
+      "extracted": {
+        "n_items": 0,
+        "n_correct": 0,
+        "n_gold": 2,
+        "n_gold_matched": 0,
+        "recall": 0.0,
+        "precision": null,
+        "route": "fallback"
+      },
+      "verified": {
+        "n_items": 0,
+        "n_correct": 0,
+        "n_gold": 2,
+        "n_gold_matched": 0,
+        "recall": 0.0,
+        "precision": null,
+        "route": "fallback"
+      },
+      "route_correct": false,
+      "route_error": "not_extracted",
+      "right_route_wrong_item": false,
+      "generation_id": "w4-pipeline-e06-x5/r1/S9",
+      "run": 1
+    },
+    {
+      "metric": "step2_advice",
+      "metric_version": 1,
+      "scenario_id": "S10",
+      "gold_route": "documented",
+      "extracted": {
+        "n_items": 1,
+        "n_correct": 1,
+        "n_gold": 1,
+        "n_gold_matched": 1,
+        "recall": 1.0,
+        "precision": 1.0,
+        "route": "documented"
+      },
+      "verified": {
+        "n_items": 1,
+        "n_correct": 1,
+        "n_gold": 1,
+        "n_gold_matched": 1,
+        "recall": 1.0,
+        "precision": 1.0,
+        "route": "documented"
+      },
+      "route_correct": true,
+      "route_error": null,
+      "right_route_wrong_item": false,
+      "generation_id": "w4-pipeline-e06-x5/r1/S10",
+      "run": 1
+    },
+    {
+      "metric": "step2_advice",
+      "metric_version": 1,
+      "scenario_id": "S11",
+      "gold_route": "documented",
+      "extracted": {
+        "n_items": 1,
+        "n_correct": 1,
+        "n_gold": 2,
+        "n_gold_matched": 1,
+        "recall": 0.5,
+        "precision": 1.0,
+        "route": "documented"
+      },
+      "verified": {
+        "n_items": 1,
+        "n_correct": 1,
+        "n_gold": 2,
+        "n_gold_matched": 1,
+        "recall": 0.5,
+        "precision": 1.0,
+        "route": "documented"
+      },
+      "route_correct": true,
+      "route_error": null,
+      "right_route_wrong_item": false,
+      "generation_id": "w4-pipeline-e06-x5/r1/S11",
+      "run": 1
+    },
+    {
+      "metric": "step2_advice",
+      "metric_version": 1,
+      "scenario_id": "S12",
+      "gold_route": "fallback",
+      "extracted": {
+        "n_items": 0,
+        "n_correct": 0,
+        "n_gold": 0,
+        "n_gold_matched": 0,
+        "recall": null,
+        "precision": null,
+        "route": "fallback"
+      },
+      "verified": {
+        "n_items": 0,
+        "n_correct": 0,
+        "n_gold": 0,
+        "n_gold_matched": 0,
+        "recall": null,
+        "precision": null,
+        "route": "fallback"
+      },
+      "route_correct": true,
+      "route_error": null,
+      "right_route_wrong_item": false,
+      "generation_id": "w4-pipeline-e06-x5/r1/S12",
+      "run": 1
+    },
+    {
+      "metric": "step2_advice",
+      "metric_version": 1,
+      "scenario_id": "S13",
+      "gold_route": "fallback",
+      "extracted": {
+        "n_items": 0,
+        "n_correct": 0,
+        "n_gold": 0,
+        "n_gold_matched": 0,
+        "recall": null,
+        "precision": null,
+        "route": "fallback"
+      },
+      "verified": {
+        "n_items": 0,
+        "n_correct": 0,
+        "n_gold": 0,
+        "n_gold_matched": 0,
+        "recall": null,
+        "precision": null,
+        "route": "fallback"
+      },
+      "route_correct": true,
+      "route_error": null,
+      "right_route_wrong_item": false,
+      "generation_id": "w4-pipeline-e06-x5/r1/S13",
+      "run": 1
+    },
+    {
+      "metric": "step2_advice",
+      "metric_version": 1,
+      "scenario_id": "S14",
+      "gold_route": "documented",
+      "extracted": {
+        "n_items": 1,
+        "n_correct": 1,
+        "n_gold": 1,
+        "n_gold_matched": 1,
+        "recall": 1.0,
+        "precision": 1.0,
+        "route": "documented"
+      },
+      "verified": {
+        "n_items": 1,
+        "n_correct": 1,
+        "n_gold": 1,
+        "n_gold_matched": 1,
+        "recall": 1.0,
+        "precision": 1.0,
+        "route": "documented"
+      },
+      "route_correct": true,
+      "route_error": null,
+      "right_route_wrong_item": false,
+      "generation_id": "w4-pipeline-e06-x5/r1/S14",
+      "run": 1
+    },
+    {
+      "metric": "step2_advice",
+      "metric_version": 1,
+      "scenario_id": "S15",
+      "gold_route": "documented",
+      "extracted": {
+        "n_items": 1,
+        "n_correct": 1,
+        "n_gold": 2,
+        "n_gold_matched": 1,
+        "recall": 0.5,
+        "precision": 1.0,
+        "route": "documented"
+      },
+      "verified": {
+        "n_items": 1,
+        "n_correct": 1,
+        "n_gold": 2,
+        "n_gold_matched": 1,
+        "recall": 0.5,
+        "precision": 1.0,
+        "route": "documented"
+      },
+      "route_correct": true,
+      "route_error": null,
+      "right_route_wrong_item": false,
+      "generation_id": "w4-pipeline-e06-x5/r1/S15",
+      "run": 1
+    },
+    {
+      "metric": "step2_advice",
+      "metric_version": 1,
+      "scenario_id": "S16",
+      "gold_route": "fallback",
+      "extracted": {
+        "n_items": 1,
+        "n_correct": 0,
+        "n_gold": 0,
+        "n_gold_matched": 0,
+        "recall": null,
+        "precision": 0.0,
+        "route": "documented"
+      },
+      "verified": {
+        "n_items": 1,
+        "n_correct": 0,
+        "n_gold": 0,
+        "n_gold_matched": 0,
+        "recall": null,
+        "precision": 0.0,
+        "route": "documented"
+      },
+      "route_correct": false,
+      "route_error": "non_advice_as_advice",
+      "right_route_wrong_item": false,
+      "generation_id": "w4-pipeline-e06-x5/r1/S16",
+      "run": 1
+    },
+    {
+      "metric": "step2_advice",
+      "metric_version": 1,
+      "scenario_id": "S17",
+      "gold_route": "fallback",
+      "extracted": {
+        "n_items": 0,
+        "n_correct": 0,
+        "n_gold": 0,
+        "n_gold_matched": 0,
+        "recall": null,
+        "precision": null,
+        "route": "fallback"
+      },
+      "verified": {
+        "n_items": 0,
+        "n_correct": 0,
+        "n_gold": 0,
+        "n_gold_matched": 0,
+        "recall": null,
+        "precision": null,
+        "route": "fallback"
+      },
+      "route_correct": true,
+      "route_error": null,
+      "right_route_wrong_item": false,
+      "generation_id": "w4-pipeline-e06-x5/r1/S17",
+      "run": 1
+    },
+    {
+      "metric": "step2_advice",
+      "metric_version": 1,
+      "scenario_id": "S18",
+      "gold_route": "documented",
+      "extracted": {
+        "n_items": 2,
+        "n_correct": 2,
+        "n_gold": 3,
+        "n_gold_matched": 3,
+        "recall": 1.0,
+        "precision": 1.0,
+        "route": "documented"
+      },
+      "verified": {
+        "n_items": 1,
+        "n_correct": 1,
+        "n_gold": 3,
+        "n_gold_matched": 3,
+        "recall": 1.0,
+        "precision": 1.0,
+        "route": "documented"
+      },
+      "route_correct": true,
+      "route_error": null,
+      "right_route_wrong_item": false,
+      "generation_id": "w4-pipeline-e06-x5/r1/S18",
+      "run": 1
+    },
+    {
+      "metric": "step2_advice",
+      "metric_version": 1,
+      "scenario_id": "A5",
+      "gold_route": "fallback",
+      "extracted": {
+        "n_items": 0,
+        "n_correct": 0,
+        "n_gold": 0,
+        "n_gold_matched": 0,
+        "recall": null,
+        "precision": null,
+        "route": "fallback"
+      },
+      "verified": {
+        "n_items": 0,
+        "n_correct": 0,
+        "n_gold": 0,
+        "n_gold_matched": 0,
+        "recall": null,
+        "precision": null,
+        "route": "fallback"
+      },
+      "route_correct": true,
+      "route_error": null,
+      "right_route_wrong_item": false,
+      "generation_id": "w4-pipeline-e06-x5/r1/A5",
+      "run": 1
+    },
+    {
+      "metric": "step2_advice",
+      "metric_version": 1,
+      "scenario_id": "B6",
+      "gold_route": "fallback",
+      "extracted": {
+        "n_items": 0,
+        "n_correct": 0,
+        "n_gold": 0,
+        "n_gold_matched": 0,
+        "recall": null,
+        "precision": null,
+        "route": "fallback"
+      },
+      "verified": {
+        "n_items": 0,
+        "n_correct": 0,
+        "n_gold": 0,
+        "n_gold_matched": 0,
+        "recall": null,
+        "precision": null,
+        "route": "fallback"
+      },
+      "route_correct": true,
+      "route_error": null,
+      "right_route_wrong_item": false,
+      "generation_id": "w4-pipeline-e06-x5/r1/B6",
+      "run": 1
+    },
+    {
+      "metric": "step2_advice",
+      "metric_version": 1,
+      "scenario_id": "C7",
+      "gold_route": "fallback",
+      "extracted": {
+        "n_items": 0,
+        "n_correct": 0,
+        "n_gold": 0,
+        "n_gold_matched": 0,
+        "recall": null,
+        "precision": null,
+        "route": "fallback"
+      },
+      "verified": {
+        "n_items": 0,
+        "n_correct": 0,
+        "n_gold": 0,
+        "n_gold_matched": 0,
+        "recall": null,
+        "precision": null,
+        "route": "fallback"
+      },
+      "route_correct": true,
+      "route_error": null,
+      "right_route_wrong_item": false,
+      "generation_id": "w4-pipeline-e06-x5/r1/C7",
+      "run": 1
+    },
+    {
+      "metric": "step2_advice",
+      "metric_version": 1,
+      "scenario_id": "S1",
+      "gold_route": "fallback",
+      "extracted": {
+        "n_items": 0,
+        "n_correct": 0,
+        "n_gold": 0,
+        "n_gold_matched": 0,
+        "recall": null,
+        "precision": null,
+        "route": "fallback"
+      },
+      "verified": {
+        "n_items": 0,
+        "n_correct": 0,
+        "n_gold": 0,
+        "n_gold_matched": 0,
+        "recall": null,
+        "precision": null,
+        "route": "fallback"
+      },
+      "route_correct": true,
+      "route_error": null,
+      "right_route_wrong_item": false,
+      "generation_id": "w4-pipeline-e06-x5/r2/S1",
+      "run": 2
+    },
+    {
+      "metric": "step2_advice",
+      "metric_version": 1,
+      "scenario_id": "S2",
+      "gold_route": "documented",
+      "extracted": {
+        "n_items": 2,
+        "n_correct": 2,
+        "n_gold": 2,
+        "n_gold_matched": 2,
+        "recall": 1.0,
+        "precision": 1.0,
+        "route": "documented"
+      },
+      "verified": {
+        "n_items": 2,
+        "n_correct": 2,
+        "n_gold": 2,
+        "n_gold_matched": 2,
+        "recall": 1.0,
+        "precision": 1.0,
+        "route": "documented"
+      },
+      "route_correct": true,
+      "route_error": null,
+      "right_route_wrong_item": false,
+      "generation_id": "w4-pipeline-e06-x5/r2/S2",
+      "run": 2
+    },
+    {
+      "metric": "step2_advice",
+      "metric_version": 1,
+      "scenario_id": "S3",
+      "gold_route": "documented",
+      "extracted": {
+        "n_items": 1,
+        "n_correct": 0,
+        "n_gold": 2,
+        "n_gold_matched": 0,
+        "recall": 0.0,
+        "precision": 0.0,
+        "route": "documented"
+      },
+      "verified": {
+        "n_items": 0,
+        "n_correct": 0,
+        "n_gold": 2,
+        "n_gold_matched": 0,
+        "recall": 0.0,
+        "precision": null,
+        "route": "fallback"
+      },
+      "route_correct": false,
+      "route_error": "lost_at_verification",
+      "right_route_wrong_item": false,
+      "generation_id": "w4-pipeline-e06-x5/r2/S3",
+      "run": 2
+    },
+    {
+      "metric": "step2_advice",
+      "metric_version": 1,
+      "scenario_id": "S4",
+      "gold_route": "documented",
+      "extracted": {
+        "n_items": 1,
+        "n_correct": 1,
+        "n_gold": 1,
+        "n_gold_matched": 1,
+        "recall": 1.0,
+        "precision": 1.0,
+        "route": "documented"
+      },
+      "verified": {
+        "n_items": 1,
+        "n_correct": 1,
+        "n_gold": 1,
+        "n_gold_matched": 1,
+        "recall": 1.0,
+        "precision": 1.0,
+        "route": "documented"
+      },
+      "route_correct": true,
+      "route_error": null,
+      "right_route_wrong_item": false,
+      "generation_id": "w4-pipeline-e06-x5/r2/S4",
+      "run": 2
+    },
+    {
+      "metric": "step2_advice",
+      "metric_version": 1,
+      "scenario_id": "S8",
+      "gold_route": "documented",
+      "extracted": {
+        "n_items": 1,
+        "n_correct": 1,
+        "n_gold": 1,
+        "n_gold_matched": 1,
+        "recall": 1.0,
+        "precision": 1.0,
+        "route": "documented"
+      },
+      "verified": {
+        "n_items": 1,
+        "n_correct": 1,
+        "n_gold": 1,
+        "n_gold_matched": 1,
+        "recall": 1.0,
+        "precision": 1.0,
+        "route": "documented"
+      },
+      "route_correct": true,
+      "route_error": null,
+      "right_route_wrong_item": false,
+      "generation_id": "w4-pipeline-e06-x5/r2/S8",
+      "run": 2
+    },
+    {
+      "metric": "step2_advice",
+      "metric_version": 1,
+      "scenario_id": "S9",
+      "gold_route": "documented",
+      "extracted": {
+        "n_items": 0,
+        "n_correct": 0,
+        "n_gold": 2,
+        "n_gold_matched": 0,
+        "recall": 0.0,
+        "precision": null,
+        "route": "fallback"
+      },
+      "verified": {
+        "n_items": 0,
+        "n_correct": 0,
+        "n_gold": 2,
+        "n_gold_matched": 0,
+        "recall": 0.0,
+        "precision": null,
+        "route": "fallback"
+      },
+      "route_correct": false,
+      "route_error": "not_extracted",
+      "right_route_wrong_item": false,
+      "generation_id": "w4-pipeline-e06-x5/r2/S9",
+      "run": 2
+    },
+    {
+      "metric": "step2_advice",
+      "metric_version": 1,
+      "scenario_id": "S10",
+      "gold_route": "documented",
+      "extracted": {
+        "n_items": 1,
+        "n_correct": 1,
+        "n_gold": 1,
+        "n_gold_matched": 1,
+        "recall": 1.0,
+        "precision": 1.0,
+        "route": "documented"
+      },
+      "verified": {
+        "n_items": 1,
+        "n_correct": 1,
+        "n_gold": 1,
+        "n_gold_matched": 1,
+        "recall": 1.0,
+        "precision": 1.0,
+        "route": "documented"
+      },
+      "route_correct": true,
+      "route_error": null,
+      "right_route_wrong_item": false,
+      "generation_id": "w4-pipeline-e06-x5/r2/S10",
+      "run": 2
+    },
+    {
+      "metric": "step2_advice",
+      "metric_version": 1,
+      "scenario_id": "S11",
+      "gold_route": "documented",
+      "extracted": {
+        "n_items": 1,
+        "n_correct": 1,
+        "n_gold": 2,
+        "n_gold_matched": 1,
+        "recall": 0.5,
+        "precision": 1.0,
+        "route": "documented"
+      },
+      "verified": {
+        "n_items": 1,
+        "n_correct": 1,
+        "n_gold": 2,
+        "n_gold_matched": 1,
+        "recall": 0.5,
+        "precision": 1.0,
+        "route": "documented"
+      },
+      "route_correct": true,
+      "route_error": null,
+      "right_route_wrong_item": false,
+      "generation_id": "w4-pipeline-e06-x5/r2/S11",
+      "run": 2
+    },
+    {
+      "metric": "step2_advice",
+      "metric_version": 1,
+      "scenario_id": "S12",
+      "gold_route": "fallback",
+      "extracted": {
+        "n_items": 0,
+        "n_correct": 0,
+        "n_gold": 0,
+        "n_gold_matched": 0,
+        "recall": null,
+        "precision": null,
+        "route": "fallback"
+      },
+      "verified": {
+        "n_items": 0,
+        "n_correct": 0,
+        "n_gold": 0,
+        "n_gold_matched": 0,
+        "recall": null,
+        "precision": null,
+        "route": "fallback"
+      },
+      "route_correct": true,
+      "route_error": null,
+      "right_route_wrong_item": false,
+      "generation_id": "w4-pipeline-e06-x5/r2/S12",
+      "run": 2
+    },
+    {
+      "metric": "step2_advice",
+      "metric_version": 1,
+      "scenario_id": "S13",
+      "gold_route": "fallback",
+      "extracted": {
+        "n_items": 0,
+        "n_correct": 0,
+        "n_gold": 0,
+        "n_gold_matched": 0,
+        "recall": null,
+        "precision": null,
+        "route": "fallback"
+      },
+      "verified": {
+        "n_items": 0,
+        "n_correct": 0,
+        "n_gold": 0,
+        "n_gold_matched": 0,
+        "recall": null,
+        "precision": null,
+        "route": "fallback"
+      },
+      "route_correct": true,
+      "route_error": null,
+      "right_route_wrong_item": false,
+      "generation_id": "w4-pipeline-e06-x5/r2/S13",
+      "run": 2
+    },
+    {
+      "metric": "step2_advice",
+      "metric_version": 1,
+      "scenario_id": "S14",
+      "gold_route": "documented",
+      "extracted": {
+        "n_items": 1,
+        "n_correct": 1,
+        "n_gold": 1,
+        "n_gold_matched": 1,
+        "recall": 1.0,
+        "precision": 1.0,
+        "route": "documented"
+      },
+      "verified": {
+        "n_items": 1,
+        "n_correct": 1,
+        "n_gold": 1,
+        "n_gold_matched": 1,
+        "recall": 1.0,
+        "precision": 1.0,
+        "route": "documented"
+      },
+      "route_correct": true,
+      "route_error": null,
+      "right_route_wrong_item": false,
+      "generation_id": "w4-pipeline-e06-x5/r2/S14",
+      "run": 2
+    },
+    {
+      "metric": "step2_advice",
+      "metric_version": 1,
+      "scenario_id": "S15",
+      "gold_route": "documented",
+      "extracted": {
+        "n_items": 1,
+        "n_correct": 1,
+        "n_gold": 2,
+        "n_gold_matched": 1,
+        "recall": 0.5,
+        "precision": 1.0,
+        "route": "documented"
+      },
+      "verified": {
+        "n_items": 1,
+        "n_correct": 1,
+        "n_gold": 2,
+        "n_gold_matched": 1,
+        "recall": 0.5,
+        "precision": 1.0,
+        "route": "documented"
+      },
+      "route_correct": true,
+      "route_error": null,
+      "right_route_wrong_item": false,
+      "generation_id": "w4-pipeline-e06-x5/r2/S15",
+      "run": 2
+    },
+    {
+      "metric": "step2_advice",
+      "metric_version": 1,
+      "scenario_id": "S16",
+      "gold_route": "fallback",
+      "extracted": {
+        "n_items": 1,
+        "n_correct": 0,
+        "n_gold": 0,
+        "n_gold_matched": 0,
+        "recall": null,
+        "precision": 0.0,
+        "route": "documented"
+      },
+      "verified": {
+        "n_items": 1,
+        "n_correct": 0,
+        "n_gold": 0,
+        "n_gold_matched": 0,
+        "recall": null,
+        "precision": 0.0,
+        "route": "documented"
+      },
+      "route_correct": false,
+      "route_error": "non_advice_as_advice",
+      "right_route_wrong_item": false,
+      "generation_id": "w4-pipeline-e06-x5/r2/S16",
+      "run": 2
+    },
+    {
+      "metric": "step2_advice",
+      "metric_version": 1,
+      "scenario_id": "S17",
+      "gold_route": "fallback",
+      "extracted": {
+        "n_items": 0,
+        "n_correct": 0,
+        "n_gold": 0,
+        "n_gold_matched": 0,
+        "recall": null,
+        "precision": null,
+        "route": "fallback"
+      },
+      "verified": {
+        "n_items": 0,
+        "n_correct": 0,
+        "n_gold": 0,
+        "n_gold_matched": 0,
+        "recall": null,
+        "precision": null,
+        "route": "fallback"
+      },
+      "route_correct": true,
+      "route_error": null,
+      "right_route_wrong_item": false,
+      "generation_id": "w4-pipeline-e06-x5/r2/S17",
+      "run": 2
+    },
+    {
+      "metric": "step2_advice",
+      "metric_version": 1,
+      "scenario_id": "S18",
+      "gold_route": "documented",
+      "extracted": {
+        "n_items": 1,
+        "n_correct": 1,
+        "n_gold": 3,
+        "n_gold_matched": 3,
+        "recall": 1.0,
+        "precision": 1.0,
+        "route": "documented"
+      },
+      "verified": {
+        "n_items": 1,
+        "n_correct": 1,
+        "n_gold": 3,
+        "n_gold_matched": 3,
+        "recall": 1.0,
+        "precision": 1.0,
+        "route": "documented"
+      },
+      "route_correct": true,
+      "route_error": null,
+      "right_route_wrong_item": false,
+      "generation_id": "w4-pipeline-e06-x5/r2/S18",
+      "run": 2
+    },
+    {
+      "metric": "step2_advice",
+      "metric_version": 1,
+      "scenario_id": "A5",
+      "gold_route": "fallback",
+      "extracted": {
+        "n_items": 0,
+        "n_correct": 0,
+        "n_gold": 0,
+        "n_gold_matched": 0,
+        "recall": null,
+        "precision": null,
+        "route": "fallback"
+      },
+      "verified": {
+        "n_items": 0,
+        "n_correct": 0,
+        "n_gold": 0,
+        "n_gold_matched": 0,
+        "recall": null,
+        "precision": null,
+        "route": "fallback"
+      },
+      "route_correct": true,
+      "route_error": null,
+      "right_route_wrong_item": false,
+      "generation_id": "w4-pipeline-e06-x5/r2/A5",
+      "run": 2
+    },
+    {
+      "metric": "step2_advice",
+      "metric_version": 1,
+      "scenario_id": "B6",
+      "gold_route": "fallback",
+      "extracted": {
+        "n_items": 0,
+        "n_correct": 0,
+        "n_gold": 0,
+        "n_gold_matched": 0,
+        "recall": null,
+        "precision": null,
+        "route": "fallback"
+      },
+      "verified": {
+        "n_items": 0,
+        "n_correct": 0,
+        "n_gold": 0,
+        "n_gold_matched": 0,
+        "recall": null,
+        "precision": null,
+        "route": "fallback"
+      },
+      "route_correct": true,
+      "route_error": null,
+      "right_route_wrong_item": false,
+      "generation_id": "w4-pipeline-e06-x5/r2/B6",
+      "run": 2
+    },
+    {
+      "metric": "step2_advice",
+      "metric_version": 1,
+      "scenario_id": "C7",
+      "gold_route": "fallback",
+      "extracted": {
+        "n_items": 1,
+        "n_correct": 0,
+        "n_gold": 0,
+        "n_gold_matched": 0,
+        "recall": null,
+        "precision": 0.0,
+        "route": "documented"
+      },
+      "verified": {
+        "n_items": 1,
+        "n_correct": 0,
+        "n_gold": 0,
+        "n_gold_matched": 0,
+        "recall": null,
+        "precision": 0.0,
+        "route": "documented"
+      },
+      "route_correct": false,
+      "route_error": "non_advice_as_advice",
+      "right_route_wrong_item": false,
+      "generation_id": "w4-pipeline-e06-x5/r2/C7",
+      "run": 2
+    },
+    {
+      "metric": "step2_advice",
+      "metric_version": 1,
+      "scenario_id": "S1",
+      "gold_route": "fallback",
+      "extracted": {
+        "n_items": 0,
+        "n_correct": 0,
+        "n_gold": 0,
+        "n_gold_matched": 0,
+        "recall": null,
+        "precision": null,
+        "route": "fallback"
+      },
+      "verified": {
+        "n_items": 0,
+        "n_correct": 0,
+        "n_gold": 0,
+        "n_gold_matched": 0,
+        "recall": null,
+        "precision": null,
+        "route": "fallback"
+      },
+      "route_correct": true,
+      "route_error": null,
+      "right_route_wrong_item": false,
+      "generation_id": "w4-pipeline-e06-x5/r3/S1",
+      "run": 3
+    },
+    {
+      "metric": "step2_advice",
+      "metric_version": 1,
+      "scenario_id": "S2",
+      "gold_route": "documented",
+      "extracted": {
+        "n_items": 2,
+        "n_correct": 2,
+        "n_gold": 2,
+        "n_gold_matched": 2,
+        "recall": 1.0,
+        "precision": 1.0,
+        "route": "documented"
+      },
+      "verified": {
+        "n_items": 2,
+        "n_correct": 2,
+        "n_gold": 2,
+        "n_gold_matched": 2,
+        "recall": 1.0,
+        "precision": 1.0,
+        "route": "documented"
+      },
+      "route_correct": true,
+      "route_error": null,
+      "right_route_wrong_item": false,
+      "generation_id": "w4-pipeline-e06-x5/r3/S2",
+      "run": 3
+    },
+    {
+      "metric": "step2_advice",
+      "metric_version": 1,
+      "scenario_id": "S3",
+      "gold_route": "documented",
+      "extracted": {
+        "n_items": 1,
+        "n_correct": 0,
+        "n_gold": 2,
+        "n_gold_matched": 0,
+        "recall": 0.0,
+        "precision": 0.0,
+        "route": "documented"
+      },
+      "verified": {
+        "n_items": 0,
+        "n_correct": 0,
+        "n_gold": 2,
+        "n_gold_matched": 0,
+        "recall": 0.0,
+        "precision": null,
+        "route": "fallback"
+      },
+      "route_correct": false,
+      "route_error": "lost_at_verification",
+      "right_route_wrong_item": false,
+      "generation_id": "w4-pipeline-e06-x5/r3/S3",
+      "run": 3
+    },
+    {
+      "metric": "step2_advice",
+      "metric_version": 1,
+      "scenario_id": "S4",
+      "gold_route": "documented",
+      "extracted": {
+        "n_items": 1,
+        "n_correct": 1,
+        "n_gold": 1,
+        "n_gold_matched": 1,
+        "recall": 1.0,
+        "precision": 1.0,
+        "route": "documented"
+      },
+      "verified": {
+        "n_items": 1,
+        "n_correct": 1,
+        "n_gold": 1,
+        "n_gold_matched": 1,
+        "recall": 1.0,
+        "precision": 1.0,
+        "route": "documented"
+      },
+      "route_correct": true,
+      "route_error": null,
+      "right_route_wrong_item": false,
+      "generation_id": "w4-pipeline-e06-x5/r3/S4",
+      "run": 3
+    },
+    {
+      "metric": "step2_advice",
+      "metric_version": 1,
+      "scenario_id": "S8",
+      "gold_route": "documented",
+      "extracted": {
+        "n_items": 1,
+        "n_correct": 1,
+        "n_gold": 1,
+        "n_gold_matched": 1,
+        "recall": 1.0,
+        "precision": 1.0,
+        "route": "documented"
+      },
+      "verified": {
+        "n_items": 1,
+        "n_correct": 1,
+        "n_gold": 1,
+        "n_gold_matched": 1,
+        "recall": 1.0,
+        "precision": 1.0,
+        "route": "documented"
+      },
+      "route_correct": true,
+      "route_error": null,
+      "right_route_wrong_item": false,
+      "generation_id": "w4-pipeline-e06-x5/r3/S8",
+      "run": 3
+    },
+    {
+      "metric": "step2_advice",
+      "metric_version": 1,
+      "scenario_id": "S9",
+      "gold_route": "documented",
+      "extracted": {
+        "n_items": 0,
+        "n_correct": 0,
+        "n_gold": 2,
+        "n_gold_matched": 0,
+        "recall": 0.0,
+        "precision": null,
+        "route": "fallback"
+      },
+      "verified": {
+        "n_items": 0,
+        "n_correct": 0,
+        "n_gold": 2,
+        "n_gold_matched": 0,
+        "recall": 0.0,
+        "precision": null,
+        "route": "fallback"
+      },
+      "route_correct": false,
+      "route_error": "not_extracted",
+      "right_route_wrong_item": false,
+      "generation_id": "w4-pipeline-e06-x5/r3/S9",
+      "run": 3
+    },
+    {
+      "metric": "step2_advice",
+      "metric_version": 1,
+      "scenario_id": "S10",
+      "gold_route": "documented",
+      "extracted": {
+        "n_items": 1,
+        "n_correct": 1,
+        "n_gold": 1,
+        "n_gold_matched": 1,
+        "recall": 1.0,
+        "precision": 1.0,
+        "route": "documented"
+      },
+      "verified": {
+        "n_items": 1,
+        "n_correct": 1,
+        "n_gold": 1,
+        "n_gold_matched": 1,
+        "recall": 1.0,
+        "precision": 1.0,
+        "route": "documented"
+      },
+      "route_correct": true,
+      "route_error": null,
+      "right_route_wrong_item": false,
+      "generation_id": "w4-pipeline-e06-x5/r3/S10",
+      "run": 3
+    },
+    {
+      "metric": "step2_advice",
+      "metric_version": 1,
+      "scenario_id": "S11",
+      "gold_route": "documented",
+      "extracted": {
+        "n_items": 1,
+        "n_correct": 1,
+        "n_gold": 2,
+        "n_gold_matched": 1,
+        "recall": 0.5,
+        "precision": 1.0,
+        "route": "documented"
+      },
+      "verified": {
+        "n_items": 1,
+        "n_correct": 1,
+        "n_gold": 2,
+        "n_gold_matched": 1,
+        "recall": 0.5,
+        "precision": 1.0,
+        "route": "documented"
+      },
+      "route_correct": true,
+      "route_error": null,
+      "right_route_wrong_item": false,
+      "generation_id": "w4-pipeline-e06-x5/r3/S11",
+      "run": 3
+    },
+    {
+      "metric": "step2_advice",
+      "metric_version": 1,
+      "scenario_id": "S12",
+      "gold_route": "fallback",
+      "extracted": {
+        "n_items": 0,
+        "n_correct": 0,
+        "n_gold": 0,
+        "n_gold_matched": 0,
+        "recall": null,
+        "precision": null,
+        "route": "fallback"
+      },
+      "verified": {
+        "n_items": 0,
+        "n_correct": 0,
+        "n_gold": 0,
+        "n_gold_matched": 0,
+        "recall": null,
+        "precision": null,
+        "route": "fallback"
+      },
+      "route_correct": true,
+      "route_error": null,
+      "right_route_wrong_item": false,
+      "generation_id": "w4-pipeline-e06-x5/r3/S12",
+      "run": 3
+    },
+    {
+      "metric": "step2_advice",
+      "metric_version": 1,
+      "scenario_id": "S13",
+      "gold_route": "fallback",
+      "extracted": {
+        "n_items": 0,
+        "n_correct": 0,
+        "n_gold": 0,
+        "n_gold_matched": 0,
+        "recall": null,
+        "precision": null,
+        "route": "fallback"
+      },
+      "verified": {
+        "n_items": 0,
+        "n_correct": 0,
+        "n_gold": 0,
+        "n_gold_matched": 0,
+        "recall": null,
+        "precision": null,
+        "route": "fallback"
+      },
+      "route_correct": true,
+      "route_error": null,
+      "right_route_wrong_item": false,
+      "generation_id": "w4-pipeline-e06-x5/r3/S13",
+      "run": 3
+    },
+    {
+      "metric": "step2_advice",
+      "metric_version": 1,
+      "scenario_id": "S14",
+      "gold_route": "documented",
+      "extracted": {
+        "n_items": 1,
+        "n_correct": 1,
+        "n_gold": 1,
+        "n_gold_matched": 1,
+        "recall": 1.0,
+        "precision": 1.0,
+        "route": "documented"
+      },
+      "verified": {
+        "n_items": 1,
+        "n_correct": 1,
+        "n_gold": 1,
+        "n_gold_matched": 1,
+        "recall": 1.0,
+        "precision": 1.0,
+        "route": "documented"
+      },
+      "route_correct": true,
+      "route_error": null,
+      "right_route_wrong_item": false,
+      "generation_id": "w4-pipeline-e06-x5/r3/S14",
+      "run": 3
+    },
+    {
+      "metric": "step2_advice",
+      "metric_version": 1,
+      "scenario_id": "S15",
+      "gold_route": "documented",
+      "extracted": {
+        "n_items": 1,
+        "n_correct": 1,
+        "n_gold": 2,
+        "n_gold_matched": 1,
+        "recall": 0.5,
+        "precision": 1.0,
+        "route": "documented"
+      },
+      "verified": {
+        "n_items": 1,
+        "n_correct": 1,
+        "n_gold": 2,
+        "n_gold_matched": 1,
+        "recall": 0.5,
+        "precision": 1.0,
+        "route": "documented"
+      },
+      "route_correct": true,
+      "route_error": null,
+      "right_route_wrong_item": false,
+      "generation_id": "w4-pipeline-e06-x5/r3/S15",
+      "run": 3
+    },
+    {
+      "metric": "step2_advice",
+      "metric_version": 1,
+      "scenario_id": "S16",
+      "gold_route": "fallback",
+      "extracted": {
+        "n_items": 1,
+        "n_correct": 0,
+        "n_gold": 0,
+        "n_gold_matched": 0,
+        "recall": null,
+        "precision": 0.0,
+        "route": "documented"
+      },
+      "verified": {
+        "n_items": 1,
+        "n_correct": 0,
+        "n_gold": 0,
+        "n_gold_matched": 0,
+        "recall": null,
+        "precision": 0.0,
+        "route": "documented"
+      },
+      "route_correct": false,
+      "route_error": "non_advice_as_advice",
+      "right_route_wrong_item": false,
+      "generation_id": "w4-pipeline-e06-x5/r3/S16",
+      "run": 3
+    },
+    {
+      "metric": "step2_advice",
+      "metric_version": 1,
+      "scenario_id": "S17",
+      "gold_route": "fallback",
+      "extracted": {
+        "n_items": 0,
+        "n_correct": 0,
+        "n_gold": 0,
+        "n_gold_matched": 0,
+        "recall": null,
+        "precision": null,
+        "route": "fallback"
+      },
+      "verified": {
+        "n_items": 0,
+        "n_correct": 0,
+        "n_gold": 0,
+        "n_gold_matched": 0,
+        "recall": null,
+        "precision": null,
+        "route": "fallback"
+      },
+      "route_correct": true,
+      "route_error": null,
+      "right_route_wrong_item": false,
+      "generation_id": "w4-pipeline-e06-x5/r3/S17",
+      "run": 3
+    },
+    {
+      "metric": "step2_advice",
+      "metric_version": 1,
+      "scenario_id": "S18",
+      "gold_route": "documented",
+      "extracted": {
+        "n_items": 2,
+        "n_correct": 2,
+        "n_gold": 3,
+        "n_gold_matched": 3,
+        "recall": 1.0,
+        "precision": 1.0,
+        "route": "documented"
+      },
+      "verified": {
+        "n_items": 1,
+        "n_correct": 1,
+        "n_gold": 3,
+        "n_gold_matched": 3,
+        "recall": 1.0,
+        "precision": 1.0,
+        "route": "documented"
+      },
+      "route_correct": true,
+      "route_error": null,
+      "right_route_wrong_item": false,
+      "generation_id": "w4-pipeline-e06-x5/r3/S18",
+      "run": 3
+    },
+    {
+      "metric": "step2_advice",
+      "metric_version": 1,
+      "scenario_id": "A5",
+      "gold_route": "fallback",
+      "extracted": {
+        "n_items": 0,
+        "n_correct": 0,
+        "n_gold": 0,
+        "n_gold_matched": 0,
+        "recall": null,
+        "precision": null,
+        "route": "fallback"
+      },
+      "verified": {
+        "n_items": 0,
+        "n_correct": 0,
+        "n_gold": 0,
+        "n_gold_matched": 0,
+        "recall": null,
+        "precision": null,
+        "route": "fallback"
+      },
+      "route_correct": true,
+      "route_error": null,
+      "right_route_wrong_item": false,
+      "generation_id": "w4-pipeline-e06-x5/r3/A5",
+      "run": 3
+    },
+    {
+      "metric": "step2_advice",
+      "metric_version": 1,
+      "scenario_id": "B6",
+      "gold_route": "fallback",
+      "extracted": {
+        "n_items": 0,
+        "n_correct": 0,
+        "n_gold": 0,
+        "n_gold_matched": 0,
+        "recall": null,
+        "precision": null,
+        "route": "fallback"
+      },
+      "verified": {
+        "n_items": 0,
+        "n_correct": 0,
+        "n_gold": 0,
+        "n_gold_matched": 0,
+        "recall": null,
+        "precision": null,
+        "route": "fallback"
+      },
+      "route_correct": true,
+      "route_error": null,
+      "right_route_wrong_item": false,
+      "generation_id": "w4-pipeline-e06-x5/r3/B6",
+      "run": 3
+    },
+    {
+      "metric": "step2_advice",
+      "metric_version": 1,
+      "scenario_id": "C7",
+      "gold_route": "fallback",
+      "extracted": {
+        "n_items": 1,
+        "n_correct": 0,
+        "n_gold": 0,
+        "n_gold_matched": 0,
+        "recall": null,
+        "precision": 0.0,
+        "route": "documented"
+      },
+      "verified": {
+        "n_items": 1,
+        "n_correct": 0,
+        "n_gold": 0,
+        "n_gold_matched": 0,
+        "recall": null,
+        "precision": 0.0,
+        "route": "documented"
+      },
+      "route_correct": false,
+      "route_error": "non_advice_as_advice",
+      "right_route_wrong_item": false,
+      "generation_id": "w4-pipeline-e06-x5/r3/C7",
+      "run": 3
+    },
+    {
+      "metric": "step2_advice",
+      "metric_version": 1,
+      "scenario_id": "S1",
+      "gold_route": "fallback",
+      "extracted": {
+        "n_items": 0,
+        "n_correct": 0,
+        "n_gold": 0,
+        "n_gold_matched": 0,
+        "recall": null,
+        "precision": null,
+        "route": "fallback"
+      },
+      "verified": {
+        "n_items": 0,
+        "n_correct": 0,
+        "n_gold": 0,
+        "n_gold_matched": 0,
+        "recall": null,
+        "precision": null,
+        "route": "fallback"
+      },
+      "route_correct": true,
+      "route_error": null,
+      "right_route_wrong_item": false,
+      "generation_id": "w4-pipeline-e06-x5/r4/S1",
+      "run": 4
+    },
+    {
+      "metric": "step2_advice",
+      "metric_version": 1,
+      "scenario_id": "S2",
+      "gold_route": "documented",
+      "extracted": {
+        "n_items": 2,
+        "n_correct": 2,
+        "n_gold": 2,
+        "n_gold_matched": 2,
+        "recall": 1.0,
+        "precision": 1.0,
+        "route": "documented"
+      },
+      "verified": {
+        "n_items": 2,
+        "n_correct": 2,
+        "n_gold": 2,
+        "n_gold_matched": 2,
+        "recall": 1.0,
+        "precision": 1.0,
+        "route": "documented"
+      },
+      "route_correct": true,
+      "route_error": null,
+      "right_route_wrong_item": false,
+      "generation_id": "w4-pipeline-e06-x5/r4/S2",
+      "run": 4
+    },
+    {
+      "metric": "step2_advice",
+      "metric_version": 1,
+      "scenario_id": "S3",
+      "gold_route": "documented",
+      "extracted": {
+        "n_items": 1,
+        "n_correct": 0,
+        "n_gold": 2,
+        "n_gold_matched": 0,
+        "recall": 0.0,
+        "precision": 0.0,
+        "route": "documented"
+      },
+      "verified": {
+        "n_items": 0,
+        "n_correct": 0,
+        "n_gold": 2,
+        "n_gold_matched": 0,
+        "recall": 0.0,
+        "precision": null,
+        "route": "fallback"
+      },
+      "route_correct": false,
+      "route_error": "lost_at_verification",
+      "right_route_wrong_item": false,
+      "generation_id": "w4-pipeline-e06-x5/r4/S3",
+      "run": 4
+    },
+    {
+      "metric": "step2_advice",
+      "metric_version": 1,
+      "scenario_id": "S4",
+      "gold_route": "documented",
+      "extracted": {
+        "n_items": 1,
+        "n_correct": 1,
+        "n_gold": 1,
+        "n_gold_matched": 1,
+        "recall": 1.0,
+        "precision": 1.0,
+        "route": "documented"
+      },
+      "verified": {
+        "n_items": 1,
+        "n_correct": 1,
+        "n_gold": 1,
+        "n_gold_matched": 1,
+        "recall": 1.0,
+        "precision": 1.0,
+        "route": "documented"
+      },
+      "route_correct": true,
+      "route_error": null,
+      "right_route_wrong_item": false,
+      "generation_id": "w4-pipeline-e06-x5/r4/S4",
+      "run": 4
+    },
+    {
+      "metric": "step2_advice",
+      "metric_version": 1,
+      "scenario_id": "S8",
+      "gold_route": "documented",
+      "extracted": {
+        "n_items": 1,
+        "n_correct": 1,
+        "n_gold": 1,
+        "n_gold_matched": 1,
+        "recall": 1.0,
+        "precision": 1.0,
+        "route": "documented"
+      },
+      "verified": {
+        "n_items": 1,
+        "n_correct": 1,
+        "n_gold": 1,
+        "n_gold_matched": 1,
+        "recall": 1.0,
+        "precision": 1.0,
+        "route": "documented"
+      },
+      "route_correct": true,
+      "route_error": null,
+      "right_route_wrong_item": false,
+      "generation_id": "w4-pipeline-e06-x5/r4/S8",
+      "run": 4
+    },
+    {
+      "metric": "step2_advice",
+      "metric_version": 1,
+      "scenario_id": "S9",
+      "gold_route": "documented",
+      "extracted": {
+        "n_items": 1,
+        "n_correct": 1,
+        "n_gold": 2,
+        "n_gold_matched": 1,
+        "recall": 0.5,
+        "precision": 1.0,
+        "route": "documented"
+      },
+      "verified": {
+        "n_items": 1,
+        "n_correct": 1,
+        "n_gold": 2,
+        "n_gold_matched": 1,
+        "recall": 0.5,
+        "precision": 1.0,
+        "route": "documented"
+      },
+      "route_correct": true,
+      "route_error": null,
+      "right_route_wrong_item": false,
+      "generation_id": "w4-pipeline-e06-x5/r4/S9",
+      "run": 4
+    },
+    {
+      "metric": "step2_advice",
+      "metric_version": 1,
+      "scenario_id": "S10",
+      "gold_route": "documented",
+      "extracted": {
+        "n_items": 1,
+        "n_correct": 1,
+        "n_gold": 1,
+        "n_gold_matched": 1,
+        "recall": 1.0,
+        "precision": 1.0,
+        "route": "documented"
+      },
+      "verified": {
+        "n_items": 1,
+        "n_correct": 1,
+        "n_gold": 1,
+        "n_gold_matched": 1,
+        "recall": 1.0,
+        "precision": 1.0,
+        "route": "documented"
+      },
+      "route_correct": true,
+      "route_error": null,
+      "right_route_wrong_item": false,
+      "generation_id": "w4-pipeline-e06-x5/r4/S10",
+      "run": 4
+    },
+    {
+      "metric": "step2_advice",
+      "metric_version": 1,
+      "scenario_id": "S11",
+      "gold_route": "documented",
+      "extracted": {
+        "n_items": 1,
+        "n_correct": 1,
+        "n_gold": 2,
+        "n_gold_matched": 1,
+        "recall": 0.5,
+        "precision": 1.0,
+        "route": "documented"
+      },
+      "verified": {
+        "n_items": 1,
+        "n_correct": 1,
+        "n_gold": 2,
+        "n_gold_matched": 1,
+        "recall": 0.5,
+        "precision": 1.0,
+        "route": "documented"
+      },
+      "route_correct": true,
+      "route_error": null,
+      "right_route_wrong_item": false,
+      "generation_id": "w4-pipeline-e06-x5/r4/S11",
+      "run": 4
+    },
+    {
+      "metric": "step2_advice",
+      "metric_version": 1,
+      "scenario_id": "S12",
+      "gold_route": "fallback",
+      "extracted": {
+        "n_items": 0,
+        "n_correct": 0,
+        "n_gold": 0,
+        "n_gold_matched": 0,
+        "recall": null,
+        "precision": null,
+        "route": "fallback"
+      },
+      "verified": {
+        "n_items": 0,
+        "n_correct": 0,
+        "n_gold": 0,
+        "n_gold_matched": 0,
+        "recall": null,
+        "precision": null,
+        "route": "fallback"
+      },
+      "route_correct": true,
+      "route_error": null,
+      "right_route_wrong_item": false,
+      "generation_id": "w4-pipeline-e06-x5/r4/S12",
+      "run": 4
+    },
+    {
+      "metric": "step2_advice",
+      "metric_version": 1,
+      "scenario_id": "S13",
+      "gold_route": "fallback",
+      "extracted": {
+        "n_items": 0,
+        "n_correct": 0,
+        "n_gold": 0,
+        "n_gold_matched": 0,
+        "recall": null,
+        "precision": null,
+        "route": "fallback"
+      },
+      "verified": {
+        "n_items": 0,
+        "n_correct": 0,
+        "n_gold": 0,
+        "n_gold_matched": 0,
+        "recall": null,
+        "precision": null,
+        "route": "fallback"
+      },
+      "route_correct": true,
+      "route_error": null,
+      "right_route_wrong_item": false,
+      "generation_id": "w4-pipeline-e06-x5/r4/S13",
+      "run": 4
+    },
+    {
+      "metric": "step2_advice",
+      "metric_version": 1,
+      "scenario_id": "S14",
+      "gold_route": "documented",
+      "extracted": {
+        "n_items": 1,
+        "n_correct": 1,
+        "n_gold": 1,
+        "n_gold_matched": 1,
+        "recall": 1.0,
+        "precision": 1.0,
+        "route": "documented"
+      },
+      "verified": {
+        "n_items": 1,
+        "n_correct": 1,
+        "n_gold": 1,
+        "n_gold_matched": 1,
+        "recall": 1.0,
+        "precision": 1.0,
+        "route": "documented"
+      },
+      "route_correct": true,
+      "route_error": null,
+      "right_route_wrong_item": false,
+      "generation_id": "w4-pipeline-e06-x5/r4/S14",
+      "run": 4
+    },
+    {
+      "metric": "step2_advice",
+      "metric_version": 1,
+      "scenario_id": "S15",
+      "gold_route": "documented",
+      "extracted": {
+        "n_items": 0,
+        "n_correct": 0,
+        "n_gold": 2,
+        "n_gold_matched": 0,
+        "recall": 0.0,
+        "precision": null,
+        "route": "fallback"
+      },
+      "verified": {
+        "n_items": 0,
+        "n_correct": 0,
+        "n_gold": 2,
+        "n_gold_matched": 0,
+        "recall": 0.0,
+        "precision": null,
+        "route": "fallback"
+      },
+      "route_correct": false,
+      "route_error": "not_extracted",
+      "right_route_wrong_item": false,
+      "generation_id": "w4-pipeline-e06-x5/r4/S15",
+      "run": 4
+    },
+    {
+      "metric": "step2_advice",
+      "metric_version": 1,
+      "scenario_id": "S16",
+      "gold_route": "fallback",
+      "extracted": {
+        "n_items": 0,
+        "n_correct": 0,
+        "n_gold": 0,
+        "n_gold_matched": 0,
+        "recall": null,
+        "precision": null,
+        "route": "fallback"
+      },
+      "verified": {
+        "n_items": 0,
+        "n_correct": 0,
+        "n_gold": 0,
+        "n_gold_matched": 0,
+        "recall": null,
+        "precision": null,
+        "route": "fallback"
+      },
+      "route_correct": true,
+      "route_error": null,
+      "right_route_wrong_item": false,
+      "generation_id": "w4-pipeline-e06-x5/r4/S16",
+      "run": 4
+    },
+    {
+      "metric": "step2_advice",
+      "metric_version": 1,
+      "scenario_id": "S17",
+      "gold_route": "fallback",
+      "extracted": {
+        "n_items": 0,
+        "n_correct": 0,
+        "n_gold": 0,
+        "n_gold_matched": 0,
+        "recall": null,
+        "precision": null,
+        "route": "fallback"
+      },
+      "verified": {
+        "n_items": 0,
+        "n_correct": 0,
+        "n_gold": 0,
+        "n_gold_matched": 0,
+        "recall": null,
+        "precision": null,
+        "route": "fallback"
+      },
+      "route_correct": true,
+      "route_error": null,
+      "right_route_wrong_item": false,
+      "generation_id": "w4-pipeline-e06-x5/r4/S17",
+      "run": 4
+    },
+    {
+      "metric": "step2_advice",
+      "metric_version": 1,
+      "scenario_id": "S18",
+      "gold_route": "documented",
+      "extracted": {
+        "n_items": 2,
+        "n_correct": 2,
+        "n_gold": 3,
+        "n_gold_matched": 3,
+        "recall": 1.0,
+        "precision": 1.0,
+        "route": "documented"
+      },
+      "verified": {
+        "n_items": 2,
+        "n_correct": 2,
+        "n_gold": 3,
+        "n_gold_matched": 3,
+        "recall": 1.0,
+        "precision": 1.0,
+        "route": "documented"
+      },
+      "route_correct": true,
+      "route_error": null,
+      "right_route_wrong_item": false,
+      "generation_id": "w4-pipeline-e06-x5/r4/S18",
+      "run": 4
+    },
+    {
+      "metric": "step2_advice",
+      "metric_version": 1,
+      "scenario_id": "A5",
+      "gold_route": "fallback",
+      "extracted": {
+        "n_items": 0,
+        "n_correct": 0,
+        "n_gold": 0,
+        "n_gold_matched": 0,
+        "recall": null,
+        "precision": null,
+        "route": "fallback"
+      },
+      "verified": {
+        "n_items": 0,
+        "n_correct": 0,
+        "n_gold": 0,
+        "n_gold_matched": 0,
+        "recall": null,
+        "precision": null,
+        "route": "fallback"
+      },
+      "route_correct": true,
+      "route_error": null,
+      "right_route_wrong_item": false,
+      "generation_id": "w4-pipeline-e06-x5/r4/A5",
+      "run": 4
+    },
+    {
+      "metric": "step2_advice",
+      "metric_version": 1,
+      "scenario_id": "B6",
+      "gold_route": "fallback",
+      "extracted": {
+        "n_items": 0,
+        "n_correct": 0,
+        "n_gold": 0,
+        "n_gold_matched": 0,
+        "recall": null,
+        "precision": null,
+        "route": "fallback"
+      },
+      "verified": {
+        "n_items": 0,
+        "n_correct": 0,
+        "n_gold": 0,
+        "n_gold_matched": 0,
+        "recall": null,
+        "precision": null,
+        "route": "fallback"
+      },
+      "route_correct": true,
+      "route_error": null,
+      "right_route_wrong_item": false,
+      "generation_id": "w4-pipeline-e06-x5/r4/B6",
+      "run": 4
+    },
+    {
+      "metric": "step2_advice",
+      "metric_version": 1,
+      "scenario_id": "C7",
+      "gold_route": "fallback",
+      "extracted": {
+        "n_items": 1,
+        "n_correct": 0,
+        "n_gold": 0,
+        "n_gold_matched": 0,
+        "recall": null,
+        "precision": 0.0,
+        "route": "documented"
+      },
+      "verified": {
+        "n_items": 1,
+        "n_correct": 0,
+        "n_gold": 0,
+        "n_gold_matched": 0,
+        "recall": null,
+        "precision": 0.0,
+        "route": "documented"
+      },
+      "route_correct": false,
+      "route_error": "non_advice_as_advice",
+      "right_route_wrong_item": false,
+      "generation_id": "w4-pipeline-e06-x5/r4/C7",
+      "run": 4
+    },
+    {
+      "metric": "step2_advice",
+      "metric_version": 1,
+      "scenario_id": "S1",
+      "gold_route": "fallback",
+      "extracted": {
+        "n_items": 0,
+        "n_correct": 0,
+        "n_gold": 0,
+        "n_gold_matched": 0,
+        "recall": null,
+        "precision": null,
+        "route": "fallback"
+      },
+      "verified": {
+        "n_items": 0,
+        "n_correct": 0,
+        "n_gold": 0,
+        "n_gold_matched": 0,
+        "recall": null,
+        "precision": null,
+        "route": "fallback"
+      },
+      "route_correct": true,
+      "route_error": null,
+      "right_route_wrong_item": false,
+      "generation_id": "w4-pipeline-e06-x5/r5/S1",
+      "run": 5
+    },
+    {
+      "metric": "step2_advice",
+      "metric_version": 1,
+      "scenario_id": "S2",
+      "gold_route": "documented",
+      "extracted": {
+        "n_items": 2,
+        "n_correct": 2,
+        "n_gold": 2,
+        "n_gold_matched": 2,
+        "recall": 1.0,
+        "precision": 1.0,
+        "route": "documented"
+      },
+      "verified": {
+        "n_items": 2,
+        "n_correct": 2,
+        "n_gold": 2,
+        "n_gold_matched": 2,
+        "recall": 1.0,
+        "precision": 1.0,
+        "route": "documented"
+      },
+      "route_correct": true,
+      "route_error": null,
+      "right_route_wrong_item": false,
+      "generation_id": "w4-pipeline-e06-x5/r5/S2",
+      "run": 5
+    },
+    {
+      "metric": "step2_advice",
+      "metric_version": 1,
+      "scenario_id": "S3",
+      "gold_route": "documented",
+      "extracted": {
+        "n_items": 0,
+        "n_correct": 0,
+        "n_gold": 2,
+        "n_gold_matched": 0,
+        "recall": 0.0,
+        "precision": null,
+        "route": "fallback"
+      },
+      "verified": {
+        "n_items": 0,
+        "n_correct": 0,
+        "n_gold": 2,
+        "n_gold_matched": 0,
+        "recall": 0.0,
+        "precision": null,
+        "route": "fallback"
+      },
+      "route_correct": false,
+      "route_error": "not_extracted",
+      "right_route_wrong_item": false,
+      "generation_id": "w4-pipeline-e06-x5/r5/S3",
+      "run": 5
+    },
+    {
+      "metric": "step2_advice",
+      "metric_version": 1,
+      "scenario_id": "S4",
+      "gold_route": "documented",
+      "extracted": {
+        "n_items": 1,
+        "n_correct": 1,
+        "n_gold": 1,
+        "n_gold_matched": 1,
+        "recall": 1.0,
+        "precision": 1.0,
+        "route": "documented"
+      },
+      "verified": {
+        "n_items": 1,
+        "n_correct": 1,
+        "n_gold": 1,
+        "n_gold_matched": 1,
+        "recall": 1.0,
+        "precision": 1.0,
+        "route": "documented"
+      },
+      "route_correct": true,
+      "route_error": null,
+      "right_route_wrong_item": false,
+      "generation_id": "w4-pipeline-e06-x5/r5/S4",
+      "run": 5
+    },
+    {
+      "metric": "step2_advice",
+      "metric_version": 1,
+      "scenario_id": "S8",
+      "gold_route": "documented",
+      "extracted": {
+        "n_items": 1,
+        "n_correct": 1,
+        "n_gold": 1,
+        "n_gold_matched": 1,
+        "recall": 1.0,
+        "precision": 1.0,
+        "route": "documented"
+      },
+      "verified": {
+        "n_items": 1,
+        "n_correct": 1,
+        "n_gold": 1,
+        "n_gold_matched": 1,
+        "recall": 1.0,
+        "precision": 1.0,
+        "route": "documented"
+      },
+      "route_correct": true,
+      "route_error": null,
+      "right_route_wrong_item": false,
+      "generation_id": "w4-pipeline-e06-x5/r5/S8",
+      "run": 5
+    },
+    {
+      "metric": "step2_advice",
+      "metric_version": 1,
+      "scenario_id": "S9",
+      "gold_route": "documented",
+      "extracted": {
+        "n_items": 2,
+        "n_correct": 1,
+        "n_gold": 2,
+        "n_gold_matched": 1,
+        "recall": 0.5,
+        "precision": 0.5,
+        "route": "documented"
+      },
+      "verified": {
+        "n_items": 2,
+        "n_correct": 1,
+        "n_gold": 2,
+        "n_gold_matched": 1,
+        "recall": 0.5,
+        "precision": 0.5,
+        "route": "documented"
+      },
+      "route_correct": true,
+      "route_error": null,
+      "right_route_wrong_item": false,
+      "generation_id": "w4-pipeline-e06-x5/r5/S9",
+      "run": 5
+    },
+    {
+      "metric": "step2_advice",
+      "metric_version": 1,
+      "scenario_id": "S10",
+      "gold_route": "documented",
+      "extracted": {
+        "n_items": 1,
+        "n_correct": 1,
+        "n_gold": 1,
+        "n_gold_matched": 1,
+        "recall": 1.0,
+        "precision": 1.0,
+        "route": "documented"
+      },
+      "verified": {
+        "n_items": 1,
+        "n_correct": 1,
+        "n_gold": 1,
+        "n_gold_matched": 1,
+        "recall": 1.0,
+        "precision": 1.0,
+        "route": "documented"
+      },
+      "route_correct": true,
+      "route_error": null,
+      "right_route_wrong_item": false,
+      "generation_id": "w4-pipeline-e06-x5/r5/S10",
+      "run": 5
+    },
+    {
+      "metric": "step2_advice",
+      "metric_version": 1,
+      "scenario_id": "S11",
+      "gold_route": "documented",
+      "extracted": {
+        "n_items": 1,
+        "n_correct": 1,
+        "n_gold": 2,
+        "n_gold_matched": 1,
+        "recall": 0.5,
+        "precision": 1.0,
+        "route": "documented"
+      },
+      "verified": {
+        "n_items": 1,
+        "n_correct": 1,
+        "n_gold": 2,
+        "n_gold_matched": 1,
+        "recall": 0.5,
+        "precision": 1.0,
+        "route": "documented"
+      },
+      "route_correct": true,
+      "route_error": null,
+      "right_route_wrong_item": false,
+      "generation_id": "w4-pipeline-e06-x5/r5/S11",
+      "run": 5
+    },
+    {
+      "metric": "step2_advice",
+      "metric_version": 1,
+      "scenario_id": "S12",
+      "gold_route": "fallback",
+      "extracted": {
+        "n_items": 0,
+        "n_correct": 0,
+        "n_gold": 0,
+        "n_gold_matched": 0,
+        "recall": null,
+        "precision": null,
+        "route": "fallback"
+      },
+      "verified": {
+        "n_items": 0,
+        "n_correct": 0,
+        "n_gold": 0,
+        "n_gold_matched": 0,
+        "recall": null,
+        "precision": null,
+        "route": "fallback"
+      },
+      "route_correct": true,
+      "route_error": null,
+      "right_route_wrong_item": false,
+      "generation_id": "w4-pipeline-e06-x5/r5/S12",
+      "run": 5
+    },
+    {
+      "metric": "step2_advice",
+      "metric_version": 1,
+      "scenario_id": "S13",
+      "gold_route": "fallback",
+      "extracted": {
+        "n_items": 0,
+        "n_correct": 0,
+        "n_gold": 0,
+        "n_gold_matched": 0,
+        "recall": null,
+        "precision": null,
+        "route": "fallback"
+      },
+      "verified": {
+        "n_items": 0,
+        "n_correct": 0,
+        "n_gold": 0,
+        "n_gold_matched": 0,
+        "recall": null,
+        "precision": null,
+        "route": "fallback"
+      },
+      "route_correct": true,
+      "route_error": null,
+      "right_route_wrong_item": false,
+      "generation_id": "w4-pipeline-e06-x5/r5/S13",
+      "run": 5
+    },
+    {
+      "metric": "step2_advice",
+      "metric_version": 1,
+      "scenario_id": "S14",
+      "gold_route": "documented",
+      "extracted": {
+        "n_items": 1,
+        "n_correct": 1,
+        "n_gold": 1,
+        "n_gold_matched": 1,
+        "recall": 1.0,
+        "precision": 1.0,
+        "route": "documented"
+      },
+      "verified": {
+        "n_items": 1,
+        "n_correct": 1,
+        "n_gold": 1,
+        "n_gold_matched": 1,
+        "recall": 1.0,
+        "precision": 1.0,
+        "route": "documented"
+      },
+      "route_correct": true,
+      "route_error": null,
+      "right_route_wrong_item": false,
+      "generation_id": "w4-pipeline-e06-x5/r5/S14",
+      "run": 5
+    },
+    {
+      "metric": "step2_advice",
+      "metric_version": 1,
+      "scenario_id": "S15",
+      "gold_route": "documented",
+      "extracted": {
+        "n_items": 0,
+        "n_correct": 0,
+        "n_gold": 2,
+        "n_gold_matched": 0,
+        "recall": 0.0,
+        "precision": null,
+        "route": "fallback"
+      },
+      "verified": {
+        "n_items": 0,
+        "n_correct": 0,
+        "n_gold": 2,
+        "n_gold_matched": 0,
+        "recall": 0.0,
+        "precision": null,
+        "route": "fallback"
+      },
+      "route_correct": false,
+      "route_error": "not_extracted",
+      "right_route_wrong_item": false,
+      "generation_id": "w4-pipeline-e06-x5/r5/S15",
+      "run": 5
+    },
+    {
+      "metric": "step2_advice",
+      "metric_version": 1,
+      "scenario_id": "S16",
+      "gold_route": "fallback",
+      "extracted": {
+        "n_items": 1,
+        "n_correct": 0,
+        "n_gold": 0,
+        "n_gold_matched": 0,
+        "recall": null,
+        "precision": 0.0,
+        "route": "documented"
+      },
+      "verified": {
+        "n_items": 1,
+        "n_correct": 0,
+        "n_gold": 0,
+        "n_gold_matched": 0,
+        "recall": null,
+        "precision": 0.0,
+        "route": "documented"
+      },
+      "route_correct": false,
+      "route_error": "non_advice_as_advice",
+      "right_route_wrong_item": false,
+      "generation_id": "w4-pipeline-e06-x5/r5/S16",
+      "run": 5
+    },
+    {
+      "metric": "step2_advice",
+      "metric_version": 1,
+      "scenario_id": "S17",
+      "gold_route": "fallback",
+      "extracted": {
+        "n_items": 0,
+        "n_correct": 0,
+        "n_gold": 0,
+        "n_gold_matched": 0,
+        "recall": null,
+        "precision": null,
+        "route": "fallback"
+      },
+      "verified": {
+        "n_items": 0,
+        "n_correct": 0,
+        "n_gold": 0,
+        "n_gold_matched": 0,
+        "recall": null,
+        "precision": null,
+        "route": "fallback"
+      },
+      "route_correct": true,
+      "route_error": null,
+      "right_route_wrong_item": false,
+      "generation_id": "w4-pipeline-e06-x5/r5/S17",
+      "run": 5
+    },
+    {
+      "metric": "step2_advice",
+      "metric_version": 1,
+      "scenario_id": "S18",
+      "gold_route": "documented",
+      "extracted": {
+        "n_items": 2,
+        "n_correct": 2,
+        "n_gold": 3,
+        "n_gold_matched": 3,
+        "recall": 1.0,
+        "precision": 1.0,
+        "route": "documented"
+      },
+      "verified": {
+        "n_items": 2,
+        "n_correct": 2,
+        "n_gold": 3,
+        "n_gold_matched": 3,
+        "recall": 1.0,
+        "precision": 1.0,
+        "route": "documented"
+      },
+      "route_correct": true,
+      "route_error": null,
+      "right_route_wrong_item": false,
+      "generation_id": "w4-pipeline-e06-x5/r5/S18",
+      "run": 5
+    },
+    {
+      "metric": "step2_advice",
+      "metric_version": 1,
+      "scenario_id": "A5",
+      "gold_route": "fallback",
+      "extracted": {
+        "n_items": 0,
+        "n_correct": 0,
+        "n_gold": 0,
+        "n_gold_matched": 0,
+        "recall": null,
+        "precision": null,
+        "route": "fallback"
+      },
+      "verified": {
+        "n_items": 0,
+        "n_correct": 0,
+        "n_gold": 0,
+        "n_gold_matched": 0,
+        "recall": null,
+        "precision": null,
+        "route": "fallback"
+      },
+      "route_correct": true,
+      "route_error": null,
+      "right_route_wrong_item": false,
+      "generation_id": "w4-pipeline-e06-x5/r5/A5",
+      "run": 5
+    },
+    {
+      "metric": "step2_advice",
+      "metric_version": 1,
+      "scenario_id": "B6",
+      "gold_route": "fallback",
+      "extracted": {
+        "n_items": 0,
+        "n_correct": 0,
+        "n_gold": 0,
+        "n_gold_matched": 0,
+        "recall": null,
+        "precision": null,
+        "route": "fallback"
+      },
+      "verified": {
+        "n_items": 0,
+        "n_correct": 0,
+        "n_gold": 0,
+        "n_gold_matched": 0,
+        "recall": null,
+        "precision": null,
+        "route": "fallback"
+      },
+      "route_correct": true,
+      "route_error": null,
+      "right_route_wrong_item": false,
+      "generation_id": "w4-pipeline-e06-x5/r5/B6",
+      "run": 5
+    },
+    {
+      "metric": "step2_advice",
+      "metric_version": 1,
+      "scenario_id": "C7",
+      "gold_route": "fallback",
+      "extracted": {
+        "n_items": 0,
+        "n_correct": 0,
+        "n_gold": 0,
+        "n_gold_matched": 0,
+        "recall": null,
+        "precision": null,
+        "route": "fallback"
+      },
+      "verified": {
+        "n_items": 0,
+        "n_correct": 0,
+        "n_gold": 0,
+        "n_gold_matched": 0,
+        "recall": null,
+        "precision": null,
+        "route": "fallback"
+      },
+      "route_correct": true,
+      "route_error": null,
+      "right_route_wrong_item": false,
+      "generation_id": "w4-pipeline-e06-x5/r5/C7",
+      "run": 5
+    }
+  ],
+  "summary": {
+    "n_records": 90,
+    "n_scored": 90,
+    "route_correct": 74,
+    "route_errors": {
+      "not_extracted": 6,
+      "lost_at_verification": 3,
+      "non_advice_as_advice": 7
+    },
+    "right_route_wrong_item": 0,
+    "extracted": {
+      "recall": 0.6588235294117647,
+      "precision": 0.819672131147541,
+      "n_items": 61,
+      "n_gold": 85
+    },
+    "verified": {
+      "recall": 0.6588235294117647,
+      "precision": 0.8571428571428571,
+      "n_items": 56,
+      "n_gold": 85
+    }
+  }
+}

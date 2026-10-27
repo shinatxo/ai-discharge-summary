@@ -1,0 +1,726 @@
+{
+  "batch_id": "w6-pipeline-e07-m01-x5",
+  "stopped_early": false,
+  "generations": [
+    {
+      "run": 1,
+      "scenario_id": "S1",
+      "record": "r1/S1.json",
+      "failed_step": null,
+      "error_code": null,
+      "cost_usd_est": 0.058503
+    },
+    {
+      "run": 1,
+      "scenario_id": "S2",
+      "record": "r1/S2.json",
+      "failed_step": null,
+      "error_code": null,
+      "cost_usd_est": 0.036321
+    },
+    {
+      "run": 1,
+      "scenario_id": "S3",
+      "record": "r1/S3.json",
+      "failed_step": null,
+      "error_code": null,
+      "cost_usd_est": 0.040383
+    },
+    {
+      "run": 1,
+      "scenario_id": "S4",
+      "record": "r1/S4.json",
+      "failed_step": null,
+      "error_code": null,
+      "cost_usd_est": 0.037921
+    },
+    {
+      "run": 1,
+      "scenario_id": "S8",
+      "record": "r1/S8.json",
+      "failed_step": null,
+      "error_code": null,
+      "cost_usd_est": 0.0341
+    },
+    {
+      "run": 1,
+      "scenario_id": "S9",
+      "record": "r1/S9.json",
+      "failed_step": null,
+      "error_code": null,
+      "cost_usd_est": 0.038024
+    },
+    {
+      "run": 1,
+      "scenario_id": "S10",
+      "record": "r1/S10.json",
+      "failed_step": null,
+      "error_code": null,
+      "cost_usd_est": 0.04199
+    },
+    {
+      "run": 1,
+      "scenario_id": "S11",
+      "record": "r1/S11.json",
+      "failed_step": null,
+      "error_code": null,
+      "cost_usd_est": 0.044927
+    },
+    {
+      "run": 1,
+      "scenario_id": "S12",
+      "record": "r1/S12.json",
+      "failed_step": null,
+      "error_code": null,
+      "cost_usd_est": 0.053619
+    },
+    {
+      "run": 1,
+      "scenario_id": "S13",
+      "record": "r1/S13.json",
+      "failed_step": null,
+      "error_code": null,
+      "cost_usd_est": 0.057923
+    },
+    {
+      "run": 1,
+      "scenario_id": "S14",
+      "record": "r1/S14.json",
+      "failed_step": null,
+      "error_code": null,
+      "cost_usd_est": 0.058474
+    },
+    {
+      "run": 1,
+      "scenario_id": "S15",
+      "record": "r1/S15.json",
+      "failed_step": null,
+      "error_code": null,
+      "cost_usd_est": 0.049894
+    },
+    {
+      "run": 1,
+      "scenario_id": "S16",
+      "record": "r1/S16.json",
+      "failed_step": null,
+      "error_code": null,
+      "cost_usd_est": 0.056768
+    },
+    {
+      "run": 1,
+      "scenario_id": "S17",
+      "record": "r1/S17.json",
+      "failed_step": null,
+      "error_code": null,
+      "cost_usd_est": 0.057467
+    },
+    {
+      "run": 1,
+      "scenario_id": "S18",
+      "record": "r1/S18.json",
+      "failed_step": null,
+      "error_code": null,
+      "cost_usd_est": 0.031641
+    },
+    {
+      "run": 1,
+      "scenario_id": "A5",
+      "record": "r1/A5.json",
+      "failed_step": null,
+      "error_code": null,
+      "cost_usd_est": 0.051336
+    },
+    {
+      "run": 1,
+      "scenario_id": "B6",
+      "record": "r1/B6.json",
+      "failed_step": null,
+      "error_code": null,
+      "cost_usd_est": 0.050158
+    },
+    {
+      "run": 1,
+      "scenario_id": "C7",
+      "record": "r1/C7.json",
+      "failed_step": null,
+      "error_code": null,
+      "cost_usd_est": 0.021068
+    },
+    {
+      "run": 2,
+      "scenario_id": "S1",
+      "record": "r2/S1.json",
+      "failed_step": null,
+      "error_code": null,
+      "cost_usd_est": 0.058484
+    },
+    {
+      "run": 2,
+      "scenario_id": "S2",
+      "record": "r2/S2.json",
+      "failed_step": null,
+      "error_code": null,
+      "cost_usd_est": 0.036684
+    },
+    {
+      "run": 2,
+      "scenario_id": "S3",
+      "record": "r2/S3.json",
+      "failed_step": null,
+      "error_code": null,
+      "cost_usd_est": 0.041967
+    },
+    {
+      "run": 2,
+      "scenario_id": "S4",
+      "record": "r2/S4.json",
+      "failed_step": null,
+      "error_code": null,
+      "cost_usd_est": 0.036733
+    },
+    {
+      "run": 2,
+      "scenario_id": "S8",
+      "record": "r2/S8.json",
+      "failed_step": null,
+      "error_code": null,
+      "cost_usd_est": 0.034281
+    },
+    {
+      "run": 2,
+      "scenario_id": "S9",
+      "record": "r2/S9.json",
+      "failed_step": null,
+      "error_code": null,
+      "cost_usd_est": 0.035417
+    },
+    {
+      "run": 2,
+      "scenario_id": "S10",
+      "record": "r2/S10.json",
+      "failed_step": null,
+      "error_code": null,
+      "cost_usd_est": 0.042452
+    },
+    {
+      "run": 2,
+      "scenario_id": "S11",
+      "record": "r2/S11.json",
+      "failed_step": null,
+      "error_code": null,
+      "cost_usd_est": 0.048395
+    },
+    {
+      "run": 2,
+      "scenario_id": "S12",
+      "record": "r2/S12.json",
+      "failed_step": null,
+      "error_code": null,
+      "cost_usd_est": 0.054246
+    },
+    {
+      "run": 2,
+      "scenario_id": "S13",
+      "record": "r2/S13.json",
+      "failed_step": null,
+      "error_code": null,
+      "cost_usd_est": 0.057655
+    },
+    {
+      "run": 2,
+      "scenario_id": "S14",
+      "record": "r2/S14.json",
+      "failed_step": null,
+      "error_code": null,
+      "cost_usd_est": 0.057368
+    },
+    {
+      "run": 2,
+      "scenario_id": "S15",
+      "record": "r2/S15.json",
+      "failed_step": null,
+      "error_code": null,
+      "cost_usd_est": 0.050102
+    },
+    {
+      "run": 2,
+      "scenario_id": "S16",
+      "record": "r2/S16.json",
+      "failed_step": null,
+      "error_code": null,
+      "cost_usd_est": 0.05518
+    },
+    {
+      "run": 2,
+      "scenario_id": "S17",
+      "record": "r2/S17.json",
+      "failed_step": null,
+      "error_code": null,
+      "cost_usd_est": 0.058196
+    },
+    {
+      "run": 2,
+      "scenario_id": "S18",
+      "record": "r2/S18.json",
+      "failed_step": null,
+      "error_code": null,
+      "cost_usd_est": 0.035572
+    },
+    {
+      "run": 2,
+      "scenario_id": "A5",
+      "record": "r2/A5.json",
+      "failed_step": null,
+      "error_code": null,
+      "cost_usd_est": 0.054939
+    },
+    {
+      "run": 2,
+      "scenario_id": "B6",
+      "record": "r2/B6.json",
+      "failed_step": null,
+      "error_code": null,
+      "cost_usd_est": 0.051999
+    },
+    {
+      "run": 2,
+      "scenario_id": "C7",
+      "record": "r2/C7.json",
+      "failed_step": null,
+      "error_code": null,
+      "cost_usd_est": 0.021893
+    },
+    {
+      "run": 3,
+      "scenario_id": "S1",
+      "record": "r3/S1.json",
+      "failed_step": null,
+      "error_code": null,
+      "cost_usd_est": 0.059639
+    },
+    {
+      "run": 3,
+      "scenario_id": "S2",
+      "record": "r3/S2.json",
+      "failed_step": null,
+      "error_code": null,
+      "cost_usd_est": 0.03637
+    },
+    {
+      "run": 3,
+      "scenario_id": "S3",
+      "record": "r3/S3.json",
+      "failed_step": null,
+      "error_code": null,
+      "cost_usd_est": 0.045119
+    },
+    {
+      "run": 3,
+      "scenario_id": "S4",
+      "record": "r3/S4.json",
+      "failed_step": null,
+      "error_code": null,
+      "cost_usd_est": 0.037377
+    },
+    {
+      "run": 3,
+      "scenario_id": "S8",
+      "record": "r3/S8.json",
+      "failed_step": null,
+      "error_code": null,
+      "cost_usd_est": 0.034908
+    },
+    {
+      "run": 3,
+      "scenario_id": "S9",
+      "record": "r3/S9.json",
+      "failed_step": null,
+      "error_code": null,
+      "cost_usd_est": 0.038948
+    },
+    {
+      "run": 3,
+      "scenario_id": "S10",
+      "record": "r3/S10.json",
+      "failed_step": null,
+      "error_code": null,
+      "cost_usd_est": 0.042389
+    },
+    {
+      "run": 3,
+      "scenario_id": "S11",
+      "record": "r3/S11.json",
+      "failed_step": null,
+      "error_code": null,
+      "cost_usd_est": 0.044505
+    },
+    {
+      "run": 3,
+      "scenario_id": "S12",
+      "record": "r3/S12.json",
+      "failed_step": null,
+      "error_code": null,
+      "cost_usd_est": 0.050174
+    },
+    {
+      "run": 3,
+      "scenario_id": "S13",
+      "record": "r3/S13.json",
+      "failed_step": null,
+      "error_code": null,
+      "cost_usd_est": 0.054735
+    },
+    {
+      "run": 3,
+      "scenario_id": "S14",
+      "record": "r3/S14.json",
+      "failed_step": null,
+      "error_code": null,
+      "cost_usd_est": 0.057969
+    },
+    {
+      "run": 3,
+      "scenario_id": "S15",
+      "record": "r3/S15.json",
+      "failed_step": null,
+      "error_code": null,
+      "cost_usd_est": 0.052831
+    },
+    {
+      "run": 3,
+      "scenario_id": "S16",
+      "record": "r3/S16.json",
+      "failed_step": null,
+      "error_code": null,
+      "cost_usd_est": 0.05623
+    },
+    {
+      "run": 3,
+      "scenario_id": "S17",
+      "record": "r3/S17.json",
+      "failed_step": null,
+      "error_code": null,
+      "cost_usd_est": 0.057517
+    },
+    {
+      "run": 3,
+      "scenario_id": "S18",
+      "record": "r3/S18.json",
+      "failed_step": null,
+      "error_code": null,
+      "cost_usd_est": 0.034205
+    },
+    {
+      "run": 3,
+      "scenario_id": "A5",
+      "record": "r3/A5.json",
+      "failed_step": null,
+      "error_code": null,
+      "cost_usd_est": 0.053738
+    },
+    {
+      "run": 3,
+      "scenario_id": "B6",
+      "record": "r3/B6.json",
+      "failed_step": null,
+      "error_code": null,
+      "cost_usd_est": 0.04859
+    },
+    {
+      "run": 3,
+      "scenario_id": "C7",
+      "record": "r3/C7.json",
+      "failed_step": null,
+      "error_code": null,
+      "cost_usd_est": 0.021992
+    },
+    {
+      "run": 4,
+      "scenario_id": "S1",
+      "record": "r4/S1.json",
+      "failed_step": null,
+      "error_code": null,
+      "cost_usd_est": 0.058576
+    },
+    {
+      "run": 4,
+      "scenario_id": "S2",
+      "record": "r4/S2.json",
+      "failed_step": null,
+      "error_code": null,
+      "cost_usd_est": 0.034242
+    },
+    {
+      "run": 4,
+      "scenario_id": "S3",
+      "record": "r4/S3.json",
+      "failed_step": null,
+      "error_code": null,
+      "cost_usd_est": 0.049666
+    },
+    {
+      "run": 4,
+      "scenario_id": "S4",
+      "record": "r4/S4.json",
+      "failed_step": null,
+      "error_code": null,
+      "cost_usd_est": 0.034852
+    },
+    {
+      "run": 4,
+      "scenario_id": "S8",
+      "record": "r4/S8.json",
+      "failed_step": null,
+      "error_code": null,
+      "cost_usd_est": 0.034265
+    },
+    {
+      "run": 4,
+      "scenario_id": "S9",
+      "record": "r4/S9.json",
+      "failed_step": null,
+      "error_code": null,
+      "cost_usd_est": 0.034922
+    },
+    {
+      "run": 4,
+      "scenario_id": "S10",
+      "record": "r4/S10.json",
+      "failed_step": null,
+      "error_code": null,
+      "cost_usd_est": 0.042086
+    },
+    {
+      "run": 4,
+      "scenario_id": "S11",
+      "record": "r4/S11.json",
+      "failed_step": null,
+      "error_code": null,
+      "cost_usd_est": 0.046802
+    },
+    {
+      "run": 4,
+      "scenario_id": "S12",
+      "record": "r4/S12.json",
+      "failed_step": null,
+      "error_code": null,
+      "cost_usd_est": 0.04994
+    },
+    {
+      "run": 4,
+      "scenario_id": "S13",
+      "record": "r4/S13.json",
+      "failed_step": null,
+      "error_code": null,
+      "cost_usd_est": 0.055576
+    },
+    {
+      "run": 4,
+      "scenario_id": "S14",
+      "record": "r4/S14.json",
+      "failed_step": null,
+      "error_code": null,
+      "cost_usd_est": 0.059454
+    },
+    {
+      "run": 4,
+      "scenario_id": "S15",
+      "record": "r4/S15.json",
+      "failed_step": null,
+      "error_code": null,
+      "cost_usd_est": 0.049425
+    },
+    {
+      "run": 4,
+      "scenario_id": "S16",
+      "record": "r4/S16.json",
+      "failed_step": null,
+      "error_code": null,
+      "cost_usd_est": 0.0542
+    },
+    {
+      "run": 4,
+      "scenario_id": "S17",
+      "record": "r4/S17.json",
+      "failed_step": null,
+      "error_code": null,
+      "cost_usd_est": 0.056695
+    },
+    {
+      "run": 4,
+      "scenario_id": "S18",
+      "record": "r4/S18.json",
+      "failed_step": null,
+      "error_code": null,
+      "cost_usd_est": 0.034671
+    },
+    {
+      "run": 4,
+      "scenario_id": "A5",
+      "record": "r4/A5.json",
+      "failed_step": null,
+      "error_code": null,
+      "cost_usd_est": 0.051458
+    },
+    {
+      "run": 4,
+      "scenario_id": "B6",
+      "record": "r4/B6.json",
+      "failed_step": null,
+      "error_code": null,
+      "cost_usd_est": 0.0503
+    },
+    {
+      "run": 4,
+      "scenario_id": "C7",
+      "record": "r4/C7.json",
+      "failed_step": null,
+      "error_code": null,
+      "cost_usd_est": 0.022372
+    },
+    {
+      "run": 5,
+      "scenario_id": "S1",
+      "record": "r5/S1.json",
+      "failed_step": null,
+      "error_code": null,
+      "cost_usd_est": 0.05618
+    },
+    {
+      "run": 5,
+      "scenario_id": "S2",
+      "record": "r5/S2.json",
+      "failed_step": null,
+      "error_code": null,
+      "cost_usd_est": 0.036321
+    },
+    {
+      "run": 5,
+      "scenario_id": "S3",
+      "record": "r5/S3.json",
+      "failed_step": null,
+      "error_code": null,
+      "cost_usd_est": 0.040664
+    },
+    {
+      "run": 5,
+      "scenario_id": "S4",
+      "record": "r5/S4.json",
+      "failed_step": null,
+      "error_code": null,
+      "cost_usd_est": 0.034476
+    },
+    {
+      "run": 5,
+      "scenario_id": "S8",
+      "record": "r5/S8.json",
+      "failed_step": null,
+      "error_code": null,
+      "cost_usd_est": 0.034595
+    },
+    {
+      "run": 5,
+      "scenario_id": "S9",
+      "record": "r5/S9.json",
+      "failed_step": null,
+      "error_code": null,
+      "cost_usd_est": 0.035004
+    },
+    {
+      "run": 5,
+      "scenario_id": "S10",
+      "record": "r5/S10.json",
+      "failed_step": null,
+      "error_code": null,
+      "cost_usd_est": 0.043254
+    },
+    {
+      "run": 5,
+      "scenario_id": "S11",
+      "record": "r5/S11.json",
+      "failed_step": null,
+      "error_code": null,
+      "cost_usd_est": 0.046802
+    },
+    {
+      "run": 5,
+      "scenario_id": "S12",
+      "record": "r5/S12.json",
+      "failed_step": null,
+      "error_code": null,
+      "cost_usd_est": 0.050517
+    },
+    {
+      "run": 5,
+      "scenario_id": "S13",
+      "record": "r5/S13.json",
+      "failed_step": null,
+      "error_code": null,
+      "cost_usd_est": 0.055725
+    },
+    {
+      "run": 5,
+      "scenario_id": "S14",
+      "record": "r5/S14.json",
+      "failed_step": null,
+      "error_code": null,
+      "cost_usd_est": 0.055543
+    },
+    {
+      "run": 5,
+      "scenario_id": "S15",
+      "record": "r5/S15.json",
+      "failed_step": null,
+      "error_code": null,
+      "cost_usd_est": 0.047264
+    },
+    {
+      "run": 5,
+      "scenario_id": "S16",
+      "record": "r5/S16.json",
+      "failed_step": null,
+      "error_code": null,
+      "cost_usd_est": 0.056768
+    },
+    {
+      "run": 5,
+      "scenario_id": "S17",
+      "record": "r5/S17.json",
+      "failed_step": null,
+      "error_code": null,
+      "cost_usd_est": 0.057312
+    },
+    {
+      "run": 5,
+      "scenario_id": "S18",
+      "record": "r5/S18.json",
+      "failed_step": null,
+      "error_code": null,
+      "cost_usd_est": 0.033859
+    },
+    {
+      "run": 5,
+      "scenario_id": "A5",
+      "record": "r5/A5.json",
+      "failed_step": null,
+      "error_code": null,
+      "cost_usd_est": 0.053052
+    },
+    {
+      "run": 5,
+      "scenario_id": "B6",
+      "record": "r5/B6.json",
+      "failed_step": null,
+      "error_code": null,
+      "cost_usd_est": 0.051801
+    },
+    {
+      "run": 5,
+      "scenario_id": "C7",
+      "record": "r5/C7.json",
+      "failed_step": null,
+      "error_code": null,
+      "cost_usd_est": 0.022306
+    }
+  ]
+}

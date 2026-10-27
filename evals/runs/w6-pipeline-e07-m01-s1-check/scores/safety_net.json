@@ -1,0 +1,76 @@
+{
+  "scorer": "safety_net",
+  "scorer_version": 2,
+  "batch_id": "w6-pipeline-e07-m01-s1-check",
+  "generator": "pipeline",
+  "gold": {
+    "S1": {
+      "status": "approved",
+      "sha256": "17c1a71d3422d157cd75942acec635e4dc588eea7c60c6278efb3e6cb7245ff4"
+    }
+  },
+  "results": [
+    {
+      "generator": "pipeline",
+      "gold_status": "approved",
+      "route": {
+        "gold": "fallback",
+        "predicted": "fallback",
+        "correct": true,
+        "gold_basis": null
+      },
+      "advice": {
+        "units": [],
+        "n_units": 0,
+        "n_gold": 0,
+        "n_other_line": 0,
+        "n_unlocated": 0,
+        "n_adjudicated": 0,
+        "gold_items": 0,
+        "gold_items_carried": 0,
+        "meta_flags": 0
+      },
+      "seek_help": {
+        "gold_documented": false,
+        "n_signposts": 4,
+        "n_invented": 0
+      },
+      "pinned": {
+        "required": true,
+        "in_part_c": true,
+        "audience_ok": true
+      },
+      "failures": [],
+      "verdict": "pass",
+      "generation_id": "w6-pipeline-e07-m01-s1-check/r1/S1",
+      "scenario_id": "S1",
+      "run": 1
+    }
+  ],
+  "skipped": [],
+  "meds": {
+    "scorer": "d4_medications",
+    "scorer_version": 2,
+    "results": [
+      {
+        "generator": "pipeline",
+        "gold_status": "approved",
+        "discharge_status": "referenced_not_listed",
+        "verdict": "pass",
+        "findings": [],
+        "drugs": {
+          "gold": 8,
+          "fully_correct": 8
+        },
+        "invented_doses": 0,
+        "invented_frequencies": 0,
+        "extras": [],
+        "n_entries": 8,
+        "generation_id": "w6-pipeline-e07-m01-s1-check/r1/S1",
+        "scenario_id": "S1",
+        "run": 1
+      }
+    ],
+    "skipped": []
+  }
+}

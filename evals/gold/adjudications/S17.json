@@ -1,0 +1,68 @@
+{
+  "scenario_id": "S17",
+  "compose_rulings": {
+    "079792f7a4aff6a2": "acceptable",
+    "26b9806dbbd33a63": "acceptable",
+    "298e1e7bfed6256a": "acceptable",
+    "2ce8d1596bafe260": "acceptable",
+    "423956f288b55992": "acceptable",
+    "507ffbe1292d6bd6": "acceptable",
+    "51c1582c14239540": "acceptable",
+    "5553875687853a9a": "acceptable",
+    "626c120bb1a31f48": "acceptable",
+    "966d7b267a2754f8": "acceptable",
+    "a5513e18edcf2e5e": "acceptable",
+    "a5d5bad796172478": "acceptable",
+    "a788e873cf5ae309": "acceptable",
+    "b2b2769adec1a6f1": "acceptable",
+    "b3efd2b9fd12ed76": "acceptable",
+    "bd61a84c0b861caf": "acceptable",
+    "c71461baec02cd56": "acceptable",
+    "cd960c1f1073c023": "acceptable",
+    "d9971801bc65b7f5": "acceptable",
+    "e8a5cc27f2adec3e": "acceptable",
+    "ea4ea69e844bd46c": "acceptable",
+    "eb0f4ca5eefb8cb2": "acceptable",
+    "f01bad7aa6540c9d": "acceptable",
+    "f94d4953f847e65a": "acceptable",
+    "fe0c323197c605d0": "acceptable"
+  },
+  "compose_rulings_meta": {
+    "by": "Shina Oguntoye (CSO)",
+    "on": "2026-10-28",
+    "source": "w6-pipeline-e07-m01-c01-x5, step 6 (grouped and proposed by Claude, approved by the CSO — rulings R1-R3, 28 Oct 2026)",
+    "groups": {
+      "R3_medication": {
+        "verdict": "acceptable",
+        "reason": "a drug named from a fact the section cites (in-hospital treatment, background, GP action, VTE, follow-up); no discharge list restated. 17 narrate an in-hospital dose change — box-vs-prose divergence to be checked at 8a (item 4)",
+        "keys": [
+          "079792f7a4aff6a2",
+          "26b9806dbbd33a63",
+          "298e1e7bfed6256a",
+          "2ce8d1596bafe260",
+          "423956f288b55992",
+          "507ffbe1292d6bd6",
+          "51c1582c14239540",
+          "5553875687853a9a",
+          "626c120bb1a31f48",
+          "966d7b267a2754f8",
+          "a5513e18edcf2e5e",
+          "a5d5bad796172478",
+          "a788e873cf5ae309",
+          "b2b2769adec1a6f1",
+          "b3efd2b9fd12ed76",
+          "bd61a84c0b861caf",
+          "c71461baec02cd56",
+          "cd960c1f1073c023",
+          "d9971801bc65b7f5",
+          "e8a5cc27f2adec3e",
+          "ea4ea69e844bd46c",
+          "eb0f4ca5eefb8cb2",
+          "f01bad7aa6540c9d",
+          "f94d4953f847e65a",
+          "fe0c323197c605d0"
+        ]
+      }
+    }
+  }
+}

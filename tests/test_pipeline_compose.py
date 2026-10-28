@@ -500,3 +500,14 @@ def test_output_never_carries_the_notes():
     dumped = json.dumps(_run())
     assert "Day 3 nursing" not in dumped and "triple vessel disease" not in dumped
     assert shape_errors({"sections": []}, record_composition_schema()) == []
+
+
+def test_items_under_a_not_documented_field_are_not_a_field_omission():
+    # CSO R4, 28 Oct 2026: field-level omission is defined on DOCUMENTED fields.
+    facts = _facts()
+    facts["fields"]["diagnosis_background"] = {
+        "status": "not_documented", "field_check": "items_on_not_documented",
+        "items": [{"fact_id": "diagnosis_background.0", "value": "Not documented — note: x",
+                   "citation_status": "verified"}]}
+    names = _names(_run(facts=facts))
+    assert "field_omitted" not in names and "fact_unused" in names

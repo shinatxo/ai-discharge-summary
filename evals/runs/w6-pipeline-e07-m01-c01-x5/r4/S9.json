@@ -1,0 +1,983 @@
+{
+  "record_version": 1,
+  "generation_id": "w6-pipeline-e07-m01-c01-x5/r4/S9",
+  "batch_id": "w6-pipeline-e07-m01-c01-x5",
+  "run": 4,
+  "scenario_id": "S9",
+  "generator": "pipeline",
+  "path": "steps-1-5b-5a-6",
+  "model_id": "anthropic.claude-sonnet-4-6",
+  "region": "eu-west-2",
+  "prompts": {
+    "extract_facts": {
+      "path": "src/generate/pipeline/prompts/extract_facts.md",
+      "file_sha256": "378df3fefedc74177c9dd51c9c8827b86080f632fb3daa734a07c3462ccd760e",
+      "body_sha256": "208ac00d3d6096f05c4ba91137e923aec4054651c042f55d9e7c089bcd7675a2"
+    },
+    "reconcile_medications": {
+      "path": "src/generate/pipeline/prompts/reconcile_medications.md",
+      "file_sha256": "5006968b7010560f437e0eb31f55e9092baebc7a4adf347667bfcb154e8708a0",
+      "body_sha256": "b06f8c12a739b80c3d57f41ceada7dd7b1c2af38bc53159353b68425d09d5acf"
+    },
+    "compose_clinical": {
+      "path": "src/generate/pipeline/prompts/compose_clinical.md",
+      "file_sha256": "95c1688d76caf27a6867dd243ac939d75cf91611f1c7a6b615b9f107955a22c7",
+      "body_sha256": "cb55505a0692ff0aa7548836ab5dc777ac116dd604081d0864a1654284b0282d"
+    }
+  },
+  "prompt_caching": true,
+  "notes_sha256": "fff6b2a27043c88393b3a44a1c2074ccc86e3d61eb2be9262fc6d67ca0a4aa4a",
+  "started_at": "2026-10-28T12:27:46+00:00",
+  "elapsed_s": 20.19,
+  "calls": [
+    {
+      "name": "extract_facts",
+      "input_tokens": 763,
+      "output_tokens": 1798,
+      "cache_read_tokens": 4183,
+      "cache_write_tokens": 0,
+      "stop_reason": "tool_use",
+      "latency_s": 10.694,
+      "throttle_retries": 0
+    },
+    {
+      "name": "reconcile_medications",
+      "input_tokens": 812,
+      "output_tokens": 135,
+      "cache_read_tokens": 2290,
+      "cache_write_tokens": 0,
+      "stop_reason": "tool_use",
+      "latency_s": 1.501,
+      "throttle_retries": 0
+    },
+    {
+      "name": "compose_clinical",
+      "input_tokens": 1102,
+      "output_tokens": 1364,
+      "cache_read_tokens": 2822,
+      "cache_write_tokens": 0,
+      "stop_reason": "tool_use",
+      "latency_s": 7.876,
+      "throttle_retries": 0
+    }
+  ],
+  "steps": {
+    "guard_input": {
+      "notes_sha256": "fff6b2a27043c88393b3a44a1c2074ccc86e3d61eb2be9262fc6d67ca0a4aa4a",
+      "line_count": 13,
+      "flags": []
+    },
+    "extract_facts": {
+      "call": {
+        "model_id": "anthropic.claude-sonnet-4-6",
+        "prompt_sha256": "208ac00d3d6096f05c4ba91137e923aec4054651c042f55d9e7c089bcd7675a2",
+        "stop_reason": "tool_use",
+        "attempts": 1,
+        "input_tokens": 763,
+        "output_tokens": 1798,
+        "cache_read_tokens": 4183,
+        "cache_write_tokens": 0,
+        "latency_ms": 10694
+      }
+    },
+    "validate_facts": {
+      "facts": {
+        "fields": {
+          "age_sex": {
+            "status": "documented",
+            "items": [
+              {
+                "value": "9-year-old female",
+                "cites": [
+                  {
+                    "lines": [
+                      "L001"
+                    ],
+                    "quote": "9yo girl",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "age_sex.0",
+                "citation_status": "verified",
+                "reason": null
+              }
+            ],
+            "field_check": "ok"
+          },
+          "specialty": {
+            "status": "inferred_flagged",
+            "items": [
+              {
+                "value": "Paediatrics (inferred from 9-year-old patient with DKA and diabetes nurse/dietician input on ward HDU)",
+                "cites": [
+                  {
+                    "lines": [
+                      "L003"
+                    ],
+                    "quote": "Dx DKA, new presentation T1DM",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "specialty.0",
+                "citation_status": "verified",
+                "reason": null
+              }
+            ],
+            "field_check": "ok"
+          },
+          "legal_status": {
+            "status": "not_documented",
+            "items": [],
+            "field_check": "ok"
+          },
+          "weight": {
+            "status": "documented",
+            "items": [
+              {
+                "value": "28 kg",
+                "cites": [
+                  {
+                    "lines": [
+                      "L001"
+                    ],
+                    "quote": "Wt 28 kg",
+                    "verified": false,
+                    "reason": "quote_not_found"
+                  }
+                ],
+                "fact_id": "weight.0",
+                "citation_status": "citation_unverified",
+                "reason": "quote_not_found"
+              }
+            ],
+            "field_check": "ok"
+          },
+          "admission_date": {
+            "status": "documented",
+            "items": [
+              {
+                "value": "17/05",
+                "cites": [
+                  {
+                    "lines": [
+                      "L001"
+                    ],
+                    "quote": "17/05",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "admission_date.0",
+                "citation_status": "verified",
+                "reason": null
+              }
+            ],
+            "field_check": "ok"
+          },
+          "discharge_date": {
+            "status": "documented",
+            "items": [
+              {
+                "value": "20/05",
+                "cites": [
+                  {
+                    "lines": [
+                      "L011",
+                      "L012"
+                    ],
+                    "quote": "Fit for\ndischarge",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "discharge_date.0",
+                "citation_status": "verified",
+                "reason": null
+              }
+            ],
+            "field_check": "ok"
+          },
+          "presenting_complaint": {
+            "status": "documented",
+            "items": [
+              {
+                "value": "2 weeks of polyuria and polydipsia, 3 kg weight loss, 2 days of vomiting and abdominal pain, drowsy",
+                "cites": [
+                  {
+                    "lines": [
+                      "L001"
+                    ],
+                    "quote": "2/52 polyuria/polydipsia, 3 kg weight loss, 2/7 vomiting +\nabdo pain, drowsy",
+                    "verified": false,
+                    "reason": "quote_not_found"
+                  }
+                ],
+                "fact_id": "presenting_complaint.0",
+                "citation_status": "citation_unverified",
+                "reason": "quote_not_found"
+              }
+            ],
+            "field_check": "ok"
+          },
+          "diagnosis_primary": {
+            "status": "documented",
+            "items": [
+              {
+                "value": "Diabetic ketoacidosis (DKA)",
+                "cites": [
+                  {
+                    "lines": [
+                      "L003"
+                    ],
+                    "quote": "Dx DKA",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "diagnosis_primary.0",
+                "citation_status": "verified",
+                "reason": null
+              }
+            ],
+            "field_check": "ok"
+          },
+          "diagnosis_secondary": {
+            "status": "documented",
+            "items": [
+              {
+                "value": "New presentation type 1 diabetes mellitus",
+                "cites": [
+                  {
+                    "lines": [
+                      "L003"
+                    ],
+                    "quote": "new presentation T1DM",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "diagnosis_secondary.0",
+                "citation_status": "verified",
+                "reason": null
+              }
+            ],
+            "field_check": "ok"
+          },
+          "diagnosis_background": {
+            "status": "not_documented",
+            "items": [],
+            "field_check": "ok"
+          },
+          "key_investigations": {
+            "status": "documented",
+            "items": [
+              {
+                "value": "Blood glucose (BM): HI (meter high)",
+                "cites": [
+                  {
+                    "lines": [
+                      "L001",
+                      "L002"
+                    ],
+                    "quote": "BM \"HI\"",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "key_investigations.0",
+                "citation_status": "verified",
+                "reason": null
+              },
+              {
+                "value": "Ketones: 5.2",
+                "cites": [
+                  {
+                    "lines": [
+                      "L002"
+                    ],
+                    "quote": "ketones 5.2",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "key_investigations.1",
+                "citation_status": "verified",
+                "reason": null
+              },
+              {
+                "value": "pH: 7.18 on admission",
+                "cites": [
+                  {
+                    "lines": [
+                      "L002"
+                    ],
+                    "quote": "pH 7.18",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "key_investigations.2",
+                "citation_status": "verified",
+                "reason": null
+              },
+              {
+                "value": "Bicarbonate (HCO3): 11 on admission",
+                "cites": [
+                  {
+                    "lines": [
+                      "L002"
+                    ],
+                    "quote": "HCO3 11",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "key_investigations.3",
+                "citation_status": "verified",
+                "reason": null
+              },
+              {
+                "value": "Glucose: 34 on admission",
+                "cites": [
+                  {
+                    "lines": [
+                      "L002"
+                    ],
+                    "quote": "glucose 34",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "key_investigations.4",
+                "citation_status": "verified",
+                "reason": null
+              },
+              {
+                "value": "pH: 7.34 on Day 2 (resolving acidosis)",
+                "cites": [
+                  {
+                    "lines": [
+                      "L006"
+                    ],
+                    "quote": "Acidosis resolving pH 7.34",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "key_investigations.5",
+                "citation_status": "verified",
+                "reason": null
+              },
+              {
+                "value": "Ketones: 0.8 on Day 2",
+                "cites": [
+                  {
+                    "lines": [
+                      "L006"
+                    ],
+                    "quote": "ketones 0.8",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "key_investigations.6",
+                "citation_status": "verified",
+                "reason": null
+              }
+            ],
+            "field_check": "ok"
+          },
+          "treatment": {
+            "status": "documented",
+            "items": [
+              {
+                "value": "DKA protocol: IV fluids (cautious), fixed-rate insulin infusion, potassium replacement, hourly monitoring",
+                "cites": [
+                  {
+                    "lines": [
+                      "L003",
+                      "L004"
+                    ],
+                    "quote": "Started DKA protocol: IV fluids (cautious),\nfixed-rate insulin infusion, K+ replacement, hourly monitoring",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "treatment.0",
+                "citation_status": "verified",
+                "reason": null
+              },
+              {
+                "value": "PICU informed; managed on ward HDU",
+                "cites": [
+                  {
+                    "lines": [
+                      "L004",
+                      "L005"
+                    ],
+                    "quote": "PICU informed,\nmanaged on ward HDU",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "treatment.1",
+                "citation_status": "verified",
+                "reason": null
+              },
+              {
+                "value": "Transitioned to subcutaneous insulin (basal-bolus regimen) on Day 2",
+                "cites": [
+                  {
+                    "lines": [
+                      "L006",
+                      "L007"
+                    ],
+                    "quote": "Transitioned to subcut\ninsulin (basal-bolus)",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "treatment.2",
+                "citation_status": "verified",
+                "reason": null
+              },
+              {
+                "value": "Diabetes nurse and dietician input started",
+                "cites": [
+                  {
+                    "lines": [
+                      "L007"
+                    ],
+                    "quote": "Diabetes nurse + dietician input started",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "treatment.3",
+                "citation_status": "verified",
+                "reason": null
+              },
+              {
+                "value": "Family education begun",
+                "cites": [
+                  {
+                    "lines": [
+                      "L007",
+                      "L008"
+                    ],
+                    "quote": "Family education\nbegun",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "treatment.4",
+                "citation_status": "verified",
+                "reason": null
+              },
+              {
+                "value": "Ongoing structured education: carbohydrate counting, hypo management, sick-day rules",
+                "cites": [
+                  {
+                    "lines": [
+                      "L009",
+                      "L010"
+                    ],
+                    "quote": "Ongoing structured\neducation (carb counting, hypo management, sick-day rules)",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "treatment.5",
+                "citation_status": "verified",
+                "reason": null
+              },
+              {
+                "value": "Parents and child confident with injections and monitoring prior to discharge",
+                "cites": [
+                  {
+                    "lines": [
+                      "L011"
+                    ],
+                    "quote": "Confident with injections + monitoring (parents + child)",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "treatment.6",
+                "citation_status": "verified",
+                "reason": null
+              }
+            ],
+            "field_check": "ok"
+          },
+          "risk_assessment": {
+            "status": "not_documented",
+            "items": [],
+            "field_check": "ok"
+          },
+          "allergies": {
+            "status": "not_documented",
+            "items": [],
+            "field_check": "ok"
+          },
+          "follow_up": {
+            "status": "documented",
+            "items": [
+              {
+                "value": "Diabetes team follow-up in 1 week",
+                "cites": [
+                  {
+                    "lines": [
+                      "L012"
+                    ],
+                    "quote": "Diabetes team f/u 1/52",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "follow_up.0",
+                "citation_status": "verified",
+                "reason": null
+              },
+              {
+                "value": "Phone support from diabetes team in the interim",
+                "cites": [
+                  {
+                    "lines": [
+                      "L012"
+                    ],
+                    "quote": "phone support meanwhile",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "follow_up.1",
+                "citation_status": "verified",
+                "reason": null
+              },
+              {
+                "value": "Dietician follow-up arranged",
+                "cites": [
+                  {
+                    "lines": [
+                      "L012"
+                    ],
+                    "quote": "dietician follow-up",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "follow_up.2",
+                "citation_status": "verified",
+                "reason": null
+              }
+            ],
+            "field_check": "ok"
+          },
+          "gp_actions": {
+            "status": "documented",
+            "items": [
+              {
+                "value": "GP aware; no acute action required",
+                "cites": [
+                  {
+                    "lines": [
+                      "L013"
+                    ],
+                    "quote": "GP: aware, no acute action",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "gp_actions.0",
+                "citation_status": "verified",
+                "reason": null
+              }
+            ],
+            "field_check": "ok"
+          },
+          "vte_assessment": {
+            "status": "not_documented",
+            "items": [],
+            "field_check": "ok"
+          }
+        },
+        "medications": {
+          "pre_admission": [],
+          "discharge": [],
+          "discharge_status": "not_documented",
+          "medications_check": "ok"
+        },
+        "resus": {
+          "changed": "not_documented",
+          "cites": [],
+          "form_or_discussion_documented": false,
+          "status_documented": "not_documented",
+          "fact_id": "resus",
+          "citation_status": "verified",
+          "reason": null
+        },
+        "documented_advice": [],
+        "age_group": "child",
+        "contradictions": [],
+        "suspicious_text": []
+      },
+      "uncited_lines": [],
+      "counts": {
+        "cites_total": 26,
+        "cites_verified": 24,
+        "items_unverified": 2,
+        "fields_inconsistent": 0,
+        "medications_inconsistent": 0
+      }
+    },
+    "retrieve_evidence": {
+      "medication": [],
+      "resus": [],
+      "counts": {
+        "medication_lines": 0,
+        "resus_lines": 0,
+        "medication_matched_not_cited": 0,
+        "resus_matched_not_cited": 0
+      }
+    },
+    "route_resus": {
+      "route": "absent",
+      "forced": "no",
+      "status": "not_documented",
+      "changed": "not_documented",
+      "cited_lines": [],
+      "rendered": "RESUSCITATION STATUS\nNot documented."
+    },
+    "select_safety_net": {
+      "route": "fallback",
+      "audience": "paediatric",
+      "pinned_line": "If you have been given a number to call, use that first. Otherwise, if you are worried about your child, contact your GP or call NHS 111. Call 999 if it is an emergency.",
+      "advice": [],
+      "advice_excluded": 0,
+      "cited_lines": [],
+      "part_ab": "If you have been given a number to call, use that first. Otherwise, if you are worried about your child, contact your GP or call NHS 111. Call 999 if it is an emergency.",
+      "part_c": "If you have been given a number to call, use that first. Otherwise, if you are worried about your child, contact your GP or call NHS 111. Call 999 if it is an emergency."
+    },
+    "reconcile_medications": {
+      "reconciliation": [
+        {
+          "entry_id": "reconciliation.0",
+          "drug": "insulin (basal-bolus)",
+          "tag": "new",
+          "basis": "documented",
+          "dose": null,
+          "route": "subcut",
+          "frequency": null,
+          "previous": null,
+          "conflict": false,
+          "dh_cites": [],
+          "discharge_cites": [
+            {
+              "lines": [
+                "L006",
+                "L007"
+              ],
+              "quote": "Transitioned to subcut\ninsulin (basal-bolus).",
+              "verified": true,
+              "reason": null
+            }
+          ],
+          "citation_status": "verified",
+          "reason": null,
+          "checks": []
+        }
+      ],
+      "discharge_status": "not_documented",
+      "reconciliation_check": "drugs_where_none_documented",
+      "dh_lines_unreconciled": [],
+      "counts": {
+        "entries": 1,
+        "cites_total": 1,
+        "cites_verified": 1,
+        "entries_unverified": 0,
+        "entries_flagged": 0,
+        "dh_lines_unreconciled": 0
+      },
+      "call": {
+        "model_id": "anthropic.claude-sonnet-4-6",
+        "prompt_sha256": "b06f8c12a739b80c3d57f41ceada7dd7b1c2af38bc53159353b68425d09d5acf",
+        "stop_reason": "tool_use",
+        "attempts": 1,
+        "input_tokens": 812,
+        "output_tokens": 135,
+        "cache_read_tokens": 2290,
+        "cache_write_tokens": 0,
+        "latency_ms": 1501
+      }
+    },
+    "compose_clinical": {
+      "sections": [
+        {
+          "section_id": "sections.0",
+          "part": "part_a",
+          "heading": "presenting_complaint",
+          "fact_ids": [
+            "presenting_complaint.0"
+          ],
+          "text": "A 9-year-old female presented with a 2-week history of polyuria and polydipsia, 3 kg weight loss, 2 days of vomiting and abdominal pain, and drowsiness.",
+          "unverified_fact_ids": [
+            "presenting_complaint.0"
+          ]
+        },
+        {
+          "section_id": "sections.1",
+          "part": "part_a",
+          "heading": "diagnosis",
+          "fact_ids": [
+            "diagnosis_primary.0",
+            "diagnosis_secondary.0"
+          ],
+          "text": "Primary: Diabetic ketoacidosis (DKA)\nSecondary: New presentation type 1 diabetes mellitus",
+          "unverified_fact_ids": []
+        },
+        {
+          "section_id": "sections.2",
+          "part": "part_a",
+          "heading": "key_investigations",
+          "fact_ids": [
+            "key_investigations.0",
+            "key_investigations.1",
+            "key_investigations.2",
+            "key_investigations.3",
+            "key_investigations.4",
+            "key_investigations.5",
+            "key_investigations.6"
+          ],
+          "text": "On admission: blood glucose HI (meter high), ketones 5.2, pH 7.18, bicarbonate (HCO3) 11, glucose 34.\nBy Day 2: pH 7.34 and ketones 0.8, consistent with resolving acidosis.",
+          "unverified_fact_ids": []
+        },
+        {
+          "section_id": "sections.3",
+          "part": "part_a",
+          "heading": "treatment",
+          "fact_ids": [
+            "treatment.0",
+            "treatment.1",
+            "treatment.2",
+            "treatment.3",
+            "treatment.4",
+            "treatment.5",
+            "treatment.6"
+          ],
+          "text": "- DKA protocol commenced: cautious IV fluids, fixed-rate insulin infusion, potassium replacement, and hourly monitoring.\n- PICU informed; patient managed on ward HDU.\n- Transitioned to subcutaneous insulin (basal-bolus regimen) on Day 2.\n- Diabetes nurse and dietician input started during admission.\n- Family education begun, including carbohydrate counting, hypo management, and sick-day rules.\n- Parents and child confident with injections and monitoring prior to discharge.",
+          "unverified_fact_ids": []
+        },
+        {
+          "section_id": "sections.4",
+          "part": "part_a",
+          "heading": "resuscitation_status",
+          "fact_ids": [],
+          "text": "{{RESUS}}",
+          "unverified_fact_ids": []
+        },
+        {
+          "section_id": "sections.5",
+          "part": "part_a",
+          "heading": "medications",
+          "fact_ids": [],
+          "text": "{{MEDICATIONS}}",
+          "unverified_fact_ids": []
+        },
+        {
+          "section_id": "sections.6",
+          "part": "part_a",
+          "heading": "allergies",
+          "fact_ids": [
+            "allergies"
+          ],
+          "text": "Not documented",
+          "unverified_fact_ids": []
+        },
+        {
+          "section_id": "sections.7",
+          "part": "part_a",
+          "heading": "follow_up",
+          "fact_ids": [
+            "follow_up.0",
+            "follow_up.1",
+            "follow_up.2"
+          ],
+          "text": "- Diabetes team follow-up in 1 week.\n- Phone support from diabetes team available in the interim.\n- Dietician follow-up arranged.",
+          "unverified_fact_ids": []
+        },
+        {
+          "section_id": "sections.8",
+          "part": "part_a",
+          "heading": "gp_actions",
+          "fact_ids": [
+            "gp_actions.0"
+          ],
+          "text": "GP aware; no acute action required.",
+          "unverified_fact_ids": []
+        },
+        {
+          "section_id": "sections.9",
+          "part": "part_a",
+          "heading": "safety_net",
+          "fact_ids": [],
+          "text": "{{SAFETY_NET}}",
+          "unverified_fact_ids": []
+        },
+        {
+          "section_id": "sections.10",
+          "part": "part_a",
+          "heading": "vte_assessment",
+          "fact_ids": [],
+          "text": "Not applicable (paediatric)",
+          "unverified_fact_ids": []
+        },
+        {
+          "section_id": "sections.11",
+          "part": "part_b",
+          "heading": "opening",
+          "fact_ids": [
+            "age_sex.0",
+            "presenting_complaint.0",
+            "diagnosis_primary.0"
+          ],
+          "text": "Thank you for referring this 9-year-old female who presented with a 2-week history of polyuria, polydipsia, weight loss, vomiting, abdominal pain, and drowsiness, and was diagnosed with diabetic ketoacidosis (DKA) as a new presentation of type 1 diabetes mellitus.",
+          "unverified_fact_ids": [
+            "presenting_complaint.0"
+          ]
+        },
+        {
+          "section_id": "sections.12",
+          "part": "part_b",
+          "heading": "admission_summary",
+          "fact_ids": [
+            "key_investigations.0",
+            "key_investigations.1",
+            "key_investigations.2",
+            "key_investigations.3",
+            "key_investigations.4",
+            "key_investigations.5",
+            "key_investigations.6",
+            "treatment.0",
+            "treatment.1",
+            "treatment.2",
+            "treatment.3",
+            "treatment.4",
+            "treatment.5",
+            "treatment.6"
+          ],
+          "text": "On admission, blood glucose was HI (meter high), ketones 5.2, pH 7.18, bicarbonate 11, and glucose 34, confirming severe DKA. PICU was informed and she was managed on ward HDU. She was treated with cautious IV fluids, a fixed-rate insulin infusion, potassium replacement, and hourly monitoring per DKA protocol. By Day 2, pH had improved to 7.34 and ketones to 0.8; she was transitioned to subcutaneous insulin on a basal-bolus regimen. Diabetes nurse and dietician input commenced during the admission. Structured education covering carbohydrate counting, hypo management, and sick-day rules was provided, and both parents and child were confident with injections and monitoring prior to discharge.",
+          "unverified_fact_ids": []
+        },
+        {
+          "section_id": "sections.13",
+          "part": "part_b",
+          "heading": "diagnosis",
+          "fact_ids": [
+            "diagnosis_primary.0",
+            "diagnosis_secondary.0"
+          ],
+          "text": "Primary: Diabetic ketoacidosis (DKA)\nSecondary: New presentation type 1 diabetes mellitus",
+          "unverified_fact_ids": []
+        },
+        {
+          "section_id": "sections.14",
+          "part": "part_b",
+          "heading": "resuscitation_status",
+          "fact_ids": [],
+          "text": "{{RESUS}}",
+          "unverified_fact_ids": []
+        },
+        {
+          "section_id": "sections.15",
+          "part": "part_b",
+          "heading": "medications",
+          "fact_ids": [],
+          "text": "{{MEDICATIONS}}",
+          "unverified_fact_ids": []
+        },
+        {
+          "section_id": "sections.16",
+          "part": "part_b",
+          "heading": "gp_actions",
+          "fact_ids": [
+            "gp_actions.0"
+          ],
+          "text": "- GP aware; no acute action required.",
+          "unverified_fact_ids": []
+        },
+        {
+          "section_id": "sections.17",
+          "part": "part_b",
+          "heading": "follow_up",
+          "fact_ids": [
+            "follow_up.0",
+            "follow_up.1",
+            "follow_up.2"
+          ],
+          "text": "- Diabetes team follow-up arranged in 1 week.\n- Phone support from diabetes team available in the interim.\n- Dietician follow-up arranged.",
+          "unverified_fact_ids": []
+        },
+        {
+          "section_id": "sections.18",
+          "part": "part_b",
+          "heading": "safety_net",
+          "fact_ids": [],
+          "text": "{{SAFETY_NET}}",
+          "unverified_fact_ids": []
+        }
+      ],
+      "checks": [
+        {
+          "check": "unknown_fact_id",
+          "part": "part_a",
+          "heading": "allergies",
+          "fact_id": null,
+          "token": null
+        },
+        {
+          "check": "not_documented_with_content",
+          "part": "part_a",
+          "heading": "allergies",
+          "fact_id": null,
+          "token": null
+        }
+      ],
+      "counts": {
+        "sections": 19,
+        "sections_a": 11,
+        "sections_b": 8,
+        "facts_given": 21,
+        "facts_used_in_a": 21,
+        "header_facts_given": 5,
+        "contradictions_given": 0,
+        "contradictions_in_a": 0,
+        "gp_actions_given": 1,
+        "gp_actions_in_b": 1,
+        "unverified_given": 2,
+        "unverified_used": 1,
+        "checks": 2
+      },
+      "age_group": "child",
+      "call": {
+        "model_id": "anthropic.claude-sonnet-4-6",
+        "prompt_sha256": "cb55505a0692ff0aa7548836ab5dc777ac116dd604081d0864a1654284b0282d",
+        "stop_reason": "tool_use",
+        "attempts": 1,
+        "input_tokens": 1102,
+        "output_tokens": 1364,
+        "cache_read_tokens": 2822,
+        "cache_write_tokens": 0,
+        "latency_ms": 7876
+      }
+    }
+  },
+  "output": null,
+  "gate": null,
+  "failed_step": null,
+  "error": null,
+  "step_errors": {},
+  "cost_usd_est": 0.066302
+}

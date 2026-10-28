@@ -47,5 +47,38 @@
       "source": "w4-baseline-v1-x5 (proposed by Claude, approved by the CSO)"
     }
   },
-  "med_rulings": {}
+  "med_rulings": {},
+  "compose_rulings": {
+    "107a949589f33a56": "acceptable",
+    "48b2c25227b4689f": "acceptable",
+    "70fb747ec6ecf3e3": "acceptable",
+    "9236d20885df92b2": "acceptable",
+    "92d2dea65690b74b": "acceptable",
+    "d9b4fb9a18339114": "acceptable",
+    "dc217a310fbf7fa2": "acceptable",
+    "eea46e69c8098d8b": "acceptable",
+    "f87cf3776d0a7b09": "acceptable"
+  },
+  "compose_rulings_meta": {
+    "by": "Shina Oguntoye (CSO)",
+    "on": "2026-10-28",
+    "source": "w6-pipeline-e07-m01-c01-x5, step 6 (grouped and proposed by Claude, approved by the CSO — rulings R1-R3, 28 Oct 2026)",
+    "groups": {
+      "R3_medication": {
+        "verdict": "acceptable",
+        "reason": "a drug named from a fact the section cites (in-hospital treatment, background, GP action, VTE, follow-up); no discharge list restated. 17 narrate an in-hospital dose change — box-vs-prose divergence to be checked at 8a (item 4)",
+        "keys": [
+          "107a949589f33a56",
+          "48b2c25227b4689f",
+          "70fb747ec6ecf3e3",
+          "9236d20885df92b2",
+          "92d2dea65690b74b",
+          "d9b4fb9a18339114",
+          "dc217a310fbf7fa2",
+          "eea46e69c8098d8b",
+          "f87cf3776d0a7b09"
+        ]
+      }
+    }
+  }
 }

@@ -1,0 +1,50 @@
+{
+  "scenario_id": "S1",
+  "compose_rulings": {
+    "047632a85534deb2": "acceptable",
+    "17c361c44e98afc3": "defect",
+    "1ee53a62ee57e2e4": "defect",
+    "3acccfa8e9d98bb9": "defect",
+    "4988d36b3cf5ec3c": "defect",
+    "76a1e16f57373b3c": "acceptable",
+    "7b3fe4afea8503cb": "defect",
+    "9f1545ebe2f32d6b": "defect",
+    "c69ea67038385af7": "acceptable",
+    "d86f03b53bf46bff": "acceptable",
+    "e223f7aae4eb74d0": "defect",
+    "f0d562e52a3c8bc3": "acceptable",
+    "f68754bf91e9267d": "acceptable"
+  },
+  "compose_rulings_meta": {
+    "by": "Shina Oguntoye (CSO)",
+    "on": "2026-10-28",
+    "source": "w6-pipeline-e07-m01-c01-x5, step 6 (grouped and proposed by Claude, approved by the CSO — rulings R1-R3, 28 Oct 2026)",
+    "groups": {
+      "R1_resus_status": {
+        "verdict": "defect",
+        "reason": "a resuscitation status stated outside {{RESUS}} — against step 6's prompt (any resuscitation status is a critical failure) and ADR-009 [A2] (only code writes a resus status); restates a verified fact filed by step 2 under treatment / background / risk",
+        "keys": [
+          "17c361c44e98afc3",
+          "1ee53a62ee57e2e4",
+          "3acccfa8e9d98bb9",
+          "4988d36b3cf5ec3c",
+          "7b3fe4afea8503cb",
+          "9f1545ebe2f32d6b",
+          "e223f7aae4eb74d0"
+        ]
+      },
+      "R3_medication": {
+        "verdict": "acceptable",
+        "reason": "a drug named from a fact the section cites (in-hospital treatment, background, GP action, VTE, follow-up); no discharge list restated. 17 narrate an in-hospital dose change — box-vs-prose divergence to be checked at 8a (item 4)",
+        "keys": [
+          "047632a85534deb2",
+          "76a1e16f57373b3c",
+          "c69ea67038385af7",
+          "d86f03b53bf46bff",
+          "f0d562e52a3c8bc3",
+          "f68754bf91e9267d"
+        ]
+      }
+    }
+  }
+}

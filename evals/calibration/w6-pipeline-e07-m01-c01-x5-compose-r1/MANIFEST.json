@@ -1,0 +1,49 @@
+{
+  "sheets_version": 1,
+  "batch_id": "w6-pipeline-e07-m01-c01-x5",
+  "run": 1,
+  "rule": "W5 pipeline spot-check items (f5c9adc): S1, S4, S10, S13, S16, A5",
+  "dimensions": [
+    "D2",
+    "D6",
+    "D7",
+    "omission"
+  ],
+  "items": [
+    {
+      "scenario_id": "S1",
+      "generation_id": "w6-pipeline-e07-m01-c01-x5/r1/S1",
+      "sections_sha256": "053d50c5776f7c44976f7bcaade70d3ceaae83b41e4116a0611dd5aa025f87ab"
+    },
+    {
+      "scenario_id": "S4",
+      "generation_id": "w6-pipeline-e07-m01-c01-x5/r1/S4",
+      "sections_sha256": "043ebc6d339dfc8b84ce9446e873a04b210e39af538e3b78b9157b3af9d11bd3"
+    },
+    {
+      "scenario_id": "S10",
+      "generation_id": "w6-pipeline-e07-m01-c01-x5/r1/S10",
+      "sections_sha256": "bfeff250e2312f7854c044f73faa30c1728eb25416c3e8423a7f797510e0b340"
+    },
+    {
+      "scenario_id": "S13",
+      "generation_id": "w6-pipeline-e07-m01-c01-x5/r1/S13",
+      "sections_sha256": "42a6b877e3ef8637f56a6193bf8a67ed845940f9b9e83254488131e6cf57d8f3"
+    },
+    {
+      "scenario_id": "S16",
+      "generation_id": "w6-pipeline-e07-m01-c01-x5/r1/S16",
+      "sections_sha256": "3e88b85c66286a94d31f05c5fbaf7b3b8791387cbf02567398ed58bee78647b5"
+    },
+    {
+      "scenario_id": "A5",
+      "generation_id": "w6-pipeline-e07-m01-c01-x5/r1/A5",
+      "sections_sha256": "eb3b93d3e5d2dfd2a731e221945c88a6762073b78406c23ad845d45ce14b28a1"
+    }
+  ],
+  "excluded": [
+    "step 6 checks and counts",
+    "scores/",
+    "notes"
+  ]
+}

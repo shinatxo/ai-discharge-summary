@@ -1,0 +1,1182 @@
+{
+  "record_version": 1,
+  "generation_id": "w6-pipeline-e07-m01-c01-x5/r1/S15",
+  "batch_id": "w6-pipeline-e07-m01-c01-x5",
+  "run": 1,
+  "scenario_id": "S15",
+  "generator": "pipeline",
+  "path": "steps-1-5b-5a-6",
+  "model_id": "anthropic.claude-sonnet-4-6",
+  "region": "eu-west-2",
+  "prompts": {
+    "extract_facts": {
+      "path": "src/generate/pipeline/prompts/extract_facts.md",
+      "file_sha256": "378df3fefedc74177c9dd51c9c8827b86080f632fb3daa734a07c3462ccd760e",
+      "body_sha256": "208ac00d3d6096f05c4ba91137e923aec4054651c042f55d9e7c089bcd7675a2"
+    },
+    "reconcile_medications": {
+      "path": "src/generate/pipeline/prompts/reconcile_medications.md",
+      "file_sha256": "5006968b7010560f437e0eb31f55e9092baebc7a4adf347667bfcb154e8708a0",
+      "body_sha256": "b06f8c12a739b80c3d57f41ceada7dd7b1c2af38bc53159353b68425d09d5acf"
+    },
+    "compose_clinical": {
+      "path": "src/generate/pipeline/prompts/compose_clinical.md",
+      "file_sha256": "95c1688d76caf27a6867dd243ac939d75cf91611f1c7a6b615b9f107955a22c7",
+      "body_sha256": "cb55505a0692ff0aa7548836ab5dc777ac116dd604081d0864a1654284b0282d"
+    }
+  },
+  "prompt_caching": true,
+  "notes_sha256": "f54e5b4b248523c38c755c7e4eb587fa65b3ae478aec2c9d77ef94ba96f278d3",
+  "started_at": "2026-10-28T12:10:45+00:00",
+  "elapsed_s": 23.127,
+  "calls": [
+    {
+      "name": "extract_facts",
+      "input_tokens": 831,
+      "output_tokens": 1968,
+      "cache_read_tokens": 4183,
+      "cache_write_tokens": 0,
+      "stop_reason": "tool_use",
+      "latency_s": 11.685,
+      "throttle_retries": 0
+    },
+    {
+      "name": "reconcile_medications",
+      "input_tokens": 976,
+      "output_tokens": 449,
+      "cache_read_tokens": 2290,
+      "cache_write_tokens": 0,
+      "stop_reason": "tool_use",
+      "latency_s": 3.208,
+      "throttle_retries": 0
+    },
+    {
+      "name": "compose_clinical",
+      "input_tokens": 1019,
+      "output_tokens": 1464,
+      "cache_read_tokens": 2822,
+      "cache_write_tokens": 0,
+      "stop_reason": "tool_use",
+      "latency_s": 7.955,
+      "throttle_retries": 0
+    }
+  ],
+  "steps": {
+    "guard_input": {
+      "notes_sha256": "f54e5b4b248523c38c755c7e4eb587fa65b3ae478aec2c9d77ef94ba96f278d3",
+      "line_count": 13,
+      "flags": []
+    },
+    "extract_facts": {
+      "call": {
+        "model_id": "anthropic.claude-sonnet-4-6",
+        "prompt_sha256": "208ac00d3d6096f05c4ba91137e923aec4054651c042f55d9e7c089bcd7675a2",
+        "stop_reason": "tool_use",
+        "attempts": 1,
+        "input_tokens": 831,
+        "output_tokens": 1968,
+        "cache_read_tokens": 4183,
+        "cache_write_tokens": 0,
+        "latency_ms": 11685
+      }
+    },
+    "validate_facts": {
+      "facts": {
+        "fields": {
+          "age_sex": {
+            "status": "documented",
+            "items": [
+              {
+                "value": "79-year-old female",
+                "cites": [
+                  {
+                    "lines": [
+                      "L001"
+                    ],
+                    "quote": "79F",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "age_sex.0",
+                "citation_status": "verified",
+                "reason": null
+              }
+            ],
+            "field_check": "ok"
+          },
+          "specialty": {
+            "status": "inferred_flagged",
+            "items": [],
+            "field_check": "status_without_items"
+          },
+          "legal_status": {
+            "status": "not_documented",
+            "items": [],
+            "field_check": "ok"
+          },
+          "weight": {
+            "status": "not_documented",
+            "items": [],
+            "field_check": "ok"
+          },
+          "admission_date": {
+            "status": "documented",
+            "items": [],
+            "field_check": "status_without_items"
+          },
+          "discharge_date": {
+            "status": "documented",
+            "items": [],
+            "field_check": "status_without_items"
+          },
+          "presenting_complaint": {
+            "status": "documented",
+            "items": [
+              {
+                "value": "4 days of increasing shortness of breath, green sputum and wheeze",
+                "cites": [
+                  {
+                    "lines": [
+                      "L001",
+                      "L002"
+                    ],
+                    "quote": "PC: 4/7 increasing SOB, green sputum, wheeze",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "presenting_complaint.0",
+                "citation_status": "verified",
+                "reason": null
+              }
+            ],
+            "field_check": "ok"
+          },
+          "diagnosis_primary": {
+            "status": "documented",
+            "items": [
+              {
+                "value": "Acute exacerbation of COPD with type 2 respiratory failure",
+                "cites": [
+                  {
+                    "lines": [
+                      "L002",
+                      "L003"
+                    ],
+                    "quote": "pH 7.30 PaCO2 8.1 -> type 2 resp failure",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "diagnosis_primary.0",
+                "citation_status": "verified",
+                "reason": null
+              }
+            ],
+            "field_check": "ok"
+          },
+          "diagnosis_secondary": {
+            "status": "not_documented",
+            "items": [],
+            "field_check": "ok"
+          },
+          "diagnosis_background": {
+            "status": "documented",
+            "items": [
+              {
+                "value": "Severe COPD (FEV1 30% predicted, home O2, previous ITU avoided by patient choice)",
+                "cites": [
+                  {
+                    "lines": [
+                      "L001",
+                      "L002"
+                    ],
+                    "quote": "known severe COPD (FEV1 30% predicted, home O2, prev ITU avoided\nby choice)",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "diagnosis_background.0",
+                "citation_status": "verified",
+                "reason": null
+              },
+              {
+                "value": "Pre-existing community DNACPR (ReSPECT form) in place prior to admission, on basis of advanced COPD and patient wishes",
+                "cites": [
+                  {
+                    "lines": [
+                      "L006",
+                      "L007"
+                    ],
+                    "quote": "PRE-EXISTING community DNACPR (ReSPECT) in place from before admission\n(advanced COPD, patient wishes). Documented, not changed.",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "diagnosis_background.1",
+                "citation_status": "verified",
+                "reason": null
+              }
+            ],
+            "field_check": "ok"
+          },
+          "key_investigations": {
+            "status": "documented",
+            "items": [
+              {
+                "value": "On admission: T 37.8, RR 28, sats 84% on home O2, pH 7.30, PaCO2 8.1 → type 2 respiratory failure",
+                "cites": [
+                  {
+                    "lines": [
+                      "L002",
+                      "L003"
+                    ],
+                    "quote": "T 37.8, RR 28, sats 84% on\nhome O2, pH 7.30 PaCO2 8.1 -> type 2 resp failure",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "key_investigations.0",
+                "citation_status": "verified",
+                "reason": null
+              }
+            ],
+            "field_check": "ok"
+          },
+          "treatment": {
+            "status": "documented",
+            "items": [
+              {
+                "value": "Controlled oxygen therapy commenced",
+                "cites": [
+                  {
+                    "lines": [
+                      "L003"
+                    ],
+                    "quote": "Started controlled O2, NIV",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "treatment.0",
+                "citation_status": "verified",
+                "reason": null
+              },
+              {
+                "value": "Non-invasive ventilation (NIV) commenced",
+                "cites": [
+                  {
+                    "lines": [
+                      "L003"
+                    ],
+                    "quote": "Started controlled O2, NIV",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "treatment.1",
+                "citation_status": "verified",
+                "reason": null
+              },
+              {
+                "value": "Nebulisers given",
+                "cites": [
+                  {
+                    "lines": [
+                      "L003",
+                      "L004"
+                    ],
+                    "quote": "nebs",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "treatment.2",
+                "citation_status": "verified",
+                "reason": null
+              },
+              {
+                "value": "IV hydrocortisone then oral prednisolone",
+                "cites": [
+                  {
+                    "lines": [
+                      "L003",
+                      "L004"
+                    ],
+                    "quote": "IV hydrocortisone then oral pred",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "treatment.3",
+                "citation_status": "verified",
+                "reason": null
+              },
+              {
+                "value": "IV then oral amoxicillin (per local guidelines)",
+                "cites": [
+                  {
+                    "lines": [
+                      "L004"
+                    ],
+                    "quote": "IV then oral amoxicillin (per local)",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "treatment.4",
+                "citation_status": "verified",
+                "reason": null
+              },
+              {
+                "value": "Weaned off NIV by day 3; sats 88–90% on home O2 at baseline",
+                "cites": [
+                  {
+                    "lines": [
+                      "L009"
+                    ],
+                    "quote": "Weaned off NIV, sats 88-90% on home O2 baseline",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "treatment.5",
+                "citation_status": "verified",
+                "reason": null
+              },
+              {
+                "value": "Inhaler technique reviewed",
+                "cites": [
+                  {
+                    "lines": [
+                      "L011"
+                    ],
+                    "quote": "inhaler technique\nreviewed",
+                    "verified": false,
+                    "reason": "quote_not_found"
+                  }
+                ],
+                "fact_id": "treatment.6",
+                "citation_status": "citation_unverified",
+                "reason": "quote_not_found"
+              },
+              {
+                "value": "Rescue pack supplied",
+                "cites": [
+                  {
+                    "lines": [
+                      "L011",
+                      "L012"
+                    ],
+                    "quote": "rescue pack supplied",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "treatment.7",
+                "citation_status": "verified",
+                "reason": null
+              },
+              {
+                "value": "Smoking cessation discussed (ex-smoker)",
+                "cites": [
+                  {
+                    "lines": [
+                      "L012"
+                    ],
+                    "quote": "smoking cessation discussed (ex-smoker)",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "treatment.8",
+                "citation_status": "verified",
+                "reason": null
+              },
+              {
+                "value": "Ceiling of care: ward-based NIV, not for intubation (per ReSPECT and patient wishes)",
+                "cites": [
+                  {
+                    "lines": [
+                      "L007",
+                      "L008"
+                    ],
+                    "quote": "Ceiling of care = ward-\nbased NIV, not for intubation (per ReSPECT + patient)",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "treatment.9",
+                "citation_status": "verified",
+                "reason": null
+              }
+            ],
+            "field_check": "ok"
+          },
+          "risk_assessment": {
+            "status": "not_documented",
+            "items": [],
+            "field_check": "ok"
+          },
+          "allergies": {
+            "status": "documented",
+            "items": [
+              {
+                "value": "No known drug allergies",
+                "cites": [
+                  {
+                    "lines": [
+                      "L005"
+                    ],
+                    "quote": "NKDA",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "allergies.0",
+                "citation_status": "verified",
+                "reason": null
+              }
+            ],
+            "field_check": "ok"
+          },
+          "follow_up": {
+            "status": "documented",
+            "items": [
+              {
+                "value": "Respiratory clinic in 6 weeks",
+                "cites": [
+                  {
+                    "lines": [
+                      "L012",
+                      "L013"
+                    ],
+                    "quote": "Resp clinic\n6/52",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "follow_up.0",
+                "citation_status": "verified",
+                "reason": null
+              },
+              {
+                "value": "Referral to community respiratory team",
+                "cites": [
+                  {
+                    "lines": [
+                      "L012",
+                      "L013"
+                    ],
+                    "quote": "community resp team referral",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "follow_up.1",
+                "citation_status": "verified",
+                "reason": null
+              }
+            ],
+            "field_check": "ok"
+          },
+          "gp_actions": {
+            "status": "documented",
+            "items": [
+              {
+                "value": "GP to review patient after exacerbation",
+                "cites": [
+                  {
+                    "lines": [
+                      "L013"
+                    ],
+                    "quote": "GP: review after exacerbation",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "gp_actions.0",
+                "citation_status": "verified",
+                "reason": null
+              }
+            ],
+            "field_check": "ok"
+          },
+          "vte_assessment": {
+            "status": "not_documented",
+            "items": [],
+            "field_check": "ok"
+          }
+        },
+        "medications": {
+          "pre_admission": [
+            {
+              "value": "Trelegy inhaler once daily",
+              "cites": [
+                {
+                  "lines": [
+                    "L004",
+                    "L005"
+                  ],
+                  "quote": "DH:\nTrelegy inhaler OD",
+                  "verified": true,
+                  "reason": null
+                }
+              ],
+              "fact_id": "medications.pre_admission.0",
+              "citation_status": "verified",
+              "reason": null
+            },
+            {
+              "value": "Salbutamol PRN",
+              "cites": [
+                {
+                  "lines": [
+                    "L005"
+                  ],
+                  "quote": "salbutamol PRN",
+                  "verified": true,
+                  "reason": null
+                }
+              ],
+              "fact_id": "medications.pre_admission.1",
+              "citation_status": "verified",
+              "reason": null
+            },
+            {
+              "value": "Amlodipine 5 mg once daily",
+              "cites": [
+                {
+                  "lines": [
+                    "L005"
+                  ],
+                  "quote": "amlodipine 5mg OD",
+                  "verified": true,
+                  "reason": null
+                }
+              ],
+              "fact_id": "medications.pre_admission.2",
+              "citation_status": "verified",
+              "reason": null
+            }
+          ],
+          "discharge": [
+            {
+              "value": "Prednisolone 30 mg once daily — complete course at home (5 days total)",
+              "cites": [
+                {
+                  "lines": [
+                    "L010",
+                    "L011"
+                  ],
+                  "quote": "Pred 30mg OD for 5 days total\n(complete course at home)",
+                  "verified": true,
+                  "reason": null
+                }
+              ],
+              "fact_id": "medications.discharge.0",
+              "citation_status": "verified",
+              "reason": null
+            },
+            {
+              "value": "Oral amoxicillin — complete course at home",
+              "cites": [
+                {
+                  "lines": [
+                    "L011"
+                  ],
+                  "quote": "complete oral amoxicillin course",
+                  "verified": true,
+                  "reason": null
+                }
+              ],
+              "fact_id": "medications.discharge.1",
+              "citation_status": "verified",
+              "reason": null
+            }
+          ],
+          "discharge_status": "listed",
+          "medications_check": "ok"
+        },
+        "resus": {
+          "changed": "no",
+          "cites": [
+            {
+              "lines": [
+                "L006",
+                "L007"
+              ],
+              "quote": "PRE-EXISTING community DNACPR (ReSPECT) in place from before admission\n(advanced COPD, patient wishes). Documented, not changed.",
+              "verified": true,
+              "reason": null
+            }
+          ],
+          "form_or_discussion_documented": true,
+          "status_documented": "dnacpr",
+          "fact_id": "resus",
+          "citation_status": "verified",
+          "reason": null
+        },
+        "documented_advice": [],
+        "age_group": "adult",
+        "contradictions": [],
+        "suspicious_text": []
+      },
+      "uncited_lines": [],
+      "counts": {
+        "cites_total": 26,
+        "cites_verified": 25,
+        "items_unverified": 1,
+        "fields_inconsistent": 3,
+        "medications_inconsistent": 0
+      }
+    },
+    "retrieve_evidence": {
+      "medication": [
+        {
+          "line": "L004",
+          "sources": [
+            "cited",
+            "med_header"
+          ],
+          "fact_ids": [
+            "medications.pre_admission.0"
+          ],
+          "flagged": false
+        },
+        {
+          "line": "L005",
+          "sources": [
+            "cited",
+            "med_continuation"
+          ],
+          "fact_ids": [
+            "medications.pre_admission.0",
+            "medications.pre_admission.1",
+            "medications.pre_admission.2"
+          ],
+          "flagged": false
+        },
+        {
+          "line": "L010",
+          "sources": [
+            "cited"
+          ],
+          "fact_ids": [
+            "medications.discharge.0"
+          ],
+          "flagged": false
+        },
+        {
+          "line": "L011",
+          "sources": [
+            "cited"
+          ],
+          "fact_ids": [
+            "medications.discharge.0",
+            "medications.discharge.1"
+          ],
+          "flagged": false
+        }
+      ],
+      "resus": [
+        {
+          "line": "L006",
+          "sources": [
+            "cited",
+            "resus_term"
+          ],
+          "fact_ids": [
+            "resus"
+          ],
+          "flagged": false
+        },
+        {
+          "line": "L007",
+          "sources": [
+            "cited"
+          ],
+          "fact_ids": [
+            "resus"
+          ],
+          "flagged": false
+        },
+        {
+          "line": "L008",
+          "sources": [
+            "resus_term"
+          ],
+          "fact_ids": [],
+          "flagged": false
+        }
+      ],
+      "counts": {
+        "medication_lines": 4,
+        "resus_lines": 3,
+        "medication_matched_not_cited": 0,
+        "resus_matched_not_cited": 1
+      }
+    },
+    "route_resus": {
+      "route": "documented_but_absent",
+      "forced": "resus_lines_uncited",
+      "status": "not_documented",
+      "changed": "not_documented",
+      "cited_lines": [
+        "L006",
+        "L007",
+        "L008"
+      ],
+      "rendered": "RESUSCITATION STATUS\nResuscitation is recorded in these notes ([L006–L007]: \"PRE-EXISTING community DNACPR (ReSPECT) in place from before admission (advanced COPD, patient wishes). Documented, not changed.\"; [L008]: \"based NIV, not for intubation (per ReSPECT + patient).\"), but the status could not be confirmed from them. Check the notes and any completed form before relying on any resuscitation decision."
+    },
+    "select_safety_net": {
+      "route": "fallback",
+      "audience": "adult",
+      "pinned_line": "If you have been given a number to call, use that first. Otherwise, if you are worried, contact your GP or call NHS 111. Call 999 if it is an emergency.",
+      "advice": [],
+      "advice_excluded": 0,
+      "cited_lines": [],
+      "part_ab": "If you have been given a number to call, use that first. Otherwise, if you are worried, contact your GP or call NHS 111. Call 999 if it is an emergency.",
+      "part_c": "If you have been given a number to call, use that first. Otherwise, if you are worried, contact your GP or call NHS 111. Call 999 if it is an emergency."
+    },
+    "reconcile_medications": {
+      "reconciliation": [
+        {
+          "entry_id": "reconciliation.0",
+          "drug": "Trelegy inhaler",
+          "tag": "continued",
+          "basis": "documented",
+          "dose": null,
+          "route": null,
+          "frequency": "OD",
+          "previous": null,
+          "conflict": false,
+          "dh_cites": [
+            {
+              "lines": [
+                "L004",
+                "L005"
+              ],
+              "quote": "Trelegy inhaler OD",
+              "verified": true,
+              "reason": null
+            }
+          ],
+          "discharge_cites": [
+            {
+              "lines": [
+                "L011"
+              ],
+              "quote": "inhaler technique\nreviewed",
+              "verified": false,
+              "reason": "quote_not_found"
+            }
+          ],
+          "citation_status": "citation_unverified",
+          "reason": "quote_not_found",
+          "checks": []
+        },
+        {
+          "entry_id": "reconciliation.1",
+          "drug": "salbutamol",
+          "tag": "continued",
+          "basis": "inferred_from_dh",
+          "dose": null,
+          "route": null,
+          "frequency": "PRN",
+          "previous": null,
+          "conflict": false,
+          "dh_cites": [
+            {
+              "lines": [
+                "L005"
+              ],
+              "quote": "salbutamol PRN",
+              "verified": true,
+              "reason": null
+            }
+          ],
+          "discharge_cites": [],
+          "citation_status": "verified",
+          "reason": null,
+          "checks": []
+        },
+        {
+          "entry_id": "reconciliation.2",
+          "drug": "amlodipine",
+          "tag": "continued",
+          "basis": "inferred_from_dh",
+          "dose": "5mg",
+          "route": null,
+          "frequency": "OD",
+          "previous": null,
+          "conflict": false,
+          "dh_cites": [
+            {
+              "lines": [
+                "L005"
+              ],
+              "quote": "amlodipine 5mg OD",
+              "verified": true,
+              "reason": null
+            }
+          ],
+          "discharge_cites": [],
+          "citation_status": "verified",
+          "reason": null,
+          "checks": []
+        },
+        {
+          "entry_id": "reconciliation.3",
+          "drug": "prednisolone",
+          "tag": "new",
+          "basis": "documented",
+          "dose": "30mg",
+          "route": null,
+          "frequency": "OD",
+          "previous": null,
+          "conflict": false,
+          "dh_cites": [],
+          "discharge_cites": [
+            {
+              "lines": [
+                "L010",
+                "L011"
+              ],
+              "quote": "Pred 30mg OD for 5 days total\n(complete course at home)",
+              "verified": true,
+              "reason": null
+            }
+          ],
+          "citation_status": "verified",
+          "reason": null,
+          "checks": []
+        },
+        {
+          "entry_id": "reconciliation.4",
+          "drug": "amoxicillin",
+          "tag": "new",
+          "basis": "documented",
+          "dose": null,
+          "route": "oral",
+          "frequency": null,
+          "previous": null,
+          "conflict": false,
+          "dh_cites": [],
+          "discharge_cites": [
+            {
+              "lines": [
+                "L011"
+              ],
+              "quote": "complete oral amoxicillin course",
+              "verified": true,
+              "reason": null
+            }
+          ],
+          "citation_status": "verified",
+          "reason": null,
+          "checks": []
+        }
+      ],
+      "discharge_status": "listed",
+      "reconciliation_check": "ok",
+      "dh_lines_unreconciled": [],
+      "counts": {
+        "entries": 5,
+        "cites_total": 6,
+        "cites_verified": 5,
+        "entries_unverified": 1,
+        "entries_flagged": 0,
+        "dh_lines_unreconciled": 0
+      },
+      "call": {
+        "model_id": "anthropic.claude-sonnet-4-6",
+        "prompt_sha256": "b06f8c12a739b80c3d57f41ceada7dd7b1c2af38bc53159353b68425d09d5acf",
+        "stop_reason": "tool_use",
+        "attempts": 1,
+        "input_tokens": 976,
+        "output_tokens": 449,
+        "cache_read_tokens": 2290,
+        "cache_write_tokens": 0,
+        "latency_ms": 3208
+      }
+    },
+    "compose_clinical": {
+      "sections": [
+        {
+          "section_id": "sections.0",
+          "part": "part_a",
+          "heading": "presenting_complaint",
+          "fact_ids": [
+            "presenting_complaint.0"
+          ],
+          "text": "4 days of increasing shortness of breath, green sputum and wheeze.",
+          "unverified_fact_ids": []
+        },
+        {
+          "section_id": "sections.1",
+          "part": "part_a",
+          "heading": "diagnosis",
+          "fact_ids": [
+            "diagnosis_primary.0",
+            "diagnosis_background.0",
+            "diagnosis_background.1"
+          ],
+          "text": "Primary: Acute exacerbation of COPD with type 2 respiratory failure.\n\nBackground:\n- Severe COPD (FEV1 30% predicted, home O2, previous ITU avoided by patient choice)\n- Pre-existing community DNACPR (ReSPECT form) in place prior to admission, on basis of advanced COPD and patient wishes",
+          "unverified_fact_ids": []
+        },
+        {
+          "section_id": "sections.2",
+          "part": "part_a",
+          "heading": "key_investigations",
+          "fact_ids": [
+            "key_investigations.0"
+          ],
+          "text": "On admission: temperature 37.8, RR 28, sats 84% on home O2, pH 7.30, PaCO2 8.1 — consistent with type 2 respiratory failure.",
+          "unverified_fact_ids": []
+        },
+        {
+          "section_id": "sections.3",
+          "part": "part_a",
+          "heading": "treatment",
+          "fact_ids": [
+            "treatment.0",
+            "treatment.1",
+            "treatment.2",
+            "treatment.3",
+            "treatment.4",
+            "treatment.5",
+            "treatment.6",
+            "treatment.7",
+            "treatment.8",
+            "treatment.9"
+          ],
+          "text": "- Controlled oxygen therapy commenced.\n- Non-invasive ventilation (NIV) commenced.\n- Nebulisers given.\n- IV hydrocortisone then oral prednisolone.\n- IV then oral amoxicillin (per local guidelines).\n- Weaned off NIV by day 3; sats 88–90% on home O2 at baseline.\n- Inhaler technique reviewed.\n- Rescue pack supplied.\n- Smoking cessation discussed (ex-smoker).\n- Ceiling of care established: ward-based NIV, not for intubation, in accordance with ReSPECT form and patient wishes.",
+          "unverified_fact_ids": [
+            "treatment.6"
+          ]
+        },
+        {
+          "section_id": "sections.4",
+          "part": "part_a",
+          "heading": "resuscitation_status",
+          "fact_ids": [],
+          "text": "{{RESUS}}",
+          "unverified_fact_ids": []
+        },
+        {
+          "section_id": "sections.5",
+          "part": "part_a",
+          "heading": "medications",
+          "fact_ids": [],
+          "text": "{{MEDICATIONS}}",
+          "unverified_fact_ids": []
+        },
+        {
+          "section_id": "sections.6",
+          "part": "part_a",
+          "heading": "allergies",
+          "fact_ids": [
+            "allergies.0"
+          ],
+          "text": "No known drug allergies.",
+          "unverified_fact_ids": []
+        },
+        {
+          "section_id": "sections.7",
+          "part": "part_a",
+          "heading": "follow_up",
+          "fact_ids": [
+            "follow_up.0",
+            "follow_up.1"
+          ],
+          "text": "- Respiratory clinic in 6 weeks.\n- Referral to community respiratory team made.",
+          "unverified_fact_ids": []
+        },
+        {
+          "section_id": "sections.8",
+          "part": "part_a",
+          "heading": "gp_actions",
+          "fact_ids": [
+            "gp_actions.0"
+          ],
+          "text": "- GP to review patient after exacerbation.",
+          "unverified_fact_ids": []
+        },
+        {
+          "section_id": "sections.9",
+          "part": "part_a",
+          "heading": "safety_net",
+          "fact_ids": [],
+          "text": "{{SAFETY_NET}}",
+          "unverified_fact_ids": []
+        },
+        {
+          "section_id": "sections.10",
+          "part": "part_a",
+          "heading": "vte_assessment",
+          "fact_ids": [],
+          "text": "Not documented",
+          "unverified_fact_ids": []
+        },
+        {
+          "section_id": "sections.11",
+          "part": "part_b",
+          "heading": "opening",
+          "fact_ids": [
+            "age_sex.0",
+            "presenting_complaint.0",
+            "diagnosis_primary.0"
+          ],
+          "text": "Thank you for referring this 79-year-old female who was admitted with a 4-day history of increasing shortness of breath, green sputum and wheeze, and was found to have an acute exacerbation of COPD with type 2 respiratory failure.",
+          "unverified_fact_ids": []
+        },
+        {
+          "section_id": "sections.12",
+          "part": "part_b",
+          "heading": "admission_summary",
+          "fact_ids": [
+            "key_investigations.0",
+            "treatment.0",
+            "treatment.1",
+            "treatment.2",
+            "treatment.3",
+            "treatment.4",
+            "treatment.5",
+            "treatment.6",
+            "treatment.7",
+            "treatment.8",
+            "treatment.9",
+            "diagnosis_background.0",
+            "diagnosis_background.1"
+          ],
+          "text": "On admission she had a temperature of 37.8, RR 28, sats 84% on home O2, pH 7.30 and PaCO2 8.1, confirming type 2 respiratory failure. She was treated with controlled oxygen therapy, NIV, nebulisers, IV hydrocortisone transitioning to oral prednisolone, and IV then oral amoxicillin per local guidelines. She was successfully weaned off NIV by day 3, with sats 88–90% on home O2 at her baseline. Inhaler technique was reviewed and a rescue pack was supplied. Smoking cessation was discussed (she is an ex-smoker). Her background of severe COPD (FEV1 30% predicted, home O2) and her pre-existing community DNACPR (ReSPECT form, in place prior to admission on the basis of advanced COPD and patient wishes) were noted. Ceiling of care was established as ward-based NIV; she is not for intubation, in accordance with her ReSPECT form and her own wishes.",
+          "unverified_fact_ids": [
+            "treatment.6"
+          ]
+        },
+        {
+          "section_id": "sections.13",
+          "part": "part_b",
+          "heading": "diagnosis",
+          "fact_ids": [
+            "diagnosis_primary.0",
+            "diagnosis_background.0",
+            "diagnosis_background.1"
+          ],
+          "text": "Primary: Acute exacerbation of COPD with type 2 respiratory failure.\n\nBackground:\n- Severe COPD (FEV1 30% predicted, home O2, previous ITU avoided by patient choice)\n- Pre-existing community DNACPR (ReSPECT form) in place prior to admission, on basis of advanced COPD and patient wishes",
+          "unverified_fact_ids": []
+        },
+        {
+          "section_id": "sections.14",
+          "part": "part_b",
+          "heading": "resuscitation_status",
+          "fact_ids": [],
+          "text": "{{RESUS}}",
+          "unverified_fact_ids": []
+        },
+        {
+          "section_id": "sections.15",
+          "part": "part_b",
+          "heading": "medications",
+          "fact_ids": [],
+          "text": "{{MEDICATIONS}}",
+          "unverified_fact_ids": []
+        },
+        {
+          "section_id": "sections.16",
+          "part": "part_b",
+          "heading": "gp_actions",
+          "fact_ids": [
+            "gp_actions.0"
+          ],
+          "text": "- GP to review patient after exacerbation.",
+          "unverified_fact_ids": []
+        },
+        {
+          "section_id": "sections.17",
+          "part": "part_b",
+          "heading": "follow_up",
+          "fact_ids": [
+            "follow_up.0",
+            "follow_up.1"
+          ],
+          "text": "- Respiratory clinic arranged in 6 weeks.\n- Referral to community respiratory team made.",
+          "unverified_fact_ids": []
+        },
+        {
+          "section_id": "sections.18",
+          "part": "part_b",
+          "heading": "safety_net",
+          "fact_ids": [],
+          "text": "{{SAFETY_NET}}",
+          "unverified_fact_ids": []
+        }
+      ],
+      "checks": [
+        {
+          "check": "resus_text_outside",
+          "part": "part_a",
+          "heading": "diagnosis",
+          "fact_id": null,
+          "token": null
+        },
+        {
+          "check": "resus_text_outside",
+          "part": "part_a",
+          "heading": "treatment",
+          "fact_id": null,
+          "token": null
+        },
+        {
+          "check": "resus_text_outside",
+          "part": "part_b",
+          "heading": "admission_summary",
+          "fact_id": null,
+          "token": null
+        },
+        {
+          "check": "resus_text_outside",
+          "part": "part_b",
+          "heading": "diagnosis",
+          "fact_id": null,
+          "token": null
+        }
+      ],
+      "counts": {
+        "sections": 19,
+        "sections_a": 11,
+        "sections_b": 8,
+        "facts_given": 19,
+        "facts_used_in_a": 19,
+        "header_facts_given": 1,
+        "contradictions_given": 0,
+        "contradictions_in_a": 0,
+        "gp_actions_given": 1,
+        "gp_actions_in_b": 1,
+        "unverified_given": 1,
+        "unverified_used": 1,
+        "checks": 4
+      },
+      "age_group": "adult",
+      "call": {
+        "model_id": "anthropic.claude-sonnet-4-6",
+        "prompt_sha256": "cb55505a0692ff0aa7548836ab5dc777ac116dd604081d0864a1654284b0282d",
+        "stop_reason": "tool_use",
+        "attempts": 1,
+        "input_tokens": 1019,
+        "output_tokens": 1464,
+        "cache_read_tokens": 2822,
+        "cache_write_tokens": 0,
+        "latency_ms": 7955
+      }
+    }
+  },
+  "output": null,
+  "gate": null,
+  "failed_step": null,
+  "error": null,
+  "step_errors": {},
+  "cost_usd_est": 0.07643
+}

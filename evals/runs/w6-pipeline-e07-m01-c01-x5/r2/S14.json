@@ -1,0 +1,1354 @@
+{
+  "record_version": 1,
+  "generation_id": "w6-pipeline-e07-m01-c01-x5/r2/S14",
+  "batch_id": "w6-pipeline-e07-m01-c01-x5",
+  "run": 2,
+  "scenario_id": "S14",
+  "generator": "pipeline",
+  "path": "steps-1-5b-5a-6",
+  "model_id": "anthropic.claude-sonnet-4-6",
+  "region": "eu-west-2",
+  "prompts": {
+    "extract_facts": {
+      "path": "src/generate/pipeline/prompts/extract_facts.md",
+      "file_sha256": "378df3fefedc74177c9dd51c9c8827b86080f632fb3daa734a07c3462ccd760e",
+      "body_sha256": "208ac00d3d6096f05c4ba91137e923aec4054651c042f55d9e7c089bcd7675a2"
+    },
+    "reconcile_medications": {
+      "path": "src/generate/pipeline/prompts/reconcile_medications.md",
+      "file_sha256": "5006968b7010560f437e0eb31f55e9092baebc7a4adf347667bfcb154e8708a0",
+      "body_sha256": "b06f8c12a739b80c3d57f41ceada7dd7b1c2af38bc53159353b68425d09d5acf"
+    },
+    "compose_clinical": {
+      "path": "src/generate/pipeline/prompts/compose_clinical.md",
+      "file_sha256": "95c1688d76caf27a6867dd243ac939d75cf91611f1c7a6b615b9f107955a22c7",
+      "body_sha256": "cb55505a0692ff0aa7548836ab5dc777ac116dd604081d0864a1654284b0282d"
+    }
+  },
+  "prompt_caching": true,
+  "notes_sha256": "20c5042a7bbfa0a841857197d01c69abf4b0abe852955048535cbba89c736340",
+  "started_at": "2026-10-28T12:16:47+00:00",
+  "elapsed_s": 24.645,
+  "calls": [
+    {
+      "name": "extract_facts",
+      "input_tokens": 829,
+      "output_tokens": 2490,
+      "cache_read_tokens": 4183,
+      "cache_write_tokens": 0,
+      "stop_reason": "tool_use",
+      "latency_s": 13.894,
+      "throttle_retries": 0
+    },
+    {
+      "name": "reconcile_medications",
+      "input_tokens": 1048,
+      "output_tokens": 488,
+      "cache_read_tokens": 2290,
+      "cache_write_tokens": 0,
+      "stop_reason": "tool_use",
+      "latency_s": 3.501,
+      "throttle_retries": 0
+    },
+    {
+      "name": "compose_clinical",
+      "input_tokens": 1093,
+      "output_tokens": 1296,
+      "cache_read_tokens": 2822,
+      "cache_write_tokens": 0,
+      "stop_reason": "tool_use",
+      "latency_s": 7.066,
+      "throttle_retries": 0
+    }
+  ],
+  "steps": {
+    "guard_input": {
+      "notes_sha256": "20c5042a7bbfa0a841857197d01c69abf4b0abe852955048535cbba89c736340",
+      "line_count": 14,
+      "flags": []
+    },
+    "extract_facts": {
+      "call": {
+        "model_id": "anthropic.claude-sonnet-4-6",
+        "prompt_sha256": "208ac00d3d6096f05c4ba91137e923aec4054651c042f55d9e7c089bcd7675a2",
+        "stop_reason": "tool_use",
+        "attempts": 1,
+        "input_tokens": 829,
+        "output_tokens": 2490,
+        "cache_read_tokens": 4183,
+        "cache_write_tokens": 0,
+        "latency_ms": 13894
+      }
+    },
+    "validate_facts": {
+      "facts": {
+        "fields": {
+          "age_sex": {
+            "status": "documented",
+            "items": [
+              {
+                "value": "74-year-old male",
+                "cites": [
+                  {
+                    "lines": [
+                      "L001"
+                    ],
+                    "quote": "74M",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "age_sex.0",
+                "citation_status": "verified",
+                "reason": null
+              }
+            ],
+            "field_check": "ok"
+          },
+          "specialty": {
+            "status": "inferred_flagged",
+            "items": [
+              {
+                "value": "Stroke / Neurology (inferred from acute ischaemic stroke with thrombolysis and stroke protocol)",
+                "cites": [
+                  {
+                    "lines": [
+                      "L001",
+                      "L002"
+                    ],
+                    "quote": "CT head no haemorrhage. Thrombolysed (alteplase) within window. Known AF —",
+                    "verified": true,
+                    "reason": null
+                  },
+                  {
+                    "lines": [
+                      "L002",
+                      "L003"
+                    ],
+                    "quote": "Known AF —\nNOT previously anticoagulated (was on aspirin only)",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "specialty.0",
+                "citation_status": "verified",
+                "reason": null
+              }
+            ],
+            "field_check": "ok"
+          },
+          "legal_status": {
+            "status": "not_documented",
+            "items": [],
+            "field_check": "ok"
+          },
+          "weight": {
+            "status": "not_documented",
+            "items": [],
+            "field_check": "ok"
+          },
+          "admission_date": {
+            "status": "documented",
+            "items": [
+              {
+                "value": "14/05",
+                "cites": [
+                  {
+                    "lines": [
+                      "L001"
+                    ],
+                    "quote": "Day 1 (14/05)",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "admission_date.0",
+                "citation_status": "verified",
+                "reason": null
+              }
+            ],
+            "field_check": "ok"
+          },
+          "discharge_date": {
+            "status": "documented",
+            "items": [
+              {
+                "value": "18/05",
+                "cites": [
+                  {
+                    "lines": [
+                      "L011"
+                    ],
+                    "quote": "Day 5 (18/05) Discharge.",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "discharge_date.0",
+                "citation_status": "verified",
+                "reason": null
+              }
+            ],
+            "field_check": "ok"
+          },
+          "presenting_complaint": {
+            "status": "documented",
+            "items": [
+              {
+                "value": "Sudden right facial droop, right arm weakness and dysphasia with onset 1 hour prior to admission",
+                "cites": [
+                  {
+                    "lines": [
+                      "L001"
+                    ],
+                    "quote": "sudden R facial droop, R arm weakness, dysphasia, onset 1h ago",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "presenting_complaint.0",
+                "citation_status": "verified",
+                "reason": null
+              }
+            ],
+            "field_check": "ok"
+          },
+          "diagnosis_primary": {
+            "status": "documented",
+            "items": [
+              {
+                "value": "Acute ischaemic stroke",
+                "cites": [
+                  {
+                    "lines": [
+                      "L001",
+                      "L002"
+                    ],
+                    "quote": "CT head no haemorrhage. Thrombolysed (alteplase) within window. Known AF —",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "diagnosis_primary.0",
+                "citation_status": "verified",
+                "reason": null
+              }
+            ],
+            "field_check": "ok"
+          },
+          "diagnosis_secondary": {
+            "status": "documented",
+            "items": [
+              {
+                "value": "Atrial fibrillation (AF) — not previously anticoagulated",
+                "cites": [
+                  {
+                    "lines": [
+                      "L002",
+                      "L003"
+                    ],
+                    "quote": "Known AF —\nNOT previously anticoagulated (was on aspirin only)",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "diagnosis_secondary.0",
+                "citation_status": "verified",
+                "reason": null
+              }
+            ],
+            "field_check": "ok"
+          },
+          "diagnosis_background": {
+            "status": "documented",
+            "items": [
+              {
+                "value": "Atrial fibrillation (AF)",
+                "cites": [
+                  {
+                    "lines": [
+                      "L003"
+                    ],
+                    "quote": "PMH: AF, HTN, T2DM",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "diagnosis_background.0",
+                "citation_status": "verified",
+                "reason": null
+              },
+              {
+                "value": "Hypertension (HTN)",
+                "cites": [
+                  {
+                    "lines": [
+                      "L003"
+                    ],
+                    "quote": "PMH: AF, HTN, T2DM",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "diagnosis_background.1",
+                "citation_status": "verified",
+                "reason": null
+              },
+              {
+                "value": "Type 2 diabetes mellitus (T2DM)",
+                "cites": [
+                  {
+                    "lines": [
+                      "L003"
+                    ],
+                    "quote": "PMH: AF, HTN, T2DM",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "diagnosis_background.2",
+                "citation_status": "verified",
+                "reason": null
+              }
+            ],
+            "field_check": "ok"
+          },
+          "key_investigations": {
+            "status": "documented",
+            "items": [
+              {
+                "value": "NIHSS on admission: 9",
+                "cites": [
+                  {
+                    "lines": [
+                      "L001",
+                      "L002"
+                    ],
+                    "quote": "NIHSS 9. CT head no haemorrhage.",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "key_investigations.0",
+                "citation_status": "verified",
+                "reason": null
+              },
+              {
+                "value": "CT head (Day 1): no haemorrhage",
+                "cites": [
+                  {
+                    "lines": [
+                      "L001",
+                      "L002"
+                    ],
+                    "quote": "CT head no haemorrhage",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "key_investigations.1",
+                "citation_status": "verified",
+                "reason": null
+              },
+              {
+                "value": "Post-thrombolysis CT (Day 2): no bleed",
+                "cites": [
+                  {
+                    "lines": [
+                      "L005"
+                    ],
+                    "quote": "Post-thrombolysis CT no bleed. NIHSS improving to 4.",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "key_investigations.2",
+                "citation_status": "verified",
+                "reason": null
+              },
+              {
+                "value": "NIHSS Day 2: improving to 4",
+                "cites": [
+                  {
+                    "lines": [
+                      "L005"
+                    ],
+                    "quote": "NIHSS improving to 4",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "key_investigations.3",
+                "citation_status": "verified",
+                "reason": null
+              }
+            ],
+            "field_check": "ok"
+          },
+          "treatment": {
+            "status": "documented",
+            "items": [
+              {
+                "value": "Thrombolysis with alteplase within treatment window (Day 1)",
+                "cites": [
+                  {
+                    "lines": [
+                      "L001",
+                      "L002"
+                    ],
+                    "quote": "Thrombolysed (alteplase) within window",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "treatment.0",
+                "citation_status": "verified",
+                "reason": null
+              },
+              {
+                "value": "Speech and language therapy (SALT) assessment for unsafe swallow",
+                "cites": [
+                  {
+                    "lines": [
+                      "L005",
+                      "L006"
+                    ],
+                    "quote": "Swallow unsafe\ninitially -> SALT",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "treatment.1",
+                "citation_status": "verified",
+                "reason": null
+              },
+              {
+                "value": "Nasogastric (NG) feeding commenced due to unsafe swallow",
+                "cites": [
+                  {
+                    "lines": [
+                      "L005",
+                      "L006"
+                    ],
+                    "quote": "Swallow unsafe\ninitially -> SALT, NG feeding",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "treatment.2",
+                "citation_status": "verified",
+                "reason": null
+              },
+              {
+                "value": "Swallow recovered by Day 3; NG feeding discontinued",
+                "cites": [
+                  {
+                    "lines": [
+                      "L006"
+                    ],
+                    "quote": "then swallow recovered day 3",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "treatment.3",
+                "citation_status": "verified",
+                "reason": null
+              },
+              {
+                "value": "Anticoagulation started for AF (apixaban) per stroke protocol timing on Day 4; aspirin stopped",
+                "cites": [
+                  {
+                    "lines": [
+                      "L008",
+                      "L009"
+                    ],
+                    "quote": "Anticoagulation started for AF (apixaba) per stroke protocol timing;\naspirin stopped.",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "treatment.4",
+                "citation_status": "verified",
+                "reason": null
+              },
+              {
+                "value": "Early supported discharge (ESD) team accepted patient",
+                "cites": [
+                  {
+                    "lines": [
+                      "L009",
+                      "L010"
+                    ],
+                    "quote": "Early supported discharge\nteam accept.",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "treatment.5",
+                "citation_status": "verified",
+                "reason": null
+              },
+              {
+                "value": "Resuscitation discussed with patient (capacity intact); patient wishes to remain for resuscitation",
+                "cites": [
+                  {
+                    "lines": [
+                      "L006",
+                      "L007"
+                    ],
+                    "quote": "Resus discussed with\npatient (capacity intact) -> wishes to remain for resus.",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "treatment.6",
+                "citation_status": "verified",
+                "reason": null
+              }
+            ],
+            "field_check": "ok"
+          },
+          "risk_assessment": {
+            "status": "not_documented",
+            "items": [],
+            "field_check": "ok"
+          },
+          "allergies": {
+            "status": "documented",
+            "items": [
+              {
+                "value": "No known drug allergies (NKDA)",
+                "cites": [
+                  {
+                    "lines": [
+                      "L004"
+                    ],
+                    "quote": "NKDA.",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "allergies.0",
+                "citation_status": "verified",
+                "reason": null
+              }
+            ],
+            "field_check": "ok"
+          },
+          "follow_up": {
+            "status": "documented",
+            "items": [
+              {
+                "value": "Early supported discharge (ESD) / community stroke rehabilitation",
+                "cites": [
+                  {
+                    "lines": [
+                      "L013"
+                    ],
+                    "quote": "ESD/community stroke rehab.",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "follow_up.0",
+                "citation_status": "verified",
+                "reason": null
+              },
+              {
+                "value": "Stroke clinic follow-up at 6 weeks",
+                "cites": [
+                  {
+                    "lines": [
+                      "L013"
+                    ],
+                    "quote": "Stroke clinic 6/52.",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "follow_up.1",
+                "citation_status": "verified",
+                "reason": null
+              }
+            ],
+            "field_check": "ok"
+          },
+          "gp_actions": {
+            "status": "documented",
+            "items": [
+              {
+                "value": "GP to check blood pressure (BP) and HbA1c",
+                "cites": [
+                  {
+                    "lines": [
+                      "L013"
+                    ],
+                    "quote": "GP: BP, HbA1c.",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "gp_actions.0",
+                "citation_status": "verified",
+                "reason": null
+              }
+            ],
+            "field_check": "ok"
+          },
+          "vte_assessment": {
+            "status": "not_documented",
+            "items": [],
+            "field_check": "ok"
+          }
+        },
+        "medications": {
+          "pre_admission": [
+            {
+              "value": "Aspirin 75mg once daily (OD)",
+              "cites": [
+                {
+                  "lines": [
+                    "L003",
+                    "L004"
+                  ],
+                  "quote": "DH: aspirin\n75mg OD",
+                  "verified": true,
+                  "reason": null
+                }
+              ],
+              "fact_id": "medications.pre_admission.0",
+              "citation_status": "verified",
+              "reason": null
+            },
+            {
+              "value": "Amlodipine 10mg once daily (OD)",
+              "cites": [
+                {
+                  "lines": [
+                    "L004"
+                  ],
+                  "quote": "amlodipine 10mg OD",
+                  "verified": true,
+                  "reason": null
+                }
+              ],
+              "fact_id": "medications.pre_admission.1",
+              "citation_status": "verified",
+              "reason": null
+            },
+            {
+              "value": "Metformin 1g twice daily (BD)",
+              "cites": [
+                {
+                  "lines": [
+                    "L004"
+                  ],
+                  "quote": "metformin 1g BD",
+                  "verified": true,
+                  "reason": null
+                }
+              ],
+              "fact_id": "medications.pre_admission.2",
+              "citation_status": "verified",
+              "reason": null
+            }
+          ],
+          "discharge": [
+            {
+              "value": "Apixaban 5mg twice daily (BD) — new",
+              "cites": [
+                {
+                  "lines": [
+                    "L011",
+                    "L012"
+                  ],
+                  "quote": "apixaban 5mg BD (new)",
+                  "verified": true,
+                  "reason": null
+                }
+              ],
+              "fact_id": "medications.discharge.0",
+              "citation_status": "verified",
+              "reason": null
+            },
+            {
+              "value": "Aspirin STOPPED",
+              "cites": [
+                {
+                  "lines": [
+                    "L011"
+                  ],
+                  "quote": "aspirin STOPPED",
+                  "verified": true,
+                  "reason": null
+                }
+              ],
+              "fact_id": "medications.discharge.1",
+              "citation_status": "verified",
+              "reason": null
+            },
+            {
+              "value": "Amlodipine 10mg once daily (OD) — continued",
+              "cites": [
+                {
+                  "lines": [
+                    "L011",
+                    "L012"
+                  ],
+                  "quote": "amlodipine\n10mg OD continued",
+                  "verified": true,
+                  "reason": null
+                }
+              ],
+              "fact_id": "medications.discharge.2",
+              "citation_status": "verified",
+              "reason": null
+            },
+            {
+              "value": "Atorvastatin 80mg at night (ON) — new, secondary prevention",
+              "cites": [
+                {
+                  "lines": [
+                    "L012"
+                  ],
+                  "quote": "atorvastatin 80mg ON (new, secondary prevention)",
+                  "verified": true,
+                  "reason": null
+                }
+              ],
+              "fact_id": "medications.discharge.3",
+              "citation_status": "verified",
+              "reason": null
+            },
+            {
+              "value": "Metformin 1g twice daily (BD) — continued",
+              "cites": [
+                {
+                  "lines": [
+                    "L012",
+                    "L013"
+                  ],
+                  "quote": "metformin 1g\nBD continued",
+                  "verified": true,
+                  "reason": null
+                }
+              ],
+              "fact_id": "medications.discharge.4",
+              "citation_status": "verified",
+              "reason": null
+            }
+          ],
+          "discharge_status": "listed",
+          "medications_check": "ok"
+        },
+        "resus": {
+          "changed": "no",
+          "cites": [
+            {
+              "lines": [
+                "L006",
+                "L007"
+              ],
+              "quote": "Resus discussed with\npatient (capacity intact) -> wishes to remain for resus.",
+              "verified": true,
+              "reason": null
+            }
+          ],
+          "form_or_discussion_documented": true,
+          "status_documented": "for_resuscitation",
+          "fact_id": "resus",
+          "citation_status": "verified",
+          "reason": null
+        },
+        "documented_advice": [
+          {
+            "value": "Advised not to drive and must inform DVLA (1 month off driving minimum per rules)",
+            "cites": [
+              {
+                "lines": [
+                  "L014"
+                ],
+                "quote": "Driving: advised not to drive, must inform DVLA (1 month off driving min per rules).",
+                "verified": true,
+                "reason": null
+              }
+            ],
+            "fact_id": "documented_advice.0",
+            "citation_status": "verified",
+            "reason": null
+          }
+        ],
+        "age_group": "adult",
+        "contradictions": [],
+        "suspicious_text": []
+      },
+      "uncited_lines": [],
+      "counts": {
+        "cites_total": 36,
+        "cites_verified": 36,
+        "items_unverified": 0,
+        "fields_inconsistent": 0,
+        "medications_inconsistent": 0
+      }
+    },
+    "retrieve_evidence": {
+      "medication": [
+        {
+          "line": "L003",
+          "sources": [
+            "cited",
+            "med_header"
+          ],
+          "fact_ids": [
+            "medications.pre_admission.0"
+          ],
+          "flagged": false
+        },
+        {
+          "line": "L004",
+          "sources": [
+            "cited",
+            "med_continuation"
+          ],
+          "fact_ids": [
+            "medications.pre_admission.0",
+            "medications.pre_admission.1",
+            "medications.pre_admission.2"
+          ],
+          "flagged": false
+        },
+        {
+          "line": "L011",
+          "sources": [
+            "cited",
+            "med_header"
+          ],
+          "fact_ids": [
+            "medications.discharge.0",
+            "medications.discharge.1",
+            "medications.discharge.2"
+          ],
+          "flagged": false
+        },
+        {
+          "line": "L012",
+          "sources": [
+            "cited",
+            "med_continuation"
+          ],
+          "fact_ids": [
+            "medications.discharge.0",
+            "medications.discharge.2",
+            "medications.discharge.3",
+            "medications.discharge.4"
+          ],
+          "flagged": false
+        },
+        {
+          "line": "L013",
+          "sources": [
+            "cited",
+            "med_continuation"
+          ],
+          "fact_ids": [
+            "medications.discharge.4"
+          ],
+          "flagged": false
+        }
+      ],
+      "resus": [
+        {
+          "line": "L006",
+          "sources": [
+            "cited",
+            "resus_term"
+          ],
+          "fact_ids": [
+            "resus"
+          ],
+          "flagged": false
+        },
+        {
+          "line": "L007",
+          "sources": [
+            "cited",
+            "resus_term"
+          ],
+          "fact_ids": [
+            "resus"
+          ],
+          "flagged": false
+        }
+      ],
+      "counts": {
+        "medication_lines": 5,
+        "resus_lines": 2,
+        "medication_matched_not_cited": 0,
+        "resus_matched_not_cited": 0
+      }
+    },
+    "route_resus": {
+      "route": "documented",
+      "forced": "no",
+      "status": "for_resuscitation",
+      "changed": "no",
+      "cited_lines": [
+        "L006",
+        "L007"
+      ],
+      "rendered": "RESUSCITATION STATUS\nFor resuscitation. No change during admission.\nSource: [L006–L007]: \"Resus discussed with patient (capacity intact) -> wishes to remain for resus.\""
+    },
+    "select_safety_net": {
+      "route": "documented",
+      "audience": "adult",
+      "pinned_line": "If you have been given a number to call, use that first. Otherwise, if you are worried, contact your GP or call NHS 111. Call 999 if it is an emergency.",
+      "advice": [
+        {
+          "fact_id": "documented_advice.0",
+          "lines": [
+            "L014"
+          ],
+          "quote": "Driving: advised not to drive, must inform DVLA (1 month off driving min per rules)."
+        }
+      ],
+      "advice_excluded": 0,
+      "cited_lines": [
+        "L014"
+      ],
+      "part_ab": "- \"Driving: advised not to drive, must inform DVLA (1 month off driving min per rules).\" [L014]\n\nStandard seek-help line in the patient version (fixed wording, not from the notes):\nIf you have been given a number to call, use that first. Otherwise, if you are worried, contact your GP or call NHS 111. Call 999 if it is an emergency.",
+      "part_c": "Driving: advised not to drive, must inform DVLA (1 month off driving min per rules).\n\nIf you have been given a number to call, use that first. Otherwise, if you are worried, contact your GP or call NHS 111. Call 999 if it is an emergency."
+    },
+    "reconcile_medications": {
+      "reconciliation": [
+        {
+          "entry_id": "reconciliation.0",
+          "drug": "aspirin",
+          "tag": "stopped",
+          "basis": "documented",
+          "dose": "75mg",
+          "route": null,
+          "frequency": "OD",
+          "previous": null,
+          "conflict": false,
+          "dh_cites": [
+            {
+              "lines": [
+                "L003",
+                "L004"
+              ],
+              "quote": "aspirin\n75mg OD",
+              "verified": true,
+              "reason": null
+            }
+          ],
+          "discharge_cites": [
+            {
+              "lines": [
+                "L011"
+              ],
+              "quote": "aspirin STOPPED",
+              "verified": true,
+              "reason": null
+            }
+          ],
+          "citation_status": "verified",
+          "reason": null,
+          "checks": []
+        },
+        {
+          "entry_id": "reconciliation.1",
+          "drug": "amlodipine",
+          "tag": "continued",
+          "basis": "documented",
+          "dose": "10mg",
+          "route": null,
+          "frequency": "OD",
+          "previous": null,
+          "conflict": false,
+          "dh_cites": [
+            {
+              "lines": [
+                "L004"
+              ],
+              "quote": "amlodipine 10mg OD",
+              "verified": true,
+              "reason": null
+            }
+          ],
+          "discharge_cites": [
+            {
+              "lines": [
+                "L011",
+                "L012"
+              ],
+              "quote": "amlodipine\n10mg OD continued",
+              "verified": true,
+              "reason": null
+            }
+          ],
+          "citation_status": "verified",
+          "reason": null,
+          "checks": []
+        },
+        {
+          "entry_id": "reconciliation.2",
+          "drug": "metformin",
+          "tag": "continued",
+          "basis": "documented",
+          "dose": "1g",
+          "route": null,
+          "frequency": "BD",
+          "previous": null,
+          "conflict": false,
+          "dh_cites": [
+            {
+              "lines": [
+                "L004"
+              ],
+              "quote": "metformin 1g BD",
+              "verified": true,
+              "reason": null
+            }
+          ],
+          "discharge_cites": [
+            {
+              "lines": [
+                "L012",
+                "L013"
+              ],
+              "quote": "metformin 1g\nBD continued",
+              "verified": true,
+              "reason": null
+            }
+          ],
+          "citation_status": "verified",
+          "reason": null,
+          "checks": []
+        },
+        {
+          "entry_id": "reconciliation.3",
+          "drug": "apixaban",
+          "tag": "new",
+          "basis": "documented",
+          "dose": "5mg",
+          "route": null,
+          "frequency": "BD",
+          "previous": null,
+          "conflict": false,
+          "dh_cites": [],
+          "discharge_cites": [
+            {
+              "lines": [
+                "L011",
+                "L012"
+              ],
+              "quote": "apixaban 5mg BD (new)",
+              "verified": true,
+              "reason": null
+            }
+          ],
+          "citation_status": "verified",
+          "reason": null,
+          "checks": []
+        },
+        {
+          "entry_id": "reconciliation.4",
+          "drug": "atorvastatin",
+          "tag": "new",
+          "basis": "documented",
+          "dose": "80mg",
+          "route": null,
+          "frequency": "ON",
+          "previous": null,
+          "conflict": false,
+          "dh_cites": [],
+          "discharge_cites": [
+            {
+              "lines": [
+                "L012"
+              ],
+              "quote": "atorvastatin 80mg ON (new, secondary prevention)",
+              "verified": true,
+              "reason": null
+            }
+          ],
+          "citation_status": "verified",
+          "reason": null,
+          "checks": []
+        }
+      ],
+      "discharge_status": "listed",
+      "reconciliation_check": "ok",
+      "dh_lines_unreconciled": [],
+      "counts": {
+        "entries": 5,
+        "cites_total": 8,
+        "cites_verified": 8,
+        "entries_unverified": 0,
+        "entries_flagged": 0,
+        "dh_lines_unreconciled": 0
+      },
+      "call": {
+        "model_id": "anthropic.claude-sonnet-4-6",
+        "prompt_sha256": "b06f8c12a739b80c3d57f41ceada7dd7b1c2af38bc53159353b68425d09d5acf",
+        "stop_reason": "tool_use",
+        "attempts": 1,
+        "input_tokens": 1048,
+        "output_tokens": 488,
+        "cache_read_tokens": 2290,
+        "cache_write_tokens": 0,
+        "latency_ms": 3501
+      }
+    },
+    "compose_clinical": {
+      "sections": [
+        {
+          "section_id": "sections.0",
+          "part": "part_a",
+          "heading": "presenting_complaint",
+          "fact_ids": [
+            "presenting_complaint.0"
+          ],
+          "text": "Sudden right facial droop, right arm weakness and dysphasia with onset 1 hour prior to admission.",
+          "unverified_fact_ids": []
+        },
+        {
+          "section_id": "sections.1",
+          "part": "part_a",
+          "heading": "diagnosis",
+          "fact_ids": [
+            "diagnosis_primary.0",
+            "diagnosis_secondary.0",
+            "diagnosis_background.0",
+            "diagnosis_background.1",
+            "diagnosis_background.2"
+          ],
+          "text": "Primary: Acute ischaemic stroke\n\nSecondary: Atrial fibrillation (AF) — not previously anticoagulated\n\nBackground:\n- Atrial fibrillation (AF)\n- Hypertension (HTN)\n- Type 2 diabetes mellitus (T2DM)",
+          "unverified_fact_ids": []
+        },
+        {
+          "section_id": "sections.2",
+          "part": "part_a",
+          "heading": "key_investigations",
+          "fact_ids": [
+            "key_investigations.0",
+            "key_investigations.1",
+            "key_investigations.2",
+            "key_investigations.3"
+          ],
+          "text": "- NIHSS on admission: 9\n- CT head (Day 1): no haemorrhage\n- Post-thrombolysis CT (Day 2): no bleed\n- NIHSS Day 2: improving to 4",
+          "unverified_fact_ids": []
+        },
+        {
+          "section_id": "sections.3",
+          "part": "part_a",
+          "heading": "treatment",
+          "fact_ids": [
+            "treatment.0",
+            "treatment.1",
+            "treatment.2",
+            "treatment.3",
+            "treatment.4",
+            "treatment.5",
+            "treatment.6"
+          ],
+          "text": "- Thrombolysis with alteplase within treatment window (Day 1)\n- Speech and language therapy (SALT) assessment performed for unsafe swallow; nasogastric (NG) feeding commenced\n- Swallow recovered by Day 3; NG feeding discontinued\n- Anticoagulation started for AF (apixaban) per stroke protocol timing on Day 4; aspirin stopped\n- Early supported discharge (ESD) team accepted patient\n- Resuscitation discussed with patient (capacity intact); patient wishes to remain for resuscitation",
+          "unverified_fact_ids": []
+        },
+        {
+          "section_id": "sections.4",
+          "part": "part_a",
+          "heading": "resuscitation_status",
+          "fact_ids": [],
+          "text": "{{RESUS}}",
+          "unverified_fact_ids": []
+        },
+        {
+          "section_id": "sections.5",
+          "part": "part_a",
+          "heading": "medications",
+          "fact_ids": [],
+          "text": "{{MEDICATIONS}}",
+          "unverified_fact_ids": []
+        },
+        {
+          "section_id": "sections.6",
+          "part": "part_a",
+          "heading": "allergies",
+          "fact_ids": [
+            "allergies.0"
+          ],
+          "text": "No known drug allergies (NKDA).",
+          "unverified_fact_ids": []
+        },
+        {
+          "section_id": "sections.7",
+          "part": "part_a",
+          "heading": "follow_up",
+          "fact_ids": [
+            "follow_up.0",
+            "follow_up.1"
+          ],
+          "text": "- Early supported discharge (ESD) / community stroke rehabilitation\n- Stroke clinic follow-up at 6 weeks",
+          "unverified_fact_ids": []
+        },
+        {
+          "section_id": "sections.8",
+          "part": "part_a",
+          "heading": "gp_actions",
+          "fact_ids": [
+            "gp_actions.0"
+          ],
+          "text": "- GP to check blood pressure (BP) and HbA1c",
+          "unverified_fact_ids": []
+        },
+        {
+          "section_id": "sections.9",
+          "part": "part_a",
+          "heading": "safety_net",
+          "fact_ids": [],
+          "text": "{{SAFETY_NET}}",
+          "unverified_fact_ids": []
+        },
+        {
+          "section_id": "sections.10",
+          "part": "part_a",
+          "heading": "vte_assessment",
+          "fact_ids": [],
+          "text": "Not documented",
+          "unverified_fact_ids": []
+        },
+        {
+          "section_id": "sections.11",
+          "part": "part_b",
+          "heading": "opening",
+          "fact_ids": [
+            "age_sex.0",
+            "presenting_complaint.0",
+            "diagnosis_primary.0"
+          ],
+          "text": "Thank you for referring this 74-year-old male who was admitted with sudden right facial droop, right arm weakness and dysphasia with onset 1 hour prior to admission, with a primary diagnosis of acute ischaemic stroke.",
+          "unverified_fact_ids": []
+        },
+        {
+          "section_id": "sections.12",
+          "part": "part_b",
+          "heading": "admission_summary",
+          "fact_ids": [
+            "key_investigations.0",
+            "key_investigations.1",
+            "key_investigations.2",
+            "key_investigations.3",
+            "treatment.0",
+            "treatment.1",
+            "treatment.2",
+            "treatment.3",
+            "treatment.4",
+            "treatment.5"
+          ],
+          "text": "On admission the NIHSS was 9. CT head on Day 1 showed no haemorrhage, and he was treated with thrombolysis with alteplase within the treatment window. Post-thrombolysis CT on Day 2 showed no bleed, and the NIHSS had improved to 4. He was assessed by speech and language therapy for an unsafe swallow and nasogastric feeding was commenced; swallow recovered by Day 3 and NG feeding was discontinued. Anticoagulation with apixaban was started for AF per stroke protocol timing on Day 4, and aspirin was stopped. The early supported discharge (ESD) team accepted the patient.",
+          "unverified_fact_ids": []
+        },
+        {
+          "section_id": "sections.13",
+          "part": "part_b",
+          "heading": "diagnosis",
+          "fact_ids": [
+            "diagnosis_primary.0",
+            "diagnosis_secondary.0"
+          ],
+          "text": "Primary: Acute ischaemic stroke\nSecondary: Atrial fibrillation (AF) — not previously anticoagulated",
+          "unverified_fact_ids": []
+        },
+        {
+          "section_id": "sections.14",
+          "part": "part_b",
+          "heading": "resuscitation_status",
+          "fact_ids": [],
+          "text": "{{RESUS}}",
+          "unverified_fact_ids": []
+        },
+        {
+          "section_id": "sections.15",
+          "part": "part_b",
+          "heading": "medications",
+          "fact_ids": [],
+          "text": "{{MEDICATIONS}}",
+          "unverified_fact_ids": []
+        },
+        {
+          "section_id": "sections.16",
+          "part": "part_b",
+          "heading": "gp_actions",
+          "fact_ids": [
+            "gp_actions.0"
+          ],
+          "text": "- GP to check blood pressure (BP) and HbA1c",
+          "unverified_fact_ids": []
+        },
+        {
+          "section_id": "sections.17",
+          "part": "part_b",
+          "heading": "follow_up",
+          "fact_ids": [
+            "follow_up.0",
+            "follow_up.1"
+          ],
+          "text": "- Early supported discharge (ESD) / community stroke rehabilitation already arranged\n- Stroke clinic follow-up at 6 weeks already arranged",
+          "unverified_fact_ids": []
+        },
+        {
+          "section_id": "sections.18",
+          "part": "part_b",
+          "heading": "safety_net",
+          "fact_ids": [],
+          "text": "{{SAFETY_NET}}",
+          "unverified_fact_ids": []
+        }
+      ],
+      "checks": [
+        {
+          "check": "resus_text_outside",
+          "part": "part_a",
+          "heading": "treatment",
+          "fact_id": null,
+          "token": null
+        }
+      ],
+      "counts": {
+        "sections": 19,
+        "sections_a": 11,
+        "sections_b": 8,
+        "facts_given": 21,
+        "facts_used_in_a": 21,
+        "header_facts_given": 4,
+        "contradictions_given": 0,
+        "contradictions_in_a": 0,
+        "gp_actions_given": 1,
+        "gp_actions_in_b": 1,
+        "unverified_given": 0,
+        "unverified_used": 0,
+        "checks": 1
+      },
+      "age_group": "adult",
+      "call": {
+        "model_id": "anthropic.claude-sonnet-4-6",
+        "prompt_sha256": "cb55505a0692ff0aa7548836ab5dc777ac116dd604081d0864a1654284b0282d",
+        "stop_reason": "tool_use",
+        "attempts": 1,
+        "input_tokens": 1093,
+        "output_tokens": 1296,
+        "cache_read_tokens": 2822,
+        "cache_write_tokens": 0,
+        "latency_ms": 7066
+      }
+    }
+  },
+  "output": null,
+  "gate": null,
+  "failed_step": null,
+  "error": null,
+  "step_errors": {},
+  "cost_usd_est": 0.083389
+}

@@ -50,5 +50,30 @@
       "on": "2026-10-07",
       "source": "w4-baseline-v1-x5 (proposed by Claude, approved by the CSO)"
     }
+  },
+  "compose_rulings": {
+    "11141ba9f1ea84cf": "acceptable",
+    "48596a2a35e5d120": "acceptable",
+    "51820091414430a7": "acceptable",
+    "addc282432d38e53": "acceptable",
+    "ef85350325d60023": "acceptable"
+  },
+  "compose_rulings_meta": {
+    "by": "Shina Oguntoye (CSO)",
+    "on": "2026-10-28",
+    "source": "w6-pipeline-e07-m01-c01-x5, step 6 (grouped and proposed by Claude, approved by the CSO — rulings R1-R3, 28 Oct 2026)",
+    "groups": {
+      "R2_resus_event": {
+        "verdict": "acceptable",
+        "reason": "a resus form or ceiling-of-care EVENT with no status — consistent with the box; ceiling-of-care scope is the carried-open D8 question (January)",
+        "keys": [
+          "11141ba9f1ea84cf",
+          "48596a2a35e5d120",
+          "51820091414430a7",
+          "addc282432d38e53",
+          "ef85350325d60023"
+        ]
+      }
+    }
   }
 }

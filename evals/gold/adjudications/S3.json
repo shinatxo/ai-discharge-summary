@@ -34,5 +34,60 @@
       "date": "2026-10-12",
       "note": "Supersedes the drafting sentence in EVAL_RESULTS.md section 2 (D8) naming S3's D8 content; section 2 stays frozen for calibration."
     }
+  },
+  "compose_rulings": {
+    "0819a4510fc04e67": "acceptable",
+    "0b2a0855f1a6afa4": "acceptable",
+    "10ad4c70c8648494": "acceptable",
+    "1143a5943ddb8825": "acceptable",
+    "135e4f8f9837b1b2": "acceptable",
+    "30f59573b1e95220": "acceptable",
+    "4fbe130b230876a9": "acceptable",
+    "51982c7e3b74ec62": "acceptable",
+    "5adbe083926e1cd8": "acceptable",
+    "6063df3b96800211": "acceptable",
+    "61554557582d28b4": "acceptable",
+    "72f146a87afffd57": "acceptable",
+    "7634073372e07db5": "acceptable",
+    "76e9ad4792c01f9a": "acceptable",
+    "82fc6f02c586b38e": "acceptable",
+    "a83aba31968c1b01": "acceptable",
+    "d3b7c725cc9e39b7": "acceptable",
+    "e1e8499a9d8f3c0e": "acceptable",
+    "e7e213af42dac30e": "acceptable",
+    "e920de543a6d082f": "acceptable"
+  },
+  "compose_rulings_meta": {
+    "by": "Shina Oguntoye (CSO)",
+    "on": "2026-10-28",
+    "source": "w6-pipeline-e07-m01-c01-x5, step 6 (grouped and proposed by Claude, approved by the CSO — rulings R1-R3, 28 Oct 2026)",
+    "groups": {
+      "R3_medication": {
+        "verdict": "acceptable",
+        "reason": "a drug named from a fact the section cites (in-hospital treatment, background, GP action, VTE, follow-up); no discharge list restated. 17 narrate an in-hospital dose change — box-vs-prose divergence to be checked at 8a (item 4)",
+        "keys": [
+          "0819a4510fc04e67",
+          "0b2a0855f1a6afa4",
+          "10ad4c70c8648494",
+          "1143a5943ddb8825",
+          "135e4f8f9837b1b2",
+          "30f59573b1e95220",
+          "4fbe130b230876a9",
+          "51982c7e3b74ec62",
+          "5adbe083926e1cd8",
+          "6063df3b96800211",
+          "61554557582d28b4",
+          "72f146a87afffd57",
+          "7634073372e07db5",
+          "76e9ad4792c01f9a",
+          "82fc6f02c586b38e",
+          "a83aba31968c1b01",
+          "d3b7c725cc9e39b7",
+          "e1e8499a9d8f3c0e",
+          "e7e213af42dac30e",
+          "e920de543a6d082f"
+        ]
+      }
+    }
   }
 }

@@ -1,0 +1,14 @@
+{
+  "batch_id": "w6-pipeline-e07-m01-c01-s1-check",
+  "stopped_early": false,
+  "generations": [
+    {
+      "run": 1,
+      "scenario_id": "S1",
+      "record": "r1/S1.json",
+      "failed_step": null,
+      "error_code": null,
+      "cost_usd_est": 0.126614
+    }
+  ]
+}

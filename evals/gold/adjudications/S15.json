@@ -1,0 +1,80 @@
+{
+  "scenario_id": "S15",
+  "compose_rulings": {
+    "03f904640f0dc86c": "defect",
+    "06471b454f3a4546": "defect",
+    "089a07194fa6d70a": "acceptable",
+    "0d704bc8fd3dd39e": "defect",
+    "172e5c1bc704e3a8": "acceptable",
+    "187467c8e24a66b1": "acceptable",
+    "1b25b0709eeeb465": "defect",
+    "1d427ae6bbf6bae9": "defect",
+    "294289444c8142e3": "acceptable",
+    "2ec791b8697fd1ae": "acceptable",
+    "3362066b39e6dc31": "acceptable",
+    "373a5f16a44100de": "acceptable",
+    "4e8f19e14e6607d8": "acceptable",
+    "527f9ec0f31ac4a4": "defect",
+    "573d196ea3cccebd": "acceptable",
+    "60ce96670d6d5ec5": "acceptable",
+    "680fed712fb38885": "acceptable",
+    "68ba1cc1d4035d36": "defect",
+    "88ad33ca53d99ec5": "defect",
+    "94083a2c071ca71b": "defect",
+    "a09973592a5bd385": "defect",
+    "ae40377be11c3039": "acceptable",
+    "d16fa92d4098f5f2": "defect",
+    "e3fcbb4c0e2be076": "acceptable",
+    "f529546b1d5bb405": "acceptable"
+  },
+  "compose_rulings_meta": {
+    "by": "Shina Oguntoye (CSO)",
+    "on": "2026-10-28",
+    "source": "w6-pipeline-e07-m01-c01-x5, step 6 (grouped and proposed by Claude, approved by the CSO — rulings R1-R3, 28 Oct 2026)",
+    "groups": {
+      "R1_resus_status": {
+        "verdict": "defect",
+        "reason": "a resuscitation status stated outside {{RESUS}} — against step 6's prompt (any resuscitation status is a critical failure) and ADR-009 [A2] (only code writes a resus status); restates a verified fact filed by step 2 under treatment / background / risk",
+        "keys": [
+          "03f904640f0dc86c",
+          "06471b454f3a4546",
+          "0d704bc8fd3dd39e",
+          "1b25b0709eeeb465",
+          "1d427ae6bbf6bae9",
+          "527f9ec0f31ac4a4",
+          "68ba1cc1d4035d36",
+          "88ad33ca53d99ec5",
+          "94083a2c071ca71b",
+          "a09973592a5bd385",
+          "d16fa92d4098f5f2"
+        ]
+      },
+      "R2_resus_event": {
+        "verdict": "acceptable",
+        "reason": "a resus form or ceiling-of-care EVENT with no status — consistent with the box; ceiling-of-care scope is the carried-open D8 question (January)",
+        "keys": [
+          "089a07194fa6d70a",
+          "373a5f16a44100de",
+          "e3fcbb4c0e2be076"
+        ]
+      },
+      "R3_medication": {
+        "verdict": "acceptable",
+        "reason": "a drug named from a fact the section cites (in-hospital treatment, background, GP action, VTE, follow-up); no discharge list restated. 17 narrate an in-hospital dose change — box-vs-prose divergence to be checked at 8a (item 4)",
+        "keys": [
+          "172e5c1bc704e3a8",
+          "187467c8e24a66b1",
+          "294289444c8142e3",
+          "2ec791b8697fd1ae",
+          "3362066b39e6dc31",
+          "4e8f19e14e6607d8",
+          "573d196ea3cccebd",
+          "60ce96670d6d5ec5",
+          "680fed712fb38885",
+          "ae40377be11c3039",
+          "f529546b1d5bb405"
+        ]
+      }
+    }
+  }
+}

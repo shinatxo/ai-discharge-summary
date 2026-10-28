@@ -1,0 +1,56 @@
+{
+  "scenario_id": "B6",
+  "compose_rulings": {
+    "1c2b73b6bac7a1a6": "defect",
+    "2b3da6b86177b304": "defect",
+    "38c4a9dadd3d181d": "acceptable",
+    "3952d17518bdfa9a": "acceptable",
+    "5aaaf747a9590c0c": "acceptable",
+    "609b267ae6c8880f": "acceptable",
+    "7a6b1df64ff43d9d": "acceptable",
+    "81ead1a0bfeb1aaf": "defect",
+    "90483c3ea1e5e5c3": "defect",
+    "9325f4f146013c96": "acceptable",
+    "b7f712dc120ec56e": "acceptable",
+    "c13f686d6f11d146": "acceptable",
+    "d3dc996bae2e281d": "acceptable",
+    "e83efa20698536df": "acceptable",
+    "fd4f9376b0a66811": "defect",
+    "ff9d8ae774ad1287": "defect"
+  },
+  "compose_rulings_meta": {
+    "by": "Shina Oguntoye (CSO)",
+    "on": "2026-10-28",
+    "source": "w6-pipeline-e07-m01-c01-x5, step 6 (grouped and proposed by Claude, approved by the CSO — rulings R1-R3, 28 Oct 2026)",
+    "groups": {
+      "R1_resus_status": {
+        "verdict": "defect",
+        "reason": "a resuscitation status stated outside {{RESUS}} — against step 6's prompt (any resuscitation status is a critical failure) and ADR-009 [A2] (only code writes a resus status); restates a verified fact filed by step 2 under treatment / background / risk",
+        "keys": [
+          "1c2b73b6bac7a1a6",
+          "2b3da6b86177b304",
+          "81ead1a0bfeb1aaf",
+          "90483c3ea1e5e5c3",
+          "fd4f9376b0a66811",
+          "ff9d8ae774ad1287"
+        ]
+      },
+      "R3_medication": {
+        "verdict": "acceptable",
+        "reason": "a drug named from a fact the section cites (in-hospital treatment, background, GP action, VTE, follow-up); no discharge list restated. 17 narrate an in-hospital dose change — box-vs-prose divergence to be checked at 8a (item 4)",
+        "keys": [
+          "38c4a9dadd3d181d",
+          "3952d17518bdfa9a",
+          "5aaaf747a9590c0c",
+          "609b267ae6c8880f",
+          "7a6b1df64ff43d9d",
+          "9325f4f146013c96",
+          "b7f712dc120ec56e",
+          "c13f686d6f11d146",
+          "d3dc996bae2e281d",
+          "e83efa20698536df"
+        ]
+      }
+    }
+  }
+}

@@ -1,0 +1,65 @@
+{
+  "batch_id": "w6-pipeline-e07-m01-c01-s1-check",
+  "gold": {
+    "S1": {
+      "status": "approved",
+      "sha256": "17c1a71d3422d157cd75942acec635e4dc588eea7c60c6278efb3e6cb7245ff4"
+    }
+  },
+  "metric": "step2_advice",
+  "metric_version": 1,
+  "results": [
+    {
+      "metric": "step2_advice",
+      "metric_version": 1,
+      "scenario_id": "S1",
+      "gold_route": "fallback",
+      "extracted": {
+        "n_items": 0,
+        "n_correct": 0,
+        "n_gold": 0,
+        "n_gold_matched": 0,
+        "recall": null,
+        "precision": null,
+        "route": "fallback"
+      },
+      "verified": {
+        "n_items": 0,
+        "n_correct": 0,
+        "n_gold": 0,
+        "n_gold_matched": 0,
+        "recall": null,
+        "precision": null,
+        "route": "fallback"
+      },
+      "route_correct": true,
+      "route_error": null,
+      "right_route_wrong_item": false,
+      "generation_id": "w6-pipeline-e07-m01-c01-s1-check/r1/S1",
+      "run": 1
+    }
+  ],
+  "summary": {
+    "n_records": 1,
+    "n_scored": 1,
+    "route_correct": 1,
+    "route_errors": {
+      "not_extracted": 0,
+      "lost_at_verification": 0,
+      "non_advice_as_advice": 0
+    },
+    "right_route_wrong_item": 0,
+    "extracted": {
+      "recall": null,
+      "precision": null,
+      "n_items": 0,
+      "n_gold": 0
+    },
+    "verified": {
+      "recall": null,
+      "precision": null,
+      "n_items": 0,
+      "n_gold": 0
+    }
+  }
+}

@@ -139,3 +139,16 @@ def test_results_hold_no_sentence():
     r = _score(p)
     assert all("sentence" not in x for x in r["review"])
     assert "Return to ED" not in str(r)
+
+
+def test_bar_6_counts_documented_fields_only():
+    rec = _record()
+    f = rec["steps"]["validate_facts"]["facts"]["fields"]
+    f["diagnosis_background"] = {"status": "not_documented", "field_check": "items_on_not_documented",
+                                 "items": [{"fact_id": "diagnosis_background.0", "value": "x",
+                                            "citation_status": "verified"}]}
+    assert CP.field_omitted(rec) == []
+    f["diagnosis_background"]["status"] = "documented"
+    assert CP.field_omitted(rec) == ["diagnosis_background"]
+    r = CP.score_record(rec, T.NOTES, {})
+    assert CP.bar(_sm([r]))[6][2] == "NOT MET"

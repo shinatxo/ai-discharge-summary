@@ -34,5 +34,68 @@
       "on": "2026-10-27",
       "source": "w6-pipeline-e07-m01-x5, step 5a (proposed by Claude, approved by the CSO — decision 1A)"
     }
+  },
+  "compose_rulings": {
+    "00b4a00003d3292d": "acceptable",
+    "0c08878190a7bd4b": "acceptable",
+    "1da579005dd31eb5": "acceptable",
+    "2ebeef3bc7fb22a1": "defect",
+    "34b93e246245ac10": "acceptable",
+    "524f7c24a425b987": "defect",
+    "527cb3c25b577e2e": "defect",
+    "6cb6f596afaef0ad": "acceptable",
+    "769068d36df196fb": "acceptable",
+    "832a609365d41774": "acceptable",
+    "94f20006e139959b": "acceptable",
+    "963ba729941da881": "acceptable",
+    "a7df1fb5daa91daf": "acceptable",
+    "b7a812a8c7049462": "acceptable",
+    "bb856326f99534a9": "defect",
+    "bcd38d305cefec90": "acceptable",
+    "ca3578ac330fcfd1": "acceptable",
+    "da4289961340e64f": "acceptable",
+    "deaa0fd2fda7697b": "acceptable",
+    "ea994f4bf0f9a64e": "acceptable",
+    "eccaa25747c3f6ab": "acceptable"
+  },
+  "compose_rulings_meta": {
+    "by": "Shina Oguntoye (CSO)",
+    "on": "2026-10-28",
+    "source": "w6-pipeline-e07-m01-c01-x5, step 6 (grouped and proposed by Claude, approved by the CSO — rulings R1-R3, 28 Oct 2026)",
+    "groups": {
+      "R1_resus_status": {
+        "verdict": "defect",
+        "reason": "a resuscitation status stated outside {{RESUS}} — against step 6's prompt (any resuscitation status is a critical failure) and ADR-009 [A2] (only code writes a resus status); restates a verified fact filed by step 2 under treatment / background / risk",
+        "keys": [
+          "2ebeef3bc7fb22a1",
+          "524f7c24a425b987",
+          "527cb3c25b577e2e",
+          "bb856326f99534a9"
+        ]
+      },
+      "R3_medication": {
+        "verdict": "acceptable",
+        "reason": "a drug named from a fact the section cites (in-hospital treatment, background, GP action, VTE, follow-up); no discharge list restated. 17 narrate an in-hospital dose change — box-vs-prose divergence to be checked at 8a (item 4)",
+        "keys": [
+          "00b4a00003d3292d",
+          "0c08878190a7bd4b",
+          "1da579005dd31eb5",
+          "34b93e246245ac10",
+          "6cb6f596afaef0ad",
+          "769068d36df196fb",
+          "832a609365d41774",
+          "94f20006e139959b",
+          "963ba729941da881",
+          "a7df1fb5daa91daf",
+          "b7a812a8c7049462",
+          "bcd38d305cefec90",
+          "ca3578ac330fcfd1",
+          "da4289961340e64f",
+          "deaa0fd2fda7697b",
+          "ea994f4bf0f9a64e",
+          "eccaa25747c3f6ab"
+        ]
+      }
+    }
   }
 }

@@ -1,0 +1,1303 @@
+{
+  "record_version": 1,
+  "generation_id": "w6-pipeline-e07-m01-c01-x5/r1/S16",
+  "batch_id": "w6-pipeline-e07-m01-c01-x5",
+  "run": 1,
+  "scenario_id": "S16",
+  "generator": "pipeline",
+  "path": "steps-1-5b-5a-6",
+  "model_id": "anthropic.claude-sonnet-4-6",
+  "region": "eu-west-2",
+  "prompts": {
+    "extract_facts": {
+      "path": "src/generate/pipeline/prompts/extract_facts.md",
+      "file_sha256": "378df3fefedc74177c9dd51c9c8827b86080f632fb3daa734a07c3462ccd760e",
+      "body_sha256": "208ac00d3d6096f05c4ba91137e923aec4054651c042f55d9e7c089bcd7675a2"
+    },
+    "reconcile_medications": {
+      "path": "src/generate/pipeline/prompts/reconcile_medications.md",
+      "file_sha256": "5006968b7010560f437e0eb31f55e9092baebc7a4adf347667bfcb154e8708a0",
+      "body_sha256": "b06f8c12a739b80c3d57f41ceada7dd7b1c2af38bc53159353b68425d09d5acf"
+    },
+    "compose_clinical": {
+      "path": "src/generate/pipeline/prompts/compose_clinical.md",
+      "file_sha256": "95c1688d76caf27a6867dd243ac939d75cf91611f1c7a6b615b9f107955a22c7",
+      "body_sha256": "cb55505a0692ff0aa7548836ab5dc777ac116dd604081d0864a1654284b0282d"
+    }
+  },
+  "prompt_caching": true,
+  "notes_sha256": "d762fcf2443af7c65329f6b17d603be9d58f3d3ccdc4df81ce08db03201a197e",
+  "started_at": "2026-10-28T12:11:08+00:00",
+  "elapsed_s": 23.063,
+  "calls": [
+    {
+      "name": "extract_facts",
+      "input_tokens": 865,
+      "output_tokens": 2293,
+      "cache_read_tokens": 4183,
+      "cache_write_tokens": 0,
+      "stop_reason": "tool_use",
+      "latency_s": 12.123,
+      "throttle_retries": 0
+    },
+    {
+      "name": "reconcile_medications",
+      "input_tokens": 1082,
+      "output_tokens": 558,
+      "cache_read_tokens": 2290,
+      "cache_write_tokens": 0,
+      "stop_reason": "tool_use",
+      "latency_s": 3.61,
+      "throttle_retries": 0
+    },
+    {
+      "name": "compose_clinical",
+      "input_tokens": 1047,
+      "output_tokens": 1275,
+      "cache_read_tokens": 2822,
+      "cache_write_tokens": 0,
+      "stop_reason": "tool_use",
+      "latency_s": 7.103,
+      "throttle_retries": 0
+    }
+  ],
+  "steps": {
+    "guard_input": {
+      "notes_sha256": "d762fcf2443af7c65329f6b17d603be9d58f3d3ccdc4df81ce08db03201a197e",
+      "line_count": 16,
+      "flags": []
+    },
+    "extract_facts": {
+      "call": {
+        "model_id": "anthropic.claude-sonnet-4-6",
+        "prompt_sha256": "208ac00d3d6096f05c4ba91137e923aec4054651c042f55d9e7c089bcd7675a2",
+        "stop_reason": "tool_use",
+        "attempts": 1,
+        "input_tokens": 865,
+        "output_tokens": 2293,
+        "cache_read_tokens": 4183,
+        "cache_write_tokens": 0,
+        "latency_ms": 12123
+      }
+    },
+    "validate_facts": {
+      "facts": {
+        "fields": {
+          "age_sex": {
+            "status": "documented",
+            "items": [
+              {
+                "value": "72-year-old male",
+                "cites": [
+                  {
+                    "lines": [
+                      "L001"
+                    ],
+                    "quote": "72M",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "age_sex.0",
+                "citation_status": "verified",
+                "reason": null
+              }
+            ],
+            "field_check": "ok"
+          },
+          "specialty": {
+            "status": "inferred_flagged",
+            "items": [
+              {
+                "value": "General Surgery (inferred from emergency laparotomy for bowel obstruction)",
+                "cites": [
+                  {
+                    "lines": [
+                      "L007",
+                      "L008",
+                      "L009"
+                    ],
+                    "quote": "emergency laparotomy:\nadhesiolysis + small bowel resection (non-viable segment) + primary anastomosis;\ndefunctioning loop ileostomy formed",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "specialty.0",
+                "citation_status": "verified",
+                "reason": null
+              }
+            ],
+            "field_check": "ok"
+          },
+          "legal_status": {
+            "status": "not_documented",
+            "items": [],
+            "field_check": "ok"
+          },
+          "weight": {
+            "status": "not_documented",
+            "items": [],
+            "field_check": "ok"
+          },
+          "admission_date": {
+            "status": "documented",
+            "items": [
+              {
+                "value": "10/05",
+                "cites": [
+                  {
+                    "lines": [
+                      "L001"
+                    ],
+                    "quote": "10/05",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "admission_date.0",
+                "citation_status": "verified",
+                "reason": null
+              }
+            ],
+            "field_check": "ok"
+          },
+          "discharge_date": {
+            "status": "documented",
+            "items": [
+              {
+                "value": "18/05",
+                "cites": [
+                  {
+                    "lines": [
+                      "L013"
+                    ],
+                    "quote": "18/05",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "discharge_date.0",
+                "citation_status": "verified",
+                "reason": null
+              }
+            ],
+            "field_check": "ok"
+          },
+          "presenting_complaint": {
+            "status": "documented",
+            "items": [
+              {
+                "value": "3-day history of colicky abdominal pain, distension, vomiting, and absolute constipation",
+                "cites": [
+                  {
+                    "lines": [
+                      "L001"
+                    ],
+                    "quote": "3/7 colicky abdo pain, distension, vomiting, absolute",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "presenting_complaint.0",
+                "citation_status": "verified",
+                "reason": null
+              },
+              {
+                "value": "3-day history of colicky abdominal pain, distension, vomiting, and absolute constipation",
+                "cites": [
+                  {
+                    "lines": [
+                      "L001",
+                      "L002"
+                    ],
+                    "quote": "3/7 colicky abdo pain, distension, vomiting, absolute\nconstipation",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "presenting_complaint.1",
+                "citation_status": "verified",
+                "reason": null
+              }
+            ],
+            "field_check": "ok"
+          },
+          "diagnosis_primary": {
+            "status": "documented",
+            "items": [
+              {
+                "value": "Adhesional small bowel obstruction",
+                "cites": [
+                  {
+                    "lines": [
+                      "L004"
+                    ],
+                    "quote": "adhesional small bowel obstruction, transition point, no ischaemia initially",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "diagnosis_primary.0",
+                "citation_status": "verified",
+                "reason": null
+              }
+            ],
+            "field_check": "ok"
+          },
+          "diagnosis_secondary": {
+            "status": "not_documented",
+            "items": [],
+            "field_check": "ok"
+          },
+          "diagnosis_background": {
+            "status": "documented",
+            "items": [
+              {
+                "value": "Hypertension",
+                "cites": [
+                  {
+                    "lines": [
+                      "L002"
+                    ],
+                    "quote": "HTN",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "diagnosis_background.0",
+                "citation_status": "verified",
+                "reason": null
+              },
+              {
+                "value": "Atrial fibrillation (on warfarin)",
+                "cites": [
+                  {
+                    "lines": [
+                      "L002"
+                    ],
+                    "quote": "AF (on warfarin)",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "diagnosis_background.1",
+                "citation_status": "verified",
+                "reason": null
+              },
+              {
+                "value": "Type 2 diabetes mellitus",
+                "cites": [
+                  {
+                    "lines": [
+                      "L002"
+                    ],
+                    "quote": "T2DM",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "diagnosis_background.2",
+                "citation_status": "verified",
+                "reason": null
+              },
+              {
+                "value": "Previous open appendicectomy",
+                "cites": [
+                  {
+                    "lines": [
+                      "L002"
+                    ],
+                    "quote": "previous open appendicectomy",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "diagnosis_background.3",
+                "citation_status": "verified",
+                "reason": null
+              }
+            ],
+            "field_check": "ok"
+          },
+          "key_investigations": {
+            "status": "documented",
+            "items": [
+              {
+                "value": "CT abdomen: adhesional small bowel obstruction, transition point identified, no ischaemia initially",
+                "cites": [
+                  {
+                    "lines": [
+                      "L004"
+                    ],
+                    "quote": "CT: adhesional small bowel obstruction, transition point, no ischaemia initially",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "key_investigations.0",
+                "citation_status": "verified",
+                "reason": null
+              }
+            ],
+            "field_check": "ok"
+          },
+          "treatment": {
+            "status": "documented",
+            "items": [
+              {
+                "value": "Trial of conservative management: nasogastric tube, drip and suck",
+                "cites": [
+                  {
+                    "lines": [
+                      "L005",
+                      "L006"
+                    ],
+                    "quote": "Trial conservative (NG, drip & suck). Warfarin held, INR reversed for possible\nsurgery",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "treatment.0",
+                "citation_status": "verified",
+                "reason": null
+              },
+              {
+                "value": "Warfarin held and INR reversed for possible surgery",
+                "cites": [
+                  {
+                    "lines": [
+                      "L005",
+                      "L006"
+                    ],
+                    "quote": "Warfarin held, INR reversed for possible\nsurgery",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "treatment.1",
+                "citation_status": "verified",
+                "reason": null
+              },
+              {
+                "value": "Emergency laparotomy: adhesiolysis, small bowel resection of non-viable segment, primary anastomosis, and defunctioning loop ileostomy formed",
+                "cites": [
+                  {
+                    "lines": [
+                      "L007",
+                      "L008",
+                      "L009"
+                    ],
+                    "quote": "emergency laparotomy:\nadhesiolysis + small bowel resection (non-viable segment) + primary anastomosis;\ndefunctioning loop ileostomy formed",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "treatment.2",
+                "citation_status": "verified",
+                "reason": null
+              },
+              {
+                "value": "Post-operative recovery in HDU",
+                "cites": [
+                  {
+                    "lines": [
+                      "L009"
+                    ],
+                    "quote": "Recovery in HDU",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "treatment.3",
+                "citation_status": "verified",
+                "reason": null
+              },
+              {
+                "value": "Stoma nurse teaching commenced",
+                "cites": [
+                  {
+                    "lines": [
+                      "L010"
+                    ],
+                    "quote": "Stoma nurse teaching",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "treatment.4",
+                "citation_status": "verified",
+                "reason": null
+              },
+              {
+                "value": "Metformin, ramipril, and bisoprolol restarted on day 6; warfarin restarted with bridging treatment-dose enoxaparin until INR therapeutic",
+                "cites": [
+                  {
+                    "lines": [
+                      "L011",
+                      "L012"
+                    ],
+                    "quote": "Restarted: metformin, ramipril, bisoprolol. Warfarin restarted with bridging\n(treatment-dose enoxaparin) until INR therapeutic",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "treatment.5",
+                "citation_status": "verified",
+                "reason": null
+              }
+            ],
+            "field_check": "ok"
+          },
+          "risk_assessment": {
+            "status": "not_documented",
+            "items": [],
+            "field_check": "ok"
+          },
+          "allergies": {
+            "status": "documented",
+            "items": [
+              {
+                "value": "No known drug allergies",
+                "cites": [
+                  {
+                    "lines": [
+                      "L003"
+                    ],
+                    "quote": "NKDA",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "allergies.0",
+                "citation_status": "verified",
+                "reason": null
+              }
+            ],
+            "field_check": "ok"
+          },
+          "follow_up": {
+            "status": "documented",
+            "items": [
+              {
+                "value": "Community stoma nurse follow-up",
+                "cites": [
+                  {
+                    "lines": [
+                      "L015",
+                      "L016"
+                    ],
+                    "quote": "Stoma nurse\ncommunity follow-up",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "follow_up.0",
+                "citation_status": "verified",
+                "reason": null
+              },
+              {
+                "value": "Surgical outpatient clinic at 6 weeks (with possible ileostomy reversal to be considered later)",
+                "cites": [
+                  {
+                    "lines": [
+                      "L016"
+                    ],
+                    "quote": "surgical clinic 6/52 (?reversal later)",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "follow_up.1",
+                "citation_status": "verified",
+                "reason": null
+              }
+            ],
+            "field_check": "ok"
+          },
+          "gp_actions": {
+            "status": "documented",
+            "items": [
+              {
+                "value": "Monitor INR",
+                "cites": [
+                  {
+                    "lines": [
+                      "L016"
+                    ],
+                    "quote": "GP: monitor INR",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "gp_actions.0",
+                "citation_status": "verified",
+                "reason": null
+              }
+            ],
+            "field_check": "ok"
+          },
+          "vte_assessment": {
+            "status": "not_documented",
+            "items": [],
+            "field_check": "ok"
+          }
+        },
+        "medications": {
+          "pre_admission": [
+            {
+              "value": "Warfarin per INR",
+              "cites": [
+                {
+                  "lines": [
+                    "L003"
+                  ],
+                  "quote": "warfarin per INR",
+                  "verified": true,
+                  "reason": null
+                }
+              ],
+              "fact_id": "medications.pre_admission.0",
+              "citation_status": "verified",
+              "reason": null
+            },
+            {
+              "value": "Ramipril 5 mg once daily",
+              "cites": [
+                {
+                  "lines": [
+                    "L003"
+                  ],
+                  "quote": "ramipril 5mg OD",
+                  "verified": true,
+                  "reason": null
+                }
+              ],
+              "fact_id": "medications.pre_admission.1",
+              "citation_status": "verified",
+              "reason": null
+            },
+            {
+              "value": "Metformin 1 g twice daily",
+              "cites": [
+                {
+                  "lines": [
+                    "L003"
+                  ],
+                  "quote": "metformin 1g BD",
+                  "verified": true,
+                  "reason": null
+                }
+              ],
+              "fact_id": "medications.pre_admission.2",
+              "citation_status": "verified",
+              "reason": null
+            },
+            {
+              "value": "Bisoprolol 5 mg once daily",
+              "cites": [
+                {
+                  "lines": [
+                    "L003"
+                  ],
+                  "quote": "bisoprolol 5mg OD",
+                  "verified": true,
+                  "reason": null
+                }
+              ],
+              "fact_id": "medications.pre_admission.3",
+              "citation_status": "verified",
+              "reason": null
+            }
+          ],
+          "discharge": [
+            {
+              "value": "Warfarin (per INR)",
+              "cites": [
+                {
+                  "lines": [
+                    "L013",
+                    "L014"
+                  ],
+                  "quote": "warfarin\nrestarted (per INR)",
+                  "verified": true,
+                  "reason": null
+                }
+              ],
+              "fact_id": "medications.discharge.0",
+              "citation_status": "verified",
+              "reason": null
+            },
+            {
+              "value": "Enoxaparin treatment dose — bridging until INR in range",
+              "cites": [
+                {
+                  "lines": [
+                    "L014"
+                  ],
+                  "quote": "enoxaparin treatment dose bridging until INR in range",
+                  "verified": true,
+                  "reason": null
+                }
+              ],
+              "fact_id": "medications.discharge.1",
+              "citation_status": "verified",
+              "reason": null
+            },
+            {
+              "value": "Ramipril 5 mg once daily",
+              "cites": [
+                {
+                  "lines": [
+                    "L015"
+                  ],
+                  "quote": "ramipril 5mg OD",
+                  "verified": true,
+                  "reason": null
+                }
+              ],
+              "fact_id": "medications.discharge.2",
+              "citation_status": "verified",
+              "reason": null
+            },
+            {
+              "value": "Metformin 1 g twice daily",
+              "cites": [
+                {
+                  "lines": [
+                    "L015"
+                  ],
+                  "quote": "metformin 1g BD",
+                  "verified": true,
+                  "reason": null
+                }
+              ],
+              "fact_id": "medications.discharge.3",
+              "citation_status": "verified",
+              "reason": null
+            },
+            {
+              "value": "Bisoprolol 5 mg once daily",
+              "cites": [
+                {
+                  "lines": [
+                    "L015"
+                  ],
+                  "quote": "bisoprolol 5mg OD",
+                  "verified": true,
+                  "reason": null
+                }
+              ],
+              "fact_id": "medications.discharge.4",
+              "citation_status": "verified",
+              "reason": null
+            },
+            {
+              "value": "Analgesia (not further specified)",
+              "cites": [
+                {
+                  "lines": [
+                    "L015"
+                  ],
+                  "quote": "analgesia",
+                  "verified": true,
+                  "reason": null
+                }
+              ],
+              "fact_id": "medications.discharge.5",
+              "citation_status": "verified",
+              "reason": null
+            }
+          ],
+          "discharge_status": "referenced_not_listed",
+          "medications_check": "ok"
+        },
+        "resus": {
+          "changed": "not_documented",
+          "cites": [],
+          "form_or_discussion_documented": false,
+          "status_documented": "not_documented",
+          "fact_id": "resus",
+          "citation_status": "verified",
+          "reason": null
+        },
+        "documented_advice": [
+          {
+            "value": "Independent with stoma care",
+            "cites": [
+              {
+                "lines": [
+                  "L013"
+                ],
+                "quote": "Independent with stoma care",
+                "verified": true,
+                "reason": null
+              }
+            ],
+            "fact_id": "documented_advice.0",
+            "citation_status": "verified",
+            "reason": null
+          }
+        ],
+        "age_group": "adult",
+        "contradictions": [],
+        "suspicious_text": []
+      },
+      "uncited_lines": [],
+      "counts": {
+        "cites_total": 33,
+        "cites_verified": 33,
+        "items_unverified": 0,
+        "fields_inconsistent": 0,
+        "medications_inconsistent": 0
+      }
+    },
+    "retrieve_evidence": {
+      "medication": [
+        {
+          "line": "L003",
+          "sources": [
+            "cited",
+            "med_header"
+          ],
+          "fact_ids": [
+            "medications.pre_admission.0",
+            "medications.pre_admission.1",
+            "medications.pre_admission.2",
+            "medications.pre_admission.3"
+          ],
+          "flagged": false
+        },
+        {
+          "line": "L013",
+          "sources": [
+            "cited",
+            "med_header"
+          ],
+          "fact_ids": [
+            "medications.discharge.0"
+          ],
+          "flagged": false
+        },
+        {
+          "line": "L014",
+          "sources": [
+            "cited",
+            "med_continuation"
+          ],
+          "fact_ids": [
+            "medications.discharge.0",
+            "medications.discharge.1"
+          ],
+          "flagged": false
+        },
+        {
+          "line": "L015",
+          "sources": [
+            "cited",
+            "med_continuation"
+          ],
+          "fact_ids": [
+            "medications.discharge.2",
+            "medications.discharge.3",
+            "medications.discharge.4",
+            "medications.discharge.5"
+          ],
+          "flagged": false
+        }
+      ],
+      "resus": [],
+      "counts": {
+        "medication_lines": 4,
+        "resus_lines": 0,
+        "medication_matched_not_cited": 0,
+        "resus_matched_not_cited": 0
+      }
+    },
+    "route_resus": {
+      "route": "absent",
+      "forced": "no",
+      "status": "not_documented",
+      "changed": "not_documented",
+      "cited_lines": [],
+      "rendered": "RESUSCITATION STATUS\nNot documented."
+    },
+    "select_safety_net": {
+      "route": "documented",
+      "audience": "adult",
+      "pinned_line": "If you have been given a number to call, use that first. Otherwise, if you are worried, contact your GP or call NHS 111. Call 999 if it is an emergency.",
+      "advice": [
+        {
+          "fact_id": "documented_advice.0",
+          "lines": [
+            "L013"
+          ],
+          "quote": "Independent with stoma care"
+        }
+      ],
+      "advice_excluded": 0,
+      "cited_lines": [
+        "L013"
+      ],
+      "part_ab": "- \"Independent with stoma care\" [L013]\n\nStandard seek-help line in the patient version (fixed wording, not from the notes):\nIf you have been given a number to call, use that first. Otherwise, if you are worried, contact your GP or call NHS 111. Call 999 if it is an emergency.",
+      "part_c": "Independent with stoma care\n\nIf you have been given a number to call, use that first. Otherwise, if you are worried, contact your GP or call NHS 111. Call 999 if it is an emergency."
+    },
+    "reconcile_medications": {
+      "reconciliation": [
+        {
+          "entry_id": "reconciliation.0",
+          "drug": "warfarin",
+          "tag": "continued",
+          "basis": "documented",
+          "dose": "per INR",
+          "route": null,
+          "frequency": null,
+          "previous": null,
+          "conflict": false,
+          "dh_cites": [
+            {
+              "lines": [
+                "L003"
+              ],
+              "quote": "warfarin per INR",
+              "verified": true,
+              "reason": null
+            }
+          ],
+          "discharge_cites": [
+            {
+              "lines": [
+                "L013",
+                "L014"
+              ],
+              "quote": "warfarin\nrestarted (per INR)",
+              "verified": true,
+              "reason": null
+            }
+          ],
+          "citation_status": "verified",
+          "reason": null,
+          "checks": []
+        },
+        {
+          "entry_id": "reconciliation.1",
+          "drug": "ramipril",
+          "tag": "continued",
+          "basis": "documented",
+          "dose": "5mg",
+          "route": null,
+          "frequency": "OD",
+          "previous": null,
+          "conflict": false,
+          "dh_cites": [
+            {
+              "lines": [
+                "L003"
+              ],
+              "quote": "ramipril 5mg OD",
+              "verified": true,
+              "reason": null
+            }
+          ],
+          "discharge_cites": [
+            {
+              "lines": [
+                "L015"
+              ],
+              "quote": "ramipril 5mg OD",
+              "verified": true,
+              "reason": null
+            }
+          ],
+          "citation_status": "verified",
+          "reason": null,
+          "checks": []
+        },
+        {
+          "entry_id": "reconciliation.2",
+          "drug": "metformin",
+          "tag": "continued",
+          "basis": "documented",
+          "dose": "1g",
+          "route": null,
+          "frequency": "BD",
+          "previous": null,
+          "conflict": false,
+          "dh_cites": [
+            {
+              "lines": [
+                "L003"
+              ],
+              "quote": "metformin 1g BD",
+              "verified": true,
+              "reason": null
+            }
+          ],
+          "discharge_cites": [
+            {
+              "lines": [
+                "L015"
+              ],
+              "quote": "metformin 1g BD",
+              "verified": true,
+              "reason": null
+            }
+          ],
+          "citation_status": "verified",
+          "reason": null,
+          "checks": []
+        },
+        {
+          "entry_id": "reconciliation.3",
+          "drug": "bisoprolol",
+          "tag": "continued",
+          "basis": "documented",
+          "dose": "5mg",
+          "route": null,
+          "frequency": "OD",
+          "previous": null,
+          "conflict": false,
+          "dh_cites": [
+            {
+              "lines": [
+                "L003"
+              ],
+              "quote": "bisoprolol 5mg OD",
+              "verified": true,
+              "reason": null
+            }
+          ],
+          "discharge_cites": [
+            {
+              "lines": [
+                "L015"
+              ],
+              "quote": "bisoprolol 5mg OD",
+              "verified": true,
+              "reason": null
+            }
+          ],
+          "citation_status": "verified",
+          "reason": null,
+          "checks": []
+        },
+        {
+          "entry_id": "reconciliation.4",
+          "drug": "enoxaparin",
+          "tag": "new",
+          "basis": "documented",
+          "dose": "treatment dose",
+          "route": null,
+          "frequency": null,
+          "previous": null,
+          "conflict": false,
+          "dh_cites": [],
+          "discharge_cites": [
+            {
+              "lines": [
+                "L014"
+              ],
+              "quote": "enoxaparin treatment dose bridging until INR in range",
+              "verified": true,
+              "reason": null
+            }
+          ],
+          "citation_status": "verified",
+          "reason": null,
+          "checks": []
+        },
+        {
+          "entry_id": "reconciliation.5",
+          "drug": "analgesia",
+          "tag": "new",
+          "basis": "documented",
+          "dose": null,
+          "route": null,
+          "frequency": null,
+          "previous": null,
+          "conflict": false,
+          "dh_cites": [],
+          "discharge_cites": [
+            {
+              "lines": [
+                "L015"
+              ],
+              "quote": "analgesia",
+              "verified": true,
+              "reason": null
+            }
+          ],
+          "citation_status": "verified",
+          "reason": null,
+          "checks": []
+        }
+      ],
+      "discharge_status": "referenced_not_listed",
+      "reconciliation_check": "ok",
+      "dh_lines_unreconciled": [],
+      "counts": {
+        "entries": 6,
+        "cites_total": 10,
+        "cites_verified": 10,
+        "entries_unverified": 0,
+        "entries_flagged": 0,
+        "dh_lines_unreconciled": 0
+      },
+      "call": {
+        "model_id": "anthropic.claude-sonnet-4-6",
+        "prompt_sha256": "b06f8c12a739b80c3d57f41ceada7dd7b1c2af38bc53159353b68425d09d5acf",
+        "stop_reason": "tool_use",
+        "attempts": 1,
+        "input_tokens": 1082,
+        "output_tokens": 558,
+        "cache_read_tokens": 2290,
+        "cache_write_tokens": 0,
+        "latency_ms": 3610
+      }
+    },
+    "compose_clinical": {
+      "sections": [
+        {
+          "section_id": "sections.0",
+          "part": "part_a",
+          "heading": "presenting_complaint",
+          "fact_ids": [
+            "presenting_complaint.0"
+          ],
+          "text": "3-day history of colicky abdominal pain, distension, vomiting, and absolute constipation.",
+          "unverified_fact_ids": []
+        },
+        {
+          "section_id": "sections.1",
+          "part": "part_a",
+          "heading": "diagnosis",
+          "fact_ids": [
+            "diagnosis_primary.0",
+            "diagnosis_background.0",
+            "diagnosis_background.1",
+            "diagnosis_background.2",
+            "diagnosis_background.3"
+          ],
+          "text": "Primary: Adhesional small bowel obstruction.\n\nBackground:\n- Hypertension\n- Atrial fibrillation (on warfarin)\n- Type 2 diabetes mellitus\n- Previous open appendicectomy",
+          "unverified_fact_ids": []
+        },
+        {
+          "section_id": "sections.2",
+          "part": "part_a",
+          "heading": "key_investigations",
+          "fact_ids": [
+            "key_investigations.0"
+          ],
+          "text": "- CT abdomen: adhesional small bowel obstruction, transition point identified, no ischaemia initially.",
+          "unverified_fact_ids": []
+        },
+        {
+          "section_id": "sections.3",
+          "part": "part_a",
+          "heading": "treatment",
+          "fact_ids": [
+            "treatment.0",
+            "treatment.1",
+            "treatment.2",
+            "treatment.3",
+            "treatment.4",
+            "treatment.5"
+          ],
+          "text": "- Trial of conservative management with nasogastric tube, drip and suck.\n- Warfarin held and INR reversed for possible surgery.\n- Proceeded to emergency laparotomy: adhesiolysis, small bowel resection of non-viable segment, primary anastomosis, and defunctioning loop ileostomy formed.\n- Post-operative recovery in HDU.\n- Stoma nurse teaching commenced.\n- Metformin, ramipril, and bisoprolol restarted on day 6; warfarin restarted with bridging treatment-dose enoxaparin until INR therapeutic.",
+          "unverified_fact_ids": []
+        },
+        {
+          "section_id": "sections.4",
+          "part": "part_a",
+          "heading": "resuscitation_status",
+          "fact_ids": [],
+          "text": "{{RESUS}}",
+          "unverified_fact_ids": []
+        },
+        {
+          "section_id": "sections.5",
+          "part": "part_a",
+          "heading": "medications",
+          "fact_ids": [],
+          "text": "{{MEDICATIONS}}",
+          "unverified_fact_ids": []
+        },
+        {
+          "section_id": "sections.6",
+          "part": "part_a",
+          "heading": "allergies",
+          "fact_ids": [
+            "allergies.0"
+          ],
+          "text": "No known drug allergies.",
+          "unverified_fact_ids": []
+        },
+        {
+          "section_id": "sections.7",
+          "part": "part_a",
+          "heading": "follow_up",
+          "fact_ids": [
+            "follow_up.0",
+            "follow_up.1"
+          ],
+          "text": "- Community stoma nurse follow-up.\n- Surgical outpatient clinic at 6 weeks (with possible ileostomy reversal to be considered later).",
+          "unverified_fact_ids": []
+        },
+        {
+          "section_id": "sections.8",
+          "part": "part_a",
+          "heading": "gp_actions",
+          "fact_ids": [
+            "gp_actions.0"
+          ],
+          "text": "- Monitor INR.",
+          "unverified_fact_ids": []
+        },
+        {
+          "section_id": "sections.9",
+          "part": "part_a",
+          "heading": "safety_net",
+          "fact_ids": [],
+          "text": "{{SAFETY_NET}}",
+          "unverified_fact_ids": []
+        },
+        {
+          "section_id": "sections.10",
+          "part": "part_a",
+          "heading": "vte_assessment",
+          "fact_ids": [],
+          "text": "Not documented",
+          "unverified_fact_ids": []
+        },
+        {
+          "section_id": "sections.11",
+          "part": "part_b",
+          "heading": "opening",
+          "fact_ids": [
+            "age_sex.0",
+            "presenting_complaint.0",
+            "diagnosis_primary.0"
+          ],
+          "text": "Thank you for referring this 72-year-old male who was admitted with a 3-day history of colicky abdominal pain, distension, vomiting, and absolute constipation, and was found to have adhesional small bowel obstruction.",
+          "unverified_fact_ids": []
+        },
+        {
+          "section_id": "sections.12",
+          "part": "part_b",
+          "heading": "admission_summary",
+          "fact_ids": [
+            "key_investigations.0",
+            "treatment.0",
+            "treatment.1",
+            "treatment.2",
+            "treatment.3",
+            "treatment.4",
+            "treatment.5"
+          ],
+          "text": "CT abdomen confirmed adhesional small bowel obstruction with a transition point identified and no ischaemia initially. An initial trial of conservative management with nasogastric tube and drip and suck was undertaken. Warfarin was held and the INR reversed in preparation for possible surgery. He subsequently required emergency laparotomy, at which adhesiolysis, small bowel resection of a non-viable segment, primary anastomosis, and formation of a defunctioning loop ileostomy were performed. He recovered post-operatively in HDU and stoma nurse teaching was commenced. Metformin, ramipril, and bisoprolol were restarted on day 6; warfarin was restarted with bridging treatment-dose enoxaparin until the INR becomes therapeutic.",
+          "unverified_fact_ids": []
+        },
+        {
+          "section_id": "sections.13",
+          "part": "part_b",
+          "heading": "diagnosis",
+          "fact_ids": [
+            "diagnosis_primary.0",
+            "diagnosis_background.0",
+            "diagnosis_background.1",
+            "diagnosis_background.2",
+            "diagnosis_background.3"
+          ],
+          "text": "Primary: Adhesional small bowel obstruction.\n\nBackground: Hypertension, atrial fibrillation (on warfarin), type 2 diabetes mellitus, previous open appendicectomy.",
+          "unverified_fact_ids": []
+        },
+        {
+          "section_id": "sections.14",
+          "part": "part_b",
+          "heading": "resuscitation_status",
+          "fact_ids": [],
+          "text": "{{RESUS}}",
+          "unverified_fact_ids": []
+        },
+        {
+          "section_id": "sections.15",
+          "part": "part_b",
+          "heading": "medications",
+          "fact_ids": [],
+          "text": "{{MEDICATIONS}}",
+          "unverified_fact_ids": []
+        },
+        {
+          "section_id": "sections.16",
+          "part": "part_b",
+          "heading": "gp_actions",
+          "fact_ids": [
+            "gp_actions.0"
+          ],
+          "text": "- Monitor INR.",
+          "unverified_fact_ids": []
+        },
+        {
+          "section_id": "sections.17",
+          "part": "part_b",
+          "heading": "follow_up",
+          "fact_ids": [
+            "follow_up.0",
+            "follow_up.1"
+          ],
+          "text": "- Community stoma nurse follow-up arranged.\n- Surgical outpatient clinic at 6 weeks (with possible ileostomy reversal to be considered later).",
+          "unverified_fact_ids": []
+        },
+        {
+          "section_id": "sections.18",
+          "part": "part_b",
+          "heading": "safety_net",
+          "fact_ids": [],
+          "text": "{{SAFETY_NET}}",
+          "unverified_fact_ids": []
+        }
+      ],
+      "checks": [
+        {
+          "check": "fact_unused",
+          "part": "part_a",
+          "heading": null,
+          "fact_id": "presenting_complaint.1",
+          "token": null
+        }
+      ],
+      "counts": {
+        "sections": 19,
+        "sections_a": 11,
+        "sections_b": 8,
+        "facts_given": 18,
+        "facts_used_in_a": 17,
+        "header_facts_given": 4,
+        "contradictions_given": 0,
+        "contradictions_in_a": 0,
+        "gp_actions_given": 1,
+        "gp_actions_in_b": 1,
+        "unverified_given": 0,
+        "unverified_used": 0,
+        "checks": 1
+      },
+      "age_group": "adult",
+      "call": {
+        "model_id": "anthropic.claude-sonnet-4-6",
+        "prompt_sha256": "cb55505a0692ff0aa7548836ab5dc777ac116dd604081d0864a1654284b0282d",
+        "stop_reason": "tool_use",
+        "attempts": 1,
+        "input_tokens": 1047,
+        "output_tokens": 1275,
+        "cache_read_tokens": 2822,
+        "cache_write_tokens": 0,
+        "latency_ms": 7103
+      }
+    }
+  },
+  "output": null,
+  "gate": null,
+  "failed_step": null,
+  "error": null,
+  "step_errors": {},
+  "cost_usd_est": 0.081027
+}

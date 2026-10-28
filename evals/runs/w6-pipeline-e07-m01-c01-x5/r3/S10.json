@@ -1,0 +1,1061 @@
+{
+  "record_version": 1,
+  "generation_id": "w6-pipeline-e07-m01-c01-x5/r3/S10",
+  "batch_id": "w6-pipeline-e07-m01-c01-x5",
+  "run": 3,
+  "scenario_id": "S10",
+  "generator": "pipeline",
+  "path": "steps-1-5b-5a-6",
+  "model_id": "anthropic.claude-sonnet-4-6",
+  "region": "eu-west-2",
+  "prompts": {
+    "extract_facts": {
+      "path": "src/generate/pipeline/prompts/extract_facts.md",
+      "file_sha256": "378df3fefedc74177c9dd51c9c8827b86080f632fb3daa734a07c3462ccd760e",
+      "body_sha256": "208ac00d3d6096f05c4ba91137e923aec4054651c042f55d9e7c089bcd7675a2"
+    },
+    "reconcile_medications": {
+      "path": "src/generate/pipeline/prompts/reconcile_medications.md",
+      "file_sha256": "5006968b7010560f437e0eb31f55e9092baebc7a4adf347667bfcb154e8708a0",
+      "body_sha256": "b06f8c12a739b80c3d57f41ceada7dd7b1c2af38bc53159353b68425d09d5acf"
+    },
+    "compose_clinical": {
+      "path": "src/generate/pipeline/prompts/compose_clinical.md",
+      "file_sha256": "95c1688d76caf27a6867dd243ac939d75cf91611f1c7a6b615b9f107955a22c7",
+      "body_sha256": "cb55505a0692ff0aa7548836ab5dc777ac116dd604081d0864a1654284b0282d"
+    }
+  },
+  "prompt_caching": true,
+  "notes_sha256": "a00b5caaa8e251a370d8136857fd8a4d7969cc70de71013d55dbd99a5fd03229",
+  "started_at": "2026-10-28T12:21:39+00:00",
+  "elapsed_s": 20.199,
+  "calls": [
+    {
+      "name": "extract_facts",
+      "input_tokens": 742,
+      "output_tokens": 1763,
+      "cache_read_tokens": 4183,
+      "cache_write_tokens": 0,
+      "stop_reason": "tool_use",
+      "latency_s": 10.125,
+      "throttle_retries": 0
+    },
+    {
+      "name": "reconcile_medications",
+      "input_tokens": 857,
+      "output_tokens": 389,
+      "cache_read_tokens": 2290,
+      "cache_write_tokens": 0,
+      "stop_reason": "tool_use",
+      "latency_s": 2.775,
+      "throttle_retries": 0
+    },
+    {
+      "name": "compose_clinical",
+      "input_tokens": 990,
+      "output_tokens": 1203,
+      "cache_read_tokens": 2822,
+      "cache_write_tokens": 0,
+      "stop_reason": "tool_use",
+      "latency_s": 7.135,
+      "throttle_retries": 0
+    }
+  ],
+  "steps": {
+    "guard_input": {
+      "notes_sha256": "a00b5caaa8e251a370d8136857fd8a4d7969cc70de71013d55dbd99a5fd03229",
+      "line_count": 10,
+      "flags": []
+    },
+    "extract_facts": {
+      "call": {
+        "model_id": "anthropic.claude-sonnet-4-6",
+        "prompt_sha256": "208ac00d3d6096f05c4ba91137e923aec4054651c042f55d9e7c089bcd7675a2",
+        "stop_reason": "tool_use",
+        "attempts": 1,
+        "input_tokens": 742,
+        "output_tokens": 1763,
+        "cache_read_tokens": 4183,
+        "cache_write_tokens": 0,
+        "latency_ms": 10125
+      }
+    },
+    "validate_facts": {
+      "facts": {
+        "fields": {
+          "age_sex": {
+            "status": "documented",
+            "items": [
+              {
+                "value": "31-year-old female, P1, 39 weeks gestation",
+                "cites": [
+                  {
+                    "lines": [
+                      "L001"
+                    ],
+                    "quote": "31F P1, 39/40",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "age_sex.0",
+                "citation_status": "verified",
+                "reason": null
+              }
+            ],
+            "field_check": "ok"
+          },
+          "specialty": {
+            "status": "inferred_flagged",
+            "items": [
+              {
+                "value": "Obstetrics (emergency LSCS for pathological CTG / fetal distress)",
+                "cites": [
+                  {
+                    "lines": [
+                      "L001"
+                    ],
+                    "quote": "emergency LSCS for pathological CTG / fetal distress",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "specialty.0",
+                "citation_status": "verified",
+                "reason": null
+              }
+            ],
+            "field_check": "ok"
+          },
+          "legal_status": {
+            "status": "not_documented",
+            "items": [],
+            "field_check": "ok"
+          },
+          "weight": {
+            "status": "not_documented",
+            "items": [],
+            "field_check": "ok"
+          },
+          "admission_date": {
+            "status": "documented",
+            "items": [
+              {
+                "value": "15/05",
+                "cites": [
+                  {
+                    "lines": [
+                      "L001"
+                    ],
+                    "quote": "15/05",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "admission_date.0",
+                "citation_status": "verified",
+                "reason": null
+              }
+            ],
+            "field_check": "ok"
+          },
+          "discharge_date": {
+            "status": "documented",
+            "items": [
+              {
+                "value": "17/05",
+                "cites": [
+                  {
+                    "lines": [
+                      "L008"
+                    ],
+                    "quote": "Day 3 (17/05) Fit for discharge.",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "discharge_date.0",
+                "citation_status": "verified",
+                "reason": null
+              }
+            ],
+            "field_check": "ok"
+          },
+          "presenting_complaint": {
+            "status": "documented",
+            "items": [
+              {
+                "value": "Pathological CTG / fetal distress in labour requiring emergency LSCS",
+                "cites": [
+                  {
+                    "lines": [
+                      "L001"
+                    ],
+                    "quote": "emergency LSCS for pathological CTG / fetal distress",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "presenting_complaint.0",
+                "citation_status": "verified",
+                "reason": null
+              }
+            ],
+            "field_check": "ok"
+          },
+          "diagnosis_primary": {
+            "status": "documented",
+            "items": [
+              {
+                "value": "Emergency lower segment caesarean section (LSCS) for pathological CTG / fetal distress in labour",
+                "cites": [
+                  {
+                    "lines": [
+                      "L001"
+                    ],
+                    "quote": "emergency LSCS for pathological CTG / fetal distress",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "diagnosis_primary.0",
+                "citation_status": "verified",
+                "reason": null
+              }
+            ],
+            "field_check": "ok"
+          },
+          "diagnosis_secondary": {
+            "status": "documented",
+            "items": [
+              {
+                "value": "Primary postpartum haemorrhage approximately 1200 ml due to uterine atony",
+                "cites": [
+                  {
+                    "lines": [
+                      "L003"
+                    ],
+                    "quote": "primary PPH ~1200ml (uterine atony)",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "diagnosis_secondary.0",
+                "citation_status": "verified",
+                "reason": null
+              }
+            ],
+            "field_check": "ok"
+          },
+          "diagnosis_background": {
+            "status": "documented",
+            "items": [
+              {
+                "value": "No pre-existing conditions documented",
+                "cites": [
+                  {
+                    "lines": [
+                      "L004"
+                    ],
+                    "quote": "Pre-existing: nil.",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "diagnosis_background.0",
+                "citation_status": "verified",
+                "reason": null
+              }
+            ],
+            "field_check": "ok"
+          },
+          "key_investigations": {
+            "status": "documented",
+            "items": [
+              {
+                "value": "Haemoglobin 84 (from 119) on day 1 post-op",
+                "cites": [
+                  {
+                    "lines": [
+                      "L005"
+                    ],
+                    "quote": "Hb 84 (from 119).",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "key_investigations.0",
+                "citation_status": "verified",
+                "reason": null
+              }
+            ],
+            "field_check": "ok"
+          },
+          "treatment": {
+            "status": "documented",
+            "items": [
+              {
+                "value": "Emergency lower segment caesarean section (LSCS)",
+                "cites": [
+                  {
+                    "lines": [
+                      "L001"
+                    ],
+                    "quote": "emergency LSCS for pathological CTG / fetal distress",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "treatment.0",
+                "citation_status": "verified",
+                "reason": null
+              },
+              {
+                "value": "Live male infant delivered in good condition; transferred to postnatal ward with mother",
+                "cites": [
+                  {
+                    "lines": [
+                      "L001",
+                      "L002"
+                    ],
+                    "quote": "Live male infant, good condition, to postnatal ward with mum.",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "treatment.1",
+                "citation_status": "verified",
+                "reason": null
+              },
+              {
+                "value": "Intraoperative PPH treated with oxytocin and ergometrine",
+                "cites": [
+                  {
+                    "lines": [
+                      "L003"
+                    ],
+                    "quote": "responded to oxytocin + ergometrine",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "treatment.2",
+                "citation_status": "verified",
+                "reason": null
+              },
+              {
+                "value": "Bimanual compression performed; no return to theatre; estimated blood loss controlled",
+                "cites": [
+                  {
+                    "lines": [
+                      "L003",
+                      "L004"
+                    ],
+                    "quote": "bimanual; no return to theatre. EBL controlled.",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "treatment.3",
+                "citation_status": "verified",
+                "reason": null
+              },
+              {
+                "value": "Oral iron started",
+                "cites": [
+                  {
+                    "lines": [
+                      "L005"
+                    ],
+                    "quote": "Started oral iron.",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "treatment.4",
+                "citation_status": "verified",
+                "reason": null
+              },
+              {
+                "value": "Prophylactic enoxaparin daily commenced",
+                "cites": [
+                  {
+                    "lines": [
+                      "L006"
+                    ],
+                    "quote": "prophylactic enoxaparin daily.",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "treatment.5",
+                "citation_status": "verified",
+                "reason": null
+              }
+            ],
+            "field_check": "ok"
+          },
+          "risk_assessment": {
+            "status": "not_documented",
+            "items": [],
+            "field_check": "ok"
+          },
+          "allergies": {
+            "status": "documented",
+            "items": [
+              {
+                "value": "No known drug allergies",
+                "cites": [
+                  {
+                    "lines": [
+                      "L004"
+                    ],
+                    "quote": "NKDA.",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "allergies.0",
+                "citation_status": "verified",
+                "reason": null
+              }
+            ],
+            "field_check": "ok"
+          },
+          "follow_up": {
+            "status": "documented",
+            "items": [
+              {
+                "value": "Community midwife handover arranged",
+                "cites": [
+                  {
+                    "lines": [
+                      "L009"
+                    ],
+                    "quote": "Community midwife handover.",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "follow_up.0",
+                "citation_status": "verified",
+                "reason": null
+              },
+              {
+                "value": "Postnatal check at 6 weeks with GP",
+                "cites": [
+                  {
+                    "lines": [
+                      "L010"
+                    ],
+                    "quote": "Postnatal check 6/52 with GP.",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "follow_up.1",
+                "citation_status": "verified",
+                "reason": null
+              }
+            ],
+            "field_check": "ok"
+          },
+          "gp_actions": {
+            "status": "documented",
+            "items": [
+              {
+                "value": "GP and health visitor informed",
+                "cites": [
+                  {
+                    "lines": [
+                      "L010"
+                    ],
+                    "quote": "GP/HV informed.",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "gp_actions.0",
+                "citation_status": "verified",
+                "reason": null
+              }
+            ],
+            "field_check": "ok"
+          },
+          "vte_assessment": {
+            "status": "documented",
+            "items": [
+              {
+                "value": "VTE risk raised (LSCS + PPH); prophylactic enoxaparin daily commenced",
+                "cites": [
+                  {
+                    "lines": [
+                      "L006"
+                    ],
+                    "quote": "VTE risk raised (LSCS + PPH) -> prophylactic enoxaparin daily.",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "vte_assessment.0",
+                "citation_status": "verified",
+                "reason": null
+              }
+            ],
+            "field_check": "ok"
+          }
+        },
+        "medications": {
+          "pre_admission": [
+            {
+              "value": "No pre-admission drug history documented (DH: nil)",
+              "cites": [
+                {
+                  "lines": [
+                    "L004"
+                  ],
+                  "quote": "DH: nil.",
+                  "verified": true,
+                  "reason": null
+                }
+              ],
+              "fact_id": "medications.pre_admission.0",
+              "citation_status": "verified",
+              "reason": null
+            }
+          ],
+          "discharge": [
+            {
+              "value": "Enoxaparin prophylaxis to continue 10 days",
+              "cites": [
+                {
+                  "lines": [
+                    "L008",
+                    "L009"
+                  ],
+                  "quote": "enoxaparin prophylaxis to continue 10 days,",
+                  "verified": true,
+                  "reason": null
+                }
+              ],
+              "fact_id": "medications.discharge.0",
+              "citation_status": "verified",
+              "reason": null
+            },
+            {
+              "value": "Oral iron",
+              "cites": [
+                {
+                  "lines": [
+                    "L009"
+                  ],
+                  "quote": "oral iron,",
+                  "verified": true,
+                  "reason": null
+                }
+              ],
+              "fact_id": "medications.discharge.1",
+              "citation_status": "verified",
+              "reason": null
+            },
+            {
+              "value": "Regular paracetamol + ibuprofen PRN",
+              "cites": [
+                {
+                  "lines": [
+                    "L009"
+                  ],
+                  "quote": "regular paracetamol + ibuprofen PRN.",
+                  "verified": true,
+                  "reason": null
+                }
+              ],
+              "fact_id": "medications.discharge.2",
+              "citation_status": "verified",
+              "reason": null
+            }
+          ],
+          "discharge_status": "listed",
+          "medications_check": "ok"
+        },
+        "resus": {
+          "changed": "not_documented",
+          "cites": [],
+          "form_or_discussion_documented": false,
+          "status_documented": "not_documented",
+          "fact_id": "resus",
+          "citation_status": "verified",
+          "reason": null
+        },
+        "documented_advice": [
+          {
+            "value": "Safety-net re PPH/sepsis/VTE",
+            "cites": [
+              {
+                "lines": [
+                  "L010"
+                ],
+                "quote": "Safety-net re PPH/sepsis/VTE.",
+                "verified": true,
+                "reason": null
+              }
+            ],
+            "fact_id": "documented_advice.0",
+            "citation_status": "verified",
+            "reason": null
+          }
+        ],
+        "age_group": "adult",
+        "contradictions": [],
+        "suspicious_text": []
+      },
+      "uncited_lines": [
+        "L007"
+      ],
+      "counts": {
+        "cites_total": 25,
+        "cites_verified": 25,
+        "items_unverified": 0,
+        "fields_inconsistent": 0,
+        "medications_inconsistent": 0
+      }
+    },
+    "retrieve_evidence": {
+      "medication": [
+        {
+          "line": "L004",
+          "sources": [
+            "cited",
+            "med_header"
+          ],
+          "fact_ids": [
+            "medications.pre_admission.0"
+          ],
+          "flagged": false
+        },
+        {
+          "line": "L008",
+          "sources": [
+            "cited",
+            "med_header"
+          ],
+          "fact_ids": [
+            "medications.discharge.0"
+          ],
+          "flagged": false
+        },
+        {
+          "line": "L009",
+          "sources": [
+            "cited",
+            "med_continuation"
+          ],
+          "fact_ids": [
+            "medications.discharge.0",
+            "medications.discharge.1",
+            "medications.discharge.2"
+          ],
+          "flagged": false
+        }
+      ],
+      "resus": [],
+      "counts": {
+        "medication_lines": 3,
+        "resus_lines": 0,
+        "medication_matched_not_cited": 0,
+        "resus_matched_not_cited": 0
+      }
+    },
+    "route_resus": {
+      "route": "absent",
+      "forced": "no",
+      "status": "not_documented",
+      "changed": "not_documented",
+      "cited_lines": [],
+      "rendered": "RESUSCITATION STATUS\nNot documented."
+    },
+    "select_safety_net": {
+      "route": "documented",
+      "audience": "adult",
+      "pinned_line": "If you have been given a number to call, use that first. Otherwise, if you are worried, contact your GP or call NHS 111. Call 999 if it is an emergency.",
+      "advice": [
+        {
+          "fact_id": "documented_advice.0",
+          "lines": [
+            "L010"
+          ],
+          "quote": "Safety-net re PPH/sepsis/VTE."
+        }
+      ],
+      "advice_excluded": 0,
+      "cited_lines": [
+        "L010"
+      ],
+      "part_ab": "- \"Safety-net re PPH/sepsis/VTE.\" [L010]\n\nStandard seek-help line in the patient version (fixed wording, not from the notes):\nIf you have been given a number to call, use that first. Otherwise, if you are worried, contact your GP or call NHS 111. Call 999 if it is an emergency.",
+      "part_c": "Safety-net re PPH/sepsis/VTE.\n\nIf you have been given a number to call, use that first. Otherwise, if you are worried, contact your GP or call NHS 111. Call 999 if it is an emergency."
+    },
+    "reconcile_medications": {
+      "reconciliation": [
+        {
+          "entry_id": "reconciliation.0",
+          "drug": "enoxaparin",
+          "tag": "new",
+          "basis": "documented",
+          "dose": null,
+          "route": null,
+          "frequency": "daily",
+          "previous": null,
+          "conflict": false,
+          "dh_cites": [],
+          "discharge_cites": [
+            {
+              "lines": [
+                "L008",
+                "L009"
+              ],
+              "quote": "enoxaparin prophylaxis to continue 10 days,",
+              "verified": true,
+              "reason": null
+            }
+          ],
+          "citation_status": "verified",
+          "reason": null,
+          "checks": []
+        },
+        {
+          "entry_id": "reconciliation.1",
+          "drug": "oral iron",
+          "tag": "new",
+          "basis": "documented",
+          "dose": null,
+          "route": "oral",
+          "frequency": null,
+          "previous": null,
+          "conflict": false,
+          "dh_cites": [],
+          "discharge_cites": [
+            {
+              "lines": [
+                "L009"
+              ],
+              "quote": "oral iron",
+              "verified": true,
+              "reason": null
+            }
+          ],
+          "citation_status": "verified",
+          "reason": null,
+          "checks": []
+        },
+        {
+          "entry_id": "reconciliation.2",
+          "drug": "paracetamol",
+          "tag": "new",
+          "basis": "documented",
+          "dose": null,
+          "route": null,
+          "frequency": "regular",
+          "previous": null,
+          "conflict": false,
+          "dh_cites": [],
+          "discharge_cites": [
+            {
+              "lines": [
+                "L009"
+              ],
+              "quote": "regular paracetamol + ibuprofen PRN",
+              "verified": true,
+              "reason": null
+            }
+          ],
+          "citation_status": "verified",
+          "reason": null,
+          "checks": []
+        },
+        {
+          "entry_id": "reconciliation.3",
+          "drug": "ibuprofen",
+          "tag": "new",
+          "basis": "documented",
+          "dose": null,
+          "route": null,
+          "frequency": "PRN",
+          "previous": null,
+          "conflict": false,
+          "dh_cites": [],
+          "discharge_cites": [
+            {
+              "lines": [
+                "L009"
+              ],
+              "quote": "regular paracetamol + ibuprofen PRN",
+              "verified": true,
+              "reason": null
+            }
+          ],
+          "citation_status": "verified",
+          "reason": null,
+          "checks": []
+        }
+      ],
+      "discharge_status": "listed",
+      "reconciliation_check": "ok",
+      "dh_lines_unreconciled": [
+        "L004"
+      ],
+      "counts": {
+        "entries": 4,
+        "cites_total": 4,
+        "cites_verified": 4,
+        "entries_unverified": 0,
+        "entries_flagged": 0,
+        "dh_lines_unreconciled": 1
+      },
+      "call": {
+        "model_id": "anthropic.claude-sonnet-4-6",
+        "prompt_sha256": "b06f8c12a739b80c3d57f41ceada7dd7b1c2af38bc53159353b68425d09d5acf",
+        "stop_reason": "tool_use",
+        "attempts": 1,
+        "input_tokens": 857,
+        "output_tokens": 389,
+        "cache_read_tokens": 2290,
+        "cache_write_tokens": 0,
+        "latency_ms": 2775
+      }
+    },
+    "compose_clinical": {
+      "sections": [
+        {
+          "section_id": "sections.0",
+          "part": "part_a",
+          "heading": "presenting_complaint",
+          "fact_ids": [
+            "presenting_complaint.0"
+          ],
+          "text": "Pathological CTG / fetal distress in labour requiring emergency lower segment caesarean section (LSCS).",
+          "unverified_fact_ids": []
+        },
+        {
+          "section_id": "sections.1",
+          "part": "part_a",
+          "heading": "diagnosis",
+          "fact_ids": [
+            "diagnosis_primary.0",
+            "diagnosis_secondary.0",
+            "diagnosis_background.0"
+          ],
+          "text": "Primary: Emergency lower segment caesarean section (LSCS) for pathological CTG / fetal distress in labour.\n\nSecondary: Primary postpartum haemorrhage approximately 1200 ml due to uterine atony.\n\nBackground: No pre-existing conditions documented.",
+          "unverified_fact_ids": []
+        },
+        {
+          "section_id": "sections.2",
+          "part": "part_a",
+          "heading": "key_investigations",
+          "fact_ids": [
+            "key_investigations.0"
+          ],
+          "text": "- Haemoglobin 84 (from 119) on day 1 post-op.",
+          "unverified_fact_ids": []
+        },
+        {
+          "section_id": "sections.3",
+          "part": "part_a",
+          "heading": "treatment",
+          "fact_ids": [
+            "treatment.0",
+            "treatment.1",
+            "treatment.2",
+            "treatment.3",
+            "treatment.4",
+            "treatment.5"
+          ],
+          "text": "Emergency LSCS was performed. A live male infant was delivered in good condition and transferred to the postnatal ward with the mother.\n\nIntraoperative primary postpartum haemorrhage was treated with oxytocin and ergometrine. Bimanual compression was performed; blood loss was controlled and return to theatre was not required.\n\nOral iron was started post-operatively. Prophylactic enoxaparin daily was commenced.",
+          "unverified_fact_ids": []
+        },
+        {
+          "section_id": "sections.4",
+          "part": "part_a",
+          "heading": "resuscitation_status",
+          "fact_ids": [],
+          "text": "{{RESUS}}",
+          "unverified_fact_ids": []
+        },
+        {
+          "section_id": "sections.5",
+          "part": "part_a",
+          "heading": "medications",
+          "fact_ids": [],
+          "text": "{{MEDICATIONS}}",
+          "unverified_fact_ids": []
+        },
+        {
+          "section_id": "sections.6",
+          "part": "part_a",
+          "heading": "allergies",
+          "fact_ids": [
+            "allergies.0"
+          ],
+          "text": "No known drug allergies.",
+          "unverified_fact_ids": []
+        },
+        {
+          "section_id": "sections.7",
+          "part": "part_a",
+          "heading": "follow_up",
+          "fact_ids": [
+            "follow_up.0",
+            "follow_up.1"
+          ],
+          "text": "- Community midwife handover arranged.\n- Postnatal check at 6 weeks with GP.",
+          "unverified_fact_ids": []
+        },
+        {
+          "section_id": "sections.8",
+          "part": "part_a",
+          "heading": "gp_actions",
+          "fact_ids": [
+            "gp_actions.0"
+          ],
+          "text": "- GP and health visitor informed.",
+          "unverified_fact_ids": []
+        },
+        {
+          "section_id": "sections.9",
+          "part": "part_a",
+          "heading": "safety_net",
+          "fact_ids": [],
+          "text": "{{SAFETY_NET}}",
+          "unverified_fact_ids": []
+        },
+        {
+          "section_id": "sections.10",
+          "part": "part_a",
+          "heading": "vte_assessment",
+          "fact_ids": [
+            "vte_assessment.0"
+          ],
+          "text": "VTE risk raised (LSCS + PPH); prophylactic enoxaparin daily commenced.",
+          "unverified_fact_ids": []
+        },
+        {
+          "section_id": "sections.11",
+          "part": "part_b",
+          "heading": "opening",
+          "fact_ids": [
+            "age_sex.0",
+            "presenting_complaint.0",
+            "diagnosis_primary.0"
+          ],
+          "text": "Thank you for accepting this 31-year-old female (P1, 39 weeks gestation) who was admitted on 15/05 with pathological CTG / fetal distress in labour and underwent emergency LSCS.",
+          "unverified_fact_ids": []
+        },
+        {
+          "section_id": "sections.12",
+          "part": "part_b",
+          "heading": "admission_summary",
+          "fact_ids": [
+            "key_investigations.0",
+            "treatment.0",
+            "treatment.1",
+            "treatment.2",
+            "treatment.3",
+            "treatment.4",
+            "treatment.5"
+          ],
+          "text": "She underwent emergency LSCS, with delivery of a live male infant in good condition; both were transferred to the postnatal ward together. She sustained an intraoperative primary postpartum haemorrhage of approximately 1200 ml secondary to uterine atony, managed with oxytocin, ergometrine and bimanual compression; return to theatre was not required. Post-operatively, haemoglobin was noted to have fallen to 84 (from 119) on day 1, and oral iron was commenced. Prophylactic enoxaparin daily was started given elevated VTE risk (LSCS + PPH). She was discharged on 17/05.",
+          "unverified_fact_ids": []
+        },
+        {
+          "section_id": "sections.13",
+          "part": "part_b",
+          "heading": "diagnosis",
+          "fact_ids": [
+            "diagnosis_primary.0",
+            "diagnosis_secondary.0"
+          ],
+          "text": "Primary: Emergency LSCS for pathological CTG / fetal distress in labour.\nSecondary: Primary postpartum haemorrhage approximately 1200 ml due to uterine atony.",
+          "unverified_fact_ids": []
+        },
+        {
+          "section_id": "sections.14",
+          "part": "part_b",
+          "heading": "resuscitation_status",
+          "fact_ids": [],
+          "text": "{{RESUS}}",
+          "unverified_fact_ids": []
+        },
+        {
+          "section_id": "sections.15",
+          "part": "part_b",
+          "heading": "medications",
+          "fact_ids": [],
+          "text": "{{MEDICATIONS}}",
+          "unverified_fact_ids": []
+        },
+        {
+          "section_id": "sections.16",
+          "part": "part_b",
+          "heading": "gp_actions",
+          "fact_ids": [
+            "gp_actions.0"
+          ],
+          "text": "- GP and health visitor informed.",
+          "unverified_fact_ids": []
+        },
+        {
+          "section_id": "sections.17",
+          "part": "part_b",
+          "heading": "follow_up",
+          "fact_ids": [
+            "follow_up.0",
+            "follow_up.1"
+          ],
+          "text": "- Community midwife handover arranged.\n- Postnatal check at 6 weeks with GP.",
+          "unverified_fact_ids": []
+        },
+        {
+          "section_id": "sections.18",
+          "part": "part_b",
+          "heading": "safety_net",
+          "fact_ids": [],
+          "text": "{{SAFETY_NET}}",
+          "unverified_fact_ids": []
+        }
+      ],
+      "checks": [],
+      "counts": {
+        "sections": 19,
+        "sections_a": 11,
+        "sections_b": 8,
+        "facts_given": 16,
+        "facts_used_in_a": 16,
+        "header_facts_given": 4,
+        "contradictions_given": 0,
+        "contradictions_in_a": 0,
+        "gp_actions_given": 1,
+        "gp_actions_in_b": 1,
+        "unverified_given": 0,
+        "unverified_used": 0,
+        "checks": 0
+      },
+      "age_group": "adult",
+      "call": {
+        "model_id": "anthropic.claude-sonnet-4-6",
+        "prompt_sha256": "cb55505a0692ff0aa7548836ab5dc777ac116dd604081d0864a1654284b0282d",
+        "stop_reason": "tool_use",
+        "attempts": 1,
+        "input_tokens": 990,
+        "output_tokens": 1203,
+        "cache_read_tokens": 2822,
+        "cache_write_tokens": 0,
+        "latency_ms": 7135
+      }
+    }
+  },
+  "output": null,
+  "gate": null,
+  "failed_step": null,
+  "error": null,
+  "step_errors": {},
+  "cost_usd_est": 0.066969
+}

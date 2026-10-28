@@ -1,0 +1,5658 @@
+{
+  "batch_id": "w6-pipeline-e07-m01-c01-x5",
+  "metric": "compose_clinical",
+  "metric_version": 2,
+  "results": [
+    {
+      "metric": "compose_clinical",
+      "metric_version": 2,
+      "checks": {
+        "resus_text_outside": 2
+      },
+      "counts": {
+        "sections": 19,
+        "sections_a": 11,
+        "sections_b": 8,
+        "facts_given": 25,
+        "facts_used_in_a": 25,
+        "header_facts_given": 4,
+        "contradictions_given": 0,
+        "contradictions_in_a": 0,
+        "gp_actions_given": 1,
+        "gp_actions_in_b": 1,
+        "unverified_given": 0,
+        "unverified_used": 0,
+        "checks": 2
+      },
+      "box_problems": 0,
+      "field_omitted": [],
+      "years_vs_notes": [],
+      "review": [
+        {
+          "kind": "resus",
+          "part": "part_a",
+          "heading": "treatment",
+          "token": null,
+          "key": "7b3fe4afea8503cb",
+          "ruling": "defect"
+        },
+        {
+          "kind": "medication",
+          "part": "part_b",
+          "heading": "admission_summary",
+          "token": "bisoprolol",
+          "key": "f0d562e52a3c8bc3",
+          "ruling": "acceptable"
+        },
+        {
+          "kind": "medication",
+          "part": "part_b",
+          "heading": "admission_summary",
+          "token": "ticagrelor",
+          "key": "f68754bf91e9267d",
+          "ruling": "acceptable"
+        },
+        {
+          "kind": "resus",
+          "part": "part_b",
+          "heading": "admission_summary",
+          "token": null,
+          "key": "1ee53a62ee57e2e4",
+          "ruling": "defect"
+        }
+      ],
+      "latency": {
+        "step2_s": 12.648,
+        "step5a_s": 4.417,
+        "step6_s": 8.322,
+        "critical_s": 20.97
+      },
+      "generation_id": "w6-pipeline-e07-m01-c01-x5/r1/S1",
+      "scenario_id": "S1",
+      "run": 1
+    },
+    {
+      "metric": "compose_clinical",
+      "metric_version": 2,
+      "checks": {},
+      "counts": {
+        "sections": 20,
+        "sections_a": 11,
+        "sections_b": 9,
+        "facts_given": 10,
+        "facts_used_in_a": 10,
+        "header_facts_given": 4,
+        "contradictions_given": 0,
+        "contradictions_in_a": 0,
+        "gp_actions_given": 0,
+        "gp_actions_in_b": 0,
+        "unverified_given": 0,
+        "unverified_used": 0,
+        "checks": 0
+      },
+      "box_problems": 0,
+      "field_omitted": [],
+      "years_vs_notes": [],
+      "review": [],
+      "latency": {
+        "step2_s": 8.438,
+        "step5a_s": 2.012,
+        "step6_s": 6.849,
+        "critical_s": 15.287
+      },
+      "generation_id": "w6-pipeline-e07-m01-c01-x5/r1/S2",
+      "scenario_id": "S2",
+      "run": 1
+    },
+    {
+      "metric": "compose_clinical",
+      "metric_version": 2,
+      "checks": {},
+      "counts": {
+        "sections": 20,
+        "sections_a": 12,
+        "sections_b": 8,
+        "facts_given": 18,
+        "facts_used_in_a": 18,
+        "header_facts_given": 6,
+        "contradictions_given": 0,
+        "contradictions_in_a": 0,
+        "gp_actions_given": 1,
+        "gp_actions_in_b": 1,
+        "unverified_given": 2,
+        "unverified_used": 2,
+        "checks": 0
+      },
+      "box_problems": 0,
+      "field_omitted": [],
+      "years_vs_notes": [],
+      "review": [
+        {
+          "kind": "medication",
+          "part": "part_a",
+          "heading": "diagnosis",
+          "token": "sertraline",
+          "key": "6063df3b96800211",
+          "ruling": "acceptable"
+        },
+        {
+          "kind": "medication",
+          "part": "part_a",
+          "heading": "follow_up",
+          "token": "sertraline",
+          "key": "e7e213af42dac30e",
+          "ruling": "acceptable"
+        },
+        {
+          "kind": "medication",
+          "part": "part_a",
+          "heading": "gp_actions",
+          "token": "sertraline",
+          "key": "76e9ad4792c01f9a",
+          "ruling": "acceptable"
+        },
+        {
+          "kind": "medication",
+          "part": "part_b",
+          "heading": "admission_summary",
+          "token": "sertraline",
+          "key": "0819a4510fc04e67",
+          "ruling": "acceptable"
+        },
+        {
+          "kind": "medication",
+          "part": "part_b",
+          "heading": "admission_summary",
+          "token": "sertraline",
+          "key": "0b2a0855f1a6afa4",
+          "ruling": "acceptable"
+        },
+        {
+          "kind": "medication",
+          "part": "part_b",
+          "heading": "gp_actions",
+          "token": "sertraline",
+          "key": "135e4f8f9837b1b2",
+          "ruling": "acceptable"
+        },
+        {
+          "kind": "medication",
+          "part": "part_b",
+          "heading": "follow_up",
+          "token": "sertraline",
+          "key": "51982c7e3b74ec62",
+          "ruling": "acceptable"
+        }
+      ],
+      "latency": {
+        "step2_s": 13.24,
+        "step5a_s": 1.91,
+        "step6_s": 9.425,
+        "critical_s": 22.665
+      },
+      "generation_id": "w6-pipeline-e07-m01-c01-x5/r1/S3",
+      "scenario_id": "S3",
+      "run": 1
+    },
+    {
+      "metric": "compose_clinical",
+      "metric_version": 2,
+      "checks": {},
+      "counts": {
+        "sections": 19,
+        "sections_a": 11,
+        "sections_b": 8,
+        "facts_given": 16,
+        "facts_used_in_a": 16,
+        "header_facts_given": 5,
+        "contradictions_given": 0,
+        "contradictions_in_a": 0,
+        "gp_actions_given": 0,
+        "gp_actions_in_b": 0,
+        "unverified_given": 0,
+        "unverified_used": 0,
+        "checks": 0
+      },
+      "box_problems": 0,
+      "field_omitted": [],
+      "years_vs_notes": [],
+      "review": [],
+      "latency": {
+        "step2_s": 10.71,
+        "step5a_s": 0.863,
+        "step6_s": 7.526,
+        "critical_s": 18.236
+      },
+      "generation_id": "w6-pipeline-e07-m01-c01-x5/r1/S4",
+      "scenario_id": "S4",
+      "run": 1
+    },
+    {
+      "metric": "compose_clinical",
+      "metric_version": 2,
+      "checks": {},
+      "counts": {
+        "sections": 19,
+        "sections_a": 11,
+        "sections_b": 8,
+        "facts_given": 13,
+        "facts_used_in_a": 13,
+        "header_facts_given": 5,
+        "contradictions_given": 0,
+        "contradictions_in_a": 0,
+        "gp_actions_given": 0,
+        "gp_actions_in_b": 0,
+        "unverified_given": 1,
+        "unverified_used": 1,
+        "checks": 0
+      },
+      "box_problems": 0,
+      "field_omitted": [],
+      "years_vs_notes": [],
+      "review": [],
+      "latency": {
+        "step2_s": 9.694,
+        "step5a_s": 0.721,
+        "step6_s": 7.469,
+        "critical_s": 17.163
+      },
+      "generation_id": "w6-pipeline-e07-m01-c01-x5/r1/S8",
+      "scenario_id": "S8",
+      "run": 1
+    },
+    {
+      "metric": "compose_clinical",
+      "metric_version": 2,
+      "checks": {},
+      "counts": {
+        "sections": 19,
+        "sections_a": 11,
+        "sections_b": 8,
+        "facts_given": 13,
+        "facts_used_in_a": 13,
+        "header_facts_given": 5,
+        "contradictions_given": 0,
+        "contradictions_in_a": 0,
+        "gp_actions_given": 1,
+        "gp_actions_in_b": 1,
+        "unverified_given": 1,
+        "unverified_used": 0,
+        "checks": 0
+      },
+      "box_problems": 0,
+      "field_omitted": [],
+      "years_vs_notes": [],
+      "review": [
+        {
+          "kind": "medication",
+          "part": "part_b",
+          "heading": "admission_summary",
+          "token": "insulin",
+          "key": "107a949589f33a56",
+          "ruling": "acceptable"
+        },
+        {
+          "kind": "medication",
+          "part": "part_b",
+          "heading": "admission_summary",
+          "token": "insulin",
+          "key": "70fb747ec6ecf3e3",
+          "ruling": "acceptable"
+        }
+      ],
+      "latency": {
+        "step2_s": 9.432,
+        "step5a_s": 1.703,
+        "step6_s": 7.556,
+        "critical_s": 16.988
+      },
+      "generation_id": "w6-pipeline-e07-m01-c01-x5/r1/S9",
+      "scenario_id": "S9",
+      "run": 1
+    },
+    {
+      "metric": "compose_clinical",
+      "metric_version": 2,
+      "checks": {},
+      "counts": {
+        "sections": 19,
+        "sections_a": 11,
+        "sections_b": 8,
+        "facts_given": 16,
+        "facts_used_in_a": 16,
+        "header_facts_given": 4,
+        "contradictions_given": 0,
+        "contradictions_in_a": 0,
+        "gp_actions_given": 1,
+        "gp_actions_in_b": 1,
+        "unverified_given": 0,
+        "unverified_used": 0,
+        "checks": 0
+      },
+      "box_problems": 0,
+      "field_omitted": [],
+      "years_vs_notes": [],
+      "review": [
+        {
+          "kind": "medication",
+          "part": "part_a",
+          "heading": "vte_assessment",
+          "token": "enoxaparin",
+          "key": "96d074cb91cf58ea",
+          "ruling": "acceptable"
+        },
+        {
+          "kind": "medication",
+          "part": "part_b",
+          "heading": "admission_summary",
+          "token": "oral",
+          "key": "ef1dab31b47737d1",
+          "ruling": "acceptable"
+        },
+        {
+          "kind": "medication",
+          "part": "part_b",
+          "heading": "admission_summary",
+          "token": "enoxaparin",
+          "key": "d6b53df55e24a9cf",
+          "ruling": "acceptable"
+        }
+      ],
+      "latency": {
+        "step2_s": 10.166,
+        "step5a_s": 2.467,
+        "step6_s": 7.143,
+        "critical_s": 17.309
+      },
+      "generation_id": "w6-pipeline-e07-m01-c01-x5/r1/S10",
+      "scenario_id": "S10",
+      "run": 1
+    },
+    {
+      "metric": "compose_clinical",
+      "metric_version": 2,
+      "checks": {
+        "unknown_fact_id": 1,
+        "fact_unused": 1,
+        "not_documented_with_content": 1
+      },
+      "counts": {
+        "sections": 19,
+        "sections_a": 11,
+        "sections_b": 8,
+        "facts_given": 23,
+        "facts_used_in_a": 22,
+        "header_facts_given": 2,
+        "contradictions_given": 0,
+        "contradictions_in_a": 0,
+        "gp_actions_given": 0,
+        "gp_actions_in_b": 0,
+        "unverified_given": 0,
+        "unverified_used": 0,
+        "checks": 3
+      },
+      "box_problems": 0,
+      "field_omitted": [],
+      "years_vs_notes": [],
+      "review": [
+        {
+          "kind": "medication",
+          "part": "part_a",
+          "heading": "vte_assessment",
+          "token": "enoxaparin",
+          "key": "cc7d13444abb354a",
+          "ruling": "acceptable"
+        },
+        {
+          "kind": "medication",
+          "part": "part_a",
+          "heading": "vte_assessment",
+          "token": "enoxaparin",
+          "key": "113ca26c8f4b6156",
+          "ruling": "acceptable"
+        }
+      ],
+      "latency": {
+        "step2_s": 13.06,
+        "step5a_s": 1.956,
+        "step6_s": 8.405,
+        "critical_s": 21.465
+      },
+      "generation_id": "w6-pipeline-e07-m01-c01-x5/r1/S11",
+      "scenario_id": "S11",
+      "run": 1
+    },
+    {
+      "metric": "compose_clinical",
+      "metric_version": 2,
+      "checks": {
+        "resus_text_outside": 2
+      },
+      "counts": {
+        "sections": 19,
+        "sections_a": 11,
+        "sections_b": 8,
+        "facts_given": 37,
+        "facts_used_in_a": 37,
+        "header_facts_given": 2,
+        "contradictions_given": 0,
+        "contradictions_in_a": 0,
+        "gp_actions_given": 0,
+        "gp_actions_in_b": 0,
+        "unverified_given": 0,
+        "unverified_used": 0,
+        "checks": 2
+      },
+      "box_problems": 0,
+      "field_omitted": [],
+      "years_vs_notes": [],
+      "review": [
+        {
+          "kind": "resus",
+          "part": "part_a",
+          "heading": "treatment",
+          "token": null,
+          "key": "48596a2a35e5d120",
+          "ruling": "acceptable"
+        },
+        {
+          "kind": "resus",
+          "part": "part_b",
+          "heading": "admission_summary",
+          "token": null,
+          "key": "addc282432d38e53",
+          "ruling": "acceptable"
+        }
+      ],
+      "latency": {
+        "step2_s": 13.148,
+        "step5a_s": 0.788,
+        "step6_s": 9.273,
+        "critical_s": 22.421
+      },
+      "generation_id": "w6-pipeline-e07-m01-c01-x5/r1/S12",
+      "scenario_id": "S12",
+      "run": 1
+    },
+    {
+      "metric": "compose_clinical",
+      "metric_version": 2,
+      "checks": {
+        "resus_text_outside": 1
+      },
+      "counts": {
+        "sections": 19,
+        "sections_a": 11,
+        "sections_b": 8,
+        "facts_given": 26,
+        "facts_used_in_a": 26,
+        "header_facts_given": 4,
+        "contradictions_given": 0,
+        "contradictions_in_a": 0,
+        "gp_actions_given": 1,
+        "gp_actions_in_b": 1,
+        "unverified_given": 0,
+        "unverified_used": 0,
+        "checks": 1
+      },
+      "box_problems": 0,
+      "field_omitted": [],
+      "years_vs_notes": [],
+      "review": [
+        {
+          "kind": "medication",
+          "part": "part_a",
+          "heading": "key_investigations",
+          "token": "wound",
+          "key": "832a609365d41774",
+          "ruling": "acceptable"
+        },
+        {
+          "kind": "resus",
+          "part": "part_a",
+          "heading": "treatment",
+          "token": null,
+          "key": "524f7c24a425b987",
+          "ruling": "defect"
+        },
+        {
+          "kind": "medication",
+          "part": "part_a",
+          "heading": "follow_up",
+          "token": "wound",
+          "key": "ea994f4bf0f9a64e",
+          "ruling": "acceptable"
+        },
+        {
+          "kind": "medication",
+          "part": "part_b",
+          "heading": "admission_summary",
+          "token": "wound",
+          "key": "769068d36df196fb",
+          "ruling": "acceptable"
+        },
+        {
+          "kind": "medication",
+          "part": "part_b",
+          "heading": "admission_summary",
+          "token": "wound",
+          "key": "6cb6f596afaef0ad",
+          "ruling": "acceptable"
+        },
+        {
+          "kind": "medication",
+          "part": "part_b",
+          "heading": "follow_up",
+          "token": "wound",
+          "key": "963ba729941da881",
+          "ruling": "acceptable"
+        }
+      ],
+      "latency": {
+        "step2_s": 14.21,
+        "step5a_s": 3.201,
+        "step6_s": 8.44,
+        "critical_s": 22.65
+      },
+      "generation_id": "w6-pipeline-e07-m01-c01-x5/r1/S13",
+      "scenario_id": "S13",
+      "run": 1
+    },
+    {
+      "metric": "compose_clinical",
+      "metric_version": 2,
+      "checks": {
+        "resus_text_outside": 1
+      },
+      "counts": {
+        "sections": 19,
+        "sections_a": 11,
+        "sections_b": 8,
+        "facts_given": 18,
+        "facts_used_in_a": 18,
+        "header_facts_given": 4,
+        "contradictions_given": 0,
+        "contradictions_in_a": 0,
+        "gp_actions_given": 1,
+        "gp_actions_in_b": 1,
+        "unverified_given": 0,
+        "unverified_used": 0,
+        "checks": 1
+      },
+      "box_problems": 0,
+      "field_omitted": [],
+      "years_vs_notes": [],
+      "review": [
+        {
+          "kind": "medication",
+          "part": "part_a",
+          "heading": "diagnosis",
+          "token": "aspirin",
+          "key": "644039c5b593ffab",
+          "ruling": "acceptable"
+        },
+        {
+          "kind": "resus",
+          "part": "part_a",
+          "heading": "treatment",
+          "token": null,
+          "key": "6efb468d898264c3",
+          "ruling": "defect"
+        },
+        {
+          "kind": "medication",
+          "part": "part_b",
+          "heading": "admission_summary",
+          "token": "aspirin",
+          "key": "1e98cc833dc6c9e6",
+          "ruling": "acceptable"
+        },
+        {
+          "kind": "medication",
+          "part": "part_b",
+          "heading": "admission_summary",
+          "token": "apixaban",
+          "key": "04118b645ac829fb",
+          "ruling": "acceptable"
+        },
+        {
+          "kind": "medication",
+          "part": "part_b",
+          "heading": "diagnosis",
+          "token": "aspirin",
+          "key": "8cf1d8cb9ef545ef",
+          "ruling": "acceptable"
+        }
+      ],
+      "latency": {
+        "step2_s": 13.701,
+        "step5a_s": 3.307,
+        "step6_s": 7.033,
+        "critical_s": 20.734
+      },
+      "generation_id": "w6-pipeline-e07-m01-c01-x5/r1/S14",
+      "scenario_id": "S14",
+      "run": 1
+    },
+    {
+      "metric": "compose_clinical",
+      "metric_version": 2,
+      "checks": {
+        "resus_text_outside": 4
+      },
+      "counts": {
+        "sections": 19,
+        "sections_a": 11,
+        "sections_b": 8,
+        "facts_given": 19,
+        "facts_used_in_a": 19,
+        "header_facts_given": 1,
+        "contradictions_given": 0,
+        "contradictions_in_a": 0,
+        "gp_actions_given": 1,
+        "gp_actions_in_b": 1,
+        "unverified_given": 1,
+        "unverified_used": 1,
+        "checks": 4
+      },
+      "box_problems": 0,
+      "field_omitted": [],
+      "years_vs_notes": [],
+      "review": [
+        {
+          "kind": "resus",
+          "part": "part_a",
+          "heading": "diagnosis",
+          "token": null,
+          "key": "527f9ec0f31ac4a4",
+          "ruling": "defect"
+        },
+        {
+          "kind": "resus",
+          "part": "part_a",
+          "heading": "treatment",
+          "token": null,
+          "key": "e3fcbb4c0e2be076",
+          "ruling": "acceptable"
+        },
+        {
+          "kind": "medication",
+          "part": "part_b",
+          "heading": "admission_summary",
+          "token": "prednisolone",
+          "key": "4e8f19e14e6607d8",
+          "ruling": "acceptable"
+        },
+        {
+          "kind": "medication",
+          "part": "part_b",
+          "heading": "admission_summary",
+          "token": "oral",
+          "key": "680fed712fb38885",
+          "ruling": "acceptable"
+        },
+        {
+          "kind": "medication",
+          "part": "part_b",
+          "heading": "admission_summary",
+          "token": "amoxicillin",
+          "key": "573d196ea3cccebd",
+          "ruling": "acceptable"
+        },
+        {
+          "kind": "resus",
+          "part": "part_b",
+          "heading": "admission_summary",
+          "token": null,
+          "key": "d16fa92d4098f5f2",
+          "ruling": "defect"
+        },
+        {
+          "kind": "resus",
+          "part": "part_b",
+          "heading": "admission_summary",
+          "token": null,
+          "key": "089a07194fa6d70a",
+          "ruling": "acceptable"
+        },
+        {
+          "kind": "resus",
+          "part": "part_b",
+          "heading": "diagnosis",
+          "token": null,
+          "key": "03f904640f0dc86c",
+          "ruling": "defect"
+        }
+      ],
+      "latency": {
+        "step2_s": 11.685,
+        "step5a_s": 3.208,
+        "step6_s": 7.955,
+        "critical_s": 19.64
+      },
+      "generation_id": "w6-pipeline-e07-m01-c01-x5/r1/S15",
+      "scenario_id": "S15",
+      "run": 1
+    },
+    {
+      "metric": "compose_clinical",
+      "metric_version": 2,
+      "checks": {
+        "fact_unused": 1
+      },
+      "counts": {
+        "sections": 19,
+        "sections_a": 11,
+        "sections_b": 8,
+        "facts_given": 18,
+        "facts_used_in_a": 17,
+        "header_facts_given": 4,
+        "contradictions_given": 0,
+        "contradictions_in_a": 0,
+        "gp_actions_given": 1,
+        "gp_actions_in_b": 1,
+        "unverified_given": 0,
+        "unverified_used": 0,
+        "checks": 1
+      },
+      "box_problems": 0,
+      "field_omitted": [],
+      "years_vs_notes": [],
+      "review": [
+        {
+          "kind": "medication",
+          "part": "part_a",
+          "heading": "diagnosis",
+          "token": "warfarin",
+          "key": "a64b56f343c0eab6",
+          "ruling": "acceptable"
+        },
+        {
+          "kind": "medication",
+          "part": "part_b",
+          "heading": "admission_summary",
+          "token": "warfarin",
+          "key": "5ab0c9dc3bf99650",
+          "ruling": "acceptable"
+        },
+        {
+          "kind": "medication",
+          "part": "part_b",
+          "heading": "admission_summary",
+          "token": "warfarin",
+          "key": "63f8644afdc194cd",
+          "ruling": "acceptable"
+        },
+        {
+          "kind": "medication",
+          "part": "part_b",
+          "heading": "admission_summary",
+          "token": "ramipril",
+          "key": "8131e4640ffae143",
+          "ruling": "acceptable"
+        },
+        {
+          "kind": "medication",
+          "part": "part_b",
+          "heading": "admission_summary",
+          "token": "metformin",
+          "key": "ebde493b09ee27d6",
+          "ruling": "acceptable"
+        },
+        {
+          "kind": "medication",
+          "part": "part_b",
+          "heading": "admission_summary",
+          "token": "bisoprolol",
+          "key": "75b0ae85420f5f4e",
+          "ruling": "acceptable"
+        },
+        {
+          "kind": "medication",
+          "part": "part_b",
+          "heading": "admission_summary",
+          "token": "enoxaparin",
+          "key": "54665a47cb59ddac",
+          "ruling": "acceptable"
+        },
+        {
+          "kind": "medication",
+          "part": "part_b",
+          "heading": "diagnosis",
+          "token": "warfarin",
+          "key": "6cc5b376bb928982",
+          "ruling": "acceptable"
+        }
+      ],
+      "latency": {
+        "step2_s": 12.123,
+        "step5a_s": 3.61,
+        "step6_s": 7.103,
+        "critical_s": 19.226
+      },
+      "generation_id": "w6-pipeline-e07-m01-c01-x5/r1/S16",
+      "scenario_id": "S16",
+      "run": 1
+    },
+    {
+      "metric": "compose_clinical",
+      "metric_version": 2,
+      "checks": {},
+      "counts": {
+        "sections": 19,
+        "sections_a": 11,
+        "sections_b": 8,
+        "facts_given": 21,
+        "facts_used_in_a": 21,
+        "header_facts_given": 3,
+        "contradictions_given": 0,
+        "contradictions_in_a": 0,
+        "gp_actions_given": 3,
+        "gp_actions_in_b": 3,
+        "unverified_given": 0,
+        "unverified_used": 0,
+        "checks": 0
+      },
+      "box_problems": 0,
+      "field_omitted": [],
+      "years_vs_notes": [],
+      "review": [
+        {
+          "kind": "medication",
+          "part": "part_a",
+          "heading": "diagnosis",
+          "token": "pylori",
+          "key": "966d7b267a2754f8",
+          "ruling": "acceptable"
+        },
+        {
+          "kind": "medication",
+          "part": "part_a",
+          "heading": "key_investigations",
+          "token": "pylori",
+          "key": "5553875687853a9a",
+          "ruling": "acceptable"
+        },
+        {
+          "kind": "medication",
+          "part": "part_a",
+          "heading": "gp_actions",
+          "token": "pylori",
+          "key": "2ce8d1596bafe260",
+          "ruling": "acceptable"
+        },
+        {
+          "kind": "medication",
+          "part": "part_a",
+          "heading": "gp_actions",
+          "token": "apixaban",
+          "key": "507ffbe1292d6bd6",
+          "ruling": "acceptable"
+        },
+        {
+          "kind": "medication",
+          "part": "part_b",
+          "heading": "admission_summary",
+          "token": "pylori",
+          "key": "079792f7a4aff6a2",
+          "ruling": "acceptable"
+        },
+        {
+          "kind": "medication",
+          "part": "part_b",
+          "heading": "admission_summary",
+          "token": "apixaban",
+          "key": "ea4ea69e844bd46c",
+          "ruling": "acceptable"
+        },
+        {
+          "kind": "medication",
+          "part": "part_b",
+          "heading": "diagnosis",
+          "token": "pylori",
+          "key": "f94d4953f847e65a",
+          "ruling": "acceptable"
+        },
+        {
+          "kind": "medication",
+          "part": "part_b",
+          "heading": "gp_actions",
+          "token": "pylori",
+          "key": "e8a5cc27f2adec3e",
+          "ruling": "acceptable"
+        },
+        {
+          "kind": "medication",
+          "part": "part_b",
+          "heading": "gp_actions",
+          "token": "apixaban",
+          "key": "298e1e7bfed6256a",
+          "ruling": "acceptable"
+        }
+      ],
+      "latency": {
+        "step2_s": 13.109,
+        "step5a_s": 4.239,
+        "step6_s": 7.301,
+        "critical_s": 20.41
+      },
+      "generation_id": "w6-pipeline-e07-m01-c01-x5/r1/S17",
+      "scenario_id": "S17",
+      "run": 1
+    },
+    {
+      "metric": "compose_clinical",
+      "metric_version": 2,
+      "checks": {},
+      "counts": {
+        "sections": 19,
+        "sections_a": 11,
+        "sections_b": 8,
+        "facts_given": 11,
+        "facts_used_in_a": 11,
+        "header_facts_given": 4,
+        "contradictions_given": 0,
+        "contradictions_in_a": 0,
+        "gp_actions_given": 1,
+        "gp_actions_in_b": 1,
+        "unverified_given": 0,
+        "unverified_used": 0,
+        "checks": 0
+      },
+      "box_problems": 0,
+      "field_omitted": [],
+      "years_vs_notes": [],
+      "review": [],
+      "latency": {
+        "step2_s": 8.803,
+        "step5a_s": 0.769,
+        "step6_s": 5.83,
+        "critical_s": 14.633
+      },
+      "generation_id": "w6-pipeline-e07-m01-c01-x5/r1/S18",
+      "scenario_id": "S18",
+      "run": 1
+    },
+    {
+      "metric": "compose_clinical",
+      "metric_version": 2,
+      "checks": {
+        "resus_text_outside": 2
+      },
+      "counts": {
+        "sections": 19,
+        "sections_a": 11,
+        "sections_b": 8,
+        "facts_given": 19,
+        "facts_used_in_a": 19,
+        "header_facts_given": 4,
+        "contradictions_given": 0,
+        "contradictions_in_a": 0,
+        "gp_actions_given": 1,
+        "gp_actions_in_b": 1,
+        "unverified_given": 0,
+        "unverified_used": 0,
+        "checks": 2
+      },
+      "box_problems": 0,
+      "field_omitted": [],
+      "years_vs_notes": [],
+      "review": [
+        {
+          "kind": "medication",
+          "part": "part_a",
+          "heading": "diagnosis",
+          "token": "apixaban",
+          "key": "1c105b38d9c57ae8",
+          "ruling": "acceptable"
+        },
+        {
+          "kind": "resus",
+          "part": "part_a",
+          "heading": "treatment",
+          "token": null,
+          "key": "e47e03d9c1fc84fb",
+          "ruling": "defect"
+        },
+        {
+          "kind": "medication",
+          "part": "part_b",
+          "heading": "admission_summary",
+          "token": "co-amoxiclav",
+          "key": "481b815c8341b946",
+          "ruling": "acceptable"
+        },
+        {
+          "kind": "resus",
+          "part": "part_b",
+          "heading": "admission_summary",
+          "token": null,
+          "key": "b47ff3a8391fe524",
+          "ruling": "defect"
+        },
+        {
+          "kind": "medication",
+          "part": "part_b",
+          "heading": "diagnosis",
+          "token": "apixaban",
+          "key": "f809728133c85434",
+          "ruling": "acceptable"
+        }
+      ],
+      "latency": {
+        "step2_s": 12.207,
+        "step5a_s": 3.523,
+        "step6_s": 7.476,
+        "critical_s": 19.683
+      },
+      "generation_id": "w6-pipeline-e07-m01-c01-x5/r1/A5",
+      "scenario_id": "A5",
+      "run": 1
+    },
+    {
+      "metric": "compose_clinical",
+      "metric_version": 2,
+      "checks": {},
+      "counts": {
+        "sections": 21,
+        "sections_a": 12,
+        "sections_b": 9,
+        "facts_given": 11,
+        "facts_used_in_a": 11,
+        "header_facts_given": 3,
+        "contradictions_given": 1,
+        "contradictions_in_a": 1,
+        "gp_actions_given": 1,
+        "gp_actions_in_b": 1,
+        "unverified_given": 0,
+        "unverified_used": 0,
+        "checks": 0
+      },
+      "box_problems": 0,
+      "field_omitted": [],
+      "years_vs_notes": [],
+      "review": [
+        {
+          "kind": "medication",
+          "part": "part_a",
+          "heading": "gp_actions",
+          "token": "digoxin",
+          "key": "9325f4f146013c96",
+          "ruling": "acceptable"
+        },
+        {
+          "kind": "medication",
+          "part": "part_b",
+          "heading": "admission_summary",
+          "token": "bisoprolol",
+          "key": "609b267ae6c8880f",
+          "ruling": "acceptable"
+        },
+        {
+          "kind": "medication",
+          "part": "part_b",
+          "heading": "admission_summary",
+          "token": "digoxin",
+          "key": "c13f686d6f11d146",
+          "ruling": "acceptable"
+        },
+        {
+          "kind": "medication",
+          "part": "part_b",
+          "heading": "gp_actions",
+          "token": "digoxin",
+          "key": "5aaaf747a9590c0c",
+          "ruling": "acceptable"
+        }
+      ],
+      "latency": {
+        "step2_s": 10.432,
+        "step5a_s": 3.424,
+        "step6_s": 6.636,
+        "critical_s": 17.068
+      },
+      "generation_id": "w6-pipeline-e07-m01-c01-x5/r1/B6",
+      "scenario_id": "B6",
+      "run": 1
+    },
+    {
+      "metric": "compose_clinical",
+      "metric_version": 2,
+      "checks": {
+        "fact_unused": 1,
+        "field_omitted": 1
+      },
+      "counts": {
+        "sections": 19,
+        "sections_a": 11,
+        "sections_b": 8,
+        "facts_given": 7,
+        "facts_used_in_a": 6,
+        "header_facts_given": 3,
+        "contradictions_given": 0,
+        "contradictions_in_a": 0,
+        "gp_actions_given": 0,
+        "gp_actions_in_b": 0,
+        "unverified_given": 0,
+        "unverified_used": 0,
+        "checks": 2
+      },
+      "box_problems": 0,
+      "field_omitted": [],
+      "years_vs_notes": [],
+      "review": [],
+      "latency": {
+        "step2_s": 6.021,
+        "step5a_s": 0.776,
+        "step6_s": 4.577,
+        "critical_s": 10.598
+      },
+      "generation_id": "w6-pipeline-e07-m01-c01-x5/r1/C7",
+      "scenario_id": "C7",
+      "run": 1
+    },
+    {
+      "metric": "compose_clinical",
+      "metric_version": 2,
+      "checks": {
+        "resus_text_outside": 2
+      },
+      "counts": {
+        "sections": 20,
+        "sections_a": 11,
+        "sections_b": 9,
+        "facts_given": 29,
+        "facts_used_in_a": 29,
+        "header_facts_given": 4,
+        "contradictions_given": 0,
+        "contradictions_in_a": 0,
+        "gp_actions_given": 1,
+        "gp_actions_in_b": 1,
+        "unverified_given": 0,
+        "unverified_used": 0,
+        "checks": 2
+      },
+      "box_problems": 0,
+      "field_omitted": [],
+      "years_vs_notes": [],
+      "review": [
+        {
+          "kind": "resus",
+          "part": "part_a",
+          "heading": "treatment",
+          "token": null,
+          "key": "9f1545ebe2f32d6b",
+          "ruling": "defect"
+        },
+        {
+          "kind": "medication",
+          "part": "part_b",
+          "heading": "admission_summary",
+          "token": "ticagrelor",
+          "key": "d86f03b53bf46bff",
+          "ruling": "acceptable"
+        },
+        {
+          "kind": "medication",
+          "part": "part_b",
+          "heading": "admission_summary",
+          "token": "bisoprolol",
+          "key": "047632a85534deb2",
+          "ruling": "acceptable"
+        },
+        {
+          "kind": "resus",
+          "part": "part_b",
+          "heading": "admission_summary",
+          "token": null,
+          "key": "4988d36b3cf5ec3c",
+          "ruling": "defect"
+        }
+      ],
+      "latency": {
+        "step2_s": 13.915,
+        "step5a_s": 4.111,
+        "step6_s": 8.793,
+        "critical_s": 22.708
+      },
+      "generation_id": "w6-pipeline-e07-m01-c01-x5/r2/S1",
+      "scenario_id": "S1",
+      "run": 2
+    },
+    {
+      "metric": "compose_clinical",
+      "metric_version": 2,
+      "checks": {},
+      "counts": {
+        "sections": 20,
+        "sections_a": 11,
+        "sections_b": 9,
+        "facts_given": 11,
+        "facts_used_in_a": 11,
+        "header_facts_given": 4,
+        "contradictions_given": 0,
+        "contradictions_in_a": 0,
+        "gp_actions_given": 0,
+        "gp_actions_in_b": 0,
+        "unverified_given": 0,
+        "unverified_used": 0,
+        "checks": 0
+      },
+      "box_problems": 0,
+      "field_omitted": [],
+      "years_vs_notes": [],
+      "review": [],
+      "latency": {
+        "step2_s": 8.554,
+        "step5a_s": 1.865,
+        "step6_s": 6.846,
+        "critical_s": 15.4
+      },
+      "generation_id": "w6-pipeline-e07-m01-c01-x5/r2/S2",
+      "scenario_id": "S2",
+      "run": 2
+    },
+    {
+      "metric": "compose_clinical",
+      "metric_version": 2,
+      "checks": {},
+      "counts": {
+        "sections": 20,
+        "sections_a": 12,
+        "sections_b": 8,
+        "facts_given": 21,
+        "facts_used_in_a": 21,
+        "header_facts_given": 6,
+        "contradictions_given": 0,
+        "contradictions_in_a": 0,
+        "gp_actions_given": 1,
+        "gp_actions_in_b": 1,
+        "unverified_given": 1,
+        "unverified_used": 1,
+        "checks": 0
+      },
+      "box_problems": 0,
+      "field_omitted": [],
+      "years_vs_notes": [],
+      "review": [
+        {
+          "kind": "medication",
+          "part": "part_a",
+          "heading": "diagnosis",
+          "token": "sertraline",
+          "key": "72f146a87afffd57",
+          "ruling": "acceptable"
+        },
+        {
+          "kind": "medication",
+          "part": "part_a",
+          "heading": "follow_up",
+          "token": "sertraline",
+          "key": "e7e213af42dac30e",
+          "ruling": "acceptable"
+        },
+        {
+          "kind": "medication",
+          "part": "part_a",
+          "heading": "gp_actions",
+          "token": "sertraline",
+          "key": "76e9ad4792c01f9a",
+          "ruling": "acceptable"
+        },
+        {
+          "kind": "medication",
+          "part": "part_b",
+          "heading": "admission_summary",
+          "token": "sertraline",
+          "key": "d3b7c725cc9e39b7",
+          "ruling": "acceptable"
+        },
+        {
+          "kind": "medication",
+          "part": "part_b",
+          "heading": "diagnosis",
+          "token": "sertraline",
+          "key": "1143a5943ddb8825",
+          "ruling": "acceptable"
+        },
+        {
+          "kind": "medication",
+          "part": "part_b",
+          "heading": "gp_actions",
+          "token": "sertraline",
+          "key": "135e4f8f9837b1b2",
+          "ruling": "acceptable"
+        },
+        {
+          "kind": "medication",
+          "part": "part_b",
+          "heading": "follow_up",
+          "token": "sertraline",
+          "key": "e1e8499a9d8f3c0e",
+          "ruling": "acceptable"
+        }
+      ],
+      "latency": {
+        "step2_s": 12.984,
+        "step5a_s": 1.891,
+        "step6_s": 9.523,
+        "critical_s": 22.507
+      },
+      "generation_id": "w6-pipeline-e07-m01-c01-x5/r2/S3",
+      "scenario_id": "S3",
+      "run": 2
+    },
+    {
+      "metric": "compose_clinical",
+      "metric_version": 2,
+      "checks": {},
+      "counts": {
+        "sections": 19,
+        "sections_a": 11,
+        "sections_b": 8,
+        "facts_given": 19,
+        "facts_used_in_a": 19,
+        "header_facts_given": 4,
+        "contradictions_given": 0,
+        "contradictions_in_a": 0,
+        "gp_actions_given": 0,
+        "gp_actions_in_b": 0,
+        "unverified_given": 0,
+        "unverified_used": 0,
+        "checks": 0
+      },
+      "box_problems": 0,
+      "field_omitted": [],
+      "years_vs_notes": [],
+      "review": [],
+      "latency": {
+        "step2_s": 10.662,
+        "step5a_s": 0.705,
+        "step6_s": 7.944,
+        "critical_s": 18.606
+      },
+      "generation_id": "w6-pipeline-e07-m01-c01-x5/r2/S4",
+      "scenario_id": "S4",
+      "run": 2
+    },
+    {
+      "metric": "compose_clinical",
+      "metric_version": 2,
+      "checks": {},
+      "counts": {
+        "sections": 19,
+        "sections_a": 11,
+        "sections_b": 8,
+        "facts_given": 13,
+        "facts_used_in_a": 13,
+        "header_facts_given": 5,
+        "contradictions_given": 0,
+        "contradictions_in_a": 0,
+        "gp_actions_given": 0,
+        "gp_actions_in_b": 0,
+        "unverified_given": 1,
+        "unverified_used": 1,
+        "checks": 0
+      },
+      "box_problems": 0,
+      "field_omitted": [],
+      "years_vs_notes": [],
+      "review": [],
+      "latency": {
+        "step2_s": 9.941,
+        "step5a_s": 0.744,
+        "step6_s": 7.345,
+        "critical_s": 17.286
+      },
+      "generation_id": "w6-pipeline-e07-m01-c01-x5/r2/S8",
+      "scenario_id": "S8",
+      "run": 2
+    },
+    {
+      "metric": "compose_clinical",
+      "metric_version": 2,
+      "checks": {},
+      "counts": {
+        "sections": 19,
+        "sections_a": 11,
+        "sections_b": 8,
+        "facts_given": 12,
+        "facts_used_in_a": 12,
+        "header_facts_given": 5,
+        "contradictions_given": 0,
+        "contradictions_in_a": 0,
+        "gp_actions_given": 1,
+        "gp_actions_in_b": 1,
+        "unverified_given": 2,
+        "unverified_used": 1,
+        "checks": 0
+      },
+      "box_problems": 0,
+      "field_omitted": [],
+      "years_vs_notes": [],
+      "review": [
+        {
+          "kind": "medication",
+          "part": "part_b",
+          "heading": "admission_summary",
+          "token": "insulin",
+          "key": "d9b4fb9a18339114",
+          "ruling": "acceptable"
+        },
+        {
+          "kind": "medication",
+          "part": "part_b",
+          "heading": "admission_summary",
+          "token": "insulin",
+          "key": "48b2c25227b4689f",
+          "ruling": "acceptable"
+        }
+      ],
+      "latency": {
+        "step2_s": 9.586,
+        "step5a_s": 1.55,
+        "step6_s": 7.383,
+        "critical_s": 16.969
+      },
+      "generation_id": "w6-pipeline-e07-m01-c01-x5/r2/S9",
+      "scenario_id": "S9",
+      "run": 2
+    },
+    {
+      "metric": "compose_clinical",
+      "metric_version": 2,
+      "checks": {},
+      "counts": {
+        "sections": 19,
+        "sections_a": 11,
+        "sections_b": 8,
+        "facts_given": 14,
+        "facts_used_in_a": 14,
+        "header_facts_given": 4,
+        "contradictions_given": 0,
+        "contradictions_in_a": 0,
+        "gp_actions_given": 1,
+        "gp_actions_in_b": 1,
+        "unverified_given": 1,
+        "unverified_used": 1,
+        "checks": 0
+      },
+      "box_problems": 0,
+      "field_omitted": [],
+      "years_vs_notes": [],
+      "review": [
+        {
+          "kind": "medication",
+          "part": "part_a",
+          "heading": "vte_assessment",
+          "token": "enoxaparin",
+          "key": "7c8e7d91f8261d93",
+          "ruling": "acceptable"
+        },
+        {
+          "kind": "medication",
+          "part": "part_b",
+          "heading": "admission_summary",
+          "token": "oral",
+          "key": "4d5b81434cb2870b",
+          "ruling": "acceptable"
+        },
+        {
+          "kind": "medication",
+          "part": "part_b",
+          "heading": "admission_summary",
+          "token": "enoxaparin",
+          "key": "c44f03311e6d9dc0",
+          "ruling": "acceptable"
+        }
+      ],
+      "latency": {
+        "step2_s": 10.139,
+        "step5a_s": 2.834,
+        "step6_s": 7.301,
+        "critical_s": 17.44
+      },
+      "generation_id": "w6-pipeline-e07-m01-c01-x5/r2/S10",
+      "scenario_id": "S10",
+      "run": 2
+    },
+    {
+      "metric": "compose_clinical",
+      "metric_version": 2,
+      "checks": {
+        "resus_text_outside": 1,
+        "unknown_fact_id": 1,
+        "not_documented_with_content": 1
+      },
+      "counts": {
+        "sections": 19,
+        "sections_a": 11,
+        "sections_b": 8,
+        "facts_given": 21,
+        "facts_used_in_a": 21,
+        "header_facts_given": 4,
+        "contradictions_given": 0,
+        "contradictions_in_a": 0,
+        "gp_actions_given": 0,
+        "gp_actions_in_b": 0,
+        "unverified_given": 0,
+        "unverified_used": 0,
+        "checks": 3
+      },
+      "box_problems": 0,
+      "field_omitted": [],
+      "years_vs_notes": [],
+      "review": [
+        {
+          "kind": "resus",
+          "part": "part_a",
+          "heading": "treatment",
+          "token": null,
+          "key": "d365f4d09ee23668",
+          "ruling": "defect"
+        },
+        {
+          "kind": "medication",
+          "part": "part_a",
+          "heading": "vte_assessment",
+          "token": "enoxaparin",
+          "key": "bfb06b04ab78f7ef",
+          "ruling": "acceptable"
+        }
+      ],
+      "latency": {
+        "step2_s": 13.115,
+        "step5a_s": 2.332,
+        "step6_s": 7.877,
+        "critical_s": 20.992
+      },
+      "generation_id": "w6-pipeline-e07-m01-c01-x5/r2/S11",
+      "scenario_id": "S11",
+      "run": 2
+    },
+    {
+      "metric": "compose_clinical",
+      "metric_version": 2,
+      "checks": {
+        "resus_text_outside": 2
+      },
+      "counts": {
+        "sections": 19,
+        "sections_a": 11,
+        "sections_b": 8,
+        "facts_given": 36,
+        "facts_used_in_a": 36,
+        "header_facts_given": 1,
+        "contradictions_given": 1,
+        "contradictions_in_a": 1,
+        "gp_actions_given": 0,
+        "gp_actions_in_b": 0,
+        "unverified_given": 0,
+        "unverified_used": 0,
+        "checks": 2
+      },
+      "box_problems": 0,
+      "field_omitted": [],
+      "years_vs_notes": [],
+      "review": [
+        {
+          "kind": "resus",
+          "part": "part_a",
+          "heading": "treatment",
+          "token": null,
+          "key": "48596a2a35e5d120",
+          "ruling": "acceptable"
+        },
+        {
+          "kind": "resus",
+          "part": "part_b",
+          "heading": "admission_summary",
+          "token": null,
+          "key": "51820091414430a7",
+          "ruling": "acceptable"
+        }
+      ],
+      "latency": {
+        "step2_s": 13.303,
+        "step5a_s": 0.717,
+        "step6_s": 9.344,
+        "critical_s": 22.647
+      },
+      "generation_id": "w6-pipeline-e07-m01-c01-x5/r2/S12",
+      "scenario_id": "S12",
+      "run": 2
+    },
+    {
+      "metric": "compose_clinical",
+      "metric_version": 2,
+      "checks": {
+        "resus_text_outside": 2
+      },
+      "counts": {
+        "sections": 19,
+        "sections_a": 11,
+        "sections_b": 8,
+        "facts_given": 24,
+        "facts_used_in_a": 24,
+        "header_facts_given": 4,
+        "contradictions_given": 0,
+        "contradictions_in_a": 0,
+        "gp_actions_given": 1,
+        "gp_actions_in_b": 1,
+        "unverified_given": 0,
+        "unverified_used": 0,
+        "checks": 2
+      },
+      "box_problems": 0,
+      "field_omitted": [],
+      "years_vs_notes": [],
+      "review": [
+        {
+          "kind": "resus",
+          "part": "part_a",
+          "heading": "treatment",
+          "token": null,
+          "key": "bb856326f99534a9",
+          "ruling": "defect"
+        },
+        {
+          "kind": "medication",
+          "part": "part_a",
+          "heading": "follow_up",
+          "token": "wound",
+          "key": "ea994f4bf0f9a64e",
+          "ruling": "acceptable"
+        },
+        {
+          "kind": "medication",
+          "part": "part_b",
+          "heading": "admission_summary",
+          "token": "wound",
+          "key": "bcd38d305cefec90",
+          "ruling": "acceptable"
+        },
+        {
+          "kind": "resus",
+          "part": "part_b",
+          "heading": "admission_summary",
+          "token": null,
+          "key": "2ebeef3bc7fb22a1",
+          "ruling": "defect"
+        },
+        {
+          "kind": "medication",
+          "part": "part_b",
+          "heading": "follow_up",
+          "token": "wound",
+          "key": "963ba729941da881",
+          "ruling": "acceptable"
+        }
+      ],
+      "latency": {
+        "step2_s": 13.529,
+        "step5a_s": 3.205,
+        "step6_s": 9.229,
+        "critical_s": 22.758
+      },
+      "generation_id": "w6-pipeline-e07-m01-c01-x5/r2/S13",
+      "scenario_id": "S13",
+      "run": 2
+    },
+    {
+      "metric": "compose_clinical",
+      "metric_version": 2,
+      "checks": {
+        "resus_text_outside": 1
+      },
+      "counts": {
+        "sections": 19,
+        "sections_a": 11,
+        "sections_b": 8,
+        "facts_given": 21,
+        "facts_used_in_a": 21,
+        "header_facts_given": 4,
+        "contradictions_given": 0,
+        "contradictions_in_a": 0,
+        "gp_actions_given": 1,
+        "gp_actions_in_b": 1,
+        "unverified_given": 0,
+        "unverified_used": 0,
+        "checks": 1
+      },
+      "box_problems": 0,
+      "field_omitted": [],
+      "years_vs_notes": [],
+      "review": [
+        {
+          "kind": "resus",
+          "part": "part_a",
+          "heading": "treatment",
+          "token": null,
+          "key": "6efb468d898264c3",
+          "ruling": "defect"
+        },
+        {
+          "kind": "medication",
+          "part": "part_b",
+          "heading": "admission_summary",
+          "token": "aspirin",
+          "key": "1e98cc833dc6c9e6",
+          "ruling": "acceptable"
+        },
+        {
+          "kind": "medication",
+          "part": "part_b",
+          "heading": "admission_summary",
+          "token": "apixaban",
+          "key": "04118b645ac829fb",
+          "ruling": "acceptable"
+        }
+      ],
+      "latency": {
+        "step2_s": 13.894,
+        "step5a_s": 3.501,
+        "step6_s": 7.066,
+        "critical_s": 20.96
+      },
+      "generation_id": "w6-pipeline-e07-m01-c01-x5/r2/S14",
+      "scenario_id": "S14",
+      "run": 2
+    },
+    {
+      "metric": "compose_clinical",
+      "metric_version": 2,
+      "checks": {
+        "resus_text_outside": 2
+      },
+      "counts": {
+        "sections": 19,
+        "sections_a": 11,
+        "sections_b": 8,
+        "facts_given": 19,
+        "facts_used_in_a": 19,
+        "header_facts_given": 3,
+        "contradictions_given": 0,
+        "contradictions_in_a": 0,
+        "gp_actions_given": 1,
+        "gp_actions_in_b": 1,
+        "unverified_given": 1,
+        "unverified_used": 1,
+        "checks": 2
+      },
+      "box_problems": 0,
+      "field_omitted": [],
+      "years_vs_notes": [],
+      "review": [
+        {
+          "kind": "resus",
+          "part": "part_a",
+          "heading": "treatment",
+          "token": null,
+          "key": "a09973592a5bd385",
+          "ruling": "defect"
+        },
+        {
+          "kind": "resus",
+          "part": "part_a",
+          "heading": "treatment",
+          "token": null,
+          "key": "373a5f16a44100de",
+          "ruling": "acceptable"
+        },
+        {
+          "kind": "medication",
+          "part": "part_b",
+          "heading": "admission_summary",
+          "token": "prednisolone",
+          "key": "2ec791b8697fd1ae",
+          "ruling": "acceptable"
+        },
+        {
+          "kind": "medication",
+          "part": "part_b",
+          "heading": "admission_summary",
+          "token": "oral",
+          "key": "187467c8e24a66b1",
+          "ruling": "acceptable"
+        },
+        {
+          "kind": "medication",
+          "part": "part_b",
+          "heading": "admission_summary",
+          "token": "amoxicillin",
+          "key": "172e5c1bc704e3a8",
+          "ruling": "acceptable"
+        },
+        {
+          "kind": "resus",
+          "part": "part_b",
+          "heading": "admission_summary",
+          "token": null,
+          "key": "88ad33ca53d99ec5",
+          "ruling": "defect"
+        }
+      ],
+      "latency": {
+        "step2_s": 12.884,
+        "step5a_s": 3.369,
+        "step6_s": 7.924,
+        "critical_s": 20.808
+      },
+      "generation_id": "w6-pipeline-e07-m01-c01-x5/r2/S15",
+      "scenario_id": "S15",
+      "run": 2
+    },
+    {
+      "metric": "compose_clinical",
+      "metric_version": 2,
+      "checks": {
+        "fact_unused": 1
+      },
+      "counts": {
+        "sections": 19,
+        "sections_a": 11,
+        "sections_b": 8,
+        "facts_given": 18,
+        "facts_used_in_a": 17,
+        "header_facts_given": 4,
+        "contradictions_given": 0,
+        "contradictions_in_a": 0,
+        "gp_actions_given": 1,
+        "gp_actions_in_b": 1,
+        "unverified_given": 1,
+        "unverified_used": 1,
+        "checks": 1
+      },
+      "box_problems": 0,
+      "field_omitted": [],
+      "years_vs_notes": [],
+      "review": [
+        {
+          "kind": "medication",
+          "part": "part_a",
+          "heading": "diagnosis",
+          "token": "warfarin",
+          "key": "a64b56f343c0eab6",
+          "ruling": "acceptable"
+        },
+        {
+          "kind": "medication",
+          "part": "part_b",
+          "heading": "admission_summary",
+          "token": "warfarin",
+          "key": "0182e276346b0951",
+          "ruling": "acceptable"
+        },
+        {
+          "kind": "medication",
+          "part": "part_b",
+          "heading": "admission_summary",
+          "token": "warfarin",
+          "key": "07b3346ee55d39bf",
+          "ruling": "acceptable"
+        },
+        {
+          "kind": "medication",
+          "part": "part_b",
+          "heading": "admission_summary",
+          "token": "ramipril",
+          "key": "771157ba5834e6eb",
+          "ruling": "acceptable"
+        },
+        {
+          "kind": "medication",
+          "part": "part_b",
+          "heading": "admission_summary",
+          "token": "metformin",
+          "key": "35f9095ab005b0f7",
+          "ruling": "acceptable"
+        },
+        {
+          "kind": "medication",
+          "part": "part_b",
+          "heading": "admission_summary",
+          "token": "bisoprolol",
+          "key": "a56d1b9e3988d565",
+          "ruling": "acceptable"
+        },
+        {
+          "kind": "medication",
+          "part": "part_b",
+          "heading": "admission_summary",
+          "token": "enoxaparin",
+          "key": "503eaf384bc397a9",
+          "ruling": "acceptable"
+        },
+        {
+          "kind": "medication",
+          "part": "part_b",
+          "heading": "diagnosis",
+          "token": "warfarin",
+          "key": "6cc5b376bb928982",
+          "ruling": "acceptable"
+        }
+      ],
+      "latency": {
+        "step2_s": 12.883,
+        "step5a_s": 3.682,
+        "step6_s": 6.927,
+        "critical_s": 19.81
+      },
+      "generation_id": "w6-pipeline-e07-m01-c01-x5/r2/S16",
+      "scenario_id": "S16",
+      "run": 2
+    },
+    {
+      "metric": "compose_clinical",
+      "metric_version": 2,
+      "checks": {},
+      "counts": {
+        "sections": 19,
+        "sections_a": 11,
+        "sections_b": 8,
+        "facts_given": 18,
+        "facts_used_in_a": 18,
+        "header_facts_given": 1,
+        "contradictions_given": 0,
+        "contradictions_in_a": 0,
+        "gp_actions_given": 1,
+        "gp_actions_in_b": 1,
+        "unverified_given": 0,
+        "unverified_used": 0,
+        "checks": 0
+      },
+      "box_problems": 0,
+      "field_omitted": [],
+      "years_vs_notes": [],
+      "review": [
+        {
+          "kind": "medication",
+          "part": "part_a",
+          "heading": "diagnosis",
+          "token": "pylori",
+          "key": "966d7b267a2754f8",
+          "ruling": "acceptable"
+        },
+        {
+          "kind": "medication",
+          "part": "part_a",
+          "heading": "key_investigations",
+          "token": "pylori",
+          "key": "5553875687853a9a",
+          "ruling": "acceptable"
+        },
+        {
+          "kind": "medication",
+          "part": "part_a",
+          "heading": "gp_actions",
+          "token": "apixaban",
+          "key": "f01bad7aa6540c9d",
+          "ruling": "acceptable"
+        },
+        {
+          "kind": "medication",
+          "part": "part_a",
+          "heading": "gp_actions",
+          "token": "pylori",
+          "key": "cd960c1f1073c023",
+          "ruling": "acceptable"
+        },
+        {
+          "kind": "medication",
+          "part": "part_b",
+          "heading": "admission_summary",
+          "token": "pylori",
+          "key": "423956f288b55992",
+          "ruling": "acceptable"
+        },
+        {
+          "kind": "medication",
+          "part": "part_b",
+          "heading": "admission_summary",
+          "token": "apixaban",
+          "key": "ea4ea69e844bd46c",
+          "ruling": "acceptable"
+        },
+        {
+          "kind": "medication",
+          "part": "part_b",
+          "heading": "diagnosis",
+          "token": "pylori",
+          "key": "f94d4953f847e65a",
+          "ruling": "acceptable"
+        },
+        {
+          "kind": "medication",
+          "part": "part_b",
+          "heading": "gp_actions",
+          "token": "pylori",
+          "key": "e8a5cc27f2adec3e",
+          "ruling": "acceptable"
+        },
+        {
+          "kind": "medication",
+          "part": "part_b",
+          "heading": "gp_actions",
+          "token": "apixaban",
+          "key": "fe0c323197c605d0",
+          "ruling": "acceptable"
+        }
+      ],
+      "latency": {
+        "step2_s": 11.234,
+        "step5a_s": 4.266,
+        "step6_s": 7.103,
+        "critical_s": 18.337
+      },
+      "generation_id": "w6-pipeline-e07-m01-c01-x5/r2/S17",
+      "scenario_id": "S17",
+      "run": 2
+    },
+    {
+      "metric": "compose_clinical",
+      "metric_version": 2,
+      "checks": {},
+      "counts": {
+        "sections": 19,
+        "sections_a": 11,
+        "sections_b": 8,
+        "facts_given": 12,
+        "facts_used_in_a": 12,
+        "header_facts_given": 4,
+        "contradictions_given": 0,
+        "contradictions_in_a": 0,
+        "gp_actions_given": 1,
+        "gp_actions_in_b": 1,
+        "unverified_given": 0,
+        "unverified_used": 0,
+        "checks": 0
+      },
+      "box_problems": 0,
+      "field_omitted": [],
+      "years_vs_notes": [],
+      "review": [],
+      "latency": {
+        "step2_s": 9.178,
+        "step5a_s": 0.729,
+        "step6_s": 6.174,
+        "critical_s": 15.352
+      },
+      "generation_id": "w6-pipeline-e07-m01-c01-x5/r2/S18",
+      "scenario_id": "S18",
+      "run": 2
+    },
+    {
+      "metric": "compose_clinical",
+      "metric_version": 2,
+      "checks": {},
+      "counts": {
+        "sections": 19,
+        "sections_a": 11,
+        "sections_b": 8,
+        "facts_given": 19,
+        "facts_used_in_a": 19,
+        "header_facts_given": 3,
+        "contradictions_given": 0,
+        "contradictions_in_a": 0,
+        "gp_actions_given": 1,
+        "gp_actions_in_b": 1,
+        "unverified_given": 0,
+        "unverified_used": 0,
+        "checks": 0
+      },
+      "box_problems": 0,
+      "field_omitted": [],
+      "years_vs_notes": [],
+      "review": [
+        {
+          "kind": "medication",
+          "part": "part_a",
+          "heading": "diagnosis",
+          "token": "apixaban",
+          "key": "bfa6de0e11c2fb8b",
+          "ruling": "acceptable"
+        },
+        {
+          "kind": "medication",
+          "part": "part_b",
+          "heading": "admission_summary",
+          "token": "co-amoxiclav",
+          "key": "ccd50676f00ea2d6",
+          "ruling": "acceptable"
+        },
+        {
+          "kind": "medication",
+          "part": "part_b",
+          "heading": "diagnosis",
+          "token": "apixaban",
+          "key": "f809728133c85434",
+          "ruling": "acceptable"
+        }
+      ],
+      "latency": {
+        "step2_s": 10.914,
+        "step5a_s": 3.34,
+        "step6_s": 7.434,
+        "critical_s": 18.348
+      },
+      "generation_id": "w6-pipeline-e07-m01-c01-x5/r2/A5",
+      "scenario_id": "A5",
+      "run": 2
+    },
+    {
+      "metric": "compose_clinical",
+      "metric_version": 2,
+      "checks": {},
+      "counts": {
+        "sections": 21,
+        "sections_a": 12,
+        "sections_b": 9,
+        "facts_given": 11,
+        "facts_used_in_a": 11,
+        "header_facts_given": 4,
+        "contradictions_given": 2,
+        "contradictions_in_a": 2,
+        "gp_actions_given": 1,
+        "gp_actions_in_b": 1,
+        "unverified_given": 1,
+        "unverified_used": 1,
+        "checks": 0
+      },
+      "box_problems": 0,
+      "field_omitted": [],
+      "years_vs_notes": [],
+      "review": [
+        {
+          "kind": "medication",
+          "part": "part_a",
+          "heading": "gp_actions",
+          "token": "digoxin",
+          "key": "9325f4f146013c96",
+          "ruling": "acceptable"
+        },
+        {
+          "kind": "medication",
+          "part": "part_b",
+          "heading": "admission_summary",
+          "token": "bisoprolol",
+          "key": "d3dc996bae2e281d",
+          "ruling": "acceptable"
+        },
+        {
+          "kind": "medication",
+          "part": "part_b",
+          "heading": "admission_summary",
+          "token": "digoxin",
+          "key": "38c4a9dadd3d181d",
+          "ruling": "acceptable"
+        },
+        {
+          "kind": "medication",
+          "part": "part_b",
+          "heading": "gp_actions",
+          "token": "digoxin",
+          "key": "5aaaf747a9590c0c",
+          "ruling": "acceptable"
+        }
+      ],
+      "latency": {
+        "step2_s": 11.55,
+        "step5a_s": 3.552,
+        "step6_s": 7.08,
+        "critical_s": 18.63
+      },
+      "generation_id": "w6-pipeline-e07-m01-c01-x5/r2/B6",
+      "scenario_id": "B6",
+      "run": 2
+    },
+    {
+      "metric": "compose_clinical",
+      "metric_version": 2,
+      "checks": {},
+      "counts": {
+        "sections": 19,
+        "sections_a": 11,
+        "sections_b": 8,
+        "facts_given": 5,
+        "facts_used_in_a": 5,
+        "header_facts_given": 4,
+        "contradictions_given": 0,
+        "contradictions_in_a": 0,
+        "gp_actions_given": 0,
+        "gp_actions_in_b": 0,
+        "unverified_given": 0,
+        "unverified_used": 0,
+        "checks": 0
+      },
+      "box_problems": 0,
+      "field_omitted": [],
+      "years_vs_notes": [],
+      "review": [],
+      "latency": {
+        "step2_s": 5.562,
+        "step5a_s": 0.644,
+        "step6_s": 4.325,
+        "critical_s": 9.887
+      },
+      "generation_id": "w6-pipeline-e07-m01-c01-x5/r2/C7",
+      "scenario_id": "C7",
+      "run": 2
+    },
+    {
+      "metric": "compose_clinical",
+      "metric_version": 2,
+      "checks": {
+        "resus_text_outside": 2
+      },
+      "counts": {
+        "sections": 20,
+        "sections_a": 11,
+        "sections_b": 9,
+        "facts_given": 29,
+        "facts_used_in_a": 29,
+        "header_facts_given": 4,
+        "contradictions_given": 0,
+        "contradictions_in_a": 0,
+        "gp_actions_given": 1,
+        "gp_actions_in_b": 1,
+        "unverified_given": 0,
+        "unverified_used": 0,
+        "checks": 2
+      },
+      "box_problems": 0,
+      "field_omitted": [],
+      "years_vs_notes": [],
+      "review": [
+        {
+          "kind": "resus",
+          "part": "part_a",
+          "heading": "treatment",
+          "token": null,
+          "key": "9f1545ebe2f32d6b",
+          "ruling": "defect"
+        },
+        {
+          "kind": "medication",
+          "part": "part_b",
+          "heading": "admission_summary",
+          "token": "bisoprolol",
+          "key": "f0d562e52a3c8bc3",
+          "ruling": "acceptable"
+        },
+        {
+          "kind": "medication",
+          "part": "part_b",
+          "heading": "admission_summary",
+          "token": "ticagrelor",
+          "key": "f68754bf91e9267d",
+          "ruling": "acceptable"
+        },
+        {
+          "kind": "resus",
+          "part": "part_b",
+          "heading": "admission_summary",
+          "token": null,
+          "key": "3acccfa8e9d98bb9",
+          "ruling": "defect"
+        }
+      ],
+      "latency": {
+        "step2_s": 13.947,
+        "step5a_s": 4.047,
+        "step6_s": 9.055,
+        "critical_s": 23.002
+      },
+      "generation_id": "w6-pipeline-e07-m01-c01-x5/r3/S1",
+      "scenario_id": "S1",
+      "run": 3
+    },
+    {
+      "metric": "compose_clinical",
+      "metric_version": 2,
+      "checks": {},
+      "counts": {
+        "sections": 20,
+        "sections_a": 11,
+        "sections_b": 9,
+        "facts_given": 12,
+        "facts_used_in_a": 12,
+        "header_facts_given": 4,
+        "contradictions_given": 0,
+        "contradictions_in_a": 0,
+        "gp_actions_given": 0,
+        "gp_actions_in_b": 0,
+        "unverified_given": 0,
+        "unverified_used": 0,
+        "checks": 0
+      },
+      "box_problems": 0,
+      "field_omitted": [],
+      "years_vs_notes": [],
+      "review": [],
+      "latency": {
+        "step2_s": 8.964,
+        "step5a_s": 1.853,
+        "step6_s": 6.98,
+        "critical_s": 15.944
+      },
+      "generation_id": "w6-pipeline-e07-m01-c01-x5/r3/S2",
+      "scenario_id": "S2",
+      "run": 3
+    },
+    {
+      "metric": "compose_clinical",
+      "metric_version": 2,
+      "checks": {},
+      "counts": {
+        "sections": 20,
+        "sections_a": 12,
+        "sections_b": 8,
+        "facts_given": 18,
+        "facts_used_in_a": 18,
+        "header_facts_given": 6,
+        "contradictions_given": 0,
+        "contradictions_in_a": 0,
+        "gp_actions_given": 2,
+        "gp_actions_in_b": 2,
+        "unverified_given": 2,
+        "unverified_used": 2,
+        "checks": 0
+      },
+      "box_problems": 0,
+      "field_omitted": [],
+      "years_vs_notes": [],
+      "review": [
+        {
+          "kind": "medication",
+          "part": "part_a",
+          "heading": "diagnosis",
+          "token": "sertraline",
+          "key": "72f146a87afffd57",
+          "ruling": "acceptable"
+        },
+        {
+          "kind": "medication",
+          "part": "part_a",
+          "heading": "gp_actions",
+          "token": "sertraline",
+          "key": "76e9ad4792c01f9a",
+          "ruling": "acceptable"
+        },
+        {
+          "kind": "medication",
+          "part": "part_a",
+          "heading": "gp_actions",
+          "token": "sertraline",
+          "key": "e920de543a6d082f",
+          "ruling": "acceptable"
+        },
+        {
+          "kind": "medication",
+          "part": "part_b",
+          "heading": "admission_summary",
+          "token": "sertraline",
+          "key": "0b2a0855f1a6afa4",
+          "ruling": "acceptable"
+        },
+        {
+          "kind": "medication",
+          "part": "part_b",
+          "heading": "diagnosis",
+          "token": "sertraline",
+          "key": "10ad4c70c8648494",
+          "ruling": "acceptable"
+        },
+        {
+          "kind": "medication",
+          "part": "part_b",
+          "heading": "gp_actions",
+          "token": "sertraline",
+          "key": "135e4f8f9837b1b2",
+          "ruling": "acceptable"
+        },
+        {
+          "kind": "medication",
+          "part": "part_b",
+          "heading": "gp_actions",
+          "token": "sertraline",
+          "key": "30f59573b1e95220",
+          "ruling": "acceptable"
+        }
+      ],
+      "latency": {
+        "step2_s": 12.175,
+        "step5a_s": 1.704,
+        "step6_s": 8.472,
+        "critical_s": 20.647
+      },
+      "generation_id": "w6-pipeline-e07-m01-c01-x5/r3/S3",
+      "scenario_id": "S3",
+      "run": 3
+    },
+    {
+      "metric": "compose_clinical",
+      "metric_version": 2,
+      "checks": {},
+      "counts": {
+        "sections": 19,
+        "sections_a": 11,
+        "sections_b": 8,
+        "facts_given": 17,
+        "facts_used_in_a": 17,
+        "header_facts_given": 4,
+        "contradictions_given": 0,
+        "contradictions_in_a": 0,
+        "gp_actions_given": 0,
+        "gp_actions_in_b": 0,
+        "unverified_given": 0,
+        "unverified_used": 0,
+        "checks": 0
+      },
+      "box_problems": 0,
+      "field_omitted": [],
+      "years_vs_notes": [],
+      "review": [],
+      "latency": {
+        "step2_s": 10.322,
+        "step5a_s": 0.723,
+        "step6_s": 8.188,
+        "critical_s": 18.51
+      },
+      "generation_id": "w6-pipeline-e07-m01-c01-x5/r3/S4",
+      "scenario_id": "S4",
+      "run": 3
+    },
+    {
+      "metric": "compose_clinical",
+      "metric_version": 2,
+      "checks": {},
+      "counts": {
+        "sections": 19,
+        "sections_a": 11,
+        "sections_b": 8,
+        "facts_given": 12,
+        "facts_used_in_a": 12,
+        "header_facts_given": 5,
+        "contradictions_given": 0,
+        "contradictions_in_a": 0,
+        "gp_actions_given": 0,
+        "gp_actions_in_b": 0,
+        "unverified_given": 1,
+        "unverified_used": 1,
+        "checks": 0
+      },
+      "box_problems": 0,
+      "field_omitted": [],
+      "years_vs_notes": [],
+      "review": [],
+      "latency": {
+        "step2_s": 9.626,
+        "step5a_s": 0.676,
+        "step6_s": 7.129,
+        "critical_s": 16.755
+      },
+      "generation_id": "w6-pipeline-e07-m01-c01-x5/r3/S8",
+      "scenario_id": "S8",
+      "run": 3
+    },
+    {
+      "metric": "compose_clinical",
+      "metric_version": 2,
+      "checks": {
+        "not_documented_with_content": 1
+      },
+      "counts": {
+        "sections": 19,
+        "sections_a": 11,
+        "sections_b": 8,
+        "facts_given": 18,
+        "facts_used_in_a": 18,
+        "header_facts_given": 5,
+        "contradictions_given": 0,
+        "contradictions_in_a": 0,
+        "gp_actions_given": 1,
+        "gp_actions_in_b": 1,
+        "unverified_given": 2,
+        "unverified_used": 1,
+        "checks": 1
+      },
+      "box_problems": 0,
+      "field_omitted": [],
+      "years_vs_notes": [],
+      "review": [
+        {
+          "kind": "medication",
+          "part": "part_b",
+          "heading": "admission_summary",
+          "token": "insulin",
+          "key": "f87cf3776d0a7b09",
+          "ruling": "acceptable"
+        },
+        {
+          "kind": "medication",
+          "part": "part_b",
+          "heading": "admission_summary",
+          "token": "insulin",
+          "key": "9236d20885df92b2",
+          "ruling": "acceptable"
+        }
+      ],
+      "latency": {
+        "step2_s": 10.318,
+        "step5a_s": 1.648,
+        "step6_s": 7.55,
+        "critical_s": 17.868
+      },
+      "generation_id": "w6-pipeline-e07-m01-c01-x5/r3/S9",
+      "scenario_id": "S9",
+      "run": 3
+    },
+    {
+      "metric": "compose_clinical",
+      "metric_version": 2,
+      "checks": {},
+      "counts": {
+        "sections": 19,
+        "sections_a": 11,
+        "sections_b": 8,
+        "facts_given": 16,
+        "facts_used_in_a": 16,
+        "header_facts_given": 4,
+        "contradictions_given": 0,
+        "contradictions_in_a": 0,
+        "gp_actions_given": 1,
+        "gp_actions_in_b": 1,
+        "unverified_given": 0,
+        "unverified_used": 0,
+        "checks": 0
+      },
+      "box_problems": 0,
+      "field_omitted": [],
+      "years_vs_notes": [],
+      "review": [
+        {
+          "kind": "medication",
+          "part": "part_a",
+          "heading": "vte_assessment",
+          "token": "enoxaparin",
+          "key": "96d074cb91cf58ea",
+          "ruling": "acceptable"
+        },
+        {
+          "kind": "medication",
+          "part": "part_b",
+          "heading": "admission_summary",
+          "token": "oral",
+          "key": "b9f79d088fd53543",
+          "ruling": "acceptable"
+        },
+        {
+          "kind": "medication",
+          "part": "part_b",
+          "heading": "admission_summary",
+          "token": "enoxaparin",
+          "key": "d6a974db6811ffdb",
+          "ruling": "acceptable"
+        }
+      ],
+      "latency": {
+        "step2_s": 10.125,
+        "step5a_s": 2.775,
+        "step6_s": 7.135,
+        "critical_s": 17.26
+      },
+      "generation_id": "w6-pipeline-e07-m01-c01-x5/r3/S10",
+      "scenario_id": "S10",
+      "run": 3
+    },
+    {
+      "metric": "compose_clinical",
+      "metric_version": 2,
+      "checks": {
+        "resus_text_outside": 1,
+        "unknown_fact_id": 1,
+        "not_documented_with_content": 1
+      },
+      "counts": {
+        "sections": 19,
+        "sections_a": 11,
+        "sections_b": 8,
+        "facts_given": 19,
+        "facts_used_in_a": 19,
+        "header_facts_given": 4,
+        "contradictions_given": 0,
+        "contradictions_in_a": 0,
+        "gp_actions_given": 0,
+        "gp_actions_in_b": 0,
+        "unverified_given": 0,
+        "unverified_used": 0,
+        "checks": 3
+      },
+      "box_problems": 0,
+      "field_omitted": [],
+      "years_vs_notes": [],
+      "review": [
+        {
+          "kind": "resus",
+          "part": "part_a",
+          "heading": "treatment",
+          "token": null,
+          "key": "e92cc3cb3c65f2fb",
+          "ruling": "defect"
+        },
+        {
+          "kind": "medication",
+          "part": "part_a",
+          "heading": "vte_assessment",
+          "token": "enoxaparin",
+          "key": "67e7ce7cea1833fe",
+          "ruling": "acceptable"
+        }
+      ],
+      "latency": {
+        "step2_s": 13.198,
+        "step5a_s": 2.061,
+        "step6_s": 8.222,
+        "critical_s": 21.42
+      },
+      "generation_id": "w6-pipeline-e07-m01-c01-x5/r3/S11",
+      "scenario_id": "S11",
+      "run": 3
+    },
+    {
+      "metric": "compose_clinical",
+      "metric_version": 2,
+      "checks": {
+        "resus_text_outside": 2
+      },
+      "counts": {
+        "sections": 19,
+        "sections_a": 11,
+        "sections_b": 8,
+        "facts_given": 38,
+        "facts_used_in_a": 38,
+        "header_facts_given": 1,
+        "contradictions_given": 0,
+        "contradictions_in_a": 0,
+        "gp_actions_given": 0,
+        "gp_actions_in_b": 0,
+        "unverified_given": 0,
+        "unverified_used": 0,
+        "checks": 2
+      },
+      "box_problems": 0,
+      "field_omitted": [],
+      "years_vs_notes": [],
+      "review": [
+        {
+          "kind": "resus",
+          "part": "part_a",
+          "heading": "treatment",
+          "token": null,
+          "key": "48596a2a35e5d120",
+          "ruling": "acceptable"
+        },
+        {
+          "kind": "resus",
+          "part": "part_b",
+          "heading": "admission_summary",
+          "token": null,
+          "key": "ef85350325d60023",
+          "ruling": "acceptable"
+        }
+      ],
+      "latency": {
+        "step2_s": 13.545,
+        "step5a_s": 0.675,
+        "step6_s": 9.243,
+        "critical_s": 22.788
+      },
+      "generation_id": "w6-pipeline-e07-m01-c01-x5/r3/S12",
+      "scenario_id": "S12",
+      "run": 3
+    },
+    {
+      "metric": "compose_clinical",
+      "metric_version": 2,
+      "checks": {
+        "resus_text_outside": 1
+      },
+      "counts": {
+        "sections": 19,
+        "sections_a": 11,
+        "sections_b": 8,
+        "facts_given": 26,
+        "facts_used_in_a": 26,
+        "header_facts_given": 4,
+        "contradictions_given": 0,
+        "contradictions_in_a": 0,
+        "gp_actions_given": 1,
+        "gp_actions_in_b": 1,
+        "unverified_given": 0,
+        "unverified_used": 0,
+        "checks": 1
+      },
+      "box_problems": 0,
+      "field_omitted": [],
+      "years_vs_notes": [],
+      "review": [
+        {
+          "kind": "medication",
+          "part": "part_a",
+          "heading": "key_investigations",
+          "token": "wound",
+          "key": "832a609365d41774",
+          "ruling": "acceptable"
+        },
+        {
+          "kind": "resus",
+          "part": "part_a",
+          "heading": "treatment",
+          "token": null,
+          "key": "524f7c24a425b987",
+          "ruling": "defect"
+        },
+        {
+          "kind": "medication",
+          "part": "part_a",
+          "heading": "follow_up",
+          "token": "wound",
+          "key": "1da579005dd31eb5",
+          "ruling": "acceptable"
+        },
+        {
+          "kind": "medication",
+          "part": "part_b",
+          "heading": "admission_summary",
+          "token": "wound",
+          "key": "769068d36df196fb",
+          "ruling": "acceptable"
+        },
+        {
+          "kind": "medication",
+          "part": "part_b",
+          "heading": "admission_summary",
+          "token": "wound",
+          "key": "ca3578ac330fcfd1",
+          "ruling": "acceptable"
+        },
+        {
+          "kind": "medication",
+          "part": "part_b",
+          "heading": "follow_up",
+          "token": "wound",
+          "key": "deaa0fd2fda7697b",
+          "ruling": "acceptable"
+        }
+      ],
+      "latency": {
+        "step2_s": 14.209,
+        "step5a_s": 3.169,
+        "step6_s": 8.798,
+        "critical_s": 23.007
+      },
+      "generation_id": "w6-pipeline-e07-m01-c01-x5/r3/S13",
+      "scenario_id": "S13",
+      "run": 3
+    },
+    {
+      "metric": "compose_clinical",
+      "metric_version": 2,
+      "checks": {
+        "resus_text_outside": 1
+      },
+      "counts": {
+        "sections": 19,
+        "sections_a": 11,
+        "sections_b": 8,
+        "facts_given": 21,
+        "facts_used_in_a": 21,
+        "header_facts_given": 4,
+        "contradictions_given": 0,
+        "contradictions_in_a": 0,
+        "gp_actions_given": 1,
+        "gp_actions_in_b": 1,
+        "unverified_given": 0,
+        "unverified_used": 0,
+        "checks": 1
+      },
+      "box_problems": 0,
+      "field_omitted": [],
+      "years_vs_notes": [],
+      "review": [
+        {
+          "kind": "resus",
+          "part": "part_a",
+          "heading": "treatment",
+          "token": null,
+          "key": "6efb468d898264c3",
+          "ruling": "defect"
+        },
+        {
+          "kind": "medication",
+          "part": "part_b",
+          "heading": "admission_summary",
+          "token": "aspirin",
+          "key": "f61597b8cf43f153",
+          "ruling": "acceptable"
+        },
+        {
+          "kind": "medication",
+          "part": "part_b",
+          "heading": "admission_summary",
+          "token": "apixaban",
+          "key": "1d2ffb65f1703ebb",
+          "ruling": "acceptable"
+        }
+      ],
+      "latency": {
+        "step2_s": 13.851,
+        "step5a_s": 3.423,
+        "step6_s": 7.316,
+        "critical_s": 21.167
+      },
+      "generation_id": "w6-pipeline-e07-m01-c01-x5/r3/S14",
+      "scenario_id": "S14",
+      "run": 3
+    },
+    {
+      "metric": "compose_clinical",
+      "metric_version": 2,
+      "checks": {
+        "resus_text_outside": 2
+      },
+      "counts": {
+        "sections": 19,
+        "sections_a": 11,
+        "sections_b": 8,
+        "facts_given": 17,
+        "facts_used_in_a": 17,
+        "header_facts_given": 3,
+        "contradictions_given": 0,
+        "contradictions_in_a": 0,
+        "gp_actions_given": 1,
+        "gp_actions_in_b": 1,
+        "unverified_given": 0,
+        "unverified_used": 0,
+        "checks": 2
+      },
+      "box_problems": 0,
+      "field_omitted": [],
+      "years_vs_notes": [],
+      "review": [
+        {
+          "kind": "resus",
+          "part": "part_a",
+          "heading": "treatment",
+          "token": null,
+          "key": "0d704bc8fd3dd39e",
+          "ruling": "defect"
+        },
+        {
+          "kind": "resus",
+          "part": "part_a",
+          "heading": "treatment",
+          "token": null,
+          "key": "373a5f16a44100de",
+          "ruling": "acceptable"
+        },
+        {
+          "kind": "medication",
+          "part": "part_b",
+          "heading": "admission_summary",
+          "token": "prednisolone",
+          "key": "3362066b39e6dc31",
+          "ruling": "acceptable"
+        },
+        {
+          "kind": "medication",
+          "part": "part_b",
+          "heading": "admission_summary",
+          "token": "oral",
+          "key": "60ce96670d6d5ec5",
+          "ruling": "acceptable"
+        },
+        {
+          "kind": "medication",
+          "part": "part_b",
+          "heading": "admission_summary",
+          "token": "amoxicillin",
+          "key": "294289444c8142e3",
+          "ruling": "acceptable"
+        },
+        {
+          "kind": "medication",
+          "part": "part_b",
+          "heading": "admission_summary",
+          "token": "rescue",
+          "key": "ae40377be11c3039",
+          "ruling": "acceptable"
+        },
+        {
+          "kind": "resus",
+          "part": "part_b",
+          "heading": "admission_summary",
+          "token": null,
+          "key": "68ba1cc1d4035d36",
+          "ruling": "defect"
+        }
+      ],
+      "latency": {
+        "step2_s": 12.969,
+        "step5a_s": 3.312,
+        "step6_s": 7.846,
+        "critical_s": 20.815
+      },
+      "generation_id": "w6-pipeline-e07-m01-c01-x5/r3/S15",
+      "scenario_id": "S15",
+      "run": 3
+    },
+    {
+      "metric": "compose_clinical",
+      "metric_version": 2,
+      "checks": {},
+      "counts": {
+        "sections": 19,
+        "sections_a": 11,
+        "sections_b": 8,
+        "facts_given": 18,
+        "facts_used_in_a": 18,
+        "header_facts_given": 4,
+        "contradictions_given": 0,
+        "contradictions_in_a": 0,
+        "gp_actions_given": 1,
+        "gp_actions_in_b": 1,
+        "unverified_given": 1,
+        "unverified_used": 1,
+        "checks": 0
+      },
+      "box_problems": 0,
+      "field_omitted": [],
+      "years_vs_notes": [],
+      "review": [
+        {
+          "kind": "medication",
+          "part": "part_a",
+          "heading": "diagnosis",
+          "token": "warfarin",
+          "key": "a64b56f343c0eab6",
+          "ruling": "acceptable"
+        },
+        {
+          "kind": "medication",
+          "part": "part_b",
+          "heading": "admission_summary",
+          "token": "warfarin",
+          "key": "24c070dad74add03",
+          "ruling": "acceptable"
+        },
+        {
+          "kind": "medication",
+          "part": "part_b",
+          "heading": "admission_summary",
+          "token": "warfarin",
+          "key": "4773ad00cf62f898",
+          "ruling": "acceptable"
+        },
+        {
+          "kind": "medication",
+          "part": "part_b",
+          "heading": "admission_summary",
+          "token": "ramipril",
+          "key": "1c24f260218c3c50",
+          "ruling": "acceptable"
+        },
+        {
+          "kind": "medication",
+          "part": "part_b",
+          "heading": "admission_summary",
+          "token": "metformin",
+          "key": "ebffc99940ff8bd8",
+          "ruling": "acceptable"
+        },
+        {
+          "kind": "medication",
+          "part": "part_b",
+          "heading": "admission_summary",
+          "token": "bisoprolol",
+          "key": "7ea30273d23272bd",
+          "ruling": "acceptable"
+        },
+        {
+          "kind": "medication",
+          "part": "part_b",
+          "heading": "admission_summary",
+          "token": "enoxaparin",
+          "key": "c0532af11873e23e",
+          "ruling": "acceptable"
+        },
+        {
+          "kind": "medication",
+          "part": "part_b",
+          "heading": "diagnosis",
+          "token": "warfarin",
+          "key": "6cc5b376bb928982",
+          "ruling": "acceptable"
+        }
+      ],
+      "latency": {
+        "step2_s": 12.093,
+        "step5a_s": 3.602,
+        "step6_s": 7.28,
+        "critical_s": 19.373
+      },
+      "generation_id": "w6-pipeline-e07-m01-c01-x5/r3/S16",
+      "scenario_id": "S16",
+      "run": 3
+    },
+    {
+      "metric": "compose_clinical",
+      "metric_version": 2,
+      "checks": {},
+      "counts": {
+        "sections": 19,
+        "sections_a": 11,
+        "sections_b": 8,
+        "facts_given": 20,
+        "facts_used_in_a": 20,
+        "header_facts_given": 1,
+        "contradictions_given": 0,
+        "contradictions_in_a": 0,
+        "gp_actions_given": 1,
+        "gp_actions_in_b": 1,
+        "unverified_given": 0,
+        "unverified_used": 0,
+        "checks": 0
+      },
+      "box_problems": 0,
+      "field_omitted": [],
+      "years_vs_notes": [],
+      "review": [
+        {
+          "kind": "medication",
+          "part": "part_a",
+          "heading": "diagnosis",
+          "token": "pylori",
+          "key": "bd61a84c0b861caf",
+          "ruling": "acceptable"
+        },
+        {
+          "kind": "medication",
+          "part": "part_a",
+          "heading": "key_investigations",
+          "token": "pylori",
+          "key": "5553875687853a9a",
+          "ruling": "acceptable"
+        },
+        {
+          "kind": "medication",
+          "part": "part_a",
+          "heading": "follow_up",
+          "token": "apixaban",
+          "key": "a788e873cf5ae309",
+          "ruling": "acceptable"
+        },
+        {
+          "kind": "medication",
+          "part": "part_a",
+          "heading": "gp_actions",
+          "token": "apixaban",
+          "key": "eb0f4ca5eefb8cb2",
+          "ruling": "acceptable"
+        },
+        {
+          "kind": "medication",
+          "part": "part_a",
+          "heading": "gp_actions",
+          "token": "pylori",
+          "key": "d9971801bc65b7f5",
+          "ruling": "acceptable"
+        },
+        {
+          "kind": "medication",
+          "part": "part_b",
+          "heading": "admission_summary",
+          "token": "pylori",
+          "key": "079792f7a4aff6a2",
+          "ruling": "acceptable"
+        },
+        {
+          "kind": "medication",
+          "part": "part_b",
+          "heading": "admission_summary",
+          "token": "apixaban",
+          "key": "51c1582c14239540",
+          "ruling": "acceptable"
+        },
+        {
+          "kind": "medication",
+          "part": "part_b",
+          "heading": "diagnosis",
+          "token": "pylori",
+          "key": "a5513e18edcf2e5e",
+          "ruling": "acceptable"
+        },
+        {
+          "kind": "medication",
+          "part": "part_b",
+          "heading": "gp_actions",
+          "token": "pylori",
+          "key": "e8a5cc27f2adec3e",
+          "ruling": "acceptable"
+        },
+        {
+          "kind": "medication",
+          "part": "part_b",
+          "heading": "gp_actions",
+          "token": "apixaban",
+          "key": "298e1e7bfed6256a",
+          "ruling": "acceptable"
+        },
+        {
+          "kind": "medication",
+          "part": "part_b",
+          "heading": "follow_up",
+          "token": "apixaban",
+          "key": "26b9806dbbd33a63",
+          "ruling": "acceptable"
+        }
+      ],
+      "latency": {
+        "step2_s": 12.088,
+        "step5a_s": 4.84,
+        "step6_s": 7.747,
+        "critical_s": 19.835
+      },
+      "generation_id": "w6-pipeline-e07-m01-c01-x5/r3/S17",
+      "scenario_id": "S17",
+      "run": 3
+    },
+    {
+      "metric": "compose_clinical",
+      "metric_version": 2,
+      "checks": {},
+      "counts": {
+        "sections": 19,
+        "sections_a": 11,
+        "sections_b": 8,
+        "facts_given": 14,
+        "facts_used_in_a": 14,
+        "header_facts_given": 4,
+        "contradictions_given": 0,
+        "contradictions_in_a": 0,
+        "gp_actions_given": 1,
+        "gp_actions_in_b": 1,
+        "unverified_given": 0,
+        "unverified_used": 0,
+        "checks": 0
+      },
+      "box_problems": 0,
+      "field_omitted": [],
+      "years_vs_notes": [],
+      "review": [],
+      "latency": {
+        "step2_s": 10.215,
+        "step5a_s": 0.739,
+        "step6_s": 6.375,
+        "critical_s": 16.59
+      },
+      "generation_id": "w6-pipeline-e07-m01-c01-x5/r3/S18",
+      "scenario_id": "S18",
+      "run": 3
+    },
+    {
+      "metric": "compose_clinical",
+      "metric_version": 2,
+      "checks": {
+        "resus_text_outside": 2
+      },
+      "counts": {
+        "sections": 19,
+        "sections_a": 11,
+        "sections_b": 8,
+        "facts_given": 20,
+        "facts_used_in_a": 20,
+        "header_facts_given": 3,
+        "contradictions_given": 0,
+        "contradictions_in_a": 0,
+        "gp_actions_given": 1,
+        "gp_actions_in_b": 1,
+        "unverified_given": 0,
+        "unverified_used": 0,
+        "checks": 2
+      },
+      "box_problems": 0,
+      "field_omitted": [],
+      "years_vs_notes": [],
+      "review": [
+        {
+          "kind": "resus",
+          "part": "part_a",
+          "heading": "treatment",
+          "token": null,
+          "key": "d356742187ca4da5",
+          "ruling": "defect"
+        },
+        {
+          "kind": "medication",
+          "part": "part_b",
+          "heading": "admission_summary",
+          "token": "co-amoxiclav",
+          "key": "664102a17e81e1a6",
+          "ruling": "acceptable"
+        },
+        {
+          "kind": "resus",
+          "part": "part_b",
+          "heading": "admission_summary",
+          "token": null,
+          "key": "97c1c1db899b4885",
+          "ruling": "defect"
+        }
+      ],
+      "latency": {
+        "step2_s": 11.277,
+        "step5a_s": 3.38,
+        "step6_s": 7.686,
+        "critical_s": 18.963
+      },
+      "generation_id": "w6-pipeline-e07-m01-c01-x5/r3/A5",
+      "scenario_id": "A5",
+      "run": 3
+    },
+    {
+      "metric": "compose_clinical",
+      "metric_version": 2,
+      "checks": {},
+      "counts": {
+        "sections": 21,
+        "sections_a": 12,
+        "sections_b": 9,
+        "facts_given": 12,
+        "facts_used_in_a": 12,
+        "header_facts_given": 4,
+        "contradictions_given": 2,
+        "contradictions_in_a": 2,
+        "gp_actions_given": 1,
+        "gp_actions_in_b": 1,
+        "unverified_given": 1,
+        "unverified_used": 1,
+        "checks": 0
+      },
+      "box_problems": 0,
+      "field_omitted": [],
+      "years_vs_notes": [],
+      "review": [
+        {
+          "kind": "medication",
+          "part": "part_a",
+          "heading": "gp_actions",
+          "token": "digoxin",
+          "key": "9325f4f146013c96",
+          "ruling": "acceptable"
+        },
+        {
+          "kind": "medication",
+          "part": "part_b",
+          "heading": "admission_summary",
+          "token": "bisoprolol",
+          "key": "3952d17518bdfa9a",
+          "ruling": "acceptable"
+        },
+        {
+          "kind": "medication",
+          "part": "part_b",
+          "heading": "admission_summary",
+          "token": "digoxin",
+          "key": "e83efa20698536df",
+          "ruling": "acceptable"
+        },
+        {
+          "kind": "medication",
+          "part": "part_b",
+          "heading": "gp_actions",
+          "token": "digoxin",
+          "key": "5aaaf747a9590c0c",
+          "ruling": "acceptable"
+        }
+      ],
+      "latency": {
+        "step2_s": 11.798,
+        "step5a_s": 3.335,
+        "step6_s": 7.009,
+        "critical_s": 18.807
+      },
+      "generation_id": "w6-pipeline-e07-m01-c01-x5/r3/B6",
+      "scenario_id": "B6",
+      "run": 3
+    },
+    {
+      "metric": "compose_clinical",
+      "metric_version": 2,
+      "checks": {},
+      "counts": {
+        "sections": 19,
+        "sections_a": 11,
+        "sections_b": 8,
+        "facts_given": 5,
+        "facts_used_in_a": 5,
+        "header_facts_given": 3,
+        "contradictions_given": 0,
+        "contradictions_in_a": 0,
+        "gp_actions_given": 0,
+        "gp_actions_in_b": 0,
+        "unverified_given": 0,
+        "unverified_used": 0,
+        "checks": 0
+      },
+      "box_problems": 0,
+      "field_omitted": [],
+      "years_vs_notes": [],
+      "review": [],
+      "latency": {
+        "step2_s": 5.351,
+        "step5a_s": 0.717,
+        "step6_s": 4.605,
+        "critical_s": 9.956
+      },
+      "generation_id": "w6-pipeline-e07-m01-c01-x5/r3/C7",
+      "scenario_id": "C7",
+      "run": 3
+    },
+    {
+      "metric": "compose_clinical",
+      "metric_version": 2,
+      "checks": {},
+      "counts": {
+        "sections": 19,
+        "sections_a": 11,
+        "sections_b": 8,
+        "facts_given": 26,
+        "facts_used_in_a": 26,
+        "header_facts_given": 4,
+        "contradictions_given": 0,
+        "contradictions_in_a": 0,
+        "gp_actions_given": 1,
+        "gp_actions_in_b": 1,
+        "unverified_given": 0,
+        "unverified_used": 0,
+        "checks": 0
+      },
+      "box_problems": 0,
+      "field_omitted": [],
+      "years_vs_notes": [],
+      "review": [
+        {
+          "kind": "medication",
+          "part": "part_b",
+          "heading": "admission_summary",
+          "token": "bisoprolol",
+          "key": "c69ea67038385af7",
+          "ruling": "acceptable"
+        },
+        {
+          "kind": "medication",
+          "part": "part_b",
+          "heading": "admission_summary",
+          "token": "ticagrelor",
+          "key": "76a1e16f57373b3c",
+          "ruling": "acceptable"
+        }
+      ],
+      "latency": {
+        "step2_s": 12.651,
+        "step5a_s": 4.122,
+        "step6_s": 8.103,
+        "critical_s": 20.754
+      },
+      "generation_id": "w6-pipeline-e07-m01-c01-x5/r4/S1",
+      "scenario_id": "S1",
+      "run": 4
+    },
+    {
+      "metric": "compose_clinical",
+      "metric_version": 2,
+      "checks": {},
+      "counts": {
+        "sections": 20,
+        "sections_a": 11,
+        "sections_b": 9,
+        "facts_given": 11,
+        "facts_used_in_a": 11,
+        "header_facts_given": 4,
+        "contradictions_given": 0,
+        "contradictions_in_a": 0,
+        "gp_actions_given": 0,
+        "gp_actions_in_b": 0,
+        "unverified_given": 0,
+        "unverified_used": 0,
+        "checks": 0
+      },
+      "box_problems": 0,
+      "field_omitted": [],
+      "years_vs_notes": [],
+      "review": [],
+      "latency": {
+        "step2_s": 8.608,
+        "step5a_s": 1.907,
+        "step6_s": 7.103,
+        "critical_s": 15.711
+      },
+      "generation_id": "w6-pipeline-e07-m01-c01-x5/r4/S2",
+      "scenario_id": "S2",
+      "run": 4
+    },
+    {
+      "metric": "compose_clinical",
+      "metric_version": 2,
+      "checks": {},
+      "counts": {
+        "sections": 20,
+        "sections_a": 12,
+        "sections_b": 8,
+        "facts_given": 20,
+        "facts_used_in_a": 20,
+        "header_facts_given": 6,
+        "contradictions_given": 0,
+        "contradictions_in_a": 0,
+        "gp_actions_given": 1,
+        "gp_actions_in_b": 1,
+        "unverified_given": 0,
+        "unverified_used": 0,
+        "checks": 0
+      },
+      "box_problems": 0,
+      "field_omitted": [],
+      "years_vs_notes": [],
+      "review": [
+        {
+          "kind": "medication",
+          "part": "part_a",
+          "heading": "diagnosis",
+          "token": "sertraline",
+          "key": "82fc6f02c586b38e",
+          "ruling": "acceptable"
+        },
+        {
+          "kind": "medication",
+          "part": "part_a",
+          "heading": "follow_up",
+          "token": "sertraline",
+          "key": "5adbe083926e1cd8",
+          "ruling": "acceptable"
+        },
+        {
+          "kind": "medication",
+          "part": "part_a",
+          "heading": "gp_actions",
+          "token": "sertraline",
+          "key": "4fbe130b230876a9",
+          "ruling": "acceptable"
+        },
+        {
+          "kind": "medication",
+          "part": "part_b",
+          "heading": "admission_summary",
+          "token": "sertraline",
+          "key": "0b2a0855f1a6afa4",
+          "ruling": "acceptable"
+        },
+        {
+          "kind": "medication",
+          "part": "part_b",
+          "heading": "gp_actions",
+          "token": "sertraline",
+          "key": "7634073372e07db5",
+          "ruling": "acceptable"
+        },
+        {
+          "kind": "medication",
+          "part": "part_b",
+          "heading": "follow_up",
+          "token": "sertraline",
+          "key": "a83aba31968c1b01",
+          "ruling": "acceptable"
+        }
+      ],
+      "latency": {
+        "step2_s": 12.445,
+        "step5a_s": 1.855,
+        "step6_s": 8.148,
+        "critical_s": 20.593
+      },
+      "generation_id": "w6-pipeline-e07-m01-c01-x5/r4/S3",
+      "scenario_id": "S3",
+      "run": 4
+    },
+    {
+      "metric": "compose_clinical",
+      "metric_version": 2,
+      "checks": {},
+      "counts": {
+        "sections": 19,
+        "sections_a": 11,
+        "sections_b": 8,
+        "facts_given": 16,
+        "facts_used_in_a": 16,
+        "header_facts_given": 5,
+        "contradictions_given": 0,
+        "contradictions_in_a": 0,
+        "gp_actions_given": 0,
+        "gp_actions_in_b": 0,
+        "unverified_given": 0,
+        "unverified_used": 0,
+        "checks": 0
+      },
+      "box_problems": 0,
+      "field_omitted": [],
+      "years_vs_notes": [],
+      "review": [],
+      "latency": {
+        "step2_s": 10.322,
+        "step5a_s": 0.689,
+        "step6_s": 7.593,
+        "critical_s": 17.915
+      },
+      "generation_id": "w6-pipeline-e07-m01-c01-x5/r4/S4",
+      "scenario_id": "S4",
+      "run": 4
+    },
+    {
+      "metric": "compose_clinical",
+      "metric_version": 2,
+      "checks": {},
+      "counts": {
+        "sections": 19,
+        "sections_a": 11,
+        "sections_b": 8,
+        "facts_given": 15,
+        "facts_used_in_a": 15,
+        "header_facts_given": 5,
+        "contradictions_given": 0,
+        "contradictions_in_a": 0,
+        "gp_actions_given": 0,
+        "gp_actions_in_b": 0,
+        "unverified_given": 1,
+        "unverified_used": 1,
+        "checks": 0
+      },
+      "box_problems": 0,
+      "field_omitted": [],
+      "years_vs_notes": [],
+      "review": [],
+      "latency": {
+        "step2_s": 9.821,
+        "step5a_s": 0.713,
+        "step6_s": 7.404,
+        "critical_s": 17.225
+      },
+      "generation_id": "w6-pipeline-e07-m01-c01-x5/r4/S8",
+      "scenario_id": "S8",
+      "run": 4
+    },
+    {
+      "metric": "compose_clinical",
+      "metric_version": 2,
+      "checks": {
+        "unknown_fact_id": 1,
+        "not_documented_with_content": 1
+      },
+      "counts": {
+        "sections": 19,
+        "sections_a": 11,
+        "sections_b": 8,
+        "facts_given": 21,
+        "facts_used_in_a": 21,
+        "header_facts_given": 5,
+        "contradictions_given": 0,
+        "contradictions_in_a": 0,
+        "gp_actions_given": 1,
+        "gp_actions_in_b": 1,
+        "unverified_given": 2,
+        "unverified_used": 1,
+        "checks": 2
+      },
+      "box_problems": 0,
+      "field_omitted": [],
+      "years_vs_notes": [],
+      "review": [
+        {
+          "kind": "medication",
+          "part": "part_b",
+          "heading": "admission_summary",
+          "token": "insulin",
+          "key": "eea46e69c8098d8b",
+          "ruling": "acceptable"
+        },
+        {
+          "kind": "medication",
+          "part": "part_b",
+          "heading": "admission_summary",
+          "token": "insulin",
+          "key": "92d2dea65690b74b",
+          "ruling": "acceptable"
+        }
+      ],
+      "latency": {
+        "step2_s": 10.694,
+        "step5a_s": 1.501,
+        "step6_s": 7.876,
+        "critical_s": 18.57
+      },
+      "generation_id": "w6-pipeline-e07-m01-c01-x5/r4/S9",
+      "scenario_id": "S9",
+      "run": 4
+    },
+    {
+      "metric": "compose_clinical",
+      "metric_version": 2,
+      "checks": {},
+      "counts": {
+        "sections": 19,
+        "sections_a": 11,
+        "sections_b": 8,
+        "facts_given": 14,
+        "facts_used_in_a": 14,
+        "header_facts_given": 4,
+        "contradictions_given": 0,
+        "contradictions_in_a": 0,
+        "gp_actions_given": 1,
+        "gp_actions_in_b": 1,
+        "unverified_given": 1,
+        "unverified_used": 1,
+        "checks": 0
+      },
+      "box_problems": 0,
+      "field_omitted": [],
+      "years_vs_notes": [],
+      "review": [
+        {
+          "kind": "medication",
+          "part": "part_a",
+          "heading": "vte_assessment",
+          "token": "enoxaparin",
+          "key": "6bf69fda5ef19445",
+          "ruling": "acceptable"
+        },
+        {
+          "kind": "medication",
+          "part": "part_b",
+          "heading": "admission_summary",
+          "token": "oral",
+          "key": "7506a8ad872e48cd",
+          "ruling": "acceptable"
+        },
+        {
+          "kind": "medication",
+          "part": "part_b",
+          "heading": "admission_summary",
+          "token": "enoxaparin",
+          "key": "8423f795210ba72e",
+          "ruling": "acceptable"
+        }
+      ],
+      "latency": {
+        "step2_s": 10.504,
+        "step5a_s": 2.541,
+        "step6_s": 6.556,
+        "critical_s": 17.06
+      },
+      "generation_id": "w6-pipeline-e07-m01-c01-x5/r4/S10",
+      "scenario_id": "S10",
+      "run": 4
+    },
+    {
+      "metric": "compose_clinical",
+      "metric_version": 2,
+      "checks": {},
+      "counts": {
+        "sections": 19,
+        "sections_a": 11,
+        "sections_b": 8,
+        "facts_given": 19,
+        "facts_used_in_a": 19,
+        "header_facts_given": 2,
+        "contradictions_given": 0,
+        "contradictions_in_a": 0,
+        "gp_actions_given": 0,
+        "gp_actions_in_b": 0,
+        "unverified_given": 0,
+        "unverified_used": 0,
+        "checks": 0
+      },
+      "box_problems": 0,
+      "field_omitted": [],
+      "years_vs_notes": [],
+      "review": [
+        {
+          "kind": "medication",
+          "part": "part_a",
+          "heading": "vte_assessment",
+          "token": "enoxaparin",
+          "key": "bfb06b04ab78f7ef",
+          "ruling": "acceptable"
+        }
+      ],
+      "latency": {
+        "step2_s": 13.191,
+        "step5a_s": 2.192,
+        "step6_s": 8.519,
+        "critical_s": 21.71
+      },
+      "generation_id": "w6-pipeline-e07-m01-c01-x5/r4/S11",
+      "scenario_id": "S11",
+      "run": 4
+    },
+    {
+      "metric": "compose_clinical",
+      "metric_version": 2,
+      "checks": {
+        "resus_text_outside": 2,
+        "contradiction_missing": 2
+      },
+      "counts": {
+        "sections": 19,
+        "sections_a": 11,
+        "sections_b": 8,
+        "facts_given": 38,
+        "facts_used_in_a": 38,
+        "header_facts_given": 1,
+        "contradictions_given": 2,
+        "contradictions_in_a": 0,
+        "gp_actions_given": 0,
+        "gp_actions_in_b": 0,
+        "unverified_given": 2,
+        "unverified_used": 0,
+        "checks": 4
+      },
+      "box_problems": 0,
+      "field_omitted": [],
+      "years_vs_notes": [],
+      "review": [
+        {
+          "kind": "resus",
+          "part": "part_a",
+          "heading": "treatment",
+          "token": null,
+          "key": "48596a2a35e5d120",
+          "ruling": "acceptable"
+        },
+        {
+          "kind": "resus",
+          "part": "part_b",
+          "heading": "admission_summary",
+          "token": null,
+          "key": "ef85350325d60023",
+          "ruling": "acceptable"
+        }
+      ],
+      "latency": {
+        "step2_s": 13.977,
+        "step5a_s": 0.677,
+        "step6_s": 9.126,
+        "critical_s": 23.103
+      },
+      "generation_id": "w6-pipeline-e07-m01-c01-x5/r4/S12",
+      "scenario_id": "S12",
+      "run": 4
+    },
+    {
+      "metric": "compose_clinical",
+      "metric_version": 2,
+      "checks": {
+        "resus_text_outside": 1,
+        "contradiction_missing": 1,
+        "not_documented_with_content": 1
+      },
+      "counts": {
+        "sections": 20,
+        "sections_a": 11,
+        "sections_b": 9,
+        "facts_given": 24,
+        "facts_used_in_a": 24,
+        "header_facts_given": 4,
+        "contradictions_given": 1,
+        "contradictions_in_a": 0,
+        "gp_actions_given": 1,
+        "gp_actions_in_b": 1,
+        "unverified_given": 0,
+        "unverified_used": 0,
+        "checks": 3
+      },
+      "box_problems": 0,
+      "field_omitted": [],
+      "years_vs_notes": [],
+      "review": [
+        {
+          "kind": "medication",
+          "part": "part_a",
+          "heading": "key_investigations",
+          "token": "wound",
+          "key": "0c08878190a7bd4b",
+          "ruling": "acceptable"
+        },
+        {
+          "kind": "medication",
+          "part": "part_a",
+          "heading": "follow_up",
+          "token": "wound",
+          "key": "94f20006e139959b",
+          "ruling": "acceptable"
+        },
+        {
+          "kind": "medication",
+          "part": "part_b",
+          "heading": "admission_summary",
+          "token": "wound",
+          "key": "a7df1fb5daa91daf",
+          "ruling": "acceptable"
+        },
+        {
+          "kind": "medication",
+          "part": "part_b",
+          "heading": "admission_summary",
+          "token": "wound",
+          "key": "eccaa25747c3f6ab",
+          "ruling": "acceptable"
+        },
+        {
+          "kind": "resus",
+          "part": "part_b",
+          "heading": "medication_conflicts",
+          "token": null,
+          "key": "527cb3c25b577e2e",
+          "ruling": "defect"
+        },
+        {
+          "kind": "medication",
+          "part": "part_b",
+          "heading": "follow_up",
+          "token": "wound",
+          "key": "34b93e246245ac10",
+          "ruling": "acceptable"
+        }
+      ],
+      "latency": {
+        "step2_s": 13.833,
+        "step5a_s": 3.3,
+        "step6_s": 8.937,
+        "critical_s": 22.77
+      },
+      "generation_id": "w6-pipeline-e07-m01-c01-x5/r4/S13",
+      "scenario_id": "S13",
+      "run": 4
+    },
+    {
+      "metric": "compose_clinical",
+      "metric_version": 2,
+      "checks": {
+        "resus_text_outside": 1
+      },
+      "counts": {
+        "sections": 19,
+        "sections_a": 11,
+        "sections_b": 8,
+        "facts_given": 20,
+        "facts_used_in_a": 20,
+        "header_facts_given": 4,
+        "contradictions_given": 0,
+        "contradictions_in_a": 0,
+        "gp_actions_given": 1,
+        "gp_actions_in_b": 1,
+        "unverified_given": 0,
+        "unverified_used": 0,
+        "checks": 1
+      },
+      "box_problems": 0,
+      "field_omitted": [],
+      "years_vs_notes": [],
+      "review": [
+        {
+          "kind": "medication",
+          "part": "part_a",
+          "heading": "diagnosis",
+          "token": "aspirin",
+          "key": "644039c5b593ffab",
+          "ruling": "acceptable"
+        },
+        {
+          "kind": "resus",
+          "part": "part_a",
+          "heading": "treatment",
+          "token": null,
+          "key": "6efb468d898264c3",
+          "ruling": "defect"
+        },
+        {
+          "kind": "medication",
+          "part": "part_b",
+          "heading": "admission_summary",
+          "token": "aspirin",
+          "key": "fdc086f35375f432",
+          "ruling": "acceptable"
+        },
+        {
+          "kind": "medication",
+          "part": "part_b",
+          "heading": "admission_summary",
+          "token": "apixaban",
+          "key": "3142da082f2034d5",
+          "ruling": "acceptable"
+        },
+        {
+          "kind": "medication",
+          "part": "part_b",
+          "heading": "diagnosis",
+          "token": "aspirin",
+          "key": "b9d76d359860bd4d",
+          "ruling": "acceptable"
+        }
+      ],
+      "latency": {
+        "step2_s": 14.225,
+        "step5a_s": 3.46,
+        "step6_s": 7.761,
+        "critical_s": 21.986
+      },
+      "generation_id": "w6-pipeline-e07-m01-c01-x5/r4/S14",
+      "scenario_id": "S14",
+      "run": 4
+    },
+    {
+      "metric": "compose_clinical",
+      "metric_version": 2,
+      "checks": {
+        "resus_text_outside": 2
+      },
+      "counts": {
+        "sections": 19,
+        "sections_a": 11,
+        "sections_b": 8,
+        "facts_given": 19,
+        "facts_used_in_a": 19,
+        "header_facts_given": 3,
+        "contradictions_given": 0,
+        "contradictions_in_a": 0,
+        "gp_actions_given": 1,
+        "gp_actions_in_b": 1,
+        "unverified_given": 0,
+        "unverified_used": 0,
+        "checks": 2
+      },
+      "box_problems": 0,
+      "field_omitted": [],
+      "years_vs_notes": [],
+      "review": [
+        {
+          "kind": "resus",
+          "part": "part_a",
+          "heading": "treatment",
+          "token": null,
+          "key": "94083a2c071ca71b",
+          "ruling": "defect"
+        },
+        {
+          "kind": "resus",
+          "part": "part_a",
+          "heading": "treatment",
+          "token": null,
+          "key": "373a5f16a44100de",
+          "ruling": "acceptable"
+        },
+        {
+          "kind": "medication",
+          "part": "part_b",
+          "heading": "admission_summary",
+          "token": "prednisolone",
+          "key": "3362066b39e6dc31",
+          "ruling": "acceptable"
+        },
+        {
+          "kind": "medication",
+          "part": "part_b",
+          "heading": "admission_summary",
+          "token": "oral",
+          "key": "60ce96670d6d5ec5",
+          "ruling": "acceptable"
+        },
+        {
+          "kind": "medication",
+          "part": "part_b",
+          "heading": "admission_summary",
+          "token": "amoxicillin",
+          "key": "294289444c8142e3",
+          "ruling": "acceptable"
+        },
+        {
+          "kind": "resus",
+          "part": "part_b",
+          "heading": "admission_summary",
+          "token": null,
+          "key": "1b25b0709eeeb465",
+          "ruling": "defect"
+        }
+      ],
+      "latency": {
+        "step2_s": 12.452,
+        "step5a_s": 3.431,
+        "step6_s": 7.991,
+        "critical_s": 20.443
+      },
+      "generation_id": "w6-pipeline-e07-m01-c01-x5/r4/S15",
+      "scenario_id": "S15",
+      "run": 4
+    },
+    {
+      "metric": "compose_clinical",
+      "metric_version": 2,
+      "checks": {},
+      "counts": {
+        "sections": 19,
+        "sections_a": 11,
+        "sections_b": 8,
+        "facts_given": 18,
+        "facts_used_in_a": 18,
+        "header_facts_given": 4,
+        "contradictions_given": 0,
+        "contradictions_in_a": 0,
+        "gp_actions_given": 1,
+        "gp_actions_in_b": 1,
+        "unverified_given": 0,
+        "unverified_used": 0,
+        "checks": 0
+      },
+      "box_problems": 0,
+      "field_omitted": [],
+      "years_vs_notes": [],
+      "review": [
+        {
+          "kind": "medication",
+          "part": "part_a",
+          "heading": "diagnosis",
+          "token": "warfarin",
+          "key": "a64b56f343c0eab6",
+          "ruling": "acceptable"
+        },
+        {
+          "kind": "medication",
+          "part": "part_b",
+          "heading": "admission_summary",
+          "token": "warfarin",
+          "key": "2ddb1d6f7501a72e",
+          "ruling": "acceptable"
+        },
+        {
+          "kind": "medication",
+          "part": "part_b",
+          "heading": "admission_summary",
+          "token": "warfarin",
+          "key": "0538f51d6d09a74f",
+          "ruling": "acceptable"
+        },
+        {
+          "kind": "medication",
+          "part": "part_b",
+          "heading": "admission_summary",
+          "token": "ramipril",
+          "key": "2b5ba2b4c00d97cd",
+          "ruling": "acceptable"
+        },
+        {
+          "kind": "medication",
+          "part": "part_b",
+          "heading": "admission_summary",
+          "token": "metformin",
+          "key": "6e84d12a66c77a1d",
+          "ruling": "acceptable"
+        },
+        {
+          "kind": "medication",
+          "part": "part_b",
+          "heading": "admission_summary",
+          "token": "bisoprolol",
+          "key": "4cfdc842f1f81db3",
+          "ruling": "acceptable"
+        },
+        {
+          "kind": "medication",
+          "part": "part_b",
+          "heading": "admission_summary",
+          "token": "enoxaparin",
+          "key": "ef00266ca9682ba2",
+          "ruling": "acceptable"
+        },
+        {
+          "kind": "medication",
+          "part": "part_b",
+          "heading": "diagnosis",
+          "token": "warfarin",
+          "key": "6cc5b376bb928982",
+          "ruling": "acceptable"
+        }
+      ],
+      "latency": {
+        "step2_s": 11.962,
+        "step5a_s": 3.666,
+        "step6_s": 7.814,
+        "critical_s": 19.776
+      },
+      "generation_id": "w6-pipeline-e07-m01-c01-x5/r4/S16",
+      "scenario_id": "S16",
+      "run": 4
+    },
+    {
+      "metric": "compose_clinical",
+      "metric_version": 2,
+      "checks": {},
+      "counts": {
+        "sections": 19,
+        "sections_a": 11,
+        "sections_b": 8,
+        "facts_given": 21,
+        "facts_used_in_a": 21,
+        "header_facts_given": 1,
+        "contradictions_given": 0,
+        "contradictions_in_a": 0,
+        "gp_actions_given": 3,
+        "gp_actions_in_b": 3,
+        "unverified_given": 0,
+        "unverified_used": 0,
+        "checks": 0
+      },
+      "box_problems": 0,
+      "field_omitted": [],
+      "years_vs_notes": [],
+      "review": [
+        {
+          "kind": "medication",
+          "part": "part_a",
+          "heading": "diagnosis",
+          "token": "pylori",
+          "key": "966d7b267a2754f8",
+          "ruling": "acceptable"
+        },
+        {
+          "kind": "medication",
+          "part": "part_a",
+          "heading": "key_investigations",
+          "token": "pylori",
+          "key": "5553875687853a9a",
+          "ruling": "acceptable"
+        },
+        {
+          "kind": "medication",
+          "part": "part_a",
+          "heading": "gp_actions",
+          "token": "pylori",
+          "key": "2ce8d1596bafe260",
+          "ruling": "acceptable"
+        },
+        {
+          "kind": "medication",
+          "part": "part_a",
+          "heading": "gp_actions",
+          "token": "apixaban",
+          "key": "b3efd2b9fd12ed76",
+          "ruling": "acceptable"
+        },
+        {
+          "kind": "medication",
+          "part": "part_b",
+          "heading": "admission_summary",
+          "token": "pylori",
+          "key": "079792f7a4aff6a2",
+          "ruling": "acceptable"
+        },
+        {
+          "kind": "medication",
+          "part": "part_b",
+          "heading": "admission_summary",
+          "token": "apixaban",
+          "key": "c71461baec02cd56",
+          "ruling": "acceptable"
+        },
+        {
+          "kind": "medication",
+          "part": "part_b",
+          "heading": "diagnosis",
+          "token": "pylori",
+          "key": "f94d4953f847e65a",
+          "ruling": "acceptable"
+        },
+        {
+          "kind": "medication",
+          "part": "part_b",
+          "heading": "gp_actions",
+          "token": "pylori",
+          "key": "e8a5cc27f2adec3e",
+          "ruling": "acceptable"
+        },
+        {
+          "kind": "medication",
+          "part": "part_b",
+          "heading": "gp_actions",
+          "token": "apixaban",
+          "key": "a5d5bad796172478",
+          "ruling": "acceptable"
+        }
+      ],
+      "latency": {
+        "step2_s": 12.436,
+        "step5a_s": 4.315,
+        "step6_s": 7.437,
+        "critical_s": 19.873
+      },
+      "generation_id": "w6-pipeline-e07-m01-c01-x5/r4/S17",
+      "scenario_id": "S17",
+      "run": 4
+    },
+    {
+      "metric": "compose_clinical",
+      "metric_version": 2,
+      "checks": {},
+      "counts": {
+        "sections": 19,
+        "sections_a": 11,
+        "sections_b": 8,
+        "facts_given": 9,
+        "facts_used_in_a": 9,
+        "header_facts_given": 4,
+        "contradictions_given": 0,
+        "contradictions_in_a": 0,
+        "gp_actions_given": 1,
+        "gp_actions_in_b": 1,
+        "unverified_given": 0,
+        "unverified_used": 0,
+        "checks": 0
+      },
+      "box_problems": 0,
+      "field_omitted": [],
+      "years_vs_notes": [],
+      "review": [],
+      "latency": {
+        "step2_s": 8.219,
+        "step5a_s": 0.644,
+        "step6_s": 5.872,
+        "critical_s": 14.091
+      },
+      "generation_id": "w6-pipeline-e07-m01-c01-x5/r4/S18",
+      "scenario_id": "S18",
+      "run": 4
+    },
+    {
+      "metric": "compose_clinical",
+      "metric_version": 2,
+      "checks": {},
+      "counts": {
+        "sections": 19,
+        "sections_a": 11,
+        "sections_b": 8,
+        "facts_given": 19,
+        "facts_used_in_a": 19,
+        "header_facts_given": 3,
+        "contradictions_given": 0,
+        "contradictions_in_a": 0,
+        "gp_actions_given": 1,
+        "gp_actions_in_b": 1,
+        "unverified_given": 0,
+        "unverified_used": 0,
+        "checks": 0
+      },
+      "box_problems": 0,
+      "field_omitted": [],
+      "years_vs_notes": [],
+      "review": [
+        {
+          "kind": "medication",
+          "part": "part_a",
+          "heading": "diagnosis",
+          "token": "apixaban",
+          "key": "bfa6de0e11c2fb8b",
+          "ruling": "acceptable"
+        },
+        {
+          "kind": "medication",
+          "part": "part_b",
+          "heading": "admission_summary",
+          "token": "co-amoxiclav",
+          "key": "aa17a7297fe8a500",
+          "ruling": "acceptable"
+        },
+        {
+          "kind": "medication",
+          "part": "part_b",
+          "heading": "diagnosis",
+          "token": "apixaban",
+          "key": "d3f2bf62587bee1a",
+          "ruling": "acceptable"
+        }
+      ],
+      "latency": {
+        "step2_s": 10.758,
+        "step5a_s": 3.143,
+        "step6_s": 7.233,
+        "critical_s": 17.991
+      },
+      "generation_id": "w6-pipeline-e07-m01-c01-x5/r4/A5",
+      "scenario_id": "A5",
+      "run": 4
+    },
+    {
+      "metric": "compose_clinical",
+      "metric_version": 2,
+      "checks": {
+        "resus_text_outside": 2
+      },
+      "counts": {
+        "sections": 21,
+        "sections_a": 12,
+        "sections_b": 9,
+        "facts_given": 13,
+        "facts_used_in_a": 13,
+        "header_facts_given": 3,
+        "contradictions_given": 2,
+        "contradictions_in_a": 2,
+        "gp_actions_given": 1,
+        "gp_actions_in_b": 1,
+        "unverified_given": 0,
+        "unverified_used": 0,
+        "checks": 2
+      },
+      "box_problems": 0,
+      "field_omitted": [],
+      "years_vs_notes": [],
+      "review": [
+        {
+          "kind": "resus",
+          "part": "part_a",
+          "heading": "treatment",
+          "token": null,
+          "key": "2b3da6b86177b304",
+          "ruling": "defect"
+        },
+        {
+          "kind": "resus",
+          "part": "part_a",
+          "heading": "treatment",
+          "token": null,
+          "key": "81ead1a0bfeb1aaf",
+          "ruling": "defect"
+        },
+        {
+          "kind": "medication",
+          "part": "part_a",
+          "heading": "gp_actions",
+          "token": "digoxin",
+          "key": "9325f4f146013c96",
+          "ruling": "acceptable"
+        },
+        {
+          "kind": "medication",
+          "part": "part_b",
+          "heading": "admission_summary",
+          "token": "bisoprolol",
+          "key": "609b267ae6c8880f",
+          "ruling": "acceptable"
+        },
+        {
+          "kind": "medication",
+          "part": "part_b",
+          "heading": "admission_summary",
+          "token": "digoxin",
+          "key": "c13f686d6f11d146",
+          "ruling": "acceptable"
+        },
+        {
+          "kind": "resus",
+          "part": "part_b",
+          "heading": "admission_summary",
+          "token": null,
+          "key": "ff9d8ae774ad1287",
+          "ruling": "defect"
+        },
+        {
+          "kind": "medication",
+          "part": "part_b",
+          "heading": "gp_actions",
+          "token": "digoxin",
+          "key": "5aaaf747a9590c0c",
+          "ruling": "acceptable"
+        }
+      ],
+      "latency": {
+        "step2_s": 11.641,
+        "step5a_s": 3.513,
+        "step6_s": 7.004,
+        "critical_s": 18.645
+      },
+      "generation_id": "w6-pipeline-e07-m01-c01-x5/r4/B6",
+      "scenario_id": "B6",
+      "run": 4
+    },
+    {
+      "metric": "compose_clinical",
+      "metric_version": 2,
+      "checks": {},
+      "counts": {
+        "sections": 19,
+        "sections_a": 11,
+        "sections_b": 8,
+        "facts_given": 6,
+        "facts_used_in_a": 6,
+        "header_facts_given": 3,
+        "contradictions_given": 0,
+        "contradictions_in_a": 0,
+        "gp_actions_given": 0,
+        "gp_actions_in_b": 0,
+        "unverified_given": 0,
+        "unverified_used": 0,
+        "checks": 0
+      },
+      "box_problems": 0,
+      "field_omitted": [],
+      "years_vs_notes": [],
+      "review": [],
+      "latency": {
+        "step2_s": 5.506,
+        "step5a_s": 0.73,
+        "step6_s": 4.619,
+        "critical_s": 10.125
+      },
+      "generation_id": "w6-pipeline-e07-m01-c01-x5/r4/C7",
+      "scenario_id": "C7",
+      "run": 4
+    },
+    {
+      "metric": "compose_clinical",
+      "metric_version": 2,
+      "checks": {
+        "resus_text_outside": 1
+      },
+      "counts": {
+        "sections": 20,
+        "sections_a": 12,
+        "sections_b": 8,
+        "facts_given": 29,
+        "facts_used_in_a": 29,
+        "header_facts_given": 4,
+        "contradictions_given": 0,
+        "contradictions_in_a": 0,
+        "gp_actions_given": 1,
+        "gp_actions_in_b": 1,
+        "unverified_given": 0,
+        "unverified_used": 0,
+        "checks": 1
+      },
+      "box_problems": 0,
+      "field_omitted": [],
+      "years_vs_notes": [],
+      "review": [
+        {
+          "kind": "resus",
+          "part": "part_a",
+          "heading": "risk_assessment",
+          "token": null,
+          "key": "17c361c44e98afc3",
+          "ruling": "defect"
+        },
+        {
+          "kind": "resus",
+          "part": "part_a",
+          "heading": "risk_assessment",
+          "token": null,
+          "key": "e223f7aae4eb74d0",
+          "ruling": "defect"
+        },
+        {
+          "kind": "medication",
+          "part": "part_b",
+          "heading": "admission_summary",
+          "token": "bisoprolol",
+          "key": "f0d562e52a3c8bc3",
+          "ruling": "acceptable"
+        },
+        {
+          "kind": "medication",
+          "part": "part_b",
+          "heading": "admission_summary",
+          "token": "ticagrelor",
+          "key": "f68754bf91e9267d",
+          "ruling": "acceptable"
+        }
+      ],
+      "latency": {
+        "step2_s": 13.825,
+        "step5a_s": 4.216,
+        "step6_s": 8.538,
+        "critical_s": 22.363
+      },
+      "generation_id": "w6-pipeline-e07-m01-c01-x5/r5/S1",
+      "scenario_id": "S1",
+      "run": 5
+    },
+    {
+      "metric": "compose_clinical",
+      "metric_version": 2,
+      "checks": {},
+      "counts": {
+        "sections": 20,
+        "sections_a": 11,
+        "sections_b": 9,
+        "facts_given": 13,
+        "facts_used_in_a": 13,
+        "header_facts_given": 4,
+        "contradictions_given": 0,
+        "contradictions_in_a": 0,
+        "gp_actions_given": 0,
+        "gp_actions_in_b": 0,
+        "unverified_given": 0,
+        "unverified_used": 0,
+        "checks": 0
+      },
+      "box_problems": 0,
+      "field_omitted": [],
+      "years_vs_notes": [],
+      "review": [],
+      "latency": {
+        "step2_s": 8.74,
+        "step5a_s": 2.002,
+        "step6_s": 6.86,
+        "critical_s": 15.6
+      },
+      "generation_id": "w6-pipeline-e07-m01-c01-x5/r5/S2",
+      "scenario_id": "S2",
+      "run": 5
+    },
+    {
+      "metric": "compose_clinical",
+      "metric_version": 2,
+      "checks": {
+        "heading_wrong_part": 1
+      },
+      "counts": {
+        "sections": 21,
+        "sections_a": 12,
+        "sections_b": 9,
+        "facts_given": 18,
+        "facts_used_in_a": 18,
+        "header_facts_given": 6,
+        "contradictions_given": 0,
+        "contradictions_in_a": 0,
+        "gp_actions_given": 1,
+        "gp_actions_in_b": 1,
+        "unverified_given": 2,
+        "unverified_used": 2,
+        "checks": 1
+      },
+      "box_problems": 0,
+      "field_omitted": [],
+      "years_vs_notes": [],
+      "review": [
+        {
+          "kind": "medication",
+          "part": "part_a",
+          "heading": "diagnosis",
+          "token": "sertraline",
+          "key": "6063df3b96800211",
+          "ruling": "acceptable"
+        },
+        {
+          "kind": "medication",
+          "part": "part_a",
+          "heading": "follow_up",
+          "token": "sertraline",
+          "key": "e7e213af42dac30e",
+          "ruling": "acceptable"
+        },
+        {
+          "kind": "medication",
+          "part": "part_a",
+          "heading": "gp_actions",
+          "token": "sertraline",
+          "key": "76e9ad4792c01f9a",
+          "ruling": "acceptable"
+        },
+        {
+          "kind": "medication",
+          "part": "part_b",
+          "heading": "admission_summary",
+          "token": "sertraline",
+          "key": "0b2a0855f1a6afa4",
+          "ruling": "acceptable"
+        },
+        {
+          "kind": "medication",
+          "part": "part_b",
+          "heading": "diagnosis",
+          "token": "sertraline",
+          "key": "61554557582d28b4",
+          "ruling": "acceptable"
+        },
+        {
+          "kind": "medication",
+          "part": "part_b",
+          "heading": "gp_actions",
+          "token": "sertraline",
+          "key": "135e4f8f9837b1b2",
+          "ruling": "acceptable"
+        },
+        {
+          "kind": "medication",
+          "part": "part_b",
+          "heading": "follow_up",
+          "token": "sertraline",
+          "key": "e1e8499a9d8f3c0e",
+          "ruling": "acceptable"
+        }
+      ],
+      "latency": {
+        "step2_s": 12.582,
+        "step5a_s": 1.811,
+        "step6_s": 9.023,
+        "critical_s": 21.605
+      },
+      "generation_id": "w6-pipeline-e07-m01-c01-x5/r5/S3",
+      "scenario_id": "S3",
+      "run": 5
+    },
+    {
+      "metric": "compose_clinical",
+      "metric_version": 2,
+      "checks": {},
+      "counts": {
+        "sections": 19,
+        "sections_a": 11,
+        "sections_b": 8,
+        "facts_given": 14,
+        "facts_used_in_a": 14,
+        "header_facts_given": 5,
+        "contradictions_given": 0,
+        "contradictions_in_a": 0,
+        "gp_actions_given": 0,
+        "gp_actions_in_b": 0,
+        "unverified_given": 0,
+        "unverified_used": 0,
+        "checks": 0
+      },
+      "box_problems": 0,
+      "field_omitted": [],
+      "years_vs_notes": [],
+      "review": [],
+      "latency": {
+        "step2_s": 9.986,
+        "step5a_s": 0.636,
+        "step6_s": 7.224,
+        "critical_s": 17.21
+      },
+      "generation_id": "w6-pipeline-e07-m01-c01-x5/r5/S4",
+      "scenario_id": "S4",
+      "run": 5
+    },
+    {
+      "metric": "compose_clinical",
+      "metric_version": 2,
+      "checks": {},
+      "counts": {
+        "sections": 19,
+        "sections_a": 11,
+        "sections_b": 8,
+        "facts_given": 15,
+        "facts_used_in_a": 15,
+        "header_facts_given": 5,
+        "contradictions_given": 0,
+        "contradictions_in_a": 0,
+        "gp_actions_given": 0,
+        "gp_actions_in_b": 0,
+        "unverified_given": 1,
+        "unverified_used": 1,
+        "checks": 0
+      },
+      "box_problems": 0,
+      "field_omitted": [],
+      "years_vs_notes": [],
+      "review": [],
+      "latency": {
+        "step2_s": 9.794,
+        "step5a_s": 0.764,
+        "step6_s": 7.517,
+        "critical_s": 17.311
+      },
+      "generation_id": "w6-pipeline-e07-m01-c01-x5/r5/S8",
+      "scenario_id": "S8",
+      "run": 5
+    },
+    {
+      "metric": "compose_clinical",
+      "metric_version": 2,
+      "checks": {},
+      "counts": {
+        "sections": 19,
+        "sections_a": 11,
+        "sections_b": 8,
+        "facts_given": 12,
+        "facts_used_in_a": 12,
+        "header_facts_given": 5,
+        "contradictions_given": 0,
+        "contradictions_in_a": 0,
+        "gp_actions_given": 1,
+        "gp_actions_in_b": 1,
+        "unverified_given": 2,
+        "unverified_used": 1,
+        "checks": 0
+      },
+      "box_problems": 0,
+      "field_omitted": [],
+      "years_vs_notes": [],
+      "review": [
+        {
+          "kind": "medication",
+          "part": "part_b",
+          "heading": "admission_summary",
+          "token": "insulin",
+          "key": "dc217a310fbf7fa2",
+          "ruling": "acceptable"
+        },
+        {
+          "kind": "medication",
+          "part": "part_b",
+          "heading": "admission_summary",
+          "token": "insulin",
+          "key": "70fb747ec6ecf3e3",
+          "ruling": "acceptable"
+        }
+      ],
+      "latency": {
+        "step2_s": 9.171,
+        "step5a_s": 1.474,
+        "step6_s": 7.31,
+        "critical_s": 16.481
+      },
+      "generation_id": "w6-pipeline-e07-m01-c01-x5/r5/S9",
+      "scenario_id": "S9",
+      "run": 5
+    },
+    {
+      "metric": "compose_clinical",
+      "metric_version": 2,
+      "checks": {},
+      "counts": {
+        "sections": 19,
+        "sections_a": 11,
+        "sections_b": 8,
+        "facts_given": 13,
+        "facts_used_in_a": 13,
+        "header_facts_given": 4,
+        "contradictions_given": 0,
+        "contradictions_in_a": 0,
+        "gp_actions_given": 1,
+        "gp_actions_in_b": 1,
+        "unverified_given": 0,
+        "unverified_used": 0,
+        "checks": 0
+      },
+      "box_problems": 0,
+      "field_omitted": [],
+      "years_vs_notes": [],
+      "review": [
+        {
+          "kind": "medication",
+          "part": "part_a",
+          "heading": "vte_assessment",
+          "token": "enoxaparin",
+          "key": "eced13695e86a35a",
+          "ruling": "acceptable"
+        },
+        {
+          "kind": "medication",
+          "part": "part_b",
+          "heading": "admission_summary",
+          "token": "oral",
+          "key": "c027540a1914f299",
+          "ruling": "acceptable"
+        }
+      ],
+      "latency": {
+        "step2_s": 9.878,
+        "step5a_s": 2.815,
+        "step6_s": 6.135,
+        "critical_s": 16.013
+      },
+      "generation_id": "w6-pipeline-e07-m01-c01-x5/r5/S10",
+      "scenario_id": "S10",
+      "run": 5
+    },
+    {
+      "metric": "compose_clinical",
+      "metric_version": 2,
+      "checks": {
+        "resus_text_outside": 1
+      },
+      "counts": {
+        "sections": 19,
+        "sections_a": 11,
+        "sections_b": 8,
+        "facts_given": 22,
+        "facts_used_in_a": 22,
+        "header_facts_given": 4,
+        "contradictions_given": 0,
+        "contradictions_in_a": 0,
+        "gp_actions_given": 0,
+        "gp_actions_in_b": 0,
+        "unverified_given": 0,
+        "unverified_used": 0,
+        "checks": 1
+      },
+      "box_problems": 0,
+      "field_omitted": [],
+      "years_vs_notes": [],
+      "review": [
+        {
+          "kind": "resus",
+          "part": "part_a",
+          "heading": "treatment",
+          "token": null,
+          "key": "e610600fb153f192",
+          "ruling": "defect"
+        },
+        {
+          "kind": "medication",
+          "part": "part_a",
+          "heading": "vte_assessment",
+          "token": "enoxaparin",
+          "key": "1db9e41314ccca28",
+          "ruling": "acceptable"
+        },
+        {
+          "kind": "medication",
+          "part": "part_b",
+          "heading": "admission_summary",
+          "token": "enoxaparin",
+          "key": "8a007c98369974f0",
+          "ruling": "acceptable"
+        }
+      ],
+      "latency": {
+        "step2_s": 13.381,
+        "step5a_s": 2.159,
+        "step6_s": 8.09,
+        "critical_s": 21.471
+      },
+      "generation_id": "w6-pipeline-e07-m01-c01-x5/r5/S11",
+      "scenario_id": "S11",
+      "run": 5
+    },
+    {
+      "metric": "compose_clinical",
+      "metric_version": 2,
+      "checks": {
+        "resus_text_outside": 2
+      },
+      "counts": {
+        "sections": 19,
+        "sections_a": 11,
+        "sections_b": 8,
+        "facts_given": 37,
+        "facts_used_in_a": 37,
+        "header_facts_given": 2,
+        "contradictions_given": 0,
+        "contradictions_in_a": 0,
+        "gp_actions_given": 0,
+        "gp_actions_in_b": 0,
+        "unverified_given": 0,
+        "unverified_used": 0,
+        "checks": 2
+      },
+      "box_problems": 0,
+      "field_omitted": [],
+      "years_vs_notes": [],
+      "review": [
+        {
+          "kind": "resus",
+          "part": "part_a",
+          "heading": "treatment",
+          "token": null,
+          "key": "48596a2a35e5d120",
+          "ruling": "acceptable"
+        },
+        {
+          "kind": "resus",
+          "part": "part_b",
+          "heading": "admission_summary",
+          "token": null,
+          "key": "11141ba9f1ea84cf",
+          "ruling": "acceptable"
+        }
+      ],
+      "latency": {
+        "step2_s": 13.1,
+        "step5a_s": 0.717,
+        "step6_s": 9.544,
+        "critical_s": 22.644
+      },
+      "generation_id": "w6-pipeline-e07-m01-c01-x5/r5/S12",
+      "scenario_id": "S12",
+      "run": 5
+    },
+    {
+      "metric": "compose_clinical",
+      "metric_version": 2,
+      "checks": {},
+      "counts": {
+        "sections": 19,
+        "sections_a": 11,
+        "sections_b": 8,
+        "facts_given": 24,
+        "facts_used_in_a": 24,
+        "header_facts_given": 4,
+        "contradictions_given": 0,
+        "contradictions_in_a": 0,
+        "gp_actions_given": 1,
+        "gp_actions_in_b": 1,
+        "unverified_given": 0,
+        "unverified_used": 0,
+        "checks": 0
+      },
+      "box_problems": 0,
+      "field_omitted": [],
+      "years_vs_notes": [],
+      "review": [
+        {
+          "kind": "medication",
+          "part": "part_a",
+          "heading": "key_investigations",
+          "token": "wound",
+          "key": "da4289961340e64f",
+          "ruling": "acceptable"
+        },
+        {
+          "kind": "medication",
+          "part": "part_a",
+          "heading": "follow_up",
+          "token": "wound",
+          "key": "ea994f4bf0f9a64e",
+          "ruling": "acceptable"
+        },
+        {
+          "kind": "medication",
+          "part": "part_b",
+          "heading": "admission_summary",
+          "token": "wound",
+          "key": "b7a812a8c7049462",
+          "ruling": "acceptable"
+        },
+        {
+          "kind": "medication",
+          "part": "part_b",
+          "heading": "admission_summary",
+          "token": "wound",
+          "key": "00b4a00003d3292d",
+          "ruling": "acceptable"
+        },
+        {
+          "kind": "medication",
+          "part": "part_b",
+          "heading": "follow_up",
+          "token": "wound",
+          "key": "963ba729941da881",
+          "ruling": "acceptable"
+        }
+      ],
+      "latency": {
+        "step2_s": 13.659,
+        "step5a_s": 3.267,
+        "step6_s": 9.109,
+        "critical_s": 22.768
+      },
+      "generation_id": "w6-pipeline-e07-m01-c01-x5/r5/S13",
+      "scenario_id": "S13",
+      "run": 5
+    },
+    {
+      "metric": "compose_clinical",
+      "metric_version": 2,
+      "checks": {},
+      "counts": {
+        "sections": 19,
+        "sections_a": 11,
+        "sections_b": 8,
+        "facts_given": 17,
+        "facts_used_in_a": 17,
+        "header_facts_given": 4,
+        "contradictions_given": 0,
+        "contradictions_in_a": 0,
+        "gp_actions_given": 1,
+        "gp_actions_in_b": 1,
+        "unverified_given": 0,
+        "unverified_used": 0,
+        "checks": 0
+      },
+      "box_problems": 0,
+      "field_omitted": [],
+      "years_vs_notes": [],
+      "review": [
+        {
+          "kind": "medication",
+          "part": "part_b",
+          "heading": "admission_summary",
+          "token": "aspirin",
+          "key": "401465cdd4fb32b7",
+          "ruling": "acceptable"
+        },
+        {
+          "kind": "medication",
+          "part": "part_b",
+          "heading": "admission_summary",
+          "token": "apixaban",
+          "key": "eafca7d4eec257ff",
+          "ruling": "acceptable"
+        }
+      ],
+      "latency": {
+        "step2_s": 14.466,
+        "step5a_s": 3.503,
+        "step6_s": 6.965,
+        "critical_s": 21.431
+      },
+      "generation_id": "w6-pipeline-e07-m01-c01-x5/r5/S14",
+      "scenario_id": "S14",
+      "run": 5
+    },
+    {
+      "metric": "compose_clinical",
+      "metric_version": 2,
+      "checks": {
+        "resus_text_outside": 2
+      },
+      "counts": {
+        "sections": 19,
+        "sections_a": 11,
+        "sections_b": 8,
+        "facts_given": 21,
+        "facts_used_in_a": 21,
+        "header_facts_given": 1,
+        "contradictions_given": 0,
+        "contradictions_in_a": 0,
+        "gp_actions_given": 1,
+        "gp_actions_in_b": 1,
+        "unverified_given": 1,
+        "unverified_used": 1,
+        "checks": 2
+      },
+      "box_problems": 0,
+      "field_omitted": [],
+      "years_vs_notes": [],
+      "review": [
+        {
+          "kind": "resus",
+          "part": "part_a",
+          "heading": "treatment",
+          "token": null,
+          "key": "06471b454f3a4546",
+          "ruling": "defect"
+        },
+        {
+          "kind": "resus",
+          "part": "part_a",
+          "heading": "treatment",
+          "token": null,
+          "key": "373a5f16a44100de",
+          "ruling": "acceptable"
+        },
+        {
+          "kind": "medication",
+          "part": "part_b",
+          "heading": "admission_summary",
+          "token": "prednisolone",
+          "key": "3362066b39e6dc31",
+          "ruling": "acceptable"
+        },
+        {
+          "kind": "medication",
+          "part": "part_b",
+          "heading": "admission_summary",
+          "token": "oral",
+          "key": "60ce96670d6d5ec5",
+          "ruling": "acceptable"
+        },
+        {
+          "kind": "medication",
+          "part": "part_b",
+          "heading": "admission_summary",
+          "token": "amoxicillin",
+          "key": "294289444c8142e3",
+          "ruling": "acceptable"
+        },
+        {
+          "kind": "medication",
+          "part": "part_b",
+          "heading": "admission_summary",
+          "token": "prednisolone",
+          "key": "f529546b1d5bb405",
+          "ruling": "acceptable"
+        },
+        {
+          "kind": "resus",
+          "part": "part_b",
+          "heading": "admission_summary",
+          "token": null,
+          "key": "1d427ae6bbf6bae9",
+          "ruling": "defect"
+        }
+      ],
+      "latency": {
+        "step2_s": 13.018,
+        "step5a_s": 3.354,
+        "step6_s": 7.987,
+        "critical_s": 21.005
+      },
+      "generation_id": "w6-pipeline-e07-m01-c01-x5/r5/S15",
+      "scenario_id": "S15",
+      "run": 5
+    },
+    {
+      "metric": "compose_clinical",
+      "metric_version": 2,
+      "checks": {},
+      "counts": {
+        "sections": 19,
+        "sections_a": 11,
+        "sections_b": 8,
+        "facts_given": 18,
+        "facts_used_in_a": 18,
+        "header_facts_given": 4,
+        "contradictions_given": 0,
+        "contradictions_in_a": 0,
+        "gp_actions_given": 1,
+        "gp_actions_in_b": 1,
+        "unverified_given": 0,
+        "unverified_used": 0,
+        "checks": 0
+      },
+      "box_problems": 0,
+      "field_omitted": [],
+      "years_vs_notes": [],
+      "review": [
+        {
+          "kind": "medication",
+          "part": "part_a",
+          "heading": "diagnosis",
+          "token": "warfarin",
+          "key": "a64b56f343c0eab6",
+          "ruling": "acceptable"
+        },
+        {
+          "kind": "medication",
+          "part": "part_b",
+          "heading": "admission_summary",
+          "token": "warfarin",
+          "key": "0182e276346b0951",
+          "ruling": "acceptable"
+        },
+        {
+          "kind": "medication",
+          "part": "part_b",
+          "heading": "admission_summary",
+          "token": "ramipril",
+          "key": "08632c388eb515f0",
+          "ruling": "acceptable"
+        },
+        {
+          "kind": "medication",
+          "part": "part_b",
+          "heading": "admission_summary",
+          "token": "metformin",
+          "key": "d9240ecfd003c345",
+          "ruling": "acceptable"
+        },
+        {
+          "kind": "medication",
+          "part": "part_b",
+          "heading": "admission_summary",
+          "token": "bisoprolol",
+          "key": "1657d2b71605a647",
+          "ruling": "acceptable"
+        },
+        {
+          "kind": "medication",
+          "part": "part_b",
+          "heading": "admission_summary",
+          "token": "warfarin",
+          "key": "400159dc5b0f3eb5",
+          "ruling": "acceptable"
+        },
+        {
+          "kind": "medication",
+          "part": "part_b",
+          "heading": "admission_summary",
+          "token": "enoxaparin",
+          "key": "6401c31589dacfe7",
+          "ruling": "acceptable"
+        },
+        {
+          "kind": "medication",
+          "part": "part_b",
+          "heading": "diagnosis",
+          "token": "warfarin",
+          "key": "6cc5b376bb928982",
+          "ruling": "acceptable"
+        }
+      ],
+      "latency": {
+        "step2_s": 12.277,
+        "step5a_s": 3.621,
+        "step6_s": 7.02,
+        "critical_s": 19.297
+      },
+      "generation_id": "w6-pipeline-e07-m01-c01-x5/r5/S16",
+      "scenario_id": "S16",
+      "run": 5
+    },
+    {
+      "metric": "compose_clinical",
+      "metric_version": 2,
+      "checks": {},
+      "counts": {
+        "sections": 19,
+        "sections_a": 11,
+        "sections_b": 8,
+        "facts_given": 21,
+        "facts_used_in_a": 21,
+        "header_facts_given": 1,
+        "contradictions_given": 0,
+        "contradictions_in_a": 0,
+        "gp_actions_given": 3,
+        "gp_actions_in_b": 3,
+        "unverified_given": 0,
+        "unverified_used": 0,
+        "checks": 0
+      },
+      "box_problems": 0,
+      "field_omitted": [],
+      "years_vs_notes": [],
+      "review": [
+        {
+          "kind": "medication",
+          "part": "part_a",
+          "heading": "diagnosis",
+          "token": "pylori",
+          "key": "966d7b267a2754f8",
+          "ruling": "acceptable"
+        },
+        {
+          "kind": "medication",
+          "part": "part_a",
+          "heading": "key_investigations",
+          "token": "pylori",
+          "key": "5553875687853a9a",
+          "ruling": "acceptable"
+        },
+        {
+          "kind": "medication",
+          "part": "part_a",
+          "heading": "gp_actions",
+          "token": "pylori",
+          "key": "2ce8d1596bafe260",
+          "ruling": "acceptable"
+        },
+        {
+          "kind": "medication",
+          "part": "part_a",
+          "heading": "gp_actions",
+          "token": "apixaban",
+          "key": "626c120bb1a31f48",
+          "ruling": "acceptable"
+        },
+        {
+          "kind": "medication",
+          "part": "part_b",
+          "heading": "admission_summary",
+          "token": "pylori",
+          "key": "079792f7a4aff6a2",
+          "ruling": "acceptable"
+        },
+        {
+          "kind": "medication",
+          "part": "part_b",
+          "heading": "admission_summary",
+          "token": "apixaban",
+          "key": "ea4ea69e844bd46c",
+          "ruling": "acceptable"
+        },
+        {
+          "kind": "medication",
+          "part": "part_b",
+          "heading": "diagnosis",
+          "token": "pylori",
+          "key": "f94d4953f847e65a",
+          "ruling": "acceptable"
+        },
+        {
+          "kind": "medication",
+          "part": "part_b",
+          "heading": "gp_actions",
+          "token": "pylori",
+          "key": "e8a5cc27f2adec3e",
+          "ruling": "acceptable"
+        },
+        {
+          "kind": "medication",
+          "part": "part_b",
+          "heading": "gp_actions",
+          "token": "apixaban",
+          "key": "b2b2769adec1a6f1",
+          "ruling": "acceptable"
+        }
+      ],
+      "latency": {
+        "step2_s": 12.699,
+        "step5a_s": 4.215,
+        "step6_s": 7.356,
+        "critical_s": 20.055
+      },
+      "generation_id": "w6-pipeline-e07-m01-c01-x5/r5/S17",
+      "scenario_id": "S17",
+      "run": 5
+    },
+    {
+      "metric": "compose_clinical",
+      "metric_version": 2,
+      "checks": {},
+      "counts": {
+        "sections": 19,
+        "sections_a": 11,
+        "sections_b": 8,
+        "facts_given": 14,
+        "facts_used_in_a": 14,
+        "header_facts_given": 4,
+        "contradictions_given": 0,
+        "contradictions_in_a": 0,
+        "gp_actions_given": 1,
+        "gp_actions_in_b": 1,
+        "unverified_given": 1,
+        "unverified_used": 1,
+        "checks": 0
+      },
+      "box_problems": 0,
+      "field_omitted": [],
+      "years_vs_notes": [],
+      "review": [],
+      "latency": {
+        "step2_s": 10.124,
+        "step5a_s": 0.616,
+        "step6_s": 6.495,
+        "critical_s": 16.619
+      },
+      "generation_id": "w6-pipeline-e07-m01-c01-x5/r5/S18",
+      "scenario_id": "S18",
+      "run": 5
+    },
+    {
+      "metric": "compose_clinical",
+      "metric_version": 2,
+      "checks": {
+        "resus_text_outside": 2
+      },
+      "counts": {
+        "sections": 19,
+        "sections_a": 11,
+        "sections_b": 8,
+        "facts_given": 20,
+        "facts_used_in_a": 20,
+        "header_facts_given": 3,
+        "contradictions_given": 0,
+        "contradictions_in_a": 0,
+        "gp_actions_given": 1,
+        "gp_actions_in_b": 1,
+        "unverified_given": 0,
+        "unverified_used": 0,
+        "checks": 2
+      },
+      "box_problems": 0,
+      "field_omitted": [],
+      "years_vs_notes": [],
+      "review": [
+        {
+          "kind": "resus",
+          "part": "part_a",
+          "heading": "treatment",
+          "token": null,
+          "key": "e47e03d9c1fc84fb",
+          "ruling": "defect"
+        },
+        {
+          "kind": "medication",
+          "part": "part_b",
+          "heading": "admission_summary",
+          "token": "oral",
+          "key": "d9a194d55d36dbea",
+          "ruling": "acceptable"
+        },
+        {
+          "kind": "medication",
+          "part": "part_b",
+          "heading": "admission_summary",
+          "token": "co-amoxiclav",
+          "key": "664102a17e81e1a6",
+          "ruling": "acceptable"
+        },
+        {
+          "kind": "resus",
+          "part": "part_b",
+          "heading": "admission_summary",
+          "token": null,
+          "key": "46bff501f49b0371",
+          "ruling": "defect"
+        }
+      ],
+      "latency": {
+        "step2_s": 11.351,
+        "step5a_s": 3.362,
+        "step6_s": 7.501,
+        "critical_s": 18.852
+      },
+      "generation_id": "w6-pipeline-e07-m01-c01-x5/r5/A5",
+      "scenario_id": "A5",
+      "run": 5
+    },
+    {
+      "metric": "compose_clinical",
+      "metric_version": 2,
+      "checks": {
+        "resus_text_outside": 2
+      },
+      "counts": {
+        "sections": 21,
+        "sections_a": 12,
+        "sections_b": 9,
+        "facts_given": 13,
+        "facts_used_in_a": 13,
+        "header_facts_given": 4,
+        "contradictions_given": 1,
+        "contradictions_in_a": 1,
+        "gp_actions_given": 1,
+        "gp_actions_in_b": 1,
+        "unverified_given": 0,
+        "unverified_used": 0,
+        "checks": 2
+      },
+      "box_problems": 0,
+      "field_omitted": [],
+      "years_vs_notes": [],
+      "review": [
+        {
+          "kind": "resus",
+          "part": "part_a",
+          "heading": "treatment",
+          "token": null,
+          "key": "fd4f9376b0a66811",
+          "ruling": "defect"
+        },
+        {
+          "kind": "resus",
+          "part": "part_a",
+          "heading": "treatment",
+          "token": null,
+          "key": "1c2b73b6bac7a1a6",
+          "ruling": "defect"
+        },
+        {
+          "kind": "medication",
+          "part": "part_a",
+          "heading": "gp_actions",
+          "token": "digoxin",
+          "key": "9325f4f146013c96",
+          "ruling": "acceptable"
+        },
+        {
+          "kind": "medication",
+          "part": "part_b",
+          "heading": "admission_summary",
+          "token": "bisoprolol",
+          "key": "7a6b1df64ff43d9d",
+          "ruling": "acceptable"
+        },
+        {
+          "kind": "medication",
+          "part": "part_b",
+          "heading": "admission_summary",
+          "token": "digoxin",
+          "key": "b7f712dc120ec56e",
+          "ruling": "acceptable"
+        },
+        {
+          "kind": "resus",
+          "part": "part_b",
+          "heading": "admission_summary",
+          "token": null,
+          "key": "90483c3ea1e5e5c3",
+          "ruling": "defect"
+        },
+        {
+          "kind": "medication",
+          "part": "part_b",
+          "heading": "gp_actions",
+          "token": "digoxin",
+          "key": "5aaaf747a9590c0c",
+          "ruling": "acceptable"
+        }
+      ],
+      "latency": {
+        "step2_s": 11.594,
+        "step5a_s": 3.482,
+        "step6_s": 6.944,
+        "critical_s": 18.538
+      },
+      "generation_id": "w6-pipeline-e07-m01-c01-x5/r5/B6",
+      "scenario_id": "B6",
+      "run": 5
+    },
+    {
+      "metric": "compose_clinical",
+      "metric_version": 2,
+      "checks": {},
+      "counts": {
+        "sections": 19,
+        "sections_a": 11,
+        "sections_b": 8,
+        "facts_given": 5,
+        "facts_used_in_a": 5,
+        "header_facts_given": 4,
+        "contradictions_given": 0,
+        "contradictions_in_a": 0,
+        "gp_actions_given": 0,
+        "gp_actions_in_b": 0,
+        "unverified_given": 0,
+        "unverified_used": 0,
+        "checks": 0
+      },
+      "box_problems": 0,
+      "field_omitted": [],
+      "years_vs_notes": [],
+      "review": [],
+      "latency": {
+        "step2_s": 5.295,
+        "step5a_s": 0.732,
+        "step6_s": 4.468,
+        "critical_s": 9.763
+      },
+      "generation_id": "w6-pipeline-e07-m01-c01-x5/r5/C7",
+      "scenario_id": "C7",
+      "run": 5
+    }
+  ],
+  "summary": {
+    "n_records": 90,
+    "n_scored": 90,
+    "skipped": [],
+    "year_added_step6": {
+      "findings": 0,
+      "generations": 0
+    },
+    "years_vs_notes": {
+      "step_6": 0,
+      "step_2": 0,
+      "generations": 0
+    },
+    "boxes_correct": 90,
+    "unknown_fact_ids": 4,
+    "excluded_fact_ids": 0,
+    "contradictions": {
+      "given": 12,
+      "in_a": 9
+    },
+    "field_omitted": 0,
+    "field_omitted_step_check": 1,
+    "gp_action_missing_in_b": 0,
+    "facts": {
+      "given": 1631,
+      "used_in_a": 1627
+    },
+    "unverified": {
+      "given": 33,
+      "used": 26
+    },
+    "review": {
+      "advice": {
+        "flagged": 0,
+        "defect": 0,
+        "acceptable": 0,
+        "pending": 0
+      },
+      "resus": {
+        "flagged": 59,
+        "defect": 43,
+        "acceptable": 16,
+        "pending": 0
+      },
+      "medication": {
+        "flagged": 248,
+        "defect": 0,
+        "acceptable": 248,
+        "pending": 0
+      }
+    },
+    "other_checks": {
+      "heading_wrong_part": 1,
+      "heading_repeated": 0,
+      "required_heading_missing": 0,
+      "box_not_exact": 0,
+      "stray_placeholder": 0,
+      "fact_unused": 4,
+      "inferred_unflagged": 0,
+      "not_documented_with_content": 6,
+      "conflict_section_uncited": 0,
+      "resus_text_outside": 51
+    },
+    "latency": {
+      "step6_p50": 7.437,
+      "step6_p95": 9.273,
+      "step6_max": 9.544,
+      "critical_p50": 18.963,
+      "critical_p95": 22.77,
+      "critical_max": 23.103,
+      "critical_over_watch": 0,
+      "watch_s": 200,
+      "median_step6": 7.453
+    }
+  }
+}

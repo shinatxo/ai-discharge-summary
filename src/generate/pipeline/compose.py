@@ -288,7 +288,12 @@ def check_composition(wire: dict, facts: dict) -> tuple[list[dict], list[dict], 
         for i in items:
             if i["fact_id"] not in a_ids:
                 flag("fact_unused", "part_a", fact_id=i["fact_id"])
-        if items and not any(i["fact_id"] in a_ids for i in items):
+        # Field-level omission is defined on DOCUMENTED fields (the pass bar written
+        # 27 Oct 2026). Items under a not_documented field are a step-2 artefact
+        # (step 3 flags them items_on_not_documented); they still count in
+        # fact_unused. Corrected 28 Oct 2026, after the first batch (C7 r1) — CSO R4.
+        if (items and fields[name]["status"] != "not_documented"
+                and not any(i["fact_id"] in a_ids for i in items)):
             flag("field_omitted", "part_a", token=name)
     for i in fields["gp_actions"]["items"]:
         if i["fact_id"] not in b_ids:

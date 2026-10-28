@@ -1,0 +1,1267 @@
+{
+  "record_version": 1,
+  "generation_id": "w6-pipeline-e07-m01-c01-x5/r4/B6",
+  "batch_id": "w6-pipeline-e07-m01-c01-x5",
+  "run": 4,
+  "scenario_id": "B6",
+  "generator": "pipeline",
+  "path": "steps-1-5b-5a-6",
+  "model_id": "anthropic.claude-sonnet-4-6",
+  "region": "eu-west-2",
+  "prompts": {
+    "extract_facts": {
+      "path": "src/generate/pipeline/prompts/extract_facts.md",
+      "file_sha256": "378df3fefedc74177c9dd51c9c8827b86080f632fb3daa734a07c3462ccd760e",
+      "body_sha256": "208ac00d3d6096f05c4ba91137e923aec4054651c042f55d9e7c089bcd7675a2"
+    },
+    "reconcile_medications": {
+      "path": "src/generate/pipeline/prompts/reconcile_medications.md",
+      "file_sha256": "5006968b7010560f437e0eb31f55e9092baebc7a4adf347667bfcb154e8708a0",
+      "body_sha256": "b06f8c12a739b80c3d57f41ceada7dd7b1c2af38bc53159353b68425d09d5acf"
+    },
+    "compose_clinical": {
+      "path": "src/generate/pipeline/prompts/compose_clinical.md",
+      "file_sha256": "95c1688d76caf27a6867dd243ac939d75cf91611f1c7a6b615b9f107955a22c7",
+      "body_sha256": "cb55505a0692ff0aa7548836ab5dc777ac116dd604081d0864a1654284b0282d"
+    }
+  },
+  "prompt_caching": true,
+  "notes_sha256": "fa57541fe0dd7d176b5b46020f94e83903003d8ff0d88cc4443cd33468c757ae",
+  "started_at": "2026-10-28T12:31:55+00:00",
+  "elapsed_s": 22.311,
+  "calls": [
+    {
+      "name": "extract_facts",
+      "input_tokens": 873,
+      "output_tokens": 2045,
+      "cache_read_tokens": 4183,
+      "cache_write_tokens": 0,
+      "stop_reason": "tool_use",
+      "latency_s": 11.641,
+      "throttle_retries": 0
+    },
+    {
+      "name": "reconcile_medications",
+      "input_tokens": 1181,
+      "output_tokens": 480,
+      "cache_read_tokens": 2290,
+      "cache_write_tokens": 0,
+      "stop_reason": "tool_use",
+      "latency_s": 3.513,
+      "throttle_retries": 0
+    },
+    {
+      "name": "compose_clinical",
+      "input_tokens": 978,
+      "output_tokens": 1338,
+      "cache_read_tokens": 2822,
+      "cache_write_tokens": 0,
+      "stop_reason": "tool_use",
+      "latency_s": 7.004,
+      "throttle_retries": 0
+    }
+  ],
+  "steps": {
+    "guard_input": {
+      "notes_sha256": "fa57541fe0dd7d176b5b46020f94e83903003d8ff0d88cc4443cd33468c757ae",
+      "line_count": 20,
+      "flags": []
+    },
+    "extract_facts": {
+      "call": {
+        "model_id": "anthropic.claude-sonnet-4-6",
+        "prompt_sha256": "208ac00d3d6096f05c4ba91137e923aec4054651c042f55d9e7c089bcd7675a2",
+        "stop_reason": "tool_use",
+        "attempts": 1,
+        "input_tokens": 873,
+        "output_tokens": 2045,
+        "cache_read_tokens": 4183,
+        "cache_write_tokens": 0,
+        "latency_ms": 11641
+      }
+    },
+    "validate_facts": {
+      "facts": {
+        "fields": {
+          "age_sex": {
+            "status": "documented",
+            "items": [
+              {
+                "value": "68-year-old female",
+                "cites": [
+                  {
+                    "lines": [
+                      "L001"
+                    ],
+                    "quote": "68F",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "age_sex.0",
+                "citation_status": "verified",
+                "reason": null
+              }
+            ],
+            "field_check": "ok"
+          },
+          "specialty": {
+            "status": "not_documented",
+            "items": [],
+            "field_check": "ok"
+          },
+          "legal_status": {
+            "status": "not_documented",
+            "items": [],
+            "field_check": "ok"
+          },
+          "weight": {
+            "status": "not_documented",
+            "items": [],
+            "field_check": "ok"
+          },
+          "admission_date": {
+            "status": "documented",
+            "items": [
+              {
+                "value": "14/05",
+                "cites": [
+                  {
+                    "lines": [
+                      "L001"
+                    ],
+                    "quote": "14/05",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "admission_date.0",
+                "citation_status": "verified",
+                "reason": null
+              }
+            ],
+            "field_check": "ok"
+          },
+          "discharge_date": {
+            "status": "documented",
+            "items": [
+              {
+                "value": "18/05",
+                "cites": [
+                  {
+                    "lines": [
+                      "L017"
+                    ],
+                    "quote": "18/05",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "discharge_date.0",
+                "citation_status": "verified",
+                "reason": null
+              }
+            ],
+            "field_check": "ok"
+          },
+          "presenting_complaint": {
+            "status": "documented",
+            "items": [
+              {
+                "value": "Palpitations and breathlessness",
+                "cites": [
+                  {
+                    "lines": [
+                      "L001"
+                    ],
+                    "quote": "PC: palpitations and breathlessness.",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "presenting_complaint.0",
+                "citation_status": "verified",
+                "reason": null
+              }
+            ],
+            "field_check": "ok"
+          },
+          "diagnosis_primary": {
+            "status": "documented",
+            "items": [
+              {
+                "value": "New atrial fibrillation with fast ventricular response and mild decompensated heart failure",
+                "cites": [
+                  {
+                    "lines": [
+                      "L001",
+                      "L002"
+                    ],
+                    "quote": "New AF with fast\nventricular response and mild decompensated heart failure.",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "diagnosis_primary.0",
+                "citation_status": "verified",
+                "reason": null
+              }
+            ],
+            "field_check": "ok"
+          },
+          "diagnosis_secondary": {
+            "status": "not_documented",
+            "items": [],
+            "field_check": "ok"
+          },
+          "diagnosis_background": {
+            "status": "documented",
+            "items": [
+              {
+                "value": "Hypertension",
+                "cites": [
+                  {
+                    "lines": [
+                      "L003"
+                    ],
+                    "quote": "PMH: HTN.",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "diagnosis_background.0",
+                "citation_status": "verified",
+                "reason": null
+              }
+            ],
+            "field_check": "ok"
+          },
+          "key_investigations": {
+            "status": "documented",
+            "items": [
+              {
+                "value": "On examination: irregularly irregular pulse, HR 138, BP 110/70, bibasal creps",
+                "cites": [
+                  {
+                    "lines": [
+                      "L005"
+                    ],
+                    "quote": "irregularly irregular, HR 138, BP 110/70, bibasal creps.",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "key_investigations.0",
+                "citation_status": "verified",
+                "reason": null
+              }
+            ],
+            "field_check": "ok"
+          },
+          "treatment": {
+            "status": "documented",
+            "items": [
+              {
+                "value": "Rate control, continued anticoagulation, diuresis",
+                "cites": [
+                  {
+                    "lines": [
+                      "L005",
+                      "L006"
+                    ],
+                    "quote": "Plan: rate control,\ncontinue anticoagulation, diurese.",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "treatment.0",
+                "citation_status": "verified",
+                "reason": null
+              },
+              {
+                "value": "Digoxin loading — rate improved",
+                "cites": [
+                  {
+                    "lines": [
+                      "L008"
+                    ],
+                    "quote": "Digoxin loaded, rate improved.",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "treatment.1",
+                "citation_status": "verified",
+                "reason": null
+              },
+              {
+                "value": "Bisoprolol increased to 5mg OD",
+                "cites": [
+                  {
+                    "lines": [
+                      "L008"
+                    ],
+                    "quote": "Bisoprolol increased to 5mg OD.",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "treatment.2",
+                "citation_status": "verified",
+                "reason": null
+              },
+              {
+                "value": "DNACPR form completed after an overnight deterioration",
+                "cites": [
+                  {
+                    "lines": [
+                      "L011",
+                      "L012"
+                    ],
+                    "quote": "DNACPR form completed by Dr Lowe after an overnight\ndeterioration.",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "treatment.3",
+                "citation_status": "verified",
+                "reason": null
+              },
+              {
+                "value": "DNACPR revoked; patient and family wish for full active treatment — for resuscitation",
+                "cites": [
+                  {
+                    "lines": [
+                      "L014",
+                      "L015"
+                    ],
+                    "quote": "Patient and family\nwish for full active treatment — DNACPR revoked, for resuscitation.",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "treatment.4",
+                "citation_status": "verified",
+                "reason": null
+              }
+            ],
+            "field_check": "ok"
+          },
+          "risk_assessment": {
+            "status": "not_documented",
+            "items": [],
+            "field_check": "ok"
+          },
+          "allergies": {
+            "status": "documented",
+            "items": [
+              {
+                "value": "No known drug allergies (documented on Day 1)",
+                "cites": [
+                  {
+                    "lines": [
+                      "L004"
+                    ],
+                    "quote": "Allergies: NKDA.",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "allergies.0",
+                "citation_status": "verified",
+                "reason": null
+              },
+              {
+                "value": "Penicillin allergy — rash as a child (patient-reported, documented by nursing note Day 3)",
+                "cites": [
+                  {
+                    "lines": [
+                      "L010"
+                    ],
+                    "quote": "penicillin allergy – rash as a child",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "allergies.1",
+                "citation_status": "verified",
+                "reason": null
+              }
+            ],
+            "field_check": "ok"
+          },
+          "follow_up": {
+            "status": "documented",
+            "items": [
+              {
+                "value": "Cardiology follow-up at 6 weeks",
+                "cites": [
+                  {
+                    "lines": [
+                      "L020"
+                    ],
+                    "quote": "Cardiology 6 weeks.",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "follow_up.0",
+                "citation_status": "verified",
+                "reason": null
+              }
+            ],
+            "field_check": "ok"
+          },
+          "gp_actions": {
+            "status": "documented",
+            "items": [
+              {
+                "value": "Monitor INR and digoxin level",
+                "cites": [
+                  {
+                    "lines": [
+                      "L020"
+                    ],
+                    "quote": "monitor INR and digoxin level.",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "gp_actions.0",
+                "citation_status": "verified",
+                "reason": null
+              }
+            ],
+            "field_check": "ok"
+          },
+          "vte_assessment": {
+            "status": "not_documented",
+            "items": [],
+            "field_check": "ok"
+          }
+        },
+        "medications": {
+          "pre_admission": [
+            {
+              "value": "Bisoprolol 2.5mg OD",
+              "cites": [
+                {
+                  "lines": [
+                    "L003"
+                  ],
+                  "quote": "bisoprolol 2.5mg OD",
+                  "verified": true,
+                  "reason": null
+                }
+              ],
+              "fact_id": "medications.pre_admission.0",
+              "citation_status": "verified",
+              "reason": null
+            },
+            {
+              "value": "Furosemide 40mg OD",
+              "cites": [
+                {
+                  "lines": [
+                    "L003"
+                  ],
+                  "quote": "furosemide 40mg OD",
+                  "verified": true,
+                  "reason": null
+                }
+              ],
+              "fact_id": "medications.pre_admission.1",
+              "citation_status": "verified",
+              "reason": null
+            },
+            {
+              "value": "Warfarin 3mg OD (indication: AF, target INR 2–3)",
+              "cites": [
+                {
+                  "lines": [
+                    "L003",
+                    "L004"
+                  ],
+                  "quote": "warfarin 3mg OD (AF,\ntarget INR 2–3)",
+                  "verified": true,
+                  "reason": null
+                }
+              ],
+              "fact_id": "medications.pre_admission.2",
+              "citation_status": "verified",
+              "reason": null
+            }
+          ],
+          "discharge": [
+            {
+              "value": "Warfarin 5mg OD (as per doctor TTO)",
+              "cites": [
+                {
+                  "lines": [
+                    "L017"
+                  ],
+                  "quote": "TTO (doctor): warfarin 5mg OD.",
+                  "verified": true,
+                  "reason": null
+                }
+              ],
+              "fact_id": "medications.discharge.0",
+              "citation_status": "verified",
+              "reason": null
+            },
+            {
+              "value": "Warfarin 4mg OD (as per pharmacy reconciliation / anticoagulation clinic)",
+              "cites": [
+                {
+                  "lines": [
+                    "L018"
+                  ],
+                  "quote": "warfarin 4mg OD as per anticoagulation clinic.",
+                  "verified": true,
+                  "reason": null
+                }
+              ],
+              "fact_id": "medications.discharge.1",
+              "citation_status": "verified",
+              "reason": null
+            },
+            {
+              "value": "Bisoprolol 5mg OD",
+              "cites": [
+                {
+                  "lines": [
+                    "L019"
+                  ],
+                  "quote": "bisoprolol 5mg OD",
+                  "verified": true,
+                  "reason": null
+                }
+              ],
+              "fact_id": "medications.discharge.2",
+              "citation_status": "verified",
+              "reason": null
+            },
+            {
+              "value": "Furosemide 40mg OD",
+              "cites": [
+                {
+                  "lines": [
+                    "L019"
+                  ],
+                  "quote": "furosemide 40mg OD",
+                  "verified": true,
+                  "reason": null
+                }
+              ],
+              "fact_id": "medications.discharge.3",
+              "citation_status": "verified",
+              "reason": null
+            },
+            {
+              "value": "Digoxin 125mcg OD",
+              "cites": [
+                {
+                  "lines": [
+                    "L019"
+                  ],
+                  "quote": "digoxin 125mcg OD",
+                  "verified": true,
+                  "reason": null
+                }
+              ],
+              "fact_id": "medications.discharge.4",
+              "citation_status": "verified",
+              "reason": null
+            }
+          ],
+          "discharge_status": "listed",
+          "medications_check": "ok"
+        },
+        "resus": {
+          "changed": "yes",
+          "cites": [
+            {
+              "lines": [
+                "L006"
+              ],
+              "quote": "For resus.",
+              "verified": true,
+              "reason": null
+            },
+            {
+              "lines": [
+                "L011",
+                "L012"
+              ],
+              "quote": "DNACPR form completed by Dr Lowe after an overnight\ndeterioration.",
+              "verified": true,
+              "reason": null
+            },
+            {
+              "lines": [
+                "L014",
+                "L015"
+              ],
+              "quote": "Patient and family\nwish for full active treatment — DNACPR revoked, for resuscitation.",
+              "verified": true,
+              "reason": null
+            }
+          ],
+          "form_or_discussion_documented": true,
+          "status_documented": "for_resuscitation",
+          "fact_id": "resus",
+          "citation_status": "verified",
+          "reason": null
+        },
+        "documented_advice": [],
+        "age_group": "adult",
+        "contradictions": [
+          {
+            "value": "Allergy status is contradictory: Day 1 records NKDA; Day 3 nursing note records patient-reported penicillin allergy (rash as a child)",
+            "cites": [
+              {
+                "lines": [
+                  "L004"
+                ],
+                "quote": "Allergies: NKDA.",
+                "verified": true,
+                "reason": null
+              },
+              {
+                "lines": [
+                  "L010"
+                ],
+                "quote": "penicillin allergy – rash as a child",
+                "verified": true,
+                "reason": null
+              }
+            ],
+            "fact_id": "contradictions.0",
+            "citation_status": "verified",
+            "reason": null
+          },
+          {
+            "value": "Warfarin discharge dose is contradictory: doctor TTO records 5mg OD; pharmacy reconciliation note records 4mg OD as per anticoagulation clinic",
+            "cites": [
+              {
+                "lines": [
+                  "L017"
+                ],
+                "quote": "TTO (doctor): warfarin 5mg OD.",
+                "verified": true,
+                "reason": null
+              },
+              {
+                "lines": [
+                  "L018"
+                ],
+                "quote": "warfarin 4mg OD as per anticoagulation clinic.",
+                "verified": true,
+                "reason": null
+              }
+            ],
+            "fact_id": "contradictions.1",
+            "citation_status": "verified",
+            "reason": null
+          }
+        ],
+        "suspicious_text": []
+      },
+      "uncited_lines": [],
+      "counts": {
+        "cites_total": 31,
+        "cites_verified": 31,
+        "items_unverified": 0,
+        "fields_inconsistent": 0,
+        "medications_inconsistent": 0
+      }
+    },
+    "retrieve_evidence": {
+      "medication": [
+        {
+          "line": "L003",
+          "sources": [
+            "cited",
+            "med_header"
+          ],
+          "fact_ids": [
+            "medications.pre_admission.0",
+            "medications.pre_admission.1",
+            "medications.pre_admission.2"
+          ],
+          "flagged": false
+        },
+        {
+          "line": "L004",
+          "sources": [
+            "cited",
+            "med_continuation"
+          ],
+          "fact_ids": [
+            "medications.pre_admission.2"
+          ],
+          "flagged": false
+        },
+        {
+          "line": "L017",
+          "sources": [
+            "cited",
+            "med_header"
+          ],
+          "fact_ids": [
+            "medications.discharge.0"
+          ],
+          "flagged": false
+        },
+        {
+          "line": "L018",
+          "sources": [
+            "cited",
+            "med_continuation"
+          ],
+          "fact_ids": [
+            "medications.discharge.1"
+          ],
+          "flagged": false
+        },
+        {
+          "line": "L019",
+          "sources": [
+            "cited",
+            "med_header"
+          ],
+          "fact_ids": [
+            "medications.discharge.2",
+            "medications.discharge.3",
+            "medications.discharge.4"
+          ],
+          "flagged": false
+        }
+      ],
+      "resus": [
+        {
+          "line": "L006",
+          "sources": [
+            "cited",
+            "resus_term"
+          ],
+          "fact_ids": [
+            "resus"
+          ],
+          "flagged": false
+        },
+        {
+          "line": "L011",
+          "sources": [
+            "cited",
+            "resus_term"
+          ],
+          "fact_ids": [
+            "resus"
+          ],
+          "flagged": false
+        },
+        {
+          "line": "L012",
+          "sources": [
+            "cited"
+          ],
+          "fact_ids": [
+            "resus"
+          ],
+          "flagged": false
+        },
+        {
+          "line": "L014",
+          "sources": [
+            "cited"
+          ],
+          "fact_ids": [
+            "resus"
+          ],
+          "flagged": false
+        },
+        {
+          "line": "L015",
+          "sources": [
+            "cited",
+            "resus_term"
+          ],
+          "fact_ids": [
+            "resus"
+          ],
+          "flagged": false
+        }
+      ],
+      "counts": {
+        "medication_lines": 5,
+        "resus_lines": 5,
+        "medication_matched_not_cited": 0,
+        "resus_matched_not_cited": 0
+      }
+    },
+    "route_resus": {
+      "route": "documented",
+      "forced": "no",
+      "status": "for_resuscitation",
+      "changed": "yes",
+      "cited_lines": [
+        "L006",
+        "L011",
+        "L012",
+        "L014",
+        "L015"
+      ],
+      "rendered": "RESUSCITATION STATUS\nFor resuscitation. *** CHANGED DURING ADMISSION ***\nSource: [L006]: \"For resus.\"; [L011–L012]: \"DNACPR form completed by Dr Lowe after an overnight deterioration.\"; [L014–L015]: \"Patient and family wish for full active treatment — DNACPR revoked, for resuscitation.\""
+    },
+    "select_safety_net": {
+      "route": "fallback",
+      "audience": "adult",
+      "pinned_line": "If you have been given a number to call, use that first. Otherwise, if you are worried, contact your GP or call NHS 111. Call 999 if it is an emergency.",
+      "advice": [],
+      "advice_excluded": 0,
+      "cited_lines": [],
+      "part_ab": "If you have been given a number to call, use that first. Otherwise, if you are worried, contact your GP or call NHS 111. Call 999 if it is an emergency.",
+      "part_c": "If you have been given a number to call, use that first. Otherwise, if you are worried, contact your GP or call NHS 111. Call 999 if it is an emergency."
+    },
+    "reconcile_medications": {
+      "reconciliation": [
+        {
+          "entry_id": "reconciliation.0",
+          "drug": "bisoprolol",
+          "tag": "increased",
+          "basis": "documented",
+          "dose": "5mg",
+          "route": null,
+          "frequency": "OD",
+          "previous": {
+            "dose": "2.5mg",
+            "frequency": "OD"
+          },
+          "conflict": false,
+          "dh_cites": [
+            {
+              "lines": [
+                "L003"
+              ],
+              "quote": "bisoprolol 2.5mg OD",
+              "verified": true,
+              "reason": null
+            }
+          ],
+          "discharge_cites": [
+            {
+              "lines": [
+                "L008"
+              ],
+              "quote": "Bisoprolol increased to 5mg OD",
+              "verified": true,
+              "reason": null
+            },
+            {
+              "lines": [
+                "L019"
+              ],
+              "quote": "bisoprolol 5mg OD",
+              "verified": true,
+              "reason": null
+            }
+          ],
+          "citation_status": "verified",
+          "reason": null,
+          "checks": []
+        },
+        {
+          "entry_id": "reconciliation.1",
+          "drug": "furosemide",
+          "tag": "continued",
+          "basis": "documented",
+          "dose": "40mg",
+          "route": null,
+          "frequency": "OD",
+          "previous": null,
+          "conflict": false,
+          "dh_cites": [
+            {
+              "lines": [
+                "L003"
+              ],
+              "quote": "furosemide 40mg OD",
+              "verified": true,
+              "reason": null
+            }
+          ],
+          "discharge_cites": [
+            {
+              "lines": [
+                "L019"
+              ],
+              "quote": "furosemide 40mg OD",
+              "verified": true,
+              "reason": null
+            }
+          ],
+          "citation_status": "verified",
+          "reason": null,
+          "checks": []
+        },
+        {
+          "entry_id": "reconciliation.2",
+          "drug": "warfarin",
+          "tag": "increased",
+          "basis": "documented",
+          "dose": null,
+          "route": null,
+          "frequency": "OD",
+          "previous": null,
+          "conflict": true,
+          "dh_cites": [
+            {
+              "lines": [
+                "L003",
+                "L004"
+              ],
+              "quote": "warfarin 3mg OD (AF,\ntarget INR 2–3)",
+              "verified": true,
+              "reason": null
+            }
+          ],
+          "discharge_cites": [
+            {
+              "lines": [
+                "L017"
+              ],
+              "quote": "warfarin 5mg OD",
+              "verified": true,
+              "reason": null
+            },
+            {
+              "lines": [
+                "L018"
+              ],
+              "quote": "warfarin 4mg OD as per anticoagulation clinic",
+              "verified": true,
+              "reason": null
+            }
+          ],
+          "citation_status": "verified",
+          "reason": null,
+          "checks": [
+            "previous_missing"
+          ]
+        },
+        {
+          "entry_id": "reconciliation.3",
+          "drug": "digoxin",
+          "tag": "new",
+          "basis": "documented",
+          "dose": "125mcg",
+          "route": null,
+          "frequency": "OD",
+          "previous": null,
+          "conflict": false,
+          "dh_cites": [],
+          "discharge_cites": [
+            {
+              "lines": [
+                "L019"
+              ],
+              "quote": "digoxin 125mcg OD",
+              "verified": true,
+              "reason": null
+            }
+          ],
+          "citation_status": "verified",
+          "reason": null,
+          "checks": []
+        }
+      ],
+      "discharge_status": "listed",
+      "reconciliation_check": "ok",
+      "dh_lines_unreconciled": [],
+      "counts": {
+        "entries": 4,
+        "cites_total": 9,
+        "cites_verified": 9,
+        "entries_unverified": 0,
+        "entries_flagged": 1,
+        "dh_lines_unreconciled": 0
+      },
+      "call": {
+        "model_id": "anthropic.claude-sonnet-4-6",
+        "prompt_sha256": "b06f8c12a739b80c3d57f41ceada7dd7b1c2af38bc53159353b68425d09d5acf",
+        "stop_reason": "tool_use",
+        "attempts": 1,
+        "input_tokens": 1181,
+        "output_tokens": 480,
+        "cache_read_tokens": 2290,
+        "cache_write_tokens": 0,
+        "latency_ms": 3513
+      }
+    },
+    "compose_clinical": {
+      "sections": [
+        {
+          "section_id": "sections.0",
+          "part": "part_a",
+          "heading": "presenting_complaint",
+          "fact_ids": [
+            "presenting_complaint.0"
+          ],
+          "text": "Palpitations and breathlessness.",
+          "unverified_fact_ids": []
+        },
+        {
+          "section_id": "sections.1",
+          "part": "part_a",
+          "heading": "diagnosis",
+          "fact_ids": [
+            "diagnosis_primary.0",
+            "diagnosis_background.0"
+          ],
+          "text": "Primary: New atrial fibrillation with fast ventricular response and mild decompensated heart failure.\n\nBackground: Hypertension.",
+          "unverified_fact_ids": []
+        },
+        {
+          "section_id": "sections.2",
+          "part": "part_a",
+          "heading": "key_investigations",
+          "fact_ids": [
+            "key_investigations.0"
+          ],
+          "text": "On examination: irregularly irregular pulse, HR 138, BP 110/70, bibasal creps.",
+          "unverified_fact_ids": []
+        },
+        {
+          "section_id": "sections.3",
+          "part": "part_a",
+          "heading": "treatment",
+          "fact_ids": [
+            "treatment.0",
+            "treatment.1",
+            "treatment.2",
+            "treatment.3",
+            "treatment.4"
+          ],
+          "text": "Rate control, continued anticoagulation, and diuresis were initiated. Digoxin loading was undertaken and rate improved. Bisoprolol was increased to 5 mg OD.\n\nA DNACPR form was completed following an overnight deterioration. This was subsequently revoked; the patient and family expressed a wish for full active treatment — patient is for resuscitation.",
+          "unverified_fact_ids": []
+        },
+        {
+          "section_id": "sections.4",
+          "part": "part_a",
+          "heading": "resuscitation_status",
+          "fact_ids": [],
+          "text": "{{RESUS}}",
+          "unverified_fact_ids": []
+        },
+        {
+          "section_id": "sections.5",
+          "part": "part_a",
+          "heading": "medications",
+          "fact_ids": [],
+          "text": "{{MEDICATIONS}}",
+          "unverified_fact_ids": []
+        },
+        {
+          "section_id": "sections.6",
+          "part": "part_a",
+          "heading": "medication_conflicts",
+          "fact_ids": [
+            "contradictions.1"
+          ],
+          "text": "Notes conflict: warfarin discharge dose is contradictory — doctor TTO records 5 mg OD; pharmacy reconciliation note records 4 mg OD as per anticoagulation clinic — requires clarification.",
+          "unverified_fact_ids": []
+        },
+        {
+          "section_id": "sections.7",
+          "part": "part_a",
+          "heading": "allergies",
+          "fact_ids": [
+            "allergies.0",
+            "allergies.1",
+            "contradictions.0"
+          ],
+          "text": "Notes conflict: allergy status is contradictory — Day 1 records no known drug allergies; Day 3 nursing note records patient-reported penicillin allergy (rash as a child) — requires clarification.",
+          "unverified_fact_ids": []
+        },
+        {
+          "section_id": "sections.8",
+          "part": "part_a",
+          "heading": "follow_up",
+          "fact_ids": [
+            "follow_up.0"
+          ],
+          "text": "- Cardiology follow-up at 6 weeks.",
+          "unverified_fact_ids": []
+        },
+        {
+          "section_id": "sections.9",
+          "part": "part_a",
+          "heading": "gp_actions",
+          "fact_ids": [
+            "gp_actions.0"
+          ],
+          "text": "- Monitor INR and digoxin level.",
+          "unverified_fact_ids": []
+        },
+        {
+          "section_id": "sections.10",
+          "part": "part_a",
+          "heading": "safety_net",
+          "fact_ids": [],
+          "text": "{{SAFETY_NET}}",
+          "unverified_fact_ids": []
+        },
+        {
+          "section_id": "sections.11",
+          "part": "part_a",
+          "heading": "vte_assessment",
+          "fact_ids": [],
+          "text": "Not documented.",
+          "unverified_fact_ids": []
+        },
+        {
+          "section_id": "sections.12",
+          "part": "part_b",
+          "heading": "opening",
+          "fact_ids": [
+            "age_sex.0",
+            "presenting_complaint.0",
+            "diagnosis_primary.0"
+          ],
+          "text": "A 68-year-old female was admitted with palpitations and breathlessness, with a primary diagnosis of new atrial fibrillation with fast ventricular response and mild decompensated heart failure.",
+          "unverified_fact_ids": []
+        },
+        {
+          "section_id": "sections.13",
+          "part": "part_b",
+          "heading": "admission_summary",
+          "fact_ids": [
+            "key_investigations.0",
+            "treatment.0",
+            "treatment.1",
+            "treatment.2",
+            "treatment.3",
+            "treatment.4"
+          ],
+          "text": "On examination she had an irregularly irregular pulse (HR 138), BP 110/70, and bibasal creps. She was managed with rate control, continued anticoagulation, and diuresis. Digoxin loading was undertaken with improvement in rate, and bisoprolol was increased to 5 mg OD. During the admission a DNACPR form was completed following an overnight deterioration; this was subsequently revoked following discussion with the patient and family, who expressed a wish for full active treatment — she is for resuscitation.",
+          "unverified_fact_ids": []
+        },
+        {
+          "section_id": "sections.14",
+          "part": "part_b",
+          "heading": "diagnosis",
+          "fact_ids": [
+            "diagnosis_primary.0",
+            "diagnosis_background.0"
+          ],
+          "text": "Primary: New atrial fibrillation with fast ventricular response and mild decompensated heart failure.\n\nBackground: Hypertension.",
+          "unverified_fact_ids": []
+        },
+        {
+          "section_id": "sections.15",
+          "part": "part_b",
+          "heading": "resuscitation_status",
+          "fact_ids": [],
+          "text": "{{RESUS}}",
+          "unverified_fact_ids": []
+        },
+        {
+          "section_id": "sections.16",
+          "part": "part_b",
+          "heading": "medications",
+          "fact_ids": [],
+          "text": "{{MEDICATIONS}}",
+          "unverified_fact_ids": []
+        },
+        {
+          "section_id": "sections.17",
+          "part": "part_b",
+          "heading": "medication_conflicts",
+          "fact_ids": [
+            "contradictions.1"
+          ],
+          "text": "Notes conflict: warfarin discharge dose is contradictory — doctor TTO records 5 mg OD; pharmacy reconciliation note records 4 mg OD as per anticoagulation clinic — requires clarification.",
+          "unverified_fact_ids": []
+        },
+        {
+          "section_id": "sections.18",
+          "part": "part_b",
+          "heading": "gp_actions",
+          "fact_ids": [
+            "gp_actions.0"
+          ],
+          "text": "- Monitor INR and digoxin level.",
+          "unverified_fact_ids": []
+        },
+        {
+          "section_id": "sections.19",
+          "part": "part_b",
+          "heading": "follow_up",
+          "fact_ids": [
+            "follow_up.0"
+          ],
+          "text": "- Cardiology follow-up at 6 weeks.",
+          "unverified_fact_ids": []
+        },
+        {
+          "section_id": "sections.20",
+          "part": "part_b",
+          "heading": "safety_net",
+          "fact_ids": [],
+          "text": "{{SAFETY_NET}}",
+          "unverified_fact_ids": []
+        }
+      ],
+      "checks": [
+        {
+          "check": "resus_text_outside",
+          "part": "part_a",
+          "heading": "treatment",
+          "fact_id": null,
+          "token": null
+        },
+        {
+          "check": "resus_text_outside",
+          "part": "part_b",
+          "heading": "admission_summary",
+          "fact_id": null,
+          "token": null
+        }
+      ],
+      "counts": {
+        "sections": 21,
+        "sections_a": 12,
+        "sections_b": 9,
+        "facts_given": 13,
+        "facts_used_in_a": 13,
+        "header_facts_given": 3,
+        "contradictions_given": 2,
+        "contradictions_in_a": 2,
+        "gp_actions_given": 1,
+        "gp_actions_in_b": 1,
+        "unverified_given": 0,
+        "unverified_used": 0,
+        "checks": 2
+      },
+      "age_group": "adult",
+      "call": {
+        "model_id": "anthropic.claude-sonnet-4-6",
+        "prompt_sha256": "cb55505a0692ff0aa7548836ab5dc777ac116dd604081d0864a1654284b0282d",
+        "stop_reason": "tool_use",
+        "attempts": 1,
+        "input_tokens": 978,
+        "output_tokens": 1338,
+        "cache_read_tokens": 2822,
+        "cache_write_tokens": 0,
+        "latency_ms": 7004
+      }
+    }
+  },
+  "output": null,
+  "gate": null,
+  "failed_step": null,
+  "error": null,
+  "step_errors": {},
+  "cost_usd_est": 0.076812
+}

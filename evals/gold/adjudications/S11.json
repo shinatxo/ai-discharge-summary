@@ -20,5 +20,44 @@
       "source": "w4-baseline-v1-x5 (proposed by Claude, approved by the CSO)"
     }
   },
-  "med_rulings": {}
+  "med_rulings": {},
+  "compose_rulings": {
+    "113ca26c8f4b6156": "acceptable",
+    "1db9e41314ccca28": "acceptable",
+    "67e7ce7cea1833fe": "acceptable",
+    "8a007c98369974f0": "acceptable",
+    "bfb06b04ab78f7ef": "acceptable",
+    "cc7d13444abb354a": "acceptable",
+    "d365f4d09ee23668": "defect",
+    "e610600fb153f192": "defect",
+    "e92cc3cb3c65f2fb": "defect"
+  },
+  "compose_rulings_meta": {
+    "by": "Shina Oguntoye (CSO)",
+    "on": "2026-10-28",
+    "source": "w6-pipeline-e07-m01-c01-x5, step 6 (grouped and proposed by Claude, approved by the CSO — rulings R1-R3, 28 Oct 2026)",
+    "groups": {
+      "R1_resus_status": {
+        "verdict": "defect",
+        "reason": "a resuscitation status stated outside {{RESUS}} — against step 6's prompt (any resuscitation status is a critical failure) and ADR-009 [A2] (only code writes a resus status); restates a verified fact filed by step 2 under treatment / background / risk",
+        "keys": [
+          "d365f4d09ee23668",
+          "e610600fb153f192",
+          "e92cc3cb3c65f2fb"
+        ]
+      },
+      "R3_medication": {
+        "verdict": "acceptable",
+        "reason": "a drug named from a fact the section cites (in-hospital treatment, background, GP action, VTE, follow-up); no discharge list restated. 17 narrate an in-hospital dose change — box-vs-prose divergence to be checked at 8a (item 4)",
+        "keys": [
+          "113ca26c8f4b6156",
+          "1db9e41314ccca28",
+          "67e7ce7cea1833fe",
+          "8a007c98369974f0",
+          "bfb06b04ab78f7ef",
+          "cc7d13444abb354a"
+        ]
+      }
+    }
+  }
 }

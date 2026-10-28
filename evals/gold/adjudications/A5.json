@@ -10,5 +10,54 @@
       "on": "2026-10-07",
       "source": "w4-baseline-v1-x5 (proposed by Claude, approved by the CSO)"
     }
+  },
+  "compose_rulings": {
+    "1c105b38d9c57ae8": "acceptable",
+    "46bff501f49b0371": "defect",
+    "481b815c8341b946": "acceptable",
+    "664102a17e81e1a6": "acceptable",
+    "97c1c1db899b4885": "defect",
+    "aa17a7297fe8a500": "acceptable",
+    "b47ff3a8391fe524": "defect",
+    "bfa6de0e11c2fb8b": "acceptable",
+    "ccd50676f00ea2d6": "acceptable",
+    "d356742187ca4da5": "defect",
+    "d3f2bf62587bee1a": "acceptable",
+    "d9a194d55d36dbea": "acceptable",
+    "e47e03d9c1fc84fb": "defect",
+    "f809728133c85434": "acceptable"
+  },
+  "compose_rulings_meta": {
+    "by": "Shina Oguntoye (CSO)",
+    "on": "2026-10-28",
+    "source": "w6-pipeline-e07-m01-c01-x5, step 6 (grouped and proposed by Claude, approved by the CSO — rulings R1-R3, 28 Oct 2026)",
+    "groups": {
+      "R1_resus_status": {
+        "verdict": "defect",
+        "reason": "a resuscitation status stated outside {{RESUS}} — against step 6's prompt (any resuscitation status is a critical failure) and ADR-009 [A2] (only code writes a resus status); restates a verified fact filed by step 2 under treatment / background / risk",
+        "keys": [
+          "46bff501f49b0371",
+          "97c1c1db899b4885",
+          "b47ff3a8391fe524",
+          "d356742187ca4da5",
+          "e47e03d9c1fc84fb"
+        ]
+      },
+      "R3_medication": {
+        "verdict": "acceptable",
+        "reason": "a drug named from a fact the section cites (in-hospital treatment, background, GP action, VTE, follow-up); no discharge list restated. 17 narrate an in-hospital dose change — box-vs-prose divergence to be checked at 8a (item 4)",
+        "keys": [
+          "1c105b38d9c57ae8",
+          "481b815c8341b946",
+          "664102a17e81e1a6",
+          "aa17a7297fe8a500",
+          "bfa6de0e11c2fb8b",
+          "ccd50676f00ea2d6",
+          "d3f2bf62587bee1a",
+          "d9a194d55d36dbea",
+          "f809728133c85434"
+        ]
+      }
+    }
   }
 }

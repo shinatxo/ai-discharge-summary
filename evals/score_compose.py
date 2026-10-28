@@ -14,7 +14,7 @@ first live step-6 call:
                                     {{...}}; unknown or excluded fact_ids
   4  contradictions in PART A       contradictions_in_a / contradictions_given
   5  resus / advice outside boxes   flagged by code, RULED BY THE CSO (review file)
-  6  omission                       field_omitted, gp_action_missing_in_b = 0;
+  6  omission                       field_omitted (DOCUMENTED fields — v2), gp_action_missing_in_b = 0;
                                     fact coverage k/n reported (no target)
   7  medication text outside box    flagged by code, RULED BY THE CSO
   8  no regression                  NOT here: SAFETY_NET.md, MEDS.md, haz03_check.py
@@ -50,7 +50,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "src" / "generat
 import rubric_checks as RC  # noqa: E402
 from pipeline import compose as CMP  # noqa: E402
 
-METRIC_VERSION = 1
+METRIC_VERSION = 2   # v2, 28 Oct 2026: bar line 6 counts DOCUMENTED fields only (see field_omitted)
 DEADLINE_WATCH_S = 200      # 270 s internal deadline − step 7's 60 s read timeout − 10 s (ADR-009 Q3)
 RULINGS = ("acceptable", "defect")
 
@@ -126,6 +126,22 @@ def review_items(rec: dict) -> list[dict]:
     return items
 
 
+def field_omitted(rec: dict) -> list[str]:
+    """Bar line 6 as WRITTEN on 27 Oct 2026: a documented (or inferred_flagged)
+    content field with items, none of which PART A cites. Recomputed from the
+    record, not read from the step's check: v1 of the step check also counted
+    fields whose status is not_documented (C7 r1 in the first batch — a step-2
+    artefact under a not_documented field). Found after the batch and corrected
+    to the written bar by CSO ruling R4, 28 Oct 2026; the step's raw count is
+    still reported beside it."""
+    fields = rec["steps"]["validate_facts"]["facts"]["fields"]
+    a_ids = {f for s in rec["steps"]["compose_clinical"]["sections"] if s["part"] == "part_a"
+             for f in s["fact_ids"]}
+    return [n for n in CMP.CONTENT_FIELDS
+            if fields[n]["items"] and fields[n]["status"] != "not_documented"
+            and not any(i["fact_id"] in a_ids for i in fields[n]["items"])]
+
+
 def _latency(rec: dict) -> dict:
     by = {c["name"]: c.get("latency_s") for c in rec.get("calls") or []}
     l2, l5, l6 = by.get("extract_facts"), by.get("reconcile_medications"), by.get("compose_clinical")
@@ -162,6 +178,7 @@ def score_record(rec: dict, notes: str, rulings: dict) -> dict:
         review.append({k: v for k, v in it.items() if k != "sentence"} | {"ruling": ruling})
     return {"metric": "compose_clinical", "metric_version": METRIC_VERSION,
             "checks": checks, "counts": step["counts"], "box_problems": box_problems,
+            "field_omitted": field_omitted(rec),
             "years_vs_notes": vs_notes, "review": review, "latency": _latency(rec)}
 
 
@@ -198,7 +215,9 @@ def summarise(results: list[dict], skipped: list[dict], n_records: int) -> dict:
         "boxes_correct": sum(1 for r in results if r["box_problems"] == 0),
         "unknown_fact_ids": tot("unknown_fact_id"), "excluded_fact_ids": tot("excluded_fact_id"),
         "contradictions": {"given": c("contradictions_given"), "in_a": c("contradictions_in_a")},
-        "field_omitted": tot("field_omitted"), "gp_action_missing_in_b": tot("gp_action_missing_in_b"),
+        "field_omitted": sum(len(r["field_omitted"]) for r in results),
+        "field_omitted_step_check": tot("field_omitted"),
+        "gp_action_missing_in_b": tot("gp_action_missing_in_b"),
         "facts": {"given": c("facts_given"), "used_in_a": c("facts_used_in_a")},
         "unverified": {"given": c("unverified_given"), "used": c("unverified_used")},
         "review": {k: review(k) for k in ("advice", "resus", "medication")},
@@ -241,7 +260,7 @@ def bar(sm: dict) -> list[tuple[str, str, str]]:
         ("5 Resus / advice text outside its box (CSO-ruled defects)",
          f"flagged {ra['flagged']}, defects {ra['defect']}, pending {ra['pending']}",
          met(ra["defect"] == 0, pending=ra["pending"] > 0)),
-        ("6 Field-level omission in A / GP actions missing from B",
+        ("6 Field-level omission in A (documented fields) / GP actions missing from B",
          f"{sm['field_omitted']} / {sm['gp_action_missing_in_b']}",
          met(sm["field_omitted"] == 0 and sm["gp_action_missing_in_b"] == 0 and sm["n_scored"] == n)),
         ("7 Medication text outside the box (CSO-ruled defects)",
@@ -269,6 +288,8 @@ def write_reports(out: Path, scored: dict, batch_dir: Path, corpus: dict) -> Non
     lines += ["", "## Reported, no bar", "", "| Measure | Result |", "| --- | --- |",
               f"| Fact coverage in PART A (k/n) | {sm['facts']['used_in_a']}/{sm['facts']['given']} |",
               f"| Unverified facts given / used (8a adds the warning) | {sm['unverified']['given']} / {sm['unverified']['used']} |",
+              f"| Field omitted — the step's own check (v1 counted not_documented fields too) | "
+              f"{sm['field_omitted_step_check']} |",
               f"| Years vs the notes (rubric D2) — added by step 6 / by step 2 | {yn['step_6']} / {yn['step_2']} "
               f"(in {yn['generations']} generations) |"]
     lines += [f"| Check `{k}` | {v} |" for k, v in sm["other_checks"].items()]
@@ -291,7 +312,7 @@ def write_reports(out: Path, scored: dict, batch_dir: Path, corpus: dict) -> Non
                      f"{sum(r['checks'].get('year_added', 0) for r in rows)} | "
                      f"{sum(r['counts']['contradictions_in_a'] for r in rows)}/"
                      f"{sum(r['counts']['contradictions_given'] for r in rows)} | "
-                     f"{sum(r['checks'].get('field_omitted', 0) for r in rows)} | "
+                     f"{sum(len(r['field_omitted']) for r in rows)} | "
                      f"{rk('advice')} / {rk('resus')} / {rk('medication')} |")
     (out / "COMPOSE_CLINICAL.md").write_text("\n".join(lines) + "\n", encoding="utf-8")
 

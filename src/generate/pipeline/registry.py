@@ -13,6 +13,7 @@ from dataclasses import dataclass
 from typing import Callable
 
 from .context import StepContext
+from .compose import compose_clinical
 from .errors import StepError
 from .extract import extract_facts
 from .guard import guard_input
@@ -43,6 +44,7 @@ _ALL_STEPS = (
     Step("route_resus", "04", "code", route_resus),
     Step("reconcile_medications", "05a", "model", reconcile_medications),
     Step("select_safety_net", "05b", "code", select_safety_net),
+    Step("compose_clinical", "06", "model", compose_clinical),
 )
 
 STEPS: dict[str, Step] = {s.name: s for s in _ALL_STEPS}

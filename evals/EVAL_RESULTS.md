@@ -49,6 +49,28 @@ scenarios are synthetic, so storing them here is fine, but the habit matters.
 
 ---
 
+### Pipeline step-level scoring — notes kept OUTSIDE the frozen rubric (§2)
+
+Section 2 is the judge's rubric: `run_judge.py` hashes it and refuses to run if it differs from
+`evals/judge/FROZEN.json` ("a new judge version"). Notes about what the pipeline is scored on
+therefore live here. **28 Oct 2026:** step build piece 1 (`e253d31` / `51cd184`) had edited the
+§2 D4 row ("waits for 5a" → "step 5a's reconciliation list …"), which broke the freeze; no judge
+run used the changed text (the last was 20 Oct). The row is restored to its frozen wording and a
+test now pins §2 to `FROZEN.json`.
+
+**D4 on the pipeline (from 27 Oct 2026):** step 5a's reconciliation list, through `view_from_5a`
+(`score_meds.py`), not PART A — §2's "waits for 5a" is the frozen wording.
+
+**Step 6 `compose_clinical` (from 28 Oct 2026, WS1a step build piece 2).** Its PART A / B
+sections are scored at step level by **code checks only** (`evals/score_compose.py`; pass bar
+written 27 Oct 2026, before any step-6 code): boxes exact, fact_ids valid, every contradiction in
+A, no field omitted from A, every GP action in B, **no year added** (D2's year rule, against
+step 6's own input and against the notes), and resus / advice / medication text outside the
+code-filled boxes (code flags, the CSO rules). **Faithfulness of the prose to its facts (D2 beyond
+years, D6, D7) is not measured at step level** — the judge is not validated on the pipeline view
+(spot-check κ 0.29, NOT MET); a CSO blind read of six fixed items (`make_compose_sheets.py`) is
+evidence, not a bar. Step 6 is not judged; the judgeable view (`pipeline_view.py`) is unchanged.
+
 ## 2. Scoring rubric
 
 **Rubric v2 — 9 Oct 2026 (W5).** Eight dimensions. D1–D5 are unchanged except D2's
@@ -167,7 +189,7 @@ one overall grade**; W11 compares like for like.
 | D1 | PART A, B, C | not scored | full output |
 | D2 | PART A, B, C | each fact's `value` against its cited lines; 5b `part_ab` / `part_c` | full output |
 | D3 | PART A, B, C | step 4's status against the notes | full output |
-| D4 | PART A medications (W4 scorer) | step 5a's reconciliation list (`view_from_5a`), from 27 Oct 2026 | 5a |
+| D4 | PART A medications (W4 scorer) | waits for 5a | 5a |
 | D5 | PART C | — (no prose yet) | PART C |
 | D6 | PART A, B, C | fact `value` against cites; 5b (verbatim quotes — Pass by construction, still judged) | full output |
 | D7 | PART A, B, C | fact `value`, resus, `age_group` | full output |

@@ -25,6 +25,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import gold as G  # noqa: E402
 import run_cold_eval as rce  # noqa: E402
+import score_compose as CP  # noqa: E402
 import score_meds as MD  # noqa: E402
 import score_safety_net as SN  # noqa: E402
 import score_step2_advice as S2  # noqa: E402
@@ -93,14 +94,18 @@ def score_batch(batch_dir: Path, gold_dir: Path = G.GOLD_DIR,
             raise ScoreError(str(exc)) from None
         lines[sid] = G.line_index(s.notes)
         adj[sid] = (load_adjudications(sid, adjudications_dir),
-                    load_adjudications(sid, adjudications_dir, "med_rulings"))
+                    load_adjudications(sid, adjudications_dir, "med_rulings"),
+                    load_adjudications(sid, adjudications_dir, "compose_rulings"))
         gold_meta[sid] = {"status": golds[sid]["status"],
                           "sha256": hashlib.sha256((gold_dir / f"{sid}.json").read_bytes()).hexdigest()}
 
     # A pipeline batch whose runner includes step 5a (27 Oct 2026) — the only
     # kind in which a missing 5a output is a skip rather than "5a not built".
     expects_5a = "reconcile_medications" in (manifest.get("prompts") or {})
+    # ...and step 6 (28 Oct 2026, step build piece 2).
+    expects_6 = "compose_clinical" in (manifest.get("prompts") or {})
     results, med_results, skipped, med_skipped, step2_results = [], [], [], [], []
+    compose_results, compose_skipped = [], []
     for g in index["generations"]:
         rec = json.loads((batch_dir / g["record"]).read_text(encoding="utf-8"))
         sid = rec["scenario_id"]
@@ -119,6 +124,18 @@ def score_batch(batch_dir: Path, gold_dir: Path = G.GOLD_DIR,
                 step2_results.append(s2)
             if expects_5a and "reconcile_medications" not in steps:
                 med_skipped.append(skip)
+            if expects_6:
+                if "compose_clinical" in steps:
+                    try:
+                        c6 = CP.score_record(rec, by_id[sid].notes, adj[sid][2])
+                    except ValueError as exc:
+                        raise ScoreError(str(exc)) from None
+                    c6.update(ids)
+                    compose_results.append(c6)
+                else:
+                    compose_skipped.append({"generation_id": rec["generation_id"],
+                                            "error_code": (rec.get("step_errors") or {}).get(
+                                                "compose_clinical", skip["error_code"])})
             if "select_safety_net" not in steps:
                 skipped.append(skip)
                 continue
@@ -149,6 +166,10 @@ def score_batch(batch_dir: Path, gold_dir: Path = G.GOLD_DIR,
     if manifest["generator"] == "pipeline":
         out["step2_advice"] = {"metric": "step2_advice", "metric_version": S2.METRIC_VERSION,
                                "results": step2_results, "summary": S2.summarise(step2_results)}
+    if expects_6:
+        out["compose"] = {"metric": "compose_clinical", "metric_version": CP.METRIC_VERSION,
+                          "results": compose_results,
+                          "summary": CP.summarise(compose_results, compose_skipped, len(index["generations"]))}
     return out
 
 
@@ -167,7 +188,7 @@ def write_reports(batch_dir: Path, scored: dict, corpus_path: Path = rce.DEFAULT
     out = batch_dir / "scores"
     out.mkdir(exist_ok=True)
     # step2_advice has its own files (below), so safety_net.json is unchanged for older batches.
-    sn_json = {k: v for k, v in scored.items() if k != "step2_advice"}
+    sn_json = {k: v for k, v in scored.items() if k not in ("step2_advice", "compose")}
     (out / "safety_net.json").write_text(json.dumps(sn_json, indent=2) + "\n", encoding="utf-8")
     res = scored["results"]
     n = len(res)
@@ -249,6 +270,8 @@ def write_reports(batch_dir: Path, scored: dict, corpus_path: Path = rce.DEFAULT
     _write_med_reports(batch_dir, out, scored, corpus)
     if "step2_advice" in scored:
         _write_step2_reports(out, scored)
+    if "compose" in scored:
+        CP.write_reports(out, scored, batch_dir, corpus)
     return out
 
 
@@ -387,6 +410,10 @@ def main(argv=None) -> int:
         print(f"Step 2 advice: verified recall {sm['verified']['n_gold'] and round(100 * (sm['verified']['recall'] or 0))}% "
               f"of {sm['verified']['n_gold']} gold items; route errors not extracted {re_['not_extracted']}, "
               f"lost at verification {re_['lost_at_verification']}, non-advice {re_['non_advice_as_advice']}.")
+    if "compose" in scored:
+        bar = CP.bar(scored["compose"]["summary"])
+        print("Step 6: " + "; ".join(f"{line.split(' ', 1)[0]} {verdict}" for line, _r, verdict in bar)
+              + " (details in COMPOSE_CLINICAL.md — open it only after the CSO blind read).")
     drafts = sum(1 for m in scored["gold"].values() if m["status"] != "approved")
     if drafts:
         print(f"Provisional: {drafts} gold record(s) are drafts.")

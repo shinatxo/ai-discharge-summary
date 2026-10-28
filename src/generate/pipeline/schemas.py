@@ -288,3 +288,59 @@ def _build_reconciliation() -> dict:
 def record_reconciliation_schema() -> dict:
     """A fresh copy each call (as record_facts_schema)."""
     return copy.deepcopy(_build_reconciliation())
+
+
+# =============================================================================
+# Step 6 — the record_composition input schema (ADR-009 step table, row 6)
+# =============================================================================
+#
+# Same rules as above: strict tool, forced; field names and fixed enums only
+# (DPIA Annex C.2 — headings are snake_case IDs, code prints the wording);
+# every property required; no nullables; no length constraints.
+#
+# FLAT: one list of sections, each tagged with its `part`, so the section shape
+# occurs ONCE in the grammar (the W2 part 2 finding). `part_a: [...]` and
+# `part_b: [...]` would put it in two places. Code splits A from B.
+#
+# Property ORDER is deliberate: `fact_ids` before `text`, so the model chooses
+# its evidence before it writes the sentence (as 5a's `cites` before values).
+#
+# Which heading may appear in which part, which are required, and which are the
+# three code-filled boxes is checked by compose.py — not by the grammar — so the
+# schema stays one shape (decided 27 Oct 2026, step build piece 2, round 2).
+
+COMPOSE_PARTS = ("part_a", "part_b")
+COMPOSE_HEADINGS = (
+    "presenting_complaint",
+    "opening",
+    "admission_summary",
+    "diagnosis",
+    "key_investigations",
+    "treatment",
+    "resuscitation_status",
+    "risk_assessment",
+    "medications",
+    "medication_conflicts",
+    "allergies",
+    "follow_up",
+    "pending_results",
+    "gp_actions",
+    "safety_net",
+    "vte_assessment",
+)
+
+COMPOSE_SECTION = _obj({
+    "part": _enum(*COMPOSE_PARTS),
+    "heading": _enum(*COMPOSE_HEADINGS),
+    "fact_ids": _arr(_str()),
+    "text": _str(),
+})
+
+
+def _build_composition() -> dict:
+    return _obj({"sections": _arr(COMPOSE_SECTION)})
+
+
+def record_composition_schema() -> dict:
+    """A fresh copy each call (as record_facts_schema)."""
+    return copy.deepcopy(_build_composition())

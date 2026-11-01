@@ -253,3 +253,13 @@ def test_every_schema_field_is_explained_in_the_prompt():
                                  "field_status", "facts", "section", "discharge"]
     missing = [n for n in names if f"`{n}`" not in text]
     assert missing == []
+
+
+def test_prompt_e08_keeps_resus_in_resus_and_contradictions_clinical():
+    text = " ".join(system_prompt()[0].split())
+    assert "Resuscitation content is recorded only in `resus`, never as a fact in any other section" in text
+    assert "without the resuscitation words, citing the same line" in text
+    assert "in any value, in any section, `contradictions` included" in text
+    assert "Never write a value about your record itself" in text
+    assert "even when they were written on different days" in text
+    assert "a change in resuscitation status is `changed: yes` in `resus`" in text

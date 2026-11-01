@@ -50,7 +50,14 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "src" / "generat
 import rubric_checks as RC  # noqa: E402
 from pipeline import compose as CMP  # noqa: E402
 
-METRIC_VERSION = 2   # v2, 28 Oct 2026: bar line 6 counts DOCUMENTED fields only (see field_omitted)
+METRIC_VERSION = 3   # v2, 28 Oct 2026: bar line 6 counts DOCUMENTED fields only (see field_omitted)
+# v3, 1 Nov 2026 (piece 2 follow-up; CSO decision 3, 30 Oct; committed before the batch):
+# step 6's guard holds back resus field facts; a held fact counts as present in
+# PART A only if its verified cited lines are all in the RESUS block (held_in_box).
+# On a record without `held_back` (any earlier batch) v3 scores exactly as v2.
+# G3A (CSO, 1 Nov 2026, before the batch): compose.RESUS_CONFLICT_TEXT in PART A
+# `treatment`, in a section citing a contradiction, is pre-ruled acceptable.
+PRE_RULED_G3 = "acceptable"
 DEADLINE_WATCH_S = 200      # 270 s internal deadline − step 7's 60 s read timeout − 10 s (ADR-009 Q3)
 RULINGS = ("acceptable", "defect")
 
@@ -105,6 +112,7 @@ def review_items(rec: dict) -> list[dict]:
     step = rec["steps"]["compose_clinical"]
     contra = {i["fact_id"] for i in rec["steps"]["validate_facts"]["facts"]["contradictions"]}
     drugs = drug_tokens(rec)
+    conflict = " ".join(CMP.RESUS_CONFLICT_TEXT.split()).casefold()
     items = []
     for s in step["sections"]:
         if s["heading"] in BOX_HEADINGS:
@@ -119,11 +127,34 @@ def review_items(rec: dict) -> list[dict]:
             if not med_exempt:
                 found += [("medication", d) for d in drugs
                           if re.search(rf"\b{re.escape(d)}\b", sent, re.IGNORECASE)]
+            pre = (s["part"] == "part_a" and s["heading"] == "treatment" and bool(contra & set(s["fact_ids"]))
+                   and " ".join(sent.split()).casefold() == conflict)
             for kind, token in found:
                 items.append({"kind": kind, "part": s["part"], "heading": s["heading"], "token": token,
                               "key": _key(kind + (f":{token}" if token else ""), s["part"], s["heading"], sent),
-                              "sentence": sent})
+                              "pre_ruled": pre and kind == "resus", "sentence": sent})
     return items
+
+
+def held_in_box(rec: dict) -> tuple[set[str], list[str]]:
+    """Metric v3 (CSO decision 3, 30 Oct 2026). For each fact step 6's guard held
+    back: present in PART A iff its VERIFIED cited lines are non-empty and all in
+    step 4's RESUS block `cited_lines` — the box quotes them. Returns
+    (present fact_ids, not-in-box fact_ids in order). A held fact with no verified
+    line is not present."""
+    step = rec["steps"]["compose_clinical"]
+    fields = rec["steps"]["validate_facts"]["facts"]["fields"]
+    box = set((rec["steps"].get("route_resus") or {}).get("cited_lines") or [])
+    items = {i["fact_id"]: i for f in fields.values() for i in f["items"]}
+    present, absent = set(), []
+    for h in step.get("held_back") or []:
+        lines = {ln for c in items[h["fact_id"]].get("cites", []) if c.get("verified") is True
+                 for ln in c["lines"]}
+        if lines and lines <= box:
+            present.add(h["fact_id"])
+        else:
+            absent.append(h["fact_id"])
+    return present, absent
 
 
 def field_omitted(rec: dict) -> list[str]:
@@ -133,13 +164,20 @@ def field_omitted(rec: dict) -> list[str]:
     fields whose status is not_documented (C7 r1 in the first batch — a step-2
     artefact under a not_documented field). Found after the batch and corrected
     to the written bar by CSO ruling R4, 28 Oct 2026; the step's raw count is
-    still reported beside it."""
+    still reported beside it. v3: a held-back fact is present only by the box
+    rule (held_in_box); citing a held fact (excluded) does not make it present."""
+    step = rec["steps"]["compose_clinical"]
     fields = rec["steps"]["validate_facts"]["facts"]["fields"]
-    a_ids = {f for s in rec["steps"]["compose_clinical"]["sections"] if s["part"] == "part_a"
-             for f in s["fact_ids"]}
+    held = {h["fact_id"] for h in step.get("held_back") or []}
+    present, _ = held_in_box(rec)
+    a_ids = {f for s in step["sections"] if s["part"] == "part_a" for f in s["fact_ids"]}
+
+    def shown(fid):
+        return fid in present if fid in held else fid in a_ids
+
     return [n for n in CMP.CONTENT_FIELDS
             if fields[n]["items"] and fields[n]["status"] != "not_documented"
-            and not any(i["fact_id"] in a_ids for i in fields[n]["items"])]
+            and not any(shown(i["fact_id"]) for i in fields[n]["items"])]
 
 
 def _latency(rec: dict) -> dict:
@@ -175,10 +213,22 @@ def score_record(rec: dict, notes: str, rulings: dict) -> dict:
         ruling = rulings.get(it["key"])
         if ruling is not None and ruling not in RULINGS:
             raise ValueError(f"compose ruling {it['key']}: {ruling!r} is not one of {RULINGS}")
+        if ruling is None and it["pre_ruled"]:
+            ruling = PRE_RULED_G3
         review.append({k: v for k, v in it.items() if k != "sentence"} | {"ruling": ruling})
+
+    # v3: held-back facts (IDs only) and the box rule.
+    present, not_in_box = held_in_box(rec)
+    held = {h["fact_id"]: h["field"] for h in step.get("held_back") or []}
+    held_content = [f for f, n in held.items() if n in CMP.CONTENT_FIELDS]
+    gp_held_not_in_box = [f for f in not_in_box if held[f] == "gp_actions"]
     return {"metric": "compose_clinical", "metric_version": METRIC_VERSION,
             "checks": checks, "counts": step["counts"], "box_problems": box_problems,
             "field_omitted": field_omitted(rec),
+            "held": {"held_back": len(held), "present_in_box": len(present), "not_in_box": not_in_box,
+                     "content_held": len(held_content),
+                     "content_present": sum(f in present for f in held_content)},
+            "gp_held_not_in_box": gp_held_not_in_box,
             "years_vs_notes": vs_notes, "review": review, "latency": _latency(rec)}
 
 
@@ -217,8 +267,14 @@ def summarise(results: list[dict], skipped: list[dict], n_records: int) -> dict:
         "contradictions": {"given": c("contradictions_given"), "in_a": c("contradictions_in_a")},
         "field_omitted": sum(len(r["field_omitted"]) for r in results),
         "field_omitted_step_check": tot("field_omitted"),
-        "gp_action_missing_in_b": tot("gp_action_missing_in_b"),
+        "gp_action_missing_in_b": tot("gp_action_missing_in_b") + sum(len(r["gp_held_not_in_box"]) for r in results),
         "facts": {"given": c("facts_given"), "used_in_a": c("facts_used_in_a")},
+        "held": {"held_back": sum(r["held"]["held_back"] for r in results),
+                 "present_in_box": sum(r["held"]["present_in_box"] for r in results),
+                 "not_in_box": sum(len(r["held"]["not_in_box"]) for r in results),
+                 "generations": sum(1 for r in results if r["held"]["held_back"])},
+        "coverage_v3": {"given": c("facts_given") + sum(r["held"]["content_held"] for r in results),
+                        "present": c("facts_used_in_a") + sum(r["held"]["content_present"] for r in results)},
         "unverified": {"given": c("unverified_given"), "used": c("unverified_used")},
         "review": {k: review(k) for k in ("advice", "resus", "medication")},
         "other_checks": {k: tot(k) for k in CMP.CHECKS
@@ -278,7 +334,9 @@ def write_reports(out: Path, scored: dict, batch_dir: Path, corpus: dict) -> Non
     fmt = lambda x: "—" if x is None else f"{x:.1f} s"  # noqa: E731
     lines = [f"# Step 6 compose_clinical — batch `{scored['batch_id']}`", "",
              f"Step-level checks, metric v{cp['metric_version']}. Definition: `evals/score_compose.py` "
-             "(pass bar written 27 Oct 2026, before any step-6 code; frozen in code before the first live call).",
+             "(pass bar written 27 Oct 2026, before any step-6 code; frozen in code before the first live call). "
+             "v3 (1 Nov 2026, before the follow-up batch): a resus fact held back by step 6's guard counts as "
+             "present in PART A only if its verified lines are in the RESUS block.",
              "", "> **Not measured here:** faithfulness of the prose to its facts (D2 beyond years, D6, D7) "
              "and narrative omission — see the CSO blind read. Bar line 8 (no regression) is read from "
              "SAFETY_NET.md, MEDS.md and `haz03_check.py`.", "",
@@ -286,7 +344,12 @@ def write_reports(out: Path, scored: dict, batch_dir: Path, corpus: dict) -> Non
     lines += [f"| {a} | {b} | **{c}** |" for a, b, c in bar(sm)]
     yn = sm["years_vs_notes"]
     lines += ["", "## Reported, no bar", "", "| Measure | Result |", "| --- | --- |",
-              f"| Fact coverage in PART A (k/n) | {sm['facts']['used_in_a']}/{sm['facts']['given']} |",
+              f"| Fact coverage in PART A (k/n) — facts step 6 was given | {sm['facts']['used_in_a']}/{sm['facts']['given']} |",
+              f"| Fact coverage incl. held-back facts present in the RESUS block (v3) | "
+              f"{sm['coverage_v3']['present']}/{sm['coverage_v3']['given']} |",
+              f"| Resus facts held back by step 6's guard / present in the RESUS block / not in it | "
+              f"{sm['held']['held_back']} / {sm['held']['present_in_box']} / {sm['held']['not_in_box']} "
+              f"(in {sm['held']['generations']} generations) |",
               f"| Unverified facts given / used (8a adds the warning) | {sm['unverified']['given']} / {sm['unverified']['used']} |",
               f"| Field omitted — the step's own check (v1 counted not_documented fields too) | "
               f"{sm['field_omitted_step_check']} |",
@@ -331,8 +394,9 @@ def write_reports(out: Path, scored: dict, batch_dir: Path, corpus: dict) -> Non
           "under `compose_rulings` as `{key: ruling}`; they are reused across runs.", ""]
     for (sid, key), e in sorted(pending.items()):
         tok = f" `{e['token']}`" if e["token"] else ""
+        ruling = e["ruling"] or ("acceptable (pre-ruled G3, CSO 1 Nov 2026)" if e["pre_ruled"] else "PENDING")
         rv.append(f"- **{sid}** `{key}` {e['kind']}{tok} · {e['part']} / {e['heading']} "
-                  f"(runs {', '.join(map(str, e['runs']))}) · ruling: {e['ruling'] or 'PENDING'}: {e['sentence']}")
+                  f"(runs {', '.join(map(str, e['runs']))}) · ruling: {ruling}: {e['sentence']}")
     if not pending:
         rv.append("Nothing to rule on.")
     (out / "review_compose.md").write_text("\n".join(rv) + "\n", encoding="utf-8")

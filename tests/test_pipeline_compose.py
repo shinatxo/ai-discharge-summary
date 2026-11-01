@@ -252,7 +252,8 @@ def test_happy_path_has_no_checks_and_lists_unverified_ids():
         "sections": 18, "sections_a": 11, "sections_b": 7, "facts_given": 8, "facts_used_in_a": 8,
         "header_facts_given": 3, "contradictions_given": 1, "contradictions_in_a": 1,
         "gp_actions_given": 1, "gp_actions_in_b": 1, "unverified_given": 1, "unverified_used": 1,
-        "checks": 0}
+        "facts_held_back": 0, "gp_actions_held_back": 0, "checks": 0}
+    assert out["held_back"] == []
     assert out["age_group"] == "adult"
     c = out["call"]
     assert (c["input_tokens"], c["output_tokens"], c["cache_read_tokens"], c["latency_ms"]) == (4100, 1900, 2600, 27000)
@@ -511,3 +512,83 @@ def test_items_under_a_not_documented_field_are_not_a_field_omission():
                    "citation_status": "verified"}]}
     names = _names(_run(facts=facts))
     assert "field_omitted" not in names and "fact_unused" in names
+
+
+# --- the resus guard (piece 2 follow-up, decision D; G1A, G2A) ----------------------
+
+def _item(fid, value, lines=("L010",), quote="For CPR"):
+    return {"fact_id": fid, "value": value, "citation_status": "verified", "reason": None,
+            "cites": [{"lines": list(lines), "quote": quote, "verified": True, "reason": None}]}
+
+
+def _with_resus(facts=None):
+    """Step 2 filed resus content under treatment and risk_assessment (the 28 Oct
+    leak), and wrote a contradiction about it."""
+    facts = facts or _facts()
+    facts["fields"]["treatment"]["items"].append(_item("treatment.1", "For CPR — discussed with patient"))
+    facts["fields"]["risk_assessment"] = {"status": "documented",
+                                          "items": [_item("risk_assessment.0", "DNACPR discussed")]}
+    facts["contradictions"].append(_item("contradictions.1", "Resus: for CPR vs DNACPR"))
+    return facts
+
+
+def test_the_guard_uses_step_3bs_patterns():
+    from pipeline import retrieve
+    assert C._RESUS_PATTERNS is retrieve._RESUS_PATTERNS
+    assert C.is_resus("DNACPR form completed") and C.is_resus("ReSPECT form completed")
+    assert not C.is_resus("Ceiling of care: ward-based NIV, not for intubation")
+    assert not C.is_resus("resus bay on arrival")
+    # Known limit, pinned (the same as step 3b's): "fluid resuscitation" is held back.
+    assert C.is_resus("fluid resuscitation 2 L")
+
+
+def test_guard_holds_back_resus_field_facts_and_never_contradictions():
+    facts = _with_resus()
+    assert C.held_back(facts) == {"treatment.1": "treatment", "risk_assessment.0": "risk_assessment"}
+    text = C.user_text(facts)
+    assert "treatment.1" not in text and "For CPR" not in text and "DNACPR discussed" not in text
+    assert "- [treatment.0] Severe 3VD" in text                              # the rest of the field stays
+    assert f"risk_assessment (documented) — {C.HELD_MARK}" in text           # all held: marked, no items
+    assert "- [contradictions.1] Resus: for CPR vs DNACPR" in text           # decision 1A stands
+
+
+def test_held_facts_are_not_given_unused_or_omitted():
+    out = _run(facts=_with_resus())
+    names = _names(out)
+    assert not names & {"fact_unused", "field_omitted", "required_heading_missing"}
+    assert "contradiction_missing" in names                                  # contradictions.1 is still owed
+    assert out["held_back"] == [{"fact_id": "treatment.1", "field": "treatment"},
+                                {"fact_id": "risk_assessment.0", "field": "risk_assessment"}]
+    assert out["counts"]["facts_held_back"] == 2 and out["counts"]["facts_given"] == 8
+
+
+def test_citing_a_held_fact_is_an_excluded_fact_id():
+    p = _good()
+    _sec(p, "part_a", "treatment")["fact_ids"].append("treatment.1")
+    assert ("excluded_fact_id", "part_a", "treatment", "treatment.1", None) in _checks(_run(p, facts=_with_resus()))
+
+
+def test_a_required_section_held_back_entirely_is_reported_not_missing():
+    # G1A / G2A: a GP action about resus is held; A and B leave gp_actions out.
+    facts = _facts()
+    facts["fields"]["gp_actions"]["items"] = [_item("gp_actions.0", "GP to note the DNACPR")]
+    p = _good()
+    p["sections"] = [s for s in p["sections"] if s["heading"] != "gp_actions"]
+    out = _run(p, facts=facts)
+    assert ("section_held_back", "part_a", "gp_actions", None, None) in _checks(out)
+    assert ("section_held_back", "part_b", "gp_actions", None, None) in _checks(out)
+    assert not _names(out) & {"required_heading_missing", "gp_action_missing_in_b"}
+    assert out["counts"]["gp_actions_held_back"] == 1 and out["counts"]["gp_actions_given"] == 0
+
+
+def test_a_section_left_out_without_a_held_reason_is_still_missing():
+    p = _good()
+    p["sections"] = [s for s in p["sections"] if not (s["part"] == "part_a" and s["heading"] == "follow_up")]
+    assert ("required_heading_missing", "part_a", "follow_up", None, None) in _checks(_run(p))
+
+
+def test_prompt_c02_carries_the_guard_marker_the_conflict_sentence_and_the_fact_id_rule():
+    text = " ".join(C.system_prompt()[0].split())
+    assert C.HELD_MARK in text and C.RESUS_CONFLICT_TEXT in text
+    assert "A field name (`allergies`, `treatment`) is never a fact ID" in text
+    assert "The resuscitation rule comes first" in text

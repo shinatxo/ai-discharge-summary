@@ -62,3 +62,14 @@ def test_check_validates_verdicts_and_findings(tmp_path):
     d["findings"] = [{"dimension": "D6", "part": "part_a", "heading": "diagnosis", "fact_ids": [], "note": "x"}]
     p.write_text(json.dumps(d))
     assert MS.check(out) == (1, [])
+
+
+def test_sheet_lists_held_back_ids_only():
+    sys.path.insert(0, str(ROOT / "tests"))
+    import test_pipeline_compose as T
+    facts = T._with_resus(T._facts())
+    rec = {"scenario_id": "X1", "steps": {"validate_facts": {"facts": facts},
+                                          "compose_clinical": T._run(facts=facts)}}
+    sheet = MS.render_sheet(rec)
+    assert "(resuscitation facts — the RESUS box shows them): treatment.1, risk_assessment.0" in sheet
+    assert "For CPR — discussed" not in sheet and "DNACPR discussed" not in sheet

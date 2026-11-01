@@ -80,6 +80,11 @@ def render_sheet(rec: dict) -> str:
     sections = rec["steps"]["compose_clinical"]["sections"]
     out = [f"# {rec['scenario_id']} — step 6 blind read", "",
            "## Facts given to step 6 (its whole input)", "", "```", CMP.user_text(facts), "```", ""]
+    held = [h["fact_id"] for h in rec["steps"]["compose_clinical"].get("held_back") or []]
+    # Piece 2 follow-up: IDs only — these were never given to step 6, so their absence
+    # from the prose is by design, not an omission.
+    out += ["Held back by code before step 6 (resuscitation facts — the RESUS box shows them): "
+            + (", ".join(held) if held else "none"), ""]
     for part in ("part_a", "part_b"):
         out += [f"## {LABELS[part]}", ""]
         for s in (x for x in sections if x["part"] == part):

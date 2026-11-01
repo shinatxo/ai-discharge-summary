@@ -21,10 +21,27 @@ Decisions of 27–28 Oct 2026 (step build piece 2; CSO):
   - the input is {fact_id, value} under each field's status — no quotes, no
     line IDs (decision 5).
 
+Decisions of 30 Oct and 1 Nov 2026 (piece 2 follow-up; CSO):
+  - the resus GUARD (decision D): before the facts become the model's message,
+    code holds back every FIELD item whose value matches the resus patterns
+    (retrieve._RESUS_PATTERNS — the same object step 3b retrieves on and the
+    resus_text_outside check uses). ADR-009 excluded resus from step 6 as an
+    OBJECT; step 2 also filed resus content as treatment / background / risk
+    facts, and step 6 wrote it (43 defects, 28 Oct). The guard makes the
+    exclusion true by content. Contradictions are never held back (decision 1A
+    stands). A held fact's source lines are already quoted in the RESUS block
+    (40/40 in the 28 Oct batch); the scorer checks that per fact (metric v3);
+  - a field whose items are ALL held is shown as HELD_MARK with no items; a
+    required section left with nothing is left out and reported as
+    `section_held_back` (G1A; 8a prints a fixed line there — item 4);
+  - GP actions are guarded too (G2A; 8a shows the RESUS block in PART B
+    whenever one was held — item 4).
+
 run_step("compose_clinical", {"facts": <step 3 output facts>}, ctx=StepContext(...)):
   in:  {"facts": ...} and nothing else — a "lines" key (the notes) is refused.
   out: {"sections": [{section_id, part, heading, fact_ids, text,
                       unverified_fact_ids}],
+        "held_back": [{fact_id, field}],
         "checks": [{check, part, heading, fact_id, token}],
         "counts": {...}, "age_group", "call": {...}}
 Fails closed with a fixed code: bad_input, no_client (registry), max_tokens,
@@ -34,7 +51,8 @@ request_invalid, bedrock_error.
 
 What the output may carry: prose built from fact values (the same class of
 content as step 3's facts), headings and fact_ids. `checks` carries fixed
-words, headings, fact_ids, field names and 4-digit years only — never text.
+words, headings, fact_ids, field names and 4-digit years only — never text;
+`held_back` carries fact_ids and field names only.
 
 Honest limit (ADR-009 Q4, again): a fact_id shows the model CLAIMED to use a
 fact, not that its sentence states it correctly; and provenance is per
@@ -105,6 +123,12 @@ CONTENT_FIELDS = tuple(f for fs in A_FIELDS.values() for f in fs)
 
 NOT_DOCUMENTED = "Not documented"
 PAEDIATRIC_VTE = "Not applicable (paediatric)"
+# c0.2: the guard's marker on a field whose facts were all held back, and the one
+# fixed sentence for a contradiction about resuscitation (pre-ruled acceptable, G3A).
+HELD_MARK = "held back — shown in the resuscitation box"
+RESUS_CONFLICT_TEXT = "Notes conflict about resuscitation status — requires clarification."
+# PART B required headings built from fields (for section_held_back).
+B_FIELDS = {"gp_actions": ("gp_actions",)}
 EXCLUDED_PREFIXES = ("medications.", "documented_advice.", "suspicious_text.")
 EXCLUDED_IDS = ("resus",)
 
@@ -115,7 +139,7 @@ CHECKS = (
     "box_not_exact", "stray_placeholder",
     "contradiction_missing", "fact_unused", "field_omitted", "gp_action_missing_in_b",
     "inferred_unflagged", "not_documented_with_content", "conflict_section_uncited",
-    "year_added", "resus_text_outside",
+    "year_added", "resus_text_outside", "section_held_back",
 )
 
 _PLACEHOLDER = re.compile(r"\{\{[^{}]*\}\}")
@@ -196,16 +220,33 @@ def _check_input(inp) -> dict:
     return facts
 
 
+def is_resus(value: str) -> bool:
+    return any(p.search(value) for p in _RESUS_PATTERNS)
+
+
+def held_back(facts: dict) -> dict[str, str]:
+    """The guard: fact_id -> field for every FIELD item whose value matches the
+    resus patterns, in field order. Contradictions are never held (decision 1A)."""
+    return {i["fact_id"]: name for name in FIELD_NAMES
+            for i in facts["fields"][name]["items"] if is_resus(i["value"])}
+
+
 def user_text(facts: dict) -> str:
     """age_group, every field with its status and {fact_id, value} items, and
     every contradiction. NOT medications, resus, documented advice or
     suspicious text; no quotes, no line IDs (decision 5); unverified items are
-    included unmarked (decision 3A)."""
+    included unmarked (decision 3A). Field items the guard holds back are left
+    out; a field whose items are all held carries HELD_MARK instead."""
+    held = held_back(facts)
     parts = [f"age_group: {facts['age_group']}", "", "FACTS"]
     for name in FIELD_NAMES:
         f = facts["fields"][name]
+        kept = [i for i in f["items"] if i["fact_id"] not in held]
+        if f["items"] and not kept:
+            parts.append(f"{name} ({f['status']}) — {HELD_MARK}")
+            continue
         parts.append(f"{name} ({f['status']})")
-        parts += [f"- [{i['fact_id']}] {i['value']}" for i in f["items"]]
+        parts += [f"- [{i['fact_id']}] {i['value']}" for i in kept]
     parts += ["", "CONTRADICTIONS"]
     parts += [f"- [{i['fact_id']}] {i['value']}" for i in facts["contradictions"]] or ["none"]
     return "\n".join(parts)
@@ -222,18 +263,25 @@ def _excluded(fid: str) -> bool:
 
 
 def check_composition(wire: dict, facts: dict) -> tuple[list[dict], list[dict], dict]:
-    """Wire form -> (sections, checks, counts). Flags; never repairs or drops."""
+    """Wire form -> (sections, checks, counts). Flags; never repairs or drops.
+    Everything is measured against what step 6 was GIVEN: held-back items are
+    not given (citing one is excluded_fact_id)."""
     fields = facts["fields"]
+    held = held_back(facts)
+
+    def kept(name):
+        return [i for i in fields[name]["items"] if i["fact_id"] not in held]
+
     given: dict[str, str] = {}                         # fact_id -> field name / "contradictions"
     for name in FIELD_NAMES:
-        for i in fields[name]["items"]:
+        for i in kept(name):
             given[i["fact_id"]] = name
     for i in facts["contradictions"]:
         given[i["fact_id"]] = "contradictions"
-    every_item = [i for n in FIELD_NAMES for i in fields[n]["items"]] + list(facts["contradictions"])
+    every_item = [i for n in FIELD_NAMES for i in kept(n)] + list(facts["contradictions"])
     unverified = {i["fact_id"] for i in every_item if i.get("citation_status") != "verified"}
     inferred = {i["fact_id"] for n in FIELD_NAMES if fields[n]["status"] == "inferred_flagged"
-                for i in fields[n]["items"]}
+                for i in kept(n)}
     input_years = documented_years("\n".join(i["value"] for i in every_item))
     paediatric = facts["age_group"] in PAEDIATRIC_GROUPS
 
@@ -251,7 +299,7 @@ def check_composition(wire: dict, facts: dict) -> tuple[list[dict], list[dict], 
             flag("heading_repeated", part, heading)
         seen.setdefault((part, heading), idx)
         for fid in ids:
-            if _excluded(fid):
+            if _excluded(fid) or fid in held:
                 flag("excluded_fact_id", part, heading, fid)
             elif fid not in given:
                 flag("unknown_fact_id", part, heading, fid if re.fullmatch(r"[a-z_]+\.\d+|resus", fid) else None)
@@ -273,10 +321,18 @@ def check_composition(wire: dict, facts: dict) -> tuple[list[dict], list[dict], 
                          "fact_ids": list(ids), "text": text,
                          "unverified_fact_ids": [f for f in ids if f in unverified]})
 
-    for part, required in (("part_a", A_REQUIRED), ("part_b", B_REQUIRED)):
+    def held_only(names):          # nothing left to write: held items, nothing else
+        return (any(fields[n]["items"] for n in names)
+                and not any(kept(n) for n in names)
+                and all(fields[n]["items"] or fields[n]["status"] == "not_documented" for n in names))
+
+    for part, required, field_map in (("part_a", A_REQUIRED, A_FIELDS), ("part_b", B_REQUIRED, B_FIELDS)):
         for h in required:
             if (part, h) not in seen:
-                flag("required_heading_missing", part, h)
+                if h in field_map and held_only(field_map[h]):
+                    flag("section_held_back", part, h)          # G1A: left out by design
+                else:
+                    flag("required_heading_missing", part, h)
 
     a_ids = {f for s in sections if s["part"] == "part_a" for f in s["fact_ids"]}
     b_ids = {f for s in sections if s["part"] == "part_b" for f in s["fact_ids"]}
@@ -284,7 +340,7 @@ def check_composition(wire: dict, facts: dict) -> tuple[list[dict], list[dict], 
         if i["fact_id"] not in a_ids:
             flag("contradiction_missing", "part_a", fact_id=i["fact_id"])
     for name in CONTENT_FIELDS:
-        items = fields[name]["items"]
+        items = kept(name)
         for i in items:
             if i["fact_id"] not in a_ids:
                 flag("fact_unused", "part_a", fact_id=i["fact_id"])
@@ -295,7 +351,7 @@ def check_composition(wire: dict, facts: dict) -> tuple[list[dict], list[dict], 
         if (items and fields[name]["status"] != "not_documented"
                 and not any(i["fact_id"] in a_ids for i in items)):
             flag("field_omitted", "part_a", token=name)
-    for i in fields["gp_actions"]["items"]:
+    for i in kept("gp_actions"):
         if i["fact_id"] not in b_ids:
             flag("gp_action_missing_in_b", "part_b", fact_id=i["fact_id"])
 
@@ -320,18 +376,20 @@ def check_composition(wire: dict, facts: dict) -> tuple[list[dict], list[dict], 
         if own or (not cites_contradiction and _norm(sec["text"]) not in allowed):
             flag("not_documented_with_content", "part_a", heading)
 
-    content = [i for n in CONTENT_FIELDS for i in fields[n]["items"]]
+    content = [i for n in CONTENT_FIELDS for i in kept(n)]
     counts = {
         "sections": len(sections),
         "sections_a": sum(s["part"] == "part_a" for s in sections),
         "sections_b": sum(s["part"] == "part_b" for s in sections),
         "facts_given": len(content),
         "facts_used_in_a": sum(i["fact_id"] in a_ids for i in content),
-        "header_facts_given": sum(len(fields[n]["items"]) for n in HEADER_FIELDS),
+        "header_facts_given": sum(len(kept(n)) for n in HEADER_FIELDS),
         "contradictions_given": len(facts["contradictions"]),
         "contradictions_in_a": sum(i["fact_id"] in a_ids for i in facts["contradictions"]),
-        "gp_actions_given": len(fields["gp_actions"]["items"]),
-        "gp_actions_in_b": sum(i["fact_id"] in b_ids for i in fields["gp_actions"]["items"]),
+        "gp_actions_given": len(kept("gp_actions")),
+        "gp_actions_in_b": sum(i["fact_id"] in b_ids for i in kept("gp_actions")),
+        "facts_held_back": len(held),
+        "gp_actions_held_back": sum(f == "gp_actions" for f in held.values()),
         "unverified_given": len(unverified),
         "unverified_used": len(unverified & (a_ids | b_ids)),
         "checks": len(checks),
@@ -374,6 +432,7 @@ def compose_clinical(inp: dict, ctx: StepContext) -> dict:
     sections, checks, counts = check_composition(wire, facts)
     return {
         "sections": sections,
+        "held_back": [{"fact_id": fid, "field": f} for fid, f in held_back(facts).items()],
         "checks": checks,
         "counts": counts,
         "age_group": facts["age_group"],

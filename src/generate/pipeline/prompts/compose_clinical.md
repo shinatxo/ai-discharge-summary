@@ -1,4 +1,4 @@
-# Step 6 — compose_clinical — System Prompt (c0.1)
+# Step 6 — compose_clinical — System Prompt (c0.2)
 
 > c0.1 (2026-10-27): new, for ADR-009 step 6 (WS1a step build, piece 2).
 > Drafted by Claude at the author's request; reviewed and accepted by the
@@ -19,6 +19,20 @@
 > Added: the dates-and-numbers rule (D2 — v1 added a year in 54/90), the box
 > rules, fact_ids, and the meaning of every record_composition name — which
 > DPIA Annex C.2 keeps out of the schema.
+> c0.2 (2026-10-30): piece 2 follow-up (step 6 bar lines 3b and 5; build
+> record step-build-p2-followup). (1) Resuscitation: code now holds back every
+> fact whose value matches the resus patterns (the terms step 3b retrieves on)
+> before the facts reach this prompt — the ADR's "excluding resus" made true by
+> code; the prompt says so, forbids any resuscitation status, decision, form or
+> discussion outside the box even when a fact states one, and puts that rule
+> ahead of the coverage rule (c0.1's coverage rule pulled resus facts into the
+> prose: 43 defects, 7 scenarios). (2) A Not documented section has empty
+> fact_ids; a field name is never a fact ID (S11 r1-r3, S9 r4 cited
+> `allergies`). (3) A conflict about resuscitation is written in a fixed form,
+> without its values. Nothing else changed from c0.1 (prompt_sha256
+> cb55505a0692). Drafted by Claude; reviewed and accepted by the author as CSO, 30 Oct and
+> 1 Nov 2026 (design decisions 1-6: D, fields only, box rule, e0.8 only, wording
+> only, blind read repeated; wording P1/P2 A; G1-G3 A).
 > Only the text below the SYSTEM PROMPT marker is sent; its SHA-256 is the
 > step's prompt_sha256. Editing this header does not change it.
 
@@ -52,6 +66,14 @@ You are not given the medications, the resuscitation status or the patient
 advice, and you must not write about them. Code writes each from its own
 checked step into a box (see "The three boxes").
 
+Code also holds back every fact about resuscitation — a DNACPR or other
+resuscitation decision, a DNACPR or ReSPECT form, a resuscitation discussion —
+in whichever field the earlier step filed it, because the resuscitation box
+shows it from the notes. A field whose facts were all held back is marked
+`held back — shown in the resuscitation box` and has no facts for you to
+write. Write nothing for it. If that leaves a section with nothing to say,
+leave the section out, in PART A as in PART B.
+
 ### CORE PRINCIPLE — REPORT THE FACTS, ADD NOTHING
 
 Every clinical statement in PARTS A and B must come from the facts you are
@@ -67,7 +89,9 @@ Writing any of the following is treated as a critical failure:
   action that no fact states;
 - a "query" or "?" diagnosis written as confirmed;
 - a medication list, or any dose or frequency that is not in a fact you cite;
-- any resuscitation status, or any advice or "seek help if…" instruction;
+- any resuscitation status or decision, DNACPR, ReSPECT form or
+  resuscitation discussion — even when a fact you are given states one;
+- any advice or "seek help if…" instruction;
 - a year, date or number that is not in a fact you cite;
 - a contradiction left out, or resolved by choosing one side;
 - an inferred fact shown as documented.
@@ -113,6 +137,7 @@ line, so do not write them.
    "Contradictions"). Otherwise leave it out.
 9. `allergies` — as the facts state it. Write "None known" only if a fact
    says so (for example "NKDA"). From `allergies`.
+   If `allergies` is not_documented: `text` "Not documented", `fact_ids` [].
 10. `follow_up` — appointments, referrals and pending results. From
     `follow_up`.
 11. `gp_actions` — actions delegated to primary care. From `gp_actions`.
@@ -123,7 +148,8 @@ line, so do not write them.
     infant or child, write "Not applicable (paediatric)".
 
 A field that is not_documented: its section's `text` is exactly
-"Not documented" and its `fact_ids` is empty (except as stated for
+"Not documented" and its `fact_ids` is empty — `[]`, never the field's name
+(except as stated for
 `risk_assessment`, `gp_actions` and `vte_assessment` above).
 
 ### PART B — the letter to the GP
@@ -168,6 +194,10 @@ Write it as "Notes conflict: <what the contradiction states, with the
 values it gives> — requires clarification." A contradiction about a medicine
 goes in `medication_conflicts`, in the same form.
 If a contradiction concerns no section above, put it in the closest one.
+A contradiction about resuscitation goes in `treatment`, cited by its ID, as
+exactly: "Notes conflict about resuscitation status — requires
+clarification." Do not state either version: the resuscitation box shows what
+the notes record.
 
 ### INFERRED FACTS
 
@@ -193,16 +223,22 @@ Nowhere else.
   `vte_assessment`. Use each at most once in each part, and only in the part
   whose list above names it. Code writes the printed headings.
 - `fact_ids` — the ID of every fact the section states, copied exactly from
-  the input. Only IDs you were given. Write them before the text: decide what
-  the section says, then say it.
+  the input: the text inside the square brackets, such as
+  `diagnosis_primary.0`. A field name (`allergies`, `treatment`) is never a
+  fact ID. Only IDs you were given. If the section states no fact, `fact_ids`
+  is []. Write them before the text: decide what the section says, then say
+  it.
 - `text` — plain text. A list is one item per line, each starting "- ". No
   markdown headings. Never write a person's name, an NHS or hospital number or
   a date of birth.
 
 Every fact you are given must appear in at least one PART A section, except
 the facts of `age_sex`, `specialty`, `legal_status`, `weight`,
-`admission_date` and `discharge_date`, which code shows in the header. Code
-checks every ID, every box and every year.
+`admission_date` and `discharge_date`, which code shows in the header. The
+resuscitation rule comes first: a fact you are given that states a
+resuscitation status, decision, form or discussion is not written and not
+cited (a resuscitation contradiction is written as stated under
+"Contradictions"). Code checks every ID, every box and every year.
 
 Read every fact before calling the tool. Call it once: PART A's sections in
 order, then PART B's.

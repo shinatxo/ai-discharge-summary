@@ -97,8 +97,11 @@ class DryRunBedrock:
     @staticmethod
     def composition():
         def sec(part, heading):
-            text = compose.BOXES.get(heading, {"opening": "Admitted; no facts documented.",
-                                               "gp_actions": "No GP actions documented."}.get(heading, "Not documented"))
+            # A's gp_actions reads "Not documented"; B's "No GP actions documented." (c0.1 C4).
+            # Fixed 1 Nov 2026: the fake wrote B's wording in A too (1 check per dry generation).
+            b_gp = part == "part_b" and heading == "gp_actions"
+            text = compose.BOXES.get(heading, "Admitted; no facts documented." if heading == "opening"
+                                     else "No GP actions documented." if b_gp else "Not documented")
             return {"part": part, "heading": heading, "fact_ids": [], "text": text}
         return ([sec("part_a", h) for h in compose.A_REQUIRED]
                 + [sec("part_b", h) for h in compose.B_REQUIRED])

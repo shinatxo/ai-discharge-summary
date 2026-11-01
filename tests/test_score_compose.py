@@ -152,3 +152,109 @@ def test_bar_6_counts_documented_fields_only():
     assert CP.field_omitted(rec) == ["diagnosis_background"]
     r = CP.score_record(rec, T.NOTES, {})
     assert CP.bar(_sm([r]))[6][2] == "NOT MET"
+
+
+# --- metric v3: the resus guard's held-back facts (piece 2 follow-up) ----------------
+
+import json  # noqa: E402
+
+from pipeline import compose as CMP  # noqa: E402
+
+
+def _held_record(box_lines=("L010",), payload=None, facts=None):
+    """risk_assessment holds only a resus fact (S1 r5's shape); step 6 leaves it out."""
+    facts = facts or T._with_resus(T._facts())
+    out = T._run(payload, facts=facts)
+    rec = _record(payload)
+    rec["steps"]["validate_facts"]["facts"] = facts
+    rec["steps"]["compose_clinical"] = out
+    rec["steps"]["route_resus"] = {"cited_lines": list(box_lines)}
+    return rec
+
+
+def test_v3_held_fact_with_its_lines_in_the_box_is_present():
+    rec = _held_record()
+    assert CP.held_in_box(rec) == ({"treatment.1", "risk_assessment.0"}, [])
+    assert CP.field_omitted(rec) == []
+    r = CP.score_record(rec, T.NOTES, {})
+    assert r["held"] == {"held_back": 2, "present_in_box": 2, "not_in_box": [],
+                         "content_held": 2, "content_present": 2}
+
+
+def test_v3_held_fact_whose_lines_are_not_in_the_box_is_omitted():
+    rec = _held_record(box_lines=())
+    assert CP.held_in_box(rec) == (set(), ["treatment.1", "risk_assessment.0"])
+    assert CP.field_omitted(rec) == ["risk_assessment"]       # treatment still has treatment.0 in A
+    r = CP.score_record(rec, T.NOTES, {})
+    assert CP.bar(_sm([r]))[6][2] == "NOT MET"
+
+
+def test_v3_held_fact_with_an_unverified_citation_is_not_present():
+    facts = T._with_resus(T._facts())
+    facts["fields"]["risk_assessment"]["items"][0]["cites"][0]["verified"] = False
+    assert CP.held_in_box(_held_record(facts=facts))[1] == ["risk_assessment.0"]
+
+
+def test_v3_a_held_gp_action_not_in_the_box_counts_as_missing_from_b():
+    facts = T._facts()
+    facts["fields"]["gp_actions"]["items"] = [T._item("gp_actions.0", "GP to note the DNACPR")]
+    p = T._good()
+    p["sections"] = [s for s in p["sections"] if s["heading"] != "gp_actions"]
+    ok = CP.score_record(_held_record(payload=p, facts=facts), T.NOTES, {})
+    bad = CP.score_record(_held_record(box_lines=(), payload=p, facts=copy.deepcopy(facts)), T.NOTES, {})
+    assert ok["gp_held_not_in_box"] == [] and bad["gp_held_not_in_box"] == ["gp_actions.0"]
+    assert CP.bar(_sm([ok]))[6][2] == "MET" and CP.bar(_sm([bad]))[6][2] == "NOT MET"
+
+
+def test_g3_the_fixed_resus_conflict_sentence_is_pre_ruled_acceptable():
+    facts = T._with_resus(T._facts())
+    p = T._good()
+    T._sec(p, "part_a", "treatment").update(
+        fact_ids=["treatment.0", "contradictions.1"],
+        text="Severe 3VD, not for revascularisation; medical management. " + CMP.RESUS_CONFLICT_TEXT)
+    r = CP.score_record(_held_record(payload=p, facts=facts), T.NOTES, {})
+    resus = [x for x in r["review"] if x["kind"] == "resus"]
+    assert len(resus) == 1 and resus[0]["pre_ruled"] and resus[0]["ruling"] == "acceptable"
+    assert CP.bar(_sm([r]))[5][2] == "MET"
+
+
+@pytest.mark.parametrize("change", [
+    lambda s: s.update(text="Notes conflict about resuscitation status (DNACPR vs CPR) — requires clarification."),
+    lambda s: s.update(fact_ids=["treatment.0"]),                    # cites no contradiction
+])
+def test_g3_anything_else_is_not_pre_ruled(change):
+    facts = T._with_resus(T._facts())
+    p = T._good()
+    sec = T._sec(p, "part_a", "treatment")
+    sec.update(fact_ids=["treatment.0", "contradictions.1"], text=CMP.RESUS_CONFLICT_TEXT)
+    change(sec)
+    r = CP.score_record(_held_record(payload=p, facts=facts), T.NOTES, {})
+    resus = [x for x in r["review"] if x["kind"] == "resus"]
+    assert resus and all(x["ruling"] is None and not x["pre_ruled"] for x in resus)
+
+
+BASELINE = ROOT / "evals" / "runs" / "w6-pipeline-e07-m01-c01-x5"
+
+
+@pytest.mark.skipif(not BASELINE.is_dir(), reason="saved runs not mounted")
+def test_guard_replayed_on_the_28_oct_facts():
+    """The design evidence (round 1), pinned: on the 28 Oct step-3 facts the guard
+    holds 40 field facts in 8 scenarios, no contradictions, empties one field
+    (S1 r5 risk_assessment) and no GP action — and every held fact's lines are in
+    that record's RESUS block."""
+    held, emptied, not_in_box, scenarios = 0, [], 0, set()
+    for path in sorted(BASELINE.glob("r*/*.json")):
+        rec = json.loads(path.read_text(encoding="utf-8"))
+        facts = rec["steps"]["validate_facts"]["facts"]
+        h = CMP.held_back(facts)
+        assert not any(f.startswith("contradictions") for f in h)
+        assert "gp_actions" not in h.values()
+        rec["steps"]["compose_clinical"]["held_back"] = [{"fact_id": k, "field": v} for k, v in h.items()]
+        not_in_box += len(CP.held_in_box(rec)[1])
+        held += len(h)
+        scenarios |= {rec["scenario_id"]} if h else set()
+        emptied += [(rec["scenario_id"], rec["run"], n) for n, f in facts["fields"].items()
+                    if f["items"] and all(i["fact_id"] in h for i in f["items"])]
+    assert (held, not_in_box) == (40, 0)
+    assert scenarios == {"A5", "B6", "S1", "S11", "S12", "S13", "S14", "S15"}
+    assert emptied == [("S1", 5, "risk_assessment")]

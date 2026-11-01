@@ -1,31 +1,43 @@
 {
   "scenario_id": "S15",
   "compose_rulings": {
+    "01707ca0ff501a4b": "acceptable",
     "03f904640f0dc86c": "defect",
     "06471b454f3a4546": "defect",
     "089a07194fa6d70a": "acceptable",
     "0d704bc8fd3dd39e": "defect",
     "172e5c1bc704e3a8": "acceptable",
+    "18369092698178a4": "acceptable",
     "187467c8e24a66b1": "acceptable",
     "1b25b0709eeeb465": "defect",
     "1d427ae6bbf6bae9": "defect",
     "294289444c8142e3": "acceptable",
+    "2b362650dfbe14c5": "acceptable",
     "2ec791b8697fd1ae": "acceptable",
     "3362066b39e6dc31": "acceptable",
     "373a5f16a44100de": "acceptable",
     "4e8f19e14e6607d8": "acceptable",
+    "4ea1be88874f0154": "acceptable",
     "527f9ec0f31ac4a4": "defect",
     "573d196ea3cccebd": "acceptable",
     "60ce96670d6d5ec5": "acceptable",
     "680fed712fb38885": "acceptable",
     "68ba1cc1d4035d36": "defect",
+    "6c4b9ea0fe023865": "acceptable",
     "88ad33ca53d99ec5": "defect",
     "94083a2c071ca71b": "defect",
+    "9e7710a8f668045d": "acceptable",
     "a09973592a5bd385": "defect",
+    "a2a1d1300139ea9b": "acceptable",
+    "ab67e9cab81b3ba7": "acceptable",
+    "ad0dfc1d00a3f658": "acceptable",
     "ae40377be11c3039": "acceptable",
+    "d16b8e95decf9f19": "acceptable",
     "d16fa92d4098f5f2": "defect",
     "e3fcbb4c0e2be076": "acceptable",
-    "f529546b1d5bb405": "acceptable"
+    "f067235374ca8a60": "acceptable",
+    "f529546b1d5bb405": "acceptable",
+    "fff8288d8c2a9a9c": "acceptable"
   },
   "compose_rulings_meta": {
     "by": "Shina Oguntoye (CSO)",
@@ -73,6 +85,26 @@
           "680fed712fb38885",
           "ae40377be11c3039",
           "f529546b1d5bb405"
+        ]
+      },
+      "R5_medication": {
+        "verdict": "acceptable",
+        "on": "2026-11-01",
+        "source": "w6-pipeline-e09-m01-c02-x5, step 6 (grouped and proposed by Claude, approved by the CSO — rulings R5-R6, 1 Nov 2026)",
+        "reason": "a drug named from a fact the section cites (treatment 60, background 11, investigations 7, VTE 5, GP actions 5, secondary diagnosis / follow-up 4 — of 86 distinct); no discharge list restated; 9 narrate an in-hospital dose change (B6 bisoprolol; S1 bisoprolol / ISMN) — box-vs-prose check at 8a (item 4). Same class as R3.",
+        "keys": [
+          "01707ca0ff501a4b",
+          "18369092698178a4",
+          "2b362650dfbe14c5",
+          "4ea1be88874f0154",
+          "6c4b9ea0fe023865",
+          "9e7710a8f668045d",
+          "a2a1d1300139ea9b",
+          "ab67e9cab81b3ba7",
+          "ad0dfc1d00a3f658",
+          "d16b8e95decf9f19",
+          "f067235374ca8a60",
+          "fff8288d8c2a9a9c"
         ]
       }
     }

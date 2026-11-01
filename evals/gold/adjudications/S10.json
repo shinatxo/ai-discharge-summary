@@ -49,19 +49,28 @@
     }
   },
   "compose_rulings": {
+    "01af9d51ac934a15": "acceptable",
+    "0be2e0021c114b45": "acceptable",
+    "20711b2ede17642a": "acceptable",
+    "3f9c0546aff59669": "acceptable",
     "4d5b81434cb2870b": "acceptable",
+    "4ebc0369b739adac": "acceptable",
     "6bf69fda5ef19445": "acceptable",
     "7506a8ad872e48cd": "acceptable",
     "7c8e7d91f8261d93": "acceptable",
     "8423f795210ba72e": "acceptable",
     "96d074cb91cf58ea": "acceptable",
+    "972eee923a4b1994": "acceptable",
     "b9f79d088fd53543": "acceptable",
     "c027540a1914f299": "acceptable",
     "c44f03311e6d9dc0": "acceptable",
     "d6a974db6811ffdb": "acceptable",
     "d6b53df55e24a9cf": "acceptable",
+    "ec8be7c84fbdde71": "acceptable",
     "eced13695e86a35a": "acceptable",
-    "ef1dab31b47737d1": "acceptable"
+    "ef1dab31b47737d1": "acceptable",
+    "f606be2807e7e0b6": "acceptable",
+    "ff211ae28609de34": "acceptable"
   },
   "compose_rulings_meta": {
     "by": "Shina Oguntoye (CSO)",
@@ -85,6 +94,23 @@
           "d6b53df55e24a9cf",
           "eced13695e86a35a",
           "ef1dab31b47737d1"
+        ]
+      },
+      "R5_medication": {
+        "verdict": "acceptable",
+        "on": "2026-11-01",
+        "source": "w6-pipeline-e09-m01-c02-x5, step 6 (grouped and proposed by Claude, approved by the CSO — rulings R5-R6, 1 Nov 2026)",
+        "reason": "a drug named from a fact the section cites (treatment 60, background 11, investigations 7, VTE 5, GP actions 5, secondary diagnosis / follow-up 4 — of 86 distinct); no discharge list restated; 9 narrate an in-hospital dose change (B6 bisoprolol; S1 bisoprolol / ISMN) — box-vs-prose check at 8a (item 4). Same class as R3.",
+        "keys": [
+          "01af9d51ac934a15",
+          "0be2e0021c114b45",
+          "20711b2ede17642a",
+          "3f9c0546aff59669",
+          "4ebc0369b739adac",
+          "972eee923a4b1994",
+          "ec8be7c84fbdde71",
+          "f606be2807e7e0b6",
+          "ff211ae28609de34"
         ]
       }
     }

@@ -13,14 +13,20 @@
   },
   "compose_rulings": {
     "1c105b38d9c57ae8": "acceptable",
+    "459ec84054f38634": "acceptable",
     "46bff501f49b0371": "defect",
     "481b815c8341b946": "acceptable",
+    "4a992820dab2a73a": "acceptable",
+    "5125e0304919ffbd": "acceptable",
     "664102a17e81e1a6": "acceptable",
+    "74d9e76226e409f5": "acceptable",
     "97c1c1db899b4885": "defect",
     "aa17a7297fe8a500": "acceptable",
     "b47ff3a8391fe524": "defect",
     "bfa6de0e11c2fb8b": "acceptable",
+    "c54df350c60e5748": "acceptable",
     "ccd50676f00ea2d6": "acceptable",
+    "cfc01f14951d393d": "acceptable",
     "d356742187ca4da5": "defect",
     "d3f2bf62587bee1a": "acceptable",
     "d9a194d55d36dbea": "acceptable",
@@ -56,6 +62,20 @@
           "d3f2bf62587bee1a",
           "d9a194d55d36dbea",
           "f809728133c85434"
+        ]
+      },
+      "R5_medication": {
+        "verdict": "acceptable",
+        "on": "2026-11-01",
+        "source": "w6-pipeline-e09-m01-c02-x5, step 6 (grouped and proposed by Claude, approved by the CSO — rulings R5-R6, 1 Nov 2026)",
+        "reason": "a drug named from a fact the section cites (treatment 60, background 11, investigations 7, VTE 5, GP actions 5, secondary diagnosis / follow-up 4 — of 86 distinct); no discharge list restated; 9 narrate an in-hospital dose change (B6 bisoprolol; S1 bisoprolol / ISMN) — box-vs-prose check at 8a (item 4). Same class as R3.",
+        "keys": [
+          "459ec84054f38634",
+          "4a992820dab2a73a",
+          "5125e0304919ffbd",
+          "74d9e76226e409f5",
+          "c54df350c60e5748",
+          "cfc01f14951d393d"
         ]
       }
     }

@@ -1,0 +1,1111 @@
+{
+  "record_version": 1,
+  "generation_id": "w6-pipeline-e09-m01-c02-x5/r5/S3",
+  "batch_id": "w6-pipeline-e09-m01-c02-x5",
+  "run": 5,
+  "scenario_id": "S3",
+  "generator": "pipeline",
+  "path": "steps-1-5b-5a-6",
+  "model_id": "anthropic.claude-sonnet-4-6",
+  "region": "eu-west-2",
+  "prompts": {
+    "extract_facts": {
+      "path": "src/generate/pipeline/prompts/extract_facts.md",
+      "file_sha256": "27554f5d32e4281ec3e1e0b135553d33f0f2475d8835b2929cadf3e3e3abd556",
+      "body_sha256": "481a6c68d94acb1949ab3f0cd694d538b019446ed6cf8e6951560394cf02366c"
+    },
+    "reconcile_medications": {
+      "path": "src/generate/pipeline/prompts/reconcile_medications.md",
+      "file_sha256": "5006968b7010560f437e0eb31f55e9092baebc7a4adf347667bfcb154e8708a0",
+      "body_sha256": "b06f8c12a739b80c3d57f41ceada7dd7b1c2af38bc53159353b68425d09d5acf"
+    },
+    "compose_clinical": {
+      "path": "src/generate/pipeline/prompts/compose_clinical.md",
+      "file_sha256": "511071c6204ef05308500a29aeaafd4f06facfceb83c5b9fd5b4590031cb4a7a",
+      "body_sha256": "48613f4d8669369039b77ffdf12828ce72445aaab0fd85f04d4d4ad0a82725fe"
+    }
+  },
+  "prompt_caching": true,
+  "notes_sha256": "c8882fcefb7f24fb39b45a7bb32cb6bfeb5481df37eff450606bec809ab51ef1",
+  "started_at": "2026-11-01T15:07:19+00:00",
+  "elapsed_s": 23.676,
+  "calls": [
+    {
+      "name": "extract_facts",
+      "input_tokens": 918,
+      "output_tokens": 2254,
+      "cache_read_tokens": 4539,
+      "cache_write_tokens": 0,
+      "stop_reason": "tool_use",
+      "latency_s": 13.276,
+      "throttle_retries": 0
+    },
+    {
+      "name": "reconcile_medications",
+      "input_tokens": 988,
+      "output_tokens": 116,
+      "cache_read_tokens": 2290,
+      "cache_write_tokens": 0,
+      "stop_reason": "tool_use",
+      "latency_s": 1.645,
+      "throttle_retries": 0
+    },
+    {
+      "name": "compose_clinical",
+      "input_tokens": 1180,
+      "output_tokens": 1621,
+      "cache_read_tokens": 3182,
+      "cache_write_tokens": 0,
+      "stop_reason": "tool_use",
+      "latency_s": 8.606,
+      "throttle_retries": 0
+    }
+  ],
+  "steps": {
+    "guard_input": {
+      "notes_sha256": "c8882fcefb7f24fb39b45a7bb32cb6bfeb5481df37eff450606bec809ab51ef1",
+      "line_count": 22,
+      "flags": []
+    },
+    "extract_facts": {
+      "call": {
+        "model_id": "anthropic.claude-sonnet-4-6",
+        "prompt_sha256": "481a6c68d94acb1949ab3f0cd694d538b019446ed6cf8e6951560394cf02366c",
+        "stop_reason": "tool_use",
+        "attempts": 1,
+        "input_tokens": 918,
+        "output_tokens": 2254,
+        "cache_read_tokens": 4539,
+        "cache_write_tokens": 0,
+        "latency_ms": 13276
+      }
+    },
+    "validate_facts": {
+      "facts": {
+        "fields": {
+          "age_sex": {
+            "status": "documented",
+            "items": [
+              {
+                "value": "45-year-old female",
+                "cites": [
+                  {
+                    "lines": [
+                      "L001"
+                    ],
+                    "quote": "45F",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "age_sex.0",
+                "citation_status": "verified",
+                "reason": null
+              }
+            ],
+            "field_check": "ok"
+          },
+          "specialty": {
+            "status": "documented",
+            "items": [
+              {
+                "value": "Acute Mental Health Unit",
+                "cites": [
+                  {
+                    "lines": [
+                      "L011"
+                    ],
+                    "quote": "admission to acute MH unit",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "specialty.0",
+                "citation_status": "verified",
+                "reason": null
+              }
+            ],
+            "field_check": "ok"
+          },
+          "legal_status": {
+            "status": "documented",
+            "items": [
+              {
+                "value": "Informal (voluntary) admission; not detained under the Mental Health Act",
+                "cites": [
+                  {
+                    "lines": [
+                      "L011"
+                    ],
+                    "quote": "Agreed informal (voluntary) admission to acute MH unit.",
+                    "verified": true,
+                    "reason": null
+                  },
+                  {
+                    "lines": [
+                      "L012"
+                    ],
+                    "quote": "NOT detained under MHA.",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "legal_status.0",
+                "citation_status": "verified",
+                "reason": null
+              }
+            ],
+            "field_check": "ok"
+          },
+          "weight": {
+            "status": "documented",
+            "items": [
+              {
+                "value": "Approximately 4 kg weight loss reported (no admission weight recorded)",
+                "cites": [
+                  {
+                    "lines": [
+                      "L001",
+                      "L002"
+                    ],
+                    "quote": "~4kg weight loss",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "weight.0",
+                "citation_status": "verified",
+                "reason": null
+              }
+            ],
+            "field_check": "ok"
+          },
+          "admission_date": {
+            "status": "documented",
+            "items": [
+              {
+                "value": "18/05",
+                "cites": [
+                  {
+                    "lines": [
+                      "L001"
+                    ],
+                    "quote": "18/05",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "admission_date.0",
+                "citation_status": "verified",
+                "reason": null
+              }
+            ],
+            "field_check": "ok"
+          },
+          "discharge_date": {
+            "status": "documented",
+            "items": [
+              {
+                "value": "23/05",
+                "cites": [
+                  {
+                    "lines": [
+                      "L021"
+                    ],
+                    "quote": "Day 6 (23/05) Discharged.",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "discharge_date.0",
+                "citation_status": "verified",
+                "reason": null
+              }
+            ],
+            "field_check": "ok"
+          },
+          "presenting_complaint": {
+            "status": "documented",
+            "items": [
+              {
+                "value": "6 weeks of worsening low mood, anhedonia, early-morning waking, reduced appetite with approximately 4 kg weight loss, poor concentration, and active suicidal ideation with thoughts of overdose (no formed plan or intent at assessment but escalating)",
+                "cites": [
+                  {
+                    "lines": [
+                      "L001",
+                      "L002"
+                    ],
+                    "quote": "6/52 worsening low mood, anhedonia,\nearly-morning waking, reduced appetite (~4kg weight loss), poor concentration.",
+                    "verified": true,
+                    "reason": null
+                  },
+                  {
+                    "lines": [
+                      "L003"
+                    ],
+                    "quote": "Active SI w/ thoughts of overdose, no formed plan or intent at assessment but escalating.",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "presenting_complaint.0",
+                "citation_status": "verified",
+                "reason": null
+              }
+            ],
+            "field_check": "ok"
+          },
+          "diagnosis_primary": {
+            "status": "documented",
+            "items": [
+              {
+                "value": "Depressive episode with active suicidal ideation",
+                "cites": [
+                  {
+                    "lines": [
+                      "L001",
+                      "L002"
+                    ],
+                    "quote": "6/52 worsening low mood, anhedonia,\nearly-morning waking, reduced appetite (~4kg weight loss), poor concentration.",
+                    "verified": true,
+                    "reason": null
+                  },
+                  {
+                    "lines": [
+                      "L003"
+                    ],
+                    "quote": "Active SI w/ thoughts of overdose, no formed plan or intent at assessment but escalating.",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "diagnosis_primary.0",
+                "citation_status": "verified",
+                "reason": null
+              }
+            ],
+            "field_check": "ok"
+          },
+          "diagnosis_secondary": {
+            "status": "documented",
+            "items": [
+              {
+                "value": "Identified psychosocial triggers: recent relationship breakdown and work stress",
+                "cites": [
+                  {
+                    "lines": [
+                      "L006"
+                    ],
+                    "quote": "Triggers: recent relationship breakdown + work stress.",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "diagnosis_secondary.0",
+                "citation_status": "verified",
+                "reason": null
+              }
+            ],
+            "field_check": "ok"
+          },
+          "diagnosis_background": {
+            "status": "documented",
+            "items": [
+              {
+                "value": "One previous depressive episode in 2018, GP-managed with sertraline, stopped after approximately 9 months when well",
+                "cites": [
+                  {
+                    "lines": [
+                      "L004",
+                      "L005"
+                    ],
+                    "quote": "One prev depressive episode 2018, GP-managed\nw/ sertraline, stopped after ~9/12 when well.",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "diagnosis_background.0",
+                "citation_status": "verified",
+                "reason": null
+              },
+              {
+                "value": "No physical past medical history",
+                "cites": [
+                  {
+                    "lines": [
+                      "L007"
+                    ],
+                    "quote": "PMH: nil physical.",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "diagnosis_background.1",
+                "citation_status": "verified",
+                "reason": null
+              }
+            ],
+            "field_check": "ok"
+          },
+          "key_investigations": {
+            "status": "documented",
+            "items": [
+              {
+                "value": "Suicidal ideation at assessment: active, thoughts of overdose, no formed plan or intent, but escalating",
+                "cites": [
+                  {
+                    "lines": [
+                      "L003"
+                    ],
+                    "quote": "Active SI w/ thoughts of overdose, no formed plan or intent at assessment but escalating.",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "key_investigations.0",
+                "citation_status": "verified",
+                "reason": null
+              },
+              {
+                "value": "No psychotic features identified",
+                "cites": [
+                  {
+                    "lines": [
+                      "L004"
+                    ],
+                    "quote": "No psychotic features.",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "key_investigations.1",
+                "citation_status": "verified",
+                "reason": null
+              },
+              {
+                "value": "Day 3: suicidal ideation less intense, now passive",
+                "cites": [
+                  {
+                    "lines": [
+                      "L015"
+                    ],
+                    "quote": "SI less intense, now passive.",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "key_investigations.2",
+                "citation_status": "verified",
+                "reason": null
+              },
+              {
+                "value": "Day 5 MDT: mood improving, suicidal ideation fleeting/passive, no intent, future-oriented",
+                "cites": [
+                  {
+                    "lines": [
+                      "L017"
+                    ],
+                    "quote": "Mood improving, SI fleeting/passive, no intent, future-oriented",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "key_investigations.3",
+                "citation_status": "verified",
+                "reason": null
+              }
+            ],
+            "field_check": "ok"
+          },
+          "treatment": {
+            "status": "documented",
+            "items": [
+              {
+                "value": "Sertraline 50 mg once daily started (Day 3, 20/05)",
+                "cites": [
+                  {
+                    "lines": [
+                      "L014"
+                    ],
+                    "quote": "Started sertraline 50mg OD.",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "treatment.0",
+                "citation_status": "verified",
+                "reason": null
+              },
+              {
+                "value": "Psychoeducation given",
+                "cites": [
+                  {
+                    "lines": [
+                      "L014"
+                    ],
+                    "quote": "Psychoeducation given.",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "treatment.1",
+                "citation_status": "verified",
+                "reason": null
+              },
+              {
+                "value": "Collaborative safety plan completed with patient (Day 5 MDT)",
+                "cites": [
+                  {
+                    "lines": [
+                      "L017",
+                      "L018"
+                    ],
+                    "quote": "Collaborative safety plan completed w/ pt.",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "treatment.2",
+                "citation_status": "verified",
+                "reason": null
+              },
+              {
+                "value": "Agreed discharge with early CMHT follow-up and crisis line (Day 5 MDT decision)",
+                "cites": [
+                  {
+                    "lines": [
+                      "L017",
+                      "L018",
+                      "L019"
+                    ],
+                    "quote": "Agreed discharge w/\nearly CMHT follow-up + crisis line.",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "treatment.3",
+                "citation_status": "verified",
+                "reason": null
+              }
+            ],
+            "field_check": "ok"
+          },
+          "risk_assessment": {
+            "status": "documented",
+            "items": [
+              {
+                "value": "Risk to self: moderate-high (active SI, escalating). Protective factors: 2 children, help-seeking, future-oriented. Risk to others: nil.",
+                "cites": [
+                  {
+                    "lines": [
+                      "L008",
+                      "L009"
+                    ],
+                    "quote": "Risk: self — moderate-high (active SI, escalating). Protective: 2 children, help-seeking,\nfuture-oriented. Others — nil.",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "risk_assessment.0",
+                "citation_status": "verified",
+                "reason": null
+              },
+              {
+                "value": "Safeguarding: 2 children at home (ages 8 and 11); social context to be explored; no immediate concerns flagged",
+                "cites": [
+                  {
+                    "lines": [
+                      "L009",
+                      "L010"
+                    ],
+                    "quote": "Safeguarding: 2 children at home (ages 8 + 11), social\ncontext to be explored, no immediate concerns flagged.",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "risk_assessment.1",
+                "citation_status": "verified",
+                "reason": null
+              }
+            ],
+            "field_check": "ok"
+          },
+          "allergies": {
+            "status": "documented",
+            "items": [
+              {
+                "value": "No known drug allergies",
+                "cites": [
+                  {
+                    "lines": [
+                      "L007"
+                    ],
+                    "quote": "NKDA.",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "allergies.0",
+                "citation_status": "verified",
+                "reason": null
+              }
+            ],
+            "field_check": "ok"
+          },
+          "follow_up": {
+            "status": "documented",
+            "items": [
+              {
+                "value": "CMHT follow-up in 1 week",
+                "cites": [
+                  {
+                    "lines": [
+                      "L021"
+                    ],
+                    "quote": "CMHT f/u 1/52.",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "follow_up.0",
+                "citation_status": "verified",
+                "reason": null
+              },
+              {
+                "value": "Sertraline dose review at 4 weeks",
+                "cites": [
+                  {
+                    "lines": [
+                      "L021"
+                    ],
+                    "quote": "review dose at 4/52.",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "follow_up.1",
+                "citation_status": "verified",
+                "reason": null
+              },
+              {
+                "value": "Crisis team number given to patient",
+                "cites": [
+                  {
+                    "lines": [
+                      "L021",
+                      "L022"
+                    ],
+                    "quote": "Crisis team number given.",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "follow_up.2",
+                "citation_status": "verified",
+                "reason": null
+              }
+            ],
+            "field_check": "ok"
+          },
+          "gp_actions": {
+            "status": "documented",
+            "items": [
+              {
+                "value": "GP to monitor mood and tolerability",
+                "cites": [
+                  {
+                    "lines": [
+                      "L022"
+                    ],
+                    "quote": "GP to monitor mood + tolerability.",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "gp_actions.0",
+                "citation_status": "verified",
+                "reason": null
+              }
+            ],
+            "field_check": "ok"
+          },
+          "vte_assessment": {
+            "status": "not_documented",
+            "items": [],
+            "field_check": "ok"
+          }
+        },
+        "medications": {
+          "pre_admission": [
+            {
+              "value": "No regular medications pre-admission",
+              "cites": [
+                {
+                  "lines": [
+                    "L007"
+                  ],
+                  "quote": "DH: nil regular.",
+                  "verified": true,
+                  "reason": null
+                }
+              ],
+              "fact_id": "medications.pre_admission.0",
+              "citation_status": "verified",
+              "reason": null
+            }
+          ],
+          "discharge": [
+            {
+              "value": "Sertraline 50 mg once daily",
+              "cites": [
+                {
+                  "lines": [
+                    "L021"
+                  ],
+                  "quote": "Sertraline 50mg OD",
+                  "verified": true,
+                  "reason": null
+                }
+              ],
+              "fact_id": "medications.discharge.0",
+              "citation_status": "verified",
+              "reason": null
+            }
+          ],
+          "discharge_status": "listed",
+          "medications_check": "ok"
+        },
+        "resus": {
+          "changed": "not_documented",
+          "cites": [],
+          "form_or_discussion_documented": false,
+          "status_documented": "not_documented",
+          "fact_id": "resus",
+          "citation_status": "verified",
+          "reason": null
+        },
+        "documented_advice": [
+          {
+            "value": "review dose at 4/52",
+            "cites": [
+              {
+                "lines": [
+                  "L021"
+                ],
+                "quote": "review dose at 4/52.",
+                "verified": true,
+                "reason": null
+              }
+            ],
+            "fact_id": "documented_advice.0",
+            "citation_status": "verified",
+            "reason": null
+          },
+          {
+            "value": "Crisis team number given",
+            "cites": [
+              {
+                "lines": [
+                  "L021",
+                  "L022"
+                ],
+                "quote": "Crisis team number given.",
+                "verified": true,
+                "reason": null
+              }
+            ],
+            "fact_id": "documented_advice.1",
+            "citation_status": "verified",
+            "reason": null
+          }
+        ],
+        "age_group": "adult",
+        "contradictions": [],
+        "suspicious_text": []
+      },
+      "uncited_lines": [],
+      "counts": {
+        "cites_total": 33,
+        "cites_verified": 33,
+        "items_unverified": 0,
+        "fields_inconsistent": 0,
+        "medications_inconsistent": 0
+      }
+    },
+    "retrieve_evidence": {
+      "medication": [
+        {
+          "line": "L007",
+          "sources": [
+            "cited",
+            "med_header"
+          ],
+          "fact_ids": [
+            "medications.pre_admission.0"
+          ],
+          "flagged": false
+        },
+        {
+          "line": "L021",
+          "sources": [
+            "cited"
+          ],
+          "fact_ids": [
+            "medications.discharge.0"
+          ],
+          "flagged": false
+        }
+      ],
+      "resus": [],
+      "counts": {
+        "medication_lines": 2,
+        "resus_lines": 0,
+        "medication_matched_not_cited": 0,
+        "resus_matched_not_cited": 0
+      }
+    },
+    "route_resus": {
+      "route": "absent",
+      "forced": "no",
+      "status": "not_documented",
+      "changed": "not_documented",
+      "cited_lines": [],
+      "rendered": "RESUSCITATION STATUS\nNot documented."
+    },
+    "select_safety_net": {
+      "route": "documented",
+      "audience": "adult",
+      "pinned_line": "If you have been given a number to call, use that first. Otherwise, if you are worried, contact your GP or call NHS 111. Call 999 if it is an emergency.",
+      "advice": [
+        {
+          "fact_id": "documented_advice.0",
+          "lines": [
+            "L021"
+          ],
+          "quote": "review dose at 4/52."
+        },
+        {
+          "fact_id": "documented_advice.1",
+          "lines": [
+            "L021",
+            "L022"
+          ],
+          "quote": "Crisis team number given."
+        }
+      ],
+      "advice_excluded": 0,
+      "cited_lines": [
+        "L021",
+        "L022"
+      ],
+      "part_ab": "- \"review dose at 4/52.\" [L021]\n- \"Crisis team number given.\" [L021–L022]\n\nStandard seek-help line in the patient version (fixed wording, not from the notes):\nIf you have been given a number to call, use that first. Otherwise, if you are worried, contact your GP or call NHS 111. Call 999 if it is an emergency.",
+      "part_c": "review dose at 4/52.\nCrisis team number given.\n\nIf you have been given a number to call, use that first. Otherwise, if you are worried, contact your GP or call NHS 111. Call 999 if it is an emergency."
+    },
+    "reconcile_medications": {
+      "reconciliation": [
+        {
+          "entry_id": "reconciliation.0",
+          "drug": "sertraline",
+          "tag": "new",
+          "basis": "documented",
+          "dose": "50mg",
+          "route": null,
+          "frequency": "OD",
+          "previous": null,
+          "conflict": false,
+          "dh_cites": [],
+          "discharge_cites": [
+            {
+              "lines": [
+                "L021"
+              ],
+              "quote": "Sertraline 50mg OD, review dose at 4/52",
+              "verified": true,
+              "reason": null
+            }
+          ],
+          "citation_status": "verified",
+          "reason": null,
+          "checks": []
+        }
+      ],
+      "discharge_status": "listed",
+      "reconciliation_check": "ok",
+      "dh_lines_unreconciled": [
+        "L007"
+      ],
+      "counts": {
+        "entries": 1,
+        "cites_total": 1,
+        "cites_verified": 1,
+        "entries_unverified": 0,
+        "entries_flagged": 0,
+        "dh_lines_unreconciled": 1
+      },
+      "call": {
+        "model_id": "anthropic.claude-sonnet-4-6",
+        "prompt_sha256": "b06f8c12a739b80c3d57f41ceada7dd7b1c2af38bc53159353b68425d09d5acf",
+        "stop_reason": "tool_use",
+        "attempts": 1,
+        "input_tokens": 988,
+        "output_tokens": 116,
+        "cache_read_tokens": 2290,
+        "cache_write_tokens": 0,
+        "latency_ms": 1645
+      }
+    },
+    "compose_clinical": {
+      "sections": [
+        {
+          "section_id": "sections.0",
+          "part": "part_a",
+          "heading": "presenting_complaint",
+          "fact_ids": [
+            "presenting_complaint.0"
+          ],
+          "text": "6 weeks of worsening low mood, anhedonia, early-morning waking, reduced appetite with approximately 4 kg weight loss, poor concentration, and active suicidal ideation with thoughts of overdose (no formed plan or intent at assessment but escalating).",
+          "unverified_fact_ids": []
+        },
+        {
+          "section_id": "sections.1",
+          "part": "part_a",
+          "heading": "diagnosis",
+          "fact_ids": [
+            "diagnosis_primary.0",
+            "diagnosis_secondary.0",
+            "diagnosis_background.0",
+            "diagnosis_background.1"
+          ],
+          "text": "Primary: Depressive episode with active suicidal ideation.\n\nSecondary: Identified psychosocial triggers — recent relationship breakdown and work stress.\n\nBackground:\n- One previous depressive episode in 2018, GP-managed with sertraline, stopped after approximately 9 months when well.\n- No physical past medical history.",
+          "unverified_fact_ids": []
+        },
+        {
+          "section_id": "sections.2",
+          "part": "part_a",
+          "heading": "key_investigations",
+          "fact_ids": [
+            "key_investigations.0",
+            "key_investigations.1",
+            "key_investigations.2",
+            "key_investigations.3"
+          ],
+          "text": "- At assessment: active suicidal ideation with thoughts of overdose; no formed plan or intent, but escalating.\n- No psychotic features identified.\n- Day 3: suicidal ideation less intense, now passive.\n- Day 5 MDT: mood improving, suicidal ideation fleeting and passive, no intent, future-oriented.",
+          "unverified_fact_ids": []
+        },
+        {
+          "section_id": "sections.3",
+          "part": "part_a",
+          "heading": "treatment",
+          "fact_ids": [
+            "treatment.0",
+            "treatment.1",
+            "treatment.2",
+            "treatment.3"
+          ],
+          "text": "- Sertraline 50 mg once daily started (Day 3, 20/05).\n- Psychoeducation given.\n- Collaborative safety plan completed with patient (Day 5 MDT).\n- Agreed discharge with early CMHT follow-up and crisis line (Day 5 MDT decision).",
+          "unverified_fact_ids": []
+        },
+        {
+          "section_id": "sections.4",
+          "part": "part_a",
+          "heading": "resuscitation_status",
+          "fact_ids": [],
+          "text": "{{RESUS}}",
+          "unverified_fact_ids": []
+        },
+        {
+          "section_id": "sections.5",
+          "part": "part_a",
+          "heading": "risk_assessment",
+          "fact_ids": [
+            "risk_assessment.0",
+            "risk_assessment.1"
+          ],
+          "text": "- Risk to self: moderate-high at admission (active suicidal ideation, escalating). Protective factors: 2 children, help-seeking behaviour, future-oriented.\n- Risk to others: nil.\n- Safeguarding: 2 children at home (ages 8 and 11); social context to be explored; no immediate concerns flagged.",
+          "unverified_fact_ids": []
+        },
+        {
+          "section_id": "sections.6",
+          "part": "part_a",
+          "heading": "medications",
+          "fact_ids": [],
+          "text": "{{MEDICATIONS}}",
+          "unverified_fact_ids": []
+        },
+        {
+          "section_id": "sections.7",
+          "part": "part_a",
+          "heading": "allergies",
+          "fact_ids": [
+            "allergies.0"
+          ],
+          "text": "No known drug allergies.",
+          "unverified_fact_ids": []
+        },
+        {
+          "section_id": "sections.8",
+          "part": "part_a",
+          "heading": "follow_up",
+          "fact_ids": [
+            "follow_up.0",
+            "follow_up.1",
+            "follow_up.2"
+          ],
+          "text": "- CMHT follow-up in 1 week.\n- Sertraline dose review at 4 weeks.\n- Crisis team number given to patient.",
+          "unverified_fact_ids": []
+        },
+        {
+          "section_id": "sections.9",
+          "part": "part_a",
+          "heading": "gp_actions",
+          "fact_ids": [
+            "gp_actions.0"
+          ],
+          "text": "- GP to monitor mood and tolerability.",
+          "unverified_fact_ids": []
+        },
+        {
+          "section_id": "sections.10",
+          "part": "part_a",
+          "heading": "safety_net",
+          "fact_ids": [],
+          "text": "{{SAFETY_NET}}",
+          "unverified_fact_ids": []
+        },
+        {
+          "section_id": "sections.11",
+          "part": "part_a",
+          "heading": "vte_assessment",
+          "fact_ids": [],
+          "text": "Not documented.",
+          "unverified_fact_ids": []
+        },
+        {
+          "section_id": "sections.12",
+          "part": "part_b",
+          "heading": "opening",
+          "fact_ids": [
+            "age_sex.0",
+            "presenting_complaint.0",
+            "diagnosis_primary.0"
+          ],
+          "text": "Thank you for referring this 45-year-old female who was admitted with a 6-week history of worsening low mood, anhedonia, reduced appetite, poor concentration, early-morning waking, and active suicidal ideation with thoughts of overdose, with a primary diagnosis of depressive episode with active suicidal ideation.",
+          "unverified_fact_ids": []
+        },
+        {
+          "section_id": "sections.13",
+          "part": "part_b",
+          "heading": "admission_summary",
+          "fact_ids": [
+            "key_investigations.0",
+            "key_investigations.1",
+            "key_investigations.2",
+            "key_investigations.3",
+            "treatment.0",
+            "treatment.1",
+            "treatment.2",
+            "treatment.3"
+          ],
+          "text": "At assessment, suicidal ideation was active with thoughts of overdose; there was no formed plan or intent but ideation was escalating, and no psychotic features were identified. By Day 3, ideation had become passive, and at the Day 5 MDT review mood was improving with only fleeting passive ideation, no intent, and a future-oriented outlook. Sertraline 50 mg once daily was commenced on Day 3 (20/05). Psychoeducation was provided and a collaborative safety plan was completed with the patient at the Day 5 MDT. Discharge was agreed at that MDT with early CMHT follow-up and provision of the crisis line number.",
+          "unverified_fact_ids": []
+        },
+        {
+          "section_id": "sections.14",
+          "part": "part_b",
+          "heading": "diagnosis",
+          "fact_ids": [
+            "diagnosis_primary.0",
+            "diagnosis_secondary.0",
+            "diagnosis_background.0",
+            "diagnosis_background.1"
+          ],
+          "text": "Primary: Depressive episode with active suicidal ideation.\nSecondary: Identified psychosocial triggers — recent relationship breakdown and work stress.\nBackground: One previous depressive episode in 2018, GP-managed with sertraline (stopped after approximately 9 months when well); no physical past medical history.",
+          "unverified_fact_ids": []
+        },
+        {
+          "section_id": "sections.15",
+          "part": "part_b",
+          "heading": "resuscitation_status",
+          "fact_ids": [],
+          "text": "{{RESUS}}",
+          "unverified_fact_ids": []
+        },
+        {
+          "section_id": "sections.16",
+          "part": "part_b",
+          "heading": "medications",
+          "fact_ids": [],
+          "text": "{{MEDICATIONS}}",
+          "unverified_fact_ids": []
+        },
+        {
+          "section_id": "sections.17",
+          "part": "part_b",
+          "heading": "gp_actions",
+          "fact_ids": [
+            "gp_actions.0"
+          ],
+          "text": "- GP to monitor mood and tolerability.",
+          "unverified_fact_ids": []
+        },
+        {
+          "section_id": "sections.18",
+          "part": "part_b",
+          "heading": "follow_up",
+          "fact_ids": [
+            "follow_up.0",
+            "follow_up.1",
+            "follow_up.2"
+          ],
+          "text": "- CMHT follow-up arranged in 1 week.\n- Sertraline dose review planned at 4 weeks.\n- Crisis team number given to patient.",
+          "unverified_fact_ids": []
+        },
+        {
+          "section_id": "sections.19",
+          "part": "part_b",
+          "heading": "safety_net",
+          "fact_ids": [],
+          "text": "{{SAFETY_NET}}",
+          "unverified_fact_ids": []
+        }
+      ],
+      "held_back": [],
+      "checks": [],
+      "counts": {
+        "sections": 20,
+        "sections_a": 12,
+        "sections_b": 8,
+        "facts_given": 20,
+        "facts_used_in_a": 20,
+        "header_facts_given": 6,
+        "contradictions_given": 0,
+        "contradictions_in_a": 0,
+        "gp_actions_given": 1,
+        "gp_actions_in_b": 1,
+        "facts_held_back": 0,
+        "gp_actions_held_back": 0,
+        "unverified_given": 0,
+        "unverified_used": 0,
+        "checks": 0
+      },
+      "age_group": "adult",
+      "call": {
+        "model_id": "anthropic.claude-sonnet-4-6",
+        "prompt_sha256": "48613f4d8669369039b77ffdf12828ce72445aaab0fd85f04d4d4ad0a82725fe",
+        "stop_reason": "tool_use",
+        "attempts": 1,
+        "input_tokens": 1180,
+        "output_tokens": 1621,
+        "cache_read_tokens": 3182,
+        "cache_write_tokens": 0,
+        "latency_ms": 8606
+      }
+    }
+  },
+  "output": null,
+  "gate": null,
+  "failed_step": null,
+  "error": null,
+  "step_errors": {},
+  "cost_usd_est": 0.079339
+}

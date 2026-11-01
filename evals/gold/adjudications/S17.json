@@ -1,29 +1,42 @@
 {
   "scenario_id": "S17",
   "compose_rulings": {
+    "06a234c286a50cae": "acceptable",
     "079792f7a4aff6a2": "acceptable",
     "26b9806dbbd33a63": "acceptable",
     "298e1e7bfed6256a": "acceptable",
+    "2baa1e5ec36ee861": "acceptable",
     "2ce8d1596bafe260": "acceptable",
+    "3192a338634e4e19": "acceptable",
+    "33399f579efbd717": "acceptable",
+    "3589187ae9ea0ca1": "acceptable",
+    "38c0c272c97d832a": "acceptable",
     "423956f288b55992": "acceptable",
     "507ffbe1292d6bd6": "acceptable",
     "51c1582c14239540": "acceptable",
+    "51c9e0e279063184": "acceptable",
     "5553875687853a9a": "acceptable",
     "626c120bb1a31f48": "acceptable",
+    "769c21288614972d": "acceptable",
     "966d7b267a2754f8": "acceptable",
     "a5513e18edcf2e5e": "acceptable",
     "a5d5bad796172478": "acceptable",
     "a788e873cf5ae309": "acceptable",
+    "ab1d453af79f792c": "acceptable",
     "b2b2769adec1a6f1": "acceptable",
     "b3efd2b9fd12ed76": "acceptable",
     "bd61a84c0b861caf": "acceptable",
+    "bfa6de0e11c2fb8b": "acceptable",
     "c71461baec02cd56": "acceptable",
+    "c931da18117886b9": "acceptable",
     "cd960c1f1073c023": "acceptable",
     "d9971801bc65b7f5": "acceptable",
+    "e36da37e0aa79e36": "acceptable",
     "e8a5cc27f2adec3e": "acceptable",
     "ea4ea69e844bd46c": "acceptable",
     "eb0f4ca5eefb8cb2": "acceptable",
     "f01bad7aa6540c9d": "acceptable",
+    "f5b61cc0696ee230": "acceptable",
     "f94d4953f847e65a": "acceptable",
     "fe0c323197c605d0": "acceptable"
   },
@@ -61,6 +74,35 @@
           "f01bad7aa6540c9d",
           "f94d4953f847e65a",
           "fe0c323197c605d0"
+        ]
+      },
+      "R5_medication": {
+        "verdict": "acceptable",
+        "on": "2026-11-01",
+        "source": "w6-pipeline-e09-m01-c02-x5, step 6 (grouped and proposed by Claude, approved by the CSO — rulings R5-R6, 1 Nov 2026)",
+        "reason": "a drug named from a fact the section cites (treatment 60, background 11, investigations 7, VTE 5, GP actions 5, secondary diagnosis / follow-up 4 — of 86 distinct); no discharge list restated; 9 narrate an in-hospital dose change (B6 bisoprolol; S1 bisoprolol / ISMN) — box-vs-prose check at 8a (item 4). Same class as R3.",
+        "keys": [
+          "06a234c286a50cae",
+          "2baa1e5ec36ee861",
+          "3192a338634e4e19",
+          "33399f579efbd717",
+          "3589187ae9ea0ca1",
+          "38c0c272c97d832a",
+          "51c9e0e279063184",
+          "769c21288614972d",
+          "ab1d453af79f792c",
+          "bfa6de0e11c2fb8b",
+          "c931da18117886b9",
+          "f5b61cc0696ee230"
+        ]
+      },
+      "R6_s17_ibuprofen": {
+        "verdict": "acceptable",
+        "on": "2026-11-01",
+        "source": "w6-pipeline-e09-m01-c02-x5, step 6 (grouped and proposed by Claude, approved by the CSO — rulings R5-R6, 1 Nov 2026)",
+        "reason": "S17 r2 PART B admission_summary: names ibuprofen from diagnosis_secondary.1, which the section does not cite, and softens 'cause' to 'contributory cause'. Not a discharge-medication restatement, so acceptable for bar line 7; recorded as a faithfulness finding (missing citation + meaning softened), which code does not measure.",
+        "keys": [
+          "e36da37e0aa79e36"
         ]
       }
     }

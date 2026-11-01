@@ -2,18 +2,26 @@
   "scenario_id": "S1",
   "compose_rulings": {
     "047632a85534deb2": "acceptable",
+    "0994c29036093642": "acceptable",
+    "15cafdf35b6bf0b0": "acceptable",
     "17c361c44e98afc3": "defect",
     "1ee53a62ee57e2e4": "defect",
     "3acccfa8e9d98bb9": "defect",
     "4988d36b3cf5ec3c": "defect",
+    "69c18f4f549df575": "acceptable",
     "76a1e16f57373b3c": "acceptable",
     "7b3fe4afea8503cb": "defect",
     "9f1545ebe2f32d6b": "defect",
+    "c247d3f34cfb705e": "acceptable",
     "c69ea67038385af7": "acceptable",
+    "cb02b0ad03c8e80f": "acceptable",
+    "d4dd2c917484f7e1": "acceptable",
     "d86f03b53bf46bff": "acceptable",
     "e223f7aae4eb74d0": "defect",
+    "e918361bb5e05cda": "acceptable",
     "f0d562e52a3c8bc3": "acceptable",
-    "f68754bf91e9267d": "acceptable"
+    "f68754bf91e9267d": "acceptable",
+    "f75e727963079ca8": "acceptable"
   },
   "compose_rulings_meta": {
     "by": "Shina Oguntoye (CSO)",
@@ -43,6 +51,22 @@
           "d86f03b53bf46bff",
           "f0d562e52a3c8bc3",
           "f68754bf91e9267d"
+        ]
+      },
+      "R5_medication": {
+        "verdict": "acceptable",
+        "on": "2026-11-01",
+        "source": "w6-pipeline-e09-m01-c02-x5, step 6 (grouped and proposed by Claude, approved by the CSO — rulings R5-R6, 1 Nov 2026); also the S1 checks w6-pipeline-e08-m01-c02-s1-check and w6-pipeline-e09-m01-c02-s1-check (same class: S1 in-hospital treatment)",
+        "reason": "a drug named from a fact the section cites (treatment 60, background 11, investigations 7, VTE 5, GP actions 5, secondary diagnosis / follow-up 4 — of 86 distinct); no discharge list restated; 9 narrate an in-hospital dose change (B6 bisoprolol; S1 bisoprolol / ISMN) — box-vs-prose check at 8a (item 4). Same class as R3.",
+        "keys": [
+          "0994c29036093642",
+          "15cafdf35b6bf0b0",
+          "69c18f4f549df575",
+          "c247d3f34cfb705e",
+          "cb02b0ad03c8e80f",
+          "d4dd2c917484f7e1",
+          "e918361bb5e05cda",
+          "f75e727963079ca8"
         ]
       }
     }

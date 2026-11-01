@@ -32,14 +32,24 @@
   "med_rulings": {},
   "compose_rulings": {
     "04118b645ac829fb": "acceptable",
+    "155cdb7ab02d116a": "acceptable",
     "1d2ffb65f1703ebb": "acceptable",
     "1e98cc833dc6c9e6": "acceptable",
     "3142da082f2034d5": "acceptable",
     "401465cdd4fb32b7": "acceptable",
+    "40148a9769710a42": "acceptable",
+    "4b7e1d84a7c6b040": "acceptable",
+    "555fc68b354438e4": "acceptable",
     "644039c5b593ffab": "acceptable",
     "6efb468d898264c3": "defect",
+    "6f97ab2baa1f4343": "acceptable",
     "8cf1d8cb9ef545ef": "acceptable",
+    "94da0fd0eb2e57c1": "acceptable",
+    "aadd2302243e1728": "acceptable",
+    "b222382f894a58c1": "acceptable",
     "b9d76d359860bd4d": "acceptable",
+    "d4bdafd5bb319bd2": "acceptable",
+    "df838f05422afb07": "acceptable",
     "eafca7d4eec257ff": "acceptable",
     "f61597b8cf43f153": "acceptable",
     "fdc086f35375f432": "acceptable"
@@ -71,6 +81,24 @@
           "eafca7d4eec257ff",
           "f61597b8cf43f153",
           "fdc086f35375f432"
+        ]
+      },
+      "R5_medication": {
+        "verdict": "acceptable",
+        "on": "2026-11-01",
+        "source": "w6-pipeline-e09-m01-c02-x5, step 6 (grouped and proposed by Claude, approved by the CSO — rulings R5-R6, 1 Nov 2026)",
+        "reason": "a drug named from a fact the section cites (treatment 60, background 11, investigations 7, VTE 5, GP actions 5, secondary diagnosis / follow-up 4 — of 86 distinct); no discharge list restated; 9 narrate an in-hospital dose change (B6 bisoprolol; S1 bisoprolol / ISMN) — box-vs-prose check at 8a (item 4). Same class as R3.",
+        "keys": [
+          "155cdb7ab02d116a",
+          "40148a9769710a42",
+          "4b7e1d84a7c6b040",
+          "555fc68b354438e4",
+          "6f97ab2baa1f4343",
+          "94da0fd0eb2e57c1",
+          "aadd2302243e1728",
+          "b222382f894a58c1",
+          "d4bdafd5bb319bd2",
+          "df838f05422afb07"
         ]
       }
     }

@@ -1,4 +1,4 @@
-# Step 2 — extract_facts — System Prompt (e0.8)
+# Step 2 — extract_facts — System Prompt (e0.9)
 
 > e0.1 (2026-09-30): split from the Phase 1 prompt v0.7
 > (`prompts/discharge-summary-system-prompt.md`) for ADR-009 step 2. Drafted by
@@ -68,6 +68,15 @@
 > (prompt_sha256 208ac00d3d60). Drafted by Claude; reviewed and accepted by the author as CSO, 30 Oct and
 > 1 Nov 2026 (design decisions 1-6: D, fields only, box rule, e0.8 only, wording
 > only, blind read repeated; wording P1/P2 A; G1-G3 A).
+> e0.9 (2026-11-01): one rule, after e0.8's S1 check
+> (w6-pipeline-e08-m01-c02-s1-check, before any batch): with resus content no
+> longer filed under treatment, step 2 cited only the final DNACPR lines in
+> `resus` and left the earlier "for resuscitation" lines uncited, so step 4
+> forced the route (documented -> "could not be confirmed"; e0.7: documented
+> 5/5). `resus.cites` now names what to cite, including every status when it
+> changed. Nothing else changed from e0.8 (prompt_sha256 e778f02a56c7).
+> Drafted by Claude; accepted by the author as CSO, 1 Nov 2026 (option B;
+> a prompt change after one live check — disclosed in the build record).
 > Only the text below the SYSTEM PROMPT marker is sent; its SHA-256 is the
 > step's prompt_sha256. Editing this header does not change it.
 
@@ -263,8 +272,11 @@ Medications:
 - `changed` — `yes` only if the notes record that the status changed during
   the admission; `no` only if they record that it did not; otherwise
   `not_documented`.
-- `cites` — every line supporting what you recorded above. If you record
-  nothing, leave it empty.
+- `cites` — every line that records a resuscitation status, decision, form or
+  discussion. When the status changed, cite the lines of each status, earlier
+  ones included: they are the evidence for `changed`. Code checks every
+  resuscitation line in the notes, and one left uncited sends the clinician
+  back to the notes. If you record nothing, leave it empty.
 
 Resuscitation content is recorded only in `resus`, never as a fact in any
 other section: a DNACPR or other resuscitation decision, a DNACPR or ReSPECT

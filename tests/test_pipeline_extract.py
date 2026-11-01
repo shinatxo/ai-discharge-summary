@@ -263,3 +263,5 @@ def test_prompt_e08_keeps_resus_in_resus_and_contradictions_clinical():
     assert "Never write a value about your record itself" in text
     assert "even when they were written on different days" in text
     assert "a change in resuscitation status is `changed: yes` in `resus`" in text
+    # e0.9 (1 Nov): every status of a change is cited (S1 check: earlier lines left uncited).
+    assert "When the status changed, cite the lines of each status, earlier ones included" in text

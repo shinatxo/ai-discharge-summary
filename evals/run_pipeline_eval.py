@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Pipeline eval runner — steps 1 -> 2 -> 3 -> 3b -> 4 -> 5b -> 5a -> 6 on the 18-scenario corpus.
+"""Pipeline eval runner — steps 1 -> 2 -> 3 -> 3b -> 4 -> 5b -> 5a -> 6 -> 7 on the 18-scenario corpus.
 
 The agentic side of ADR-009 (e)'s step-level metrics: the same scenarios, the
 same batch layout and the same canary-window guard as run_cold_eval.py, so
@@ -17,6 +17,15 @@ also keeps each step's latency clean for the 270 s deadline check.
 Step 6 runs after 5a (28 Oct 2026, step build piece 2) in its OWN try-block:
 it needs only step 3, so a 5a failure must not skip it (and vice versa). The
 record's failed_step / error are the first failure; `step_errors` lists all.
+
+Step 7 runs after step 6 (1 Nov 2026, step build piece 3) in its own try-block:
+it needs step 6's PART A (compose_patient.patient_input — the boxes, risk,
+allergies, VTE, conflicts and "Not documented" sections left out by code), so a
+step-6 failure records step 7 as `upstream_failed`; a 5a failure does not stop
+it (5a fills C's medicines box at 8b, scored offline). Its client is 5a's (60 s,
+ADR-009 Q3 (2)). The console prints step 7's tokens, latency and section count
+— never its check counts (piece 2 disclosed that step 6's were shown before the
+blind read; step 7's blind read stays blind).
 
 Records keep each step's output — the facts object (quotes <= 200 characters),
 evidence line IDs, the route, the safety-net selection — but never the line
@@ -46,7 +55,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "src" / "generate"))
 import run_cold_eval as rce  # noqa: E402
 from pipeline import StepContext, StepError, run_step  # noqa: E402
-from pipeline import compose, extract, reconcile  # noqa: E402
+from pipeline import compose, compose_patient, extract, reconcile  # noqa: E402
 from pipeline.route import NOT_FORCED  # noqa: E402
 from pipeline.schemas import FIELD_NAMES  # noqa: E402
 
@@ -55,19 +64,23 @@ MODEL_ID = rce.MODEL_ID
 READ_TIMEOUT_S = 90                    # ADR-009 Q3 (2): step 2
 READ_TIMEOUT_5A_S = reconcile.READ_TIMEOUT_S   # 60 s
 READ_TIMEOUT_6_S = compose.READ_TIMEOUT_S      # 90 s — the same client as step 2
+READ_TIMEOUT_7_S = compose_patient.READ_TIMEOUT_S   # 60 s — the same client as 5a
+UPSTREAM_FAILED = "upstream_failed"           # runner-level: step 7 not run because step 6 failed
 RECORD_VERSION = 1
-PATH = "steps-1-5b-5a-6"
+PATH = "steps-1-5b-5a-6-7"
 # Piece 1 measured steps 1-5b + 5a at 8.8-26.7 s; step 6 is estimated at ~30-40 s
 # (ADR-009 Q3: ~1.8k out at ~63 tok/s) until its first live call. With headroom.
 EST_SECONDS = 90
 # Per generation, no cache discount: an upper bound. Step 2 ~6k in / 2.5k out (W4);
 # 5a ~7k in / ~1.5k out (piece 1 measured far less); step 6 ~5k in (prompt + facts)
 # / ~3k out (estimate until the first live call).
-EST_TOKENS = {"input": 18000, "output": 7000}
+# Step 7 (piece 3): ~1.2k prompt + ~0.5k PART A sections in / ~0.7k out — +2.5k / +1k.
+EST_TOKENS = {"input": 20500, "output": 8000}
 STEP_ORDER = ("guard_input", "extract_facts", "validate_facts", "retrieve_evidence",
-              "route_resus", "select_safety_net", "reconcile_medications", "compose_clinical")
+              "route_resus", "select_safety_net", "reconcile_medications", "compose_clinical",
+              "compose_patient")
 MODEL_STEPS = {"extract_facts": extract, "reconcile_medications": reconcile,
-               "compose_clinical": compose}
+               "compose_clinical": compose, "compose_patient": compose_patient}
 
 
 class DryRunBedrock:
@@ -84,6 +97,8 @@ class DryRunBedrock:
             return self._tool_use("record_reconciliation", {"drugs": []})
         if kw["toolConfig"] == compose.tool_config():
             return self._tool_use("record_composition", {"sections": self.composition()})
+        if kw["toolConfig"] == compose_patient.tool_config():
+            return self._tool_use("record_patient_version", {"sections": self.patient_version()})
         assert kw["toolConfig"] == extract.tool_config()
         facts = {
             "field_status": [{"field": n, "status": "not_documented"} for n in FIELD_NAMES],
@@ -107,6 +122,14 @@ class DryRunBedrock:
                 + [sec("part_b", h) for h in compose.B_REQUIRED])
 
     @staticmethod
+    def patient_version():
+        # The dry composition's PART A is all "Not documented", so step 7 is given no
+        # sections: why_in_hospital (no source) and the two boxes — zero step-7 checks.
+        return [{"heading": "why_in_hospital", "source_ids": [], "text": "You were in hospital."},
+                {"heading": "medicines", "source_ids": [], "text": compose_patient.BOXES["medicines"]},
+                {"heading": "safety_net", "source_ids": [], "text": compose_patient.BOXES["safety_net"]}]
+
+    @staticmethod
     def _tool_use(name, payload):
         return {"output": {"message": {"role": "assistant", "content": [
                     {"toolUse": {"toolUseId": "dry", "name": name, "input": payload}}]}},
@@ -125,11 +148,12 @@ def live_client(read_timeout=READ_TIMEOUT_S):
 
 def run_pipeline(ctx: StepContext, scenario: rce.Scenario,
                  ctx_5a: StepContext | None = None,
-                 ctx_6: StepContext | None = None) -> tuple[dict, str | None, str | None, dict]:
+                 ctx_6: StepContext | None = None,
+                 ctx_7: StepContext | None = None) -> tuple[dict, str | None, str | None, dict]:
     """(step outputs without the line index, failed_step, error_code, step_errors).
-    ctx_5a / ctx_6 None -> that step is not run. 5a and 6 each need only steps
-    1-3b, so each runs in its own try-block: one failing never skips the other
-    (in the worker they run in parallel, ADR-009 [A5])."""
+    ctx_5a / ctx_6 / ctx_7 None -> that step is not run. 5a and 6 each need only
+    steps 1-3b, so each runs in its own try-block: one failing never skips the other
+    (in the worker they run in parallel, ADR-009 [A5]). Step 7 needs step 6."""
     steps: dict = {}
     errors: dict = {}
     current = "guard_input"
@@ -165,6 +189,16 @@ def run_pipeline(ctx: StepContext, scenario: rce.Scenario,
             steps["compose_clinical"] = run_step("compose_clinical", {"facts": facts}, ctx=ctx_6)
         except StepError as exc:
             errors["compose_clinical"] = exc.code
+    if ctx_7 is not None:
+        if "compose_clinical" not in steps:
+            errors["compose_patient"] = UPSTREAM_FAILED
+        else:
+            try:
+                # PART A's prose only (D1 I3): never the notes, the facts or the boxes
+                inp = compose_patient.patient_input(steps["compose_clinical"])
+                steps["compose_patient"] = run_step("compose_patient", inp, ctx=ctx_7)
+            except StepError as exc:
+                errors["compose_patient"] = exc.code
     first = next(iter(errors), None)
     return steps, first, errors.get(first), errors
 
@@ -189,7 +223,7 @@ def _prompt_meta(module) -> dict:
 
 
 def parse_args(argv):
-    p = argparse.ArgumentParser(description="Run pipeline steps 1-5b, 5a and 6 on the corpus.")
+    p = argparse.ArgumentParser(description="Run pipeline steps 1-5b, 5a, 6 and 7 on the corpus.")
     p.add_argument("scenarios", nargs="*")
     p.add_argument("--all", action="store_true")
     p.add_argument("--runs", type=int, default=1)
@@ -228,7 +262,7 @@ def main(argv=None, *, client_factory=None, now=None, confirm=input, runs_dir: P
 
     print(f"Batch:       {batch_id}")
     print(f"Generator:   pipeline {PATH} ({len(scenarios)} scenarios x {args.runs} runs = {n} "
-          f"generations, {3 * n} Bedrock calls — steps 2, 5a and 6)")
+          f"generations, {4 * n} Bedrock calls — steps 2, 5a, 6 and 7)")
     for name, meta in prompts.items():
         print(f"Prompt:      {meta['path']} (prompt_sha256 {meta['body_sha256'][:12]}…)")
     print(f"Caching:     {'on' if args.prompt_caching else 'off'}")
@@ -254,6 +288,7 @@ def main(argv=None, *, client_factory=None, now=None, confirm=input, runs_dir: P
     ctx_5a = StepContext(bedrock=factory(READ_TIMEOUT_5A_S), model_id=MODEL_ID,
                          prompt_caching=args.prompt_caching, sleep=sleep)
     ctx_6 = ctx                                  # 90 s, as step 2 (ADR-009 Q3 (2))
+    ctx_7 = ctx_5a                               # 60 s, as 5a (ADR-009 Q3 (2))
 
     records = []
     if not dry:
@@ -280,7 +315,7 @@ def main(argv=None, *, client_factory=None, now=None, confirm=input, runs_dir: P
                 stopped = True
                 break
             t0 = time.time()
-            steps, failed, code, step_errors = run_pipeline(ctx, s, ctx_5a, ctx_6)
+            steps, failed, code, step_errors = run_pipeline(ctx, s, ctx_5a, ctx_6, ctx_7)
             calls = _call_record(steps)
             rec = {"record_version": RECORD_VERSION, "generation_id": f"{batch_id}/r{run}/{s.id}",
                    "batch_id": batch_id, "run": run, "scenario_id": s.id, "generator": "pipeline",
@@ -307,6 +342,8 @@ def main(argv=None, *, client_factory=None, now=None, confirm=input, runs_dir: P
                 c = by_name["extract_facts"]
                 c5 = by_name.get("reconcile_medications", {})
                 c6 = by_name.get("compose_clinical", {})
+                c7 = by_name.get("compose_patient", {})
+                pm = steps.get("compose_patient") or {}
                 rc = rm.get("counts", {})
                 cc = cm.get("counts", {})
                 if step_errors:
@@ -319,6 +356,8 @@ def main(argv=None, *, client_factory=None, now=None, confirm=input, runs_dir: P
                       f"6 in/out={c6.get('input_tokens')}/{c6.get('output_tokens')} "
                       f"6 latency={c6.get('latency_s')} sections={cc.get('sections')} "
                       f"6 checks={cc.get('checks')} "
+                      f"7 in/out={c7.get('input_tokens')}/{c7.get('output_tokens')} "
+                      f"7 latency={c7.get('latency_s')} 7 sections={(pm.get('counts') or {}).get('sections')} "
                       f"cache r/w={c['cache_read_tokens']}/{c['cache_write_tokens']} "
                       f"route={sn.get('route')} audience={sn.get('audience')} "
                       f"resus={steps['route_resus'].get('route')}"

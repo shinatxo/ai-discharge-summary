@@ -40,6 +40,7 @@ CITED = "cited"
 RESUS_TERM = "resus_term"
 MED_HEADER = "med_header"
 MED_CONTINUATION = "med_continuation"
+LANGUAGE_TERM = "language_term"
 
 MAX_CONTINUATION = 2
 
@@ -57,6 +58,21 @@ _MED_PATTERNS = (
                r"|\bcontinue (?:all )?(?:regular|usual) (?:medications?|meds)\b"
                r"|\bno (?:meds|medications?)\b",                 # S4: "No meds needed" (none_required)
                re.IGNORECASE),
+)
+
+# Language / interpreter need (step build piece 3, CSO D3 T1 and R6, 1 Nov 2026).
+# 8b prints PART C's fixed translation header when any line matches; 8a will
+# print a fixed line in PART A's header (item 4) — step 2 has no field for it, so
+# since e0.7 the need reached no document. NO negation handling, on purpose: a
+# false match costs a header the clinician deletes; a miss is HAZ-12. "interpreted"
+# is deliberately not a term ("ECG interpreted as"). On the 18 canary scenarios
+# it matches C7 only (pinned in tests/test_pipeline_retrieve.py).
+_LANGUAGE_PATTERNS = (
+    re.compile(r"\binterpreters?\b|\btranslat(?:ed|ion|ions|or|ors)\b|\bnon[- ]English\b"
+               r"|\b(?:limited|little|poor|minimal|basic|no)\s+English\b"
+               r"|\b(?:first|preferred|main)\s+language\b|\bsign language\b", re.IGNORECASE),
+    re.compile(r"\bBSL\b"),                                      # case-sensitive
+    re.compile(r"\b(?!English\b)[A-Z][a-z]+[- ]speak(?:ing|ers?)\b"),   # "Polish-speaking"
 )
 
 _DAY_ENTRY = re.compile(r"^\s*Day\s+\d", re.IGNORECASE)
@@ -109,7 +125,7 @@ def _match_medication(lines: dict) -> dict[str, str]:
 
 def retrieve_evidence(inp: dict) -> dict:
     """{"facts": step-3 facts (grouped form), "lines": line index, "flags": step-1 flags}
-    -> {"medication": [...], "resus": [...], "counts": {...}}
+    -> {"medication": [...], "resus": [...], "language": [...], "counts": {...}}
 
     Each row: {"line", "sources", "fact_ids", "flagged"}, in line order.
     "flags" is required (an empty list when step 1 flagged nothing) so a caller
@@ -133,12 +149,16 @@ def retrieve_evidence(inp: dict) -> dict:
 
     medication = _block(med_cited, _match_medication(lines), flagged)
     resus = _block(resus_cited, resus_matched, flagged)
+    language = _block({}, {lid: LANGUAGE_TERM for lid, text in lines.items()
+                           if _matches(_LANGUAGE_PATTERNS, text)}, flagged)
     return {
         "medication": medication,
         "resus": resus,
+        "language": language,
         "counts": {
             "medication_lines": len(medication),
             "resus_lines": len(resus),
+            "language_lines": len(language),
             # Lines code found that no verified citation touches: the recall signal
             # W5 scores, and (for resus) what step 4 may force on.
             "medication_matched_not_cited": sum(1 for r in medication if CITED not in r["sources"]),

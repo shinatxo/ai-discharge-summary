@@ -27,6 +27,7 @@ import gold as G  # noqa: E402
 import run_cold_eval as rce  # noqa: E402
 import score_compose as CP  # noqa: E402
 import score_meds as MD  # noqa: E402
+import score_patient as SP  # noqa: E402
 import score_safety_net as SN  # noqa: E402
 import score_step2_advice as S2  # noqa: E402
 
@@ -95,7 +96,8 @@ def score_batch(batch_dir: Path, gold_dir: Path = G.GOLD_DIR,
         lines[sid] = G.line_index(s.notes)
         adj[sid] = (load_adjudications(sid, adjudications_dir),
                     load_adjudications(sid, adjudications_dir, "med_rulings"),
-                    load_adjudications(sid, adjudications_dir, "compose_rulings"))
+                    load_adjudications(sid, adjudications_dir, "compose_rulings"),
+                    load_adjudications(sid, adjudications_dir, "patient_rulings"))
         gold_meta[sid] = {"status": golds[sid]["status"],
                           "sha256": hashlib.sha256((gold_dir / f"{sid}.json").read_bytes()).hexdigest()}
 
@@ -104,8 +106,11 @@ def score_batch(batch_dir: Path, gold_dir: Path = G.GOLD_DIR,
     expects_5a = "reconcile_medications" in (manifest.get("prompts") or {})
     # ...and step 6 (28 Oct 2026, step build piece 2).
     expects_6 = "compose_clinical" in (manifest.get("prompts") or {})
+    # ...and step 7 (1 Nov 2026, step build piece 3).
+    expects_7 = "compose_patient" in (manifest.get("prompts") or {})
     results, med_results, skipped, med_skipped, step2_results = [], [], [], [], []
     compose_results, compose_skipped = [], []
+    patient_results, patient_skipped = [], []
     for g in index["generations"]:
         rec = json.loads((batch_dir / g["record"]).read_text(encoding="utf-8"))
         sid = rec["scenario_id"]
@@ -136,6 +141,18 @@ def score_batch(batch_dir: Path, gold_dir: Path = G.GOLD_DIR,
                     compose_skipped.append({"generation_id": rec["generation_id"],
                                             "error_code": (rec.get("step_errors") or {}).get(
                                                 "compose_clinical", skip["error_code"])})
+            if expects_7:
+                if "compose_patient" in steps:
+                    try:
+                        c7 = SP.score_record(rec, by_id[sid].notes, golds[sid], adj[sid][3])
+                    except ValueError as exc:
+                        raise ScoreError(str(exc)) from None
+                    c7.update(ids)
+                    patient_results.append(c7)
+                else:
+                    patient_skipped.append({"generation_id": rec["generation_id"],
+                                            "error_code": (rec.get("step_errors") or {}).get(
+                                                "compose_patient", skip["error_code"])})
             if "select_safety_net" not in steps:
                 skipped.append(skip)
                 continue
@@ -170,6 +187,10 @@ def score_batch(batch_dir: Path, gold_dir: Path = G.GOLD_DIR,
         out["compose"] = {"metric": "compose_clinical", "metric_version": CP.METRIC_VERSION,
                           "results": compose_results,
                           "summary": CP.summarise(compose_results, compose_skipped, len(index["generations"]))}
+    if expects_7:
+        out["patient"] = {"metric": "compose_patient", "metric_version": SP.METRIC_VERSION,
+                          "results": patient_results,
+                          "summary": SP.summarise(patient_results, patient_skipped, len(index["generations"]))}
     return out
 
 
@@ -188,7 +209,7 @@ def write_reports(batch_dir: Path, scored: dict, corpus_path: Path = rce.DEFAULT
     out = batch_dir / "scores"
     out.mkdir(exist_ok=True)
     # step2_advice has its own files (below), so safety_net.json is unchanged for older batches.
-    sn_json = {k: v for k, v in scored.items() if k not in ("step2_advice", "compose")}
+    sn_json = {k: v for k, v in scored.items() if k not in ("step2_advice", "compose", "patient")}
     (out / "safety_net.json").write_text(json.dumps(sn_json, indent=2) + "\n", encoding="utf-8")
     res = scored["results"]
     n = len(res)
@@ -272,6 +293,8 @@ def write_reports(batch_dir: Path, scored: dict, corpus_path: Path = rce.DEFAULT
         _write_step2_reports(out, scored)
     if "compose" in scored:
         CP.write_reports(out, scored, batch_dir, corpus)
+    if "patient" in scored:
+        SP.write_reports(out, scored, batch_dir)
     return out
 
 
@@ -414,6 +437,10 @@ def main(argv=None) -> int:
         bar = CP.bar(scored["compose"]["summary"])
         print("Step 6: " + "; ".join(f"{line.split(' ', 1)[0]} {verdict}" for line, _r, verdict in bar)
               + " (details in COMPOSE_CLINICAL.md — open it only after the CSO blind read).")
+    if "patient" in scored:
+        bar = SP.bar(scored["patient"]["summary"])
+        print("Step 7: " + "; ".join(f"{line.split(' ', 1)[0]} {verdict}" for line, _r, verdict in bar)
+              + " (details in PATIENT_VERSION.md — open it only after the CSO blind read).")
     drafts = sum(1 for m in scored["gold"].values() if m["status"] != "approved")
     if drafts:
         print(f"Provisional: {drafts} gold record(s) are drafts.")

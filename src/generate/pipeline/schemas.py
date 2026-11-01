@@ -344,3 +344,40 @@ def _build_composition() -> dict:
 def record_composition_schema() -> dict:
     """A fresh copy each call (as record_facts_schema)."""
     return copy.deepcopy(_build_composition())
+
+
+# =============================================================================
+# Step 7 — the record_patient_version input schema (ADR-009 step table, row 7)
+# =============================================================================
+#
+# Same rules as step 6: strict tool, forced; field names and fixed enums only;
+# every property required; no nullables; no length constraints. FLAT and
+# smaller still: one section shape, no `part` (PART C only).
+#
+# `source_ids` (PART A section_ids) before `text`: the model chooses which
+# PART A sections it is re-expressing before it writes (as fact_ids in step 6).
+# Order, required sections and the two boxes are checked by compose_patient.py,
+# not by the grammar (decided 1 Nov 2026, step build piece 3, round 2).
+
+PATIENT_HEADINGS = (
+    "why_in_hospital",
+    "what_we_did",
+    "medicines",
+    "next_steps",
+    "safety_net",
+)
+
+PATIENT_SECTION = _obj({
+    "heading": _enum(*PATIENT_HEADINGS),
+    "source_ids": _arr(_str()),
+    "text": _str(),
+})
+
+
+def _build_patient_version() -> dict:
+    return _obj({"sections": _arr(PATIENT_SECTION)})
+
+
+def record_patient_version_schema() -> dict:
+    """A fresh copy each call (as record_facts_schema)."""
+    return copy.deepcopy(_build_patient_version())

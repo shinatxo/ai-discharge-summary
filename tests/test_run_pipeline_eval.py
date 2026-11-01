@@ -71,10 +71,12 @@ def test_a_pipeline_batch_scores_safety_net_d4_and_step_2(tmp_path):
 def test_both_model_steps_are_recorded_with_their_own_prompts(tmp_path):
     _run(tmp_path, ["S1", "--batch", "p", "--yes"])
     man = json.loads((tmp_path / "p" / "manifest.json").read_text())
-    assert man["path"] == "steps-1-5b-5a-6"
-    assert set(man["prompts"]) == {"extract_facts", "reconcile_medications", "compose_clinical"}
+    assert man["path"] == "steps-1-5b-5a-6-7"
+    assert set(man["prompts"]) == {"extract_facts", "reconcile_medications", "compose_clinical",
+                                   "compose_patient"}
     rec = json.loads((tmp_path / "p" / "r1" / "S1.json").read_text())
-    assert [c["name"] for c in rec["calls"]] == ["extract_facts", "reconcile_medications", "compose_clinical"]
+    assert [c["name"] for c in rec["calls"]] == ["extract_facts", "reconcile_medications", "compose_clinical",
+                                                 "compose_patient"]
     assert rec["step_errors"] == {}
 
 
@@ -183,3 +185,51 @@ def test_rescoring_w4_reproduces_every_committed_report_and_the_w5_step_2_figure
 def test_refuses_an_existing_batch(tmp_path):
     (tmp_path / "p").mkdir()
     assert _run(tmp_path, ["S1", "--batch", "p", "--yes"]) == 2
+
+
+# --- step 7 (step build piece 3, 1 Nov 2026) ---------------------------------
+
+def test_a_step_6_failure_records_step_7_as_upstream_failed(tmp_path):
+    rpe.main(["S1", "--batch", "p", "--yes"], client_factory=_SixFails, now=lambda: QUIET,
+             runs_dir=tmp_path, sleep=lambda _s: None)
+    rec = json.loads((tmp_path / "p" / "r1" / "S1.json").read_text())
+    assert rec["step_errors"] == {"compose_clinical": "max_tokens", "compose_patient": rpe.UPSTREAM_FAILED}
+    assert "compose_patient" not in rec["steps"]
+    assert SB.main([str(tmp_path / "p")]) == 0
+    pv = json.loads((tmp_path / "p" / "scores" / "patient_version.json").read_text())["summary"]
+    assert pv["n_scored"] == 0 and pv["skipped"][0]["error_code"] == rpe.UPSTREAM_FAILED
+
+
+class _SevenFails(rpe.DryRunBedrock):
+    def converse(self, **kw):
+        resp = super().converse(**kw)
+        if kw["toolConfig"]["tools"][0]["toolSpec"]["name"] == "record_patient_version":
+            resp["stopReason"] = "max_tokens"
+        return resp
+
+
+def test_a_step_7_failure_keeps_every_other_step(tmp_path):
+    rpe.main(["S1", "--batch", "p", "--yes"], client_factory=_SevenFails, now=lambda: QUIET,
+             runs_dir=tmp_path, sleep=lambda _s: None)
+    rec = json.loads((tmp_path / "p" / "r1" / "S1.json").read_text())
+    assert rec["failed_step"] == "compose_patient" and rec["step_errors"] == {"compose_patient": "max_tokens"}
+    assert {"reconcile_medications", "compose_clinical"} <= set(rec["steps"])
+
+
+def test_step_7_gets_only_part_a_prose(tmp_path):
+    seen = []
+
+    class Spy(rpe.DryRunBedrock):
+        def converse(self, **kw):
+            if kw["toolConfig"]["tools"][0]["toolSpec"]["name"] == "record_patient_version":
+                seen.append(kw["messages"][0]["content"][0]["text"])
+            return super().converse(**kw)
+    rpe.main(["C7", "--batch", "p", "--yes"], client_factory=Spy, now=lambda: QUIET,
+             runs_dir=tmp_path, sleep=lambda _s: None)
+    assert seen == ["audience: adult\n\nPART A SECTIONS\nnone"]
+
+
+def test_console_never_shows_step_7_checks(tmp_path, capsys):
+    _run(tmp_path, ["S1", "--batch", "p", "--yes"])
+    out = capsys.readouterr().out
+    assert "7 sections=3" in out and "7 checks" not in out

@@ -221,7 +221,7 @@ def test_registered_as_code_step_03b():
     assert (step.seq, step.kind) == ("03b", "code")
 
 
-_SAFE_STRING = re.compile(r"^L\d{3}$|^(?:cited|resus_term|med_header|med_continuation)$"
+_SAFE_STRING = re.compile(r"^L\d{3}$|^(?:cited|resus_term|med_header|med_continuation|language_term)$"
                           r"|^[a-z_]+(?:\.[a-z_]+)*(?:\.\d+)?$")   # line IDs, fixed words, fact_ids
 
 
@@ -261,3 +261,45 @@ def test_bad_input_fails_closed(bad):
     with pytest.raises(StepError) as e:
         run_step("retrieve_evidence", bad)
     assert e.value.code == "bad_input"
+
+
+# --- language / interpreter need (step build piece 3, CSO D3 T1 and R6, 1 Nov 2026) ---
+
+LANGUAGE_PINNED = {"C7": ["L002", "L003"]}        # every other scenario: none
+
+
+@pytest.mark.parametrize("sid", sorted(PINNED))
+def test_language_matches_on_scenario_are_pinned(sid):
+    out = retrieve(no_facts(), guard(sid))
+    assert [r["line"] for r in out["language"]] == LANGUAGE_PINNED.get(sid, [])
+    assert all(r["sources"] == ["language_term"] and r["fact_ids"] == [] for r in out["language"])
+    assert out["counts"]["language_lines"] == len(LANGUAGE_PINNED.get(sid, []))
+
+
+def _language_hits(*texts):
+    out = run_step("retrieve_evidence", {"facts": no_facts(), "lines": _lines(*texts), "flags": []})
+    return [r["line"] for r in out["language"]]
+
+
+@pytest.mark.parametrize("text", [
+    "Telephone interpreter used.", "Interpreter booked for clinic.", "Needs interpreters.",
+    "Polish-speaking.", "Arabic speaker.", "Speaks limited English.", "No English.",
+    "Non-English speaking.", "First language Urdu.", "Uses BSL.", "Sign language user.",
+    "Leaflet translated.", "Interpreter not required.",          # no negation handling, on purpose
+])
+def test_language_terms_match(text):
+    assert _language_hits(text) == ["L001"]
+
+
+@pytest.mark.parametrize("text", [
+    "ECG interpreted as sinus rhythm.", "English-speaking.", "Speaks English.", "bsl noted",
+    "Language normal on neuro exam.", "Chest pain.",
+])
+def test_language_non_matches(text):
+    assert _language_hits(text) == []
+
+
+def test_a_flagged_line_still_counts_and_is_marked():
+    out = run_step("retrieve_evidence", {"facts": no_facts(), "lines": _lines("Interpreter used."),
+                                         "flags": [{"line": "L001", "rule": "x"}]})
+    assert out["language"] == [{"line": "L001", "sources": ["language_term"], "fact_ids": [], "flagged": True}]

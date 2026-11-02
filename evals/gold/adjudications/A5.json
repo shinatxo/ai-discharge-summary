@@ -13,6 +13,8 @@
   },
   "compose_rulings": {
     "1c105b38d9c57ae8": "acceptable",
+    "2c41ac809d112826": "acceptable",
+    "3088c940754bbee3": "acceptable",
     "459ec84054f38634": "acceptable",
     "46bff501f49b0371": "defect",
     "481b815c8341b946": "acceptable",
@@ -23,6 +25,7 @@
     "97c1c1db899b4885": "defect",
     "aa17a7297fe8a500": "acceptable",
     "b47ff3a8391fe524": "defect",
+    "bb4f739dadbdc8fc": "acceptable",
     "bfa6de0e11c2fb8b": "acceptable",
     "c54df350c60e5748": "acceptable",
     "ccd50676f00ea2d6": "acceptable",
@@ -78,6 +81,24 @@
           "cfc01f14951d393d"
         ]
       }
-    }
+    },
+    "later": [
+      {
+        "by": "Shina Oguntoye (CSO)",
+        "on": "2026-11-02",
+        "source": "w6-pipeline-e09-m01-c02-p01-x5, step 6 (grouped and proposed by Claude, approved by the CSO - rulings R7-R8, 2 Nov 2026)",
+        "groups": {
+          "R7_medication": {
+            "verdict": "acceptable",
+            "reason": "a drug named from a fact the section cites (the R3/R5 standard); 6 name an in-hospital dose change (S1, B6 bisoprolol) - item 4 box-vs-prose carry-in, as R5",
+            "keys": [
+              "2c41ac809d112826",
+              "3088c940754bbee3",
+              "bb4f739dadbdc8fc"
+            ]
+          }
+        }
+      }
+    ]
   }
 }

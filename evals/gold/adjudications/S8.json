@@ -10,5 +10,22 @@
       "on": "2026-10-07",
       "source": "w4-baseline-v1-x5 (proposed by Claude, approved by the CSO)"
     }
+  },
+  "patient_rulings": {
+    "b41c462aa8d7f204": "acceptable"
+  },
+  "patient_rulings_meta": {
+    "by": "Shina Oguntoye (CSO)",
+    "on": "2026-11-02",
+    "source": "w6-pipeline-e09-m01-c02-p01-x5, step 7 (grouped and proposed by Claude, approved by the CSO - rulings P1-P7, 2 Nov 2026)",
+    "groups": {
+      "P3_pointer_to_box": {
+        "verdict": "acceptable",
+        "reason": "\"if you have any concerns ... see the advice below\" points to the code-filled advice box and adds no clinical content",
+        "keys": [
+          "b41c462aa8d7f204"
+        ]
+      }
+    }
   }
 }

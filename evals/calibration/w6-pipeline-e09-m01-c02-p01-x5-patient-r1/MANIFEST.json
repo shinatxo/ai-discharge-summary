@@ -1,0 +1,61 @@
+{
+  "sheets_version": 1,
+  "batch_id": "w6-pipeline-e09-m01-c02-p01-x5",
+  "run": 1,
+  "rule": "D5 (CSO 1 Nov 2026): W5 spot-check items (f5c9adc) + S3 + C7: S1, S4, S10, S13, S16, A5, S3, C7",
+  "pass_rule": "an item passes when every dimension is pass",
+  "dimensions": [
+    "added",
+    "meaning",
+    "withheld",
+    "audience"
+  ],
+  "items": [
+    {
+      "scenario_id": "S1",
+      "generation_id": "w6-pipeline-e09-m01-c02-p01-x5/r1/S1",
+      "sections_sha256": "3831beb11913e860d39307375bfe7374b44b1d8498bb4421c33f11f7626ea3f3"
+    },
+    {
+      "scenario_id": "S4",
+      "generation_id": "w6-pipeline-e09-m01-c02-p01-x5/r1/S4",
+      "sections_sha256": "2c7010e7e9df52f96cae8ae859f8f63e242ba0ed3f8054dc1ccb9a0800f95391"
+    },
+    {
+      "scenario_id": "S10",
+      "generation_id": "w6-pipeline-e09-m01-c02-p01-x5/r1/S10",
+      "sections_sha256": "73e62f12e6ad8e1fdcc8c98495d32bb43414a8b94dbdd2b13663df8b0299bb40"
+    },
+    {
+      "scenario_id": "S13",
+      "generation_id": "w6-pipeline-e09-m01-c02-p01-x5/r1/S13",
+      "sections_sha256": "b008b7d27f8e4d96413caefb086c99174edc4c4d0eefebf5eb9896a6461f4a69"
+    },
+    {
+      "scenario_id": "S16",
+      "generation_id": "w6-pipeline-e09-m01-c02-p01-x5/r1/S16",
+      "sections_sha256": "0128b413617e59b28fd7b7689148d7eec874a261e920d5b3963cfc78cd4a0888"
+    },
+    {
+      "scenario_id": "A5",
+      "generation_id": "w6-pipeline-e09-m01-c02-p01-x5/r1/A5",
+      "sections_sha256": "82a78f31629603ad1dce9c40bc2463fe4583baac8b79da56898b6c17622f8256"
+    },
+    {
+      "scenario_id": "S3",
+      "generation_id": "w6-pipeline-e09-m01-c02-p01-x5/r1/S3",
+      "sections_sha256": "a6d642505fefe9b29280cc02c63c45c44711fadd4df997b69bcbc2166636878a"
+    },
+    {
+      "scenario_id": "C7",
+      "generation_id": "w6-pipeline-e09-m01-c02-p01-x5/r1/C7",
+      "sections_sha256": "31fd7ec21e50b4022d18bc3fe61933e12574e48d0615ededba6aa0eaa5b8157f"
+    }
+  ],
+  "excluded": [
+    "step 7 checks and counts",
+    "scores/",
+    "notes",
+    "facts"
+  ]
+}

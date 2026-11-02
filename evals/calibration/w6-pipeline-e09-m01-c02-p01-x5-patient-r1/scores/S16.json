@@ -1,0 +1,24 @@
+{
+  "generation_id": "w6-pipeline-e09-m01-c02-p01-x5/r1/S16",
+  "verdicts": {
+    "added": "partial",
+    "meaning": "partial",
+    "withheld": "pass",
+    "audience": "pass"
+  },
+  "findings": [
+    {
+      "dimension": "added",
+      "heading": null,
+      "source_ids": [],
+      "note": "calls the stoma temporary; reversal is only a possibility"
+    },
+    {
+      "dimension": "meaning",
+      "heading": null,
+      "source_ids": [],
+      "note": "omits INR reversal; makes stoma reversal sound more certain earlier in the leaflet"
+    }
+  ],
+  "scored_by": "author (CSO), 2 Nov 2026 11:40, given in chat; written to file by Claude verbatim"
+}

@@ -32,24 +32,36 @@
   "med_rulings": {},
   "compose_rulings": {
     "04118b645ac829fb": "acceptable",
+    "0c1a69846503927a": "acceptable",
     "155cdb7ab02d116a": "acceptable",
+    "16d0e597da6f369f": "acceptable",
     "1d2ffb65f1703ebb": "acceptable",
     "1e98cc833dc6c9e6": "acceptable",
+    "2c7bc8de555a2247": "acceptable",
     "3142da082f2034d5": "acceptable",
     "401465cdd4fb32b7": "acceptable",
     "40148a9769710a42": "acceptable",
     "4b7e1d84a7c6b040": "acceptable",
     "555fc68b354438e4": "acceptable",
+    "582144772914ba18": "acceptable",
+    "5a8ba2a20a398281": "acceptable",
     "644039c5b593ffab": "acceptable",
     "6efb468d898264c3": "defect",
     "6f97ab2baa1f4343": "acceptable",
+    "718845917444da54": "acceptable",
     "8cf1d8cb9ef545ef": "acceptable",
+    "8e33b3788d44854b": "acceptable",
+    "8f665014dc7ad446": "acceptable",
     "94da0fd0eb2e57c1": "acceptable",
+    "94e99281a6966ecd": "acceptable",
     "aadd2302243e1728": "acceptable",
     "b222382f894a58c1": "acceptable",
+    "b6fc5e1a634ff482": "acceptable",
     "b9d76d359860bd4d": "acceptable",
+    "cc192edef08e40c0": "acceptable",
     "d4bdafd5bb319bd2": "acceptable",
     "df838f05422afb07": "acceptable",
+    "e8f6f5f874858ff7": "acceptable",
     "eafca7d4eec257ff": "acceptable",
     "f61597b8cf43f153": "acceptable",
     "fdc086f35375f432": "acceptable"
@@ -101,6 +113,33 @@
           "df838f05422afb07"
         ]
       }
-    }
+    },
+    "later": [
+      {
+        "by": "Shina Oguntoye (CSO)",
+        "on": "2026-11-02",
+        "source": "w6-pipeline-e09-m01-c02-p01-x5, step 6 (grouped and proposed by Claude, approved by the CSO - rulings R7-R8, 2 Nov 2026)",
+        "groups": {
+          "R7_medication": {
+            "verdict": "acceptable",
+            "reason": "a drug named from a fact the section cites (the R3/R5 standard); 6 name an in-hospital dose change (S1, B6 bisoprolol) - item 4 box-vs-prose carry-in, as R5",
+            "keys": [
+              "0c1a69846503927a",
+              "16d0e597da6f369f",
+              "2c7bc8de555a2247",
+              "582144772914ba18",
+              "5a8ba2a20a398281",
+              "718845917444da54",
+              "8e33b3788d44854b",
+              "8f665014dc7ad446",
+              "94e99281a6966ecd",
+              "b6fc5e1a634ff482",
+              "cc192edef08e40c0",
+              "e8f6f5f874858ff7"
+            ]
+          }
+        }
+      }
+    ]
   }
 }

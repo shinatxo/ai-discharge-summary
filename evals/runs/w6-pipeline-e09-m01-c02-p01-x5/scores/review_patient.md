@@ -1,0 +1,50 @@
+# Step 7 sentences to rule on — batch `w6-pipeline-e09-m01-c02-p01-x5`
+
+Each sentence is step 7's prose (outside both boxes) and matched a pattern. Standards, written before any code (1 Nov 2026): **advice** — acceptable only if it restates an instruction its cited PART A section states, same force and scope; **medication / drug** — acceptable if the cited A section gives the same drug or dose for an in-hospital treatment, defect if it tells the patient what to take at home; **number / unit** — acceptable if the value is in the cited A section in another form; **conflict / sensitive** — acceptable only if it discloses no disagreement in the notes and no withheld-category detail. Store rulings in `evals/gold/adjudications/<ID>.json` under `patient_rulings` as `{key: ruling}`.
+
+- **B6** `09215428656fc59a` advice (bar 4) · next_steps (runs 2) · ruling: defect: Please make sure you attend these blood tests when asked.
+- **B6** `20382cd763ba0002` advice (bar 4) · next_steps (runs 4) · ruling: acceptable: Your GP will check your blood levels, including your INR and digoxin level, to make sure your medicines are working safely.
+- **B6** `24efd9640abc06c8` medication (bar 5) · what_we_did (runs 2) · ruling: acceptable: - Increased your bisoprolol dose to 5mg once a day
+- **B6** `914ff5b4dd46bc5a` medication (bar 5) · what_we_did (runs 1) · ruling: acceptable: - Increased your bisoprolol dose to 5 mg once a day.
+- **B6** `bd8601932ad6bf4d` drug `furosemide` (bar 5) · what_we_did (runs 1) · ruling: defect: - Gave you a water tablet (furosemide) to help clear the fluid.
+- **C7** `88eb993d0dbeda69` advice (bar 4) · next_steps (runs 1, 3) · ruling: defect: Please make sure you attend this.
+- **S10** `406141a014e5d2ab` advice (bar 4) · why_in_hospital (runs 4) · ruling: acceptable: This was because your womb did not contract as it should.
+- **S10** `9b9090ef27ca53b0` advice (bar 4) · why_in_hospital (runs 5) · ruling: acceptable: This was caused by the womb not contracting as it should (uterine atony).
+- **S10** `d6df776f6ad47b7d` advice (bar 4) · why_in_hospital (runs 3) · ruling: acceptable: This happened because your womb did not contract as it should.
+- **S10** `fadb992bdf6fd6d6` advice (bar 4) · why_in_hospital (runs 1) · ruling: acceptable: It happened because your womb did not contract as it should after delivery.
+- **S11** `07e54aed32cae96b` advice (bar 4) · next_steps (runs 2) · ruling: acceptable: - The respiratory and thoracics team do not need to see you routinely after discharge.
+- **S11** `153b42090ada676b` advice (bar 4) · next_steps (runs 1) · ruling: acceptable: - A phone call from the general surgery team about your spleen at 6 weeks.
+- **S11** `1dfb738e9d004aa9` advice (bar 4) · next_steps (runs 3) · ruling: acceptable: They will give you advice about a vaccination for your spleen at that call.
+- **S11** `2302a9c4b0ec1f81` advice (bar 4) · next_steps (runs 4) · ruling: acceptable: The team will give you advice about a vaccination for your spleen at that call.
+- **S11** `40c80289b3b87ae1` number `8` (bar 6) · why_in_hospital (runs 5) · ruling: acceptable: - Broken ribs on your left side (ribs 7, 8 and 9) with a small collection of blood around your lung
+- **S11** `5183771c9b9e14c0` advice (bar 4) · what_we_did (runs 2) · ruling: acceptable: Your blood levels and observations were checked regularly to make sure it stayed stable.
+- **S11** `6f50fe3008b49aa7` advice (bar 4) · next_steps (runs 1) · ruling: acceptable: - The chest team do not need to see you for a routine appointment.
+- **S11** `8a2649ad8bbc13ad` advice (bar 4) · next_steps (runs 4) · ruling: acceptable: The chest team do not need to see you again routinely.
+- **S11** `9a6e467c733df12d` advice (bar 4) · what_we_did (runs 3) · ruling: acceptable: You are putting some weight through your left leg, as advised by the orthopaedic team.
+- **S11** `aee297731197d73a` advice (bar 4) · what_we_did (runs 5) · ruling: acceptable: You are partially weight-bearing on your left leg, as advised by the bone specialists.
+- **S16** `2f3d143ec218dadd` advice (bar 4) · next_steps (runs 3) · ruling: acceptable: - Your GP will check your INR regularly to make sure your warfarin is at the right level.
+- **S16** `42cd586c8f54ee47` drug `warfarin` (bar 5) · next_steps (runs 5) · ruling: acceptable: - Your GP will check your warfarin levels (INR).
+- **S16** `4d54b0c113c4bdfa` drug `warfarin` (bar 5) · next_steps (runs 3) · ruling: acceptable: - Your GP will check your INR regularly to make sure your warfarin is at the right level.
+- **S16** `6475527685ea026e` conflict (bar 9) · what_we_did (runs 2, 5) · ruling: acceptable: Because the blockage did not clear, you needed an emergency operation.
+- **S16** `664c20c578b13c30` drug `warfarin` (bar 5) · next_steps (runs 1, 2, 4) · ruling: acceptable: - Your GP will check your warfarin level (INR) regularly.
+- **S17** `17912af8f30d20a4` medication (bar 5) · what_we_did (runs 1) · ruling: acceptable: We also gave you 2 units of blood to help your blood count recover.
+- **S17** `1b03d5550f7fdd83` medication (bar 5) · what_we_did (runs 4) · ruling: acceptable: We gave you 2 units of blood to help your levels recover.
+- **S17** `4572246500645c27` medication (bar 5) · what_we_did (runs 2) · ruling: acceptable: We gave you 2 units of blood to help your blood count recover.
+- **S17** `6631d9964d53df9a` medication (bar 5) · what_we_did (runs 5) · ruling: acceptable: - 2 units of blood through a drip
+- **S17** `78aba38a267ebdc6` medication (bar 5) · what_we_did (runs 3) · ruling: acceptable: You were given 2 units of blood to help your recovery.
+- **S18** `828807da8cd53309` advice (bar 4) · next_steps (runs 4) · ruling: acceptable: The team told you that you must not drive and that you must inform the DVLA.
+- **S18** `a589e3ed960e966d` advice (bar 4) · next_steps (runs 4) · ruling: acceptable: You must not drive for 6 months from the date of your seizure.
+- **S4** `19ea077163469d61` advice (bar 4) · next_steps (runs 4) · ruling: acceptable: If you have any concerns, please see the advice below.
+- **S4** `2b979ec2cc28343d` advice (bar 4) · next_steps (runs 3) · ruling: defect: If you have any concerns, please speak to your GP or health visitor.
+- **S4** `48228e9de6a0281a` advice (bar 4) · next_steps (runs 2) · ruling: defect: If you have any concerns, please speak to your GP.
+- **S4** `5626fdfb71040aa2` advice (bar 4) · next_steps (runs 1) · ruling: defect: Your child's own GP or health team will be there if you have any concerns after going home.
+- **S4** `e7b9adaa6da3f1b5` advice (bar 4) · next_steps (runs 5) · ruling: acceptable: If you have any concerns after going home, please see the advice below.
+- **S8** `b41c462aa8d7f204` advice (bar 4) · next_steps (runs 4) · ruling: acceptable: If you have any concerns after going home, please see the safety information below.
+- **S9** `0a7616492e5e54cd` advice (bar 4) · next_steps (runs 1) · ruling: acceptable: - If you have any worries before then, phone support is available from the diabetes team.
+- **S9** `10c8fff66982d805` advice (bar 4) · what_we_did (runs 1) · ruling: acceptable: The team also taught you about counting carbohydrates, what to do if blood sugar goes too low (a hypo), and what to do if she is unwell (sick-day rules).
+- **S9** `4e0a722539395b50` advice (bar 4) · next_steps (runs 5) · ruling: acceptable: Phone support from the diabetes team is available in the time before your first appointment.
+- **S9** `50c757a618bd9ed5` advice (bar 4) · next_steps (runs 4) · ruling: acceptable: Phone support from the diabetes team is available in the meantime.
+- **S9** `76993a71a4677aa5` advice (bar 4) · next_steps (runs 2, 3) · ruling: acceptable: - Phone support from the diabetes team is available in the meantime.
+- **S9** `c417b5aefd8bb2b9` advice (bar 4) · what_we_did (runs 3) · ruling: acceptable: When she arrived, her blood sugar was very high and her blood was more acidic than it should be.
+- **S9** `d0d1729dfa125b09` advice (bar 4) · what_we_did (runs 4) · ruling: acceptable: When your child arrived, her blood sugar was very high and her blood was more acidic than it should be.
+- **S9** `ffb42d2a63675471` drug `insulin` (bar 5) · why_in_hospital (runs 2) · ruling: acceptable: This is when the body does not have enough insulin and harmful substances called ketones build up in the blood.

@@ -4,6 +4,7 @@
     "01707ca0ff501a4b": "acceptable",
     "03f904640f0dc86c": "defect",
     "06471b454f3a4546": "defect",
+    "07e3ef4b36bcf4e4": "acceptable",
     "089a07194fa6d70a": "acceptable",
     "0d704bc8fd3dd39e": "defect",
     "172e5c1bc704e3a8": "acceptable",
@@ -16,25 +17,39 @@
     "2ec791b8697fd1ae": "acceptable",
     "3362066b39e6dc31": "acceptable",
     "373a5f16a44100de": "acceptable",
+    "3b6ed43ca269ab3d": "acceptable",
+    "46895d89e865a5d5": "acceptable",
     "4e8f19e14e6607d8": "acceptable",
     "4ea1be88874f0154": "acceptable",
     "527f9ec0f31ac4a4": "defect",
+    "5353c765e9c0a465": "acceptable",
     "573d196ea3cccebd": "acceptable",
+    "57f2f1156243c999": "acceptable",
     "60ce96670d6d5ec5": "acceptable",
     "680fed712fb38885": "acceptable",
     "68ba1cc1d4035d36": "defect",
     "6c4b9ea0fe023865": "acceptable",
+    "72c464eb533418fd": "acceptable",
+    "850097842b078384": "acceptable",
     "88ad33ca53d99ec5": "defect",
+    "8c4c1efc168d114f": "acceptable",
     "94083a2c071ca71b": "defect",
+    "9d71c96192d2fb56": "acceptable",
+    "9e203d85fa8ca13b": "acceptable",
     "9e7710a8f668045d": "acceptable",
     "a09973592a5bd385": "defect",
     "a2a1d1300139ea9b": "acceptable",
+    "ab5dbb8216547326": "acceptable",
     "ab67e9cab81b3ba7": "acceptable",
     "ad0dfc1d00a3f658": "acceptable",
     "ae40377be11c3039": "acceptable",
+    "b1805d7a089233f1": "acceptable",
+    "b7c798257e04530e": "acceptable",
     "d16b8e95decf9f19": "acceptable",
     "d16fa92d4098f5f2": "defect",
+    "e37b12eb0c755b9d": "acceptable",
     "e3fcbb4c0e2be076": "acceptable",
+    "eb0ecea57b831d05": "acceptable",
     "f067235374ca8a60": "acceptable",
     "f529546b1d5bb405": "acceptable",
     "fff8288d8c2a9a9c": "acceptable"
@@ -107,6 +122,36 @@
           "fff8288d8c2a9a9c"
         ]
       }
-    }
+    },
+    "later": [
+      {
+        "by": "Shina Oguntoye (CSO)",
+        "on": "2026-11-02",
+        "source": "w6-pipeline-e09-m01-c02-p01-x5, step 6 (grouped and proposed by Claude, approved by the CSO - rulings R7-R8, 2 Nov 2026)",
+        "groups": {
+          "R7_medication": {
+            "verdict": "acceptable",
+            "reason": "a drug named from a fact the section cites (the R3/R5 standard); 6 name an in-hospital dose change (S1, B6 bisoprolol) - item 4 box-vs-prose carry-in, as R5",
+            "keys": [
+              "07e3ef4b36bcf4e4",
+              "3b6ed43ca269ab3d",
+              "46895d89e865a5d5",
+              "5353c765e9c0a465",
+              "57f2f1156243c999",
+              "72c464eb533418fd",
+              "850097842b078384",
+              "8c4c1efc168d114f",
+              "9d71c96192d2fb56",
+              "9e203d85fa8ca13b",
+              "ab5dbb8216547326",
+              "b1805d7a089233f1",
+              "b7c798257e04530e",
+              "e37b12eb0c755b9d",
+              "eb0ecea57b831d05"
+            ]
+          }
+        }
+      }
+    ]
   }
 }

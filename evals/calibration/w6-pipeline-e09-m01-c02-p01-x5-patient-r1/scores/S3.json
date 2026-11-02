@@ -1,0 +1,30 @@
+{
+  "generation_id": "w6-pipeline-e09-m01-c02-p01-x5/r1/S3",
+  "verdicts": {
+    "added": "partial",
+    "meaning": "fail",
+    "withheld": "fail",
+    "audience": "pass"
+  },
+  "findings": [
+    {
+      "dimension": "added",
+      "heading": null,
+      "source_ids": [],
+      "note": "\"things felt a little easier\" is not reported"
+    },
+    {
+      "dimension": "meaning",
+      "heading": null,
+      "source_ids": [],
+      "note": "leaves out the escalating suicidal ideation that led to admission"
+    },
+    {
+      "dimension": "withheld",
+      "heading": null,
+      "source_ids": [],
+      "note": "active suicidal thoughts and thoughts of overdose are omitted"
+    }
+  ],
+  "scored_by": "author (CSO), 2 Nov 2026 11:40, given in chat; written to file by Claude verbatim"
+}

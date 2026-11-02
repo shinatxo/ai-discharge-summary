@@ -1,0 +1,166 @@
+{
+  "batch_id": "w6-pipeline-e09-m01-c02-p01-s1-check",
+  "metric": "compose_patient",
+  "metric_version": 1,
+  "results": [
+    {
+      "metric": "compose_patient",
+      "metric_version": 1,
+      "checks": {},
+      "counts": {
+        "sections": 5,
+        "sections_given": 6,
+        "sources_cited": 6,
+        "words_prose": 184,
+        "checks": 0
+      },
+      "box_problems": 0,
+      "fk_prose": 6.82,
+      "d5_prose": "pass",
+      "years_vs_notes": [],
+      "review": [],
+      "latency": {
+        "step7_s": 6.065,
+        "step7_start_s": 20.662,
+        "critical_s": 26.727
+      },
+      "audience": "adult",
+      "expected_audience": "adult",
+      "risk_sections_in_a": 0,
+      "unverified_sources": 0,
+      "assembled": true,
+      "gate": {
+        "status": "documented_advice",
+        "ok": true
+      },
+      "haz03_c": "pass",
+      "header": {
+        "present": false,
+        "expected": false
+      },
+      "non_english": {
+        "decided": 0,
+        "possible": 0
+      },
+      "fk_full": 5.97,
+      "title_ok": true,
+      "generation_id": "w6-pipeline-e09-m01-c02-p01-s1-check/r1/S1",
+      "scenario_id": "S1",
+      "run": 1
+    }
+  ],
+  "summary": {
+    "n_records": 1,
+    "n_scored": 1,
+    "n_assembled": 1,
+    "skipped": [],
+    "boxes_correct": 1,
+    "unknown_source_ids": 0,
+    "signpost_outside_box": 0,
+    "gate": {
+      "pass": 1,
+      "statuses": {
+        "documented_advice": 1
+      }
+    },
+    "resus_text": 0,
+    "year_added": 0,
+    "years_vs_notes": 0,
+    "fk": {
+      "prose_pass": 1,
+      "prose_n": 1,
+      "prose_p50": 6.82,
+      "prose_max": 6.82,
+      "full_p50": 5.97,
+      "full_max": 5.97
+    },
+    "header": {
+      "expected": 0,
+      "expected_present": 0,
+      "unexpected_present": 0
+    },
+    "header_expected_records": 0,
+    "non_english": {
+      "decided": 0,
+      "possible": 0
+    },
+    "not_documented_text": 0,
+    "follow_up_missing": 0,
+    "title_ok": 1,
+    "haz03_c": 1,
+    "risk_sections_in_a": 0,
+    "unverified_sources": 0,
+    "review": {
+      "advice": {
+        "flagged": 0,
+        "defect": 0,
+        "acceptable": 0,
+        "pending": 0
+      },
+      "medication": {
+        "flagged": 0,
+        "defect": 0,
+        "acceptable": 0,
+        "pending": 0
+      },
+      "drug": {
+        "flagged": 0,
+        "defect": 0,
+        "acceptable": 0,
+        "pending": 0
+      },
+      "number": {
+        "flagged": 0,
+        "defect": 0,
+        "acceptable": 0,
+        "pending": 0
+      },
+      "unit": {
+        "flagged": 0,
+        "defect": 0,
+        "acceptable": 0,
+        "pending": 0
+      },
+      "conflict": {
+        "flagged": 0,
+        "defect": 0,
+        "acceptable": 0,
+        "pending": 0
+      },
+      "sensitive": {
+        "flagged": 0,
+        "defect": 0,
+        "acceptable": 0,
+        "pending": 0
+      }
+    },
+    "other_checks": {
+      "heading_repeated": 0,
+      "heading_out_of_order": 0,
+      "required_heading_missing": 0,
+      "heading_without_source": 0,
+      "box_not_exact": 0,
+      "stray_placeholder": 0,
+      "source_unused": 0,
+      "advice_shaped": 0,
+      "dose_or_frequency": 0,
+      "number_added": 0,
+      "unit_added": 0,
+      "conflict_text": 0,
+      "sensitive_text": 0
+    },
+    "words_prose_p50": 184,
+    "latency": {
+      "step7_p50": 6.065,
+      "step7_max": 6.065,
+      "start7_max": 20.662,
+      "start7_over_watch": 0,
+      "critical_p50": 26.727,
+      "critical_max": 26.727,
+      "critical_over_deadline": 0,
+      "watch_s": 200,
+      "deadline_s": 270,
+      "median_step7": 6.065
+    }
+  }
+}

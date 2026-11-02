@@ -1,0 +1,155 @@
+{
+  "batch_id": "w6-pipeline-e09-m01-c02-p01-s1-check",
+  "metric": "compose_clinical",
+  "metric_version": 3,
+  "results": [
+    {
+      "metric": "compose_clinical",
+      "metric_version": 3,
+      "checks": {},
+      "counts": {
+        "sections": 19,
+        "sections_a": 11,
+        "sections_b": 8,
+        "facts_given": 26,
+        "facts_used_in_a": 26,
+        "header_facts_given": 4,
+        "contradictions_given": 0,
+        "contradictions_in_a": 0,
+        "gp_actions_given": 1,
+        "gp_actions_in_b": 1,
+        "facts_held_back": 0,
+        "gp_actions_held_back": 0,
+        "unverified_given": 0,
+        "unverified_used": 0,
+        "checks": 0
+      },
+      "box_problems": 0,
+      "field_omitted": [],
+      "held": {
+        "held_back": 0,
+        "present_in_box": 0,
+        "not_in_box": [],
+        "content_held": 0,
+        "content_present": 0
+      },
+      "gp_held_not_in_box": [],
+      "years_vs_notes": [],
+      "review": [
+        {
+          "kind": "medication",
+          "part": "part_b",
+          "heading": "admission_summary",
+          "token": "bisoprolol",
+          "key": "f0d562e52a3c8bc3",
+          "pre_ruled": false,
+          "ruling": "acceptable"
+        },
+        {
+          "kind": "medication",
+          "part": "part_b",
+          "heading": "admission_summary",
+          "token": "ticagrelor",
+          "key": "f68754bf91e9267d",
+          "pre_ruled": false,
+          "ruling": "acceptable"
+        }
+      ],
+      "latency": {
+        "step2_s": 12.795,
+        "step5a_s": 4.067,
+        "step6_s": 7.867,
+        "critical_s": 20.662
+      },
+      "generation_id": "w6-pipeline-e09-m01-c02-p01-s1-check/r1/S1",
+      "scenario_id": "S1",
+      "run": 1
+    }
+  ],
+  "summary": {
+    "n_records": 1,
+    "n_scored": 1,
+    "skipped": [],
+    "year_added_step6": {
+      "findings": 0,
+      "generations": 0
+    },
+    "years_vs_notes": {
+      "step_6": 0,
+      "step_2": 0,
+      "generations": 0
+    },
+    "boxes_correct": 1,
+    "unknown_fact_ids": 0,
+    "excluded_fact_ids": 0,
+    "contradictions": {
+      "given": 0,
+      "in_a": 0
+    },
+    "field_omitted": 0,
+    "field_omitted_step_check": 0,
+    "gp_action_missing_in_b": 0,
+    "facts": {
+      "given": 26,
+      "used_in_a": 26
+    },
+    "held": {
+      "held_back": 0,
+      "present_in_box": 0,
+      "not_in_box": 0,
+      "generations": 0
+    },
+    "coverage_v3": {
+      "given": 26,
+      "present": 26
+    },
+    "unverified": {
+      "given": 0,
+      "used": 0
+    },
+    "review": {
+      "advice": {
+        "flagged": 0,
+        "defect": 0,
+        "acceptable": 0,
+        "pending": 0
+      },
+      "resus": {
+        "flagged": 0,
+        "defect": 0,
+        "acceptable": 0,
+        "pending": 0
+      },
+      "medication": {
+        "flagged": 2,
+        "defect": 0,
+        "acceptable": 2,
+        "pending": 0
+      }
+    },
+    "other_checks": {
+      "heading_wrong_part": 0,
+      "heading_repeated": 0,
+      "required_heading_missing": 0,
+      "box_not_exact": 0,
+      "stray_placeholder": 0,
+      "fact_unused": 0,
+      "inferred_unflagged": 0,
+      "not_documented_with_content": 0,
+      "conflict_section_uncited": 0,
+      "resus_text_outside": 0,
+      "section_held_back": 0
+    },
+    "latency": {
+      "step6_p50": 7.867,
+      "step6_p95": 7.867,
+      "step6_max": 7.867,
+      "critical_p50": 20.662,
+      "critical_p95": 20.662,
+      "critical_max": 20.662,
+      "critical_over_watch": 0,
+      "watch_s": 200,
+      "median_step6": 7.867
+    }
+  }
+}

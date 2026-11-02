@@ -1,0 +1,28 @@
+{
+  "generation_id": "w6-pipeline-e09-m01-c02-p01-x5/r1/C7",
+  "verdicts": {
+    "added": "partial",
+    "meaning": "pass",
+    "withheld": "pass",
+    "audience": "pass"
+  },
+  "findings": [
+    {
+      "dimension": "added",
+      "heading": "next_steps",
+      "source_ids": [],
+      "note": "\"Please make sure you attend\" is advice not in the input"
+    }
+  ],
+  "scored_by": "author (CSO), 2 Nov 2026 11:40, given in chat; written to file by Claude verbatim",
+  "corrections": [
+    {
+      "by": "author (CSO)",
+      "on": "2026-11-02T11:54",
+      "field": "verdicts.audience",
+      "from": "fail",
+      "to": "pass",
+      "reason": "misread: the fail judged the code-rendered translation header (R4, CSO-approved), which the README excludes; made after the scorer's bar results were reported in chat; does not change bar line 10 (C7 added=partial stands)"
+    }
+  ]
+}

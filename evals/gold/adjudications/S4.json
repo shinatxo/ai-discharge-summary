@@ -20,5 +20,36 @@
       "source": "w4-baseline-v1-x5 (proposed by Claude, approved by the CSO)"
     }
   },
-  "med_rulings": {}
+  "med_rulings": {},
+  "patient_rulings": {
+    "19ea077163469d61": "acceptable",
+    "2b979ec2cc28343d": "defect",
+    "48228e9de6a0281a": "defect",
+    "5626fdfb71040aa2": "defect",
+    "e7b9adaa6da3f1b5": "acceptable"
+  },
+  "patient_rulings_meta": {
+    "by": "Shina Oguntoye (CSO)",
+    "on": "2026-11-02",
+    "source": "w6-pipeline-e09-m01-c02-p01-x5, step 7 (grouped and proposed by Claude, approved by the CSO - rulings P1-P7, 2 Nov 2026)",
+    "groups": {
+      "P3_pointer_to_box": {
+        "verdict": "acceptable",
+        "reason": "\"if you have any concerns ... see the advice below\" points to the code-filled advice box and adds no clinical content",
+        "keys": [
+          "19ea077163469d61",
+          "e7b9adaa6da3f1b5"
+        ]
+      },
+      "P4_invented_advice": {
+        "verdict": "defect",
+        "reason": "advice or an instruction its input does not state (S4 \"speak to your GP / health visitor if you have concerns\" x3; C7 and B6 \"Please make sure you attend\") - fails the bar-4 standard; carries no 111/999/A&E token, so the gate cannot see it (HAZ-01's stated blind spot)",
+        "keys": [
+          "2b979ec2cc28343d",
+          "48228e9de6a0281a",
+          "5626fdfb71040aa2"
+        ]
+      }
+    }
+  }
 }

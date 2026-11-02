@@ -1,0 +1,20 @@
+{
+  "scenario_id": "C7",
+  "patient_rulings": {
+    "88eb993d0dbeda69": "defect"
+  },
+  "patient_rulings_meta": {
+    "by": "Shina Oguntoye (CSO)",
+    "on": "2026-11-02",
+    "source": "w6-pipeline-e09-m01-c02-p01-x5, step 7 (grouped and proposed by Claude, approved by the CSO - rulings P1-P7, 2 Nov 2026)",
+    "groups": {
+      "P4_invented_advice": {
+        "verdict": "defect",
+        "reason": "advice or an instruction its input does not state (S4 \"speak to your GP / health visitor if you have concerns\" x3; C7 and B6 \"Please make sure you attend\") - fails the bar-4 standard; carries no 111/999/A&E token, so the gate cannot see it (HAZ-01's stated blind spot)",
+        "keys": [
+          "88eb993d0dbeda69"
+        ]
+      }
+    }
+  }
+}

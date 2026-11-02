@@ -1,0 +1,24 @@
+{
+  "scenario_id": "S2",
+  "compose_rulings": {
+    "bd14bbd5f04def20": "acceptable"
+  },
+  "compose_rulings_meta": {
+    "later": [
+      {
+        "by": "Shina Oguntoye (CSO)",
+        "on": "2026-11-02",
+        "source": "w6-pipeline-e09-m01-c02-p01-x5, step 6 (grouped and proposed by Claude, approved by the CSO - rulings R7-R8, 2 Nov 2026)",
+        "groups": {
+          "R8_admitted_via_ed": {
+            "verdict": "acceptable",
+            "reason": "\"admitted via the Emergency Department\" describes the route of admission, not advice (as \"presented to A&E\", piece 2)",
+            "keys": [
+              "bd14bbd5f04def20"
+            ]
+          }
+        }
+      }
+    ]
+  }
+}

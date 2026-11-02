@@ -1,0 +1,1417 @@
+{
+  "record_version": 1,
+  "generation_id": "w6-pipeline-e09-m01-c02-p01-x5/r5/S17",
+  "batch_id": "w6-pipeline-e09-m01-c02-p01-x5",
+  "run": 5,
+  "scenario_id": "S17",
+  "generator": "pipeline",
+  "path": "steps-1-5b-5a-6-7",
+  "model_id": "anthropic.claude-sonnet-4-6",
+  "region": "eu-west-2",
+  "prompts": {
+    "extract_facts": {
+      "path": "src/generate/pipeline/prompts/extract_facts.md",
+      "file_sha256": "27554f5d32e4281ec3e1e0b135553d33f0f2475d8835b2929cadf3e3e3abd556",
+      "body_sha256": "481a6c68d94acb1949ab3f0cd694d538b019446ed6cf8e6951560394cf02366c"
+    },
+    "reconcile_medications": {
+      "path": "src/generate/pipeline/prompts/reconcile_medications.md",
+      "file_sha256": "5006968b7010560f437e0eb31f55e9092baebc7a4adf347667bfcb154e8708a0",
+      "body_sha256": "b06f8c12a739b80c3d57f41ceada7dd7b1c2af38bc53159353b68425d09d5acf"
+    },
+    "compose_clinical": {
+      "path": "src/generate/pipeline/prompts/compose_clinical.md",
+      "file_sha256": "511071c6204ef05308500a29aeaafd4f06facfceb83c5b9fd5b4590031cb4a7a",
+      "body_sha256": "48613f4d8669369039b77ffdf12828ce72445aaab0fd85f04d4d4ad0a82725fe"
+    },
+    "compose_patient": {
+      "path": "src/generate/pipeline/prompts/compose_patient.md",
+      "file_sha256": "96453b1095dc9c70a4cea148a15e2be7c5c2ac5abfe26b4046a9e7e0fd4bd04f",
+      "body_sha256": "7a0ffe99eb74988499064f12b30d893fb7f7001d9a51fcdbf4b95e6815da1b52"
+    }
+  },
+  "prompt_caching": true,
+  "notes_sha256": "e3e6093b1af13ac9ae86dfab84056ca00f418c7112b956aba9373d9a8d8e40b4",
+  "started_at": "2026-11-01T17:49:21+00:00",
+  "elapsed_s": 30.0,
+  "calls": [
+    {
+      "name": "extract_facts",
+      "input_tokens": 851,
+      "output_tokens": 2308,
+      "cache_read_tokens": 4539,
+      "cache_write_tokens": 0,
+      "stop_reason": "tool_use",
+      "latency_s": 12.913,
+      "throttle_retries": 0
+    },
+    {
+      "name": "reconcile_medications",
+      "input_tokens": 1124,
+      "output_tokens": 748,
+      "cache_read_tokens": 2290,
+      "cache_write_tokens": 0,
+      "stop_reason": "tool_use",
+      "latency_s": 4.844,
+      "throttle_retries": 0
+    },
+    {
+      "name": "compose_clinical",
+      "input_tokens": 1050,
+      "output_tokens": 1363,
+      "cache_read_tokens": 3182,
+      "cache_write_tokens": 0,
+      "stop_reason": "tool_use",
+      "latency_s": 7.299,
+      "throttle_retries": 0
+    },
+    {
+      "name": "compose_patient",
+      "input_tokens": 801,
+      "output_tokens": 469,
+      "cache_read_tokens": 1658,
+      "cache_write_tokens": 0,
+      "stop_reason": "tool_use",
+      "latency_s": 4.827,
+      "throttle_retries": 0
+    }
+  ],
+  "steps": {
+    "guard_input": {
+      "notes_sha256": "e3e6093b1af13ac9ae86dfab84056ca00f418c7112b956aba9373d9a8d8e40b4",
+      "line_count": 13,
+      "flags": []
+    },
+    "extract_facts": {
+      "call": {
+        "model_id": "anthropic.claude-sonnet-4-6",
+        "prompt_sha256": "481a6c68d94acb1949ab3f0cd694d538b019446ed6cf8e6951560394cf02366c",
+        "stop_reason": "tool_use",
+        "attempts": 1,
+        "input_tokens": 851,
+        "output_tokens": 2308,
+        "cache_read_tokens": 4539,
+        "cache_write_tokens": 0,
+        "latency_ms": 12913
+      }
+    },
+    "validate_facts": {
+      "facts": {
+        "fields": {
+          "age_sex": {
+            "status": "documented",
+            "items": [
+              {
+                "value": "70-year-old female",
+                "cites": [
+                  {
+                    "lines": [
+                      "L001"
+                    ],
+                    "quote": "70F",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "age_sex.0",
+                "citation_status": "verified",
+                "reason": null
+              }
+            ],
+            "field_check": "ok"
+          },
+          "specialty": {
+            "status": "inferred_flagged",
+            "items": [],
+            "field_check": "status_without_items"
+          },
+          "legal_status": {
+            "status": "not_documented",
+            "items": [],
+            "field_check": "ok"
+          },
+          "weight": {
+            "status": "not_documented",
+            "items": [],
+            "field_check": "ok"
+          },
+          "admission_date": {
+            "status": "documented",
+            "items": [],
+            "field_check": "status_without_items"
+          },
+          "discharge_date": {
+            "status": "documented",
+            "items": [],
+            "field_check": "status_without_items"
+          },
+          "presenting_complaint": {
+            "status": "documented",
+            "items": [
+              {
+                "value": "Melaena for 2 days, one episode of coffee-ground vomit, dizziness",
+                "cites": [
+                  {
+                    "lines": [
+                      "L001"
+                    ],
+                    "quote": "melaena 2/7, one episode coffee-ground vomit, dizzy",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "presenting_complaint.0",
+                "citation_status": "verified",
+                "reason": null
+              }
+            ],
+            "field_check": "ok"
+          },
+          "diagnosis_primary": {
+            "status": "documented",
+            "items": [
+              {
+                "value": "Bleeding duodenal ulcer (Forrest IIa)",
+                "cites": [
+                  {
+                    "lines": [
+                      "L005",
+                      "L006"
+                    ],
+                    "quote": "bleeding duodenal ulcer (Forrest IIa) -> adrenaline + clip, haemostasis\nachieved",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "diagnosis_primary.0",
+                "citation_status": "verified",
+                "reason": null
+              }
+            ],
+            "field_check": "ok"
+          },
+          "diagnosis_secondary": {
+            "status": "documented",
+            "items": [
+              {
+                "value": "H. pylori infection (CLO test positive)",
+                "cites": [
+                  {
+                    "lines": [
+                      "L006"
+                    ],
+                    "quote": "CLO test positive (H. pylori)",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "diagnosis_secondary.0",
+                "citation_status": "verified",
+                "reason": null
+              }
+            ],
+            "field_check": "ok"
+          },
+          "diagnosis_background": {
+            "status": "documented",
+            "items": [
+              {
+                "value": "Osteoarthritis (OA), on regular ibuprofen",
+                "cites": [
+                  {
+                    "lines": [
+                      "L001"
+                    ],
+                    "quote": "OA\n(takes regular ibuprofen)",
+                    "verified": false,
+                    "reason": "quote_not_found"
+                  }
+                ],
+                "fact_id": "diagnosis_background.0",
+                "citation_status": "citation_unverified",
+                "reason": "quote_not_found"
+              },
+              {
+                "value": "Atrial fibrillation (AF), on apixaban",
+                "cites": [
+                  {
+                    "lines": [
+                      "L001",
+                      "L002"
+                    ],
+                    "quote": "AF (apixaban)",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "diagnosis_background.1",
+                "citation_status": "verified",
+                "reason": null
+              },
+              {
+                "value": "Hypertension (HTN)",
+                "cites": [
+                  {
+                    "lines": [
+                      "L002"
+                    ],
+                    "quote": "HTN",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "diagnosis_background.2",
+                "citation_status": "verified",
+                "reason": null
+              }
+            ],
+            "field_check": "ok"
+          },
+          "key_investigations": {
+            "status": "documented",
+            "items": [
+              {
+                "value": "Haemoglobin (Hb) on admission: 78",
+                "cites": [
+                  {
+                    "lines": [
+                      "L003"
+                    ],
+                    "quote": "Hb 78",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "key_investigations.0",
+                "citation_status": "verified",
+                "reason": null
+              },
+              {
+                "value": "Heart rate (HR) on admission: 104",
+                "cites": [
+                  {
+                    "lines": [
+                      "L003"
+                    ],
+                    "quote": "HR 104",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "key_investigations.1",
+                "citation_status": "verified",
+                "reason": null
+              },
+              {
+                "value": "Blood pressure (BP) on admission: 104/64",
+                "cites": [
+                  {
+                    "lines": [
+                      "L003"
+                    ],
+                    "quote": "BP 104/64",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "key_investigations.2",
+                "citation_status": "verified",
+                "reason": null
+              },
+              {
+                "value": "Haemoglobin (Hb) post-transfusion (Day 2): 92",
+                "cites": [
+                  {
+                    "lines": [
+                      "L007"
+                    ],
+                    "quote": "Hb 92 post-transfusion",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "key_investigations.3",
+                "citation_status": "verified",
+                "reason": null
+              },
+              {
+                "value": "OGD Day 1: bleeding duodenal ulcer (Forrest IIa), treated with adrenaline injection and clip, haemostasis achieved",
+                "cites": [
+                  {
+                    "lines": [
+                      "L005",
+                      "L006"
+                    ],
+                    "quote": "OGD day 1: bleeding duodenal ulcer (Forrest IIa) -> adrenaline + clip, haemostasis\nachieved",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "key_investigations.4",
+                "citation_status": "verified",
+                "reason": null
+              },
+              {
+                "value": "CLO test: positive for H. pylori",
+                "cites": [
+                  {
+                    "lines": [
+                      "L006"
+                    ],
+                    "quote": "CLO test positive (H. pylori)",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "key_investigations.5",
+                "citation_status": "verified",
+                "reason": null
+              }
+            ],
+            "field_check": "ok"
+          },
+          "treatment": {
+            "status": "documented",
+            "items": [
+              {
+                "value": "Transfused 2 units (blood)",
+                "cites": [
+                  {
+                    "lines": [
+                      "L004"
+                    ],
+                    "quote": "Transfused 2 units",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "treatment.0",
+                "citation_status": "verified",
+                "reason": null
+              },
+              {
+                "value": "IV PPI infusion",
+                "cites": [
+                  {
+                    "lines": [
+                      "L004"
+                    ],
+                    "quote": "IV PPI infusion",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "treatment.1",
+                "citation_status": "verified",
+                "reason": null
+              },
+              {
+                "value": "Apixaban withheld during admission",
+                "cites": [
+                  {
+                    "lines": [
+                      "L004"
+                    ],
+                    "quote": "Apixaban withheld",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "treatment.2",
+                "citation_status": "verified",
+                "reason": null
+              },
+              {
+                "value": "OGD with adrenaline injection and clip to bleeding duodenal ulcer; haemostasis achieved",
+                "cites": [
+                  {
+                    "lines": [
+                      "L005",
+                      "L006"
+                    ],
+                    "quote": "bleeding duodenal ulcer (Forrest IIa) -> adrenaline + clip, haemostasis\nachieved",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "treatment.3",
+                "citation_status": "verified",
+                "reason": null
+              }
+            ],
+            "field_check": "ok"
+          },
+          "risk_assessment": {
+            "status": "not_documented",
+            "items": [],
+            "field_check": "ok"
+          },
+          "allergies": {
+            "status": "documented",
+            "items": [
+              {
+                "value": "No known drug allergies",
+                "cites": [
+                  {
+                    "lines": [
+                      "L003"
+                    ],
+                    "quote": "NKDA",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "allergies.0",
+                "citation_status": "verified",
+                "reason": null
+              }
+            ],
+            "field_check": "ok"
+          },
+          "follow_up": {
+            "status": "documented",
+            "items": [
+              {
+                "value": "Gastroenterology clinic and repeat OGD in 6–8 weeks to confirm ulcer healing",
+                "cites": [
+                  {
+                    "lines": [
+                      "L013"
+                    ],
+                    "quote": "Gastro clinic + repeat OGD 6-8/52 to confirm ulcer healing",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "follow_up.0",
+                "citation_status": "verified",
+                "reason": null
+              }
+            ],
+            "field_check": "ok"
+          },
+          "gp_actions": {
+            "status": "documented",
+            "items": [
+              {
+                "value": "Repeat Hb",
+                "cites": [
+                  {
+                    "lines": [
+                      "L012"
+                    ],
+                    "quote": "GP: repeat Hb, confirm H. pylori eradication, decision on resuming apixaban",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "gp_actions.0",
+                "citation_status": "verified",
+                "reason": null
+              },
+              {
+                "value": "Confirm H. pylori eradication",
+                "cites": [
+                  {
+                    "lines": [
+                      "L012"
+                    ],
+                    "quote": "GP: repeat Hb, confirm H. pylori eradication, decision on resuming apixaban",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "gp_actions.1",
+                "citation_status": "verified",
+                "reason": null
+              },
+              {
+                "value": "Decision on resuming apixaban",
+                "cites": [
+                  {
+                    "lines": [
+                      "L012"
+                    ],
+                    "quote": "GP: repeat Hb, confirm H. pylori eradication, decision on resuming apixaban",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "gp_actions.2",
+                "citation_status": "verified",
+                "reason": null
+              }
+            ],
+            "field_check": "ok"
+          },
+          "vte_assessment": {
+            "status": "not_documented",
+            "items": [],
+            "field_check": "ok"
+          }
+        },
+        "medications": {
+          "pre_admission": [
+            {
+              "value": "Ibuprofen 400 mg TDS",
+              "cites": [
+                {
+                  "lines": [
+                    "L002"
+                  ],
+                  "quote": "ibuprofen 400mg TDS",
+                  "verified": true,
+                  "reason": null
+                }
+              ],
+              "fact_id": "medications.pre_admission.0",
+              "citation_status": "verified",
+              "reason": null
+            },
+            {
+              "value": "Apixaban 5 mg BD",
+              "cites": [
+                {
+                  "lines": [
+                    "L002",
+                    "L003"
+                  ],
+                  "quote": "apixaban\n5mg BD",
+                  "verified": true,
+                  "reason": null
+                }
+              ],
+              "fact_id": "medications.pre_admission.1",
+              "citation_status": "verified",
+              "reason": null
+            },
+            {
+              "value": "Amlodipine 5 mg OD",
+              "cites": [
+                {
+                  "lines": [
+                    "L003"
+                  ],
+                  "quote": "amlodipine 5mg OD",
+                  "verified": true,
+                  "reason": null
+                }
+              ],
+              "fact_id": "medications.pre_admission.2",
+              "citation_status": "verified",
+              "reason": null
+            },
+            {
+              "value": "Paracetamol PRN",
+              "cites": [
+                {
+                  "lines": [
+                    "L003"
+                  ],
+                  "quote": "paracetamol PRN",
+                  "verified": true,
+                  "reason": null
+                }
+              ],
+              "fact_id": "medications.pre_admission.3",
+              "citation_status": "verified",
+              "reason": null
+            }
+          ],
+          "discharge": [
+            {
+              "value": "Oral PPI high dose (new)",
+              "cites": [
+                {
+                  "lines": [
+                    "L008"
+                  ],
+                  "quote": "oral PPI high dose (new)",
+                  "verified": true,
+                  "reason": null
+                }
+              ],
+              "fact_id": "medications.discharge.0",
+              "citation_status": "verified",
+              "reason": null
+            },
+            {
+              "value": "H. pylori eradication: amoxicillin + clarithromycin, 7 days (new)",
+              "cites": [
+                {
+                  "lines": [
+                    "L008",
+                    "L009"
+                  ],
+                  "quote": "H. pylori eradication\n(amoxicillin + clarithromycin 7/7, new)",
+                  "verified": true,
+                  "reason": null
+                }
+              ],
+              "fact_id": "medications.discharge.1",
+              "citation_status": "verified",
+              "reason": null
+            },
+            {
+              "value": "Ibuprofen STOPPED permanently (identified as cause)",
+              "cites": [
+                {
+                  "lines": [
+                    "L009"
+                  ],
+                  "quote": "ibuprofen STOPPED permanently (cause)",
+                  "verified": true,
+                  "reason": null
+                }
+              ],
+              "fact_id": "medications.discharge.2",
+              "citation_status": "verified",
+              "reason": null
+            },
+            {
+              "value": "Paracetamol regular (for OA, instead of ibuprofen)",
+              "cites": [
+                {
+                  "lines": [
+                    "L009",
+                    "L010"
+                  ],
+                  "quote": "paracetamol regular for OA instead",
+                  "verified": true,
+                  "reason": null
+                }
+              ],
+              "fact_id": "medications.discharge.3",
+              "citation_status": "verified",
+              "reason": null
+            },
+            {
+              "value": "Amlodipine continued",
+              "cites": [
+                {
+                  "lines": [
+                    "L010"
+                  ],
+                  "quote": "amlodipine continued",
+                  "verified": true,
+                  "reason": null
+                }
+              ],
+              "fact_id": "medications.discharge.4",
+              "citation_status": "verified",
+              "reason": null
+            },
+            {
+              "value": "Apixaban: withheld on discharge, to be reviewed and restarted by GP/cardiology in approximately 2 weeks once healed",
+              "cites": [
+                {
+                  "lines": [
+                    "L010",
+                    "L011"
+                  ],
+                  "quote": "Apixaban: WITHHELD on\ndischarge, to be reviewed and restarted by GP/cardiology in ~2 weeks once healed",
+                  "verified": true,
+                  "reason": null
+                }
+              ],
+              "fact_id": "medications.discharge.5",
+              "citation_status": "verified",
+              "reason": null
+            }
+          ],
+          "discharge_status": "listed",
+          "medications_check": "ok"
+        },
+        "resus": {
+          "changed": "no",
+          "cites": [
+            {
+              "lines": [
+                "L004"
+              ],
+              "quote": "Resus status: for resus",
+              "verified": true,
+              "reason": null
+            }
+          ],
+          "form_or_discussion_documented": false,
+          "status_documented": "for_resuscitation",
+          "fact_id": "resus",
+          "citation_status": "verified",
+          "reason": null
+        },
+        "documented_advice": [],
+        "age_group": "adult",
+        "contradictions": [],
+        "suspicious_text": []
+      },
+      "uncited_lines": [],
+      "counts": {
+        "cites_total": 33,
+        "cites_verified": 32,
+        "items_unverified": 1,
+        "fields_inconsistent": 3,
+        "medications_inconsistent": 0
+      }
+    },
+    "retrieve_evidence": {
+      "medication": [
+        {
+          "line": "L002",
+          "sources": [
+            "cited",
+            "med_header"
+          ],
+          "fact_ids": [
+            "medications.pre_admission.0",
+            "medications.pre_admission.1"
+          ],
+          "flagged": false
+        },
+        {
+          "line": "L003",
+          "sources": [
+            "cited",
+            "med_continuation"
+          ],
+          "fact_ids": [
+            "medications.pre_admission.1",
+            "medications.pre_admission.2",
+            "medications.pre_admission.3"
+          ],
+          "flagged": false
+        },
+        {
+          "line": "L008",
+          "sources": [
+            "cited",
+            "med_header"
+          ],
+          "fact_ids": [
+            "medications.discharge.0",
+            "medications.discharge.1"
+          ],
+          "flagged": false
+        },
+        {
+          "line": "L009",
+          "sources": [
+            "cited",
+            "med_continuation"
+          ],
+          "fact_ids": [
+            "medications.discharge.1",
+            "medications.discharge.2",
+            "medications.discharge.3"
+          ],
+          "flagged": false
+        },
+        {
+          "line": "L010",
+          "sources": [
+            "cited",
+            "med_continuation"
+          ],
+          "fact_ids": [
+            "medications.discharge.3",
+            "medications.discharge.4",
+            "medications.discharge.5"
+          ],
+          "flagged": false
+        },
+        {
+          "line": "L011",
+          "sources": [
+            "cited"
+          ],
+          "fact_ids": [
+            "medications.discharge.5"
+          ],
+          "flagged": false
+        }
+      ],
+      "resus": [
+        {
+          "line": "L004",
+          "sources": [
+            "cited",
+            "resus_term"
+          ],
+          "fact_ids": [
+            "resus"
+          ],
+          "flagged": false
+        }
+      ],
+      "language": [],
+      "counts": {
+        "medication_lines": 6,
+        "resus_lines": 1,
+        "language_lines": 0,
+        "medication_matched_not_cited": 0,
+        "resus_matched_not_cited": 0
+      }
+    },
+    "route_resus": {
+      "route": "documented",
+      "forced": "no",
+      "status": "for_resuscitation",
+      "changed": "no",
+      "cited_lines": [
+        "L004"
+      ],
+      "rendered": "RESUSCITATION STATUS\nFor resuscitation. No change during admission.\nSource: [L004]: \"Resus status: for resus\""
+    },
+    "select_safety_net": {
+      "route": "fallback",
+      "audience": "adult",
+      "pinned_line": "If you have been given a number to call, use that first. Otherwise, if you are worried, contact your GP or call NHS 111. Call 999 if it is an emergency.",
+      "advice": [],
+      "advice_excluded": 0,
+      "cited_lines": [],
+      "part_ab": "If you have been given a number to call, use that first. Otherwise, if you are worried, contact your GP or call NHS 111. Call 999 if it is an emergency.",
+      "part_c": "If you have been given a number to call, use that first. Otherwise, if you are worried, contact your GP or call NHS 111. Call 999 if it is an emergency."
+    },
+    "reconcile_medications": {
+      "reconciliation": [
+        {
+          "entry_id": "reconciliation.0",
+          "drug": "ibuprofen",
+          "tag": "stopped",
+          "basis": "documented",
+          "dose": "400mg",
+          "route": null,
+          "frequency": "TDS",
+          "previous": null,
+          "conflict": false,
+          "dh_cites": [
+            {
+              "lines": [
+                "L002"
+              ],
+              "quote": "ibuprofen 400mg TDS",
+              "verified": true,
+              "reason": null
+            }
+          ],
+          "discharge_cites": [
+            {
+              "lines": [
+                "L009"
+              ],
+              "quote": "ibuprofen STOPPED permanently (cause)",
+              "verified": true,
+              "reason": null
+            }
+          ],
+          "citation_status": "verified",
+          "reason": null,
+          "checks": []
+        },
+        {
+          "entry_id": "reconciliation.1",
+          "drug": "apixaban",
+          "tag": "withheld",
+          "basis": "documented",
+          "dose": "5mg",
+          "route": null,
+          "frequency": "BD",
+          "previous": null,
+          "conflict": false,
+          "dh_cites": [
+            {
+              "lines": [
+                "L002",
+                "L003"
+              ],
+              "quote": "apixaban\n5mg BD",
+              "verified": true,
+              "reason": null
+            }
+          ],
+          "discharge_cites": [
+            {
+              "lines": [
+                "L010",
+                "L011"
+              ],
+              "quote": "Apixaban: WITHHELD on\ndischarge, to be reviewed and restarted by GP/cardiology in ~2 weeks once healed.",
+              "verified": true,
+              "reason": null
+            }
+          ],
+          "citation_status": "verified",
+          "reason": null,
+          "checks": []
+        },
+        {
+          "entry_id": "reconciliation.2",
+          "drug": "amlodipine",
+          "tag": "continued",
+          "basis": "documented",
+          "dose": "5mg",
+          "route": null,
+          "frequency": "OD",
+          "previous": null,
+          "conflict": false,
+          "dh_cites": [
+            {
+              "lines": [
+                "L003"
+              ],
+              "quote": "amlodipine 5mg OD",
+              "verified": true,
+              "reason": null
+            }
+          ],
+          "discharge_cites": [
+            {
+              "lines": [
+                "L010"
+              ],
+              "quote": "amlodipine continued",
+              "verified": true,
+              "reason": null
+            }
+          ],
+          "citation_status": "verified",
+          "reason": null,
+          "checks": []
+        },
+        {
+          "entry_id": "reconciliation.3",
+          "drug": "paracetamol",
+          "tag": "changed",
+          "basis": "documented",
+          "dose": null,
+          "route": null,
+          "frequency": "regular",
+          "previous": {
+            "dose": null,
+            "frequency": "PRN"
+          },
+          "conflict": false,
+          "dh_cites": [
+            {
+              "lines": [
+                "L003"
+              ],
+              "quote": "paracetamol PRN",
+              "verified": true,
+              "reason": null
+            }
+          ],
+          "discharge_cites": [
+            {
+              "lines": [
+                "L009",
+                "L010"
+              ],
+              "quote": "paracetamol regular for OA instead",
+              "verified": true,
+              "reason": null
+            }
+          ],
+          "citation_status": "verified",
+          "reason": null,
+          "checks": []
+        },
+        {
+          "entry_id": "reconciliation.4",
+          "drug": "PPI",
+          "tag": "new",
+          "basis": "documented",
+          "dose": "high dose",
+          "route": "oral",
+          "frequency": null,
+          "previous": null,
+          "conflict": false,
+          "dh_cites": [],
+          "discharge_cites": [
+            {
+              "lines": [
+                "L008"
+              ],
+              "quote": "oral PPI high dose (new)",
+              "verified": true,
+              "reason": null
+            }
+          ],
+          "citation_status": "verified",
+          "reason": null,
+          "checks": []
+        },
+        {
+          "entry_id": "reconciliation.5",
+          "drug": "amoxicillin + clarithromycin",
+          "tag": "new",
+          "basis": "documented",
+          "dose": null,
+          "route": null,
+          "frequency": "7/7",
+          "previous": null,
+          "conflict": false,
+          "dh_cites": [],
+          "discharge_cites": [
+            {
+              "lines": [
+                "L008",
+                "L009"
+              ],
+              "quote": "H. pylori eradication\n(amoxicillin + clarithromycin 7/7, new)",
+              "verified": true,
+              "reason": null
+            }
+          ],
+          "citation_status": "verified",
+          "reason": null,
+          "checks": []
+        }
+      ],
+      "discharge_status": "listed",
+      "reconciliation_check": "ok",
+      "dh_lines_unreconciled": [],
+      "counts": {
+        "entries": 6,
+        "cites_total": 10,
+        "cites_verified": 10,
+        "entries_unverified": 0,
+        "entries_flagged": 0,
+        "dh_lines_unreconciled": 0
+      },
+      "call": {
+        "model_id": "anthropic.claude-sonnet-4-6",
+        "prompt_sha256": "b06f8c12a739b80c3d57f41ceada7dd7b1c2af38bc53159353b68425d09d5acf",
+        "stop_reason": "tool_use",
+        "attempts": 1,
+        "input_tokens": 1124,
+        "output_tokens": 748,
+        "cache_read_tokens": 2290,
+        "cache_write_tokens": 0,
+        "latency_ms": 4844
+      }
+    },
+    "compose_clinical": {
+      "sections": [
+        {
+          "section_id": "sections.0",
+          "part": "part_a",
+          "heading": "presenting_complaint",
+          "fact_ids": [
+            "presenting_complaint.0"
+          ],
+          "text": "Melaena for 2 days, one episode of coffee-ground vomit, and dizziness.",
+          "unverified_fact_ids": []
+        },
+        {
+          "section_id": "sections.1",
+          "part": "part_a",
+          "heading": "diagnosis",
+          "fact_ids": [
+            "diagnosis_primary.0",
+            "diagnosis_secondary.0",
+            "diagnosis_background.0",
+            "diagnosis_background.1",
+            "diagnosis_background.2"
+          ],
+          "text": "Primary: Bleeding duodenal ulcer (Forrest IIa)\n\nSecondary: H. pylori infection (CLO test positive)\n\nBackground:\n- Osteoarthritis (OA), on regular ibuprofen\n- Atrial fibrillation (AF), on apixaban\n- Hypertension (HTN)",
+          "unverified_fact_ids": [
+            "diagnosis_background.0"
+          ]
+        },
+        {
+          "section_id": "sections.2",
+          "part": "part_a",
+          "heading": "key_investigations",
+          "fact_ids": [
+            "key_investigations.0",
+            "key_investigations.1",
+            "key_investigations.2",
+            "key_investigations.3",
+            "key_investigations.4",
+            "key_investigations.5"
+          ],
+          "text": "- Haemoglobin (Hb) on admission: 78; post-transfusion (Day 2): 92\n- Heart rate (HR) on admission: 104\n- Blood pressure (BP) on admission: 104/64\n- OGD Day 1: bleeding duodenal ulcer (Forrest IIa), treated with adrenaline injection and clip; haemostasis achieved\n- CLO test: positive for H. pylori",
+          "unverified_fact_ids": []
+        },
+        {
+          "section_id": "sections.3",
+          "part": "part_a",
+          "heading": "treatment",
+          "fact_ids": [
+            "treatment.0",
+            "treatment.1",
+            "treatment.2",
+            "treatment.3"
+          ],
+          "text": "- Transfused 2 units of blood\n- IV PPI infusion\n- Apixaban withheld during admission\n- OGD with adrenaline injection and clip to bleeding duodenal ulcer; haemostasis achieved",
+          "unverified_fact_ids": []
+        },
+        {
+          "section_id": "sections.4",
+          "part": "part_a",
+          "heading": "resuscitation_status",
+          "fact_ids": [],
+          "text": "{{RESUS}}",
+          "unverified_fact_ids": []
+        },
+        {
+          "section_id": "sections.5",
+          "part": "part_a",
+          "heading": "medications",
+          "fact_ids": [],
+          "text": "{{MEDICATIONS}}",
+          "unverified_fact_ids": []
+        },
+        {
+          "section_id": "sections.6",
+          "part": "part_a",
+          "heading": "allergies",
+          "fact_ids": [
+            "allergies.0"
+          ],
+          "text": "No known drug allergies.",
+          "unverified_fact_ids": []
+        },
+        {
+          "section_id": "sections.7",
+          "part": "part_a",
+          "heading": "follow_up",
+          "fact_ids": [
+            "follow_up.0"
+          ],
+          "text": "- Gastroenterology clinic and repeat OGD in 6–8 weeks to confirm ulcer healing",
+          "unverified_fact_ids": []
+        },
+        {
+          "section_id": "sections.8",
+          "part": "part_a",
+          "heading": "gp_actions",
+          "fact_ids": [
+            "gp_actions.0",
+            "gp_actions.1",
+            "gp_actions.2"
+          ],
+          "text": "- Repeat Hb\n- Confirm H. pylori eradication\n- Decision on resuming apixaban",
+          "unverified_fact_ids": []
+        },
+        {
+          "section_id": "sections.9",
+          "part": "part_a",
+          "heading": "safety_net",
+          "fact_ids": [],
+          "text": "{{SAFETY_NET}}",
+          "unverified_fact_ids": []
+        },
+        {
+          "section_id": "sections.10",
+          "part": "part_a",
+          "heading": "vte_assessment",
+          "fact_ids": [],
+          "text": "Not documented",
+          "unverified_fact_ids": []
+        },
+        {
+          "section_id": "sections.11",
+          "part": "part_b",
+          "heading": "opening",
+          "fact_ids": [
+            "age_sex.0",
+            "presenting_complaint.0",
+            "diagnosis_primary.0"
+          ],
+          "text": "This 70-year-old female was admitted with a 2-day history of melaena, one episode of coffee-ground vomit, and dizziness, and was found to have a bleeding duodenal ulcer (Forrest IIa).",
+          "unverified_fact_ids": []
+        },
+        {
+          "section_id": "sections.12",
+          "part": "part_b",
+          "heading": "admission_summary",
+          "fact_ids": [
+            "key_investigations.0",
+            "key_investigations.1",
+            "key_investigations.2",
+            "key_investigations.3",
+            "key_investigations.4",
+            "key_investigations.5",
+            "treatment.0",
+            "treatment.1",
+            "treatment.2",
+            "treatment.3"
+          ],
+          "text": "On admission she was haemodynamically compromised (HR 104, BP 104/64) with an Hb of 78. She was transfused 2 units of blood, with Hb rising to 92 by Day 2. She received an IV PPI infusion. Urgent OGD on Day 1 identified a bleeding duodenal ulcer (Forrest IIa); haemostasis was achieved with adrenaline injection and clip. CLO test was positive for H. pylori. Apixaban was withheld throughout the admission.",
+          "unverified_fact_ids": []
+        },
+        {
+          "section_id": "sections.13",
+          "part": "part_b",
+          "heading": "diagnosis",
+          "fact_ids": [
+            "diagnosis_primary.0",
+            "diagnosis_secondary.0",
+            "diagnosis_background.0",
+            "diagnosis_background.1",
+            "diagnosis_background.2"
+          ],
+          "text": "Primary: Bleeding duodenal ulcer (Forrest IIa)\nSecondary: H. pylori infection (CLO test positive)\nBackground: Osteoarthritis (on regular ibuprofen), atrial fibrillation (on apixaban), hypertension",
+          "unverified_fact_ids": [
+            "diagnosis_background.0"
+          ]
+        },
+        {
+          "section_id": "sections.14",
+          "part": "part_b",
+          "heading": "resuscitation_status",
+          "fact_ids": [],
+          "text": "{{RESUS}}",
+          "unverified_fact_ids": []
+        },
+        {
+          "section_id": "sections.15",
+          "part": "part_b",
+          "heading": "medications",
+          "fact_ids": [],
+          "text": "{{MEDICATIONS}}",
+          "unverified_fact_ids": []
+        },
+        {
+          "section_id": "sections.16",
+          "part": "part_b",
+          "heading": "gp_actions",
+          "fact_ids": [
+            "gp_actions.0",
+            "gp_actions.1",
+            "gp_actions.2"
+          ],
+          "text": "- Repeat Hb\n- Confirm H. pylori eradication\n- Decision on resuming apixaban",
+          "unverified_fact_ids": []
+        },
+        {
+          "section_id": "sections.17",
+          "part": "part_b",
+          "heading": "follow_up",
+          "fact_ids": [
+            "follow_up.0"
+          ],
+          "text": "- Gastroenterology clinic and repeat OGD in 6–8 weeks to confirm ulcer healing",
+          "unverified_fact_ids": []
+        },
+        {
+          "section_id": "sections.18",
+          "part": "part_b",
+          "heading": "safety_net",
+          "fact_ids": [],
+          "text": "{{SAFETY_NET}}",
+          "unverified_fact_ids": []
+        }
+      ],
+      "held_back": [],
+      "checks": [],
+      "counts": {
+        "sections": 19,
+        "sections_a": 11,
+        "sections_b": 8,
+        "facts_given": 21,
+        "facts_used_in_a": 21,
+        "header_facts_given": 1,
+        "contradictions_given": 0,
+        "contradictions_in_a": 0,
+        "gp_actions_given": 3,
+        "gp_actions_in_b": 3,
+        "facts_held_back": 0,
+        "gp_actions_held_back": 0,
+        "unverified_given": 1,
+        "unverified_used": 1,
+        "checks": 0
+      },
+      "age_group": "adult",
+      "call": {
+        "model_id": "anthropic.claude-sonnet-4-6",
+        "prompt_sha256": "48613f4d8669369039b77ffdf12828ce72445aaab0fd85f04d4d4ad0a82725fe",
+        "stop_reason": "tool_use",
+        "attempts": 1,
+        "input_tokens": 1050,
+        "output_tokens": 1363,
+        "cache_read_tokens": 3182,
+        "cache_write_tokens": 0,
+        "latency_ms": 7299
+      }
+    },
+    "compose_patient": {
+      "sections": [
+        {
+          "section_id": "c_sections.0",
+          "heading": "why_in_hospital",
+          "source_ids": [
+            "sections.0",
+            "sections.1"
+          ],
+          "text": "You came in with dark, tarry stools (melaena), vomiting blood, and dizziness. We found a bleeding ulcer in the first part of your small bowel (a duodenal ulcer). You also have an infection called H. pylori, which can cause ulcers. Your regular ibuprofen for osteoarthritis (OA) and your blood-thinning tablet apixaban for atrial fibrillation (AF) are linked to this kind of bleeding."
+        },
+        {
+          "section_id": "c_sections.1",
+          "heading": "what_we_did",
+          "source_ids": [
+            "sections.2",
+            "sections.3"
+          ],
+          "text": "We did a camera test of your stomach and bowel (OGD) on Day 1. We found the bleeding ulcer and stopped the bleeding using an injection and a small clip. We also tested for H. pylori infection — this came back positive.\n\nWe gave you:\n- 2 units of blood through a drip\n- A stomach-protecting medicine through a drip\n\nWe held your apixaban while you were in hospital."
+        },
+        {
+          "section_id": "c_sections.2",
+          "heading": "medicines",
+          "source_ids": [],
+          "text": "{{MEDICATIONS}}"
+        },
+        {
+          "section_id": "c_sections.3",
+          "heading": "next_steps",
+          "source_ids": [
+            "sections.7",
+            "sections.8"
+          ],
+          "text": "Your GP will:\n- Check your blood count (haemoglobin)\n- Confirm the H. pylori infection has cleared\n- Make a decision about restarting your apixaban\n\nYou have a gastroenterology clinic appointment and a repeat camera test (OGD) in 6–8 weeks. This is to check that your ulcer has healed."
+        },
+        {
+          "section_id": "c_sections.4",
+          "heading": "safety_net",
+          "source_ids": [],
+          "text": "{{SAFETY_NET}}"
+        }
+      ],
+      "checks": [
+        {
+          "check": "dose_or_frequency",
+          "heading": "what_we_did",
+          "source_id": null,
+          "token": null
+        }
+      ],
+      "counts": {
+        "sections": 5,
+        "sections_given": 6,
+        "sources_cited": 6,
+        "words_prose": 180,
+        "checks": 1
+      },
+      "audience": "adult",
+      "call": {
+        "model_id": "anthropic.claude-sonnet-4-6",
+        "prompt_sha256": "7a0ffe99eb74988499064f12b30d893fb7f7001d9a51fcdbf4b95e6815da1b52",
+        "stop_reason": "tool_use",
+        "attempts": 1,
+        "input_tokens": 801,
+        "output_tokens": 469,
+        "cache_read_tokens": 1658,
+        "cache_write_tokens": 0,
+        "latency_ms": 4827
+      }
+    }
+  },
+  "output": null,
+  "gate": null,
+  "failed_step": null,
+  "error": null,
+  "step_errors": {},
+  "cost_usd_est": 0.097129
+}

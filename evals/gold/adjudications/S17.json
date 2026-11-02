@@ -23,6 +23,7 @@
     "a5d5bad796172478": "acceptable",
     "a788e873cf5ae309": "acceptable",
     "ab1d453af79f792c": "acceptable",
+    "ae6eedeb1411a5af": "acceptable",
     "b2b2769adec1a6f1": "acceptable",
     "b3efd2b9fd12ed76": "acceptable",
     "bd61a84c0b861caf": "acceptable",
@@ -32,10 +33,12 @@
     "cd960c1f1073c023": "acceptable",
     "d9971801bc65b7f5": "acceptable",
     "e36da37e0aa79e36": "acceptable",
+    "e8963a2d1e7ddfa5": "acceptable",
     "e8a5cc27f2adec3e": "acceptable",
     "ea4ea69e844bd46c": "acceptable",
     "eb0f4ca5eefb8cb2": "acceptable",
     "f01bad7aa6540c9d": "acceptable",
+    "f046d5404221f9b5": "acceptable",
     "f5b61cc0696ee230": "acceptable",
     "f94d4953f847e65a": "acceptable",
     "fe0c323197c605d0": "acceptable"
@@ -103,6 +106,49 @@
         "reason": "S17 r2 PART B admission_summary: names ibuprofen from diagnosis_secondary.1, which the section does not cite, and softens 'cause' to 'contributory cause'. Not a discharge-medication restatement, so acceptable for bar line 7; recorded as a faithfulness finding (missing citation + meaning softened), which code does not measure.",
         "keys": [
           "e36da37e0aa79e36"
+        ]
+      }
+    },
+    "later": [
+      {
+        "by": "Shina Oguntoye (CSO)",
+        "on": "2026-11-02",
+        "source": "w6-pipeline-e09-m01-c02-p01-x5, step 6 (grouped and proposed by Claude, approved by the CSO - rulings R7-R8, 2 Nov 2026)",
+        "groups": {
+          "R7_medication": {
+            "verdict": "acceptable",
+            "reason": "a drug named from a fact the section cites (the R3/R5 standard); 6 name an in-hospital dose change (S1, B6 bisoprolol) - item 4 box-vs-prose carry-in, as R5",
+            "keys": [
+              "ae6eedeb1411a5af",
+              "e8963a2d1e7ddfa5",
+              "f046d5404221f9b5"
+            ]
+          }
+        }
+      }
+    ]
+  },
+  "patient_rulings": {
+    "17912af8f30d20a4": "acceptable",
+    "1b03d5550f7fdd83": "acceptable",
+    "4572246500645c27": "acceptable",
+    "6631d9964d53df9a": "acceptable",
+    "78aba38a267ebdc6": "acceptable"
+  },
+  "patient_rulings_meta": {
+    "by": "Shina Oguntoye (CSO)",
+    "on": "2026-11-02",
+    "source": "w6-pipeline-e09-m01-c02-p01-x5, step 7 (grouped and proposed by Claude, approved by the CSO - rulings P1-P7, 2 Nov 2026)",
+    "groups": {
+      "P5_in_hospital_dose": {
+        "verdict": "acceptable",
+        "reason": "the cited PART A section gives the same drug and dose for an in-hospital treatment or change (B6 bisoprolol increased to 5mg OD; S17 2 units of blood) - the round-2 bar-5 standard",
+        "keys": [
+          "17912af8f30d20a4",
+          "1b03d5550f7fdd83",
+          "4572246500645c27",
+          "6631d9964d53df9a",
+          "78aba38a267ebdc6"
         ]
       }
     }

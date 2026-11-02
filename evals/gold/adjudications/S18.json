@@ -38,5 +38,24 @@
       "source": "w4-baseline-v1-x5 (proposed by Claude, approved by the CSO)"
     }
   },
-  "med_rulings": {}
+  "med_rulings": {},
+  "patient_rulings": {
+    "828807da8cd53309": "acceptable",
+    "a589e3ed960e966d": "acceptable"
+  },
+  "patient_rulings_meta": {
+    "by": "Shina Oguntoye (CSO)",
+    "on": "2026-11-02",
+    "source": "w6-pipeline-e09-m01-c02-p01-x5, step 7 (grouped and proposed by Claude, approved by the CSO - rulings P1-P7, 2 Nov 2026)",
+    "groups": {
+      "P2_instruction_restated": {
+        "verdict": "acceptable",
+        "reason": "restates an instruction or plan its cited PART A section states, with the same force and scope (S18 driving/DVLA 6 months; S11 partial weight-bearing, follow-up; S9 education, phone support; GP to check INR / digoxin) - the round-2 bar-4 standard",
+        "keys": [
+          "828807da8cd53309",
+          "a589e3ed960e966d"
+        ]
+      }
+    }
+  }
 }

@@ -1,0 +1,18 @@
+{
+  "generation_id": "w6-pipeline-e09-m01-c02-p01-x5/r1/A5",
+  "verdicts": {
+    "added": "pass",
+    "meaning": "pass",
+    "withheld": "fail",
+    "audience": "pass"
+  },
+  "findings": [
+    {
+      "dimension": "withheld",
+      "heading": null,
+      "source_ids": [],
+      "note": "omits the ITU review, ward-based ceiling of care and family meeting"
+    }
+  ],
+  "scored_by": "author (CSO), 2 Nov 2026 11:40, given in chat; written to file by Claude verbatim"
+}

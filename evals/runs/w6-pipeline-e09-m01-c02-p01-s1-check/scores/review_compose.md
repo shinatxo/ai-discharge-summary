@@ -1,0 +1,6 @@
+# Step 6 sentences to rule on — batch `w6-pipeline-e09-m01-c02-p01-s1-check`
+
+Each sentence sits OUTSIDE a box and matched a pattern. Rule on each: **acceptable** (it is not advice / a resus status / a discharge medicine — e.g. "presented to A&E", "fluid resuscitation", an in-hospital drug) or **defect** (it is). Store rulings in `evals/gold/adjudications/<ID>.json` under `compose_rulings` as `{key: ruling}`; they are reused across runs.
+
+- **S1** `f0d562e52a3c8bc3` medication `bisoprolol` · part_b / admission_summary (runs 1) · ruling: acceptable: Dual antiplatelet therapy was commenced with ticagrelor, fondaparinux was started, bisoprolol was uptitrated to 7.5mg once daily, and isosorbide mononitrate 30mg once daily was added.
+- **S1** `f68754bf91e9267d` medication `ticagrelor` · part_b / admission_summary (runs 1) · ruling: acceptable: Dual antiplatelet therapy was commenced with ticagrelor, fondaparinux was started, bisoprolol was uptitrated to 7.5mg once daily, and isosorbide mononitrate 30mg once daily was added.

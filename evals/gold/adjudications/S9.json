@@ -100,5 +100,48 @@
         ]
       }
     }
+  },
+  "patient_rulings": {
+    "0a7616492e5e54cd": "acceptable",
+    "10c8fff66982d805": "acceptable",
+    "4e0a722539395b50": "acceptable",
+    "50c757a618bd9ed5": "acceptable",
+    "76993a71a4677aa5": "acceptable",
+    "c417b5aefd8bb2b9": "acceptable",
+    "d0d1729dfa125b09": "acceptable",
+    "ffb42d2a63675471": "acceptable"
+  },
+  "patient_rulings_meta": {
+    "by": "Shina Oguntoye (CSO)",
+    "on": "2026-11-02",
+    "source": "w6-pipeline-e09-m01-c02-p01-x5, step 7 (grouped and proposed by Claude, approved by the CSO - rulings P1-P7, 2 Nov 2026)",
+    "groups": {
+      "P1_pattern_false_alarm": {
+        "verdict": "acceptable",
+        "reason": "not an instruction, disclosure or added value: the pattern matched ordinary words (\"as it should\", \"make sure it stayed stable\", \"did not clear\" of a blockage, ribs \"7, 8 and 9\" for 7-9); content is in the cited PART A section",
+        "keys": [
+          "c417b5aefd8bb2b9",
+          "d0d1729dfa125b09"
+        ]
+      },
+      "P2_instruction_restated": {
+        "verdict": "acceptable",
+        "reason": "restates an instruction or plan its cited PART A section states, with the same force and scope (S18 driving/DVLA 6 months; S11 partial weight-bearing, follow-up; S9 education, phone support; GP to check INR / digoxin) - the round-2 bar-4 standard",
+        "keys": [
+          "0a7616492e5e54cd",
+          "10c8fff66982d805",
+          "4e0a722539395b50",
+          "50c757a618bd9ed5",
+          "76993a71a4677aa5"
+        ]
+      },
+      "P6_named_not_instructed": {
+        "verdict": "acceptable",
+        "reason": "does not tell the patient what to take (GP checks INR naming warfarin; DKA explained via insulin and ketones); recorded as added-content faithfulness findings, outside the blind sample",
+        "keys": [
+          "ffb42d2a63675471"
+        ]
+      }
+    }
   }
 }

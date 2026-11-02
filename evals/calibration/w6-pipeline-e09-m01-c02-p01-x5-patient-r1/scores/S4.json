@@ -1,0 +1,30 @@
+{
+  "generation_id": "w6-pipeline-e09-m01-c02-p01-x5/r1/S4",
+  "verdicts": {
+    "added": "partial",
+    "meaning": "partial",
+    "withheld": "pass",
+    "audience": "partial"
+  },
+  "findings": [
+    {
+      "dimension": "added",
+      "heading": null,
+      "source_ids": [],
+      "note": "says the GP or health team will be available after discharge, not stated"
+    },
+    {
+      "dimension": "meaning",
+      "heading": null,
+      "source_ids": [],
+      "note": "\"feeding much better on their own\" overstates the recorded 75% oral intake"
+    },
+    {
+      "dimension": "audience",
+      "heading": null,
+      "source_ids": [],
+      "note": "\"your child ... was not feeding\" grammar mismatch"
+    }
+  ],
+  "scored_by": "author (CSO), 2 Nov 2026 11:40, given in chat; written to file by Claude verbatim"
+}

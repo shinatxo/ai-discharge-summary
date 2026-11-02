@@ -4,19 +4,23 @@
     "0c142ff54a1adc5d": "acceptable",
     "1c2b73b6bac7a1a6": "defect",
     "1c7337818d16e789": "acceptable",
+    "27675537f101712f": "acceptable",
     "2b3da6b86177b304": "defect",
     "38c4a9dadd3d181d": "acceptable",
     "3952d17518bdfa9a": "acceptable",
     "5aaaf747a9590c0c": "acceptable",
     "609b267ae6c8880f": "acceptable",
+    "6fcdaf34fb3dcb40": "acceptable",
     "7a6b1df64ff43d9d": "acceptable",
     "7ed4b8118d943fef": "acceptable",
     "8021df9c2578e6ed": "acceptable",
     "81ead1a0bfeb1aaf": "defect",
     "90483c3ea1e5e5c3": "defect",
     "9325f4f146013c96": "acceptable",
+    "9e870fef350ed88c": "acceptable",
     "b7f712dc120ec56e": "acceptable",
     "c13f686d6f11d146": "acceptable",
+    "c43d75193d72d9f8": "acceptable",
     "d3dc996bae2e281d": "acceptable",
     "d815cac8ed8de7ef": "acceptable",
     "e83efa20698536df": "acceptable",
@@ -67,6 +71,68 @@
           "7ed4b8118d943fef",
           "8021df9c2578e6ed",
           "d815cac8ed8de7ef"
+        ]
+      }
+    },
+    "later": [
+      {
+        "by": "Shina Oguntoye (CSO)",
+        "on": "2026-11-02",
+        "source": "w6-pipeline-e09-m01-c02-p01-x5, step 6 (grouped and proposed by Claude, approved by the CSO - rulings R7-R8, 2 Nov 2026)",
+        "groups": {
+          "R7_medication": {
+            "verdict": "acceptable",
+            "reason": "a drug named from a fact the section cites (the R3/R5 standard); 6 name an in-hospital dose change (S1, B6 bisoprolol) - item 4 box-vs-prose carry-in, as R5",
+            "keys": [
+              "27675537f101712f",
+              "6fcdaf34fb3dcb40",
+              "9e870fef350ed88c",
+              "c43d75193d72d9f8"
+            ]
+          }
+        }
+      }
+    ]
+  },
+  "patient_rulings": {
+    "09215428656fc59a": "defect",
+    "20382cd763ba0002": "acceptable",
+    "24efd9640abc06c8": "acceptable",
+    "914ff5b4dd46bc5a": "acceptable",
+    "bd8601932ad6bf4d": "defect"
+  },
+  "patient_rulings_meta": {
+    "by": "Shina Oguntoye (CSO)",
+    "on": "2026-11-02",
+    "source": "w6-pipeline-e09-m01-c02-p01-x5, step 7 (grouped and proposed by Claude, approved by the CSO - rulings P1-P7, 2 Nov 2026)",
+    "groups": {
+      "P2_instruction_restated": {
+        "verdict": "acceptable",
+        "reason": "restates an instruction or plan its cited PART A section states, with the same force and scope (S18 driving/DVLA 6 months; S11 partial weight-bearing, follow-up; S9 education, phone support; GP to check INR / digoxin) - the round-2 bar-4 standard",
+        "keys": [
+          "20382cd763ba0002"
+        ]
+      },
+      "P4_invented_advice": {
+        "verdict": "defect",
+        "reason": "advice or an instruction its input does not state (S4 \"speak to your GP / health visitor if you have concerns\" x3; C7 and B6 \"Please make sure you attend\") - fails the bar-4 standard; carries no 111/999/A&E token, so the gate cannot see it (HAZ-01's stated blind spot)",
+        "keys": [
+          "09215428656fc59a"
+        ]
+      },
+      "P5_in_hospital_dose": {
+        "verdict": "acceptable",
+        "reason": "the cited PART A section gives the same drug and dose for an in-hospital treatment or change (B6 bisoprolol increased to 5mg OD; S17 2 units of blood) - the round-2 bar-5 standard",
+        "keys": [
+          "24efd9640abc06c8",
+          "914ff5b4dd46bc5a"
+        ]
+      },
+      "P7_drug_outside_input": {
+        "verdict": "defect",
+        "reason": "names a drug step 7 was not given (B6 r1 \"a water tablet (furosemide)\"; its input says only \"diuresis\")",
+        "keys": [
+          "bd8601932ad6bf4d"
         ]
       }
     }

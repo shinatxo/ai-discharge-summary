@@ -30,11 +30,30 @@ def batch(tmp_path):
 
 def test_items_are_the_fixed_eight():
     assert MS.ITEMS == ("S1", "S4", "S10", "S13", "S16", "A5", "S3", "C7")
-    assert MS.DIMENSIONS == ("added", "meaning", "withheld", "audience")
+    assert MS.DIMENSIONS == ("added", "meaning", "withheld", "omission", "audience")   # v2, F4
+    assert MS.SHEETS_VERSION == 2
+
+
+def test_v2_readme_defines_omission_with_the_by_design_exclusions():
+    r = MS.README
+    assert "**omission:**" in r and "all five are `pass`" in r
+    for x in ("risk scores", "ceilings", "risk_assessment", "allergies", "the two boxes"):
+        assert x in r.split("**omission:**", 1)[1]
+    assert "Judge disclosure\n  only here" in r
+
+
+V1 = ROOT / "evals" / "calibration" / "w6-pipeline-e09-m01-c02-p01-x5-patient-r1"
+
+
+@pytest.mark.skipif(not V1.exists(), reason="saved calibration folder not present")
+def test_a_v1_folder_still_checks_as_v1():
+    # piece 3's blind read (2 Nov, 0/8): four dimensions in its MANIFEST
+    assert MS.check(V1) == (8, 0, [])
 
 
 def test_build_writes_blind_sheets(batch, tmp_path):
     out = MS.build(batch, 1, tmp_path / "sheets")
+    assert json.loads((out / "MANIFEST.json").read_text())["dimensions"] == list(MS.DIMENSIONS)
     assert sorted(p.stem for p in (out / "sheets").glob("*.md")) == sorted(MS.ITEMS)
     sheet = (out / "sheets" / "C7.md").read_text()
     assert "## What step 7 was given" in sheet and "audience: adult" in sheet

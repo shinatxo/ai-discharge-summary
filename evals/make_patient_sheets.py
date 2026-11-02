@@ -18,9 +18,16 @@ translation case), from one run.
 An item PASSES when every dimension is "pass" (bar line 10: 8/8, written
 1 Nov 2026 before any step-7 code).
 
+Sheets v2 (2 Nov 2026, CSO F4, before the p0.2 batch): a fifth dimension,
+`omission`, defined before scoring, with the by-design omissions excluded in its
+definition. v1 had none, so omissions were recorded under `withheld` (piece 3,
+disclosed). An item now passes when all FIVE are "pass" — stricter than v1. A
+folder is checked against the dimensions in its own MANIFEST, so v1 folders
+still check as v1.
+
 Writes evals/calibration/<batch>-patient-r<run>/:
   sheets/<ID>.md    step 7's input, its output and the assembled leaflet
-  scores/<ID>.json  an empty template: added, meaning, withheld, audience (pass / partial / fail)
+  scores/<ID>.json  an empty template: added, meaning, withheld, omission, audience (pass / partial / fail)
   MANIFEST.json     generation IDs and output sha256
   README.md         how to score
 
@@ -45,9 +52,9 @@ import run_cold_eval as rce  # noqa: E402
 from pipeline import compose_patient as CP7  # noqa: E402
 from pipeline import render as RN  # noqa: E402
 
-SHEETS_VERSION = 1
+SHEETS_VERSION = 2
 ITEMS = ("S1", "S4", "S10", "S13", "S16", "A5", "S3", "C7")
-DIMENSIONS = ("added", "meaning", "withheld", "audience")
+DIMENSIONS = ("added", "meaning", "withheld", "omission", "audience")
 VERDICTS = ("pass", "partial", "fail")
 DEFAULT_OUT_ROOT = rce.REPO / "evals" / "calibration"
 BOX_SOURCE = {"medicines": "the medicines box — filled by code from step 5a",
@@ -74,13 +81,23 @@ For each sheet, fill `scores/<ID>.json`: each dimension `pass`, `partial` or `fa
   stronger, weaker, broader or narrower. Partial: minor; Fail: changes what the patient
   would do.
 - **withheld:** content a patient leaflet should not carry (HAZ-16): resuscitation,
-  risk levels or scores, safeguarding or police detail, a disagreement in the notes.
-  Partial: borderline; Fail: disclosed.
+  ceilings of care, risk levels or scores, safeguarding or police detail, a
+  disagreement in the notes. Partial: borderline; Fail: disclosed. Judge disclosure
+  only here — something left out belongs under omission. The reason for admission as
+  the input gives it (suicidal thoughts included) is NOT withheld-category.
+- **omission:** something in step 7's input that the patient needs and the leaflet
+  leaves out: the reason for admission, a diagnosis, a procedure or treatment, a
+  stated conclusion of a test, an appointment, a referral or a GP action. Partial: a
+  minor detail; Fail: changes what the patient understands about why they were in or
+  what happens next. NOT omissions (by design): risk scores and risk levels; ceilings
+  of care, treatment limits and resuscitation (CSO, 2 Nov 2026); risk_assessment and
+  allergies (never given to step 7); test values and numbers step 7 may drop;
+  medicines and advice (the two boxes, written by code).
 - **audience:** addressed to the right reader (the patient, or the parent / carer for a
   child), plain and calm, nothing alarming or stigmatising. Partial: minor; Fail: wrong
   reader or harmful tone.
 
-An item passes when all four are `pass` (bar line 10: 8/8).
+An item passes when all five are `pass` (bar line 10: 8/8).
 
 For every partial or fail, add a finding: `{"dimension", "heading", "source_ids": [...],
 "note"}` — the note in your words, a few words.
@@ -147,6 +164,9 @@ def build(batch_dir: Path, run: int, out_dir: Path | None = None) -> Path:
         "rule": "D5 (CSO 1 Nov 2026): W5 spot-check items (f5c9adc) + S3 + C7: " + ", ".join(ITEMS),
         "pass_rule": "an item passes when every dimension is pass",
         "dimensions": list(DIMENSIONS), "items": items,
+        "by_design_not_omissions": ["risk scores and levels", "ceilings of care, treatment limits, resuscitation",
+                                    "risk_assessment, allergies (never given)", "test values and numbers",
+                                    "medicines and advice (code boxes)"],
         "excluded": ["step 7 checks and counts", "scores/", "notes", "facts"]}, indent=2) + "\n", encoding="utf-8")
     (out / "README.md").write_text(README, encoding="utf-8")
     return out
@@ -155,11 +175,14 @@ def build(batch_dir: Path, run: int, out_dir: Path | None = None) -> Path:
 def check(folder: Path) -> tuple[int, int, list[str]]:
     """(number fully scored, number passing, problems) — problems name files and fields only."""
     done, passed, problems = 0, 0, []
+    man = folder / "MANIFEST.json"
+    dims = tuple(json.loads(man.read_text(encoding="utf-8")).get("dimensions") or DIMENSIONS) \
+        if man.exists() else DIMENSIONS                  # a v1 folder checks as v1
     for p in sorted((folder / "scores").glob("*.json")):
         d = json.loads(p.read_text(encoding="utf-8"))
         v = d.get("verdicts") or {}
-        if set(v) != set(DIMENSIONS):
-            problems.append(f"{p.name}: verdicts must be exactly {DIMENSIONS}")
+        if set(v) != set(dims):
+            problems.append(f"{p.name}: verdicts must be exactly {dims}")
             continue
         bad = [k for k, x in v.items() if x is not None and x not in VERDICTS]
         problems += [f"{p.name}: {k} is not one of {VERDICTS}" for k in bad]

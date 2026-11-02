@@ -27,13 +27,24 @@ Decisions of 1 Nov 2026 (step build piece 3; CSO, all as recommended):
   - R3: an instruction PART A reports may be passed on as what the team said,
     same force and limits — flagged here (`advice_shaped`), ruled by the CSO.
 
+Decisions of 2 Nov 2026 (piece 3 follow-up; CSO, all as recommended):
+  - F1: the step REFUSES (`no_sections_given`, before any Bedrock call) when it is
+    given neither a presenting_complaint nor a diagnosis section: why_in_hospital
+    is always required and cannot be written honestly without one (S12 r5, 1 Nov:
+    step 6 returned 2 sections, step 7 was given none and wrote an unsourced
+    sentence that raised no check). The orchestrator (item 5) is to fail the job on
+    any step-6 required_heading_missing before step 7 is reached;
+  - F2: `prose_without_source` — a prose section citing no section it was given;
+  - F5: `promise_shaped` — a service / availability / visit wording, flagged for
+    the record (report only, no bar), CSO-ruled.
+
 run_step("compose_patient", {"audience": ..., "sections": [...]}, ctx=StepContext(...)):
   in:  {"audience": "adult" | "parent_or_carer",
         "sections": [{"section_id", "heading", "text"}]}   (patient_input() builds it)
   out: {"sections": [{section_id, heading, source_ids, text}],
         "checks": [{check, heading, source_id, token}],
         "counts": {...}, "audience", "call": {...}}
-Fails closed with a fixed code: bad_input, no_client (registry), max_tokens,
+Fails closed with a fixed code: bad_input, no_sections_given, no_client (registry), max_tokens,
 unexpected_stop_reason, no_tool_call, patient_version_not_object,
 patient_version_shape_invalid, throttled, read_timeout, request_rejected,
 request_invalid, bedrock_error.
@@ -99,12 +110,15 @@ SOURCES = {"what_we_did": ("key_investigations", "treatment"),
 ALWAYS = ("why_in_hospital", "medicines", "safety_net")
 # Given sections whose every appointment must reach C (bar line 9).
 MUST_REACH_C = ("follow_up", "gp_actions")
+# F1 (2 Nov): at least one of these must be given, or the step refuses.
+REASON_HEADINGS = ("presenting_complaint", "diagnosis")
 
 CHECKS = (
     "heading_repeated", "heading_out_of_order", "required_heading_missing", "heading_without_source",
     "box_not_exact", "stray_placeholder", "unknown_source_id", "follow_up_missing", "source_unused",
     "signpost_outside_box", "resus_text", "year_added", "not_documented_text",
     "advice_shaped", "dose_or_frequency", "number_added", "unit_added", "conflict_text", "sensitive_text",
+    "prose_without_source", "promise_shaped",
 )
 
 _PLACEHOLDER = re.compile(r"\{\{[^{}]*\}\}")
@@ -140,6 +154,14 @@ _SENSITIVE = re.compile(
     r"safeguard\w*|social services|social worker|\bpolice\b|self[- ]harm|overdose|suicid\w*|"
     r"risk (?:score|level|assessment|rating)|ceiling of care|escalat\w*|palliat\w*|end of life|"
     r"\bNEWS2?\b|\bPHQ-?9\b|\bGAD-?7\b",
+    re.IGNORECASE)
+# F5 (2 Nov): a service, availability or visit the input may not state (S4 "will be
+# there", S10 a home visit, S12 r5 "will be able to tell you"). Report only; broad on
+# purpose — "the team will be in touch" is acceptable when follow_up says so.
+_PROMISE = re.compile(
+    r"\bwill be (?:there|available|able to|on hand|around|in touch)\b|\bavailable\b|"
+    r"\b(?:there|here) for you\b|\bvisits?\b|\bvisit(?:ed|ing)? you\b|\bcome (?:and|to) see you\b|"
+    r"\bcheck on you\b|\blook after you\b|\bkeep an eye on\b|\bsupport you\b|\bfollow you up\b",
     re.IGNORECASE)
 _NUMBER = re.compile(r"(?<![\w.])\d+(?:\.\d+)?(?![\w.]*\d)")
 _UNIT = re.compile(
@@ -211,6 +233,8 @@ def _check_input(inp) -> dict:
                 or not _SECTION_ID.fullmatch(s["section_id"]) or s["section_id"] in ids):
             raise StepError("bad_input")
         ids.add(s["section_id"])
+    if not {s["heading"] for s in secs} & set(REASON_HEADINGS):
+        raise StepError("no_sections_given")       # F1: nothing to say why the patient was in
     return inp
 
 
@@ -270,6 +294,8 @@ def check_patient_version(wire: dict, inp: dict) -> tuple[list[dict], list[dict]
         else:
             if heading in SOURCES and not (given_headings & set(SOURCES[heading])):
                 flag("heading_without_source", heading)
+            if not set(ids) & set(given):
+                flag("prose_without_source", heading)          # F2: no given section behind it
             if _PLACEHOLDER.search(text):
                 flag("stray_placeholder", heading)
             if _NOT_DOCUMENTED.search(text):
@@ -291,6 +317,8 @@ def check_patient_version(wire: dict, inp: dict) -> tuple[list[dict], list[dict]
                     flag("conflict_text", heading)
                 if _SENSITIVE.search(sent):
                     flag("sensitive_text", heading)
+                if _PROMISE.search(sent):
+                    flag("promise_shaped", heading)
             for n in sorted(numbers(text) - src_numbers):
                 if not added_years(input_years, n):          # a year is year_added's job
                     flag("number_added", heading, token=n)

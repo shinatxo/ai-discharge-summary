@@ -40,6 +40,18 @@ leaflet a clinician would see:
                               SAFETY_NET.md, MEDS.md, STEP2_ADVICE.md, COMPOSE_CLINICAL.md
   12 latency                  0 generations where step 7 would start after 200 s
                               (step 2 + max(5a, 6)); full critical path vs 270 s reported
+  13 sourceless prose         0 step-7 prose sections citing no section step 7 was given
+                              (code decides; computed here from the sections, not from
+                              the step's own check, so older batches are measured too)
+
+Metric v2 (2 Nov 2026, piece 3 follow-up, CSO F1-F5; committed before any p0.2 live
+call). Lines 1-12 are unchanged. Added: line 13 (F2); a report-only `promise` review
+kind (F5: service / availability / visit wording — ruled for the record, no bar); the
+`no_sections_given` refusals counted (F1 — a refusal is a step-7 failure, so line 1
+counts it, as written 1 Nov); and the written scope of line 9's sensitive standard
+(F3, before the batch): the reason for admission stated as step 7's input gives it —
+suicidal thoughts included — is NOT withheld-category; withheld-category is risk levels
+and scores, safeguarding, police, ceilings of care and resuscitation.
 
 A generation whose C cannot be assembled (5a or 5b missing) fails every line that
 needs the assembled leaflet (3, 8, 9's title, 11) — never a pass.
@@ -69,7 +81,7 @@ import score_compose as SC  # noqa: E402
 from pipeline import compose_patient as CP7  # noqa: E402
 from pipeline import render as RN  # noqa: E402
 
-METRIC_VERSION = 1
+METRIC_VERSION = 2
 # Pre-declared from the scenario files (adversarial-scenarios.md C7: Polish-speaking,
 # interpreter used): the one scenario of the 18 whose notes record a language need.
 TRANSLATION_SCENARIOS = ("C7",)
@@ -77,8 +89,10 @@ DEADLINE_WATCH_S = 200      # 270 s − step 7's 60 s read timeout − 10 s (ADR
 DEADLINE_S = 270
 RULINGS = ("acceptable", "defect")
 # Review kind -> bar line.
-REVIEW_KINDS = ("advice", "medication", "drug", "number", "unit", "conflict", "sensitive")
-BAR_OF = {"advice": 4, "medication": 5, "drug": 5, "number": 6, "unit": 6, "conflict": 9, "sensitive": 9}
+REVIEW_KINDS = ("advice", "medication", "drug", "number", "unit", "conflict", "sensitive", "promise")
+BAR_OF = {"advice": 4, "medication": 5, "drug": 5, "number": 6, "unit": 6, "conflict": 9, "sensitive": 9,
+          "promise": None}                    # F5: report only
+REFUSED = "no_sections_given"                 # F1
 STRUCTURE = ("box_not_exact", "stray_placeholder")
 _SENTENCE = re.compile(r"(?<=[.!?])\s+|\n+")
 
@@ -132,11 +146,20 @@ def review_items(rec: dict) -> list[dict]:
                 found.append(("conflict", None))
             if CP7._SENSITIVE.search(sent):
                 found.append(("sensitive", None))
+            if CP7._PROMISE.search(sent):
+                found.append(("promise", None))
             for kind, token in found:
                 items.append({"kind": kind, "heading": s["heading"], "token": token,
                               "key": _key(kind + (f":{token}" if token else ""), s["heading"], sent),
                               "sentence": sent})
     return items
+
+
+def sourceless(rec: dict) -> list[str]:
+    """Headings of step-7 prose sections that cite no section step 7 was given (line 13)."""
+    given = {s["section_id"] for s in given_input(rec)["sections"]}
+    return [s["heading"] for s in rec["steps"]["compose_patient"]["sections"]
+            if s["heading"] not in CP7.BOXES and not set(s["source_ids"]) & given]
 
 
 def part_a_for_gate(rec: dict) -> str:
@@ -197,7 +220,7 @@ def score_record(rec: dict, notes: str, gold: dict, rulings: dict) -> dict:
            "checks": checks, "counts": step7["counts"], "box_problems": box_problems,
            "fk_prose": fk, "d5_prose": RA.d5_verdict(fk),
            "years_vs_notes": [f["token"] for f in RC.added_years(notes, text, {})],
-           "review": review, "latency": _latency(rec),
+           "review": review, "latency": _latency(rec), "sourceless": sourceless(rec),
            "audience": step7["audience"], "expected_audience": expected_audience,
            "risk_sections_in_a": sum(1 for s in steps["compose_clinical"]["sections"]
                                      if s["part"] == "part_a" and s["heading"] == "risk_assessment"),
@@ -277,9 +300,12 @@ def summarise(results: list[dict], skipped: list[dict], n_records: int) -> dict:
         "risk_sections_in_a": sum(r["risk_sections_in_a"] for r in results),
         "unverified_sources": sum(r["unverified_sources"] for r in results),
         "review": {k: review(k) for k in REVIEW_KINDS},
+        "prose_without_source": sum(len(r["sourceless"]) for r in results),
+        "refused_no_sections": sum(1 for s in skipped if s.get("error_code") == REFUSED),
         "other_checks": {k: tot(k) for k in CP7.CHECKS
                          if k not in ("unknown_source_id", "signpost_outside_box", "resus_text", "year_added",
-                                      "not_documented_text", "follow_up_missing")},
+                                      "not_documented_text", "follow_up_missing",
+                                      "prose_without_source", "promise_shaped")},   # v2: scored here
         "words_prose_p50": _q([r["counts"]["words_prose"] for r in results], 0.5),
         "latency": {"step7_p50": _q(s7, 0.5), "step7_max": max(s7, default=None),
                     "start7_max": max(starts, default=None),
@@ -292,7 +318,7 @@ def summarise(results: list[dict], skipped: list[dict], n_records: int) -> dict:
 
 
 def bar(sm: dict) -> list[tuple[str, str, str]]:
-    """(bar line, result, verdict) for bar lines 1-9, 11, 12 — the pre-declared bar, frozen."""
+    """(bar line, result, verdict) for bar lines 1-9, 11, 12 (frozen 1 Nov) and 13 (v2, 2 Nov)."""
     n = sm["n_records"]
     full = sm["n_scored"] == n
     asm_full = sm["n_assembled"] == n
@@ -348,6 +374,8 @@ def bar(sm: dict) -> list[tuple[str, str, str]]:
         ("12 Generations where step 7 would start after the 200 s watch line",
          f"{lat['start7_over_watch']} (start max {lat['start7_max']} s; full path max {lat['critical_max']} s "
          f"vs {lat['deadline_s']} s)", met(full and lat["start7_over_watch"] == 0)),
+        ("13 Step-7 prose sections citing no section step 7 was given (code)",
+         f"{sm['prose_without_source']}", met(full and sm["prose_without_source"] == 0)),
     ]
 
 
@@ -376,7 +404,11 @@ def write_reports(out: Path, scored: dict, batch_dir: Path) -> None:
               f"| Years vs the notes in step-7 prose (rubric D2) | {sm['years_vs_notes']} |",
               f"| PART A risk_assessment sections not given to step 7 (by construction) | {sm['risk_sections_in_a']} |",
               f"| C sections drawing on an A section with unverified facts (8b's warning) | {sm['unverified_sources']} |",
-              f"| Words of step-7 prose, p50 | {sm['words_prose_p50']} |"]
+              f"| Words of step-7 prose, p50 | {sm['words_prose_p50']} |",
+              f"| Step 7 refused: `{REFUSED}` (F1; counted as not reached in line 1) | {sm['refused_no_sections']} |",
+              f"| Promise wording (F5; report only, CSO-ruled for the record) | "
+              f"flagged {sm['review']['promise']['flagged']}, defects {sm['review']['promise']['defect']}, "
+              f"pending {sm['review']['promise']['pending']} |"]
     lines += [f"| Check `{k}` | {v} |" for k, v in sm["other_checks"].items()]
     lines += ["", "## Latency (270 s deadline watch)", "", "| Measure | p50 | max |", "| --- | --- | --- |",
               f"| Step 7 | {fmt(lat['step7_p50'])} | {fmt(lat['step7_max'])} |",
@@ -389,8 +421,8 @@ def write_reports(out: Path, scored: dict, batch_dir: Path) -> None:
         lines += [f"- `{s['generation_id']}`: {s['error_code']}" for s in sm["skipped"]] + [""]
     res = pv["results"]
     lines += ["## Per scenario", "", "| Scenario | Scored | Box problems | FK prose (max) | Gate pass | Header | "
-              "Review flags (advice / meds+drug / number+unit / conflict+sensitive) |",
-              "| --- | --- | --- | --- | --- | --- | --- |"]
+              "Review flags (advice / meds+drug / number+unit / conflict+sensitive) | Promise (no bar) |",
+              "| --- | --- | --- | --- | --- | --- | --- | --- |"]
     for sid in dict.fromkeys(r["scenario_id"] for r in res):
         rows = [r for r in res if r["scenario_id"] == sid]
         rk = lambda *k: sum(1 for r in rows for x in r["review"] if x["kind"] in k)  # noqa: E731
@@ -399,7 +431,7 @@ def write_reports(out: Path, scored: dict, batch_dir: Path) -> None:
                      f"{sum(1 for r in rows if r['gate'] and r['gate']['ok'])} | "
                      f"{sum(1 for r in rows if r['header'] and r['header']['present'])} | "
                      f"{rk('advice')} / {rk('medication', 'drug')} / {rk('number', 'unit')} / "
-                     f"{rk('conflict', 'sensitive')} |")
+                     f"{rk('conflict', 'sensitive')} | {rk('promise')} |")
     (out / "PATIENT_VERSION.md").write_text("\n".join(lines) + "\n", encoding="utf-8")
 
     pending: dict[tuple[str, str], dict] = {}
@@ -416,11 +448,16 @@ def write_reports(out: Path, scored: dict, batch_dir: Path) -> None:
           "section gives the same drug or dose for an in-hospital treatment, defect if it tells the patient "
           "what to take at home; **number / unit** — acceptable if the value is in the cited A section in "
           "another form; **conflict / sensitive** — acceptable only if it discloses no disagreement in the "
-          "notes and no withheld-category detail. Store rulings in `evals/gold/adjudications/<ID>.json` under "
+          "notes and no withheld-category detail (scope written 2 Nov 2026, before the p0.2 batch: the reason "
+          "for admission as step 7's input gives it, suicidal thoughts included, is not withheld-category; "
+          "withheld-category is risk levels and scores, safeguarding, police, ceilings of care and "
+          "resuscitation); **promise** (report only, no bar) — acceptable only if its cited PART A section "
+          "states the service, visit or availability. Store rulings in `evals/gold/adjudications/<ID>.json` under "
           "`patient_rulings` as `{key: ruling}`.", ""]
     for (sid, key), e in sorted(pending.items()):
         tok = f" `{e['token']}`" if e["token"] else ""
-        rv.append(f"- **{sid}** `{key}` {e['kind']}{tok} (bar {BAR_OF[e['kind']]}) · {e['heading']} "
+        bar_txt = f"bar {BAR_OF[e['kind']]}" if BAR_OF[e["kind"]] else "no bar"
+        rv.append(f"- **{sid}** `{key}` {e['kind']}{tok} ({bar_txt}) · {e['heading']} "
                   f"(runs {', '.join(map(str, e['runs']))}) · ruling: {e['ruling'] or 'PENDING'}: {e['sentence']}")
     if not pending:
         rv.append("Nothing to rule on.")

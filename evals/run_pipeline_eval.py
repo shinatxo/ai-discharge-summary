@@ -83,11 +83,17 @@ MODEL_STEPS = {"extract_facts": extract, "reconcile_medications": reconcile,
                "compose_clinical": compose, "compose_patient": compose_patient}
 
 
+DRY_REASON = "Dry run: no facts."      # the dry composition's one PART A prose line (F1)
+
+
 class DryRunBedrock:
     """Schema-valid, all-'not_documented' facts, an empty reconciliation and a
     composition with every required section ("Not documented" and the three
-    boxes) — zero step-6 checks on the dry-run facts. Accepts (and ignores) a
-    read timeout, like live_client."""
+    boxes) except PART A presenting_complaint, which carries a fixed dry-run line so
+    step 7 is given a section and runs (2 Nov 2026: step 7 refuses with
+    no_sections_given when given neither a presenting_complaint nor a diagnosis —
+    F1). Cost: one step-6 check (not_documented_with_content) per dry generation.
+    Accepts (and ignores) a read timeout, like live_client."""
 
     def __init__(self, read_timeout=None):
         self.read_timeout = read_timeout
@@ -116,16 +122,18 @@ class DryRunBedrock:
             # Fixed 1 Nov 2026: the fake wrote B's wording in A too (1 check per dry generation).
             b_gp = part == "part_b" and heading == "gp_actions"
             text = compose.BOXES.get(heading, "Admitted; no facts documented." if heading == "opening"
-                                     else "No GP actions documented." if b_gp else "Not documented")
+                                     else "No GP actions documented." if b_gp
+                                     else DRY_REASON if (part, heading) == ("part_a", "presenting_complaint")
+                                     else "Not documented")
             return {"part": part, "heading": heading, "fact_ids": [], "text": text}
         return ([sec("part_a", h) for h in compose.A_REQUIRED]
                 + [sec("part_b", h) for h in compose.B_REQUIRED])
 
     @staticmethod
     def patient_version():
-        # The dry composition's PART A is all "Not documented", so step 7 is given no
-        # sections: why_in_hospital (no source) and the two boxes — zero step-7 checks.
-        return [{"heading": "why_in_hospital", "source_ids": [], "text": "You were in hospital."},
+        # The dry composition's PART A gives step 7 one section, presenting_complaint
+        # (sections.0): why_in_hospital cites it, then the two boxes — zero step-7 checks.
+        return [{"heading": "why_in_hospital", "source_ids": ["sections.0"], "text": "You were in hospital."},
                 {"heading": "medicines", "source_ids": [], "text": compose_patient.BOXES["medicines"]},
                 {"heading": "safety_net", "source_ids": [], "text": compose_patient.BOXES["safety_net"]}]
 

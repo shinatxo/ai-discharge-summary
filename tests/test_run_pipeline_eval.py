@@ -226,7 +226,29 @@ def test_step_7_gets_only_part_a_prose(tmp_path):
             return super().converse(**kw)
     rpe.main(["C7", "--batch", "p", "--yes"], client_factory=Spy, now=lambda: QUIET,
              runs_dir=tmp_path, sleep=lambda _s: None)
-    assert seen == ["audience: adult\n\nPART A SECTIONS\nnone"]
+    assert seen == ["audience: adult\n\nPART A SECTIONS\n\n[sections.0] presenting_complaint\n"
+                    + rpe.DRY_REASON]
+
+
+class _SixShort(rpe.DryRunBedrock):
+    """S12 r5 (1 Nov): step 6 returns follow_up only, stop tool_use."""
+    @staticmethod
+    def composition():
+        return [{"part": "part_a", "heading": "follow_up", "fact_ids": [], "text": "Not documented"},
+                {"part": "part_b", "heading": "follow_up", "fact_ids": [], "text": ""}]
+
+
+def test_a_short_step_6_makes_step_7_refuse_and_the_scorer_count_it(tmp_path):
+    rpe.main(["S1", "--batch", "p", "--yes"], client_factory=_SixShort, now=lambda: QUIET,
+             runs_dir=tmp_path, sleep=lambda _s: None)
+    rec = json.loads((tmp_path / "p" / "r1" / "S1.json").read_text())
+    assert rec["step_errors"] == {"compose_patient": "no_sections_given"}
+    assert "compose_patient" not in rec["steps"] and "compose_clinical" in rec["steps"]
+    assert SB.main([str(tmp_path / "p")]) == 0
+    pv = json.loads((tmp_path / "p" / "scores" / "patient_version.json").read_text())["summary"]
+    assert pv["n_scored"] == 0 and pv["refused_no_sections"] == 1
+    assert "| 1 Reached step 7 (schema accepted; a failure counts as a fail everywhere) | 0/1 | **NOT MET** |" \
+        in (tmp_path / "p" / "scores" / "PATIENT_VERSION.md").read_text()
 
 
 def test_console_never_shows_step_7_checks(tmp_path, capsys):

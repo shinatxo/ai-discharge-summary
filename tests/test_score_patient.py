@@ -90,7 +90,7 @@ def _with(heading, text=None, ids=None):
 def test_a_good_record_meets_every_line():
     b, sm = bar_of([score(record())])
     assert {k: v for k, (_r, v) in b.items()} == {k: "MET" for k in ("1", "2", "3", "4", "5", "6", "7", "8", "9",
-                                                                      "11", "12")}
+                                                                      "11", "12", "13")}
     assert sm["gate"]["pass"] == 1 and sm["haz03_c"] == 1 and sm["title_ok"] == 1
 
 
@@ -220,4 +220,52 @@ def test_review_file_quotes_and_report_files(tmp_path):
 
 
 def test_translation_scenarios_are_pre_declared():
-    assert SP.TRANSLATION_SCENARIOS == ("C7",) and SP.METRIC_VERSION == 1
+    assert SP.TRANSLATION_SCENARIOS == ("C7",) and SP.METRIC_VERSION == 2
+
+
+# --- metric v2 (2 Nov 2026, F1-F5): line 13, promise (report only), refusals ------
+
+def test_line_13_sourceless_prose_decides():
+    b, sm = bar_of([score(record(_with("why_in_hospital", ids=[])))])
+    assert b["13"] == ("1", "NOT MET") and sm["prose_without_source"] == 1
+    b, _ = bar_of([score(record(_with("why_in_hospital", ids=["sections.77"])))])
+    assert b["13"][1] == "NOT MET"                    # an unknown id is not a given source
+
+
+def test_line_13_is_computed_from_the_sections_not_the_steps_check():
+    # an older record (p0.1, before the check existed) is measured too
+    rec = record(_with("why_in_hospital", ids=[]))
+    rec["steps"]["compose_patient"]["checks"] = []
+    assert bar_of([score(rec)])[0]["13"][1] == "NOT MET"
+
+
+def test_promise_is_flagged_but_moves_no_bar_line():
+    rec = record(_with("next_steps", "A nurse will visit you at home. You will see the heart team in 6 weeks."))
+    r = score(rec)
+    keys = [x["key"] for x in r["review"] if x["kind"] == "promise"]
+    assert len(keys) == 1
+    b, sm = bar_of([r])
+    assert all(v == "MET" for _r, v in b.values()) and sm["review"]["promise"]["pending"] == 1
+    r = score(rec, rulings={keys[0]: "defect"})
+    b, sm = bar_of([r])
+    assert all(v == "MET" for _r, v in b.values()) and sm["review"]["promise"]["defect"] == 1
+
+
+def test_refusals_are_counted_and_line_1_counts_them_as_not_reached():
+    sm = SP.summarise([score(record())], [{"generation_id": "b/r1/S12", "error_code": SP.REFUSED}], 2)
+    assert sm["refused_no_sections"] == 1
+    assert dict((ln.split(" ", 1)[0], v) for ln, _r, v in SP.bar(sm))["1"] == "NOT MET"
+
+
+def test_review_file_marks_promise_as_no_bar_and_states_the_sensitive_scope(tmp_path):
+    rec = record(_with("next_steps", "A nurse will visit you at home. You will see the heart team in 6 weeks."))
+    (tmp_path / "r1").mkdir()
+    (tmp_path / "r1" / "S1.json").write_text(json.dumps(rec))
+    res = [score(rec)]
+    scored = {"batch_id": "b", "patient": {"metric": "compose_patient", "metric_version": SP.METRIC_VERSION,
+                                           "results": res, "summary": SP.summarise(res, [], 1)}}
+    SP.write_reports(tmp_path, scored, tmp_path)
+    rv = (tmp_path / "review_patient.md").read_text()
+    assert "promise (no bar)" in rv and "suicidal thoughts included, is not withheld-category" in rv
+    pv = (tmp_path / "PATIENT_VERSION.md").read_text()
+    assert "| 13 Step-7 prose sections" in pv and "no_sections_given" in pv

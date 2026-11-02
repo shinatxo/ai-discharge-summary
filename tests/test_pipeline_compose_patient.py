@@ -200,6 +200,29 @@ def test_prompt_names_both_boxes_every_heading_and_no_resus_box():
     assert "`record_patient_version`" in text
 
 
+def test_p02_examples_are_clear_of_the_scenarios():
+    # p0.1's examples mirrored scenario content (furosemide - B6 r1 copied it; NSTEMI - S1;
+    # driving - S14/S18). p0.2's examples must appear in none of the scenario files.
+    text, _ = P.system_prompt()
+    for old in ("furosemide", "NSTEMI", "drive"):
+        assert old not in text
+    scenarios = "\n".join(p.read_text(encoding="utf-8").lower()
+                          for p in (ROOT / "evals" / "scenarios").glob("*.md"))
+    for example in ("flucloxacillin", "cholelithiasis", "the swelling is smaller", "rest your foot",
+                    "an antibiotic"):
+        assert example in text.lower() and example not in scenarios
+
+
+def test_p02_rules_are_in_the_prompt():
+    text = " ".join(P.system_prompt()[0].split())          # rules may wrap across lines
+    for rule in ("KEEP THE MEANING EXACTLY", "WHY YOU WERE IN HOSPITAL", "Never leave the reason out",
+                 "if you have any concerns", "please make sure", "never supply a medicine's name",
+                 "Most sentences 10 words or fewer; none over 15", "Every sentence you write must come",
+                 "Do not mention risk scores or ceilings of care"):
+        assert rule in text
+    assert "[W" not in text and "Do not alarm" not in text
+
+
 def test_prompt_says_never_translate_is_codes_job_and_writes_english():
     # D3 T1: the step is not told about translation at all
     text, _ = P.system_prompt()
@@ -297,12 +320,51 @@ def test_good_output_has_no_checks_and_the_output_shape():
     assert c["prompt_sha256"] == P.system_prompt()[1] and c["attempts"] == 1 and c["latency_ms"] == 9000
 
 
-def test_empty_input_runs():
-    out = _run(payload={"sections": [_s("why_in_hospital", [], "You were in hospital."),
+# --- F1 (2 Nov 2026): refuse when nothing says why the patient was in -------------
+
+@pytest.mark.parametrize("sections", [
+    [],                                                                  # S12 r5 (1 Nov): given nothing
+    [{"section_id": "sections.9", "heading": "follow_up", "text": "Clinic in 6 weeks."}],
+    [{"section_id": "sections.2", "heading": "key_investigations", "text": "Troponin raised."},
+     {"section_id": "sections.14", "heading": "gp_actions", "text": "Check U&E."}],
+])
+def test_no_presenting_complaint_or_diagnosis_is_refused_before_any_call(sections):
+    fake = FakeBedrock()
+    with pytest.raises(StepError) as exc:
+        _run(inp={"audience": "adult", "sections": sections}, fake=fake)
+    assert exc.value.code == "no_sections_given" and fake.requests == []
+
+
+@pytest.mark.parametrize("heading", P.REASON_HEADINGS)
+def test_either_reason_heading_alone_is_enough(heading):
+    out = _run(payload={"sections": [_s("why_in_hospital", ["sections.0"], "You came in with chest pain."),
                                      _s("medicines", [], "{{MEDICATIONS}}"),
                                      _s("safety_net", [], "{{SAFETY_NET}}")]},
-               inp={"audience": "adult", "sections": []})
+               inp={"audience": "adult", "sections": [
+                   {"section_id": "sections.0", "heading": heading, "text": "Central chest pain."}]})
     assert out["checks"] == []
+
+
+def test_refusal_code_is_documented():
+    assert "no_sections_given" in P.__doc__ and P.REASON_HEADINGS == ("presenting_complaint", "diagnosis")
+
+
+# --- F2 / F5 (2 Nov 2026) ---------------------------------------------------------
+
+def test_prose_without_a_given_source_is_flagged():
+    out = _run(_with("why_in_hospital", ids=[]))
+    assert ("prose_without_source", "why_in_hospital", None, None) in _checks(out)
+    out = _run(_with("why_in_hospital", ids=["sections.99"]))
+    assert {"prose_without_source", "unknown_source_id"} <= _names(out)
+    assert "prose_without_source" not in _names(_run())                 # boxes never count
+
+
+@pytest.mark.parametrize("text", [
+    "A nurse will visit you at home.", "Your GP will be there if you need them.",
+    "The team will be able to tell you more.", "Phone support is available.",
+])
+def test_promise_wording_is_flagged(text):
+    assert ("promise_shaped", "next_steps", None, None) in _checks(_run(_with("next_steps", text)))
 
 
 # --- checks (flag, never repair) ---------------------------------------------------

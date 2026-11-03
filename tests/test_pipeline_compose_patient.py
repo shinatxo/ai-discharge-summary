@@ -23,6 +23,7 @@ sys.path.insert(0, str(ROOT / "evals"))
 from pipeline import STEPS, StepContext, StepError, run_step  # noqa: E402
 from pipeline import compose as C6  # noqa: E402
 from pipeline import compose_patient as P  # noqa: E402
+from pipeline import meaning as MN  # noqa: E402
 from pipeline.retrieve import _RESUS_PATTERNS  # noqa: E402
 from pipeline.schemas import PATIENT_HEADINGS, record_patient_version_schema, shape_errors  # noqa: E402
 from test_pipeline_schema import limit_violations  # noqa: E402
@@ -200,7 +201,7 @@ def test_prompt_names_both_boxes_every_heading_and_no_resus_box():
     assert "`record_patient_version`" in text
 
 
-def test_p02_examples_are_clear_of_the_scenarios():
+def test_p02_and_p03_examples_are_clear_of_the_scenarios():
     # p0.1's examples mirrored scenario content (furosemide - B6 r1 copied it; NSTEMI - S1;
     # driving - S14/S18). p0.2's examples must appear in none of the scenario files.
     text, _ = P.system_prompt()
@@ -209,8 +210,14 @@ def test_p02_examples_are_clear_of_the_scenarios():
     scenarios = "\n".join(p.read_text(encoding="utf-8").lower()
                           for p in (ROOT / "evals" / "scenarios").glob("*.md"))
     for example in ("flucloxacillin", "cholelithiasis", "the swelling is smaller", "rest your foot",
-                    "an antibiotic"):
-        assert example in text.lower() and example not in scenarios
+                    "an antibiotic",
+                    # p0.3 (3 Nov, G1): grep-checked against the scenario files before review
+                    "cystoscopy", "a camera test of the bladder", "mobility improving",
+                    "your walking is getting better", "walking normally", "gout", "kidney stones",
+                    "no clot", "the scan showed no clot", "your legs are healthy", "carefully", "closely",
+                    "gently", "the team treated you for"):
+        assert example in " ".join(text.lower().split()) and example not in scenarios   # may wrap
+    assert "treat as" not in text.lower()          # S12's own wording, kept out (G1.2)
 
 
 def test_p02_rules_are_in_the_prompt():
@@ -221,6 +228,46 @@ def test_p02_rules_are_in_the_prompt():
                  "Do not mention risk scores or ceilings of care"):
         assert rule in text
     assert "[W" not in text and "Do not alarm" not in text
+
+
+def test_p03_rules_are_in_the_prompt():
+    text = " ".join(P.system_prompt()[0].split())
+    for rule in ("keep the section's name for it", "Never call it a different test, sample or procedure",
+                 "Keep words about change and time at the same strength",
+                 "A diagnosis the team treated but did not confirm stays unconfirmed",
+                 "a link between two things the sections list separately",
+                 "Never widen \"no …\"", "every primary and secondary diagnosis the diagnosis section lists",
+                 "do not mention a course or supply to finish or keep taking at home",
+                 "a word that grades how something was done",
+                 "Never leave out the reason for admission, a primary or secondary diagnosis"):
+        assert rule in text, rule
+    assert "[G1" not in text and "about 250 words" not in text
+
+
+@pytest.mark.parametrize("payload,expected", [
+    (_with("what_we_did", "Blood tests showed your heart has fully healed."),
+     ("certainty_added", "what_we_did", None, "fully")),
+    (_with("what_we_did", "Blood tests showed strain caused by your blood pressure."),
+     ("cause_added", "what_we_did", None, "caused by")),
+    (_with("what_we_did", "A swab showed strain on your heart."),
+     ("test_term_added", "what_we_did", None, "swab")),
+    (_with("why_in_hospital", "You came in with chest pain."),
+     ("diagnosis_unreached", "why_in_hospital", "sections.1", "line 1")),
+])
+def test_meaning_checks_fire(payload, expected):
+    assert expected in _checks(_run(payload))
+
+
+def test_meaning_qualifier_check_fires_and_names_the_group():
+    s6 = _step6()
+    s6["sections"][2]["text"] = "Troponin 287 -> 412 ng/L, initially rising."
+    out = _run(inp=P.patient_input(s6))
+    assert ("qualifier_dropped", "what_we_did", None, "initially") in _checks(out)
+
+
+def test_meaning_checks_are_in_checks_and_the_good_output_raises_none():
+    assert set(MN.CHECK_OF.values()) <= set(P.CHECKS)
+    assert _run()["checks"] == []
 
 
 def test_prompt_says_never_translate_is_codes_job_and_writes_english():

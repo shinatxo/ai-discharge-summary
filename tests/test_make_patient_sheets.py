@@ -31,7 +31,7 @@ def batch(tmp_path):
 def test_items_are_the_fixed_eight():
     assert MS.ITEMS == ("S1", "S4", "S10", "S13", "S16", "A5", "S3", "C7")
     assert MS.DIMENSIONS == ("added", "meaning", "withheld", "omission", "audience")   # v2, F4
-    assert MS.SHEETS_VERSION == 2
+    assert MS.SHEETS_VERSION == 3          # v3 (3 Nov): box content shown; dimensions as v2
 
 
 def test_v2_readme_defines_omission_with_the_by_design_exclusions():
@@ -92,3 +92,14 @@ def test_missing_step_7_has_no_substitute(batch, tmp_path):
     p.write_text(json.dumps(rec))
     with pytest.raises(MS.SheetError):
         MS.build(batch, 1, tmp_path / "sheets")
+
+
+def test_v3_sheets_show_each_boxs_content_as_in_the_leaflet(batch, tmp_path):
+    out = MS.build(batch, 1, tmp_path / "sheets")
+    sheet = (out / "sheets" / "S1.md").read_text()
+    wrote = sheet.split("## What step 7 wrote", 1)[1].split("## The leaflet as assembled", 1)[0]
+    for h in ("medicines", "safety_net"):
+        assert f"[end of the {h} box]" in wrote
+    assert wrote.count("in the leaflet, not step 7's; not an omission") == 2
+    assert json.loads((out / "MANIFEST.json").read_text())["box_content_shown"] is True
+    assert "it IS in\nthe leaflet, so it is never an omission" in MS.README

@@ -25,6 +25,11 @@ disclosed). An item now passes when all FIVE are "pass" — stricter than v1. A
 folder is checked against the dimensions in its own MANIFEST, so v1 folders
 still check as v1.
 
+Sheets v3 (3 Nov 2026, piece 3 follow-up 2, before the p0.3 batch): the two boxes'
+content is shown on the sheet under "What step 7 wrote", labelled as code's and as in
+the leaflet, so box content is not marked omitted (v2's S3 crisis line, corrected
+after results). Dimensions and the pass rule are unchanged from v2.
+
 Writes evals/calibration/<batch>-patient-r<run>/:
   sheets/<ID>.md    step 7's input, its output and the assembled leaflet
   scores/<ID>.json  an empty template: added, meaning, withheld, omission, audience (pass / partial / fail)
@@ -52,7 +57,7 @@ import run_cold_eval as rce  # noqa: E402
 from pipeline import compose_patient as CP7  # noqa: E402
 from pipeline import render as RN  # noqa: E402
 
-SHEETS_VERSION = 2
+SHEETS_VERSION = 3
 ITEMS = ("S1", "S4", "S10", "S13", "S16", "A5", "S3", "C7")
 DIMENSIONS = ("added", "meaning", "withheld", "omission", "audience")
 VERDICTS = ("pass", "partial", "fail")
@@ -70,6 +75,8 @@ and no facts on purpose: judge step 7 against its input.
 
 The two boxes (medicines, advice) and the translation header are written by code, not
 step 7. Judge step 7's own sections; use the assembled leaflet only for audience and tone.
+Each box's content is shown where the box sits, in square-bracket label lines: it IS in
+the leaflet, so it is never an omission — and it is not step 7's to be judged.
 
 For each sheet, fill `scores/<ID>.json`: each dimension `pass`, `partial` or `fail`.
 
@@ -112,6 +119,15 @@ class SheetError(RuntimeError):
     pass
 
 
+def _box_content(steps: dict, heading: str) -> str | None:
+    """v3: what code puts in the box, or None if 5a / 5b did not finish."""
+    if heading == "medicines" and "reconcile_medications" in steps:
+        return RN.medicines_box(steps["reconcile_medications"]).rstrip()
+    if heading == "safety_net" and "select_safety_net" in steps:
+        return steps["select_safety_net"]["part_c"].rstrip()
+    return None
+
+
 def render_sheet(rec: dict) -> str:
     steps = rec["steps"]
     inp = CP7.patient_input(steps["compose_clinical"])
@@ -122,7 +138,12 @@ def render_sheet(rec: dict) -> str:
     for s in step7["sections"]:
         src = f"  (from: {', '.join(s['source_ids'])})" if s["source_ids"] else ""
         out += [f"### {s['heading']}{src}", ""]
-        out += [f"[{BOX_SOURCE[s['heading']]}]" if s["heading"] in CP7.BOXES else s["text"], ""]
+        if s["heading"] in CP7.BOXES:
+            body = _box_content(steps, s["heading"])
+            out += [f"[{BOX_SOURCE[s['heading']]} — in the leaflet, not step 7's; not an omission]"]
+            out += ([body, f"[end of the {s['heading']} box]"] if body is not None else []) + [""]
+        else:
+            out += [s["text"], ""]
     out += ["## The leaflet as assembled by code (boxes and header are not step 7's — for audience "
             "and tone only)", ""]
     if "reconcile_medications" in steps and "select_safety_net" in steps:
@@ -163,7 +184,7 @@ def build(batch_dir: Path, run: int, out_dir: Path | None = None) -> Path:
         "sheets_version": SHEETS_VERSION, "batch_id": manifest["batch_id"], "run": run,
         "rule": "D5 (CSO 1 Nov 2026): W5 spot-check items (f5c9adc) + S3 + C7: " + ", ".join(ITEMS),
         "pass_rule": "an item passes when every dimension is pass",
-        "dimensions": list(DIMENSIONS), "items": items,
+        "dimensions": list(DIMENSIONS), "items": items, "box_content_shown": True,
         "by_design_not_omissions": ["risk scores and levels", "ceilings of care, treatment limits, resuscitation",
                                     "risk_assessment, allergies (never given)", "test values and numbers",
                                     "medicines and advice (code boxes)"],

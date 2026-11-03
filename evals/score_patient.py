@@ -53,6 +53,26 @@ counts it, as written 1 Nov); and the written scope of line 9's sensitive standa
 suicidal thoughts included — is NOT withheld-category; withheld-category is risk levels
 and scores, safeguarding, police, ceilings of care and resuscitation.
 
+Metric v3 (3 Nov 2026, piece 3 follow-up 2, CSO G2 A; committed before any p0.3 live
+call). Lines 1-13 are unchanged. Added: line 14 (G2, stricter, written before the batch):
+
+  14 meaning flags            sentences / sections flagged by pipeline/meaning.py (the same
+                              functions the step's checks use, computed here from the
+                              saved sections, so older batches are measured too): an added
+                              cause or purpose, an added certainty / completion word, a
+                              qualifier of the cited section with no equivalent, a test or
+                              sample word the cited section does not justify, a primary /
+                              secondary diagnosis not reached. CSO-ruled; 0 defects.
+                              Standard (written 3 Nov 2026, before the p0.3 batch):
+                              acceptable only if the C text says the same thing as its
+                              cited PART A section with the same force and scope — a
+                              cause or purpose that section states; a certainty word it
+                              supports; the qualifier kept in other words; the test named
+                              as the section names it, or by an everyday description that
+                              is not a different test; the diagnosis stated in other words,
+                              or a by-design omission (sheets v2 list) — defect otherwise.
+                              The plain-word tables in meaning.py are the pre-ruled part.
+
 A generation whose C cannot be assembled (5a or 5b missing) fails every line that
 needs the assembled leaflet (3, 8, 9's title, 11) — never a pass.
 
@@ -79,9 +99,10 @@ import rubric_checks as RC  # noqa: E402
 import safety_net_gate as gate  # noqa: E402
 import score_compose as SC  # noqa: E402
 from pipeline import compose_patient as CP7  # noqa: E402
+from pipeline import meaning as MN  # noqa: E402
 from pipeline import render as RN  # noqa: E402
 
-METRIC_VERSION = 2
+METRIC_VERSION = 3
 # Pre-declared from the scenario files (adversarial-scenarios.md C7: Polish-speaking,
 # interpreter used): the one scenario of the 18 whose notes record a language need.
 TRANSLATION_SCENARIOS = ("C7",)
@@ -89,9 +110,10 @@ DEADLINE_WATCH_S = 200      # 270 s − step 7's 60 s read timeout − 10 s (ADR
 DEADLINE_S = 270
 RULINGS = ("acceptable", "defect")
 # Review kind -> bar line.
-REVIEW_KINDS = ("advice", "medication", "drug", "number", "unit", "conflict", "sensitive", "promise")
+MEANING_KINDS = MN.KINDS                      # G2 (3 Nov): bar line 14
+REVIEW_KINDS = ("advice", "medication", "drug", "number", "unit", "conflict", "sensitive", "promise") + MEANING_KINDS
 BAR_OF = {"advice": 4, "medication": 5, "drug": 5, "number": 6, "unit": 6, "conflict": 9, "sensitive": 9,
-          "promise": None}                    # F5: report only
+          "promise": None} | {k: 14 for k in MEANING_KINDS}    # F5: promise report only
 REFUSED = "no_sections_given"                 # F1
 STRUCTURE = ("box_not_exact", "stray_placeholder")
 _SENTENCE = re.compile(r"(?<=[.!?])\s+|\n+")
@@ -152,6 +174,17 @@ def review_items(rec: dict) -> list[dict]:
                 items.append({"kind": kind, "heading": s["heading"], "token": token,
                               "key": _key(kind + (f":{token}" if token else ""), s["heading"], sent),
                               "sentence": sent})
+    # v3 (G2): meaning flags — the step's own functions, measured against the cited sections.
+    for s in step7["sections"]:
+        if s["heading"] in CP7.BOXES:
+            continue
+        cited = [given[i] for i in s["source_ids"] if i in given] or list(given.values())
+        for kind, token, shown in MN.section_flags(s["text"], cited):
+            items.append({"kind": kind, "heading": s["heading"], "token": token,
+                          "key": _key(f"{kind}:{token}", s["heading"], shown), "sentence": shown})
+    for _sid, _n, line in MN.diagnoses_unreached(list(given.values()), prose(step7)):
+        items.append({"kind": "diagnosis", "heading": "why_in_hospital", "token": None,
+                      "key": _key("diagnosis", "why_in_hospital", line), "sentence": f"not reached: {line}"})
     return items
 
 
@@ -305,7 +338,8 @@ def summarise(results: list[dict], skipped: list[dict], n_records: int) -> dict:
         "other_checks": {k: tot(k) for k in CP7.CHECKS
                          if k not in ("unknown_source_id", "signpost_outside_box", "resus_text", "year_added",
                                       "not_documented_text", "follow_up_missing",
-                                      "prose_without_source", "promise_shaped")},   # v2: scored here
+                                      "prose_without_source", "promise_shaped")
+                         and k not in MN.CHECK_OF.values()},   # v2 / v3: scored here
         "words_prose_p50": _q([r["counts"]["words_prose"] for r in results], 0.5),
         "latency": {"step7_p50": _q(s7, 0.5), "step7_max": max(s7, default=None),
                     "start7_max": max(starts, default=None),
@@ -318,7 +352,7 @@ def summarise(results: list[dict], skipped: list[dict], n_records: int) -> dict:
 
 
 def bar(sm: dict) -> list[tuple[str, str, str]]:
-    """(bar line, result, verdict) for bar lines 1-9, 11, 12 (frozen 1 Nov) and 13 (v2, 2 Nov)."""
+    """(bar line, result, verdict) for bar lines 1-9, 11, 12 (frozen 1 Nov), 13 (v2, 2 Nov), 14 (v3, 3 Nov)."""
     n = sm["n_records"]
     full = sm["n_scored"] == n
     asm_full = sm["n_assembled"] == n
@@ -334,6 +368,7 @@ def bar(sm: dict) -> list[tuple[str, str, str]]:
         return f"flagged {r['flagged']}, defects {r['defect']}, pending {r['pending']}"
 
     r4, r5, r6, r9 = rv("advice"), rv("medication", "drug"), rv("number", "unit"), rv("conflict", "sensitive")
+    r14 = rv(*MEANING_KINDS)
     h = sm["header"]
     fk = sm["fk"]
     lat = sm["latency"]
@@ -376,6 +411,8 @@ def bar(sm: dict) -> list[tuple[str, str, str]]:
          f"vs {lat['deadline_s']} s)", met(full and lat["start7_over_watch"] == 0)),
         ("13 Step-7 prose sections citing no section step 7 was given (code)",
          f"{sm['prose_without_source']}", met(full and sm["prose_without_source"] == 0)),
+        ("14 Meaning flags: cause, certainty, qualifier, test term, diagnosis (CSO-ruled defects)", rtxt(r14),
+         met(full and r14["defect"] == 0, pending=r14["pending"] > 0)),
     ]
 
 
@@ -390,8 +427,8 @@ def write_reports(out: Path, scored: dict, batch_dir: Path) -> None:
              f"Step-level checks, metric v{pv['metric_version']}. Definition: `evals/score_patient.py` "
              "(pass bar written 1 Nov 2026 before any step-7 code; frozen in code before the first live call). "
              "PART C is assembled by `pipeline/render.py`, as 8b will.", "",
-             "> **Not measured here:** whether C says the same things as A (HAZ-17), withholding judgement, "
-             "tone — see the CSO blind read (bar line 10, `make_patient_sheets.py`). Bar line 11's other "
+             "> **Not measured here:** whether C says the same things as A (HAZ-17) beyond line 14's fixed word "
+             "lists, withholding judgement, tone — see the CSO blind read (bar line 10, `make_patient_sheets.py`). Bar line 11's other "
              "measures are in SAFETY_NET.md, MEDS.md, STEP2_ADVICE.md and COMPOSE_CLINICAL.md.", "",
              "| Bar line | Result | Verdict |", "| --- | --- | --- |"]
     lines += [f"| {a} | {b} | **{c}** |" for a, b, c in bar(sm)]
@@ -432,6 +469,12 @@ def write_reports(out: Path, scored: dict, batch_dir: Path) -> None:
                      f"{sum(1 for r in rows if r['header'] and r['header']['present'])} | "
                      f"{rk('advice')} / {rk('medication', 'drug')} / {rk('number', 'unit')} / "
                      f"{rk('conflict', 'sensitive')} | {rk('promise')} |")
+    lines += ["", "## Per scenario — meaning flags (bar line 14, v3)", "",
+              "| Scenario | " + " | ".join(MEANING_KINDS) + " |", "| --- |" + " --- |" * len(MEANING_KINDS)]
+    for sid in dict.fromkeys(r["scenario_id"] for r in res):
+        rows = [r for r in res if r["scenario_id"] == sid]
+        lines.append(f"| {sid} | " + " | ".join(
+            str(sum(1 for r in rows for x in r["review"] if x["kind"] == k)) for k in MEANING_KINDS) + " |")
     (out / "PATIENT_VERSION.md").write_text("\n".join(lines) + "\n", encoding="utf-8")
 
     pending: dict[tuple[str, str], dict] = {}
@@ -452,7 +495,13 @@ def write_reports(out: Path, scored: dict, batch_dir: Path) -> None:
           "for admission as step 7's input gives it, suicidal thoughts included, is not withheld-category; "
           "withheld-category is risk levels and scores, safeguarding, police, ceilings of care and "
           "resuscitation); **promise** (report only, no bar) — acceptable only if its cited PART A section "
-          "states the service, visit or availability. Store rulings in `evals/gold/adjudications/<ID>.json` under "
+          "states the service, visit or availability; **cause / certainty / qualifier / test_term / diagnosis** "
+          "(bar 14, written 3 Nov 2026 before the p0.3 batch) — acceptable only if the C text says the same "
+          "thing as its cited PART A section with the same force and scope (a cause or purpose that section "
+          "states; a certainty word it supports; the qualifier kept in other words; the test named as the "
+          "section names it, or by an everyday description that is not a different test; the diagnosis stated "
+          "in other words, or a by-design omission per sheets v2), defect otherwise (HAZ-17); the plain-word "
+          "tables in `pipeline/meaning.py` are pre-ruled. Store rulings in `evals/gold/adjudications/<ID>.json` under "
           "`patient_rulings` as `{key: ruling}`.", ""]
     for (sid, key), e in sorted(pending.items()):
         tok = f" `{e['token']}`" if e["token"] else ""

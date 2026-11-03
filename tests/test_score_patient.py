@@ -90,7 +90,7 @@ def _with(heading, text=None, ids=None):
 def test_a_good_record_meets_every_line():
     b, sm = bar_of([score(record())])
     assert {k: v for k, (_r, v) in b.items()} == {k: "MET" for k in ("1", "2", "3", "4", "5", "6", "7", "8", "9",
-                                                                      "11", "12", "13")}
+                                                                      "11", "12", "13", "14")}
     assert sm["gate"]["pass"] == 1 and sm["haz03_c"] == 1 and sm["title_ok"] == 1
 
 
@@ -220,7 +220,7 @@ def test_review_file_quotes_and_report_files(tmp_path):
 
 
 def test_translation_scenarios_are_pre_declared():
-    assert SP.TRANSLATION_SCENARIOS == ("C7",) and SP.METRIC_VERSION == 2
+    assert SP.TRANSLATION_SCENARIOS == ("C7",) and SP.METRIC_VERSION == 3
 
 
 # --- metric v2 (2 Nov 2026, F1-F5): line 13, promise (report only), refusals ------
@@ -269,3 +269,55 @@ def test_review_file_marks_promise_as_no_bar_and_states_the_sensitive_scope(tmp_
     assert "promise (no bar)" in rv and "suicidal thoughts included, is not withheld-category" in rv
     pv = (tmp_path / "PATIENT_VERSION.md").read_text()
     assert "| 13 Step-7 prose sections" in pv and "no_sections_given" in pv
+
+
+# --- v3 (3 Nov 2026, CSO G2 A): bar line 14, meaning flags ------------------------
+
+def test_line_14_meaning_flags_are_pending_then_ruled():
+    rec = record(_with("what_we_did", "Blood tests showed your heart has fully recovered."))
+    r = score(rec)
+    rows = [x for x in r["review"] if x["kind"] in SP.MEANING_KINDS]
+    assert {(x["kind"], x["token"]) for x in rows} >= {("certainty", "fully"), ("certainty", "recovered")}
+    b, _ = bar_of([r])
+    assert b["14"][1] == "PENDING REVIEW"
+    assert all(v == "MET" for k, (_r, v) in b.items() if k != "14")         # no other line moves
+    ruled = {x["key"]: "acceptable" for x in rows}
+    assert bar_of([score(rec, rulings=ruled)])[0]["14"][1] == "MET"
+    ruled[rows[0]["key"]] = "defect"
+    assert bar_of([score(rec, rulings=ruled)])[0]["14"][1] == "NOT MET"
+
+
+def test_line_14_is_computed_from_the_sections_not_the_steps_check():
+    # a p0.2-era record carries none of the v3 checks; it is measured all the same
+    rec = record(_with("what_we_did", "A swab showed strain on your heart."))
+    rec["steps"]["compose_patient"]["checks"] = []
+    r = score(rec)
+    assert ("test_term", "swab") in {(x["kind"], x["token"]) for x in r["review"]}
+    assert bar_of([r])[0]["14"][1] == "PENDING REVIEW"
+
+
+def test_line_14_counts_an_unreached_diagnosis():
+    r = score(record(_with("why_in_hospital", "You came in with chest pain.")))
+    rows = [x for x in r["review"] if x["kind"] == "diagnosis"]
+    assert len(rows) == 1 and rows[0]["heading"] == "why_in_hospital" and rows[0]["token"] is None
+
+
+def test_meaning_kinds_map_to_line_14_and_stay_out_of_other_checks():
+    assert SP.MEANING_KINDS == ("cause", "certainty", "qualifier", "test_term", "diagnosis")
+    assert all(SP.BAR_OF[k] == 14 for k in SP.MEANING_KINDS)
+    sm = SP.summarise([score(record())], [], 1)
+    assert not set(sm["other_checks"]) & set(SP.MN.CHECK_OF.values())
+
+
+def test_review_file_states_the_line_14_standard(tmp_path):
+    rec = record(_with("what_we_did", "Blood tests showed your heart is fine."))
+    (tmp_path / "r1").mkdir()
+    (tmp_path / "r1" / "S1.json").write_text(json.dumps(rec))
+    res = [score(rec)]
+    scored = {"batch_id": "b", "patient": {"metric": "compose_patient", "metric_version": SP.METRIC_VERSION,
+                                           "summary": SP.summarise(res, [], 1), "results": res}}
+    SP.write_reports(tmp_path, scored, tmp_path)
+    review = (tmp_path / "review_patient.md").read_text()
+    assert "(bar 14, written 3 Nov 2026 before the p0.3 batch)" in review and "certainty `fine` (bar 14)" in review
+    pv = (tmp_path / "PATIENT_VERSION.md").read_text()
+    assert "| 14 Meaning flags" in pv and "## Per scenario — meaning flags (bar line 14, v3)" in pv

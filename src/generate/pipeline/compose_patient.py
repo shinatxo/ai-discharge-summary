@@ -52,12 +52,16 @@ request_invalid, bedrock_error.
 What the output may carry: prose re-expressed from PART A (the same class of
 content as step 6's sections), headings and section_ids. `checks` carries
 fixed words, headings, section_ids, 4-digit years, numbers and unit tokens only
-— never text.
+— never text. (G2, 3 Nov: the meaning checks' tokens are fixed list words, a
+qualifier group name or "line <n>".)
 
 Honest limit (ADR-009 Q4): a source_id shows the model CLAIMED to use a PART A
-section, not that its sentence says the same thing. Meaning preservation
-(HAZ-17) and withholding judgement are not checked here — the CSO blind read is
-the evidence. The pattern checks are floors: they flag, the CSO rules.
+section, not that its sentence says the same thing. Withholding judgement is
+not checked here, and meaning preservation (HAZ-17) only by fixed word lists
+(pipeline/meaning.py, decision G2 of 3 Nov 2026: added cause / certainty words,
+dropped qualifiers, test words the cited text does not justify, unreached
+diagnoses) — the CSO blind read stays the evidence. The pattern checks are
+floors: they flag, the CSO rules.
 
 The caller builds the client with read_timeout 60 s and max_attempts 1
 (ADR-009 Q3 (2)). Nothing here creates an AWS client (package rule).
@@ -71,6 +75,7 @@ from functools import lru_cache
 from pathlib import Path
 
 from .compose import documented_years, added_years
+from . import meaning as MN                  # G2 (3 Nov 2026): meaning flags
 from .context import StepContext
 from .converse import call_block, converse_with_throttle_retry
 from .errors import StepError
@@ -119,7 +124,7 @@ CHECKS = (
     "signpost_outside_box", "resus_text", "year_added", "not_documented_text",
     "advice_shaped", "dose_or_frequency", "number_added", "unit_added", "conflict_text", "sensitive_text",
     "prose_without_source", "promise_shaped",
-)
+) + tuple(MN.CHECK_OF.values())         # G2 (3 Nov 2026): meaning flags, pipeline/meaning.py
 
 _PLACEHOLDER = re.compile(r"\{\{[^{}]*\}\}")
 _NOT_DOCUMENTED = re.compile(r"\bnot\s+(?:documented|recorded)\b", re.IGNORECASE)
@@ -304,6 +309,9 @@ def check_patient_version(wire: dict, inp: dict) -> tuple[list[dict], list[dict]
                 flag("year_added", heading, token=y)
             src = "\n".join(given[i]["text"] for i in ids if i in given) or input_text
             src_numbers, src_units = numbers(src), units(src)
+            cited = [given[i] for i in ids if i in given] or list(given.values())
+            for kind, token, _shown in MN.section_flags(text, cited):
+                flag(MN.CHECK_OF[kind], heading, token=token)
             for sent in _sentences(text):
                 if _SIGNPOST.search(sent):
                     flag("signpost_outside_box", heading)
@@ -339,6 +347,8 @@ def check_patient_version(wire: dict, inp: dict) -> tuple[list[dict], list[dict]
                  source_id=sid, token=s["heading"])
 
     prose = [s["text"] for s in sections if s["heading"] not in BOXES]
+    for sid, n, _line in MN.diagnoses_unreached(list(given.values()), "\n".join(prose)):
+        flag("diagnosis_unreached", "why_in_hospital", sid, token=f"line {n}")
     counts = {
         "sections": len(sections),
         "sections_given": len(given),

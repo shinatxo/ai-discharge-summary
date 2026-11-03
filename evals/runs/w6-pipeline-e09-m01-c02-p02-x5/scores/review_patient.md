@@ -1,0 +1,68 @@
+# Step 7 sentences to rule on — batch `w6-pipeline-e09-m01-c02-p02-x5`
+
+Each sentence is step 7's prose (outside both boxes) and matched a pattern. Standards, written before any code (1 Nov 2026): **advice** — acceptable only if it restates an instruction its cited PART A section states, same force and scope; **medication / drug** — acceptable if the cited A section gives the same drug or dose for an in-hospital treatment, defect if it tells the patient what to take at home; **number / unit** — acceptable if the value is in the cited A section in another form; **conflict / sensitive** — acceptable only if it discloses no disagreement in the notes and no withheld-category detail (scope written 2 Nov 2026, before the p0.2 batch: the reason for admission as step 7's input gives it, suicidal thoughts included, is not withheld-category; withheld-category is risk levels and scores, safeguarding, police, ceilings of care and resuscitation); **promise** (report only, no bar) — acceptable only if its cited PART A section states the service, visit or availability. Store rulings in `evals/gold/adjudications/<ID>.json` under `patient_rulings` as `{key: ruling}`.
+
+- **B6** `1b99652f7ae69992` medication (bar 5) · what_we_did (runs 3) · ruling: acceptable: - A heart medicine (bisoprolol) was increased to 5 mg once a day.
+- **B6** `872c8c01fe90f144` medication (bar 5) · what_we_did (runs 2) · ruling: acceptable: Your regular heart medicine bisoprolol was also increased to 5mg once a day.
+- **B6** `8996a198193f8755` advice (bar 4) · why_in_hospital (runs 1, 3) · ruling: acceptable: You also had mild heart failure, which means your heart was not pumping as well as it should.
+- **B6** `a8407f0141d362be` medication (bar 5) · what_we_did (runs 1) · ruling: acceptable: A heart medicine (bisoprolol) was increased to 5 mg once a day.
+- **B6** `ac66d2b0dcc2512f` medication (bar 5) · what_we_did (runs 4) · ruling: acceptable: Your heart rate medicine (bisoprolol) was increased to 5mg once a day.
+- **S1** `1da13f3c1680e300` medication (bar 5) · what_we_did (runs 5) · ruling: acceptable: - Your heart-rate medicine (bisoprolol) was increased to 7.5mg once daily.
+- **S1** `3f666f69175ca1cd` medication (bar 5) · what_we_did (runs 5) · ruling: acceptable: - A medicine to help with chest pain (isosorbide mononitrate) 30mg once daily was added.
+- **S1** `74c70fe621f8b1ba` medication (bar 5) · what_we_did (runs 1) · ruling: acceptable: A heart rate tablet (bisoprolol) was increased to 7.5mg once daily.
+- **S1** `84d58343410a75e0` medication (bar 5) · what_we_did (runs 1) · ruling: acceptable: A tablet to help with chest pain (isosorbide mononitrate) 30mg once daily was added.
+- **S10** `8cece9c35e7fa97b` advice (bar 4) · why_in_hospital (runs 1) · ruling: acceptable: It happened because the womb did not contract as it should (uterine atony).
+- **S10** `9b9090ef27ca53b0` advice (bar 4) · why_in_hospital (runs 2, 3, 5) · ruling: acceptable: This was caused by the womb not contracting as it should (uterine atony).
+- **S10** `c45acbcfcf1e49ab` advice (bar 4) · why_in_hospital (runs 4) · ruling: acceptable: It happened because your womb did not contract as it should after the birth.
+- **S10** `cea7e909e7313f13` medication (bar 5) · why_in_hospital (runs 2, 3, 5) · ruling: acceptable: After the birth, you had heavy bleeding (postpartum haemorrhage) of around 1200 ml.
+- **S11** `05cdcd10dbb33cb8` advice (bar 4) · next_steps (runs 2) · ruling: acceptable: - The respiratory and thoracics team do not need to see you routinely.
+- **S11** `07e54aed32cae96b` advice (bar 4) · next_steps (runs 1) · ruling: acceptable: - The respiratory and thoracics team do not need to see you routinely after discharge.
+- **S11** `59475bba84cf6321` advice (bar 4) · what_we_did (runs 2) · ruling: acceptable: You are putting partial weight on your left leg, as advised by the orthopaedic team.
+- **S11** `7804272741626d4e` advice (bar 4) · what_we_did (runs 1) · ruling: acceptable: You are partially weight-bearing on your left leg, as advised by the orthopaedic team.
+- **S11** `b40c4b877178539c` advice (bar 4) · next_steps (runs 4, 5) · ruling: acceptable: - The respiratory and thoracics team do not need to see you for routine follow-up.
+- **S11** `c2fd60133c07d1a0` advice (bar 4) · what_we_did (runs 5) · ruling: acceptable: You were allowed to put some weight on your left leg, as advised by the orthopaedic team.
+- **S12** `0a062f49759ffa10` advice (bar 4) · why_in_hospital (runs 5) · ruling: acceptable: The team also thinks there may be an underlying memory condition, and has advised a referral to a memory clinic.
+- **S12** `20b28d1a4f331da1` advice (bar 4) · next_steps (runs 1) · ruling: acceptable: A referral to the memory clinic has been advised for you as an outpatient.
+- **S12** `617be72526331097` advice (bar 4) · next_steps (runs 5) · ruling: acceptable: The team has advised a referral to a memory clinic as an outpatient.
+- **S12** `6c74870b90813d9a` advice (bar 4) · next_steps (runs 3, 4) · ruling: acceptable: A referral to a memory clinic has been advised.
+- **S12** `7e5f2833afeb2cda` advice (bar 4) · why_in_hospital (runs 1) · ruling: acceptable: You do not remember the whole event.
+- **S12** `d0f5ec706342d43c` advice (bar 4) · next_steps (runs 2) · ruling: acceptable: A referral to a memory clinic as an outpatient has been advised.
+- **S12** `d95b3e888eb46a24` advice (bar 4) · why_in_hospital (runs 3) · ruling: acceptable: You were advised that a referral to a memory clinic would be made.
+- **S13** `8323efa6a411f282` number `4` (bar 6) · what_we_did (runs 3) · ruling: acceptable: - carried out 4 operations to remove infected tissue (on days 0, 2, 5, and 9)
+- **S14** `ba34c835e0c5fe18` promise (no bar) · next_steps (runs 2) · ruling: acceptable: - Your GP will keep an eye on your blood pressure and your diabetes levels (HbA1c).
+- **S14** `e67dc1f1dfe50e0f` promise (no bar) · next_steps (runs 5) · ruling: acceptable: - Your GP will keep an eye on your blood pressure and your diabetes blood test (HbA1c).
+- **S15** `2729a456f90d8f09` medication (bar 5) · what_we_did (runs 5) · ruling: defect: You have a course of prednisolone 30mg to finish at home.
+- **S16** `313433ba07cdc5f3` promise (no bar) · next_steps (runs 2, 4, 5) · ruling: defect: - A community stoma nurse will follow you up at home.
+- **S16** `688d3a00af65cb8b` drug `warfarin` (bar 5) · next_steps (runs 1, 2, 3, 4, 5) · ruling: acceptable: - Your GP will check your warfarin level (INR).
+- **S16** `7717bfde4acd4291` promise (no bar) · next_steps (runs 1) · ruling: acceptable: - A stoma nurse will follow you up in the community.
+- **S17** `588b23ced1a1c02a` medication (bar 5) · what_we_did (runs 1, 3, 4) · ruling: acceptable: You were given 2 units of blood.
+- **S17** `9d699afbe69dff60` medication (bar 5) · what_we_did (runs 2) · ruling: acceptable: You were given 2 units of blood by drip.
+- **S17** `dee8a92503b38e1a` medication (bar 5) · what_we_did (runs 5) · ruling: acceptable: - You were given 2 units of blood.
+- **S18** `35bef9d1f4324022` advice (bar 4) · next_steps (runs 5) · ruling: acceptable: - You must not drive.
+- **S18** `71bf56fe4b5ba037` advice (bar 4) · next_steps (runs 5) · ruling: acceptable: The team told you that you must not drive for 6 months from the date of your seizure.
+- **S18** `f495bf6b55f6754e` advice (bar 4) · next_steps (runs 5) · ruling: acceptable: You must tell the DVLA about your seizure.
+- **S2** `7562a06f70a2b9ca` advice (bar 4) · what_we_did (runs 1) · ruling: acceptable: The stitches used will dissolve on their own, so they do not need to be taken out.
+- **S2** `964ee139d87bcb1e` promise (no bar) · next_steps (runs 2, 4) · ruling: defect: You will be told the result when it is available.
+- **S2** `ff852cf57f4943e6` promise (no bar) · next_steps (runs 5) · ruling: defect: You will be told the results when they are available.
+- **S3** `011d01d75c4cc7f1` sensitive (bar 9) · why_in_hospital (runs 4) · ruling: acceptable: You also had thoughts of suicide, including thoughts of overdose.
+- **S3** `1f219be0aa63a40b` sensitive (bar 9) · why_in_hospital (runs 3) · ruling: acceptable: You were also having thoughts of harming yourself by overdose.
+- **S3** `3c4ef567f41c42ba` sensitive (bar 9) · why_in_hospital (runs 1, 2, 3, 5) · ruling: acceptable: The team found you were having a depressive episode with active suicidal ideation.
+- **S3** `5192bc5e7c123547` sensitive (bar 9) · what_we_did (runs 4) · ruling: acceptable: By Day 3, your sleep had improved a little and the suicidal thoughts were less intense.
+- **S3** `596b9ec52f6c3898` sensitive (bar 9) · what_we_did (runs 1) · ruling: acceptable: The team assessed your thoughts of suicide carefully throughout your stay.
+- **S3** `70f59e7ddff92381` sensitive (bar 9) · what_we_did (runs 4) · ruling: acceptable: By Day 5, your mood was improving and the suicidal thoughts were fleeting and passive, with no intent.
+- **S3** `b55c2afbec0ffd18` sensitive (bar 9) · why_in_hospital (runs 2, 5) · ruling: acceptable: You were also having thoughts of suicide, including thoughts of overdose.
+- **S3** `b5bd283a3623916b` sensitive (bar 9) · what_we_did (runs 2) · ruling: acceptable: By Day 3, your sleep had slightly improved and your suicidal thoughts were less intense.
+- **S3** `c77acc02fe4d3825` sensitive (bar 9) · what_we_did (runs 5) · ruling: acceptable: By Day 5, your mood was improving and the suicidal thoughts were fleeting and passive, with no intent, and you were thinking about the future.
+- **S3** `c96facce3958ff7b` sensitive (bar 9) · what_we_did (runs 5) · ruling: acceptable: By Day 3, your sleep had improved a little and your suicidal thoughts had become less intense.
+- **S3** `d97c8cc25f995783` sensitive (bar 9) · what_we_did (runs 2) · ruling: acceptable: By Day 5, your mood was improving and suicidal thoughts were fleeting and passive, with no intent.
+- **S3** `e701a5eb5280d910` sensitive (bar 9) · why_in_hospital (runs 1) · ruling: acceptable: You were having thoughts of suicide, including thoughts of overdose.
+- **S4** `16df0d49b08b55a7` promise (no bar) · what_we_did (runs 2) · ruling: acceptable: Drip fluids were available if needed.
+- **S4** `4cc8f92c1b4d3b58` promise (no bar) · what_we_did (runs 4) · ruling: acceptable: IV (drip) feeds were available if the tube feeds were not tolerated.
+- **S9** `2b82349f58230031` drug `insulin` (bar 5) · why_in_hospital (runs 5) · ruling: acceptable: This is when the blood becomes too acidic because the body does not have enough insulin.
+- **S9** `3e46cbfb654f87a9` advice (bar 4) · next_steps (runs 2, 4, 5) · ruling: acceptable: - Phone support is available in the time before that appointment.
+- **S9** `44f960e13516f5fc` promise (no bar) · next_steps (runs 1) · ruling: acceptable: - Phone support from the diabetes team is available in the meantime.
+- **S9** `533a536be33e1ef0` promise (no bar) · next_steps (runs 2, 4, 5) · ruling: acceptable: - Phone support is available in the time before that appointment.
+- **S9** `6a2ac6c6794b7b30` advice (bar 4) · next_steps (runs 3) · ruling: acceptable: - Phone support is available in the meantime.
+- **S9** `76993a71a4677aa5` advice (bar 4) · next_steps (runs 1) · ruling: acceptable: - Phone support from the diabetes team is available in the meantime.
+- **S9** `b24210071e9850b1` drug `insulin` (bar 5) · why_in_hospital (runs 3) · ruling: acceptable: This means the blood had become too acidic because of a lack of insulin.
+- **S9** `d4cc62941523462d` promise (no bar) · next_steps (runs 3) · ruling: acceptable: - Phone support is available in the meantime.

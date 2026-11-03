@@ -1,0 +1,25 @@
+{
+  "generation_id": "w6-pipeline-e09-m01-c02-p02-x5/r1/S16",
+  "verdicts": {
+    "added": "fail",
+    "meaning": "partial",
+    "withheld": "pass",
+    "omission": "pass",
+    "audience": "pass"
+  },
+  "findings": [
+    {
+      "dimension": "added",
+      "heading": "why_in_hospital/what_we_did",
+      "source_ids": [],
+      "note": "why_in_hospital: adds prior appendix surgery as the likely cause; what_we_did: broadens “no ischaemia” to “not damaged”"
+    },
+    {
+      "dimension": "meaning",
+      "heading": "what_we_did",
+      "source_ids": [],
+      "note": "“not damaged” is broader than “no ischaemia”"
+    }
+  ],
+  "scored_by": "author (CSO), 3 Nov 2026 11:17, given in chat; written to file by Claude verbatim"
+}

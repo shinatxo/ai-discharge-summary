@@ -20,5 +20,32 @@
         }
       }
     ]
+  },
+  "patient_rulings": {
+    "7562a06f70a2b9ca": "acceptable",
+    "964ee139d87bcb1e": "defect",
+    "ff852cf57f4943e6": "defect"
+  },
+  "patient_rulings_meta_p02": {
+    "by": "Shina Oguntoye (CSO)",
+    "on": "2026-11-03",
+    "source": "w6-pipeline-e09-m01-c02-p02-x5, step 7 (grouped and proposed by Claude, approved by the CSO 3 Nov 2026 11:38)",
+    "groups": {
+      "Q2_instruction_restated": {
+        "verdict": "acceptable",
+        "reason": "restates an instruction its input states, same force and scope (P2 / bar-4 standard)",
+        "keys": [
+          "7562a06f70a2b9ca"
+        ]
+      },
+      "promise_added": {
+        "verdict": "defect",
+        "reason": "report only, no bar: S16 'at home' narrows 'community follow-up'; S2 'you will be told' adds a promise to 'histology pending'",
+        "keys": [
+          "964ee139d87bcb1e",
+          "ff852cf57f4943e6"
+        ]
+      }
+    }
   }
 }

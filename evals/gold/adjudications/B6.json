@@ -25,7 +25,11 @@
     "d815cac8ed8de7ef": "acceptable",
     "e83efa20698536df": "acceptable",
     "fd4f9376b0a66811": "defect",
-    "ff9d8ae774ad1287": "defect"
+    "ff9d8ae774ad1287": "defect",
+    "e23c3890b006e439": "acceptable",
+    "e5cbeba507ca9c44": "acceptable",
+    "e71bdeaad558df5b": "acceptable",
+    "fc3e81acc603d428": "acceptable"
   },
   "compose_rulings_meta": {
     "by": "Shina Oguntoye (CSO)",
@@ -99,7 +103,12 @@
     "20382cd763ba0002": "acceptable",
     "24efd9640abc06c8": "acceptable",
     "914ff5b4dd46bc5a": "acceptable",
-    "bd8601932ad6bf4d": "defect"
+    "bd8601932ad6bf4d": "defect",
+    "8996a198193f8755": "acceptable",
+    "1b99652f7ae69992": "acceptable",
+    "872c8c01fe90f144": "acceptable",
+    "a8407f0141d362be": "acceptable",
+    "ac66d2b0dcc2512f": "acceptable"
   },
   "patient_rulings_meta": {
     "by": "Shina Oguntoye (CSO)",
@@ -135,6 +144,45 @@
           "bd8601932ad6bf4d"
         ]
       }
+    }
+  },
+  "patient_rulings_meta_p02": {
+    "by": "Shina Oguntoye (CSO)",
+    "on": "2026-11-03",
+    "source": "w6-pipeline-e09-m01-c02-p02-x5, step 7 (grouped and proposed by Claude, approved by the CSO 3 Nov 2026 11:38)",
+    "groups": {
+      "Q1_pattern_false_alarm": {
+        "verdict": "acceptable",
+        "reason": "pattern matched; the sentence restates its input and gives no instruction (P1 standard)",
+        "keys": [
+          "8996a198193f8755"
+        ]
+      },
+      "Q3_dose_change_as_given": {
+        "verdict": "acceptable",
+        "reason": "describes a dose change the cited section gives, same dose; not an instruction (P5); box-vs-prose duplication -> item 4",
+        "keys": [
+          "1b99652f7ae69992",
+          "872c8c01fe90f144",
+          "a8407f0141d362be",
+          "ac66d2b0dcc2512f"
+        ]
+      }
+    }
+  },
+  "compose_rulings_meta_p02": {
+    "by": "Shina Oguntoye (CSO)",
+    "on": "2026-11-03",
+    "source": "w6-pipeline-e09-m01-c02-p02-x5, step 6 (proposed by Claude, approved by the CSO 3 Nov 2026 11:38)",
+    "R9": {
+      "verdict": "acceptable",
+      "reason": "medication sentences outside the box, drug from a cited fact (R3/R5/R7 standard); Claude checked all 75: 0 from uncited facts",
+      "keys": [
+        "e23c3890b006e439",
+        "e5cbeba507ca9c44",
+        "e71bdeaad558df5b",
+        "fc3e81acc603d428"
+      ]
     }
   }
 }

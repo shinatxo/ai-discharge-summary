@@ -36,7 +36,9 @@
     "cc7d13444abb354a": "acceptable",
     "d365f4d09ee23668": "defect",
     "e610600fb153f192": "defect",
-    "e92cc3cb3c65f2fb": "defect"
+    "e92cc3cb3c65f2fb": "defect",
+    "09337ac8af6b4be6": "acceptable",
+    "697a69cd6a401045": "acceptable"
   },
   "compose_rulings_meta": {
     "by": "Shina Oguntoye (CSO)",
@@ -105,7 +107,12 @@
     "6f50fe3008b49aa7": "acceptable",
     "8a2649ad8bbc13ad": "acceptable",
     "9a6e467c733df12d": "acceptable",
-    "aee297731197d73a": "acceptable"
+    "aee297731197d73a": "acceptable",
+    "05cdcd10dbb33cb8": "acceptable",
+    "b40c4b877178539c": "acceptable",
+    "59475bba84cf6321": "acceptable",
+    "7804272741626d4e": "acceptable",
+    "c2fd60133c07d1a0": "acceptable"
   },
   "patient_rulings_meta": {
     "by": "Shina Oguntoye (CSO)",
@@ -134,6 +141,43 @@
           "aee297731197d73a"
         ]
       }
+    }
+  },
+  "patient_rulings_meta_p02": {
+    "by": "Shina Oguntoye (CSO)",
+    "on": "2026-11-03",
+    "source": "w6-pipeline-e09-m01-c02-p02-x5, step 7 (grouped and proposed by Claude, approved by the CSO 3 Nov 2026 11:38)",
+    "groups": {
+      "Q1_pattern_false_alarm": {
+        "verdict": "acceptable",
+        "reason": "pattern matched; the sentence restates its input and gives no instruction (P1 standard)",
+        "keys": [
+          "05cdcd10dbb33cb8",
+          "b40c4b877178539c"
+        ]
+      },
+      "Q2_instruction_restated": {
+        "verdict": "acceptable",
+        "reason": "restates an instruction its input states, same force and scope (P2 / bar-4 standard)",
+        "keys": [
+          "59475bba84cf6321",
+          "7804272741626d4e",
+          "c2fd60133c07d1a0"
+        ]
+      }
+    }
+  },
+  "compose_rulings_meta_p02": {
+    "by": "Shina Oguntoye (CSO)",
+    "on": "2026-11-03",
+    "source": "w6-pipeline-e09-m01-c02-p02-x5, step 6 (proposed by Claude, approved by the CSO 3 Nov 2026 11:38)",
+    "R9": {
+      "verdict": "acceptable",
+      "reason": "medication sentences outside the box, drug from a cited fact (R3/R5/R7 standard); Claude checked all 75: 0 from uncited facts",
+      "keys": [
+        "09337ac8af6b4be6",
+        "697a69cd6a401045"
+      ]
     }
   }
 }

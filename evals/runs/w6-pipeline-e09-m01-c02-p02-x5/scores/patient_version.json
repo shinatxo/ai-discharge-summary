@@ -1,0 +1,5047 @@
+{
+  "batch_id": "w6-pipeline-e09-m01-c02-p02-x5",
+  "metric": "compose_patient",
+  "metric_version": 2,
+  "results": [
+    {
+      "metric": "compose_patient",
+      "metric_version": 2,
+      "checks": {
+        "dose_or_frequency": 2
+      },
+      "counts": {
+        "sections": 5,
+        "sections_given": 6,
+        "sources_cited": 6,
+        "words_prose": 221,
+        "checks": 2
+      },
+      "box_problems": 0,
+      "fk_prose": 6.59,
+      "d5_prose": "pass",
+      "years_vs_notes": [],
+      "review": [
+        {
+          "kind": "medication",
+          "heading": "what_we_did",
+          "token": null,
+          "key": "74c70fe621f8b1ba",
+          "ruling": "acceptable"
+        },
+        {
+          "kind": "medication",
+          "heading": "what_we_did",
+          "token": null,
+          "key": "84d58343410a75e0",
+          "ruling": "acceptable"
+        }
+      ],
+      "latency": {
+        "step7_s": 5.088,
+        "step7_start_s": 20.16,
+        "critical_s": 25.248
+      },
+      "sourceless": [],
+      "audience": "adult",
+      "expected_audience": "adult",
+      "risk_sections_in_a": 0,
+      "unverified_sources": 0,
+      "assembled": true,
+      "gate": {
+        "status": "documented_advice",
+        "ok": true
+      },
+      "haz03_c": "pass",
+      "header": {
+        "present": false,
+        "expected": false
+      },
+      "non_english": {
+        "decided": 0,
+        "possible": 0
+      },
+      "fk_full": 5.94,
+      "title_ok": true,
+      "generation_id": "w6-pipeline-e09-m01-c02-p02-x5/r1/S1",
+      "scenario_id": "S1",
+      "run": 1
+    },
+    {
+      "metric": "compose_patient",
+      "metric_version": 2,
+      "checks": {
+        "advice_shaped": 1
+      },
+      "counts": {
+        "sections": 5,
+        "sections_given": 5,
+        "sources_cited": 5,
+        "words_prose": 178,
+        "checks": 1
+      },
+      "box_problems": 0,
+      "fk_prose": 5.78,
+      "d5_prose": "pass",
+      "years_vs_notes": [],
+      "review": [
+        {
+          "kind": "advice",
+          "heading": "what_we_did",
+          "token": null,
+          "key": "7562a06f70a2b9ca",
+          "ruling": "acceptable"
+        }
+      ],
+      "latency": {
+        "step7_s": 4.655,
+        "step7_start_s": 16.111,
+        "critical_s": 20.766
+      },
+      "sourceless": [],
+      "audience": "adult",
+      "expected_audience": "adult",
+      "risk_sections_in_a": 0,
+      "unverified_sources": 0,
+      "assembled": true,
+      "gate": {
+        "status": "documented_advice",
+        "ok": true
+      },
+      "haz03_c": "pass",
+      "header": {
+        "present": false,
+        "expected": false
+      },
+      "non_english": {
+        "decided": 0,
+        "possible": 0
+      },
+      "fk_full": 5.06,
+      "title_ok": true,
+      "generation_id": "w6-pipeline-e09-m01-c02-p02-x5/r1/S2",
+      "scenario_id": "S2",
+      "run": 1
+    },
+    {
+      "metric": "compose_patient",
+      "metric_version": 2,
+      "checks": {
+        "sensitive_text": 3
+      },
+      "counts": {
+        "sections": 5,
+        "sections_given": 6,
+        "sources_cited": 6,
+        "words_prose": 207,
+        "checks": 3
+      },
+      "box_problems": 0,
+      "fk_prose": 6.78,
+      "d5_prose": "pass",
+      "years_vs_notes": [],
+      "review": [
+        {
+          "kind": "sensitive",
+          "heading": "why_in_hospital",
+          "token": null,
+          "key": "e701a5eb5280d910",
+          "ruling": "acceptable"
+        },
+        {
+          "kind": "sensitive",
+          "heading": "why_in_hospital",
+          "token": null,
+          "key": "3c4ef567f41c42ba",
+          "ruling": "acceptable"
+        },
+        {
+          "kind": "sensitive",
+          "heading": "what_we_did",
+          "token": null,
+          "key": "596b9ec52f6c3898",
+          "ruling": "acceptable"
+        }
+      ],
+      "latency": {
+        "step7_s": 4.284,
+        "step7_start_s": 21.483,
+        "critical_s": 25.767
+      },
+      "sourceless": [],
+      "audience": "adult",
+      "expected_audience": "adult",
+      "risk_sections_in_a": 1,
+      "unverified_sources": 0,
+      "assembled": true,
+      "gate": {
+        "status": "documented_advice",
+        "ok": true
+      },
+      "haz03_c": "pass",
+      "header": {
+        "present": false,
+        "expected": false
+      },
+      "non_english": {
+        "decided": 0,
+        "possible": 0
+      },
+      "fk_full": 5.62,
+      "title_ok": true,
+      "generation_id": "w6-pipeline-e09-m01-c02-p02-x5/r1/S3",
+      "scenario_id": "S3",
+      "run": 1
+    },
+    {
+      "metric": "compose_patient",
+      "metric_version": 2,
+      "checks": {},
+      "counts": {
+        "sections": 5,
+        "sections_given": 5,
+        "sources_cited": 5,
+        "words_prose": 156,
+        "checks": 0
+      },
+      "box_problems": 0,
+      "fk_prose": 5.35,
+      "d5_prose": "pass",
+      "years_vs_notes": [],
+      "review": [],
+      "latency": {
+        "step7_s": 4.249,
+        "step7_start_s": 19.448,
+        "critical_s": 23.697
+      },
+      "sourceless": [],
+      "audience": "parent_or_carer",
+      "expected_audience": "parent_or_carer",
+      "risk_sections_in_a": 0,
+      "unverified_sources": 1,
+      "assembled": true,
+      "gate": {
+        "status": "documented_advice",
+        "ok": true
+      },
+      "haz03_c": "pass",
+      "header": {
+        "present": false,
+        "expected": false
+      },
+      "non_english": {
+        "decided": 0,
+        "possible": 0
+      },
+      "fk_full": 4.77,
+      "title_ok": true,
+      "generation_id": "w6-pipeline-e09-m01-c02-p02-x5/r1/S4",
+      "scenario_id": "S4",
+      "run": 1
+    },
+    {
+      "metric": "compose_patient",
+      "metric_version": 2,
+      "checks": {},
+      "counts": {
+        "sections": 5,
+        "sections_given": 5,
+        "sources_cited": 5,
+        "words_prose": 155,
+        "checks": 0
+      },
+      "box_problems": 0,
+      "fk_prose": 5.32,
+      "d5_prose": "pass",
+      "years_vs_notes": [],
+      "review": [],
+      "latency": {
+        "step7_s": 3.919,
+        "step7_start_s": 16.639,
+        "critical_s": 20.558
+      },
+      "sourceless": [],
+      "audience": "parent_or_carer",
+      "expected_audience": "parent_or_carer",
+      "risk_sections_in_a": 0,
+      "unverified_sources": 0,
+      "assembled": true,
+      "gate": {
+        "status": "documented_advice",
+        "ok": true
+      },
+      "haz03_c": "pass",
+      "header": {
+        "present": false,
+        "expected": false
+      },
+      "non_english": {
+        "decided": 0,
+        "possible": 0
+      },
+      "fk_full": 4.98,
+      "title_ok": true,
+      "generation_id": "w6-pipeline-e09-m01-c02-p02-x5/r1/S8",
+      "scenario_id": "S8",
+      "run": 1
+    },
+    {
+      "metric": "compose_patient",
+      "metric_version": 2,
+      "checks": {
+        "advice_shaped": 1,
+        "promise_shaped": 1
+      },
+      "counts": {
+        "sections": 5,
+        "sections_given": 6,
+        "sources_cited": 6,
+        "words_prose": 224,
+        "checks": 2
+      },
+      "box_problems": 0,
+      "fk_prose": 5.7,
+      "d5_prose": "pass",
+      "years_vs_notes": [],
+      "review": [
+        {
+          "kind": "advice",
+          "heading": "next_steps",
+          "token": null,
+          "key": "76993a71a4677aa5",
+          "ruling": "acceptable"
+        },
+        {
+          "kind": "promise",
+          "heading": "next_steps",
+          "token": null,
+          "key": "44f960e13516f5fc",
+          "ruling": "acceptable"
+        }
+      ],
+      "latency": {
+        "step7_s": 5.424,
+        "step7_start_s": 18.548,
+        "critical_s": 23.972
+      },
+      "sourceless": [],
+      "audience": "parent_or_carer",
+      "expected_audience": "parent_or_carer",
+      "risk_sections_in_a": 0,
+      "unverified_sources": 0,
+      "assembled": true,
+      "gate": {
+        "status": "clean",
+        "ok": true
+      },
+      "haz03_c": "pass",
+      "header": {
+        "present": false,
+        "expected": false
+      },
+      "non_english": {
+        "decided": 0,
+        "possible": 0
+      },
+      "fk_full": 5.48,
+      "title_ok": true,
+      "generation_id": "w6-pipeline-e09-m01-c02-p02-x5/r1/S9",
+      "scenario_id": "S9",
+      "run": 1
+    },
+    {
+      "metric": "compose_patient",
+      "metric_version": 2,
+      "checks": {
+        "advice_shaped": 1
+      },
+      "counts": {
+        "sections": 5,
+        "sections_given": 6,
+        "sources_cited": 6,
+        "words_prose": 188,
+        "checks": 1
+      },
+      "box_problems": 0,
+      "fk_prose": 6.16,
+      "d5_prose": "pass",
+      "years_vs_notes": [],
+      "review": [
+        {
+          "kind": "advice",
+          "heading": "why_in_hospital",
+          "token": null,
+          "key": "8cece9c35e7fa97b",
+          "ruling": "acceptable"
+        }
+      ],
+      "latency": {
+        "step7_s": 4.482,
+        "step7_start_s": 18.001,
+        "critical_s": 22.483
+      },
+      "sourceless": [],
+      "audience": "adult",
+      "expected_audience": "adult",
+      "risk_sections_in_a": 0,
+      "unverified_sources": 1,
+      "assembled": true,
+      "gate": {
+        "status": "documented_advice",
+        "ok": true
+      },
+      "haz03_c": "pass",
+      "header": {
+        "present": false,
+        "expected": false
+      },
+      "non_english": {
+        "decided": 0,
+        "possible": 0
+      },
+      "fk_full": 5.86,
+      "title_ok": true,
+      "generation_id": "w6-pipeline-e09-m01-c02-p02-x5/r1/S10",
+      "scenario_id": "S10",
+      "run": 1
+    },
+    {
+      "metric": "compose_patient",
+      "metric_version": 2,
+      "checks": {
+        "advice_shaped": 2
+      },
+      "counts": {
+        "sections": 5,
+        "sections_given": 5,
+        "sources_cited": 5,
+        "words_prose": 264,
+        "checks": 2
+      },
+      "box_problems": 0,
+      "fk_prose": 6.18,
+      "d5_prose": "pass",
+      "years_vs_notes": [],
+      "review": [
+        {
+          "kind": "advice",
+          "heading": "what_we_did",
+          "token": null,
+          "key": "7804272741626d4e",
+          "ruling": "acceptable"
+        },
+        {
+          "kind": "advice",
+          "heading": "next_steps",
+          "token": null,
+          "key": "07e54aed32cae96b",
+          "ruling": "acceptable"
+        }
+      ],
+      "latency": {
+        "step7_s": 5.325,
+        "step7_start_s": 20.785,
+        "critical_s": 26.11
+      },
+      "sourceless": [],
+      "audience": "adult",
+      "expected_audience": "adult",
+      "risk_sections_in_a": 0,
+      "unverified_sources": 0,
+      "assembled": true,
+      "gate": {
+        "status": "clean",
+        "ok": true
+      },
+      "haz03_c": "pass",
+      "header": {
+        "present": false,
+        "expected": false
+      },
+      "non_english": {
+        "decided": 0,
+        "possible": 0
+      },
+      "fk_full": 6.33,
+      "title_ok": true,
+      "generation_id": "w6-pipeline-e09-m01-c02-p02-x5/r1/S11",
+      "scenario_id": "S11",
+      "run": 1
+    },
+    {
+      "metric": "compose_patient",
+      "metric_version": 2,
+      "checks": {
+        "advice_shaped": 2
+      },
+      "counts": {
+        "sections": 5,
+        "sections_given": 5,
+        "sources_cited": 5,
+        "words_prose": 286,
+        "checks": 2
+      },
+      "box_problems": 0,
+      "fk_prose": 6.18,
+      "d5_prose": "pass",
+      "years_vs_notes": [],
+      "review": [
+        {
+          "kind": "advice",
+          "heading": "why_in_hospital",
+          "token": null,
+          "key": "7e5f2833afeb2cda",
+          "ruling": "acceptable"
+        },
+        {
+          "kind": "advice",
+          "heading": "next_steps",
+          "token": null,
+          "key": "20b28d1a4f331da1",
+          "ruling": "acceptable"
+        }
+      ],
+      "latency": {
+        "step7_s": 6.03,
+        "step7_start_s": 22.467,
+        "critical_s": 28.497
+      },
+      "sourceless": [],
+      "audience": "adult",
+      "expected_audience": "adult",
+      "risk_sections_in_a": 0,
+      "unverified_sources": 0,
+      "assembled": true,
+      "gate": {
+        "status": "documented_advice",
+        "ok": true
+      },
+      "haz03_c": "pass",
+      "header": {
+        "present": false,
+        "expected": false
+      },
+      "non_english": {
+        "decided": 0,
+        "possible": 0
+      },
+      "fk_full": 5.58,
+      "title_ok": true,
+      "generation_id": "w6-pipeline-e09-m01-c02-p02-x5/r1/S12",
+      "scenario_id": "S12",
+      "run": 1
+    },
+    {
+      "metric": "compose_patient",
+      "metric_version": 2,
+      "checks": {},
+      "counts": {
+        "sections": 5,
+        "sections_given": 6,
+        "sources_cited": 6,
+        "words_prose": 293,
+        "checks": 0
+      },
+      "box_problems": 0,
+      "fk_prose": 7.26,
+      "d5_prose": "pass",
+      "years_vs_notes": [],
+      "review": [],
+      "latency": {
+        "step7_s": 6.208,
+        "step7_start_s": 21.802,
+        "critical_s": 28.01
+      },
+      "sourceless": [],
+      "audience": "adult",
+      "expected_audience": "adult",
+      "risk_sections_in_a": 0,
+      "unverified_sources": 0,
+      "assembled": true,
+      "gate": {
+        "status": "documented_advice",
+        "ok": true
+      },
+      "haz03_c": "pass",
+      "header": {
+        "present": false,
+        "expected": false
+      },
+      "non_english": {
+        "decided": 0,
+        "possible": 0
+      },
+      "fk_full": 6.23,
+      "title_ok": true,
+      "generation_id": "w6-pipeline-e09-m01-c02-p02-x5/r1/S13",
+      "scenario_id": "S13",
+      "run": 1
+    },
+    {
+      "metric": "compose_patient",
+      "metric_version": 2,
+      "checks": {},
+      "counts": {
+        "sections": 5,
+        "sections_given": 6,
+        "sources_cited": 6,
+        "words_prose": 204,
+        "checks": 0
+      },
+      "box_problems": 0,
+      "fk_prose": 7.42,
+      "d5_prose": "pass",
+      "years_vs_notes": [],
+      "review": [],
+      "latency": {
+        "step7_s": 4.414,
+        "step7_start_s": 20.649,
+        "critical_s": 25.063
+      },
+      "sourceless": [],
+      "audience": "adult",
+      "expected_audience": "adult",
+      "risk_sections_in_a": 0,
+      "unverified_sources": 1,
+      "assembled": true,
+      "gate": {
+        "status": "clean",
+        "ok": true
+      },
+      "haz03_c": "pass",
+      "header": {
+        "present": false,
+        "expected": false
+      },
+      "non_english": {
+        "decided": 0,
+        "possible": 0
+      },
+      "fk_full": 6.04,
+      "title_ok": true,
+      "generation_id": "w6-pipeline-e09-m01-c02-p02-x5/r1/S14",
+      "scenario_id": "S14",
+      "run": 1
+    },
+    {
+      "metric": "compose_patient",
+      "metric_version": 2,
+      "checks": {},
+      "counts": {
+        "sections": 5,
+        "sections_given": 6,
+        "sources_cited": 6,
+        "words_prose": 194,
+        "checks": 0
+      },
+      "box_problems": 0,
+      "fk_prose": 5.4,
+      "d5_prose": "pass",
+      "years_vs_notes": [],
+      "review": [],
+      "latency": {
+        "step7_s": 4.458,
+        "step7_start_s": 18.0,
+        "critical_s": 22.458
+      },
+      "sourceless": [],
+      "audience": "adult",
+      "expected_audience": "adult",
+      "risk_sections_in_a": 0,
+      "unverified_sources": 0,
+      "assembled": true,
+      "gate": {
+        "status": "clean",
+        "ok": true
+      },
+      "haz03_c": "pass",
+      "header": {
+        "present": false,
+        "expected": false
+      },
+      "non_english": {
+        "decided": 0,
+        "possible": 0
+      },
+      "fk_full": 5.3,
+      "title_ok": true,
+      "generation_id": "w6-pipeline-e09-m01-c02-p02-x5/r1/S15",
+      "scenario_id": "S15",
+      "run": 1
+    },
+    {
+      "metric": "compose_patient",
+      "metric_version": 2,
+      "checks": {
+        "promise_shaped": 1
+      },
+      "counts": {
+        "sections": 5,
+        "sections_given": 6,
+        "sources_cited": 6,
+        "words_prose": 289,
+        "checks": 1
+      },
+      "box_problems": 0,
+      "fk_prose": 7.17,
+      "d5_prose": "pass",
+      "years_vs_notes": [],
+      "review": [
+        {
+          "kind": "promise",
+          "heading": "next_steps",
+          "token": null,
+          "key": "7717bfde4acd4291",
+          "ruling": "acceptable"
+        },
+        {
+          "kind": "drug",
+          "heading": "next_steps",
+          "token": "warfarin",
+          "key": "688d3a00af65cb8b",
+          "ruling": "acceptable"
+        }
+      ],
+      "latency": {
+        "step7_s": 6.703,
+        "step7_start_s": 19.692,
+        "critical_s": 26.395
+      },
+      "sourceless": [],
+      "audience": "adult",
+      "expected_audience": "adult",
+      "risk_sections_in_a": 0,
+      "unverified_sources": 0,
+      "assembled": true,
+      "gate": {
+        "status": "clean",
+        "ok": true
+      },
+      "haz03_c": "pass",
+      "header": {
+        "present": false,
+        "expected": false
+      },
+      "non_english": {
+        "decided": 0,
+        "possible": 0
+      },
+      "fk_full": 6.36,
+      "title_ok": true,
+      "generation_id": "w6-pipeline-e09-m01-c02-p02-x5/r1/S16",
+      "scenario_id": "S16",
+      "run": 1
+    },
+    {
+      "metric": "compose_patient",
+      "metric_version": 2,
+      "checks": {
+        "dose_or_frequency": 1
+      },
+      "counts": {
+        "sections": 5,
+        "sections_given": 6,
+        "sources_cited": 6,
+        "words_prose": 167,
+        "checks": 1
+      },
+      "box_problems": 0,
+      "fk_prose": 5.55,
+      "d5_prose": "pass",
+      "years_vs_notes": [],
+      "review": [
+        {
+          "kind": "medication",
+          "heading": "what_we_did",
+          "token": null,
+          "key": "588b23ced1a1c02a",
+          "ruling": "acceptable"
+        }
+      ],
+      "latency": {
+        "step7_s": 4.425,
+        "step7_start_s": 19.26,
+        "critical_s": 23.685
+      },
+      "sourceless": [],
+      "audience": "adult",
+      "expected_audience": "adult",
+      "risk_sections_in_a": 0,
+      "unverified_sources": 0,
+      "assembled": true,
+      "gate": {
+        "status": "clean",
+        "ok": true
+      },
+      "haz03_c": "pass",
+      "header": {
+        "present": false,
+        "expected": false
+      },
+      "non_english": {
+        "decided": 0,
+        "possible": 0
+      },
+      "fk_full": 5.27,
+      "title_ok": true,
+      "generation_id": "w6-pipeline-e09-m01-c02-p02-x5/r1/S17",
+      "scenario_id": "S17",
+      "run": 1
+    },
+    {
+      "metric": "compose_patient",
+      "metric_version": 2,
+      "checks": {},
+      "counts": {
+        "sections": 5,
+        "sections_given": 6,
+        "sources_cited": 6,
+        "words_prose": 160,
+        "checks": 0
+      },
+      "box_problems": 0,
+      "fk_prose": 4.24,
+      "d5_prose": "pass",
+      "years_vs_notes": [],
+      "review": [],
+      "latency": {
+        "step7_s": 4.156,
+        "step7_start_s": 15.883,
+        "critical_s": 20.039
+      },
+      "sourceless": [],
+      "audience": "adult",
+      "expected_audience": "adult",
+      "risk_sections_in_a": 0,
+      "unverified_sources": 0,
+      "assembled": true,
+      "gate": {
+        "status": "clean",
+        "ok": true
+      },
+      "haz03_c": "pass",
+      "header": {
+        "present": false,
+        "expected": false
+      },
+      "non_english": {
+        "decided": 0,
+        "possible": 0
+      },
+      "fk_full": 4.02,
+      "title_ok": true,
+      "generation_id": "w6-pipeline-e09-m01-c02-p02-x5/r1/S18",
+      "scenario_id": "S18",
+      "run": 1
+    },
+    {
+      "metric": "compose_patient",
+      "metric_version": 2,
+      "checks": {},
+      "counts": {
+        "sections": 5,
+        "sections_given": 6,
+        "sources_cited": 6,
+        "words_prose": 128,
+        "checks": 0
+      },
+      "box_problems": 0,
+      "fk_prose": 6.69,
+      "d5_prose": "pass",
+      "years_vs_notes": [],
+      "review": [],
+      "latency": {
+        "step7_s": 3.607,
+        "step7_start_s": 19.102,
+        "critical_s": 22.709
+      },
+      "sourceless": [],
+      "audience": "adult",
+      "expected_audience": "adult",
+      "risk_sections_in_a": 0,
+      "unverified_sources": 0,
+      "assembled": true,
+      "gate": {
+        "status": "documented_advice",
+        "ok": true
+      },
+      "haz03_c": "pass",
+      "header": {
+        "present": false,
+        "expected": false
+      },
+      "non_english": {
+        "decided": 0,
+        "possible": 0
+      },
+      "fk_full": 6.02,
+      "title_ok": true,
+      "generation_id": "w6-pipeline-e09-m01-c02-p02-x5/r1/A5",
+      "scenario_id": "A5",
+      "run": 1
+    },
+    {
+      "metric": "compose_patient",
+      "metric_version": 2,
+      "checks": {
+        "advice_shaped": 1,
+        "dose_or_frequency": 1
+      },
+      "counts": {
+        "sections": 5,
+        "sections_given": 6,
+        "sources_cited": 6,
+        "words_prose": 139,
+        "checks": 2
+      },
+      "box_problems": 0,
+      "fk_prose": 5.22,
+      "d5_prose": "pass",
+      "years_vs_notes": [],
+      "review": [
+        {
+          "kind": "advice",
+          "heading": "why_in_hospital",
+          "token": null,
+          "key": "8996a198193f8755",
+          "ruling": "acceptable"
+        },
+        {
+          "kind": "medication",
+          "heading": "what_we_did",
+          "token": null,
+          "key": "a8407f0141d362be",
+          "ruling": "acceptable"
+        }
+      ],
+      "latency": {
+        "step7_s": 3.588,
+        "step7_start_s": 17.462,
+        "critical_s": 21.05
+      },
+      "sourceless": [],
+      "audience": "adult",
+      "expected_audience": "adult",
+      "risk_sections_in_a": 0,
+      "unverified_sources": 0,
+      "assembled": true,
+      "gate": {
+        "status": "documented_advice",
+        "ok": true
+      },
+      "haz03_c": "pass",
+      "header": {
+        "present": false,
+        "expected": false
+      },
+      "non_english": {
+        "decided": 0,
+        "possible": 0
+      },
+      "fk_full": 4.59,
+      "title_ok": true,
+      "generation_id": "w6-pipeline-e09-m01-c02-p02-x5/r1/B6",
+      "scenario_id": "B6",
+      "run": 1
+    },
+    {
+      "metric": "compose_patient",
+      "metric_version": 2,
+      "checks": {},
+      "counts": {
+        "sections": 5,
+        "sections_given": 4,
+        "sources_cited": 4,
+        "words_prose": 104,
+        "checks": 0
+      },
+      "box_problems": 0,
+      "fk_prose": 4.92,
+      "d5_prose": "pass",
+      "years_vs_notes": [],
+      "review": [],
+      "latency": {
+        "step7_s": 3.016,
+        "step7_start_s": 10.588,
+        "critical_s": 13.604
+      },
+      "sourceless": [],
+      "audience": "adult",
+      "expected_audience": "adult",
+      "risk_sections_in_a": 0,
+      "unverified_sources": 0,
+      "assembled": true,
+      "gate": {
+        "status": "clean",
+        "ok": true
+      },
+      "haz03_c": "pass",
+      "header": {
+        "present": true,
+        "expected": true
+      },
+      "non_english": {
+        "decided": 0,
+        "possible": 0
+      },
+      "fk_full": 4.93,
+      "title_ok": true,
+      "generation_id": "w6-pipeline-e09-m01-c02-p02-x5/r1/C7",
+      "scenario_id": "C7",
+      "run": 1
+    },
+    {
+      "metric": "compose_patient",
+      "metric_version": 2,
+      "checks": {},
+      "counts": {
+        "sections": 5,
+        "sections_given": 6,
+        "sources_cited": 6,
+        "words_prose": 209,
+        "checks": 0
+      },
+      "box_problems": 0,
+      "fk_prose": 6.69,
+      "d5_prose": "pass",
+      "years_vs_notes": [],
+      "review": [],
+      "latency": {
+        "step7_s": 5.044,
+        "step7_start_s": 20.156,
+        "critical_s": 25.2
+      },
+      "sourceless": [],
+      "audience": "adult",
+      "expected_audience": "adult",
+      "risk_sections_in_a": 0,
+      "unverified_sources": 0,
+      "assembled": true,
+      "gate": {
+        "status": "documented_advice",
+        "ok": true
+      },
+      "haz03_c": "pass",
+      "header": {
+        "present": false,
+        "expected": false
+      },
+      "non_english": {
+        "decided": 0,
+        "possible": 0
+      },
+      "fk_full": 5.94,
+      "title_ok": true,
+      "generation_id": "w6-pipeline-e09-m01-c02-p02-x5/r2/S1",
+      "scenario_id": "S1",
+      "run": 2
+    },
+    {
+      "metric": "compose_patient",
+      "metric_version": 2,
+      "checks": {
+        "promise_shaped": 1
+      },
+      "counts": {
+        "sections": 5,
+        "sections_given": 5,
+        "sources_cited": 5,
+        "words_prose": 173,
+        "checks": 1
+      },
+      "box_problems": 0,
+      "fk_prose": 5.5,
+      "d5_prose": "pass",
+      "years_vs_notes": [],
+      "review": [
+        {
+          "kind": "promise",
+          "heading": "next_steps",
+          "token": null,
+          "key": "964ee139d87bcb1e",
+          "ruling": "defect"
+        }
+      ],
+      "latency": {
+        "step7_s": 4.458,
+        "step7_start_s": 16.324,
+        "critical_s": 20.782
+      },
+      "sourceless": [],
+      "audience": "adult",
+      "expected_audience": "adult",
+      "risk_sections_in_a": 0,
+      "unverified_sources": 1,
+      "assembled": true,
+      "gate": {
+        "status": "documented_advice",
+        "ok": true
+      },
+      "haz03_c": "pass",
+      "header": {
+        "present": false,
+        "expected": false
+      },
+      "non_english": {
+        "decided": 0,
+        "possible": 0
+      },
+      "fk_full": 5.22,
+      "title_ok": true,
+      "generation_id": "w6-pipeline-e09-m01-c02-p02-x5/r2/S2",
+      "scenario_id": "S2",
+      "run": 2
+    },
+    {
+      "metric": "compose_patient",
+      "metric_version": 2,
+      "checks": {
+        "sensitive_text": 4
+      },
+      "counts": {
+        "sections": 5,
+        "sections_given": 6,
+        "sources_cited": 6,
+        "words_prose": 148,
+        "checks": 4
+      },
+      "box_problems": 0,
+      "fk_prose": 6.49,
+      "d5_prose": "pass",
+      "years_vs_notes": [],
+      "review": [
+        {
+          "kind": "sensitive",
+          "heading": "why_in_hospital",
+          "token": null,
+          "key": "b55c2afbec0ffd18",
+          "ruling": "acceptable"
+        },
+        {
+          "kind": "sensitive",
+          "heading": "why_in_hospital",
+          "token": null,
+          "key": "3c4ef567f41c42ba",
+          "ruling": "acceptable"
+        },
+        {
+          "kind": "sensitive",
+          "heading": "what_we_did",
+          "token": null,
+          "key": "b5bd283a3623916b",
+          "ruling": "acceptable"
+        },
+        {
+          "kind": "sensitive",
+          "heading": "what_we_did",
+          "token": null,
+          "key": "d97c8cc25f995783",
+          "ruling": "acceptable"
+        }
+      ],
+      "latency": {
+        "step7_s": 3.178,
+        "step7_start_s": 20.677,
+        "critical_s": 23.855
+      },
+      "sourceless": [],
+      "audience": "adult",
+      "expected_audience": "adult",
+      "risk_sections_in_a": 1,
+      "unverified_sources": 0,
+      "assembled": true,
+      "gate": {
+        "status": "documented_advice",
+        "ok": true
+      },
+      "haz03_c": "pass",
+      "header": {
+        "present": false,
+        "expected": false
+      },
+      "non_english": {
+        "decided": 0,
+        "possible": 0
+      },
+      "fk_full": 5.25,
+      "title_ok": true,
+      "generation_id": "w6-pipeline-e09-m01-c02-p02-x5/r2/S3",
+      "scenario_id": "S3",
+      "run": 2
+    },
+    {
+      "metric": "compose_patient",
+      "metric_version": 2,
+      "checks": {
+        "promise_shaped": 1
+      },
+      "counts": {
+        "sections": 5,
+        "sections_given": 5,
+        "sources_cited": 5,
+        "words_prose": 187,
+        "checks": 1
+      },
+      "box_problems": 0,
+      "fk_prose": 6.25,
+      "d5_prose": "pass",
+      "years_vs_notes": [],
+      "review": [
+        {
+          "kind": "promise",
+          "heading": "what_we_did",
+          "token": null,
+          "key": "16df0d49b08b55a7",
+          "ruling": "acceptable"
+        }
+      ],
+      "latency": {
+        "step7_s": 4.151,
+        "step7_start_s": 17.928,
+        "critical_s": 22.079
+      },
+      "sourceless": [],
+      "audience": "parent_or_carer",
+      "expected_audience": "parent_or_carer",
+      "risk_sections_in_a": 0,
+      "unverified_sources": 1,
+      "assembled": true,
+      "gate": {
+        "status": "documented_advice",
+        "ok": true
+      },
+      "haz03_c": "pass",
+      "header": {
+        "present": false,
+        "expected": false
+      },
+      "non_english": {
+        "decided": 0,
+        "possible": 0
+      },
+      "fk_full": 5.44,
+      "title_ok": true,
+      "generation_id": "w6-pipeline-e09-m01-c02-p02-x5/r2/S4",
+      "scenario_id": "S4",
+      "run": 2
+    },
+    {
+      "metric": "compose_patient",
+      "metric_version": 2,
+      "checks": {},
+      "counts": {
+        "sections": 5,
+        "sections_given": 5,
+        "sources_cited": 5,
+        "words_prose": 157,
+        "checks": 0
+      },
+      "box_problems": 0,
+      "fk_prose": 5.77,
+      "d5_prose": "pass",
+      "years_vs_notes": [],
+      "review": [],
+      "latency": {
+        "step7_s": 4.227,
+        "step7_start_s": 15.667,
+        "critical_s": 19.894
+      },
+      "sourceless": [],
+      "audience": "parent_or_carer",
+      "expected_audience": "parent_or_carer",
+      "risk_sections_in_a": 0,
+      "unverified_sources": 1,
+      "assembled": true,
+      "gate": {
+        "status": "documented_advice",
+        "ok": true
+      },
+      "haz03_c": "pass",
+      "header": {
+        "present": false,
+        "expected": false
+      },
+      "non_english": {
+        "decided": 0,
+        "possible": 0
+      },
+      "fk_full": 5.28,
+      "title_ok": true,
+      "generation_id": "w6-pipeline-e09-m01-c02-p02-x5/r2/S8",
+      "scenario_id": "S8",
+      "run": 2
+    },
+    {
+      "metric": "compose_patient",
+      "metric_version": 2,
+      "checks": {
+        "advice_shaped": 1,
+        "promise_shaped": 1
+      },
+      "counts": {
+        "sections": 5,
+        "sections_given": 6,
+        "sources_cited": 6,
+        "words_prose": 257,
+        "checks": 2
+      },
+      "box_problems": 0,
+      "fk_prose": 5.09,
+      "d5_prose": "pass",
+      "years_vs_notes": [],
+      "review": [
+        {
+          "kind": "advice",
+          "heading": "next_steps",
+          "token": null,
+          "key": "3e46cbfb654f87a9",
+          "ruling": "acceptable"
+        },
+        {
+          "kind": "promise",
+          "heading": "next_steps",
+          "token": null,
+          "key": "533a536be33e1ef0",
+          "ruling": "acceptable"
+        }
+      ],
+      "latency": {
+        "step7_s": 5.562,
+        "step7_start_s": 18.771,
+        "critical_s": 24.333
+      },
+      "sourceless": [],
+      "audience": "parent_or_carer",
+      "expected_audience": "parent_or_carer",
+      "risk_sections_in_a": 0,
+      "unverified_sources": 0,
+      "assembled": true,
+      "gate": {
+        "status": "clean",
+        "ok": true
+      },
+      "haz03_c": "pass",
+      "header": {
+        "present": false,
+        "expected": false
+      },
+      "non_english": {
+        "decided": 0,
+        "possible": 0
+      },
+      "fk_full": 5.26,
+      "title_ok": true,
+      "generation_id": "w6-pipeline-e09-m01-c02-p02-x5/r2/S9",
+      "scenario_id": "S9",
+      "run": 2
+    },
+    {
+      "metric": "compose_patient",
+      "metric_version": 2,
+      "checks": {
+        "dose_or_frequency": 1,
+        "advice_shaped": 1
+      },
+      "counts": {
+        "sections": 5,
+        "sections_given": 6,
+        "sources_cited": 6,
+        "words_prose": 203,
+        "checks": 2
+      },
+      "box_problems": 0,
+      "fk_prose": 6.17,
+      "d5_prose": "pass",
+      "years_vs_notes": [],
+      "review": [
+        {
+          "kind": "medication",
+          "heading": "why_in_hospital",
+          "token": null,
+          "key": "cea7e909e7313f13",
+          "ruling": "acceptable"
+        },
+        {
+          "kind": "advice",
+          "heading": "why_in_hospital",
+          "token": null,
+          "key": "9b9090ef27ca53b0",
+          "ruling": "acceptable"
+        }
+      ],
+      "latency": {
+        "step7_s": 4.647,
+        "step7_start_s": 17.627,
+        "critical_s": 22.274
+      },
+      "sourceless": [],
+      "audience": "adult",
+      "expected_audience": "adult",
+      "risk_sections_in_a": 0,
+      "unverified_sources": 0,
+      "assembled": true,
+      "gate": {
+        "status": "documented_advice",
+        "ok": true
+      },
+      "haz03_c": "pass",
+      "header": {
+        "present": false,
+        "expected": false
+      },
+      "non_english": {
+        "decided": 0,
+        "possible": 0
+      },
+      "fk_full": 5.8,
+      "title_ok": true,
+      "generation_id": "w6-pipeline-e09-m01-c02-p02-x5/r2/S10",
+      "scenario_id": "S10",
+      "run": 2
+    },
+    {
+      "metric": "compose_patient",
+      "metric_version": 2,
+      "checks": {
+        "advice_shaped": 2
+      },
+      "counts": {
+        "sections": 5,
+        "sections_given": 5,
+        "sources_cited": 5,
+        "words_prose": 266,
+        "checks": 2
+      },
+      "box_problems": 0,
+      "fk_prose": 6.51,
+      "d5_prose": "pass",
+      "years_vs_notes": [],
+      "review": [
+        {
+          "kind": "advice",
+          "heading": "what_we_did",
+          "token": null,
+          "key": "59475bba84cf6321",
+          "ruling": "acceptable"
+        },
+        {
+          "kind": "advice",
+          "heading": "next_steps",
+          "token": null,
+          "key": "05cdcd10dbb33cb8",
+          "ruling": "acceptable"
+        }
+      ],
+      "latency": {
+        "step7_s": 5.594,
+        "step7_start_s": 22.519,
+        "critical_s": 28.113
+      },
+      "sourceless": [],
+      "audience": "adult",
+      "expected_audience": "adult",
+      "risk_sections_in_a": 0,
+      "unverified_sources": 1,
+      "assembled": true,
+      "gate": {
+        "status": "clean",
+        "ok": true
+      },
+      "haz03_c": "pass",
+      "header": {
+        "present": false,
+        "expected": false
+      },
+      "non_english": {
+        "decided": 0,
+        "possible": 0
+      },
+      "fk_full": 6.32,
+      "title_ok": true,
+      "generation_id": "w6-pipeline-e09-m01-c02-p02-x5/r2/S11",
+      "scenario_id": "S11",
+      "run": 2
+    },
+    {
+      "metric": "compose_patient",
+      "metric_version": 2,
+      "checks": {
+        "advice_shaped": 1
+      },
+      "counts": {
+        "sections": 5,
+        "sections_given": 5,
+        "sources_cited": 5,
+        "words_prose": 245,
+        "checks": 1
+      },
+      "box_problems": 0,
+      "fk_prose": 5.65,
+      "d5_prose": "pass",
+      "years_vs_notes": [],
+      "review": [
+        {
+          "kind": "advice",
+          "heading": "next_steps",
+          "token": null,
+          "key": "d0f5ec706342d43c",
+          "ruling": "acceptable"
+        }
+      ],
+      "latency": {
+        "step7_s": 5.65,
+        "step7_start_s": 22.859,
+        "critical_s": 28.509
+      },
+      "sourceless": [],
+      "audience": "adult",
+      "expected_audience": "adult",
+      "risk_sections_in_a": 0,
+      "unverified_sources": 0,
+      "assembled": true,
+      "gate": {
+        "status": "documented_advice",
+        "ok": true
+      },
+      "haz03_c": "pass",
+      "header": {
+        "present": false,
+        "expected": false
+      },
+      "non_english": {
+        "decided": 0,
+        "possible": 0
+      },
+      "fk_full": 5.2,
+      "title_ok": true,
+      "generation_id": "w6-pipeline-e09-m01-c02-p02-x5/r2/S12",
+      "scenario_id": "S12",
+      "run": 2
+    },
+    {
+      "metric": "compose_patient",
+      "metric_version": 2,
+      "checks": {},
+      "counts": {
+        "sections": 5,
+        "sections_given": 6,
+        "sources_cited": 6,
+        "words_prose": 314,
+        "checks": 0
+      },
+      "box_problems": 0,
+      "fk_prose": 6.62,
+      "d5_prose": "pass",
+      "years_vs_notes": [],
+      "review": [],
+      "latency": {
+        "step7_s": 6.559,
+        "step7_start_s": 23.308,
+        "critical_s": 29.867
+      },
+      "sourceless": [],
+      "audience": "adult",
+      "expected_audience": "adult",
+      "risk_sections_in_a": 0,
+      "unverified_sources": 0,
+      "assembled": true,
+      "gate": {
+        "status": "documented_advice",
+        "ok": true
+      },
+      "haz03_c": "pass",
+      "header": {
+        "present": false,
+        "expected": false
+      },
+      "non_english": {
+        "decided": 0,
+        "possible": 0
+      },
+      "fk_full": 5.92,
+      "title_ok": true,
+      "generation_id": "w6-pipeline-e09-m01-c02-p02-x5/r2/S13",
+      "scenario_id": "S13",
+      "run": 2
+    },
+    {
+      "metric": "compose_patient",
+      "metric_version": 2,
+      "checks": {
+        "promise_shaped": 1
+      },
+      "counts": {
+        "sections": 5,
+        "sections_given": 6,
+        "sources_cited": 6,
+        "words_prose": 219,
+        "checks": 1
+      },
+      "box_problems": 0,
+      "fk_prose": 6.83,
+      "d5_prose": "pass",
+      "years_vs_notes": [],
+      "review": [
+        {
+          "kind": "promise",
+          "heading": "next_steps",
+          "token": null,
+          "key": "ba34c835e0c5fe18",
+          "ruling": "acceptable"
+        }
+      ],
+      "latency": {
+        "step7_s": 4.88,
+        "step7_start_s": 21.372,
+        "critical_s": 26.252
+      },
+      "sourceless": [],
+      "audience": "adult",
+      "expected_audience": "adult",
+      "risk_sections_in_a": 0,
+      "unverified_sources": 0,
+      "assembled": true,
+      "gate": {
+        "status": "clean",
+        "ok": true
+      },
+      "haz03_c": "pass",
+      "header": {
+        "present": false,
+        "expected": false
+      },
+      "non_english": {
+        "decided": 0,
+        "possible": 0
+      },
+      "fk_full": 5.68,
+      "title_ok": true,
+      "generation_id": "w6-pipeline-e09-m01-c02-p02-x5/r2/S14",
+      "scenario_id": "S14",
+      "run": 2
+    },
+    {
+      "metric": "compose_patient",
+      "metric_version": 2,
+      "checks": {},
+      "counts": {
+        "sections": 5,
+        "sections_given": 6,
+        "sources_cited": 6,
+        "words_prose": 187,
+        "checks": 0
+      },
+      "box_problems": 0,
+      "fk_prose": 6.83,
+      "d5_prose": "pass",
+      "years_vs_notes": [],
+      "review": [],
+      "latency": {
+        "step7_s": 4.194,
+        "step7_start_s": 18.337,
+        "critical_s": 22.531
+      },
+      "sourceless": [],
+      "audience": "adult",
+      "expected_audience": "adult",
+      "risk_sections_in_a": 0,
+      "unverified_sources": 0,
+      "assembled": true,
+      "gate": {
+        "status": "clean",
+        "ok": true
+      },
+      "haz03_c": "pass",
+      "header": {
+        "present": false,
+        "expected": false
+      },
+      "non_english": {
+        "decided": 0,
+        "possible": 0
+      },
+      "fk_full": 6.14,
+      "title_ok": true,
+      "generation_id": "w6-pipeline-e09-m01-c02-p02-x5/r2/S15",
+      "scenario_id": "S15",
+      "run": 2
+    },
+    {
+      "metric": "compose_patient",
+      "metric_version": 2,
+      "checks": {
+        "promise_shaped": 1
+      },
+      "counts": {
+        "sections": 5,
+        "sections_given": 6,
+        "sources_cited": 6,
+        "words_prose": 271,
+        "checks": 1
+      },
+      "box_problems": 0,
+      "fk_prose": 6.35,
+      "d5_prose": "pass",
+      "years_vs_notes": [],
+      "review": [
+        {
+          "kind": "promise",
+          "heading": "next_steps",
+          "token": null,
+          "key": "313433ba07cdc5f3",
+          "ruling": "defect"
+        },
+        {
+          "kind": "drug",
+          "heading": "next_steps",
+          "token": "warfarin",
+          "key": "688d3a00af65cb8b",
+          "ruling": "acceptable"
+        }
+      ],
+      "latency": {
+        "step7_s": 6.692,
+        "step7_start_s": 19.173,
+        "critical_s": 25.865
+      },
+      "sourceless": [],
+      "audience": "adult",
+      "expected_audience": "adult",
+      "risk_sections_in_a": 0,
+      "unverified_sources": 1,
+      "assembled": true,
+      "gate": {
+        "status": "clean",
+        "ok": true
+      },
+      "haz03_c": "pass",
+      "header": {
+        "present": false,
+        "expected": false
+      },
+      "non_english": {
+        "decided": 0,
+        "possible": 0
+      },
+      "fk_full": 5.83,
+      "title_ok": true,
+      "generation_id": "w6-pipeline-e09-m01-c02-p02-x5/r2/S16",
+      "scenario_id": "S16",
+      "run": 2
+    },
+    {
+      "metric": "compose_patient",
+      "metric_version": 2,
+      "checks": {
+        "dose_or_frequency": 1
+      },
+      "counts": {
+        "sections": 5,
+        "sections_given": 6,
+        "sources_cited": 6,
+        "words_prose": 179,
+        "checks": 1
+      },
+      "box_problems": 0,
+      "fk_prose": 6.61,
+      "d5_prose": "pass",
+      "years_vs_notes": [],
+      "review": [
+        {
+          "kind": "medication",
+          "heading": "what_we_did",
+          "token": null,
+          "key": "9d699afbe69dff60",
+          "ruling": "acceptable"
+        }
+      ],
+      "latency": {
+        "step7_s": 4.583,
+        "step7_start_s": 18.969,
+        "critical_s": 23.552
+      },
+      "sourceless": [],
+      "audience": "adult",
+      "expected_audience": "adult",
+      "risk_sections_in_a": 0,
+      "unverified_sources": 0,
+      "assembled": true,
+      "gate": {
+        "status": "clean",
+        "ok": true
+      },
+      "haz03_c": "pass",
+      "header": {
+        "present": false,
+        "expected": false
+      },
+      "non_english": {
+        "decided": 0,
+        "possible": 0
+      },
+      "fk_full": 5.68,
+      "title_ok": true,
+      "generation_id": "w6-pipeline-e09-m01-c02-p02-x5/r2/S17",
+      "scenario_id": "S17",
+      "run": 2
+    },
+    {
+      "metric": "compose_patient",
+      "metric_version": 2,
+      "checks": {},
+      "counts": {
+        "sections": 5,
+        "sections_given": 6,
+        "sources_cited": 6,
+        "words_prose": 182,
+        "checks": 0
+      },
+      "box_problems": 0,
+      "fk_prose": 4.95,
+      "d5_prose": "pass",
+      "years_vs_notes": [],
+      "review": [],
+      "latency": {
+        "step7_s": 4.231,
+        "step7_start_s": 16.252,
+        "critical_s": 20.483
+      },
+      "sourceless": [],
+      "audience": "adult",
+      "expected_audience": "adult",
+      "risk_sections_in_a": 0,
+      "unverified_sources": 1,
+      "assembled": true,
+      "gate": {
+        "status": "clean",
+        "ok": true
+      },
+      "haz03_c": "pass",
+      "header": {
+        "present": false,
+        "expected": false
+      },
+      "non_english": {
+        "decided": 0,
+        "possible": 0
+      },
+      "fk_full": 4.65,
+      "title_ok": true,
+      "generation_id": "w6-pipeline-e09-m01-c02-p02-x5/r2/S18",
+      "scenario_id": "S18",
+      "run": 2
+    },
+    {
+      "metric": "compose_patient",
+      "metric_version": 2,
+      "checks": {},
+      "counts": {
+        "sections": 5,
+        "sections_given": 6,
+        "sources_cited": 6,
+        "words_prose": 178,
+        "checks": 0
+      },
+      "box_problems": 0,
+      "fk_prose": 6.49,
+      "d5_prose": "pass",
+      "years_vs_notes": [],
+      "review": [],
+      "latency": {
+        "step7_s": 4.252,
+        "step7_start_s": 20.453,
+        "critical_s": 24.705
+      },
+      "sourceless": [],
+      "audience": "adult",
+      "expected_audience": "adult",
+      "risk_sections_in_a": 0,
+      "unverified_sources": 0,
+      "assembled": true,
+      "gate": {
+        "status": "documented_advice",
+        "ok": true
+      },
+      "haz03_c": "pass",
+      "header": {
+        "present": false,
+        "expected": false
+      },
+      "non_english": {
+        "decided": 0,
+        "possible": 0
+      },
+      "fk_full": 5.91,
+      "title_ok": true,
+      "generation_id": "w6-pipeline-e09-m01-c02-p02-x5/r2/A5",
+      "scenario_id": "A5",
+      "run": 2
+    },
+    {
+      "metric": "compose_patient",
+      "metric_version": 2,
+      "checks": {
+        "dose_or_frequency": 1
+      },
+      "counts": {
+        "sections": 5,
+        "sections_given": 6,
+        "sources_cited": 6,
+        "words_prose": 137,
+        "checks": 1
+      },
+      "box_problems": 0,
+      "fk_prose": 5.29,
+      "d5_prose": "pass",
+      "years_vs_notes": [],
+      "review": [
+        {
+          "kind": "medication",
+          "heading": "what_we_did",
+          "token": null,
+          "key": "872c8c01fe90f144",
+          "ruling": "acceptable"
+        }
+      ],
+      "latency": {
+        "step7_s": 3.598,
+        "step7_start_s": 17.207,
+        "critical_s": 20.805
+      },
+      "sourceless": [],
+      "audience": "adult",
+      "expected_audience": "adult",
+      "risk_sections_in_a": 0,
+      "unverified_sources": 0,
+      "assembled": true,
+      "gate": {
+        "status": "documented_advice",
+        "ok": true
+      },
+      "haz03_c": "pass",
+      "header": {
+        "present": false,
+        "expected": false
+      },
+      "non_english": {
+        "decided": 0,
+        "possible": 0
+      },
+      "fk_full": 4.68,
+      "title_ok": true,
+      "generation_id": "w6-pipeline-e09-m01-c02-p02-x5/r2/B6",
+      "scenario_id": "B6",
+      "run": 2
+    },
+    {
+      "metric": "compose_patient",
+      "metric_version": 2,
+      "checks": {},
+      "counts": {
+        "sections": 5,
+        "sections_given": 5,
+        "sources_cited": 5,
+        "words_prose": 85,
+        "checks": 0
+      },
+      "box_problems": 0,
+      "fk_prose": 4.61,
+      "d5_prose": "pass",
+      "years_vs_notes": [],
+      "review": [],
+      "latency": {
+        "step7_s": 2.751,
+        "step7_start_s": 10.536,
+        "critical_s": 13.287
+      },
+      "sourceless": [],
+      "audience": "adult",
+      "expected_audience": "adult",
+      "risk_sections_in_a": 0,
+      "unverified_sources": 0,
+      "assembled": true,
+      "gate": {
+        "status": "clean",
+        "ok": true
+      },
+      "haz03_c": "pass",
+      "header": {
+        "present": true,
+        "expected": true
+      },
+      "non_english": {
+        "decided": 0,
+        "possible": 0
+      },
+      "fk_full": 4.95,
+      "title_ok": true,
+      "generation_id": "w6-pipeline-e09-m01-c02-p02-x5/r2/C7",
+      "scenario_id": "C7",
+      "run": 2
+    },
+    {
+      "metric": "compose_patient",
+      "metric_version": 2,
+      "checks": {},
+      "counts": {
+        "sections": 5,
+        "sections_given": 6,
+        "sources_cited": 6,
+        "words_prose": 231,
+        "checks": 0
+      },
+      "box_problems": 0,
+      "fk_prose": 7.1,
+      "d5_prose": "pass",
+      "years_vs_notes": [],
+      "review": [],
+      "latency": {
+        "step7_s": 5.305,
+        "step7_start_s": 20.069,
+        "critical_s": 25.374
+      },
+      "sourceless": [],
+      "audience": "adult",
+      "expected_audience": "adult",
+      "risk_sections_in_a": 0,
+      "unverified_sources": 0,
+      "assembled": true,
+      "gate": {
+        "status": "documented_advice",
+        "ok": true
+      },
+      "haz03_c": "pass",
+      "header": {
+        "present": false,
+        "expected": false
+      },
+      "non_english": {
+        "decided": 0,
+        "possible": 0
+      },
+      "fk_full": 6.02,
+      "title_ok": true,
+      "generation_id": "w6-pipeline-e09-m01-c02-p02-x5/r3/S1",
+      "scenario_id": "S1",
+      "run": 3
+    },
+    {
+      "metric": "compose_patient",
+      "metric_version": 2,
+      "checks": {},
+      "counts": {
+        "sections": 4,
+        "sections_given": 4,
+        "sources_cited": 4,
+        "words_prose": 162,
+        "checks": 0
+      },
+      "box_problems": 0,
+      "fk_prose": 7.27,
+      "d5_prose": "pass",
+      "years_vs_notes": [],
+      "review": [],
+      "latency": {
+        "step7_s": 4.185,
+        "step7_start_s": 15.315,
+        "critical_s": 19.5
+      },
+      "sourceless": [],
+      "audience": "adult",
+      "expected_audience": "adult",
+      "risk_sections_in_a": 0,
+      "unverified_sources": 0,
+      "assembled": true,
+      "gate": {
+        "status": "documented_advice",
+        "ok": true
+      },
+      "haz03_c": "pass",
+      "header": {
+        "present": false,
+        "expected": false
+      },
+      "non_english": {
+        "decided": 0,
+        "possible": 0
+      },
+      "fk_full": 6.16,
+      "title_ok": true,
+      "generation_id": "w6-pipeline-e09-m01-c02-p02-x5/r3/S2",
+      "scenario_id": "S2",
+      "run": 3
+    },
+    {
+      "metric": "compose_patient",
+      "metric_version": 2,
+      "checks": {
+        "sensitive_text": 2
+      },
+      "counts": {
+        "sections": 5,
+        "sections_given": 5,
+        "sources_cited": 5,
+        "words_prose": 116,
+        "checks": 2
+      },
+      "box_problems": 0,
+      "fk_prose": 6.45,
+      "d5_prose": "pass",
+      "years_vs_notes": [],
+      "review": [
+        {
+          "kind": "sensitive",
+          "heading": "why_in_hospital",
+          "token": null,
+          "key": "1f219be0aa63a40b",
+          "ruling": "acceptable"
+        },
+        {
+          "kind": "sensitive",
+          "heading": "why_in_hospital",
+          "token": null,
+          "key": "3c4ef567f41c42ba",
+          "ruling": "acceptable"
+        }
+      ],
+      "latency": {
+        "step7_s": 2.794,
+        "step7_start_s": 19.877,
+        "critical_s": 22.671
+      },
+      "sourceless": [],
+      "audience": "adult",
+      "expected_audience": "adult",
+      "risk_sections_in_a": 1,
+      "unverified_sources": 0,
+      "assembled": true,
+      "gate": {
+        "status": "documented_advice",
+        "ok": true
+      },
+      "haz03_c": "pass",
+      "header": {
+        "present": false,
+        "expected": false
+      },
+      "non_english": {
+        "decided": 0,
+        "possible": 0
+      },
+      "fk_full": 5.04,
+      "title_ok": true,
+      "generation_id": "w6-pipeline-e09-m01-c02-p02-x5/r3/S3",
+      "scenario_id": "S3",
+      "run": 3
+    },
+    {
+      "metric": "compose_patient",
+      "metric_version": 2,
+      "checks": {},
+      "counts": {
+        "sections": 5,
+        "sections_given": 5,
+        "sources_cited": 5,
+        "words_prose": 127,
+        "checks": 0
+      },
+      "box_problems": 0,
+      "fk_prose": 5.53,
+      "d5_prose": "pass",
+      "years_vs_notes": [],
+      "review": [],
+      "latency": {
+        "step7_s": 3.295,
+        "step7_start_s": 18.448,
+        "critical_s": 21.743
+      },
+      "sourceless": [],
+      "audience": "parent_or_carer",
+      "expected_audience": "parent_or_carer",
+      "risk_sections_in_a": 0,
+      "unverified_sources": 1,
+      "assembled": true,
+      "gate": {
+        "status": "documented_advice",
+        "ok": true
+      },
+      "haz03_c": "pass",
+      "header": {
+        "present": false,
+        "expected": false
+      },
+      "non_english": {
+        "decided": 0,
+        "possible": 0
+      },
+      "fk_full": 4.76,
+      "title_ok": true,
+      "generation_id": "w6-pipeline-e09-m01-c02-p02-x5/r3/S4",
+      "scenario_id": "S4",
+      "run": 3
+    },
+    {
+      "metric": "compose_patient",
+      "metric_version": 2,
+      "checks": {},
+      "counts": {
+        "sections": 5,
+        "sections_given": 5,
+        "sources_cited": 5,
+        "words_prose": 157,
+        "checks": 0
+      },
+      "box_problems": 0,
+      "fk_prose": 5.79,
+      "d5_prose": "pass",
+      "years_vs_notes": [],
+      "review": [],
+      "latency": {
+        "step7_s": 4.494,
+        "step7_start_s": 16.915,
+        "critical_s": 21.409
+      },
+      "sourceless": [],
+      "audience": "parent_or_carer",
+      "expected_audience": "parent_or_carer",
+      "risk_sections_in_a": 0,
+      "unverified_sources": 0,
+      "assembled": true,
+      "gate": {
+        "status": "documented_advice",
+        "ok": true
+      },
+      "haz03_c": "pass",
+      "header": {
+        "present": false,
+        "expected": false
+      },
+      "non_english": {
+        "decided": 0,
+        "possible": 0
+      },
+      "fk_full": 5.31,
+      "title_ok": true,
+      "generation_id": "w6-pipeline-e09-m01-c02-p02-x5/r3/S8",
+      "scenario_id": "S8",
+      "run": 3
+    },
+    {
+      "metric": "compose_patient",
+      "metric_version": 2,
+      "checks": {
+        "advice_shaped": 1,
+        "promise_shaped": 1
+      },
+      "counts": {
+        "sections": 5,
+        "sections_given": 6,
+        "sources_cited": 6,
+        "words_prose": 251,
+        "checks": 2
+      },
+      "box_problems": 0,
+      "fk_prose": 5.94,
+      "d5_prose": "pass",
+      "years_vs_notes": [],
+      "review": [
+        {
+          "kind": "drug",
+          "heading": "why_in_hospital",
+          "token": "insulin",
+          "key": "b24210071e9850b1",
+          "ruling": "acceptable"
+        },
+        {
+          "kind": "advice",
+          "heading": "next_steps",
+          "token": null,
+          "key": "6a2ac6c6794b7b30",
+          "ruling": "acceptable"
+        },
+        {
+          "kind": "promise",
+          "heading": "next_steps",
+          "token": null,
+          "key": "d4cc62941523462d",
+          "ruling": "acceptable"
+        }
+      ],
+      "latency": {
+        "step7_s": 5.28,
+        "step7_start_s": 17.05,
+        "critical_s": 22.33
+      },
+      "sourceless": [],
+      "audience": "parent_or_carer",
+      "expected_audience": "parent_or_carer",
+      "risk_sections_in_a": 0,
+      "unverified_sources": 0,
+      "assembled": true,
+      "gate": {
+        "status": "clean",
+        "ok": true
+      },
+      "haz03_c": "pass",
+      "header": {
+        "present": false,
+        "expected": false
+      },
+      "non_english": {
+        "decided": 0,
+        "possible": 0
+      },
+      "fk_full": 5.62,
+      "title_ok": true,
+      "generation_id": "w6-pipeline-e09-m01-c02-p02-x5/r3/S9",
+      "scenario_id": "S9",
+      "run": 3
+    },
+    {
+      "metric": "compose_patient",
+      "metric_version": 2,
+      "checks": {
+        "dose_or_frequency": 1,
+        "advice_shaped": 1
+      },
+      "counts": {
+        "sections": 5,
+        "sections_given": 6,
+        "sources_cited": 6,
+        "words_prose": 213,
+        "checks": 2
+      },
+      "box_problems": 0,
+      "fk_prose": 5.66,
+      "d5_prose": "pass",
+      "years_vs_notes": [],
+      "review": [
+        {
+          "kind": "medication",
+          "heading": "why_in_hospital",
+          "token": null,
+          "key": "cea7e909e7313f13",
+          "ruling": "acceptable"
+        },
+        {
+          "kind": "advice",
+          "heading": "why_in_hospital",
+          "token": null,
+          "key": "9b9090ef27ca53b0",
+          "ruling": "acceptable"
+        }
+      ],
+      "latency": {
+        "step7_s": 4.93,
+        "step7_start_s": 17.703,
+        "critical_s": 22.633
+      },
+      "sourceless": [],
+      "audience": "adult",
+      "expected_audience": "adult",
+      "risk_sections_in_a": 0,
+      "unverified_sources": 0,
+      "assembled": true,
+      "gate": {
+        "status": "documented_advice",
+        "ok": true
+      },
+      "haz03_c": "pass",
+      "header": {
+        "present": false,
+        "expected": false
+      },
+      "non_english": {
+        "decided": 0,
+        "possible": 0
+      },
+      "fk_full": 5.44,
+      "title_ok": true,
+      "generation_id": "w6-pipeline-e09-m01-c02-p02-x5/r3/S10",
+      "scenario_id": "S10",
+      "run": 3
+    },
+    {
+      "metric": "compose_patient",
+      "metric_version": 2,
+      "checks": {},
+      "counts": {
+        "sections": 5,
+        "sections_given": 5,
+        "sources_cited": 5,
+        "words_prose": 250,
+        "checks": 0
+      },
+      "box_problems": 0,
+      "fk_prose": 6.23,
+      "d5_prose": "pass",
+      "years_vs_notes": [],
+      "review": [],
+      "latency": {
+        "step7_s": 5.589,
+        "step7_start_s": 21.585,
+        "critical_s": 27.174
+      },
+      "sourceless": [],
+      "audience": "adult",
+      "expected_audience": "adult",
+      "risk_sections_in_a": 0,
+      "unverified_sources": 0,
+      "assembled": true,
+      "gate": {
+        "status": "clean",
+        "ok": true
+      },
+      "haz03_c": "pass",
+      "header": {
+        "present": false,
+        "expected": false
+      },
+      "non_english": {
+        "decided": 0,
+        "possible": 0
+      },
+      "fk_full": 6.06,
+      "title_ok": true,
+      "generation_id": "w6-pipeline-e09-m01-c02-p02-x5/r3/S11",
+      "scenario_id": "S11",
+      "run": 3
+    },
+    {
+      "metric": "compose_patient",
+      "metric_version": 2,
+      "checks": {
+        "advice_shaped": 2
+      },
+      "counts": {
+        "sections": 5,
+        "sections_given": 5,
+        "sources_cited": 5,
+        "words_prose": 237,
+        "checks": 2
+      },
+      "box_problems": 0,
+      "fk_prose": 4.52,
+      "d5_prose": "pass",
+      "years_vs_notes": [],
+      "review": [
+        {
+          "kind": "advice",
+          "heading": "why_in_hospital",
+          "token": null,
+          "key": "d95b3e888eb46a24",
+          "ruling": "acceptable"
+        },
+        {
+          "kind": "advice",
+          "heading": "next_steps",
+          "token": null,
+          "key": "6c74870b90813d9a",
+          "ruling": "acceptable"
+        }
+      ],
+      "latency": {
+        "step7_s": 5.128,
+        "step7_start_s": 22.019,
+        "critical_s": 27.147
+      },
+      "sourceless": [],
+      "audience": "adult",
+      "expected_audience": "adult",
+      "risk_sections_in_a": 0,
+      "unverified_sources": 0,
+      "assembled": true,
+      "gate": {
+        "status": "documented_advice",
+        "ok": true
+      },
+      "haz03_c": "pass",
+      "header": {
+        "present": false,
+        "expected": false
+      },
+      "non_english": {
+        "decided": 0,
+        "possible": 0
+      },
+      "fk_full": 4.37,
+      "title_ok": true,
+      "generation_id": "w6-pipeline-e09-m01-c02-p02-x5/r3/S12",
+      "scenario_id": "S12",
+      "run": 3
+    },
+    {
+      "metric": "compose_patient",
+      "metric_version": 2,
+      "checks": {
+        "number_added": 1
+      },
+      "counts": {
+        "sections": 5,
+        "sections_given": 6,
+        "sources_cited": 6,
+        "words_prose": 298,
+        "checks": 1
+      },
+      "box_problems": 0,
+      "fk_prose": 6.76,
+      "d5_prose": "pass",
+      "years_vs_notes": [],
+      "review": [
+        {
+          "kind": "number",
+          "heading": "what_we_did",
+          "token": "4",
+          "key": "8323efa6a411f282",
+          "ruling": "acceptable"
+        }
+      ],
+      "latency": {
+        "step7_s": 6.206,
+        "step7_start_s": 21.918,
+        "critical_s": 28.124
+      },
+      "sourceless": [],
+      "audience": "adult",
+      "expected_audience": "adult",
+      "risk_sections_in_a": 0,
+      "unverified_sources": 0,
+      "assembled": true,
+      "gate": {
+        "status": "documented_advice",
+        "ok": true
+      },
+      "haz03_c": "pass",
+      "header": {
+        "present": false,
+        "expected": false
+      },
+      "non_english": {
+        "decided": 0,
+        "possible": 0
+      },
+      "fk_full": 6.02,
+      "title_ok": true,
+      "generation_id": "w6-pipeline-e09-m01-c02-p02-x5/r3/S13",
+      "scenario_id": "S13",
+      "run": 3
+    },
+    {
+      "metric": "compose_patient",
+      "metric_version": 2,
+      "checks": {},
+      "counts": {
+        "sections": 5,
+        "sections_given": 6,
+        "sources_cited": 6,
+        "words_prose": 243,
+        "checks": 0
+      },
+      "box_problems": 0,
+      "fk_prose": 6.67,
+      "d5_prose": "pass",
+      "years_vs_notes": [],
+      "review": [],
+      "latency": {
+        "step7_s": 5.329,
+        "step7_start_s": 21.573,
+        "critical_s": 26.902
+      },
+      "sourceless": [],
+      "audience": "adult",
+      "expected_audience": "adult",
+      "risk_sections_in_a": 0,
+      "unverified_sources": 0,
+      "assembled": true,
+      "gate": {
+        "status": "clean",
+        "ok": true
+      },
+      "haz03_c": "pass",
+      "header": {
+        "present": false,
+        "expected": false
+      },
+      "non_english": {
+        "decided": 0,
+        "possible": 0
+      },
+      "fk_full": 5.6,
+      "title_ok": true,
+      "generation_id": "w6-pipeline-e09-m01-c02-p02-x5/r3/S14",
+      "scenario_id": "S14",
+      "run": 3
+    },
+    {
+      "metric": "compose_patient",
+      "metric_version": 2,
+      "checks": {},
+      "counts": {
+        "sections": 5,
+        "sections_given": 6,
+        "sources_cited": 6,
+        "words_prose": 179,
+        "checks": 0
+      },
+      "box_problems": 0,
+      "fk_prose": 6.37,
+      "d5_prose": "pass",
+      "years_vs_notes": [],
+      "review": [],
+      "latency": {
+        "step7_s": 4.401,
+        "step7_start_s": 17.871,
+        "critical_s": 22.272
+      },
+      "sourceless": [],
+      "audience": "adult",
+      "expected_audience": "adult",
+      "risk_sections_in_a": 0,
+      "unverified_sources": 0,
+      "assembled": true,
+      "gate": {
+        "status": "clean",
+        "ok": true
+      },
+      "haz03_c": "pass",
+      "header": {
+        "present": false,
+        "expected": false
+      },
+      "non_english": {
+        "decided": 0,
+        "possible": 0
+      },
+      "fk_full": 5.89,
+      "title_ok": true,
+      "generation_id": "w6-pipeline-e09-m01-c02-p02-x5/r3/S15",
+      "scenario_id": "S15",
+      "run": 3
+    },
+    {
+      "metric": "compose_patient",
+      "metric_version": 2,
+      "checks": {},
+      "counts": {
+        "sections": 5,
+        "sections_given": 6,
+        "sources_cited": 6,
+        "words_prose": 269,
+        "checks": 0
+      },
+      "box_problems": 0,
+      "fk_prose": 7.14,
+      "d5_prose": "pass",
+      "years_vs_notes": [],
+      "review": [
+        {
+          "kind": "drug",
+          "heading": "next_steps",
+          "token": "warfarin",
+          "key": "688d3a00af65cb8b",
+          "ruling": "acceptable"
+        }
+      ],
+      "latency": {
+        "step7_s": 6.235,
+        "step7_start_s": 19.371,
+        "critical_s": 25.606
+      },
+      "sourceless": [],
+      "audience": "adult",
+      "expected_audience": "adult",
+      "risk_sections_in_a": 0,
+      "unverified_sources": 1,
+      "assembled": true,
+      "gate": {
+        "status": "clean",
+        "ok": true
+      },
+      "haz03_c": "pass",
+      "header": {
+        "present": false,
+        "expected": false
+      },
+      "non_english": {
+        "decided": 0,
+        "possible": 0
+      },
+      "fk_full": 6.33,
+      "title_ok": true,
+      "generation_id": "w6-pipeline-e09-m01-c02-p02-x5/r3/S16",
+      "scenario_id": "S16",
+      "run": 3
+    },
+    {
+      "metric": "compose_patient",
+      "metric_version": 2,
+      "checks": {
+        "dose_or_frequency": 1
+      },
+      "counts": {
+        "sections": 5,
+        "sections_given": 6,
+        "sources_cited": 6,
+        "words_prose": 180,
+        "checks": 1
+      },
+      "box_problems": 0,
+      "fk_prose": 5.86,
+      "d5_prose": "pass",
+      "years_vs_notes": [],
+      "review": [
+        {
+          "kind": "medication",
+          "heading": "what_we_did",
+          "token": null,
+          "key": "588b23ced1a1c02a",
+          "ruling": "acceptable"
+        }
+      ],
+      "latency": {
+        "step7_s": 4.741,
+        "step7_start_s": 20.141,
+        "critical_s": 24.882
+      },
+      "sourceless": [],
+      "audience": "adult",
+      "expected_audience": "adult",
+      "risk_sections_in_a": 0,
+      "unverified_sources": 1,
+      "assembled": true,
+      "gate": {
+        "status": "clean",
+        "ok": true
+      },
+      "haz03_c": "pass",
+      "header": {
+        "present": false,
+        "expected": false
+      },
+      "non_english": {
+        "decided": 0,
+        "possible": 0
+      },
+      "fk_full": 5.36,
+      "title_ok": true,
+      "generation_id": "w6-pipeline-e09-m01-c02-p02-x5/r3/S17",
+      "scenario_id": "S17",
+      "run": 3
+    },
+    {
+      "metric": "compose_patient",
+      "metric_version": 2,
+      "checks": {},
+      "counts": {
+        "sections": 5,
+        "sections_given": 6,
+        "sources_cited": 6,
+        "words_prose": 164,
+        "checks": 0
+      },
+      "box_problems": 0,
+      "fk_prose": 4.45,
+      "d5_prose": "pass",
+      "years_vs_notes": [],
+      "review": [],
+      "latency": {
+        "step7_s": 3.99,
+        "step7_start_s": 16.13,
+        "critical_s": 20.12
+      },
+      "sourceless": [],
+      "audience": "adult",
+      "expected_audience": "adult",
+      "risk_sections_in_a": 0,
+      "unverified_sources": 0,
+      "assembled": true,
+      "gate": {
+        "status": "clean",
+        "ok": true
+      },
+      "haz03_c": "pass",
+      "header": {
+        "present": false,
+        "expected": false
+      },
+      "non_english": {
+        "decided": 0,
+        "possible": 0
+      },
+      "fk_full": 4.13,
+      "title_ok": true,
+      "generation_id": "w6-pipeline-e09-m01-c02-p02-x5/r3/S18",
+      "scenario_id": "S18",
+      "run": 3
+    },
+    {
+      "metric": "compose_patient",
+      "metric_version": 2,
+      "checks": {},
+      "counts": {
+        "sections": 5,
+        "sections_given": 6,
+        "sources_cited": 6,
+        "words_prose": 145,
+        "checks": 0
+      },
+      "box_problems": 0,
+      "fk_prose": 5.63,
+      "d5_prose": "pass",
+      "years_vs_notes": [],
+      "review": [],
+      "latency": {
+        "step7_s": 3.945,
+        "step7_start_s": 19.975,
+        "critical_s": 23.92
+      },
+      "sourceless": [],
+      "audience": "adult",
+      "expected_audience": "adult",
+      "risk_sections_in_a": 0,
+      "unverified_sources": 0,
+      "assembled": true,
+      "gate": {
+        "status": "documented_advice",
+        "ok": true
+      },
+      "haz03_c": "pass",
+      "header": {
+        "present": false,
+        "expected": false
+      },
+      "non_english": {
+        "decided": 0,
+        "possible": 0
+      },
+      "fk_full": 5.53,
+      "title_ok": true,
+      "generation_id": "w6-pipeline-e09-m01-c02-p02-x5/r3/A5",
+      "scenario_id": "A5",
+      "run": 3
+    },
+    {
+      "metric": "compose_patient",
+      "metric_version": 2,
+      "checks": {
+        "advice_shaped": 1,
+        "dose_or_frequency": 1
+      },
+      "counts": {
+        "sections": 5,
+        "sections_given": 6,
+        "sources_cited": 6,
+        "words_prose": 134,
+        "checks": 2
+      },
+      "box_problems": 0,
+      "fk_prose": 5.99,
+      "d5_prose": "pass",
+      "years_vs_notes": [],
+      "review": [
+        {
+          "kind": "advice",
+          "heading": "why_in_hospital",
+          "token": null,
+          "key": "8996a198193f8755",
+          "ruling": "acceptable"
+        },
+        {
+          "kind": "medication",
+          "heading": "what_we_did",
+          "token": null,
+          "key": "1b99652f7ae69992",
+          "ruling": "acceptable"
+        }
+      ],
+      "latency": {
+        "step7_s": 3.432,
+        "step7_start_s": 17.936,
+        "critical_s": 21.368
+      },
+      "sourceless": [],
+      "audience": "adult",
+      "expected_audience": "adult",
+      "risk_sections_in_a": 0,
+      "unverified_sources": 0,
+      "assembled": true,
+      "gate": {
+        "status": "documented_advice",
+        "ok": true
+      },
+      "haz03_c": "pass",
+      "header": {
+        "present": false,
+        "expected": false
+      },
+      "non_english": {
+        "decided": 0,
+        "possible": 0
+      },
+      "fk_full": 4.9,
+      "title_ok": true,
+      "generation_id": "w6-pipeline-e09-m01-c02-p02-x5/r3/B6",
+      "scenario_id": "B6",
+      "run": 3
+    },
+    {
+      "metric": "compose_patient",
+      "metric_version": 2,
+      "checks": {},
+      "counts": {
+        "sections": 5,
+        "sections_given": 5,
+        "sources_cited": 5,
+        "words_prose": 80,
+        "checks": 0
+      },
+      "box_problems": 0,
+      "fk_prose": 3.51,
+      "d5_prose": "pass",
+      "years_vs_notes": [],
+      "review": [],
+      "latency": {
+        "step7_s": 2.712,
+        "step7_start_s": 10.156,
+        "critical_s": 12.868
+      },
+      "sourceless": [],
+      "audience": "adult",
+      "expected_audience": "adult",
+      "risk_sections_in_a": 0,
+      "unverified_sources": 0,
+      "assembled": true,
+      "gate": {
+        "status": "clean",
+        "ok": true
+      },
+      "haz03_c": "pass",
+      "header": {
+        "present": true,
+        "expected": true
+      },
+      "non_english": {
+        "decided": 0,
+        "possible": 0
+      },
+      "fk_full": 4.48,
+      "title_ok": true,
+      "generation_id": "w6-pipeline-e09-m01-c02-p02-x5/r3/C7",
+      "scenario_id": "C7",
+      "run": 3
+    },
+    {
+      "metric": "compose_patient",
+      "metric_version": 2,
+      "checks": {},
+      "counts": {
+        "sections": 5,
+        "sections_given": 6,
+        "sources_cited": 6,
+        "words_prose": 231,
+        "checks": 0
+      },
+      "box_problems": 0,
+      "fk_prose": 7.1,
+      "d5_prose": "pass",
+      "years_vs_notes": [],
+      "review": [],
+      "latency": {
+        "step7_s": 5.27,
+        "step7_start_s": 19.978,
+        "critical_s": 25.248
+      },
+      "sourceless": [],
+      "audience": "adult",
+      "expected_audience": "adult",
+      "risk_sections_in_a": 0,
+      "unverified_sources": 0,
+      "assembled": true,
+      "gate": {
+        "status": "documented_advice",
+        "ok": true
+      },
+      "haz03_c": "pass",
+      "header": {
+        "present": false,
+        "expected": false
+      },
+      "non_english": {
+        "decided": 0,
+        "possible": 0
+      },
+      "fk_full": 6.02,
+      "title_ok": true,
+      "generation_id": "w6-pipeline-e09-m01-c02-p02-x5/r4/S1",
+      "scenario_id": "S1",
+      "run": 4
+    },
+    {
+      "metric": "compose_patient",
+      "metric_version": 2,
+      "checks": {
+        "promise_shaped": 1
+      },
+      "counts": {
+        "sections": 5,
+        "sections_given": 5,
+        "sources_cited": 5,
+        "words_prose": 182,
+        "checks": 1
+      },
+      "box_problems": 0,
+      "fk_prose": 5.13,
+      "d5_prose": "pass",
+      "years_vs_notes": [],
+      "review": [
+        {
+          "kind": "promise",
+          "heading": "next_steps",
+          "token": null,
+          "key": "964ee139d87bcb1e",
+          "ruling": "defect"
+        }
+      ],
+      "latency": {
+        "step7_s": 4.692,
+        "step7_start_s": 16.004,
+        "critical_s": 20.696
+      },
+      "sourceless": [],
+      "audience": "adult",
+      "expected_audience": "adult",
+      "risk_sections_in_a": 0,
+      "unverified_sources": 0,
+      "assembled": true,
+      "gate": {
+        "status": "documented_advice",
+        "ok": true
+      },
+      "haz03_c": "pass",
+      "header": {
+        "present": false,
+        "expected": false
+      },
+      "non_english": {
+        "decided": 0,
+        "possible": 0
+      },
+      "fk_full": 5.01,
+      "title_ok": true,
+      "generation_id": "w6-pipeline-e09-m01-c02-p02-x5/r4/S2",
+      "scenario_id": "S2",
+      "run": 4
+    },
+    {
+      "metric": "compose_patient",
+      "metric_version": 2,
+      "checks": {
+        "sensitive_text": 3
+      },
+      "counts": {
+        "sections": 5,
+        "sections_given": 6,
+        "sources_cited": 6,
+        "words_prose": 151,
+        "checks": 3
+      },
+      "box_problems": 0,
+      "fk_prose": 5.98,
+      "d5_prose": "pass",
+      "years_vs_notes": [],
+      "review": [
+        {
+          "kind": "sensitive",
+          "heading": "why_in_hospital",
+          "token": null,
+          "key": "011d01d75c4cc7f1",
+          "ruling": "acceptable"
+        },
+        {
+          "kind": "sensitive",
+          "heading": "what_we_did",
+          "token": null,
+          "key": "5192bc5e7c123547",
+          "ruling": "acceptable"
+        },
+        {
+          "kind": "sensitive",
+          "heading": "what_we_did",
+          "token": null,
+          "key": "70f59e7ddff92381",
+          "ruling": "acceptable"
+        }
+      ],
+      "latency": {
+        "step7_s": 3.644,
+        "step7_start_s": 19.349,
+        "critical_s": 22.993
+      },
+      "sourceless": [],
+      "audience": "adult",
+      "expected_audience": "adult",
+      "risk_sections_in_a": 1,
+      "unverified_sources": 1,
+      "assembled": true,
+      "gate": {
+        "status": "documented_advice",
+        "ok": true
+      },
+      "haz03_c": "pass",
+      "header": {
+        "present": false,
+        "expected": false
+      },
+      "non_english": {
+        "decided": 0,
+        "possible": 0
+      },
+      "fk_full": 4.98,
+      "title_ok": true,
+      "generation_id": "w6-pipeline-e09-m01-c02-p02-x5/r4/S3",
+      "scenario_id": "S3",
+      "run": 4
+    },
+    {
+      "metric": "compose_patient",
+      "metric_version": 2,
+      "checks": {
+        "promise_shaped": 1
+      },
+      "counts": {
+        "sections": 5,
+        "sections_given": 5,
+        "sources_cited": 5,
+        "words_prose": 189,
+        "checks": 1
+      },
+      "box_problems": 0,
+      "fk_prose": 5.99,
+      "d5_prose": "pass",
+      "years_vs_notes": [],
+      "review": [
+        {
+          "kind": "promise",
+          "heading": "what_we_did",
+          "token": null,
+          "key": "4cc8f92c1b4d3b58",
+          "ruling": "acceptable"
+        }
+      ],
+      "latency": {
+        "step7_s": 4.696,
+        "step7_start_s": 18.73,
+        "critical_s": 23.426
+      },
+      "sourceless": [],
+      "audience": "parent_or_carer",
+      "expected_audience": "parent_or_carer",
+      "risk_sections_in_a": 0,
+      "unverified_sources": 1,
+      "assembled": true,
+      "gate": {
+        "status": "documented_advice",
+        "ok": true
+      },
+      "haz03_c": "pass",
+      "header": {
+        "present": false,
+        "expected": false
+      },
+      "non_english": {
+        "decided": 0,
+        "possible": 0
+      },
+      "fk_full": 5.3,
+      "title_ok": true,
+      "generation_id": "w6-pipeline-e09-m01-c02-p02-x5/r4/S4",
+      "scenario_id": "S4",
+      "run": 4
+    },
+    {
+      "metric": "compose_patient",
+      "metric_version": 2,
+      "checks": {},
+      "counts": {
+        "sections": 5,
+        "sections_given": 5,
+        "sources_cited": 5,
+        "words_prose": 178,
+        "checks": 0
+      },
+      "box_problems": 0,
+      "fk_prose": 5.12,
+      "d5_prose": "pass",
+      "years_vs_notes": [],
+      "review": [],
+      "latency": {
+        "step7_s": 4.528,
+        "step7_start_s": 16.223,
+        "critical_s": 20.751
+      },
+      "sourceless": [],
+      "audience": "parent_or_carer",
+      "expected_audience": "parent_or_carer",
+      "risk_sections_in_a": 0,
+      "unverified_sources": 1,
+      "assembled": true,
+      "gate": {
+        "status": "documented_advice",
+        "ok": true
+      },
+      "haz03_c": "pass",
+      "header": {
+        "present": false,
+        "expected": false
+      },
+      "non_english": {
+        "decided": 0,
+        "possible": 0
+      },
+      "fk_full": 4.87,
+      "title_ok": true,
+      "generation_id": "w6-pipeline-e09-m01-c02-p02-x5/r4/S8",
+      "scenario_id": "S8",
+      "run": 4
+    },
+    {
+      "metric": "compose_patient",
+      "metric_version": 2,
+      "checks": {
+        "advice_shaped": 1,
+        "promise_shaped": 1
+      },
+      "counts": {
+        "sections": 5,
+        "sections_given": 6,
+        "sources_cited": 6,
+        "words_prose": 278,
+        "checks": 2
+      },
+      "box_problems": 0,
+      "fk_prose": 4.73,
+      "d5_prose": "pass",
+      "years_vs_notes": [],
+      "review": [
+        {
+          "kind": "advice",
+          "heading": "next_steps",
+          "token": null,
+          "key": "3e46cbfb654f87a9",
+          "ruling": "acceptable"
+        },
+        {
+          "kind": "promise",
+          "heading": "next_steps",
+          "token": null,
+          "key": "533a536be33e1ef0",
+          "ruling": "acceptable"
+        }
+      ],
+      "latency": {
+        "step7_s": 6.111,
+        "step7_start_s": 18.675,
+        "critical_s": 24.786
+      },
+      "sourceless": [],
+      "audience": "parent_or_carer",
+      "expected_audience": "parent_or_carer",
+      "risk_sections_in_a": 0,
+      "unverified_sources": 0,
+      "assembled": true,
+      "gate": {
+        "status": "clean",
+        "ok": true
+      },
+      "haz03_c": "pass",
+      "header": {
+        "present": false,
+        "expected": false
+      },
+      "non_english": {
+        "decided": 0,
+        "possible": 0
+      },
+      "fk_full": 5.01,
+      "title_ok": true,
+      "generation_id": "w6-pipeline-e09-m01-c02-p02-x5/r4/S9",
+      "scenario_id": "S9",
+      "run": 4
+    },
+    {
+      "metric": "compose_patient",
+      "metric_version": 2,
+      "checks": {
+        "advice_shaped": 1
+      },
+      "counts": {
+        "sections": 5,
+        "sections_given": 6,
+        "sources_cited": 6,
+        "words_prose": 162,
+        "checks": 1
+      },
+      "box_problems": 0,
+      "fk_prose": 6.21,
+      "d5_prose": "pass",
+      "years_vs_notes": [],
+      "review": [
+        {
+          "kind": "advice",
+          "heading": "why_in_hospital",
+          "token": null,
+          "key": "c45acbcfcf1e49ab",
+          "ruling": "acceptable"
+        }
+      ],
+      "latency": {
+        "step7_s": 4.06,
+        "step7_start_s": 17.211,
+        "critical_s": 21.271
+      },
+      "sourceless": [],
+      "audience": "adult",
+      "expected_audience": "adult",
+      "risk_sections_in_a": 0,
+      "unverified_sources": 2,
+      "assembled": true,
+      "gate": {
+        "status": "documented_advice",
+        "ok": true
+      },
+      "haz03_c": "pass",
+      "header": {
+        "present": false,
+        "expected": false
+      },
+      "non_english": {
+        "decided": 0,
+        "possible": 0
+      },
+      "fk_full": 5.78,
+      "title_ok": true,
+      "generation_id": "w6-pipeline-e09-m01-c02-p02-x5/r4/S10",
+      "scenario_id": "S10",
+      "run": 4
+    },
+    {
+      "metric": "compose_patient",
+      "metric_version": 2,
+      "checks": {
+        "advice_shaped": 1
+      },
+      "counts": {
+        "sections": 5,
+        "sections_given": 5,
+        "sources_cited": 5,
+        "words_prose": 285,
+        "checks": 1
+      },
+      "box_problems": 0,
+      "fk_prose": 6.15,
+      "d5_prose": "pass",
+      "years_vs_notes": [],
+      "review": [
+        {
+          "kind": "advice",
+          "heading": "next_steps",
+          "token": null,
+          "key": "b40c4b877178539c",
+          "ruling": "acceptable"
+        }
+      ],
+      "latency": {
+        "step7_s": 6.132,
+        "step7_start_s": 22.07,
+        "critical_s": 28.202
+      },
+      "sourceless": [],
+      "audience": "adult",
+      "expected_audience": "adult",
+      "risk_sections_in_a": 0,
+      "unverified_sources": 1,
+      "assembled": true,
+      "gate": {
+        "status": "clean",
+        "ok": true
+      },
+      "haz03_c": "pass",
+      "header": {
+        "present": false,
+        "expected": false
+      },
+      "non_english": {
+        "decided": 0,
+        "possible": 0
+      },
+      "fk_full": 6.07,
+      "title_ok": true,
+      "generation_id": "w6-pipeline-e09-m01-c02-p02-x5/r4/S11",
+      "scenario_id": "S11",
+      "run": 4
+    },
+    {
+      "metric": "compose_patient",
+      "metric_version": 2,
+      "checks": {
+        "advice_shaped": 1
+      },
+      "counts": {
+        "sections": 5,
+        "sections_given": 5,
+        "sources_cited": 5,
+        "words_prose": 299,
+        "checks": 1
+      },
+      "box_problems": 0,
+      "fk_prose": 6.49,
+      "d5_prose": "pass",
+      "years_vs_notes": [],
+      "review": [
+        {
+          "kind": "advice",
+          "heading": "next_steps",
+          "token": null,
+          "key": "6c74870b90813d9a",
+          "ruling": "acceptable"
+        }
+      ],
+      "latency": {
+        "step7_s": 6.261,
+        "step7_start_s": 22.329,
+        "critical_s": 28.59
+      },
+      "sourceless": [],
+      "audience": "adult",
+      "expected_audience": "adult",
+      "risk_sections_in_a": 0,
+      "unverified_sources": 0,
+      "assembled": true,
+      "gate": {
+        "status": "documented_advice",
+        "ok": true
+      },
+      "haz03_c": "pass",
+      "header": {
+        "present": false,
+        "expected": false
+      },
+      "non_english": {
+        "decided": 0,
+        "possible": 0
+      },
+      "fk_full": 5.96,
+      "title_ok": true,
+      "generation_id": "w6-pipeline-e09-m01-c02-p02-x5/r4/S12",
+      "scenario_id": "S12",
+      "run": 4
+    },
+    {
+      "metric": "compose_patient",
+      "metric_version": 2,
+      "checks": {},
+      "counts": {
+        "sections": 5,
+        "sections_given": 6,
+        "sources_cited": 6,
+        "words_prose": 289,
+        "checks": 0
+      },
+      "box_problems": 0,
+      "fk_prose": 6.19,
+      "d5_prose": "pass",
+      "years_vs_notes": [],
+      "review": [],
+      "latency": {
+        "step7_s": 5.942,
+        "step7_start_s": 22.984,
+        "critical_s": 28.926
+      },
+      "sourceless": [],
+      "audience": "adult",
+      "expected_audience": "adult",
+      "risk_sections_in_a": 0,
+      "unverified_sources": 0,
+      "assembled": true,
+      "gate": {
+        "status": "documented_advice",
+        "ok": true
+      },
+      "haz03_c": "pass",
+      "header": {
+        "present": false,
+        "expected": false
+      },
+      "non_english": {
+        "decided": 0,
+        "possible": 0
+      },
+      "fk_full": 5.61,
+      "title_ok": true,
+      "generation_id": "w6-pipeline-e09-m01-c02-p02-x5/r4/S13",
+      "scenario_id": "S13",
+      "run": 4
+    },
+    {
+      "metric": "compose_patient",
+      "metric_version": 2,
+      "checks": {},
+      "counts": {
+        "sections": 5,
+        "sections_given": 6,
+        "sources_cited": 6,
+        "words_prose": 209,
+        "checks": 0
+      },
+      "box_problems": 0,
+      "fk_prose": 6.05,
+      "d5_prose": "pass",
+      "years_vs_notes": [],
+      "review": [],
+      "latency": {
+        "step7_s": 4.744,
+        "step7_start_s": 21.262,
+        "critical_s": 26.006
+      },
+      "sourceless": [],
+      "audience": "adult",
+      "expected_audience": "adult",
+      "risk_sections_in_a": 0,
+      "unverified_sources": 0,
+      "assembled": true,
+      "gate": {
+        "status": "clean",
+        "ok": true
+      },
+      "haz03_c": "pass",
+      "header": {
+        "present": false,
+        "expected": false
+      },
+      "non_english": {
+        "decided": 0,
+        "possible": 0
+      },
+      "fk_full": 5.35,
+      "title_ok": true,
+      "generation_id": "w6-pipeline-e09-m01-c02-p02-x5/r4/S14",
+      "scenario_id": "S14",
+      "run": 4
+    },
+    {
+      "metric": "compose_patient",
+      "metric_version": 2,
+      "checks": {},
+      "counts": {
+        "sections": 5,
+        "sections_given": 6,
+        "sources_cited": 6,
+        "words_prose": 173,
+        "checks": 0
+      },
+      "box_problems": 0,
+      "fk_prose": 5.61,
+      "d5_prose": "pass",
+      "years_vs_notes": [],
+      "review": [],
+      "latency": {
+        "step7_s": 4.321,
+        "step7_start_s": 18.8,
+        "critical_s": 23.121
+      },
+      "sourceless": [],
+      "audience": "adult",
+      "expected_audience": "adult",
+      "risk_sections_in_a": 0,
+      "unverified_sources": 0,
+      "assembled": true,
+      "gate": {
+        "status": "clean",
+        "ok": true
+      },
+      "haz03_c": "pass",
+      "header": {
+        "present": false,
+        "expected": false
+      },
+      "non_english": {
+        "decided": 0,
+        "possible": 0
+      },
+      "fk_full": 5.48,
+      "title_ok": true,
+      "generation_id": "w6-pipeline-e09-m01-c02-p02-x5/r4/S15",
+      "scenario_id": "S15",
+      "run": 4
+    },
+    {
+      "metric": "compose_patient",
+      "metric_version": 2,
+      "checks": {
+        "promise_shaped": 1
+      },
+      "counts": {
+        "sections": 5,
+        "sections_given": 6,
+        "sources_cited": 6,
+        "words_prose": 261,
+        "checks": 1
+      },
+      "box_problems": 0,
+      "fk_prose": 7.19,
+      "d5_prose": "pass",
+      "years_vs_notes": [],
+      "review": [
+        {
+          "kind": "promise",
+          "heading": "next_steps",
+          "token": null,
+          "key": "313433ba07cdc5f3",
+          "ruling": "defect"
+        },
+        {
+          "kind": "drug",
+          "heading": "next_steps",
+          "token": "warfarin",
+          "key": "688d3a00af65cb8b",
+          "ruling": "acceptable"
+        }
+      ],
+      "latency": {
+        "step7_s": 6.036,
+        "step7_start_s": 19.671,
+        "critical_s": 25.707
+      },
+      "sourceless": [],
+      "audience": "adult",
+      "expected_audience": "adult",
+      "risk_sections_in_a": 0,
+      "unverified_sources": 1,
+      "assembled": true,
+      "gate": {
+        "status": "clean",
+        "ok": true
+      },
+      "haz03_c": "pass",
+      "header": {
+        "present": false,
+        "expected": false
+      },
+      "non_english": {
+        "decided": 0,
+        "possible": 0
+      },
+      "fk_full": 6.39,
+      "title_ok": true,
+      "generation_id": "w6-pipeline-e09-m01-c02-p02-x5/r4/S16",
+      "scenario_id": "S16",
+      "run": 4
+    },
+    {
+      "metric": "compose_patient",
+      "metric_version": 2,
+      "checks": {
+        "dose_or_frequency": 1
+      },
+      "counts": {
+        "sections": 5,
+        "sections_given": 6,
+        "sources_cited": 6,
+        "words_prose": 178,
+        "checks": 1
+      },
+      "box_problems": 0,
+      "fk_prose": 5.54,
+      "d5_prose": "pass",
+      "years_vs_notes": [],
+      "review": [
+        {
+          "kind": "medication",
+          "heading": "what_we_did",
+          "token": null,
+          "key": "588b23ced1a1c02a",
+          "ruling": "acceptable"
+        }
+      ],
+      "latency": {
+        "step7_s": 4.84,
+        "step7_start_s": 21.257,
+        "critical_s": 26.097
+      },
+      "sourceless": [],
+      "audience": "adult",
+      "expected_audience": "adult",
+      "risk_sections_in_a": 0,
+      "unverified_sources": 1,
+      "assembled": true,
+      "gate": {
+        "status": "clean",
+        "ok": true
+      },
+      "haz03_c": "pass",
+      "header": {
+        "present": false,
+        "expected": false
+      },
+      "non_english": {
+        "decided": 0,
+        "possible": 0
+      },
+      "fk_full": 5.22,
+      "title_ok": true,
+      "generation_id": "w6-pipeline-e09-m01-c02-p02-x5/r4/S17",
+      "scenario_id": "S17",
+      "run": 4
+    },
+    {
+      "metric": "compose_patient",
+      "metric_version": 2,
+      "checks": {},
+      "counts": {
+        "sections": 5,
+        "sections_given": 6,
+        "sources_cited": 6,
+        "words_prose": 152,
+        "checks": 0
+      },
+      "box_problems": 0,
+      "fk_prose": 5.42,
+      "d5_prose": "pass",
+      "years_vs_notes": [],
+      "review": [],
+      "latency": {
+        "step7_s": 3.759,
+        "step7_start_s": 15.374,
+        "critical_s": 19.133
+      },
+      "sourceless": [],
+      "audience": "adult",
+      "expected_audience": "adult",
+      "risk_sections_in_a": 0,
+      "unverified_sources": 1,
+      "assembled": true,
+      "gate": {
+        "status": "clean",
+        "ok": true
+      },
+      "haz03_c": "pass",
+      "header": {
+        "present": false,
+        "expected": false
+      },
+      "non_english": {
+        "decided": 0,
+        "possible": 0
+      },
+      "fk_full": 4.79,
+      "title_ok": true,
+      "generation_id": "w6-pipeline-e09-m01-c02-p02-x5/r4/S18",
+      "scenario_id": "S18",
+      "run": 4
+    },
+    {
+      "metric": "compose_patient",
+      "metric_version": 2,
+      "checks": {},
+      "counts": {
+        "sections": 5,
+        "sections_given": 6,
+        "sources_cited": 6,
+        "words_prose": 143,
+        "checks": 0
+      },
+      "box_problems": 0,
+      "fk_prose": 6.21,
+      "d5_prose": "pass",
+      "years_vs_notes": [],
+      "review": [],
+      "latency": {
+        "step7_s": 3.765,
+        "step7_start_s": 19.003,
+        "critical_s": 22.768
+      },
+      "sourceless": [],
+      "audience": "adult",
+      "expected_audience": "adult",
+      "risk_sections_in_a": 0,
+      "unverified_sources": 0,
+      "assembled": true,
+      "gate": {
+        "status": "documented_advice",
+        "ok": true
+      },
+      "haz03_c": "pass",
+      "header": {
+        "present": false,
+        "expected": false
+      },
+      "non_english": {
+        "decided": 0,
+        "possible": 0
+      },
+      "fk_full": 5.87,
+      "title_ok": true,
+      "generation_id": "w6-pipeline-e09-m01-c02-p02-x5/r4/A5",
+      "scenario_id": "A5",
+      "run": 4
+    },
+    {
+      "metric": "compose_patient",
+      "metric_version": 2,
+      "checks": {
+        "dose_or_frequency": 1
+      },
+      "counts": {
+        "sections": 5,
+        "sections_given": 6,
+        "sources_cited": 6,
+        "words_prose": 142,
+        "checks": 1
+      },
+      "box_problems": 0,
+      "fk_prose": 6.23,
+      "d5_prose": "pass",
+      "years_vs_notes": [],
+      "review": [
+        {
+          "kind": "medication",
+          "heading": "what_we_did",
+          "token": null,
+          "key": "ac66d2b0dcc2512f",
+          "ruling": "acceptable"
+        }
+      ],
+      "latency": {
+        "step7_s": 3.657,
+        "step7_start_s": 17.04,
+        "critical_s": 20.697
+      },
+      "sourceless": [],
+      "audience": "adult",
+      "expected_audience": "adult",
+      "risk_sections_in_a": 0,
+      "unverified_sources": 0,
+      "assembled": true,
+      "gate": {
+        "status": "documented_advice",
+        "ok": true
+      },
+      "haz03_c": "pass",
+      "header": {
+        "present": false,
+        "expected": false
+      },
+      "non_english": {
+        "decided": 0,
+        "possible": 0
+      },
+      "fk_full": 5.01,
+      "title_ok": true,
+      "generation_id": "w6-pipeline-e09-m01-c02-p02-x5/r4/B6",
+      "scenario_id": "B6",
+      "run": 4
+    },
+    {
+      "metric": "compose_patient",
+      "metric_version": 2,
+      "checks": {},
+      "counts": {
+        "sections": 5,
+        "sections_given": 5,
+        "sources_cited": 5,
+        "words_prose": 85,
+        "checks": 0
+      },
+      "box_problems": 0,
+      "fk_prose": 4.61,
+      "d5_prose": "pass",
+      "years_vs_notes": [],
+      "review": [],
+      "latency": {
+        "step7_s": 2.701,
+        "step7_start_s": 10.638,
+        "critical_s": 13.339
+      },
+      "sourceless": [],
+      "audience": "adult",
+      "expected_audience": "adult",
+      "risk_sections_in_a": 0,
+      "unverified_sources": 0,
+      "assembled": true,
+      "gate": {
+        "status": "clean",
+        "ok": true
+      },
+      "haz03_c": "pass",
+      "header": {
+        "present": true,
+        "expected": true
+      },
+      "non_english": {
+        "decided": 0,
+        "possible": 0
+      },
+      "fk_full": 4.95,
+      "title_ok": true,
+      "generation_id": "w6-pipeline-e09-m01-c02-p02-x5/r4/C7",
+      "scenario_id": "C7",
+      "run": 4
+    },
+    {
+      "metric": "compose_patient",
+      "metric_version": 2,
+      "checks": {
+        "dose_or_frequency": 2
+      },
+      "counts": {
+        "sections": 5,
+        "sections_given": 6,
+        "sources_cited": 6,
+        "words_prose": 186,
+        "checks": 2
+      },
+      "box_problems": 0,
+      "fk_prose": 7.97,
+      "d5_prose": "pass",
+      "years_vs_notes": [],
+      "review": [
+        {
+          "kind": "medication",
+          "heading": "what_we_did",
+          "token": null,
+          "key": "1da13f3c1680e300",
+          "ruling": "acceptable"
+        },
+        {
+          "kind": "medication",
+          "heading": "what_we_did",
+          "token": null,
+          "key": "3f666f69175ca1cd",
+          "ruling": "acceptable"
+        }
+      ],
+      "latency": {
+        "step7_s": 4.943,
+        "step7_start_s": 20.151,
+        "critical_s": 25.094
+      },
+      "sourceless": [],
+      "audience": "adult",
+      "expected_audience": "adult",
+      "risk_sections_in_a": 0,
+      "unverified_sources": 0,
+      "assembled": true,
+      "gate": {
+        "status": "documented_advice",
+        "ok": true
+      },
+      "haz03_c": "pass",
+      "header": {
+        "present": false,
+        "expected": false
+      },
+      "non_english": {
+        "decided": 0,
+        "possible": 0
+      },
+      "fk_full": 6.56,
+      "title_ok": true,
+      "generation_id": "w6-pipeline-e09-m01-c02-p02-x5/r5/S1",
+      "scenario_id": "S1",
+      "run": 5
+    },
+    {
+      "metric": "compose_patient",
+      "metric_version": 2,
+      "checks": {
+        "promise_shaped": 1
+      },
+      "counts": {
+        "sections": 5,
+        "sections_given": 5,
+        "sources_cited": 5,
+        "words_prose": 174,
+        "checks": 1
+      },
+      "box_problems": 0,
+      "fk_prose": 6.0,
+      "d5_prose": "pass",
+      "years_vs_notes": [],
+      "review": [
+        {
+          "kind": "promise",
+          "heading": "next_steps",
+          "token": null,
+          "key": "ff852cf57f4943e6",
+          "ruling": "defect"
+        }
+      ],
+      "latency": {
+        "step7_s": 4.214,
+        "step7_start_s": 15.484,
+        "critical_s": 19.698
+      },
+      "sourceless": [],
+      "audience": "adult",
+      "expected_audience": "adult",
+      "risk_sections_in_a": 0,
+      "unverified_sources": 0,
+      "assembled": true,
+      "gate": {
+        "status": "documented_advice",
+        "ok": true
+      },
+      "haz03_c": "pass",
+      "header": {
+        "present": false,
+        "expected": false
+      },
+      "non_english": {
+        "decided": 0,
+        "possible": 0
+      },
+      "fk_full": 5.51,
+      "title_ok": true,
+      "generation_id": "w6-pipeline-e09-m01-c02-p02-x5/r5/S2",
+      "scenario_id": "S2",
+      "run": 5
+    },
+    {
+      "metric": "compose_patient",
+      "metric_version": 2,
+      "checks": {
+        "sensitive_text": 4
+      },
+      "counts": {
+        "sections": 5,
+        "sections_given": 6,
+        "sources_cited": 6,
+        "words_prose": 201,
+        "checks": 4
+      },
+      "box_problems": 0,
+      "fk_prose": 6.84,
+      "d5_prose": "pass",
+      "years_vs_notes": [],
+      "review": [
+        {
+          "kind": "sensitive",
+          "heading": "why_in_hospital",
+          "token": null,
+          "key": "b55c2afbec0ffd18",
+          "ruling": "acceptable"
+        },
+        {
+          "kind": "sensitive",
+          "heading": "why_in_hospital",
+          "token": null,
+          "key": "3c4ef567f41c42ba",
+          "ruling": "acceptable"
+        },
+        {
+          "kind": "sensitive",
+          "heading": "what_we_did",
+          "token": null,
+          "key": "c96facce3958ff7b",
+          "ruling": "acceptable"
+        },
+        {
+          "kind": "sensitive",
+          "heading": "what_we_did",
+          "token": null,
+          "key": "c77acc02fe4d3825",
+          "ruling": "acceptable"
+        }
+      ],
+      "latency": {
+        "step7_s": 3.798,
+        "step7_start_s": 20.856,
+        "critical_s": 24.654
+      },
+      "sourceless": [],
+      "audience": "adult",
+      "expected_audience": "adult",
+      "risk_sections_in_a": 1,
+      "unverified_sources": 1,
+      "assembled": true,
+      "gate": {
+        "status": "documented_advice",
+        "ok": true
+      },
+      "haz03_c": "pass",
+      "header": {
+        "present": false,
+        "expected": false
+      },
+      "non_english": {
+        "decided": 0,
+        "possible": 0
+      },
+      "fk_full": 5.56,
+      "title_ok": true,
+      "generation_id": "w6-pipeline-e09-m01-c02-p02-x5/r5/S3",
+      "scenario_id": "S3",
+      "run": 5
+    },
+    {
+      "metric": "compose_patient",
+      "metric_version": 2,
+      "checks": {},
+      "counts": {
+        "sections": 5,
+        "sections_given": 5,
+        "sources_cited": 5,
+        "words_prose": 162,
+        "checks": 0
+      },
+      "box_problems": 0,
+      "fk_prose": 5.37,
+      "d5_prose": "pass",
+      "years_vs_notes": [],
+      "review": [],
+      "latency": {
+        "step7_s": 4.238,
+        "step7_start_s": 18.578,
+        "critical_s": 22.816
+      },
+      "sourceless": [],
+      "audience": "parent_or_carer",
+      "expected_audience": "parent_or_carer",
+      "risk_sections_in_a": 0,
+      "unverified_sources": 1,
+      "assembled": true,
+      "gate": {
+        "status": "documented_advice",
+        "ok": true
+      },
+      "haz03_c": "pass",
+      "header": {
+        "present": false,
+        "expected": false
+      },
+      "non_english": {
+        "decided": 0,
+        "possible": 0
+      },
+      "fk_full": 4.75,
+      "title_ok": true,
+      "generation_id": "w6-pipeline-e09-m01-c02-p02-x5/r5/S4",
+      "scenario_id": "S4",
+      "run": 5
+    },
+    {
+      "metric": "compose_patient",
+      "metric_version": 2,
+      "checks": {},
+      "counts": {
+        "sections": 5,
+        "sections_given": 5,
+        "sources_cited": 5,
+        "words_prose": 179,
+        "checks": 0
+      },
+      "box_problems": 0,
+      "fk_prose": 5.12,
+      "d5_prose": "pass",
+      "years_vs_notes": [],
+      "review": [],
+      "latency": {
+        "step7_s": 4.416,
+        "step7_start_s": 17.002,
+        "critical_s": 21.418
+      },
+      "sourceless": [],
+      "audience": "parent_or_carer",
+      "expected_audience": "parent_or_carer",
+      "risk_sections_in_a": 0,
+      "unverified_sources": 0,
+      "assembled": true,
+      "gate": {
+        "status": "documented_advice",
+        "ok": true
+      },
+      "haz03_c": "pass",
+      "header": {
+        "present": false,
+        "expected": false
+      },
+      "non_english": {
+        "decided": 0,
+        "possible": 0
+      },
+      "fk_full": 4.76,
+      "title_ok": true,
+      "generation_id": "w6-pipeline-e09-m01-c02-p02-x5/r5/S8",
+      "scenario_id": "S8",
+      "run": 5
+    },
+    {
+      "metric": "compose_patient",
+      "metric_version": 2,
+      "checks": {
+        "advice_shaped": 1,
+        "promise_shaped": 1
+      },
+      "counts": {
+        "sections": 5,
+        "sections_given": 6,
+        "sources_cited": 6,
+        "words_prose": 252,
+        "checks": 2
+      },
+      "box_problems": 0,
+      "fk_prose": 6.08,
+      "d5_prose": "pass",
+      "years_vs_notes": [],
+      "review": [
+        {
+          "kind": "drug",
+          "heading": "why_in_hospital",
+          "token": "insulin",
+          "key": "2b82349f58230031",
+          "ruling": "acceptable"
+        },
+        {
+          "kind": "advice",
+          "heading": "next_steps",
+          "token": null,
+          "key": "3e46cbfb654f87a9",
+          "ruling": "acceptable"
+        },
+        {
+          "kind": "promise",
+          "heading": "next_steps",
+          "token": null,
+          "key": "533a536be33e1ef0",
+          "ruling": "acceptable"
+        }
+      ],
+      "latency": {
+        "step7_s": 5.284,
+        "step7_start_s": 16.666,
+        "critical_s": 21.95
+      },
+      "sourceless": [],
+      "audience": "parent_or_carer",
+      "expected_audience": "parent_or_carer",
+      "risk_sections_in_a": 0,
+      "unverified_sources": 0,
+      "assembled": true,
+      "gate": {
+        "status": "clean",
+        "ok": true
+      },
+      "haz03_c": "pass",
+      "header": {
+        "present": false,
+        "expected": false
+      },
+      "non_english": {
+        "decided": 0,
+        "possible": 0
+      },
+      "fk_full": 5.73,
+      "title_ok": true,
+      "generation_id": "w6-pipeline-e09-m01-c02-p02-x5/r5/S9",
+      "scenario_id": "S9",
+      "run": 5
+    },
+    {
+      "metric": "compose_patient",
+      "metric_version": 2,
+      "checks": {
+        "dose_or_frequency": 1,
+        "advice_shaped": 1
+      },
+      "counts": {
+        "sections": 5,
+        "sections_given": 6,
+        "sources_cited": 6,
+        "words_prose": 174,
+        "checks": 2
+      },
+      "box_problems": 0,
+      "fk_prose": 6.69,
+      "d5_prose": "pass",
+      "years_vs_notes": [],
+      "review": [
+        {
+          "kind": "medication",
+          "heading": "why_in_hospital",
+          "token": null,
+          "key": "cea7e909e7313f13",
+          "ruling": "acceptable"
+        },
+        {
+          "kind": "advice",
+          "heading": "why_in_hospital",
+          "token": null,
+          "key": "9b9090ef27ca53b0",
+          "ruling": "acceptable"
+        }
+      ],
+      "latency": {
+        "step7_s": 4.201,
+        "step7_start_s": 18.051,
+        "critical_s": 22.252
+      },
+      "sourceless": [],
+      "audience": "adult",
+      "expected_audience": "adult",
+      "risk_sections_in_a": 0,
+      "unverified_sources": 1,
+      "assembled": true,
+      "gate": {
+        "status": "documented_advice",
+        "ok": true
+      },
+      "haz03_c": "pass",
+      "header": {
+        "present": false,
+        "expected": false
+      },
+      "non_english": {
+        "decided": 0,
+        "possible": 0
+      },
+      "fk_full": 6.0,
+      "title_ok": true,
+      "generation_id": "w6-pipeline-e09-m01-c02-p02-x5/r5/S10",
+      "scenario_id": "S10",
+      "run": 5
+    },
+    {
+      "metric": "compose_patient",
+      "metric_version": 2,
+      "checks": {
+        "advice_shaped": 2
+      },
+      "counts": {
+        "sections": 5,
+        "sections_given": 5,
+        "sources_cited": 5,
+        "words_prose": 279,
+        "checks": 2
+      },
+      "box_problems": 0,
+      "fk_prose": 5.75,
+      "d5_prose": "pass",
+      "years_vs_notes": [],
+      "review": [
+        {
+          "kind": "advice",
+          "heading": "what_we_did",
+          "token": null,
+          "key": "c2fd60133c07d1a0",
+          "ruling": "acceptable"
+        },
+        {
+          "kind": "advice",
+          "heading": "next_steps",
+          "token": null,
+          "key": "b40c4b877178539c",
+          "ruling": "acceptable"
+        }
+      ],
+      "latency": {
+        "step7_s": 5.453,
+        "step7_start_s": 21.672,
+        "critical_s": 27.125
+      },
+      "sourceless": [],
+      "audience": "adult",
+      "expected_audience": "adult",
+      "risk_sections_in_a": 0,
+      "unverified_sources": 1,
+      "assembled": true,
+      "gate": {
+        "status": "clean",
+        "ok": true
+      },
+      "haz03_c": "pass",
+      "header": {
+        "present": false,
+        "expected": false
+      },
+      "non_english": {
+        "decided": 0,
+        "possible": 0
+      },
+      "fk_full": 5.86,
+      "title_ok": true,
+      "generation_id": "w6-pipeline-e09-m01-c02-p02-x5/r5/S11",
+      "scenario_id": "S11",
+      "run": 5
+    },
+    {
+      "metric": "compose_patient",
+      "metric_version": 2,
+      "checks": {
+        "advice_shaped": 2
+      },
+      "counts": {
+        "sections": 5,
+        "sections_given": 5,
+        "sources_cited": 5,
+        "words_prose": 326,
+        "checks": 2
+      },
+      "box_problems": 0,
+      "fk_prose": 7.33,
+      "d5_prose": "pass",
+      "years_vs_notes": [],
+      "review": [
+        {
+          "kind": "advice",
+          "heading": "why_in_hospital",
+          "token": null,
+          "key": "0a062f49759ffa10",
+          "ruling": "acceptable"
+        },
+        {
+          "kind": "advice",
+          "heading": "next_steps",
+          "token": null,
+          "key": "617be72526331097",
+          "ruling": "acceptable"
+        }
+      ],
+      "latency": {
+        "step7_s": 7.306,
+        "step7_start_s": 21.824,
+        "critical_s": 29.13
+      },
+      "sourceless": [],
+      "audience": "adult",
+      "expected_audience": "adult",
+      "risk_sections_in_a": 0,
+      "unverified_sources": 0,
+      "assembled": true,
+      "gate": {
+        "status": "documented_advice",
+        "ok": true
+      },
+      "haz03_c": "pass",
+      "header": {
+        "present": false,
+        "expected": false
+      },
+      "non_english": {
+        "decided": 0,
+        "possible": 0
+      },
+      "fk_full": 6.43,
+      "title_ok": true,
+      "generation_id": "w6-pipeline-e09-m01-c02-p02-x5/r5/S12",
+      "scenario_id": "S12",
+      "run": 5
+    },
+    {
+      "metric": "compose_patient",
+      "metric_version": 2,
+      "checks": {},
+      "counts": {
+        "sections": 5,
+        "sections_given": 6,
+        "sources_cited": 6,
+        "words_prose": 318,
+        "checks": 0
+      },
+      "box_problems": 0,
+      "fk_prose": 6.3,
+      "d5_prose": "pass",
+      "years_vs_notes": [],
+      "review": [],
+      "latency": {
+        "step7_s": 6.576,
+        "step7_start_s": 21.928,
+        "critical_s": 28.504
+      },
+      "sourceless": [],
+      "audience": "adult",
+      "expected_audience": "adult",
+      "risk_sections_in_a": 0,
+      "unverified_sources": 0,
+      "assembled": true,
+      "gate": {
+        "status": "documented_advice",
+        "ok": true
+      },
+      "haz03_c": "pass",
+      "header": {
+        "present": false,
+        "expected": false
+      },
+      "non_english": {
+        "decided": 0,
+        "possible": 0
+      },
+      "fk_full": 5.72,
+      "title_ok": true,
+      "generation_id": "w6-pipeline-e09-m01-c02-p02-x5/r5/S13",
+      "scenario_id": "S13",
+      "run": 5
+    },
+    {
+      "metric": "compose_patient",
+      "metric_version": 2,
+      "checks": {
+        "promise_shaped": 1
+      },
+      "counts": {
+        "sections": 5,
+        "sections_given": 6,
+        "sources_cited": 6,
+        "words_prose": 190,
+        "checks": 1
+      },
+      "box_problems": 0,
+      "fk_prose": 6.06,
+      "d5_prose": "pass",
+      "years_vs_notes": [],
+      "review": [
+        {
+          "kind": "promise",
+          "heading": "next_steps",
+          "token": null,
+          "key": "e67dc1f1dfe50e0f",
+          "ruling": "acceptable"
+        }
+      ],
+      "latency": {
+        "step7_s": 4.423,
+        "step7_start_s": 21.113,
+        "critical_s": 25.536
+      },
+      "sourceless": [],
+      "audience": "adult",
+      "expected_audience": "adult",
+      "risk_sections_in_a": 0,
+      "unverified_sources": 0,
+      "assembled": true,
+      "gate": {
+        "status": "clean",
+        "ok": true
+      },
+      "haz03_c": "pass",
+      "header": {
+        "present": false,
+        "expected": false
+      },
+      "non_english": {
+        "decided": 0,
+        "possible": 0
+      },
+      "fk_full": 5.2,
+      "title_ok": true,
+      "generation_id": "w6-pipeline-e09-m01-c02-p02-x5/r5/S14",
+      "scenario_id": "S14",
+      "run": 5
+    },
+    {
+      "metric": "compose_patient",
+      "metric_version": 2,
+      "checks": {
+        "dose_or_frequency": 1
+      },
+      "counts": {
+        "sections": 5,
+        "sections_given": 6,
+        "sources_cited": 6,
+        "words_prose": 202,
+        "checks": 1
+      },
+      "box_problems": 0,
+      "fk_prose": 6.43,
+      "d5_prose": "pass",
+      "years_vs_notes": [],
+      "review": [
+        {
+          "kind": "medication",
+          "heading": "what_we_did",
+          "token": null,
+          "key": "2729a456f90d8f09",
+          "ruling": "defect"
+        }
+      ],
+      "latency": {
+        "step7_s": 4.409,
+        "step7_start_s": 20.696,
+        "critical_s": 25.105
+      },
+      "sourceless": [],
+      "audience": "adult",
+      "expected_audience": "adult",
+      "risk_sections_in_a": 0,
+      "unverified_sources": 1,
+      "assembled": true,
+      "gate": {
+        "status": "clean",
+        "ok": true
+      },
+      "haz03_c": "pass",
+      "header": {
+        "present": false,
+        "expected": false
+      },
+      "non_english": {
+        "decided": 0,
+        "possible": 0
+      },
+      "fk_full": 5.97,
+      "title_ok": true,
+      "generation_id": "w6-pipeline-e09-m01-c02-p02-x5/r5/S15",
+      "scenario_id": "S15",
+      "run": 5
+    },
+    {
+      "metric": "compose_patient",
+      "metric_version": 2,
+      "checks": {
+        "promise_shaped": 1
+      },
+      "counts": {
+        "sections": 5,
+        "sections_given": 6,
+        "sources_cited": 6,
+        "words_prose": 278,
+        "checks": 1
+      },
+      "box_problems": 0,
+      "fk_prose": 6.87,
+      "d5_prose": "pass",
+      "years_vs_notes": [],
+      "review": [
+        {
+          "kind": "promise",
+          "heading": "next_steps",
+          "token": null,
+          "key": "313433ba07cdc5f3",
+          "ruling": "defect"
+        },
+        {
+          "kind": "drug",
+          "heading": "next_steps",
+          "token": "warfarin",
+          "key": "688d3a00af65cb8b",
+          "ruling": "acceptable"
+        }
+      ],
+      "latency": {
+        "step7_s": 6.638,
+        "step7_start_s": 20.302,
+        "critical_s": 26.94
+      },
+      "sourceless": [],
+      "audience": "adult",
+      "expected_audience": "adult",
+      "risk_sections_in_a": 0,
+      "unverified_sources": 0,
+      "assembled": true,
+      "gate": {
+        "status": "clean",
+        "ok": true
+      },
+      "haz03_c": "pass",
+      "header": {
+        "present": false,
+        "expected": false
+      },
+      "non_english": {
+        "decided": 0,
+        "possible": 0
+      },
+      "fk_full": 6.22,
+      "title_ok": true,
+      "generation_id": "w6-pipeline-e09-m01-c02-p02-x5/r5/S16",
+      "scenario_id": "S16",
+      "run": 5
+    },
+    {
+      "metric": "compose_patient",
+      "metric_version": 2,
+      "checks": {
+        "dose_or_frequency": 1
+      },
+      "counts": {
+        "sections": 5,
+        "sections_given": 6,
+        "sources_cited": 6,
+        "words_prose": 189,
+        "checks": 1
+      },
+      "box_problems": 0,
+      "fk_prose": 5.28,
+      "d5_prose": "pass",
+      "years_vs_notes": [],
+      "review": [
+        {
+          "kind": "medication",
+          "heading": "what_we_did",
+          "token": null,
+          "key": "dee8a92503b38e1a",
+          "ruling": "acceptable"
+        }
+      ],
+      "latency": {
+        "step7_s": 4.818,
+        "step7_start_s": 20.193,
+        "critical_s": 25.011
+      },
+      "sourceless": [],
+      "audience": "adult",
+      "expected_audience": "adult",
+      "risk_sections_in_a": 0,
+      "unverified_sources": 0,
+      "assembled": true,
+      "gate": {
+        "status": "clean",
+        "ok": true
+      },
+      "haz03_c": "pass",
+      "header": {
+        "present": false,
+        "expected": false
+      },
+      "non_english": {
+        "decided": 0,
+        "possible": 0
+      },
+      "fk_full": 5.11,
+      "title_ok": true,
+      "generation_id": "w6-pipeline-e09-m01-c02-p02-x5/r5/S17",
+      "scenario_id": "S17",
+      "run": 5
+    },
+    {
+      "metric": "compose_patient",
+      "metric_version": 2,
+      "checks": {
+        "advice_shaped": 3
+      },
+      "counts": {
+        "sections": 5,
+        "sections_given": 6,
+        "sources_cited": 6,
+        "words_prose": 170,
+        "checks": 3
+      },
+      "box_problems": 0,
+      "fk_prose": 3.73,
+      "d5_prose": "pass",
+      "years_vs_notes": [],
+      "review": [
+        {
+          "kind": "advice",
+          "heading": "next_steps",
+          "token": null,
+          "key": "35bef9d1f4324022",
+          "ruling": "acceptable"
+        },
+        {
+          "kind": "advice",
+          "heading": "next_steps",
+          "token": null,
+          "key": "f495bf6b55f6754e",
+          "ruling": "acceptable"
+        },
+        {
+          "kind": "advice",
+          "heading": "next_steps",
+          "token": null,
+          "key": "71bf56fe4b5ba037",
+          "ruling": "acceptable"
+        }
+      ],
+      "latency": {
+        "step7_s": 4.133,
+        "step7_start_s": 16.365,
+        "critical_s": 20.498
+      },
+      "sourceless": [],
+      "audience": "adult",
+      "expected_audience": "adult",
+      "risk_sections_in_a": 0,
+      "unverified_sources": 1,
+      "assembled": true,
+      "gate": {
+        "status": "clean",
+        "ok": true
+      },
+      "haz03_c": "pass",
+      "header": {
+        "present": false,
+        "expected": false
+      },
+      "non_english": {
+        "decided": 0,
+        "possible": 0
+      },
+      "fk_full": 3.67,
+      "title_ok": true,
+      "generation_id": "w6-pipeline-e09-m01-c02-p02-x5/r5/S18",
+      "scenario_id": "S18",
+      "run": 5
+    },
+    {
+      "metric": "compose_patient",
+      "metric_version": 2,
+      "checks": {},
+      "counts": {
+        "sections": 5,
+        "sections_given": 6,
+        "sources_cited": 6,
+        "words_prose": 151,
+        "checks": 0
+      },
+      "box_problems": 0,
+      "fk_prose": 5.9,
+      "d5_prose": "pass",
+      "years_vs_notes": [],
+      "review": [],
+      "latency": {
+        "step7_s": 3.785,
+        "step7_start_s": 19.546,
+        "critical_s": 23.331
+      },
+      "sourceless": [],
+      "audience": "adult",
+      "expected_audience": "adult",
+      "risk_sections_in_a": 0,
+      "unverified_sources": 0,
+      "assembled": true,
+      "gate": {
+        "status": "documented_advice",
+        "ok": true
+      },
+      "haz03_c": "pass",
+      "header": {
+        "present": false,
+        "expected": false
+      },
+      "non_english": {
+        "decided": 0,
+        "possible": 0
+      },
+      "fk_full": 5.68,
+      "title_ok": true,
+      "generation_id": "w6-pipeline-e09-m01-c02-p02-x5/r5/A5",
+      "scenario_id": "A5",
+      "run": 5
+    },
+    {
+      "metric": "compose_patient",
+      "metric_version": 2,
+      "checks": {},
+      "counts": {
+        "sections": 5,
+        "sections_given": 6,
+        "sources_cited": 6,
+        "words_prose": 144,
+        "checks": 0
+      },
+      "box_problems": 0,
+      "fk_prose": 5.79,
+      "d5_prose": "pass",
+      "years_vs_notes": [],
+      "review": [],
+      "latency": {
+        "step7_s": 3.656,
+        "step7_start_s": 16.812,
+        "critical_s": 20.468
+      },
+      "sourceless": [],
+      "audience": "adult",
+      "expected_audience": "adult",
+      "risk_sections_in_a": 0,
+      "unverified_sources": 0,
+      "assembled": true,
+      "gate": {
+        "status": "documented_advice",
+        "ok": true
+      },
+      "haz03_c": "pass",
+      "header": {
+        "present": false,
+        "expected": false
+      },
+      "non_english": {
+        "decided": 0,
+        "possible": 0
+      },
+      "fk_full": 4.94,
+      "title_ok": true,
+      "generation_id": "w6-pipeline-e09-m01-c02-p02-x5/r5/B6",
+      "scenario_id": "B6",
+      "run": 5
+    },
+    {
+      "metric": "compose_patient",
+      "metric_version": 2,
+      "checks": {},
+      "counts": {
+        "sections": 5,
+        "sections_given": 5,
+        "sources_cited": 5,
+        "words_prose": 85,
+        "checks": 0
+      },
+      "box_problems": 0,
+      "fk_prose": 4.61,
+      "d5_prose": "pass",
+      "years_vs_notes": [],
+      "review": [],
+      "latency": {
+        "step7_s": 2.687,
+        "step7_start_s": 10.442,
+        "critical_s": 13.129
+      },
+      "sourceless": [],
+      "audience": "adult",
+      "expected_audience": "adult",
+      "risk_sections_in_a": 0,
+      "unverified_sources": 0,
+      "assembled": true,
+      "gate": {
+        "status": "clean",
+        "ok": true
+      },
+      "haz03_c": "pass",
+      "header": {
+        "present": true,
+        "expected": true
+      },
+      "non_english": {
+        "decided": 0,
+        "possible": 0
+      },
+      "fk_full": 4.95,
+      "title_ok": true,
+      "generation_id": "w6-pipeline-e09-m01-c02-p02-x5/r5/C7",
+      "scenario_id": "C7",
+      "run": 5
+    }
+  ],
+  "summary": {
+    "n_records": 90,
+    "n_scored": 90,
+    "n_assembled": 90,
+    "skipped": [],
+    "boxes_correct": 90,
+    "unknown_source_ids": 0,
+    "signpost_outside_box": 0,
+    "gate": {
+      "pass": 90,
+      "statuses": {
+        "clean": 40,
+        "documented_advice": 50
+      }
+    },
+    "resus_text": 0,
+    "year_added": 0,
+    "years_vs_notes": 0,
+    "fk": {
+      "prose_pass": 90,
+      "prose_n": 90,
+      "prose_p50": 6.05,
+      "prose_max": 7.97,
+      "full_p50": 5.48,
+      "full_max": 6.56
+    },
+    "header": {
+      "expected": 5,
+      "expected_present": 5,
+      "unexpected_present": 0
+    },
+    "header_expected_records": 5,
+    "non_english": {
+      "decided": 0,
+      "possible": 0
+    },
+    "not_documented_text": 0,
+    "follow_up_missing": 0,
+    "title_ok": 90,
+    "haz03_c": 90,
+    "risk_sections_in_a": 5,
+    "unverified_sources": 27,
+    "review": {
+      "advice": {
+        "flagged": 31,
+        "defect": 0,
+        "acceptable": 31,
+        "pending": 0
+      },
+      "medication": {
+        "flagged": 17,
+        "defect": 1,
+        "acceptable": 16,
+        "pending": 0
+      },
+      "drug": {
+        "flagged": 7,
+        "defect": 0,
+        "acceptable": 7,
+        "pending": 0
+      },
+      "number": {
+        "flagged": 1,
+        "defect": 0,
+        "acceptable": 1,
+        "pending": 0
+      },
+      "unit": {
+        "flagged": 0,
+        "defect": 0,
+        "acceptable": 0,
+        "pending": 0
+      },
+      "conflict": {
+        "flagged": 0,
+        "defect": 0,
+        "acceptable": 0,
+        "pending": 0
+      },
+      "sensitive": {
+        "flagged": 16,
+        "defect": 0,
+        "acceptable": 16,
+        "pending": 0
+      },
+      "promise": {
+        "flagged": 16,
+        "defect": 6,
+        "acceptable": 10,
+        "pending": 0
+      }
+    },
+    "prose_without_source": 0,
+    "refused_no_sections": 0,
+    "other_checks": {
+      "heading_repeated": 0,
+      "heading_out_of_order": 0,
+      "required_heading_missing": 0,
+      "heading_without_source": 0,
+      "box_not_exact": 0,
+      "stray_placeholder": 0,
+      "source_unused": 0,
+      "advice_shaped": 31,
+      "dose_or_frequency": 17,
+      "number_added": 1,
+      "unit_added": 0,
+      "conflict_text": 0,
+      "sensitive_text": 16
+    },
+    "words_prose_p50": 186,
+    "latency": {
+      "step7_p50": 4.458,
+      "step7_max": 7.306,
+      "start7_max": 23.308,
+      "start7_over_watch": 0,
+      "critical_p50": 23.426,
+      "critical_max": 29.867,
+      "critical_over_deadline": 0,
+      "watch_s": 200,
+      "deadline_s": 270,
+      "median_step7": 4.470000000000001
+    }
+  }
+}

@@ -1,0 +1,952 @@
+{
+  "record_version": 1,
+  "generation_id": "w6-pipeline-e09-m01-c02-p02-x5/r3/S18",
+  "batch_id": "w6-pipeline-e09-m01-c02-p02-x5",
+  "run": 3,
+  "scenario_id": "S18",
+  "generator": "pipeline",
+  "path": "steps-1-5b-5a-6-7",
+  "model_id": "anthropic.claude-sonnet-4-6",
+  "region": "eu-west-2",
+  "prompts": {
+    "extract_facts": {
+      "path": "src/generate/pipeline/prompts/extract_facts.md",
+      "file_sha256": "27554f5d32e4281ec3e1e0b135553d33f0f2475d8835b2929cadf3e3e3abd556",
+      "body_sha256": "481a6c68d94acb1949ab3f0cd694d538b019446ed6cf8e6951560394cf02366c"
+    },
+    "reconcile_medications": {
+      "path": "src/generate/pipeline/prompts/reconcile_medications.md",
+      "file_sha256": "5006968b7010560f437e0eb31f55e9092baebc7a4adf347667bfcb154e8708a0",
+      "body_sha256": "b06f8c12a739b80c3d57f41ceada7dd7b1c2af38bc53159353b68425d09d5acf"
+    },
+    "compose_clinical": {
+      "path": "src/generate/pipeline/prompts/compose_clinical.md",
+      "file_sha256": "511071c6204ef05308500a29aeaafd4f06facfceb83c5b9fd5b4590031cb4a7a",
+      "body_sha256": "48613f4d8669369039b77ffdf12828ce72445aaab0fd85f04d4d4ad0a82725fe"
+    },
+    "compose_patient": {
+      "path": "src/generate/pipeline/prompts/compose_patient.md",
+      "file_sha256": "ac9fbb4bc386a913b709746d249b1afdc30188a6edbece0c360e12b8c8d6a740",
+      "body_sha256": "e292d44750c3906b1cde40f625273d88448c277d4a0106e17125f7469b238f40"
+    }
+  },
+  "prompt_caching": true,
+  "notes_sha256": "3d7f06d1a5a414275df26db1863e10bc9e085fde839ae9021e97d5f16ebf659b",
+  "started_at": "2026-11-03T05:41:00+00:00",
+  "elapsed_s": 20.942,
+  "calls": [
+    {
+      "name": "extract_facts",
+      "input_tokens": 671,
+      "output_tokens": 1507,
+      "cache_read_tokens": 4539,
+      "cache_write_tokens": 0,
+      "stop_reason": "tool_use",
+      "latency_s": 9.519,
+      "throttle_retries": 0
+    },
+    {
+      "name": "reconcile_medications",
+      "input_tokens": 732,
+      "output_tokens": 33,
+      "cache_read_tokens": 2290,
+      "cache_write_tokens": 0,
+      "stop_reason": "tool_use",
+      "latency_s": 0.676,
+      "throttle_retries": 0
+    },
+    {
+      "name": "compose_clinical",
+      "input_tokens": 853,
+      "output_tokens": 1135,
+      "cache_read_tokens": 3182,
+      "cache_write_tokens": 0,
+      "stop_reason": "tool_use",
+      "latency_s": 6.611,
+      "throttle_retries": 0
+    },
+    {
+      "name": "compose_patient",
+      "input_tokens": 645,
+      "output_tokens": 385,
+      "cache_read_tokens": 2334,
+      "cache_write_tokens": 0,
+      "stop_reason": "tool_use",
+      "latency_s": 3.99,
+      "throttle_retries": 0
+    }
+  ],
+  "steps": {
+    "guard_input": {
+      "notes_sha256": "3d7f06d1a5a414275df26db1863e10bc9e085fde839ae9021e97d5f16ebf659b",
+      "line_count": 9,
+      "flags": []
+    },
+    "extract_facts": {
+      "call": {
+        "model_id": "anthropic.claude-sonnet-4-6",
+        "prompt_sha256": "481a6c68d94acb1949ab3f0cd694d538b019446ed6cf8e6951560394cf02366c",
+        "stop_reason": "tool_use",
+        "attempts": 1,
+        "input_tokens": 671,
+        "output_tokens": 1507,
+        "cache_read_tokens": 4539,
+        "cache_write_tokens": 0,
+        "latency_ms": 9519
+      }
+    },
+    "validate_facts": {
+      "facts": {
+        "fields": {
+          "age_sex": {
+            "status": "documented",
+            "items": [
+              {
+                "value": "26-year-old male",
+                "cites": [
+                  {
+                    "lines": [
+                      "L001"
+                    ],
+                    "quote": "26M",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "age_sex.0",
+                "citation_status": "verified",
+                "reason": null
+              }
+            ],
+            "field_check": "ok"
+          },
+          "specialty": {
+            "status": "documented",
+            "items": [
+              {
+                "value": "Neurology",
+                "cites": [
+                  {
+                    "lines": [
+                      "L006"
+                    ],
+                    "quote": "Neurology review",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "specialty.0",
+                "citation_status": "verified",
+                "reason": null
+              }
+            ],
+            "field_check": "ok"
+          },
+          "legal_status": {
+            "status": "not_documented",
+            "items": [],
+            "field_check": "ok"
+          },
+          "weight": {
+            "status": "not_documented",
+            "items": [],
+            "field_check": "ok"
+          },
+          "admission_date": {
+            "status": "documented",
+            "items": [
+              {
+                "value": "19/05",
+                "cites": [
+                  {
+                    "lines": [
+                      "L001"
+                    ],
+                    "quote": "19/05",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "admission_date.0",
+                "citation_status": "verified",
+                "reason": null
+              }
+            ],
+            "field_check": "ok"
+          },
+          "discharge_date": {
+            "status": "documented",
+            "items": [
+              {
+                "value": "20/05",
+                "cites": [
+                  {
+                    "lines": [
+                      "L006",
+                      "L007"
+                    ],
+                    "quote": "Neurology review: first unprovoked seizure. Plan outpatient MRI brain\n+ EEG, first-fit clinic. No driving. Discharged.",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "discharge_date.0",
+                "citation_status": "verified",
+                "reason": null
+              }
+            ],
+            "field_check": "ok"
+          },
+          "presenting_complaint": {
+            "status": "documented",
+            "items": [
+              {
+                "value": "First witnessed generalised tonic-clonic seizure at work, approximately 2 minutes duration",
+                "cites": [
+                  {
+                    "lines": [
+                      "L001"
+                    ],
+                    "quote": "witnessed first generalised tonic-clonic seizure at work, ~2 min",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "presenting_complaint.0",
+                "citation_status": "verified",
+                "reason": null
+              }
+            ],
+            "field_check": "ok"
+          },
+          "diagnosis_primary": {
+            "status": "documented",
+            "items": [
+              {
+                "value": "First unprovoked generalised tonic-clonic seizure",
+                "cites": [
+                  {
+                    "lines": [
+                      "L006"
+                    ],
+                    "quote": "first unprovoked seizure",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "diagnosis_primary.0",
+                "citation_status": "verified",
+                "reason": null
+              }
+            ],
+            "field_check": "ok"
+          },
+          "diagnosis_secondary": {
+            "status": "documented",
+            "items": [
+              {
+                "value": "Post-ictal confusion; no incontinence reported; lateral tongue bite",
+                "cites": [
+                  {
+                    "lines": [
+                      "L001",
+                      "L002"
+                    ],
+                    "quote": "post-ictal confusion, no incontinence reported, tongue bite lateral",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "diagnosis_secondary.0",
+                "citation_status": "verified",
+                "reason": null
+              }
+            ],
+            "field_check": "ok"
+          },
+          "diagnosis_background": {
+            "status": "documented",
+            "items": [
+              {
+                "value": "No previous seizures. No head injury.",
+                "cites": [
+                  {
+                    "lines": [
+                      "L002",
+                      "L003"
+                    ],
+                    "quote": "No prev\nseizures. No head injury.",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "diagnosis_background.0",
+                "citation_status": "verified",
+                "reason": null
+              }
+            ],
+            "field_check": "ok"
+          },
+          "key_investigations": {
+            "status": "documented",
+            "items": [
+              {
+                "value": "Bloods and glucose: normal",
+                "cites": [
+                  {
+                    "lines": [
+                      "L003"
+                    ],
+                    "quote": "Bloods/glucose normal",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "key_investigations.0",
+                "citation_status": "verified",
+                "reason": null
+              },
+              {
+                "value": "Toxicology screen: negative",
+                "cites": [
+                  {
+                    "lines": [
+                      "L003"
+                    ],
+                    "quote": "tox screen negative",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "key_investigations.1",
+                "citation_status": "verified",
+                "reason": null
+              },
+              {
+                "value": "CT head: normal",
+                "cites": [
+                  {
+                    "lines": [
+                      "L003"
+                    ],
+                    "quote": "CT head normal",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "key_investigations.2",
+                "citation_status": "verified",
+                "reason": null
+              }
+            ],
+            "field_check": "ok"
+          },
+          "treatment": {
+            "status": "documented",
+            "items": [
+              {
+                "value": "No antiepileptic started — first seizure, low immediate recurrence risk; antiepileptic decision deferred to neurology post-investigation",
+                "cites": [
+                  {
+                    "lines": [
+                      "L004",
+                      "L005"
+                    ],
+                    "quote": "Started on no antiepileptic (first seizure, low immediate\nrecurrence risk, neurology to decide post-investigation)",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "treatment.0",
+                "citation_status": "verified",
+                "reason": null
+              }
+            ],
+            "field_check": "ok"
+          },
+          "risk_assessment": {
+            "status": "not_documented",
+            "items": [],
+            "field_check": "ok"
+          },
+          "allergies": {
+            "status": "documented",
+            "items": [
+              {
+                "value": "No known drug allergies",
+                "cites": [
+                  {
+                    "lines": [
+                      "L005"
+                    ],
+                    "quote": "NKDA.",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "allergies.0",
+                "citation_status": "verified",
+                "reason": null
+              }
+            ],
+            "field_check": "ok"
+          },
+          "follow_up": {
+            "status": "documented",
+            "items": [
+              {
+                "value": "Outpatient MRI brain and EEG to be arranged",
+                "cites": [
+                  {
+                    "lines": [
+                      "L006",
+                      "L007"
+                    ],
+                    "quote": "Plan outpatient MRI brain\n+ EEG, first-fit clinic.",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "follow_up.0",
+                "citation_status": "verified",
+                "reason": null
+              },
+              {
+                "value": "First-fit clinic referral",
+                "cites": [
+                  {
+                    "lines": [
+                      "L007"
+                    ],
+                    "quote": "first-fit clinic.",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "follow_up.1",
+                "citation_status": "verified",
+                "reason": null
+              }
+            ],
+            "field_check": "ok"
+          },
+          "gp_actions": {
+            "status": "documented",
+            "items": [
+              {
+                "value": "GP aware; await neurology outcome",
+                "cites": [
+                  {
+                    "lines": [
+                      "L009"
+                    ],
+                    "quote": "GP: aware, await neurology.",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "gp_actions.0",
+                "citation_status": "verified",
+                "reason": null
+              }
+            ],
+            "field_check": "ok"
+          },
+          "vte_assessment": {
+            "status": "not_documented",
+            "items": [],
+            "field_check": "ok"
+          }
+        },
+        "medications": {
+          "pre_admission": [
+            {
+              "value": "No pre-admission medications (nil drug history)",
+              "cites": [
+                {
+                  "lines": [
+                    "L005"
+                  ],
+                  "quote": "DH: nil.",
+                  "verified": true,
+                  "reason": null
+                }
+              ],
+              "fact_id": "medications.pre_admission.0",
+              "citation_status": "verified",
+              "reason": null
+            }
+          ],
+          "discharge": [],
+          "discharge_status": "none_required",
+          "medications_check": "status_without_items"
+        },
+        "resus": {
+          "changed": "not_documented",
+          "cites": [],
+          "form_or_discussion_documented": false,
+          "status_documented": "not_documented",
+          "fact_id": "resus",
+          "citation_status": "verified",
+          "reason": null
+        },
+        "documented_advice": [
+          {
+            "value": "Safety advice given: no swimming alone, no heights, no baths",
+            "cites": [
+              {
+                "lines": [
+                  "L007",
+                  "L008"
+                ],
+                "quote": "Safety advice (no swimming alone,\nheights, baths).",
+                "verified": true,
+                "reason": null
+              }
+            ],
+            "fact_id": "documented_advice.0",
+            "citation_status": "verified",
+            "reason": null
+          },
+          {
+            "value": "Advised no driving",
+            "cites": [
+              {
+                "lines": [
+                  "L007",
+                  "L008"
+                ],
+                "quote": "No driving.",
+                "verified": true,
+                "reason": null
+              }
+            ],
+            "fact_id": "documented_advice.1",
+            "citation_status": "verified",
+            "reason": null
+          },
+          {
+            "value": "Must not drive and must inform DVLA; 6 months off driving from seizure for a first unprovoked seizure, group 1",
+            "cites": [
+              {
+                "lines": [
+                  "L008",
+                  "L009"
+                ],
+                "quote": "DVLA: must not drive, must inform DVLA (6 months off driving from\nseizure for a first unprovoked seizure, group 1).",
+                "verified": true,
+                "reason": null
+              }
+            ],
+            "fact_id": "documented_advice.2",
+            "citation_status": "verified",
+            "reason": null
+          }
+        ],
+        "age_group": "adult",
+        "contradictions": [],
+        "suspicious_text": []
+      },
+      "uncited_lines": [],
+      "counts": {
+        "cites_total": 20,
+        "cites_verified": 20,
+        "items_unverified": 0,
+        "fields_inconsistent": 0,
+        "medications_inconsistent": 1
+      }
+    },
+    "retrieve_evidence": {
+      "medication": [
+        {
+          "line": "L005",
+          "sources": [
+            "cited",
+            "med_header"
+          ],
+          "fact_ids": [
+            "medications.pre_admission.0"
+          ],
+          "flagged": false
+        }
+      ],
+      "resus": [],
+      "language": [],
+      "counts": {
+        "medication_lines": 1,
+        "resus_lines": 0,
+        "language_lines": 0,
+        "medication_matched_not_cited": 0,
+        "resus_matched_not_cited": 0
+      }
+    },
+    "route_resus": {
+      "route": "absent",
+      "forced": "no",
+      "status": "not_documented",
+      "changed": "not_documented",
+      "cited_lines": [],
+      "rendered": "RESUSCITATION STATUS\nNot documented."
+    },
+    "select_safety_net": {
+      "route": "documented",
+      "audience": "adult",
+      "pinned_line": "If you have been given a number to call, use that first. Otherwise, if you are worried, contact your GP or call NHS 111. Call 999 if it is an emergency.",
+      "advice": [
+        {
+          "fact_id": "documented_advice.0",
+          "lines": [
+            "L007",
+            "L008"
+          ],
+          "quote": "Safety advice (no swimming alone, heights, baths)."
+        },
+        {
+          "fact_id": "documented_advice.1",
+          "lines": [
+            "L007",
+            "L008"
+          ],
+          "quote": "No driving."
+        },
+        {
+          "fact_id": "documented_advice.2",
+          "lines": [
+            "L008",
+            "L009"
+          ],
+          "quote": "DVLA: must not drive, must inform DVLA (6 months off driving from seizure for a first unprovoked seizure, group 1)."
+        }
+      ],
+      "advice_excluded": 0,
+      "cited_lines": [
+        "L007",
+        "L008",
+        "L009"
+      ],
+      "part_ab": "- \"Safety advice (no swimming alone, heights, baths).\" [L007–L008]\n- \"No driving.\" [L007–L008]\n- \"DVLA: must not drive, must inform DVLA (6 months off driving from seizure for a first unprovoked seizure, group 1).\" [L008–L009]\n\nStandard seek-help line in the patient version (fixed wording, not from the notes):\nIf you have been given a number to call, use that first. Otherwise, if you are worried, contact your GP or call NHS 111. Call 999 if it is an emergency.",
+      "part_c": "Safety advice (no swimming alone, heights, baths).\nNo driving.\nDVLA: must not drive, must inform DVLA (6 months off driving from seizure for a first unprovoked seizure, group 1).\n\nIf you have been given a number to call, use that first. Otherwise, if you are worried, contact your GP or call NHS 111. Call 999 if it is an emergency."
+    },
+    "reconcile_medications": {
+      "reconciliation": [],
+      "discharge_status": "none_required",
+      "reconciliation_check": "ok",
+      "dh_lines_unreconciled": [
+        "L005"
+      ],
+      "counts": {
+        "entries": 0,
+        "cites_total": 0,
+        "cites_verified": 0,
+        "entries_unverified": 0,
+        "entries_flagged": 0,
+        "dh_lines_unreconciled": 1
+      },
+      "call": {
+        "model_id": "anthropic.claude-sonnet-4-6",
+        "prompt_sha256": "b06f8c12a739b80c3d57f41ceada7dd7b1c2af38bc53159353b68425d09d5acf",
+        "stop_reason": "tool_use",
+        "attempts": 1,
+        "input_tokens": 732,
+        "output_tokens": 33,
+        "cache_read_tokens": 2290,
+        "cache_write_tokens": 0,
+        "latency_ms": 676
+      }
+    },
+    "compose_clinical": {
+      "sections": [
+        {
+          "section_id": "sections.0",
+          "part": "part_a",
+          "heading": "presenting_complaint",
+          "fact_ids": [
+            "presenting_complaint.0"
+          ],
+          "text": "First witnessed generalised tonic-clonic seizure at work, approximately 2 minutes duration.",
+          "unverified_fact_ids": []
+        },
+        {
+          "section_id": "sections.1",
+          "part": "part_a",
+          "heading": "diagnosis",
+          "fact_ids": [
+            "diagnosis_primary.0",
+            "diagnosis_secondary.0",
+            "diagnosis_background.0"
+          ],
+          "text": "Primary: First unprovoked generalised tonic-clonic seizure.\n\nSecondary: Post-ictal confusion; no incontinence reported; lateral tongue bite.\n\nBackground: No previous seizures. No head injury.",
+          "unverified_fact_ids": []
+        },
+        {
+          "section_id": "sections.2",
+          "part": "part_a",
+          "heading": "key_investigations",
+          "fact_ids": [
+            "key_investigations.0",
+            "key_investigations.1",
+            "key_investigations.2"
+          ],
+          "text": "- Bloods and glucose: normal\n- Toxicology screen: negative\n- CT head: normal",
+          "unverified_fact_ids": []
+        },
+        {
+          "section_id": "sections.3",
+          "part": "part_a",
+          "heading": "treatment",
+          "fact_ids": [
+            "treatment.0"
+          ],
+          "text": "No antiepileptic started — first seizure, low immediate recurrence risk; antiepileptic decision deferred to neurology post-investigation.",
+          "unverified_fact_ids": []
+        },
+        {
+          "section_id": "sections.4",
+          "part": "part_a",
+          "heading": "resuscitation_status",
+          "fact_ids": [],
+          "text": "{{RESUS}}",
+          "unverified_fact_ids": []
+        },
+        {
+          "section_id": "sections.5",
+          "part": "part_a",
+          "heading": "medications",
+          "fact_ids": [],
+          "text": "{{MEDICATIONS}}",
+          "unverified_fact_ids": []
+        },
+        {
+          "section_id": "sections.6",
+          "part": "part_a",
+          "heading": "allergies",
+          "fact_ids": [
+            "allergies.0"
+          ],
+          "text": "No known drug allergies.",
+          "unverified_fact_ids": []
+        },
+        {
+          "section_id": "sections.7",
+          "part": "part_a",
+          "heading": "follow_up",
+          "fact_ids": [
+            "follow_up.0",
+            "follow_up.1"
+          ],
+          "text": "- Outpatient MRI brain and EEG to be arranged.\n- First-fit clinic referral.",
+          "unverified_fact_ids": []
+        },
+        {
+          "section_id": "sections.8",
+          "part": "part_a",
+          "heading": "gp_actions",
+          "fact_ids": [
+            "gp_actions.0"
+          ],
+          "text": "GP aware; await neurology outcome.",
+          "unverified_fact_ids": []
+        },
+        {
+          "section_id": "sections.9",
+          "part": "part_a",
+          "heading": "safety_net",
+          "fact_ids": [],
+          "text": "{{SAFETY_NET}}",
+          "unverified_fact_ids": []
+        },
+        {
+          "section_id": "sections.10",
+          "part": "part_a",
+          "heading": "vte_assessment",
+          "fact_ids": [],
+          "text": "Not documented",
+          "unverified_fact_ids": []
+        },
+        {
+          "section_id": "sections.11",
+          "part": "part_b",
+          "heading": "opening",
+          "fact_ids": [
+            "age_sex.0",
+            "presenting_complaint.0",
+            "diagnosis_primary.0"
+          ],
+          "text": "Thank you for your ongoing care of this 26-year-old male who was admitted following a first witnessed generalised tonic-clonic seizure at work, with a primary diagnosis of first unprovoked generalised tonic-clonic seizure.",
+          "unverified_fact_ids": []
+        },
+        {
+          "section_id": "sections.12",
+          "part": "part_b",
+          "heading": "admission_summary",
+          "fact_ids": [
+            "key_investigations.0",
+            "key_investigations.1",
+            "key_investigations.2",
+            "diagnosis_secondary.0",
+            "diagnosis_background.0",
+            "treatment.0"
+          ],
+          "text": "On assessment, he had post-ictal confusion with a lateral tongue bite; no incontinence was reported. There is no history of previous seizures or head injury. Investigations including bloods, glucose, toxicology screen and CT head were all normal. No antiepileptic was commenced given this was a first seizure with low immediate recurrence risk; the decision regarding antiepileptic therapy has been deferred to neurology following further outpatient investigation.",
+          "unverified_fact_ids": []
+        },
+        {
+          "section_id": "sections.13",
+          "part": "part_b",
+          "heading": "diagnosis",
+          "fact_ids": [
+            "diagnosis_primary.0",
+            "diagnosis_secondary.0"
+          ],
+          "text": "Primary: First unprovoked generalised tonic-clonic seizure.\nSecondary: Post-ictal confusion; lateral tongue bite.",
+          "unverified_fact_ids": []
+        },
+        {
+          "section_id": "sections.14",
+          "part": "part_b",
+          "heading": "resuscitation_status",
+          "fact_ids": [],
+          "text": "{{RESUS}}",
+          "unverified_fact_ids": []
+        },
+        {
+          "section_id": "sections.15",
+          "part": "part_b",
+          "heading": "medications",
+          "fact_ids": [],
+          "text": "{{MEDICATIONS}}",
+          "unverified_fact_ids": []
+        },
+        {
+          "section_id": "sections.16",
+          "part": "part_b",
+          "heading": "gp_actions",
+          "fact_ids": [
+            "gp_actions.0"
+          ],
+          "text": "- GP aware; await neurology outcome.",
+          "unverified_fact_ids": []
+        },
+        {
+          "section_id": "sections.17",
+          "part": "part_b",
+          "heading": "follow_up",
+          "fact_ids": [
+            "follow_up.0",
+            "follow_up.1"
+          ],
+          "text": "- Outpatient MRI brain and EEG to be arranged.\n- First-fit clinic referral.",
+          "unverified_fact_ids": []
+        },
+        {
+          "section_id": "sections.18",
+          "part": "part_b",
+          "heading": "safety_net",
+          "fact_ids": [],
+          "text": "{{SAFETY_NET}}",
+          "unverified_fact_ids": []
+        }
+      ],
+      "held_back": [],
+      "checks": [],
+      "counts": {
+        "sections": 19,
+        "sections_a": 11,
+        "sections_b": 8,
+        "facts_given": 12,
+        "facts_used_in_a": 12,
+        "header_facts_given": 4,
+        "contradictions_given": 0,
+        "contradictions_in_a": 0,
+        "gp_actions_given": 1,
+        "gp_actions_in_b": 1,
+        "facts_held_back": 0,
+        "gp_actions_held_back": 0,
+        "unverified_given": 0,
+        "unverified_used": 0,
+        "checks": 0
+      },
+      "age_group": "adult",
+      "call": {
+        "model_id": "anthropic.claude-sonnet-4-6",
+        "prompt_sha256": "48613f4d8669369039b77ffdf12828ce72445aaab0fd85f04d4d4ad0a82725fe",
+        "stop_reason": "tool_use",
+        "attempts": 1,
+        "input_tokens": 853,
+        "output_tokens": 1135,
+        "cache_read_tokens": 3182,
+        "cache_write_tokens": 0,
+        "latency_ms": 6611
+      }
+    },
+    "compose_patient": {
+      "sections": [
+        {
+          "section_id": "c_sections.0",
+          "heading": "why_in_hospital",
+          "source_ids": [
+            "sections.0",
+            "sections.1"
+          ],
+          "text": "You came in after a seizure at work. It was the first seizure you have ever had. The team found you had a bite on the side of your tongue and some confusion after the seizure. No head injury was found."
+        },
+        {
+          "section_id": "c_sections.1",
+          "heading": "what_we_did",
+          "source_ids": [
+            "sections.2",
+            "sections.3"
+          ],
+          "text": "The team ran blood tests and checked your blood sugar. Both were normal. A toxicology screen was done and was negative. A scan of your head (CT) was done and was normal.\n\nThe team did not start any anti-seizure medicine. This is because it was your first seizure. The decision about anti-seizure medicine has been passed to the neurology team after further tests."
+        },
+        {
+          "section_id": "c_sections.2",
+          "heading": "medicines",
+          "source_ids": [],
+          "text": "{{MEDICATIONS}}"
+        },
+        {
+          "section_id": "c_sections.3",
+          "heading": "next_steps",
+          "source_ids": [
+            "sections.7",
+            "sections.8"
+          ],
+          "text": "The following has been arranged for you:\n\n- An MRI scan of your brain and an EEG (a test that checks the electrical activity in your brain) will be arranged as outpatient appointments.\n- You have been referred to a first-fit clinic.\n\nYour GP has been made aware. Your GP will wait to hear the outcome from the neurology team."
+        },
+        {
+          "section_id": "c_sections.4",
+          "heading": "safety_net",
+          "source_ids": [],
+          "text": "{{SAFETY_NET}}"
+        }
+      ],
+      "checks": [],
+      "counts": {
+        "sections": 5,
+        "sections_given": 6,
+        "sources_cited": 6,
+        "words_prose": 164,
+        "checks": 0
+      },
+      "audience": "adult",
+      "call": {
+        "model_id": "anthropic.claude-sonnet-4-6",
+        "prompt_sha256": "e292d44750c3906b1cde40f625273d88448c277d4a0106e17125f7469b238f40",
+        "stop_reason": "tool_use",
+        "attempts": 1,
+        "input_tokens": 645,
+        "output_tokens": 385,
+        "cache_read_tokens": 2334,
+        "cache_write_tokens": 0,
+        "latency_ms": 3990
+      }
+    }
+  },
+  "output": null,
+  "gate": null,
+  "failed_step": null,
+  "error": null,
+  "step_errors": {},
+  "cost_usd_est": 0.064137
+}

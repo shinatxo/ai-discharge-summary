@@ -1,0 +1,19 @@
+{
+  "generation_id": "w6-pipeline-e09-m01-c02-p02-x5/r1/S1",
+  "verdicts": {
+    "added": "pass",
+    "meaning": "partial",
+    "withheld": "pass",
+    "omission": "pass",
+    "audience": "pass"
+  },
+  "findings": [
+    {
+      "dimension": "meaning",
+      "heading": "next_steps",
+      "source_ids": [],
+      "note": "“adjust” weakens “uptitrate”"
+    }
+  ],
+  "scored_by": "author (CSO), 3 Nov 2026 11:17, given in chat; written to file by Claude verbatim"
+}

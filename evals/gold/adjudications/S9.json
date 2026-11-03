@@ -63,7 +63,11 @@
     "d9b4fb9a18339114": "acceptable",
     "dc217a310fbf7fa2": "acceptable",
     "eea46e69c8098d8b": "acceptable",
-    "f87cf3776d0a7b09": "acceptable"
+    "f87cf3776d0a7b09": "acceptable",
+    "53c5a80e76fab7b7": "acceptable",
+    "5eb797448d3d41f1": "acceptable",
+    "8adb1b5ce86eb77d": "acceptable",
+    "f46b25cdcb351e4f": "acceptable"
   },
   "compose_rulings_meta": {
     "by": "Shina Oguntoye (CSO)",
@@ -109,7 +113,14 @@
     "76993a71a4677aa5": "acceptable",
     "c417b5aefd8bb2b9": "acceptable",
     "d0d1729dfa125b09": "acceptable",
-    "ffb42d2a63675471": "acceptable"
+    "ffb42d2a63675471": "acceptable",
+    "3e46cbfb654f87a9": "acceptable",
+    "6a2ac6c6794b7b30": "acceptable",
+    "2b82349f58230031": "acceptable",
+    "b24210071e9850b1": "acceptable",
+    "44f960e13516f5fc": "acceptable",
+    "533a536be33e1ef0": "acceptable",
+    "d4cc62941523462d": "acceptable"
   },
   "patient_rulings_meta": {
     "by": "Shina Oguntoye (CSO)",
@@ -142,6 +153,53 @@
           "ffb42d2a63675471"
         ]
       }
+    }
+  },
+  "patient_rulings_meta_p02": {
+    "by": "Shina Oguntoye (CSO)",
+    "on": "2026-11-03",
+    "source": "w6-pipeline-e09-m01-c02-p02-x5, step 7 (grouped and proposed by Claude, approved by the CSO 3 Nov 2026 11:38)",
+    "groups": {
+      "Q1_pattern_false_alarm": {
+        "verdict": "acceptable",
+        "reason": "pattern matched; the sentence restates its input and gives no instruction (P1 standard)",
+        "keys": [
+          "3e46cbfb654f87a9",
+          "6a2ac6c6794b7b30"
+        ]
+      },
+      "Q4_drug_named_not_instructed": {
+        "verdict": "acceptable",
+        "reason": "drug named, no instruction (P6); findings: S16 warfarin is in the input but not the cited section; S9 adds a mechanism (lack of insulin) the input does not give - against p0.2",
+        "keys": [
+          "2b82349f58230031",
+          "b24210071e9850b1"
+        ]
+      },
+      "promise_stated": {
+        "verdict": "acceptable",
+        "reason": "report only: the service or availability is stated in the input",
+        "keys": [
+          "44f960e13516f5fc",
+          "533a536be33e1ef0",
+          "d4cc62941523462d"
+        ]
+      }
+    }
+  },
+  "compose_rulings_meta_p02": {
+    "by": "Shina Oguntoye (CSO)",
+    "on": "2026-11-03",
+    "source": "w6-pipeline-e09-m01-c02-p02-x5, step 6 (proposed by Claude, approved by the CSO 3 Nov 2026 11:38)",
+    "R9": {
+      "verdict": "acceptable",
+      "reason": "medication sentences outside the box, drug from a cited fact (R3/R5/R7 standard); Claude checked all 75: 0 from uncited facts",
+      "keys": [
+        "53c5a80e76fab7b7",
+        "5eb797448d3d41f1",
+        "8adb1b5ce86eb77d",
+        "f46b25cdcb351e4f"
+      ]
     }
   }
 }

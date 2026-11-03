@@ -1,0 +1,29 @@
+{
+  "generation_id": "w6-pipeline-e09-m01-c02-p02-x5/r1/S3",
+  "verdicts": {
+    "added": "partial",
+    "meaning": "pass",
+    "withheld": "pass",
+    "omission": "pass",
+    "audience": "pass"
+  },
+  "findings": [
+    {
+      "dimension": "added",
+      "heading": "what_we_did",
+      "source_ids": [],
+      "note": "“carefully” adds reassurance"
+    }
+  ],
+  "scored_by": "author (CSO), 3 Nov 2026 11:17, given in chat; written to file by Claude verbatim",
+  "corrections": [
+    {
+      "by": "author (CSO)",
+      "on": "2026-11-03T11:38",
+      "field": "verdicts.omission",
+      "from": "partial",
+      "to": "pass",
+      "reason": "the crisis line is in the assembled leaflet's code-filled advice box ('Crisis team number given', 5b documented advice); under sheets v2 advice in the box is not an omission; made after the scorer's bar results were reported in chat; does not change bar line 10 (S3 added=partial stands)"
+    }
+  ]
+}

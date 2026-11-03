@@ -1,0 +1,19 @@
+{
+  "generation_id": "w6-pipeline-e09-m01-c02-p02-x5/r1/C7",
+  "verdicts": {
+    "added": "partial",
+    "meaning": "pass",
+    "withheld": "pass",
+    "omission": "pass",
+    "audience": "pass"
+  },
+  "findings": [
+    {
+      "dimension": "added",
+      "heading": "what_we_did",
+      "source_ids": [],
+      "note": "“half-plaster support” is an added gloss"
+    }
+  ],
+  "scored_by": "author (CSO), 3 Nov 2026 11:17, given in chat; written to file by Claude verbatim"
+}

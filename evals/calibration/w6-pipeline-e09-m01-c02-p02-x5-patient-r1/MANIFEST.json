@@ -1,0 +1,69 @@
+{
+  "sheets_version": 2,
+  "batch_id": "w6-pipeline-e09-m01-c02-p02-x5",
+  "run": 1,
+  "rule": "D5 (CSO 1 Nov 2026): W5 spot-check items (f5c9adc) + S3 + C7: S1, S4, S10, S13, S16, A5, S3, C7",
+  "pass_rule": "an item passes when every dimension is pass",
+  "dimensions": [
+    "added",
+    "meaning",
+    "withheld",
+    "omission",
+    "audience"
+  ],
+  "items": [
+    {
+      "scenario_id": "S1",
+      "generation_id": "w6-pipeline-e09-m01-c02-p02-x5/r1/S1",
+      "sections_sha256": "9d840d7e7322cdfdf5ce32def8e0fdfd130167a1bcf1ed8dc816a4429fb1ff25"
+    },
+    {
+      "scenario_id": "S4",
+      "generation_id": "w6-pipeline-e09-m01-c02-p02-x5/r1/S4",
+      "sections_sha256": "d3b55507da672391523974aa8ed82af3fd0bb369b95eaad791045b6bd1f4f7fb"
+    },
+    {
+      "scenario_id": "S10",
+      "generation_id": "w6-pipeline-e09-m01-c02-p02-x5/r1/S10",
+      "sections_sha256": "dc06a98ad3a03224a032d139f9a8f371c63f36d85a42cdfd9e09bcd93a3434f8"
+    },
+    {
+      "scenario_id": "S13",
+      "generation_id": "w6-pipeline-e09-m01-c02-p02-x5/r1/S13",
+      "sections_sha256": "e2dec503609d1b38479dd94f542e27d4e4042b843ac6d77ef78ba2699a53b258"
+    },
+    {
+      "scenario_id": "S16",
+      "generation_id": "w6-pipeline-e09-m01-c02-p02-x5/r1/S16",
+      "sections_sha256": "2a304432f437b7978ba568896a8738ddc3081b88ec8324ca7cb21fc10bfcbae8"
+    },
+    {
+      "scenario_id": "A5",
+      "generation_id": "w6-pipeline-e09-m01-c02-p02-x5/r1/A5",
+      "sections_sha256": "9df8d73c167104e6058c8ea5874354e2223c0921460d449d673dea1f2bb994c6"
+    },
+    {
+      "scenario_id": "S3",
+      "generation_id": "w6-pipeline-e09-m01-c02-p02-x5/r1/S3",
+      "sections_sha256": "096a3fae4d94efc15cfb294fb4878fb24abde1ee97971e3c81c017d44b0ef9e8"
+    },
+    {
+      "scenario_id": "C7",
+      "generation_id": "w6-pipeline-e09-m01-c02-p02-x5/r1/C7",
+      "sections_sha256": "2dc136270ccc2a8d459643f207d7ca7e12a36e8360f0cd918f6beb2268c5e2e7"
+    }
+  ],
+  "by_design_not_omissions": [
+    "risk scores and levels",
+    "ceilings of care, treatment limits, resuscitation",
+    "risk_assessment, allergies (never given)",
+    "test values and numbers",
+    "medicines and advice (code boxes)"
+  ],
+  "excluded": [
+    "step 7 checks and counts",
+    "scores/",
+    "notes",
+    "facts"
+  ]
+}

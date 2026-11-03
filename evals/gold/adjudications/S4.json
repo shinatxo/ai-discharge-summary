@@ -26,7 +26,9 @@
     "2b979ec2cc28343d": "defect",
     "48228e9de6a0281a": "defect",
     "5626fdfb71040aa2": "defect",
-    "e7b9adaa6da3f1b5": "acceptable"
+    "e7b9adaa6da3f1b5": "acceptable",
+    "16df0d49b08b55a7": "acceptable",
+    "4cc8f92c1b4d3b58": "acceptable"
   },
   "patient_rulings_meta": {
     "by": "Shina Oguntoye (CSO)",
@@ -48,6 +50,21 @@
           "2b979ec2cc28343d",
           "48228e9de6a0281a",
           "5626fdfb71040aa2"
+        ]
+      }
+    }
+  },
+  "patient_rulings_meta_p02": {
+    "by": "Shina Oguntoye (CSO)",
+    "on": "2026-11-03",
+    "source": "w6-pipeline-e09-m01-c02-p02-x5, step 7 (grouped and proposed by Claude, approved by the CSO 3 Nov 2026 11:38)",
+    "groups": {
+      "promise_stated": {
+        "verdict": "acceptable",
+        "reason": "report only: the service or availability is stated in the input",
+        "keys": [
+          "16df0d49b08b55a7",
+          "4cc8f92c1b4d3b58"
         ]
       }
     }

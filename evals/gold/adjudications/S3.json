@@ -64,7 +64,10 @@
     "d3b7c725cc9e39b7": "acceptable",
     "e1e8499a9d8f3c0e": "acceptable",
     "e7e213af42dac30e": "acceptable",
-    "e920de543a6d082f": "acceptable"
+    "e920de543a6d082f": "acceptable",
+    "89fdff65c0725216": "acceptable",
+    "936c8c361057b824": "acceptable",
+    "e1bd3b94b8d520a7": "acceptable"
   },
   "compose_rulings_meta": {
     "by": "Shina Oguntoye (CSO)",
@@ -130,5 +133,58 @@
         }
       }
     ]
+  },
+  "patient_rulings": {
+    "011d01d75c4cc7f1": "acceptable",
+    "1f219be0aa63a40b": "acceptable",
+    "3c4ef567f41c42ba": "acceptable",
+    "5192bc5e7c123547": "acceptable",
+    "596b9ec52f6c3898": "acceptable",
+    "70f59e7ddff92381": "acceptable",
+    "b55c2afbec0ffd18": "acceptable",
+    "b5bd283a3623916b": "acceptable",
+    "c77acc02fe4d3825": "acceptable",
+    "c96facce3958ff7b": "acceptable",
+    "d97c8cc25f995783": "acceptable",
+    "e701a5eb5280d910": "acceptable"
+  },
+  "patient_rulings_meta_p02": {
+    "by": "Shina Oguntoye (CSO)",
+    "on": "2026-11-03",
+    "source": "w6-pipeline-e09-m01-c02-p02-x5, step 7 (grouped and proposed by Claude, approved by the CSO 3 Nov 2026 11:38)",
+    "groups": {
+      "Q6_sensitive_reason_as_given": {
+        "verdict": "acceptable",
+        "reason": "the reason for admission and its course as the input gives them; no risk level, score, safeguarding or police detail (F3 scope, written 2 Nov before the batch); 'carefully' recorded as an addition in the blind read",
+        "keys": [
+          "011d01d75c4cc7f1",
+          "1f219be0aa63a40b",
+          "3c4ef567f41c42ba",
+          "5192bc5e7c123547",
+          "596b9ec52f6c3898",
+          "70f59e7ddff92381",
+          "b55c2afbec0ffd18",
+          "b5bd283a3623916b",
+          "c77acc02fe4d3825",
+          "c96facce3958ff7b",
+          "d97c8cc25f995783",
+          "e701a5eb5280d910"
+        ]
+      }
+    }
+  },
+  "compose_rulings_meta_p02": {
+    "by": "Shina Oguntoye (CSO)",
+    "on": "2026-11-03",
+    "source": "w6-pipeline-e09-m01-c02-p02-x5, step 6 (proposed by Claude, approved by the CSO 3 Nov 2026 11:38)",
+    "R9": {
+      "verdict": "acceptable",
+      "reason": "medication sentences outside the box, drug from a cited fact (R3/R5/R7 standard); Claude checked all 75: 0 from uncited facts",
+      "keys": [
+        "89fdff65c0725216",
+        "936c8c361057b824",
+        "e1bd3b94b8d520a7"
+      ]
+    }
   }
 }

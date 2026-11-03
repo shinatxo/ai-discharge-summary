@@ -49,6 +49,14 @@
       "by": "Shina Oguntoye (CSO)",
       "on": "2026-10-07",
       "source": "w4-baseline-v1-x5 (proposed by Claude, approved by the CSO)"
+    },
+    "480edec780ae77edceb1e879bb6cb551e9b9f301b478c10ee0ce3f2d7497433d": {
+      "text": "DAPT continued",
+      "verdict": "acceptable",
+      "reason": "documented item ('on DAPT' in the notes); a class name the gold lists as its drugs",
+      "by": "Shina Oguntoye (CSO)",
+      "on": "2026-11-03",
+      "source": "w6-pipeline-e09-m01-c02-p02-x5 (proposed by Claude, approved by the CSO)"
     }
   },
   "compose_rulings": {
@@ -56,7 +64,8 @@
     "48596a2a35e5d120": "acceptable",
     "51820091414430a7": "acceptable",
     "addc282432d38e53": "acceptable",
-    "ef85350325d60023": "acceptable"
+    "ef85350325d60023": "acceptable",
+    "a4d4acbe870a267e": "acceptable"
   },
   "compose_rulings_meta": {
     "by": "Shina Oguntoye (CSO)",
@@ -74,6 +83,53 @@
           "ef85350325d60023"
         ]
       }
+    }
+  },
+  "patient_rulings": {
+    "7e5f2833afeb2cda": "acceptable",
+    "0a062f49759ffa10": "acceptable",
+    "20b28d1a4f331da1": "acceptable",
+    "617be72526331097": "acceptable",
+    "6c74870b90813d9a": "acceptable",
+    "d0f5ec706342d43c": "acceptable",
+    "d95b3e888eb46a24": "acceptable"
+  },
+  "patient_rulings_meta_p02": {
+    "by": "Shina Oguntoye (CSO)",
+    "on": "2026-11-03",
+    "source": "w6-pipeline-e09-m01-c02-p02-x5, step 7 (grouped and proposed by Claude, approved by the CSO 3 Nov 2026 11:38)",
+    "groups": {
+      "Q1_pattern_false_alarm": {
+        "verdict": "acceptable",
+        "reason": "pattern matched; the sentence restates its input and gives no instruction (P1 standard)",
+        "keys": [
+          "7e5f2833afeb2cda"
+        ]
+      },
+      "Q2_instruction_restated": {
+        "verdict": "acceptable",
+        "reason": "restates an instruction its input states, same force and scope (P2 / bar-4 standard)",
+        "keys": [
+          "0a062f49759ffa10",
+          "20b28d1a4f331da1",
+          "617be72526331097",
+          "6c74870b90813d9a",
+          "d0f5ec706342d43c",
+          "d95b3e888eb46a24"
+        ]
+      }
+    }
+  },
+  "compose_rulings_meta_p02": {
+    "by": "Shina Oguntoye (CSO)",
+    "on": "2026-11-03",
+    "source": "w6-pipeline-e09-m01-c02-p02-x5, step 6 (proposed by Claude, approved by the CSO 3 Nov 2026 11:38)",
+    "R9": {
+      "verdict": "acceptable",
+      "reason": "medication sentences outside the box, drug from a cited fact (R3/R5/R7 standard); Claude checked all 75: 0 from uncited facts",
+      "keys": [
+        "a4d4acbe870a267e"
+      ]
     }
   }
 }

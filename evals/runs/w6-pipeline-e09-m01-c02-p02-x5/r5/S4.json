@@ -1,0 +1,1017 @@
+{
+  "record_version": 1,
+  "generation_id": "w6-pipeline-e09-m01-c02-p02-x5/r5/S4",
+  "batch_id": "w6-pipeline-e09-m01-c02-p02-x5",
+  "run": 5,
+  "scenario_id": "S4",
+  "generator": "pipeline",
+  "path": "steps-1-5b-5a-6-7",
+  "model_id": "anthropic.claude-sonnet-4-6",
+  "region": "eu-west-2",
+  "prompts": {
+    "extract_facts": {
+      "path": "src/generate/pipeline/prompts/extract_facts.md",
+      "file_sha256": "27554f5d32e4281ec3e1e0b135553d33f0f2475d8835b2929cadf3e3e3abd556",
+      "body_sha256": "481a6c68d94acb1949ab3f0cd694d538b019446ed6cf8e6951560394cf02366c"
+    },
+    "reconcile_medications": {
+      "path": "src/generate/pipeline/prompts/reconcile_medications.md",
+      "file_sha256": "5006968b7010560f437e0eb31f55e9092baebc7a4adf347667bfcb154e8708a0",
+      "body_sha256": "b06f8c12a739b80c3d57f41ceada7dd7b1c2af38bc53159353b68425d09d5acf"
+    },
+    "compose_clinical": {
+      "path": "src/generate/pipeline/prompts/compose_clinical.md",
+      "file_sha256": "511071c6204ef05308500a29aeaafd4f06facfceb83c5b9fd5b4590031cb4a7a",
+      "body_sha256": "48613f4d8669369039b77ffdf12828ce72445aaab0fd85f04d4d4ad0a82725fe"
+    },
+    "compose_patient": {
+      "path": "src/generate/pipeline/prompts/compose_patient.md",
+      "file_sha256": "ac9fbb4bc386a913b709746d249b1afdc30188a6edbece0c360e12b8c8d6a740",
+      "body_sha256": "e292d44750c3906b1cde40f625273d88448c277d4a0106e17125f7469b238f40"
+    }
+  },
+  "prompt_caching": true,
+  "notes_sha256": "647dbf1787d657773d262b81e9df534fdf54b57d06d61b8fa585b26bbcd9a6cc",
+  "started_at": "2026-11-03T05:51:31+00:00",
+  "elapsed_s": 23.621,
+  "calls": [
+    {
+      "name": "extract_facts",
+      "input_tokens": 812,
+      "output_tokens": 1724,
+      "cache_read_tokens": 4539,
+      "cache_write_tokens": 0,
+      "stop_reason": "tool_use",
+      "latency_s": 10.3,
+      "throttle_retries": 0
+    },
+    {
+      "name": "reconcile_medications",
+      "input_tokens": 868,
+      "output_tokens": 33,
+      "cache_read_tokens": 2290,
+      "cache_write_tokens": 0,
+      "stop_reason": "tool_use",
+      "latency_s": 0.66,
+      "throttle_retries": 0
+    },
+    {
+      "name": "compose_clinical",
+      "input_tokens": 1049,
+      "output_tokens": 1301,
+      "cache_read_tokens": 3182,
+      "cache_write_tokens": 0,
+      "stop_reason": "tool_use",
+      "latency_s": 8.278,
+      "throttle_retries": 0
+    },
+    {
+      "name": "compose_patient",
+      "input_tokens": 804,
+      "output_tokens": 381,
+      "cache_read_tokens": 2334,
+      "cache_write_tokens": 0,
+      "stop_reason": "tool_use",
+      "latency_s": 4.238,
+      "throttle_retries": 0
+    }
+  ],
+  "steps": {
+    "guard_input": {
+      "notes_sha256": "647dbf1787d657773d262b81e9df534fdf54b57d06d61b8fa585b26bbcd9a6cc",
+      "line_count": 15,
+      "flags": []
+    },
+    "extract_facts": {
+      "call": {
+        "model_id": "anthropic.claude-sonnet-4-6",
+        "prompt_sha256": "481a6c68d94acb1949ab3f0cd694d538b019446ed6cf8e6951560394cf02366c",
+        "stop_reason": "tool_use",
+        "attempts": 1,
+        "input_tokens": 812,
+        "output_tokens": 1724,
+        "cache_read_tokens": 4539,
+        "cache_write_tokens": 0,
+        "latency_ms": 10300
+      }
+    },
+    "validate_facts": {
+      "facts": {
+        "fields": {
+          "age_sex": {
+            "status": "documented",
+            "items": [
+              {
+                "value": "10-month-old male",
+                "cites": [
+                  {
+                    "lines": [
+                      "L001"
+                    ],
+                    "quote": "10mo M",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "age_sex.0",
+                "citation_status": "verified",
+                "reason": null
+              }
+            ],
+            "field_check": "ok"
+          },
+          "specialty": {
+            "status": "not_documented",
+            "items": [],
+            "field_check": "ok"
+          },
+          "legal_status": {
+            "status": "not_documented",
+            "items": [],
+            "field_check": "ok"
+          },
+          "weight": {
+            "status": "documented",
+            "items": [
+              {
+                "value": "9 kg",
+                "cites": [
+                  {
+                    "lines": [
+                      "L005"
+                    ],
+                    "quote": "Wt 9 kg",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "weight.0",
+                "citation_status": "verified",
+                "reason": null
+              }
+            ],
+            "field_check": "ok"
+          },
+          "admission_date": {
+            "status": "documented",
+            "items": [
+              {
+                "value": "19/05",
+                "cites": [
+                  {
+                    "lines": [
+                      "L001"
+                    ],
+                    "quote": "19/05",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "admission_date.0",
+                "citation_status": "verified",
+                "reason": null
+              }
+            ],
+            "field_check": "ok"
+          },
+          "discharge_date": {
+            "status": "documented",
+            "items": [
+              {
+                "value": "Day 2 (20/05)",
+                "cites": [
+                  {
+                    "lines": [
+                      "L014"
+                    ],
+                    "quote": "Day 2 (later)",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "discharge_date.0",
+                "citation_status": "verified",
+                "reason": null
+              }
+            ],
+            "field_check": "ok"
+          },
+          "presenting_complaint": {
+            "status": "documented",
+            "items": [
+              {
+                "value": "3-day history of coryza, worsening cough, noisy breathing, poor feeding (~50% normal), fewer wet nappies",
+                "cites": [
+                  {
+                    "lines": [
+                      "L001",
+                      "L002"
+                    ],
+                    "quote": "PC: 3/7 coryza, worsening cough, noisy\nbreathing, poor feeding (~50% normal), fewer wet nappies",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "presenting_complaint.0",
+                "citation_status": "verified",
+                "reason": null
+              },
+              {
+                "value": "GP referred in",
+                "cites": [
+                  {
+                    "lines": [
+                      "L001"
+                    ],
+                    "quote": "GP referred in",
+                    "verified": false,
+                    "reason": "quote_not_found"
+                  }
+                ],
+                "fact_id": "presenting_complaint.1",
+                "citation_status": "citation_unverified",
+                "reason": "quote_not_found"
+              }
+            ],
+            "field_check": "ok"
+          },
+          "diagnosis_primary": {
+            "status": "documented",
+            "items": [
+              {
+                "value": "Bronchiolitis (clinical diagnosis, RSV season)",
+                "cites": [
+                  {
+                    "lines": [
+                      "L006"
+                    ],
+                    "quote": "bronchiolitis (clinical dx, RSV season)",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "diagnosis_primary.0",
+                "citation_status": "verified",
+                "reason": null
+              }
+            ],
+            "field_check": "ok"
+          },
+          "diagnosis_secondary": {
+            "status": "not_documented",
+            "items": [],
+            "field_check": "ok"
+          },
+          "diagnosis_background": {
+            "status": "documented",
+            "items": [
+              {
+                "value": "Born at term, no significant past medical history, immunisations up to date",
+                "cites": [
+                  {
+                    "lines": [
+                      "L003"
+                    ],
+                    "quote": "Born term, no significant PMH, immunisations UTD",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "diagnosis_background.0",
+                "citation_status": "verified",
+                "reason": null
+              },
+              {
+                "value": "No family history of atopy noted",
+                "cites": [
+                  {
+                    "lines": [
+                      "L003"
+                    ],
+                    "quote": "No FH atopy noted",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "diagnosis_background.1",
+                "citation_status": "verified",
+                "reason": null
+              }
+            ],
+            "field_check": "ok"
+          },
+          "key_investigations": {
+            "status": "documented",
+            "items": [
+              {
+                "value": "Nasopharyngeal aspirate (NPA): RSV positive",
+                "cites": [
+                  {
+                    "lines": [
+                      "L012"
+                    ],
+                    "quote": "NPA: RSV positive",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "key_investigations.0",
+                "citation_status": "verified",
+                "reason": null
+              },
+              {
+                "value": "On examination Day 1: temperature 37.6, RR 58, mild-moderate subcostal recession, widespread fine creps and wheeze",
+                "cites": [
+                  {
+                    "lines": [
+                      "L004"
+                    ],
+                    "quote": "T 37.6, RR 58, mild-mod subcostal recession, widespread fine creps + wheeze",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "key_investigations.1",
+                "citation_status": "verified",
+                "reason": null
+              },
+              {
+                "value": "Oxygen saturations on Day 1: 90% on room air",
+                "cites": [
+                  {
+                    "lines": [
+                      "L005"
+                    ],
+                    "quote": "sats 90% RA",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "key_investigations.2",
+                "citation_status": "verified",
+                "reason": null
+              },
+              {
+                "value": "Oxygen saturations Day 2: 93–95% on room air",
+                "cites": [
+                  {
+                    "lines": [
+                      "L010"
+                    ],
+                    "quote": "sats 93-95% RA",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "key_investigations.3",
+                "citation_status": "verified",
+                "reason": null
+              },
+              {
+                "value": "RR Day 2: 44, mild recession only",
+                "cites": [
+                  {
+                    "lines": [
+                      "L011"
+                    ],
+                    "quote": "RR 44, mild recession only",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "key_investigations.4",
+                "citation_status": "verified",
+                "reason": null
+              }
+            ],
+            "field_check": "ok"
+          },
+          "treatment": {
+            "status": "documented",
+            "items": [
+              {
+                "value": "Supplemental oxygen to maintain saturations ≥90%",
+                "cites": [
+                  {
+                    "lines": [
+                      "L006",
+                      "L007"
+                    ],
+                    "quote": "Plan: supportive. Supplemental O2 to\nmaintain sats >=90%",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "treatment.0",
+                "citation_status": "verified",
+                "reason": null
+              },
+              {
+                "value": "Nasogastric feeds commenced; IV feeds if not tolerated",
+                "cites": [
+                  {
+                    "lines": [
+                      "L007"
+                    ],
+                    "quote": "NG feeds, IV if not tolerated",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "treatment.1",
+                "citation_status": "verified",
+                "reason": null
+              },
+              {
+                "value": "No antibiotics given (viral aetiology)",
+                "cites": [
+                  {
+                    "lines": [
+                      "L007"
+                    ],
+                    "quote": "NO abx (viral)",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "treatment.2",
+                "citation_status": "verified",
+                "reason": null
+              },
+              {
+                "value": "No salbutamol given (not indicated in bronchiolitis)",
+                "cites": [
+                  {
+                    "lines": [
+                      "L008"
+                    ],
+                    "quote": "NO salbutamol (not indicated in bronchiolitis)",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "treatment.3",
+                "citation_status": "verified",
+                "reason": null
+              },
+              {
+                "value": "Nasopharyngeal aspirate (NPA) sent",
+                "cites": [
+                  {
+                    "lines": [
+                      "L008"
+                    ],
+                    "quote": "NPA sent",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "treatment.4",
+                "citation_status": "verified",
+                "reason": null
+              },
+              {
+                "value": "Weaned off supplemental oxygen overnight (Day 1 to Day 2)",
+                "cites": [
+                  {
+                    "lines": [
+                      "L010"
+                    ],
+                    "quote": "Weaned off O2 overnight",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "treatment.5",
+                "citation_status": "verified",
+                "reason": null
+              },
+              {
+                "value": "Nasogastric tube removed on Day 2 when taking approximately 75% feeds orally",
+                "cites": [
+                  {
+                    "lines": [
+                      "L011"
+                    ],
+                    "quote": "taking ~75% orally, NG removed",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "treatment.6",
+                "citation_status": "verified",
+                "reason": null
+              }
+            ],
+            "field_check": "ok"
+          },
+          "risk_assessment": {
+            "status": "not_documented",
+            "items": [],
+            "field_check": "ok"
+          },
+          "allergies": {
+            "status": "documented",
+            "items": [
+              {
+                "value": "No known drug allergies",
+                "cites": [
+                  {
+                    "lines": [
+                      "L003"
+                    ],
+                    "quote": "NKDA",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "allergies.0",
+                "citation_status": "verified",
+                "reason": null
+              }
+            ],
+            "field_check": "ok"
+          },
+          "follow_up": {
+            "status": "documented",
+            "items": [
+              {
+                "value": "No routine follow-up",
+                "cites": [
+                  {
+                    "lines": [
+                      "L015"
+                    ],
+                    "quote": "No routine f/u",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "follow_up.0",
+                "citation_status": "verified",
+                "reason": null
+              }
+            ],
+            "field_check": "ok"
+          },
+          "gp_actions": {
+            "status": "not_documented",
+            "items": [],
+            "field_check": "ok"
+          },
+          "vte_assessment": {
+            "status": "not_documented",
+            "items": [],
+            "field_check": "ok"
+          }
+        },
+        "medications": {
+          "pre_admission": [],
+          "discharge": [
+            {
+              "value": "No medications needed on discharge",
+              "cites": [
+                {
+                  "lines": [
+                    "L015"
+                  ],
+                  "quote": "No meds needed",
+                  "verified": true,
+                  "reason": null
+                }
+              ],
+              "fact_id": "medications.discharge.0",
+              "citation_status": "verified",
+              "reason": null
+            }
+          ],
+          "discharge_status": "none_required",
+          "medications_check": "ok"
+        },
+        "resus": {
+          "changed": "not_documented",
+          "cites": [],
+          "form_or_discussion_documented": false,
+          "status_documented": "not_documented",
+          "fact_id": "resus",
+          "citation_status": "verified",
+          "reason": null
+        },
+        "documented_advice": [
+          {
+            "value": "Parental safety-net advice given",
+            "cites": [
+              {
+                "lines": [
+                  "L015"
+                ],
+                "quote": "Parental safety-net advice given",
+                "verified": true,
+                "reason": null
+              }
+            ],
+            "fact_id": "documented_advice.0",
+            "citation_status": "verified",
+            "reason": null
+          }
+        ],
+        "age_group": "infant",
+        "contradictions": [],
+        "suspicious_text": []
+      },
+      "uncited_lines": [],
+      "counts": {
+        "cites_total": 25,
+        "cites_verified": 24,
+        "items_unverified": 1,
+        "fields_inconsistent": 0,
+        "medications_inconsistent": 0
+      }
+    },
+    "retrieve_evidence": {
+      "medication": [
+        {
+          "line": "L015",
+          "sources": [
+            "cited",
+            "med_header"
+          ],
+          "fact_ids": [
+            "medications.discharge.0"
+          ],
+          "flagged": false
+        }
+      ],
+      "resus": [],
+      "language": [],
+      "counts": {
+        "medication_lines": 1,
+        "resus_lines": 0,
+        "language_lines": 0,
+        "medication_matched_not_cited": 0,
+        "resus_matched_not_cited": 0
+      }
+    },
+    "route_resus": {
+      "route": "absent",
+      "forced": "no",
+      "status": "not_documented",
+      "changed": "not_documented",
+      "cited_lines": [],
+      "rendered": "RESUSCITATION STATUS\nNot documented."
+    },
+    "select_safety_net": {
+      "route": "documented",
+      "audience": "paediatric",
+      "pinned_line": "If you have been given a number to call, use that first. Otherwise, if you are worried about your child, contact your GP or call NHS 111. Call 999 if it is an emergency.",
+      "advice": [
+        {
+          "fact_id": "documented_advice.0",
+          "lines": [
+            "L015"
+          ],
+          "quote": "Parental safety-net advice given"
+        }
+      ],
+      "advice_excluded": 0,
+      "cited_lines": [
+        "L015"
+      ],
+      "part_ab": "- \"Parental safety-net advice given\" [L015]\n\nStandard seek-help line in the patient version (fixed wording, not from the notes):\nIf you have been given a number to call, use that first. Otherwise, if you are worried about your child, contact your GP or call NHS 111. Call 999 if it is an emergency.",
+      "part_c": "Parental safety-net advice given\n\nIf you have been given a number to call, use that first. Otherwise, if you are worried about your child, contact your GP or call NHS 111. Call 999 if it is an emergency."
+    },
+    "reconcile_medications": {
+      "reconciliation": [],
+      "discharge_status": "none_required",
+      "reconciliation_check": "ok",
+      "dh_lines_unreconciled": [],
+      "counts": {
+        "entries": 0,
+        "cites_total": 0,
+        "cites_verified": 0,
+        "entries_unverified": 0,
+        "entries_flagged": 0,
+        "dh_lines_unreconciled": 0
+      },
+      "call": {
+        "model_id": "anthropic.claude-sonnet-4-6",
+        "prompt_sha256": "b06f8c12a739b80c3d57f41ceada7dd7b1c2af38bc53159353b68425d09d5acf",
+        "stop_reason": "tool_use",
+        "attempts": 1,
+        "input_tokens": 868,
+        "output_tokens": 33,
+        "cache_read_tokens": 2290,
+        "cache_write_tokens": 0,
+        "latency_ms": 660
+      }
+    },
+    "compose_clinical": {
+      "sections": [
+        {
+          "section_id": "sections.0",
+          "part": "part_a",
+          "heading": "presenting_complaint",
+          "fact_ids": [
+            "presenting_complaint.0",
+            "presenting_complaint.1"
+          ],
+          "text": "10-month-old male referred in by GP with a 3-day history of coryza, worsening cough, noisy breathing, poor feeding (approximately 50% of normal intake) and fewer wet nappies.",
+          "unverified_fact_ids": [
+            "presenting_complaint.1"
+          ]
+        },
+        {
+          "section_id": "sections.1",
+          "part": "part_a",
+          "heading": "diagnosis",
+          "fact_ids": [
+            "diagnosis_primary.0",
+            "diagnosis_background.0",
+            "diagnosis_background.1"
+          ],
+          "text": "Primary: Bronchiolitis (clinical diagnosis, RSV season).\n\nBackground: Born at term with no significant past medical history; immunisations up to date. No family history of atopy noted.",
+          "unverified_fact_ids": []
+        },
+        {
+          "section_id": "sections.2",
+          "part": "part_a",
+          "heading": "key_investigations",
+          "fact_ids": [
+            "key_investigations.0",
+            "key_investigations.1",
+            "key_investigations.2",
+            "key_investigations.3",
+            "key_investigations.4"
+          ],
+          "text": "- Nasopharyngeal aspirate (NPA): RSV positive.\n- Day 1 examination: temperature 37.6, respiratory rate 58, mild-moderate subcostal recession, widespread fine creps and wheeze.\n- Oxygen saturations Day 1: 90% on room air.\n- Oxygen saturations Day 2: 93–95% on room air.\n- Respiratory rate Day 2: 44, mild recession only.",
+          "unverified_fact_ids": []
+        },
+        {
+          "section_id": "sections.3",
+          "part": "part_a",
+          "heading": "treatment",
+          "fact_ids": [
+            "treatment.0",
+            "treatment.1",
+            "treatment.2",
+            "treatment.3",
+            "treatment.4",
+            "treatment.5",
+            "treatment.6"
+          ],
+          "text": "- Nasopharyngeal aspirate (NPA) sent.\n- Supplemental oxygen commenced to maintain saturations ≥90%; weaned off supplemental oxygen overnight (Day 1 to Day 2).\n- Nasogastric feeds commenced (with plan for IV feeds if not tolerated); nasogastric tube removed on Day 2 when taking approximately 75% feeds orally.\n- No antibiotics given (viral aetiology).\n- No salbutamol given (not indicated in bronchiolitis).",
+          "unverified_fact_ids": []
+        },
+        {
+          "section_id": "sections.4",
+          "part": "part_a",
+          "heading": "resuscitation_status",
+          "fact_ids": [],
+          "text": "{{RESUS}}",
+          "unverified_fact_ids": []
+        },
+        {
+          "section_id": "sections.5",
+          "part": "part_a",
+          "heading": "medications",
+          "fact_ids": [],
+          "text": "{{MEDICATIONS}}",
+          "unverified_fact_ids": []
+        },
+        {
+          "section_id": "sections.6",
+          "part": "part_a",
+          "heading": "allergies",
+          "fact_ids": [
+            "allergies.0"
+          ],
+          "text": "No known drug allergies.",
+          "unverified_fact_ids": []
+        },
+        {
+          "section_id": "sections.7",
+          "part": "part_a",
+          "heading": "follow_up",
+          "fact_ids": [
+            "follow_up.0"
+          ],
+          "text": "No routine follow-up arranged.",
+          "unverified_fact_ids": []
+        },
+        {
+          "section_id": "sections.8",
+          "part": "part_a",
+          "heading": "gp_actions",
+          "fact_ids": [],
+          "text": "Not documented.",
+          "unverified_fact_ids": []
+        },
+        {
+          "section_id": "sections.9",
+          "part": "part_a",
+          "heading": "safety_net",
+          "fact_ids": [],
+          "text": "{{SAFETY_NET}}",
+          "unverified_fact_ids": []
+        },
+        {
+          "section_id": "sections.10",
+          "part": "part_a",
+          "heading": "vte_assessment",
+          "fact_ids": [],
+          "text": "Not applicable (paediatric).",
+          "unverified_fact_ids": []
+        },
+        {
+          "section_id": "sections.11",
+          "part": "part_b",
+          "heading": "opening",
+          "fact_ids": [
+            "age_sex.0",
+            "presenting_complaint.0",
+            "presenting_complaint.1",
+            "diagnosis_primary.0"
+          ],
+          "text": "Thank you for referring this 10-month-old male who presented with a 3-day history of coryza, worsening cough, noisy breathing, poor feeding and reduced wet nappies, and was admitted with a diagnosis of bronchiolitis.",
+          "unverified_fact_ids": [
+            "presenting_complaint.1"
+          ]
+        },
+        {
+          "section_id": "sections.12",
+          "part": "part_b",
+          "heading": "admission_summary",
+          "fact_ids": [
+            "key_investigations.0",
+            "key_investigations.1",
+            "key_investigations.2",
+            "key_investigations.3",
+            "key_investigations.4",
+            "treatment.0",
+            "treatment.1",
+            "treatment.2",
+            "treatment.3",
+            "treatment.4",
+            "treatment.5",
+            "treatment.6",
+            "diagnosis_background.0",
+            "diagnosis_background.1"
+          ],
+          "text": "On Day 1, examination showed a respiratory rate of 58, temperature 37.6, mild-moderate subcostal recession, and widespread fine creps and wheeze, with oxygen saturations of 90% on room air. NPA confirmed RSV. Background is unremarkable: born at term, no significant past medical history, immunisations up to date, no family history of atopy. He was managed with supplemental oxygen (target saturations ≥90%), which was weaned overnight, and nasogastric feeds were commenced (with IV feeds as a contingency). No antibiotics or salbutamol were given. By Day 2, respiratory rate had improved to 44 with mild recession only and saturations of 93–95% on room air; the nasogastric tube was removed once he was taking approximately 75% feeds orally.",
+          "unverified_fact_ids": []
+        },
+        {
+          "section_id": "sections.13",
+          "part": "part_b",
+          "heading": "diagnosis",
+          "fact_ids": [
+            "diagnosis_primary.0"
+          ],
+          "text": "Primary: Bronchiolitis (clinical diagnosis, RSV season; NPA RSV positive).",
+          "unverified_fact_ids": []
+        },
+        {
+          "section_id": "sections.14",
+          "part": "part_b",
+          "heading": "resuscitation_status",
+          "fact_ids": [],
+          "text": "{{RESUS}}",
+          "unverified_fact_ids": []
+        },
+        {
+          "section_id": "sections.15",
+          "part": "part_b",
+          "heading": "medications",
+          "fact_ids": [],
+          "text": "{{MEDICATIONS}}",
+          "unverified_fact_ids": []
+        },
+        {
+          "section_id": "sections.16",
+          "part": "part_b",
+          "heading": "gp_actions",
+          "fact_ids": [],
+          "text": "No GP actions documented.",
+          "unverified_fact_ids": []
+        },
+        {
+          "section_id": "sections.17",
+          "part": "part_b",
+          "heading": "follow_up",
+          "fact_ids": [
+            "follow_up.0"
+          ],
+          "text": "No routine follow-up has been arranged.",
+          "unverified_fact_ids": []
+        },
+        {
+          "section_id": "sections.18",
+          "part": "part_b",
+          "heading": "safety_net",
+          "fact_ids": [],
+          "text": "{{SAFETY_NET}}",
+          "unverified_fact_ids": []
+        }
+      ],
+      "held_back": [],
+      "checks": [],
+      "counts": {
+        "sections": 19,
+        "sections_a": 11,
+        "sections_b": 8,
+        "facts_given": 19,
+        "facts_used_in_a": 19,
+        "header_facts_given": 4,
+        "contradictions_given": 0,
+        "contradictions_in_a": 0,
+        "gp_actions_given": 0,
+        "gp_actions_in_b": 0,
+        "facts_held_back": 0,
+        "gp_actions_held_back": 0,
+        "unverified_given": 1,
+        "unverified_used": 1,
+        "checks": 0
+      },
+      "age_group": "infant",
+      "call": {
+        "model_id": "anthropic.claude-sonnet-4-6",
+        "prompt_sha256": "48613f4d8669369039b77ffdf12828ce72445aaab0fd85f04d4d4ad0a82725fe",
+        "stop_reason": "tool_use",
+        "attempts": 1,
+        "input_tokens": 1049,
+        "output_tokens": 1301,
+        "cache_read_tokens": 3182,
+        "cache_write_tokens": 0,
+        "latency_ms": 8278
+      }
+    },
+    "compose_patient": {
+      "sections": [
+        {
+          "section_id": "c_sections.0",
+          "heading": "why_in_hospital",
+          "source_ids": [
+            "sections.0",
+            "sections.1"
+          ],
+          "text": "Your child came in because they had a runny nose, a worsening cough, noisy breathing and poor feeding for 3 days. They were also having fewer wet nappies than usual.\n\nThe team found your child had bronchiolitis. This is a chest infection caused by a virus."
+        },
+        {
+          "section_id": "c_sections.1",
+          "heading": "what_we_did",
+          "source_ids": [
+            "sections.2",
+            "sections.3"
+          ],
+          "text": "The team took a swab from the back of your child's nose. This showed a virus called RSV.\n\nOn the first day, your child's breathing was fast and they needed extra oxygen. They were given extra oxygen to keep their levels safe, and this was gradually reduced overnight.\n\nYour child was not feeding well enough, so a small tube was passed through their nose into their stomach to give feeds. On the second day, your child was taking around 75% of their feeds by mouth, so the tube was removed.\n\nNo antibiotics were given, as the infection was caused by a virus. No other medicines were given for the breathing."
+        },
+        {
+          "section_id": "c_sections.2",
+          "heading": "medicines",
+          "source_ids": [],
+          "text": "{{MEDICATIONS}}"
+        },
+        {
+          "section_id": "c_sections.3",
+          "heading": "next_steps",
+          "source_ids": [
+            "sections.7"
+          ],
+          "text": "No follow-up appointments have been arranged."
+        },
+        {
+          "section_id": "c_sections.4",
+          "heading": "safety_net",
+          "source_ids": [],
+          "text": "{{SAFETY_NET}}"
+        }
+      ],
+      "checks": [],
+      "counts": {
+        "sections": 5,
+        "sections_given": 5,
+        "sources_cited": 5,
+        "words_prose": 162,
+        "checks": 0
+      },
+      "audience": "parent_or_carer",
+      "call": {
+        "model_id": "anthropic.claude-sonnet-4-6",
+        "prompt_sha256": "e292d44750c3906b1cde40f625273d88448c277d4a0106e17125f7469b238f40",
+        "stop_reason": "tool_use",
+        "attempts": 1,
+        "input_tokens": 804,
+        "output_tokens": 381,
+        "cache_read_tokens": 2334,
+        "cache_write_tokens": 0,
+        "latency_ms": 4238
+      }
+    }
+  },
+  "output": null,
+  "gate": null,
+  "failed_step": null,
+  "error": null,
+  "step_errors": {},
+  "cost_usd_est": 0.072476
+}

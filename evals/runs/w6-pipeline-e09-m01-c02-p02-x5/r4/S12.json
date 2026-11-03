@@ -1,0 +1,1316 @@
+{
+  "record_version": 1,
+  "generation_id": "w6-pipeline-e09-m01-c02-p02-x5/r4/S12",
+  "batch_id": "w6-pipeline-e09-m01-c02-p02-x5",
+  "run": 4,
+  "scenario_id": "S12",
+  "generator": "pipeline",
+  "path": "steps-1-5b-5a-6-7",
+  "model_id": "anthropic.claude-sonnet-4-6",
+  "region": "eu-west-2",
+  "prompts": {
+    "extract_facts": {
+      "path": "src/generate/pipeline/prompts/extract_facts.md",
+      "file_sha256": "27554f5d32e4281ec3e1e0b135553d33f0f2475d8835b2929cadf3e3e3abd556",
+      "body_sha256": "481a6c68d94acb1949ab3f0cd694d538b019446ed6cf8e6951560394cf02366c"
+    },
+    "reconcile_medications": {
+      "path": "src/generate/pipeline/prompts/reconcile_medications.md",
+      "file_sha256": "5006968b7010560f437e0eb31f55e9092baebc7a4adf347667bfcb154e8708a0",
+      "body_sha256": "b06f8c12a739b80c3d57f41ceada7dd7b1c2af38bc53159353b68425d09d5acf"
+    },
+    "compose_clinical": {
+      "path": "src/generate/pipeline/prompts/compose_clinical.md",
+      "file_sha256": "511071c6204ef05308500a29aeaafd4f06facfceb83c5b9fd5b4590031cb4a7a",
+      "body_sha256": "48613f4d8669369039b77ffdf12828ce72445aaab0fd85f04d4d4ad0a82725fe"
+    },
+    "compose_patient": {
+      "path": "src/generate/pipeline/prompts/compose_patient.md",
+      "file_sha256": "ac9fbb4bc386a913b709746d249b1afdc30188a6edbece0c360e12b8c8d6a740",
+      "body_sha256": "e292d44750c3906b1cde40f625273d88448c277d4a0106e17125f7469b238f40"
+    }
+  },
+  "prompt_caching": true,
+  "notes_sha256": "143db4ec88bb969841da8f67ae4e9cff993d97483c923700d3c320033a67f923",
+  "started_at": "2026-11-03T05:45:50+00:00",
+  "elapsed_s": 29.458,
+  "calls": [
+    {
+      "name": "extract_facts",
+      "input_tokens": 1084,
+      "output_tokens": 2380,
+      "cache_read_tokens": 4539,
+      "cache_write_tokens": 0,
+      "stop_reason": "tool_use",
+      "latency_s": 12.717,
+      "throttle_retries": 0
+    },
+    {
+      "name": "reconcile_medications",
+      "input_tokens": 1147,
+      "output_tokens": 33,
+      "cache_read_tokens": 2290,
+      "cache_write_tokens": 0,
+      "stop_reason": "tool_use",
+      "latency_s": 0.675,
+      "throttle_retries": 0
+    },
+    {
+      "name": "compose_clinical",
+      "input_tokens": 1271,
+      "output_tokens": 1915,
+      "cache_read_tokens": 3182,
+      "cache_write_tokens": 0,
+      "stop_reason": "tool_use",
+      "latency_s": 9.612,
+      "throttle_retries": 0
+    },
+    {
+      "name": "compose_patient",
+      "input_tokens": 937,
+      "output_tokens": 628,
+      "cache_read_tokens": 2334,
+      "cache_write_tokens": 0,
+      "stop_reason": "tool_use",
+      "latency_s": 6.261,
+      "throttle_retries": 0
+    }
+  ],
+  "steps": {
+    "guard_input": {
+      "notes_sha256": "143db4ec88bb969841da8f67ae4e9cff993d97483c923700d3c320033a67f923",
+      "line_count": 45,
+      "flags": []
+    },
+    "extract_facts": {
+      "call": {
+        "model_id": "anthropic.claude-sonnet-4-6",
+        "prompt_sha256": "481a6c68d94acb1949ab3f0cd694d538b019446ed6cf8e6951560394cf02366c",
+        "stop_reason": "tool_use",
+        "attempts": 1,
+        "input_tokens": 1084,
+        "output_tokens": 2380,
+        "cache_read_tokens": 4539,
+        "cache_write_tokens": 0,
+        "latency_ms": 12717
+      }
+    },
+    "validate_facts": {
+      "facts": {
+        "fields": {
+          "age_sex": {
+            "status": "documented",
+            "items": [
+              {
+                "value": "88-year-old female",
+                "cites": [
+                  {
+                    "lines": [
+                      "L001"
+                    ],
+                    "quote": "88F",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "age_sex.0",
+                "citation_status": "verified",
+                "reason": null
+              }
+            ],
+            "field_check": "ok"
+          },
+          "specialty": {
+            "status": "not_documented",
+            "items": [],
+            "field_check": "ok"
+          },
+          "legal_status": {
+            "status": "not_documented",
+            "items": [],
+            "field_check": "ok"
+          },
+          "weight": {
+            "status": "not_documented",
+            "items": [],
+            "field_check": "ok"
+          },
+          "admission_date": {
+            "status": "documented",
+            "items": [],
+            "field_check": "status_without_items"
+          },
+          "discharge_date": {
+            "status": "not_documented",
+            "items": [],
+            "field_check": "ok"
+          },
+          "presenting_complaint": {
+            "status": "documented",
+            "items": [
+              {
+                "value": "Found on floor by son; patient reports she went to commode and had a fall",
+                "cites": [
+                  {
+                    "lines": [
+                      "L003",
+                      "L004"
+                    ],
+                    "quote": "found on floor by son at 10a, according to the patient she\nwent to commode and had a fall",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "presenting_complaint.0",
+                "citation_status": "verified",
+                "reason": null
+              },
+              {
+                "value": "Incomplete recall of event; duration on floor uncertain, patient reports approximately 5 minutes",
+                "cites": [
+                  {
+                    "lines": [
+                      "L004",
+                      "L005"
+                    ],
+                    "quote": "does not recall whole event, dont know how long she\nstays on floor ~saying 5 mins",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "presenting_complaint.1",
+                "citation_status": "verified",
+                "reason": null
+              }
+            ],
+            "field_check": "ok"
+          },
+          "diagnosis_primary": {
+            "status": "documented",
+            "items": [
+              {
+                "value": "Short run of atrial flutter on ECG",
+                "cites": [
+                  {
+                    "lines": [
+                      "L013"
+                    ],
+                    "quote": "ECG - short run of A. flutter",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "diagnosis_primary.0",
+                "citation_status": "verified",
+                "reason": null
+              }
+            ],
+            "field_check": "ok"
+          },
+          "diagnosis_secondary": {
+            "status": "documented",
+            "items": [
+              {
+                "value": "Possible aspiration pneumonia",
+                "cites": [
+                  {
+                    "lines": [
+                      "L018"
+                    ],
+                    "quote": "Possible aspiration pneumonia",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "diagnosis_secondary.0",
+                "citation_status": "verified",
+                "reason": null
+              },
+              {
+                "value": "Consolidation right lower zone on CT",
+                "cites": [
+                  {
+                    "lines": [
+                      "L034"
+                    ],
+                    "quote": "some consolidation RLZ",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "diagnosis_secondary.1",
+                "citation_status": "verified",
+                "reason": null
+              },
+              {
+                "value": "Sigmoid diverticulitis on CT",
+                "cites": [
+                  {
+                    "lines": [
+                      "L034"
+                    ],
+                    "quote": "sigmoid diverticulitis",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "diagnosis_secondary.2",
+                "citation_status": "verified",
+                "reason": null
+              },
+              {
+                "value": "AKI and raised inflammatory markers",
+                "cites": [
+                  {
+                    "lines": [
+                      "L035"
+                    ],
+                    "quote": "AKI and raised inflammatory markers",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "diagnosis_secondary.3",
+                "citation_status": "verified",
+                "reason": null
+              },
+              {
+                "value": "AXR: dilated bowel loops concerning for obstruction, faecal loading",
+                "cites": [
+                  {
+                    "lines": [
+                      "L031"
+                    ],
+                    "quote": "AXR dilated bowel loops concerning for obstruction, faecal loading",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "diagnosis_secondary.4",
+                "citation_status": "verified",
+                "reason": null
+              }
+            ],
+            "field_check": "ok"
+          },
+          "diagnosis_background": {
+            "status": "documented",
+            "items": [
+              {
+                "value": "Recent discharge from CCU following NSTEMI, on DAPT",
+                "cites": [
+                  {
+                    "lines": [
+                      "L001",
+                      "L002"
+                    ],
+                    "quote": "recent discharge from CCU following NSTEMI on DAPT",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "diagnosis_background.0",
+                "citation_status": "verified",
+                "reason": null
+              },
+              {
+                "value": "?Underlying dementia",
+                "cites": [
+                  {
+                    "lines": [
+                      "L001",
+                      "L002"
+                    ],
+                    "quote": "?underlying dementia",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "diagnosis_background.1",
+                "citation_status": "verified",
+                "reason": null
+              },
+              {
+                "value": "Hypertension",
+                "cites": [
+                  {
+                    "lines": [
+                      "L007"
+                    ],
+                    "quote": "PMHx Hypertension",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "diagnosis_background.2",
+                "citation_status": "verified",
+                "reason": null
+              },
+              {
+                "value": "Ischaemic heart disease (IHD)",
+                "cites": [
+                  {
+                    "lines": [
+                      "L007"
+                    ],
+                    "quote": "IHD",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "diagnosis_background.3",
+                "citation_status": "verified",
+                "reason": null
+              },
+              {
+                "value": "Chronic kidney disease (CKD)",
+                "cites": [
+                  {
+                    "lines": [
+                      "L007"
+                    ],
+                    "quote": "CKD",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "diagnosis_background.4",
+                "citation_status": "verified",
+                "reason": null
+              },
+              {
+                "value": "AKI (background history)",
+                "cites": [
+                  {
+                    "lines": [
+                      "L007"
+                    ],
+                    "quote": "AKI",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "diagnosis_background.5",
+                "citation_status": "verified",
+                "reason": null
+              },
+              {
+                "value": "Closed fracture of rib",
+                "cites": [
+                  {
+                    "lines": [
+                      "L007"
+                    ],
+                    "quote": "closed fracture of rib",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "diagnosis_background.6",
+                "citation_status": "verified",
+                "reason": null
+              },
+              {
+                "value": "Fracture of neck of femur",
+                "cites": [
+                  {
+                    "lines": [
+                      "L007",
+                      "L008"
+                    ],
+                    "quote": "fracture of neck\nof femur",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "diagnosis_background.7",
+                "citation_status": "verified",
+                "reason": null
+              },
+              {
+                "value": "Hyperparathyroidism",
+                "cites": [
+                  {
+                    "lines": [
+                      "L008"
+                    ],
+                    "quote": "hyperparathyroidism",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "diagnosis_background.8",
+                "citation_status": "verified",
+                "reason": null
+              },
+              {
+                "value": "Carcinoma of cervix",
+                "cites": [
+                  {
+                    "lines": [
+                      "L008"
+                    ],
+                    "quote": "Ca cervix",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "diagnosis_background.9",
+                "citation_status": "verified",
+                "reason": null
+              }
+            ],
+            "field_check": "ok"
+          },
+          "key_investigations": {
+            "status": "documented",
+            "items": [
+              {
+                "value": "CK 186",
+                "cites": [
+                  {
+                    "lines": [
+                      "L009"
+                    ],
+                    "quote": "CK 186",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "key_investigations.0",
+                "citation_status": "verified",
+                "reason": null
+              },
+              {
+                "value": "eGFR 44 (baseline)",
+                "cites": [
+                  {
+                    "lines": [
+                      "L010"
+                    ],
+                    "quote": "eGFR 44 (baseline)",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "key_investigations.1",
+                "citation_status": "verified",
+                "reason": null
+              },
+              {
+                "value": "WBC 11.1, CRP 2.5",
+                "cites": [
+                  {
+                    "lines": [
+                      "L011"
+                    ],
+                    "quote": "WBC 11.1, CRP 2.5",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "key_investigations.2",
+                "citation_status": "verified",
+                "reason": null
+              },
+              {
+                "value": "Troponin 77",
+                "cites": [
+                  {
+                    "lines": [
+                      "L012"
+                    ],
+                    "quote": "Trop 77",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "key_investigations.3",
+                "citation_status": "verified",
+                "reason": null
+              },
+              {
+                "value": "ECG: short run of atrial flutter",
+                "cites": [
+                  {
+                    "lines": [
+                      "L013"
+                    ],
+                    "quote": "ECG - short run of A. flutter",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "key_investigations.4",
+                "citation_status": "verified",
+                "reason": null
+              },
+              {
+                "value": "CT head: nil acute",
+                "cites": [
+                  {
+                    "lines": [
+                      "L014"
+                    ],
+                    "quote": "CT Head nil acute",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "key_investigations.5",
+                "citation_status": "verified",
+                "reason": null
+              },
+              {
+                "value": "CT C-spine and CT thorax: nil acute",
+                "cites": [
+                  {
+                    "lines": [
+                      "L015"
+                    ],
+                    "quote": "CT C-spine and CT thorax nil acute",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "key_investigations.6",
+                "citation_status": "verified",
+                "reason": null
+              },
+              {
+                "value": "AXR: dilated bowel loops concerning for obstruction, faecal loading",
+                "cites": [
+                  {
+                    "lines": [
+                      "L031"
+                    ],
+                    "quote": "AXR dilated bowel loops concerning for obstruction, faecal loading",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "key_investigations.7",
+                "citation_status": "verified",
+                "reason": null
+              },
+              {
+                "value": "CXR: negative (12/05/26)",
+                "cites": [
+                  {
+                    "lines": [
+                      "L032"
+                    ],
+                    "quote": "CXR negative",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "key_investigations.8",
+                "citation_status": "verified",
+                "reason": null
+              },
+              {
+                "value": "Urine culture: negative",
+                "cites": [
+                  {
+                    "lines": [
+                      "L033"
+                    ],
+                    "quote": "Urine culture negative",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "key_investigations.9",
+                "citation_status": "verified",
+                "reason": null
+              },
+              {
+                "value": "Non-contrast CT: consolidation right lower zone and sigmoid diverticulitis",
+                "cites": [
+                  {
+                    "lines": [
+                      "L034"
+                    ],
+                    "quote": "Non contrast CT showed some consolidation RLZ and sigmoid diverticulitis",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "key_investigations.10",
+                "citation_status": "verified",
+                "reason": null
+              },
+              {
+                "value": "Lactate: normal",
+                "cites": [
+                  {
+                    "lines": [
+                      "L036"
+                    ],
+                    "quote": "Lactate normal",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "key_investigations.11",
+                "citation_status": "verified",
+                "reason": null
+              }
+            ],
+            "field_check": "ok"
+          },
+          "treatment": {
+            "status": "documented",
+            "items": [
+              {
+                "value": "Tazocin (piperacillin-tazobactam) prescribed",
+                "cites": [
+                  {
+                    "lines": [
+                      "L022"
+                    ],
+                    "quote": "Tazocin",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "treatment.0",
+                "citation_status": "verified",
+                "reason": null
+              },
+              {
+                "value": "Intravenous fluids",
+                "cites": [
+                  {
+                    "lines": [
+                      "L023"
+                    ],
+                    "quote": "Fluids",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "treatment.1",
+                "citation_status": "verified",
+                "reason": null
+              },
+              {
+                "value": "Oxygen",
+                "cites": [
+                  {
+                    "lines": [
+                      "L024"
+                    ],
+                    "quote": "Oxygen",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "treatment.2",
+                "citation_status": "verified",
+                "reason": null
+              },
+              {
+                "value": "Bloods including cultures taken",
+                "cites": [
+                  {
+                    "lines": [
+                      "L025"
+                    ],
+                    "quote": "Bloods including cultures",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "treatment.3",
+                "citation_status": "verified",
+                "reason": null
+              },
+              {
+                "value": "Urine culture if possible; consider catheter to monitor urine output",
+                "cites": [
+                  {
+                    "lines": [
+                      "L026"
+                    ],
+                    "quote": "Urine culture if possible -> consider catheter to monitor urine output",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "treatment.4",
+                "citation_status": "verified",
+                "reason": null
+              },
+              {
+                "value": "Treated as sepsis",
+                "cites": [
+                  {
+                    "lines": [
+                      "L018"
+                    ],
+                    "quote": "Treat as sepsis",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "treatment.5",
+                "citation_status": "verified",
+                "reason": null
+              },
+              {
+                "value": "Amber care plan initiated",
+                "cites": [
+                  {
+                    "lines": [
+                      "L028"
+                    ],
+                    "quote": "Amber care",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "treatment.6",
+                "citation_status": "verified",
+                "reason": null
+              }
+            ],
+            "field_check": "ok"
+          },
+          "risk_assessment": {
+            "status": "not_documented",
+            "items": [],
+            "field_check": "ok"
+          },
+          "allergies": {
+            "status": "not_documented",
+            "items": [],
+            "field_check": "ok"
+          },
+          "follow_up": {
+            "status": "documented",
+            "items": [
+              {
+                "value": "Referral to memory clinic as outpatient advised due to ?underlying dementia",
+                "cites": [
+                  {
+                    "lines": [
+                      "L001",
+                      "L002"
+                    ],
+                    "quote": "advised to refer to memory clinic as OP due to ?underlying dementia",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "follow_up.0",
+                "citation_status": "verified",
+                "reason": null
+              }
+            ],
+            "field_check": "ok"
+          },
+          "gp_actions": {
+            "status": "not_documented",
+            "items": [],
+            "field_check": "ok"
+          },
+          "vte_assessment": {
+            "status": "not_documented",
+            "items": [],
+            "field_check": "ok"
+          }
+        },
+        "medications": {
+          "pre_admission": [],
+          "discharge": [
+            {
+              "value": "Medically fit for discharge (MFFD)",
+              "cites": [
+                {
+                  "lines": [
+                    "L045"
+                  ],
+                  "quote": "PLAN: MFFD",
+                  "verified": true,
+                  "reason": null
+                }
+              ],
+              "fact_id": "medications.discharge.0",
+              "citation_status": "verified",
+              "reason": null
+            }
+          ],
+          "discharge_status": "not_documented",
+          "medications_check": "items_on_not_documented"
+        },
+        "resus": {
+          "changed": "not_documented",
+          "cites": [
+            {
+              "lines": [
+                "L029"
+              ],
+              "quote": "RESPECT form",
+              "verified": true,
+              "reason": null
+            }
+          ],
+          "form_or_discussion_documented": true,
+          "status_documented": "not_documented",
+          "fact_id": "resus",
+          "citation_status": "verified",
+          "reason": null
+        },
+        "documented_advice": [],
+        "age_group": "adult",
+        "contradictions": [],
+        "suspicious_text": []
+      },
+      "uncited_lines": [
+        "L006",
+        "L017",
+        "L019",
+        "L020",
+        "L021",
+        "L027",
+        "L037",
+        "L039",
+        "L040",
+        "L041",
+        "L042",
+        "L043",
+        "L044"
+      ],
+      "counts": {
+        "cites_total": 41,
+        "cites_verified": 41,
+        "items_unverified": 0,
+        "fields_inconsistent": 1,
+        "medications_inconsistent": 1
+      }
+    },
+    "retrieve_evidence": {
+      "medication": [
+        {
+          "line": "L045",
+          "sources": [
+            "cited"
+          ],
+          "fact_ids": [
+            "medications.discharge.0"
+          ],
+          "flagged": false
+        }
+      ],
+      "resus": [
+        {
+          "line": "L029",
+          "sources": [
+            "cited",
+            "resus_term"
+          ],
+          "fact_ids": [
+            "resus"
+          ],
+          "flagged": false
+        }
+      ],
+      "language": [],
+      "counts": {
+        "medication_lines": 1,
+        "resus_lines": 1,
+        "language_lines": 0,
+        "medication_matched_not_cited": 0,
+        "resus_matched_not_cited": 0
+      }
+    },
+    "route_resus": {
+      "route": "documented_but_absent",
+      "forced": "no",
+      "status": "not_documented",
+      "changed": "not_documented",
+      "cited_lines": [
+        "L029"
+      ],
+      "rendered": "RESUSCITATION STATUS\nA resuscitation form or discussion is documented ([L029]: \"RESPECT form\"). Its recommendation is not transcribed in these notes. Confirm against the completed form before relying on any resuscitation decision."
+    },
+    "select_safety_net": {
+      "route": "fallback",
+      "audience": "adult",
+      "pinned_line": "If you have been given a number to call, use that first. Otherwise, if you are worried, contact your GP or call NHS 111. Call 999 if it is an emergency.",
+      "advice": [],
+      "advice_excluded": 0,
+      "cited_lines": [],
+      "part_ab": "If you have been given a number to call, use that first. Otherwise, if you are worried, contact your GP or call NHS 111. Call 999 if it is an emergency.",
+      "part_c": "If you have been given a number to call, use that first. Otherwise, if you are worried, contact your GP or call NHS 111. Call 999 if it is an emergency."
+    },
+    "reconcile_medications": {
+      "reconciliation": [],
+      "discharge_status": "not_documented",
+      "reconciliation_check": "ok",
+      "dh_lines_unreconciled": [],
+      "counts": {
+        "entries": 0,
+        "cites_total": 0,
+        "cites_verified": 0,
+        "entries_unverified": 0,
+        "entries_flagged": 0,
+        "dh_lines_unreconciled": 0
+      },
+      "call": {
+        "model_id": "anthropic.claude-sonnet-4-6",
+        "prompt_sha256": "b06f8c12a739b80c3d57f41ceada7dd7b1c2af38bc53159353b68425d09d5acf",
+        "stop_reason": "tool_use",
+        "attempts": 1,
+        "input_tokens": 1147,
+        "output_tokens": 33,
+        "cache_read_tokens": 2290,
+        "cache_write_tokens": 0,
+        "latency_ms": 675
+      }
+    },
+    "compose_clinical": {
+      "sections": [
+        {
+          "section_id": "sections.0",
+          "part": "part_a",
+          "heading": "presenting_complaint",
+          "fact_ids": [
+            "presenting_complaint.0",
+            "presenting_complaint.1"
+          ],
+          "text": "88-year-old female found on floor by son. Patient reports she went to the commode and had a fall. Recall of the event is incomplete; duration on floor is uncertain, with the patient reporting approximately 5 minutes.",
+          "unverified_fact_ids": []
+        },
+        {
+          "section_id": "sections.1",
+          "part": "part_a",
+          "heading": "diagnosis",
+          "fact_ids": [
+            "diagnosis_primary.0",
+            "diagnosis_secondary.0",
+            "diagnosis_secondary.1",
+            "diagnosis_secondary.2",
+            "diagnosis_secondary.3",
+            "diagnosis_secondary.4",
+            "diagnosis_background.0",
+            "diagnosis_background.1",
+            "diagnosis_background.2",
+            "diagnosis_background.3",
+            "diagnosis_background.4",
+            "diagnosis_background.5",
+            "diagnosis_background.6",
+            "diagnosis_background.7",
+            "diagnosis_background.8",
+            "diagnosis_background.9"
+          ],
+          "text": "Primary: Short run of atrial flutter on ECG.\n\nSecondary:\n- Possible aspiration pneumonia\n- Consolidation right lower zone on CT\n- Sigmoid diverticulitis on CT\n- AKI and raised inflammatory markers\n- AXR: dilated bowel loops concerning for obstruction, faecal loading\n\nBackground:\n- Recent discharge from CCU following NSTEMI, on DAPT\n- ?Underlying dementia\n- Hypertension\n- Ischaemic heart disease (IHD)\n- Chronic kidney disease (CKD)\n- AKI (background history)\n- Closed fracture of rib\n- Fracture of neck of femur\n- Hyperparathyroidism\n- Carcinoma of cervix",
+          "unverified_fact_ids": []
+        },
+        {
+          "section_id": "sections.2",
+          "part": "part_a",
+          "heading": "key_investigations",
+          "fact_ids": [
+            "key_investigations.0",
+            "key_investigations.1",
+            "key_investigations.2",
+            "key_investigations.3",
+            "key_investigations.4",
+            "key_investigations.5",
+            "key_investigations.6",
+            "key_investigations.7",
+            "key_investigations.8",
+            "key_investigations.9",
+            "key_investigations.10",
+            "key_investigations.11"
+          ],
+          "text": "- ECG: short run of atrial flutter\n- Troponin: 77\n- CK: 186\n- eGFR: 44 (baseline)\n- WBC: 11.1; CRP: 2.5\n- Lactate: normal\n- CT head: nil acute\n- CT C-spine and CT thorax: nil acute\n- Non-contrast CT: consolidation right lower zone and sigmoid diverticulitis\n- AXR: dilated bowel loops concerning for obstruction, faecal loading\n- CXR: negative (12/05/26)\n- Urine culture: negative",
+          "unverified_fact_ids": []
+        },
+        {
+          "section_id": "sections.3",
+          "part": "part_a",
+          "heading": "treatment",
+          "fact_ids": [
+            "treatment.0",
+            "treatment.1",
+            "treatment.2",
+            "treatment.3",
+            "treatment.4",
+            "treatment.5",
+            "treatment.6"
+          ],
+          "text": "- Treated as sepsis\n- Tazocin (piperacillin-tazobactam) prescribed\n- Intravenous fluids administered\n- Oxygen administered\n- Bloods including cultures taken\n- Urine culture if possible; consider catheter to monitor urine output\n- Amber care plan initiated",
+          "unverified_fact_ids": []
+        },
+        {
+          "section_id": "sections.4",
+          "part": "part_a",
+          "heading": "resuscitation_status",
+          "fact_ids": [],
+          "text": "{{RESUS}}",
+          "unverified_fact_ids": []
+        },
+        {
+          "section_id": "sections.5",
+          "part": "part_a",
+          "heading": "medications",
+          "fact_ids": [],
+          "text": "{{MEDICATIONS}}",
+          "unverified_fact_ids": []
+        },
+        {
+          "section_id": "sections.6",
+          "part": "part_a",
+          "heading": "allergies",
+          "fact_ids": [],
+          "text": "Not documented",
+          "unverified_fact_ids": []
+        },
+        {
+          "section_id": "sections.7",
+          "part": "part_a",
+          "heading": "follow_up",
+          "fact_ids": [
+            "follow_up.0"
+          ],
+          "text": "- Referral to memory clinic as outpatient advised due to ?underlying dementia",
+          "unverified_fact_ids": []
+        },
+        {
+          "section_id": "sections.8",
+          "part": "part_a",
+          "heading": "gp_actions",
+          "fact_ids": [],
+          "text": "Not documented",
+          "unverified_fact_ids": []
+        },
+        {
+          "section_id": "sections.9",
+          "part": "part_a",
+          "heading": "safety_net",
+          "fact_ids": [],
+          "text": "{{SAFETY_NET}}",
+          "unverified_fact_ids": []
+        },
+        {
+          "section_id": "sections.10",
+          "part": "part_a",
+          "heading": "vte_assessment",
+          "fact_ids": [],
+          "text": "Not documented",
+          "unverified_fact_ids": []
+        },
+        {
+          "section_id": "sections.11",
+          "part": "part_b",
+          "heading": "opening",
+          "fact_ids": [
+            "age_sex.0",
+            "presenting_complaint.0",
+            "presenting_complaint.1",
+            "diagnosis_primary.0"
+          ],
+          "text": "This 88-year-old female was admitted after being found on the floor by her son following a fall en route to the commode, with incomplete recall of the event and uncertain duration on the floor, and was found to have a short run of atrial flutter on ECG.",
+          "unverified_fact_ids": []
+        },
+        {
+          "section_id": "sections.12",
+          "part": "part_b",
+          "heading": "admission_summary",
+          "fact_ids": [
+            "key_investigations.0",
+            "key_investigations.1",
+            "key_investigations.2",
+            "key_investigations.3",
+            "key_investigations.4",
+            "key_investigations.5",
+            "key_investigations.6",
+            "key_investigations.7",
+            "key_investigations.8",
+            "key_investigations.9",
+            "key_investigations.10",
+            "key_investigations.11",
+            "treatment.0",
+            "treatment.1",
+            "treatment.2",
+            "treatment.3",
+            "treatment.4",
+            "treatment.5",
+            "treatment.6"
+          ],
+          "text": "Investigations revealed a short run of atrial flutter on ECG, troponin 77, CK 186, eGFR 44 (baseline), WBC 11.1, CRP 2.5, and normal lactate. CT head, CT C-spine and CT thorax were nil acute. Non-contrast CT demonstrated consolidation in the right lower zone and sigmoid diverticulitis. AXR showed dilated bowel loops concerning for obstruction with faecal loading. CXR was negative (12/05/26) and urine culture was negative. The patient was treated as sepsis: Tazocin (piperacillin-tazobactam) was prescribed, intravenous fluids and oxygen were administered, and bloods including cultures were taken. Urine culture was requested where possible, with consideration of catheter insertion to monitor urine output. An amber care plan was initiated.",
+          "unverified_fact_ids": []
+        },
+        {
+          "section_id": "sections.13",
+          "part": "part_b",
+          "heading": "diagnosis",
+          "fact_ids": [
+            "diagnosis_primary.0",
+            "diagnosis_secondary.0",
+            "diagnosis_secondary.1",
+            "diagnosis_secondary.2",
+            "diagnosis_secondary.3",
+            "diagnosis_secondary.4",
+            "diagnosis_background.0",
+            "diagnosis_background.1"
+          ],
+          "text": "Primary: Short run of atrial flutter on ECG.\n\nSecondary:\n- Possible aspiration pneumonia\n- Consolidation right lower zone on CT\n- Sigmoid diverticulitis on CT\n- AKI and raised inflammatory markers\n- AXR: dilated bowel loops concerning for obstruction, faecal loading\n\nRelevant background: Recent discharge from CCU following NSTEMI (on DAPT); ?underlying dementia.",
+          "unverified_fact_ids": []
+        },
+        {
+          "section_id": "sections.14",
+          "part": "part_b",
+          "heading": "resuscitation_status",
+          "fact_ids": [],
+          "text": "{{RESUS}}",
+          "unverified_fact_ids": []
+        },
+        {
+          "section_id": "sections.15",
+          "part": "part_b",
+          "heading": "medications",
+          "fact_ids": [],
+          "text": "{{MEDICATIONS}}",
+          "unverified_fact_ids": []
+        },
+        {
+          "section_id": "sections.16",
+          "part": "part_b",
+          "heading": "gp_actions",
+          "fact_ids": [],
+          "text": "No GP actions documented.",
+          "unverified_fact_ids": []
+        },
+        {
+          "section_id": "sections.17",
+          "part": "part_b",
+          "heading": "follow_up",
+          "fact_ids": [
+            "follow_up.0"
+          ],
+          "text": "- Referral to memory clinic as outpatient advised due to ?underlying dementia",
+          "unverified_fact_ids": []
+        },
+        {
+          "section_id": "sections.18",
+          "part": "part_b",
+          "heading": "safety_net",
+          "fact_ids": [],
+          "text": "{{SAFETY_NET}}",
+          "unverified_fact_ids": []
+        }
+      ],
+      "held_back": [],
+      "checks": [],
+      "counts": {
+        "sections": 19,
+        "sections_a": 11,
+        "sections_b": 8,
+        "facts_given": 38,
+        "facts_used_in_a": 38,
+        "header_facts_given": 1,
+        "contradictions_given": 0,
+        "contradictions_in_a": 0,
+        "gp_actions_given": 0,
+        "gp_actions_in_b": 0,
+        "facts_held_back": 0,
+        "gp_actions_held_back": 0,
+        "unverified_given": 0,
+        "unverified_used": 0,
+        "checks": 0
+      },
+      "age_group": "adult",
+      "call": {
+        "model_id": "anthropic.claude-sonnet-4-6",
+        "prompt_sha256": "48613f4d8669369039b77ffdf12828ce72445aaab0fd85f04d4d4ad0a82725fe",
+        "stop_reason": "tool_use",
+        "attempts": 1,
+        "input_tokens": 1271,
+        "output_tokens": 1915,
+        "cache_read_tokens": 3182,
+        "cache_write_tokens": 0,
+        "latency_ms": 9612
+      }
+    },
+    "compose_patient": {
+      "sections": [
+        {
+          "section_id": "c_sections.0",
+          "heading": "why_in_hospital",
+          "source_ids": [
+            "sections.0",
+            "sections.1"
+          ],
+          "text": "You were found on the floor by your son after a fall. You had gone to the commode. You were not sure how long you had been on the floor.\n\nThe team found:\n- A short run of an abnormal heart rhythm (atrial flutter) on a heart tracing\n- A possible chest infection (possible aspiration pneumonia)\n- An area of infection or inflammation in the lower right part of your lung\n- Inflammation of part of your bowel (sigmoid diverticulitis)\n- Some bowel loops that looked stretched, which may point to a blockage, and a build-up of stool\n- A temporary drop in how well your kidneys were working\n- Raised markers of infection in your blood\n\nYou also have a number of long-term conditions, including high blood pressure (hypertension), heart disease (ischaemic heart disease), long-term kidney disease (chronic kidney disease), a broken rib, a broken hip (fracture of neck of femur), overactive parathyroid glands (hyperparathyroidism), and cervical cancer (carcinoma of cervix). You were recently in the coronary care unit after a heart attack (NSTEMI) and are on heart medicines from that stay. The team also noted that you may have an underlying memory condition."
+        },
+        {
+          "section_id": "c_sections.1",
+          "heading": "what_we_did",
+          "source_ids": [
+            "sections.2",
+            "sections.3"
+          ],
+          "text": "Tests done in hospital included:\n- A heart tracing (ECG)\n- Blood tests, including blood cultures\n- A urine culture\n- Scans of your head, neck, chest, and abdomen\n- A chest X-ray\n- An abdominal X-ray\n\nTreatment included:\n- You were treated as having a serious infection (sepsis)\n- An antibiotic (Tazocin) was given through a drip\n- Fluids were given through a drip\n- Oxygen was given\n- An amber care plan was started"
+        },
+        {
+          "section_id": "c_sections.2",
+          "heading": "medicines",
+          "source_ids": [],
+          "text": "{{MEDICATIONS}}"
+        },
+        {
+          "section_id": "c_sections.3",
+          "heading": "next_steps",
+          "source_ids": [
+            "sections.7"
+          ],
+          "text": "A referral to a memory clinic has been advised. This is because the team thinks you may have an underlying memory condition. This will be as an outpatient."
+        },
+        {
+          "section_id": "c_sections.4",
+          "heading": "safety_net",
+          "source_ids": [],
+          "text": "{{SAFETY_NET}}"
+        }
+      ],
+      "checks": [
+        {
+          "check": "advice_shaped",
+          "heading": "next_steps",
+          "source_id": null,
+          "token": null
+        }
+      ],
+      "counts": {
+        "sections": 5,
+        "sections_given": 5,
+        "sources_cited": 5,
+        "words_prose": 299,
+        "checks": 1
+      },
+      "audience": "adult",
+      "call": {
+        "model_id": "anthropic.claude-sonnet-4-6",
+        "prompt_sha256": "e292d44750c3906b1cde40f625273d88448c277d4a0106e17125f7469b238f40",
+        "stop_reason": "tool_use",
+        "attempts": 1,
+        "input_tokens": 937,
+        "output_tokens": 628,
+        "cache_read_tokens": 2334,
+        "cache_write_tokens": 0,
+        "latency_ms": 6261
+      }
+    }
+  },
+  "output": null,
+  "gate": null,
+  "failed_step": null,
+  "error": null,
+  "step_errors": {},
+  "cost_usd_est": 0.100497
+}

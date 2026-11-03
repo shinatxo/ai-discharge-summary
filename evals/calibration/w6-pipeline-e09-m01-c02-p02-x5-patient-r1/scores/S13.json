@@ -1,0 +1,31 @@
+{
+  "generation_id": "w6-pipeline-e09-m01-c02-p02-x5/r1/S13",
+  "verdicts": {
+    "added": "fail",
+    "meaning": "partial",
+    "withheld": "pass",
+    "omission": "fail",
+    "audience": "pass"
+  },
+  "findings": [
+    {
+      "dimension": "added",
+      "heading": "what_we_did",
+      "source_ids": [],
+      "note": "says oral feeding resumed fully; input says intake was improving"
+    },
+    {
+      "dimension": "meaning",
+      "heading": "what_we_did",
+      "source_ids": [],
+      "note": "overstates oral-feeding recovery"
+    },
+    {
+      "dimension": "omission",
+      "heading": "why_in_hospital/what_we_did",
+      "source_ids": [],
+      "note": "omits line sepsis and ICU-acquired weakness; AF appears only in follow-up"
+    }
+  ],
+  "scored_by": "author (CSO), 3 Nov 2026 11:17, given in chat; written to file by Claude verbatim"
+}

@@ -64,7 +64,13 @@
     "e8f6f5f874858ff7": "acceptable",
     "eafca7d4eec257ff": "acceptable",
     "f61597b8cf43f153": "acceptable",
-    "fdc086f35375f432": "acceptable"
+    "fdc086f35375f432": "acceptable",
+    "17f42e90d551e95b": "acceptable",
+    "4bbe79a6f4fbd250": "acceptable",
+    "64c1e39117b147af": "acceptable",
+    "6a716a8919449eb8": "acceptable",
+    "a172ead3f917b7a2": "acceptable",
+    "eee94590173df49d": "acceptable"
   },
   "compose_rulings_meta": {
     "by": "Shina Oguntoye (CSO)",
@@ -141,5 +147,41 @@
         }
       }
     ]
+  },
+  "patient_rulings": {
+    "ba34c835e0c5fe18": "acceptable",
+    "e67dc1f1dfe50e0f": "acceptable"
+  },
+  "patient_rulings_meta_p02": {
+    "by": "Shina Oguntoye (CSO)",
+    "on": "2026-11-03",
+    "source": "w6-pipeline-e09-m01-c02-p02-x5, step 7 (grouped and proposed by Claude, approved by the CSO 3 Nov 2026 11:38)",
+    "groups": {
+      "promise_stated": {
+        "verdict": "acceptable",
+        "reason": "report only: the service or availability is stated in the input",
+        "keys": [
+          "ba34c835e0c5fe18",
+          "e67dc1f1dfe50e0f"
+        ]
+      }
+    }
+  },
+  "compose_rulings_meta_p02": {
+    "by": "Shina Oguntoye (CSO)",
+    "on": "2026-11-03",
+    "source": "w6-pipeline-e09-m01-c02-p02-x5, step 6 (proposed by Claude, approved by the CSO 3 Nov 2026 11:38)",
+    "R9": {
+      "verdict": "acceptable",
+      "reason": "medication sentences outside the box, drug from a cited fact (R3/R5/R7 standard); Claude checked all 75: 0 from uncited facts",
+      "keys": [
+        "17f42e90d551e95b",
+        "4bbe79a6f4fbd250",
+        "64c1e39117b147af",
+        "6a716a8919449eb8",
+        "a172ead3f917b7a2",
+        "eee94590173df49d"
+      ]
+    }
   }
 }

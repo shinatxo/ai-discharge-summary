@@ -59,7 +59,19 @@
     "ebde493b09ee27d6": "acceptable",
     "ebffc99940ff8bd8": "acceptable",
     "ef00266ca9682ba2": "acceptable",
-    "f638e84c9d486e03": "acceptable"
+    "f638e84c9d486e03": "acceptable",
+    "27d91c9d3b97697a": "acceptable",
+    "59c6fbf451a544f1": "acceptable",
+    "5ce51272ba4ffdd8": "acceptable",
+    "5e97a17778211dc7": "acceptable",
+    "63dd474b6b0197d6": "acceptable",
+    "699715544ea81556": "acceptable",
+    "72283acc764eba4d": "acceptable",
+    "73f1455e623f9b3b": "acceptable",
+    "b170ef49e54d5ce7": "acceptable",
+    "ca67c27ee24df948": "acceptable",
+    "e7285aa94ae23a21": "acceptable",
+    "f138c0434fb1629b": "acceptable"
   },
   "compose_rulings_meta": {
     "by": "Shina Oguntoye (CSO)",
@@ -161,7 +173,10 @@
     "42cd586c8f54ee47": "acceptable",
     "4d54b0c113c4bdfa": "acceptable",
     "6475527685ea026e": "acceptable",
-    "664c20c578b13c30": "acceptable"
+    "664c20c578b13c30": "acceptable",
+    "688d3a00af65cb8b": "acceptable",
+    "7717bfde4acd4291": "acceptable",
+    "313433ba07cdc5f3": "defect"
   },
   "patient_rulings_meta": {
     "by": "Shina Oguntoye (CSO)",
@@ -191,6 +206,57 @@
           "664c20c578b13c30"
         ]
       }
+    }
+  },
+  "patient_rulings_meta_p02": {
+    "by": "Shina Oguntoye (CSO)",
+    "on": "2026-11-03",
+    "source": "w6-pipeline-e09-m01-c02-p02-x5, step 7 (grouped and proposed by Claude, approved by the CSO 3 Nov 2026 11:38)",
+    "groups": {
+      "Q4_drug_named_not_instructed": {
+        "verdict": "acceptable",
+        "reason": "drug named, no instruction (P6); findings: S16 warfarin is in the input but not the cited section; S9 adds a mechanism (lack of insulin) the input does not give - against p0.2",
+        "keys": [
+          "688d3a00af65cb8b"
+        ]
+      },
+      "promise_stated": {
+        "verdict": "acceptable",
+        "reason": "report only: the service or availability is stated in the input",
+        "keys": [
+          "7717bfde4acd4291"
+        ]
+      },
+      "promise_added": {
+        "verdict": "defect",
+        "reason": "report only, no bar: S16 'at home' narrows 'community follow-up'; S2 'you will be told' adds a promise to 'histology pending'",
+        "keys": [
+          "313433ba07cdc5f3"
+        ]
+      }
+    }
+  },
+  "compose_rulings_meta_p02": {
+    "by": "Shina Oguntoye (CSO)",
+    "on": "2026-11-03",
+    "source": "w6-pipeline-e09-m01-c02-p02-x5, step 6 (proposed by Claude, approved by the CSO 3 Nov 2026 11:38)",
+    "R9": {
+      "verdict": "acceptable",
+      "reason": "medication sentences outside the box, drug from a cited fact (R3/R5/R7 standard); Claude checked all 75: 0 from uncited facts",
+      "keys": [
+        "27d91c9d3b97697a",
+        "59c6fbf451a544f1",
+        "5ce51272ba4ffdd8",
+        "5e97a17778211dc7",
+        "63dd474b6b0197d6",
+        "699715544ea81556",
+        "72283acc764eba4d",
+        "73f1455e623f9b3b",
+        "b170ef49e54d5ce7",
+        "ca67c27ee24df948",
+        "e7285aa94ae23a21",
+        "f138c0434fb1629b"
+      ]
     }
   }
 }

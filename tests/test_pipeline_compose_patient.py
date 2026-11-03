@@ -215,7 +215,8 @@ def test_p02_and_p03_examples_are_clear_of_the_scenarios():
                     "cystoscopy", "a camera test of the bladder", "mobility improving",
                     "your walking is getting better", "walking normally", "gout", "kidney stones",
                     "no clot", "the scan showed no clot", "your legs are healthy", "carefully", "closely",
-                    "gently", "the team treated you for"):
+                    "gently", "the team treated you for",
+                    "a test of fluid from the knee"):             # p0.4 (3 Nov, H1 A)
         assert example in " ".join(text.lower().split()) and example not in scenarios   # may wrap
     assert "treat as" not in text.lower()          # S12's own wording, kept out (G1.2)
 
@@ -230,9 +231,13 @@ def test_p02_rules_are_in_the_prompt():
     assert "[W" not in text and "Do not alarm" not in text
 
 
-def test_p03_rules_are_in_the_prompt():
+def test_p03_and_p04_rules_are_in_the_prompt():
     text = " ".join(P.system_prompt()[0].split())
-    for rule in ("keep the section's name for it", "Never call it a different test, sample or procedure",
+    for rule in ("say what it is in everyday words that keep it the same test",
+                 "never call it a different test, sample or procedure",
+                 "Add the section's own term in brackets only for an operation or procedure the patient had",
+                 "Words in brackets count towards the 15",
+                 "put each on its own short line starting",
                  "Keep words about change and time at the same strength",
                  "A diagnosis the team treated but did not confirm stays unconfirmed",
                  "a link between two things the sections list separately",

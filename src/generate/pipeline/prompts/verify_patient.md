@@ -1,4 +1,12 @@
-# Step 7v — verify_patient — System Prompt (v0.1)
+# Step 7v — verify_patient — System Prompt (v0.2)
+
+> v0.2 (2026-11-04): after the CSO's audit of 4 Nov, before any measured run (v0.1
+> ran once on the dev set as a pilot; its verdicts were not read before this
+> change). (1) The glaucoma example is removed: "high pressure in the eye" is not
+> an equivalent definition — glaucoma can occur with normal eye pressure. (2) A
+> sentence may carry one item per fault (S4 r2 holds a changed test AND an added
+> cause; v0.1's one-verdict-per-sentence could never record both). (3) Evidence
+> must be a listed section, stated as a rule.
 
 > v0.1 (2026-11-04): ADR-010 (docs/_local/ADR-010-DRAFT.md), decisions V1–V7 of
 > 4 Nov 2026 (author as CSO, all as recommended). Drafted by Claude. The standard
@@ -34,13 +42,18 @@ support it.
 
 ### WHAT TO RECORD
 
-1. One item for EVERY leaflet sentence, using its exact `sentence_id` and its
-   `c_section_id`. Never skip a sentence and never record one twice.
-   - `a_section_id`: the listed PART A section the sentence comes from (the
-     closest one if it draws on several). If no listed section supports it,
-     the first listed section.
+1. At least one item for EVERY leaflet sentence, using its exact `sentence_id`
+   and its `c_section_id`. Never skip a sentence. A supported sentence has exactly
+   one item, `supported`. A sentence with more than one fault has one item per
+   fault — for example a changed test name and an added cause in the same
+   sentence are two items.
+   - `a_section_id`: always one of the PART A sections listed for this leaflet
+     section — the one the sentence comes from (the closest one if it draws on
+     several). If no listed section supports it, the first listed section, and
+     the sentence is not `supported`.
    - `span`: for any verdict other than `supported`, the exact words of the
-     leaflet sentence that are at fault, copied character for character. For
+     leaflet sentence that are at fault — only the words of THIS fault —
+     copied character for character. For
      `supported`, an empty string.
    - `reason` and `verdict`: from the lists below. `supported` always has reason
      `none`.
@@ -107,8 +120,6 @@ When you are unsure whether a sentence is supported, it is not `supported`.
   referral, a letter a letter, a handover a handover.
 - `other` — at fault for a reason not listed.
 
-Where a sentence has several faults, record the one that matters most to the
-patient.
 
 ### MUST BE KEPT
 
@@ -130,7 +141,7 @@ never `unreached`.
 ### WHAT IS NOT A FAULT
 
 - Plainer words with the same meaning and strength ("a slow heartbeat" for
-  bradycardia; "high pressure in the eye" for glaucoma).
+  bradycardia).
 - Leaving out detail a patient does not need, such as test values, unless it is
   a MUST BE KEPT item.
 - Shortening, reordering, and putting several items on separate "- " lines.

@@ -9,8 +9,13 @@ the facts, or the code-rendered boxes.
 
 Sentences are numbered by CODE (meaning.sentences, the splitter every step-7
 check and the scorer use — one copy), so the model cannot skip one: every
-numbered sentence must come back with exactly one verdict, or the step fails
-closed. Other faults in the verifier's own output are flagged, never repaired.
+numbered sentence must come back with at least one item, or the step fails
+closed. A sentence is either `supported` (its only item) or carries one item per
+fault (v0.2, 4 Nov 2026: one sentence can hold two independent defects — S4 r2's
+swab and its added cause). An evidence reference to a PART A section that was not
+given fails closed; a `supported` verdict that rests on a section its C section
+does not cite cannot be accepted — it counts as flagged (CSO audit, 4 Nov). Other
+faults in the verifier's own output are flagged, never repaired.
 
 The sequence — verify, regenerate step 7 once with the findings, verify again,
 then hold back any section still flagged — is `verified_patient_version()`
@@ -20,14 +25,15 @@ orchestrator (item 5) run the same sequence through run_step.
 run_step("verify_patient", verify_input(step7_input, step7_output), ctx=StepContext(...)):
   in:  {"a_sections": [{"section_id", "heading", "text"}],
         "c_sections": [{"section_id", "heading", "source_ids", "sentences": [{"sentence_id", "text"}]}]}
-  out: {"verdicts": [{sentence_id, c_section_id, heading, verdict, reason, a_section_id, span}],
+  out: {"verdicts": [{sentence_id, c_section_id, heading, text, verdict, reason, a_section_id, span,
+                      evidence_valid}]   (one per supported sentence; one per fault otherwise),
         "unreached": [{c_section_id, heading, a_section_id, reason, span}],
         "flagged": int, "checks": [{check, sentence_id, c_section_id, token}],
         "counts": {...}, "call": {...}}
 Fails closed with a fixed code: bad_input, nothing_to_verify, no_client (registry),
 max_tokens, unexpected_stop_reason, no_tool_call, verification_not_object,
-verification_shape_invalid, verdict_missing, verdict_duplicated, unknown_sentence_id,
-unknown_section_id, throttled, read_timeout, request_rejected, request_invalid,
+verification_shape_invalid, verdict_missing, verdict_conflict, unknown_sentence_id,
+unknown_section_id, unknown_a_section, throttled, read_timeout, request_rejected, request_invalid,
 bedrock_error.
 
 What the output may carry: verdicts, fixed reason words, IDs, and spans — words
@@ -81,8 +87,13 @@ HELD_BACK_TEXT = "Your care team will go through this part with you before you l
 # (Checked 4 Nov: raises none of step 7's pattern checks — "Please ask them." tripped _ADVICE and was
 # dropped. It is still a fixed sentence the scorer must treat as pre-ruled once the CSO approves it, O1.)
 
-CHECKS = ("uncited_source", "unknown_a_section", "span_not_found", "span_on_supported",
+CHECKS = ("uncited_source", "span_not_found", "span_on_supported", "item_repeated",
           "reason_mismatch", "unreached_with_sentence", "verdict_without_sentence")
+
+
+def acceptable(v: dict) -> bool:
+    """A sentence item the leaflet may keep: supported, on a source its C section cites."""
+    return v["verdict"] == SUPPORTED and v.get("evidence_valid", True)
 
 
 def tool_config() -> dict:
@@ -189,8 +200,8 @@ def user_text(inp: dict) -> str:
 # --- output ---------------------------------------------------------------------
 
 def check_verification(wire: dict, inp: dict) -> tuple[list, list, list, dict]:
-    """Wire form -> (verdicts, unreached, checks, counts). Fails closed on coverage;
-    flags everything else; never repairs."""
+    """Wire form -> (verdicts, unreached, checks, counts). Fails closed on coverage and
+    on references to sections that were not given; flags everything else; never repairs."""
     a = {s["section_id"]: s for s in inp["a_sections"]}
     c = {s["section_id"]: s for s in inp["c_sections"]}
     sent_of = {t["sentence_id"]: (s, t) for s in inp["c_sections"] for t in s["sentences"]}
@@ -199,17 +210,19 @@ def check_verification(wire: dict, inp: dict) -> tuple[list, list, list, dict]:
     def flag(check, sentence_id=None, c_section_id=None, token=None):
         checks.append({"check": check, "sentence_id": sentence_id, "c_section_id": c_section_id, "token": token})
 
-    verdicts: dict[str, dict] = {}
+    per: dict[str, list[dict]] = {}
+    seen: set = set()
     unreached: list[dict] = []
     for it in wire["items"]:
         sid, cid, aid = it["sentence_id"], it["c_section_id"], it["a_section_id"]
         verdict, reason, span = it["verdict"], it["reason"], it["span"]
         if cid not in c:
             raise StepError("unknown_section_id")
-        sec = c[cid]
         if aid not in a:
-            flag("unknown_a_section", sid or None, cid)
-        elif aid not in sec["source_ids"]:
+            raise StepError("unknown_a_section")       # evidence must be a section step 7 was given
+        sec = c[cid]
+        cited = aid in sec["source_ids"]
+        if not cited:
             flag("uncited_source", sid or None, cid, token=aid)
         if not sid or verdict == UNREACHED:
             if sid:
@@ -218,15 +231,22 @@ def check_verification(wire: dict, inp: dict) -> tuple[list, list, list, dict]:
                 flag("verdict_without_sentence", None, cid, token=verdict)
             if reason != NEVER_DROP:
                 flag("reason_mismatch", None, cid, token=reason)
-            if aid in a and _norm(span) not in _norm(a[aid]["text"]):
+            if _norm(span) not in _norm(a[aid]["text"]):
                 flag("span_not_found", None, cid)
             unreached.append({"c_section_id": cid, "heading": sec["heading"], "a_section_id": aid,
-                              "reason": reason, "span": span})
+                              "reason": reason, "span": span, "evidence_valid": cited})
             continue
         if sid not in sent_of or sent_of[sid][0]["section_id"] != cid:
             raise StepError("unknown_sentence_id")
-        if sid in verdicts:
-            raise StepError("verdict_duplicated")
+        # The identity includes the evidence (a_section_id), so an item that fails evidence
+        # validation is never discarded as a "repeat" of a valid one, in either order (CSO
+        # audit 2, 4 Nov 2026: a valid supported item followed by the same item on an uncited
+        # section must still leave the sentence flagged).
+        sig = (sid, verdict, reason, _norm(span), aid)
+        if sig in seen:
+            flag("item_repeated", sid, cid)
+            continue
+        seen.add(sig)
         text = sent_of[sid][1]["text"]
         if verdict == SUPPORTED:
             if reason != "none":
@@ -238,18 +258,29 @@ def check_verification(wire: dict, inp: dict) -> tuple[list, list, list, dict]:
                 flag("reason_mismatch", sid, cid, token=reason)
             if _norm(span) not in _norm(text) or not span.strip():
                 flag("span_not_found", sid, cid)
-        verdicts[sid] = {"sentence_id": sid, "c_section_id": cid, "heading": sec["heading"],
-                         "verdict": verdict, "reason": reason, "a_section_id": aid, "span": span}
-    if set(verdicts) != set(sent_of):
+        per.setdefault(sid, []).append(
+            {"sentence_id": sid, "c_section_id": cid, "heading": sec["heading"], "text": text,
+             "verdict": verdict, "reason": reason, "a_section_id": aid, "span": span, "evidence_valid": cited})
+    if set(per) != set(sent_of):
         raise StepError("verdict_missing")
+    for items in per.values():
+        verdicts_here = {v["verdict"] for v in items}
+        if SUPPORTED in verdicts_here and len(verdicts_here) > 1:
+            raise StepError("verdict_conflict")         # supported AND at fault: not a verdict
+        # several supported items (different evidence) are kept: the sentence is acceptable
+        # only if every one of them is (acceptable() per item)
 
-    ordered = [verdicts[t["sentence_id"]] for s in inp["c_sections"] for t in s["sentences"]]
-    not_supported = [v for v in ordered if v["verdict"] != SUPPORTED]
+    ordered = [v for s in inp["c_sections"] for t in s["sentences"] for v in per[t["sentence_id"]]]
+    faults = [v for v in ordered if v["verdict"] != SUPPORTED]
+    ok_sentences = sum(1 for items in per.values() if all(acceptable(v) for v in items))
     counts = {
-        "sentences": len(ordered),
-        "supported": len(ordered) - len(not_supported),
-        "by_verdict": {k: sum(1 for v in ordered if v["verdict"] == k) for k in VERIFY_VERDICTS if k != UNREACHED},
-        "by_reason": {k: sum(1 for v in not_supported if v["reason"] == k) for k in VERIFY_REASONS
+        "sentences": len(sent_of),
+        "supported": ok_sentences,
+        "faults": len(faults),
+        "supported_uncited": sum(1 for v in ordered if v["verdict"] == SUPPORTED and not v["evidence_valid"]),
+        "by_verdict": {k: sum(1 for v in faults if v["verdict"] == k) for k in VERIFY_VERDICTS
+                       if k not in (SUPPORTED, UNREACHED)},
+        "by_reason": {k: sum(1 for v in faults if v["reason"] == k) for k in VERIFY_REASONS
                       if k not in ("none", NEVER_DROP)},
         "unreached": len(unreached),
         "checks": len(checks),
@@ -289,7 +320,8 @@ def verify_patient(inp: dict, ctx: StepContext) -> dict:
         raise StepError("verification_shape_invalid")
 
     verdicts, unreached, checks, counts = check_verification(wire, inp)
-    flagged = sum(1 for v in verdicts if v["verdict"] != SUPPORTED) + len(unreached)
+    # every fault, every unreached item, and every supported verdict on an uncited source
+    flagged = sum(1 for v in verdicts if not acceptable(v)) + len(unreached)
     return {"verdicts": verdicts, "unreached": unreached, "flagged": flagged,
             "checks": checks, "counts": counts, "call": call_block(ctx, prompt_sha256, resp, attempts)}
 
@@ -302,6 +334,9 @@ def revision_for(step7_output: dict, verification: dict) -> dict:
     plain-word text from CP7.REVISION_ISSUES — code-fixed wording, O3)."""
     findings = [{"heading": v["heading"], "span": v["span"], "issue": v["reason"]}
                 for v in verification["verdicts"] if v["verdict"] != SUPPORTED]
+    # supported, but only by a section its C section does not cite: the cited sections do not say it
+    findings += [{"heading": v["heading"], "span": v["text"], "issue": "new_fact"}
+                 for v in verification["verdicts"] if v["verdict"] == SUPPORTED and not acceptable(v)]
     findings += [{"heading": u["heading"], "span": u["span"], "issue": NEVER_DROP}
                  for u in verification["unreached"]]
     previous = [{"heading": s["heading"], "source_ids": list(s["source_ids"]), "text": s["text"]}
@@ -314,7 +349,7 @@ def hold_back(step7_output: dict, verification: dict, step7_input: dict) -> tupl
     with HELD_BACK_TEXT (fail closed); re-run step 7's code checks on the result, so
     the output's checks describe the text that is kept. Unreached items are left
     for the reviewer (8b warning); code adds no prose."""
-    bad = {v["c_section_id"] for v in verification["verdicts"] if v["verdict"] != SUPPORTED}
+    bad = {v["c_section_id"] for v in verification["verdicts"] if not acceptable(v)}
     held = [{"section_id": s["section_id"], "heading": s["heading"]}
             for s in step7_output["sections"] if s["section_id"] in bad]
     if not held:

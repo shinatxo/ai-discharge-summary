@@ -149,8 +149,13 @@ def test_registered_as_seq_07v_model_step_and_60_s():
 # calibration reads (ADR-010 V5: an example copied from a labelled defect would
 # inflate recall on the held-out set too).
 PROMPT_EXAMPLES = ("skin scraping", "biopsy", "hearing test", "slow heartbeat", "bradycardia",
-                   "glaucoma", "pressure in the eye", "24-hour recording", "camera on a tube",
-                   "heart monitoring")
+                   "24-hour recording", "camera on a tube", "heart monitoring")
+
+
+def test_v02_dropped_the_glaucoma_example():
+    # CSO audit 4 Nov: "high pressure in the eye" is not an equivalent definition of glaucoma
+    text = " ".join(V.system_prompt()[0].split()).casefold()
+    assert "glaucoma" not in text and "pressure in the eye" not in text
 CAL_BATCHES = ("w6-pipeline-e09-m01-c02-p01-x5", "w6-pipeline-e09-m01-c02-p02-x5",
                "w6-pipeline-e09-m01-c02-p04-x5")
 
@@ -158,7 +163,7 @@ CAL_BATCHES = ("w6-pipeline-e09-m01-c02-p01-x5", "w6-pipeline-e09-m01-c02-p02-x5
 def test_prompt_body_only_and_its_sha():
     import hashlib
     text, sha = V.system_prompt()
-    assert text.startswith("You check a patient leaflet") and "v0.1 (2026-11-04)" not in text
+    assert text.startswith("You check a patient leaflet") and "v0.2 (2026-11-04)" not in text
     assert sha == hashlib.sha256(text.encode("utf-8")).hexdigest()
 
 
@@ -296,12 +301,14 @@ def test_a_flagged_sentence_and_an_unreached_item_are_counted():
     assert out["counts"]["by_reason"]["certainty_or_completion"] == 1 and out["counts"]["unreached"] == 1
     assert out["unreached"][0] == {"c_section_id": "c_sections.0", "heading": "why_in_hospital",
                                    "a_section_id": "sections.0", "reason": "never_drop_item",
-                                   "span": "unable to weight bear"}
+                                   "span": "unable to weight bear", "evidence_valid": True}
 
 
 @pytest.mark.parametrize("mutate,code", [
     (lambda p: p["items"].pop(), "verdict_missing"),
-    (lambda p: p["items"].append(dict(p["items"][0])), "verdict_duplicated"),
+    (lambda p: p["items"].append(dict(p["items"][0], verdict="added", reason="new_fact", span="You fell")),
+     "verdict_conflict"),                                               # supported AND at fault
+    (lambda p: p["items"][0].update(a_section_id="sections.8"), "unknown_a_section"),   # evidence not given
     (lambda p: p["items"][0].update(sentence_id="c_sections.0.s9"), "unknown_sentence_id"),
     (lambda p: p["items"][0].update(sentence_id="c_sections.1.s1"), "unknown_sentence_id"),   # wrong section
     (lambda p: p["items"][0].update(c_section_id="c_sections.7"), "unknown_section_id"),
@@ -316,7 +323,6 @@ def test_coverage_fails_closed(mutate, code):
 
 @pytest.mark.parametrize("change,expected", [
     (("c_sections.3.s1", {"a_section_id": "sections.1"}), "uncited_source"),
-    (("c_sections.3.s1", {"a_section_id": "sections.8"}), "unknown_a_section"),
     (("c_sections.3.s1", {"verdict": "added", "reason": "new_fact", "span": "not in the sentence"}), "span_not_found"),
     (("c_sections.3.s1", {"verdict": "added", "reason": "new_fact", "span": ""}), "span_not_found"),
     (("c_sections.3.s1", {"span": "clinic"}), "span_on_supported"),
@@ -518,3 +524,71 @@ def test_sequence_failure_propagates():
         V.verified_patient_version(STEP7_INPUT, lambda i: run_step("compose_patient", i, ctx=_ctx(f7)),
                                    lambda i: run_step("verify_patient", i, ctx=_ctx(f7v)))
     assert exc.value.code == "max_tokens"
+
+
+# --- v0.2 (CSO audit, 4 Nov 2026) ---------------------------------------------------
+
+def test_a_sentence_may_carry_one_item_per_fault():
+    p = _payload_with(("c_sections.1.s1", {"verdict": "changed", "reason": "term_changed", "span": "replace part of the hip",
+                                           "a_section_id": "sections.2"}),
+                      extra=[_item("c_sections.1.s1", "c_sections.1", "sections.2", "added", "cause_or_purpose",
+                                   "an operation")])
+    out = _run(p)
+    on = [v for v in out["verdicts"] if v["sentence_id"] == "c_sections.1.s1"]
+    assert [v["reason"] for v in on] == ["term_changed", "cause_or_purpose"]
+    assert out["flagged"] == 2 and out["counts"]["faults"] == 2 and out["counts"]["sentences"] == 5
+
+
+def test_an_exact_repeat_is_flagged_and_kept_once():
+    item = _item("c_sections.3.s1", "c_sections.3", "sections.4", "added", "new_fact", "bone team")
+    out = _run(_payload_with(("c_sections.3.s1", dict(item)), extra=[dict(item)]))
+    assert "item_repeated" in _names(out) and out["flagged"] == 1
+
+
+def test_a_supported_verdict_on_an_uncited_source_counts_as_flagged():
+    out = _run(_payload_with(("c_sections.3.s1", {"a_section_id": "sections.1"})))     # next_steps cites only sections.4
+    v = next(v for v in out["verdicts"] if v["sentence_id"] == "c_sections.3.s1")
+    assert v["verdict"] == "supported" and v["evidence_valid"] is False and not V.acceptable(v)
+    assert out["flagged"] == 1 and out["counts"]["supported_uncited"] == 1 and out["counts"]["supported"] == 4
+
+
+def test_an_uncited_supported_sentence_is_sent_back_and_then_held_back():
+    p = _payload_with(("c_sections.3.s1", {"a_section_id": "sections.1"}))
+    out, f7, _ = _seq(p, p, _good7())
+    assert out["patient_held_back"] == [{"section_id": "c_sections.3", "heading": "next_steps"}]
+    assert "says something the sections do not say" in f7.requests[1]["messages"][0]["content"][0]["text"]
+
+
+# --- CSO audit 2 (4 Nov 2026): evidence failures survive de-duplication --------------
+
+@pytest.mark.parametrize("order", ["valid_first", "uncited_first"])
+def test_an_uncited_supported_item_is_never_lost_as_a_repeat_of_a_valid_one(order):
+    valid = _item("c_sections.3.s1", "c_sections.3", "sections.4")          # next_steps cites sections.4
+    uncited = _item("c_sections.3.s1", "c_sections.3", "sections.1")        # same item, uncited evidence
+    p = _all_supported(_vin())
+    p["items"] = [i for i in p["items"] if i["sentence_id"] != "c_sections.3.s1"]
+    p["items"] += [valid, uncited] if order == "valid_first" else [uncited, valid]
+    out = _run(p)
+    on = [v for v in out["verdicts"] if v["sentence_id"] == "c_sections.3.s1"]
+    assert len(on) == 2 and {v["evidence_valid"] for v in on} == {True, False}
+    assert out["flagged"] == 1 and out["counts"]["supported"] == 4 and "item_repeated" not in _names(out)
+
+
+def test_an_exact_repeat_with_the_same_evidence_is_still_kept_once():
+    item = _item("c_sections.3.s1", "c_sections.3", "sections.4")
+    p = _all_supported(_vin())
+    p["items"].append(dict(item))
+    out = _run(p)
+    assert "item_repeated" in _names(out) and out["flagged"] == 0
+    assert len([v for v in out["verdicts"] if v["sentence_id"] == "c_sections.3.s1"]) == 1
+
+
+@pytest.mark.parametrize("order", ["valid_first", "uncited_first"])
+def test_the_v3_sequence_holds_back_a_sentence_whose_only_problem_is_a_second_uncited_item(order):
+    valid = _item("c_sections.3.s1", "c_sections.3", "sections.4")
+    uncited = _item("c_sections.3.s1", "c_sections.3", "sections.1")
+    p = _all_supported(_vin())
+    p["items"] = [i for i in p["items"] if i["sentence_id"] != "c_sections.3.s1"]
+    p["items"] += [valid, uncited] if order == "valid_first" else [uncited, valid]
+    out, _, _ = _seq(p, p, _good7())
+    assert out["patient_held_back"] == [{"section_id": "c_sections.3", "heading": "next_steps"}]

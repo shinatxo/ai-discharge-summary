@@ -90,9 +90,9 @@ VERIFY_STEPS = ("verify_patient", "compose_patient_first", "verify_patient_2", "
 # was regenerated) and the second verification. Their module is the step's.
 EXTRA_CALLS = {"verify_patient": "verify_patient", "compose_patient_first": "compose_patient",
                "verify_patient_2": "verify_patient"}
-# Step 7v per call: ~1.1k prompt + ~2.4k sections/sentences in, ~0.6-0.9k out; worst case a
-# regeneration (+ step 7) and a second 7v.
-EST_TOKENS_VERIFY = {"input": 3500 * 2 + 4500, "output": 900 * 2 + 700}
+# Step 7v per call (measured, v0.1 pilot 4 Nov: output p50 1.3k, p90 1.8k): 3.6k in / 1.7k out as an
+# upper bound; worst case a regeneration (+ step 7) and a second 7v.
+EST_TOKENS_VERIFY = {"input": 3600 * 2 + 4500, "output": 1700 * 2 + 700}
 
 
 DRY_REASON = "Dry run: no facts."      # the dry composition's one PART A prose line (F1)

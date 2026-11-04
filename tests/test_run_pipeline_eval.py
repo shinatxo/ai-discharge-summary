@@ -255,3 +255,62 @@ def test_console_never_shows_step_7_checks(tmp_path, capsys):
     _run(tmp_path, ["S1", "--batch", "p", "--yes"])
     out = capsys.readouterr().out
     assert "7 sections=3" in out and "7 checks" not in out
+
+
+# --- step 7v, --verify (ADR-010, 4 Nov 2026) -----------------------------------
+
+def test_without_verify_the_path_and_records_are_unchanged(tmp_path):
+    _run(tmp_path, ["S1", "--batch", "p", "--yes"])
+    rec = json.loads((tmp_path / "p" / "r1" / "S1.json").read_text())
+    assert rec["path"] == rpe.PATH and not set(rpe.VERIFY_STEPS) & set(rec["steps"])
+
+
+def test_verify_records_7v_its_prompt_and_its_call_and_the_scorer_still_runs(tmp_path):
+    assert _run(tmp_path, ["--all", "--batch", "p", "--yes", "--verify"]) == 0
+    man = json.loads((tmp_path / "p" / "manifest.json").read_text())
+    assert man["path"] == rpe.PATH_VERIFY and "verify_patient" in man["prompts"]
+    rec = json.loads((tmp_path / "p" / "r1" / "S1.json").read_text())
+    assert rec["steps"]["verify_patient"]["flagged"] == 0          # the dry fake: all supported
+    assert "compose_patient_first" not in rec["steps"]
+    assert [c["name"] for c in rec["calls"]][-1] == "verify_patient"
+    assert SB.main([str(tmp_path / "p")]) == 0
+
+
+class _VerifyFlags(rpe.DryRunBedrock):
+    """7v flags the dry leaflet's one sentence on both checks -> regeneration, then hold back."""
+    def converse(self, **kw):
+        resp = super().converse(**kw)
+        if kw["toolConfig"]["tools"][0]["toolSpec"]["name"] == "record_verification":
+            item = resp["output"]["message"]["content"][0]["toolUse"]["input"]["items"][0]
+            item.update(verdict="added", reason="new_fact", span="in hospital")
+        return resp
+
+
+def test_verify_regenerates_once_then_holds_back_and_records_both_drafts(tmp_path):
+    rpe.main(["S1", "--batch", "p", "--yes", "--verify"], client_factory=_VerifyFlags, now=lambda: QUIET,
+             runs_dir=tmp_path, sleep=lambda _s: None)
+    rec = json.loads((tmp_path / "p" / "r1" / "S1.json").read_text())
+    s = rec["steps"]
+    assert {"compose_patient_first", "verify_patient", "verify_patient_2", "patient_held_back"} <= set(s)
+    assert s["patient_held_back"] == [{"section_id": "c_sections.0", "heading": "why_in_hospital"}]
+    assert s["compose_patient"]["sections"][0]["text"] == rpe.verify_patient.HELD_BACK_TEXT
+    assert s["compose_patient"]["revised"] is True and s["compose_patient_first"]["revised"] is False
+    names = [c["name"] for c in rec["calls"]]
+    assert names.count("compose_patient") == 1 and "compose_patient_first" in names
+    assert "verify_patient_2" in names and rec["step_errors"] == {}
+
+
+class _VerifyFails(rpe.DryRunBedrock):
+    def converse(self, **kw):
+        resp = super().converse(**kw)
+        if kw["toolConfig"]["tools"][0]["toolSpec"]["name"] == "record_verification":
+            resp["stopReason"] = "max_tokens"
+        return resp
+
+
+def test_a_7v_failure_fails_step_7_closed(tmp_path):
+    rpe.main(["S1", "--batch", "p", "--yes", "--verify"], client_factory=_VerifyFails, now=lambda: QUIET,
+             runs_dir=tmp_path, sleep=lambda _s: None)
+    rec = json.loads((tmp_path / "p" / "r1" / "S1.json").read_text())
+    assert rec["step_errors"] == {"compose_patient": "max_tokens"}
+    assert "compose_patient" not in rec["steps"] and "verify_patient" not in rec["steps"]

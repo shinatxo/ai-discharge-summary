@@ -362,7 +362,8 @@ def test_request_shape_and_message():
 def test_good_output_has_no_checks_and_the_output_shape():
     out = _run()
     assert out["checks"] == []
-    assert set(out) == {"sections", "checks", "counts", "audience", "call"}
+    assert set(out) == {"sections", "checks", "counts", "audience", "revised", "call"}
+    assert out["revised"] is False                 # ADR-010 V3: True only on the one regeneration
     assert out["sections"][0] == {"section_id": "c_sections.0", "heading": "why_in_hospital",
                                   "source_ids": ["sections.0", "sections.1"],
                                   "text": "You came in with chest pain. You had a heart attack (NSTEMI)."}

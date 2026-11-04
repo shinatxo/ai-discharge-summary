@@ -23,6 +23,7 @@ from .retrieve import retrieve_evidence
 from .route import route_resus
 from .safety_net import select_safety_net
 from .validate import validate_facts
+from .verify_patient import verify_patient
 
 # The line-indexed notes travel under this key in step inputs and outputs. It is
 # the one key the trace writer must never persist (ADR-009 (b), [A6]).
@@ -47,6 +48,7 @@ _ALL_STEPS = (
     Step("select_safety_net", "05b", "code", select_safety_net),
     Step("compose_clinical", "06", "model", compose_clinical),
     Step("compose_patient", "07", "model", compose_patient),
+    Step("verify_patient", "07v", "model", verify_patient),     # ADR-010 (4 Nov 2026)
 )
 
 STEPS: dict[str, Step] = {s.name: s for s in _ALL_STEPS}

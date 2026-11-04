@@ -41,9 +41,11 @@ Decisions of 2 Nov 2026 (piece 3 follow-up; CSO, all as recommended):
 run_step("compose_patient", {"audience": ..., "sections": [...]}, ctx=StepContext(...)):
   in:  {"audience": "adult" | "parent_or_carer",
         "sections": [{"section_id", "heading", "text"}]}   (patient_input() builds it)
+       (+ "revision": {"previous": [...], "findings": [{heading, span, issue}]} for the one
+        regeneration after step 7v — ADR-010 V3; verify_patient.revision_for() builds it)
   out: {"sections": [{section_id, heading, source_ids, text}],
         "checks": [{check, heading, source_id, token}],
-        "counts": {...}, "audience", "call": {...}}
+        "counts": {...}, "audience", "revised": bool, "call": {...}}
 Fails closed with a fixed code: bad_input, no_sections_given, no_client (registry), max_tokens,
 unexpected_stop_reason, no_tool_call, patient_version_not_object,
 patient_version_shape_invalid, throttled, read_timeout, request_rejected,
@@ -125,6 +127,27 @@ CHECKS = (
     "advice_shaped", "dose_or_frequency", "number_added", "unit_added", "conflict_text", "sensitive_text",
     "prose_without_source", "promise_shaped",
 ) + tuple(MN.CHECK_OF.values())         # G2 (3 Nov 2026): meaning flags, pipeline/meaning.py
+
+# ADR-010 V3 (4 Nov 2026): step 7's one regeneration after step 7v. The revision
+# block travels in the USER message, in code-fixed wording; the system prompt (and
+# its sha) is unchanged. O3: issue wording drafted by Claude — CSO approval pending.
+REVISION_ISSUES = {
+    "cause_or_purpose": "gives a cause, a purpose or a link that the sections do not state",
+    "new_fact": "says something the sections do not say",
+    "term_changed": "calls a test, procedure, diagnosis or treatment something different from the sections",
+    "certainty_or_completion": "is more (or less) certain, finished or permanent than the sections, or grades it",
+    "qualifier": "drops or weakens a word such as \"may\", \"possible\", \"improving\" or \"until\" that the sections use",
+    "withheld_category": "includes something that must not be in the leaflet (a risk level, safeguarding, "
+                         "the police, a ceiling of care or resuscitation)",
+    "instruction_or_promise": "adds advice, an instruction, or a service or promise that the sections do not state",
+    "other": "does not match what the sections say",
+    "never_drop_item": "is in the sections but not in your leaflet: include it",
+}
+REVISION_INSTRUCTION = (
+    "Write the leaflet again. Fix each finding above by saying only what the listed "
+    "sections say, or by removing those words. Keep every other sentence of your first "
+    "draft as it is. Every rule in your instructions still applies."
+)
 
 _PLACEHOLDER = re.compile(r"\{\{[^{}]*\}\}")
 _NOT_DOCUMENTED = re.compile(r"\bnot\s+(?:documented|recorded)\b", re.IGNORECASE)
@@ -223,10 +246,32 @@ def patient_input(compose_output: dict) -> dict:
         raise StepError("bad_input") from None
 
 
-def _check_input(inp) -> dict:
-    # Exactly {"audience", "sections"}: step 7 never receives the notes or the facts.
-    if not isinstance(inp, dict) or set(inp) != {"audience", "sections"} or inp["audience"] not in AUDIENCES:
+def _check_revision(rev) -> None:
+    # ADR-010 V3: {"previous": step 7's own first draft, "findings": [{heading, span, issue}]}.
+    if not isinstance(rev, dict) or set(rev) != {"previous", "findings"}:
         raise StepError("bad_input")
+    if not isinstance(rev["previous"], list) or not isinstance(rev["findings"], list) or not rev["findings"]:
+        raise StepError("bad_input")
+    for s in rev["previous"]:
+        if (not isinstance(s, dict) or set(s) != {"heading", "source_ids", "text"}
+                or s["heading"] not in PATIENT_HEADINGS or not isinstance(s["text"], str)
+                or not isinstance(s["source_ids"], list) or not all(isinstance(i, str) for i in s["source_ids"])):
+            raise StepError("bad_input")
+    for f in rev["findings"]:
+        if (not isinstance(f, dict) or set(f) != {"heading", "span", "issue"}
+                or f["heading"] not in PATIENT_HEADINGS or not isinstance(f["span"], str)
+                or f["issue"] not in REVISION_ISSUES):
+            raise StepError("bad_input")
+
+
+def _check_input(inp) -> dict:
+    # Exactly {"audience", "sections"} (+ "revision" for the one regeneration, ADR-010 V3):
+    # step 7 never receives the notes or the facts.
+    if (not isinstance(inp, dict) or set(inp) - {"revision"} != {"audience", "sections"}
+            or inp["audience"] not in AUDIENCES):
+        raise StepError("bad_input")
+    if "revision" in inp:
+        _check_revision(inp["revision"])
     secs = inp["sections"]
     if not isinstance(secs, list):
         raise StepError("bad_input")
@@ -250,6 +295,14 @@ def user_text(inp: dict) -> str:
         parts += ["", f"[{s['section_id']}] {s['heading']}", s["text"]]
     if not inp["sections"]:
         parts.append("none")
+    rev = inp.get("revision")
+    if rev:
+        parts += ["", "YOUR FIRST DRAFT"]
+        for s in rev["previous"]:
+            parts += ["", f"[{s['heading']}] (source_ids: {', '.join(s['source_ids']) or 'none'})", s["text"]]
+        parts += ["", "A CHECK OF YOUR FIRST DRAFT AGAINST THE SECTIONS FOUND:"]
+        parts += [f'- {f["heading"]}: "{f["span"]}" — {REVISION_ISSUES[f["issue"]]}.' for f in rev["findings"]]
+        parts += ["", REVISION_INSTRUCTION]
     return "\n".join(parts)
 
 
@@ -397,5 +450,6 @@ def compose_patient(inp: dict, ctx: StepContext) -> dict:
         "checks": checks,
         "counts": counts,
         "audience": inp["audience"],
+        "revised": "revision" in inp,
         "call": call_block(ctx, prompt_sha256, resp, attempts),
     }

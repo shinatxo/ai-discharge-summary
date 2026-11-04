@@ -381,3 +381,51 @@ def _build_patient_version() -> dict:
 def record_patient_version_schema() -> dict:
     """A fresh copy each call (as record_facts_schema)."""
     return copy.deepcopy(_build_patient_version())
+
+
+# =============================================================================
+# Step 7v — the record_verification input schema (ADR-010, V1)
+# =============================================================================
+#
+# Same rules as above: strict tool, forced; field names and fixed enums only; every
+# property required; no nullables ("" means "none" — e.g. sentence_id on an
+# unreached item); flat — ONE item shape, so it occurs once in the grammar.
+#
+# ADR-010 V1 names a `kind` field (sentence | unreached). It is folded into
+# `verdict` here ("unreached" is a verdict value): one field fewer that could
+# contradict another. Recorded in the ADR draft.
+#
+# Property ORDER is deliberate (as 5a, 6 and 7): the evidence — which C section and
+# sentence, which A section, the words at fault, the reason — before the verdict.
+
+VERIFY_VERDICTS = ("supported", "added", "changed", "qualifier_dropped", "unreached")
+VERIFY_REASONS = (
+    "none",                       # supported
+    "cause_or_purpose",           # a cause, purpose, mechanism or link the cited sections do not give
+    "new_fact",                   # any other fact, result, plan, service or reassurance not in them
+    "term_changed",               # a test, sample, procedure, diagnosis or treatment called something else
+    "certainty_or_completion",    # more (or less) certain, finished, permanent, or graded than they say
+    "qualifier",                  # a qualifier or uncertainty dropped or weakened
+    "withheld_category",          # risk level / score, safeguarding, police, ceiling of care, resus
+    "instruction_or_promise",     # advice, an instruction, urging, or a service / visit promise
+    "never_drop_item",            # unreached: a diagnosis, treatment, appointment or GP action left out
+    "other",
+)
+
+VERIFY_ITEM = _obj({
+    "c_section_id": _str(),
+    "sentence_id": _str(),
+    "a_section_id": _str(),
+    "span": _str(),
+    "reason": _enum(*VERIFY_REASONS),
+    "verdict": _enum(*VERIFY_VERDICTS),
+})
+
+
+def _build_verification() -> dict:
+    return _obj({"items": _arr(VERIFY_ITEM)})
+
+
+def record_verification_schema() -> dict:
+    """A fresh copy each call (as record_facts_schema)."""
+    return copy.deepcopy(_build_verification())

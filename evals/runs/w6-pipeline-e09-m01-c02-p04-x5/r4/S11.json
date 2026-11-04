@@ -1,0 +1,1118 @@
+{
+  "record_version": 1,
+  "generation_id": "w6-pipeline-e09-m01-c02-p04-x5/r4/S11",
+  "batch_id": "w6-pipeline-e09-m01-c02-p04-x5",
+  "run": 4,
+  "scenario_id": "S11",
+  "generator": "pipeline",
+  "path": "steps-1-5b-5a-6-7",
+  "model_id": "anthropic.claude-sonnet-4-6",
+  "region": "eu-west-2",
+  "prompts": {
+    "extract_facts": {
+      "path": "src/generate/pipeline/prompts/extract_facts.md",
+      "file_sha256": "27554f5d32e4281ec3e1e0b135553d33f0f2475d8835b2929cadf3e3e3abd556",
+      "body_sha256": "481a6c68d94acb1949ab3f0cd694d538b019446ed6cf8e6951560394cf02366c"
+    },
+    "reconcile_medications": {
+      "path": "src/generate/pipeline/prompts/reconcile_medications.md",
+      "file_sha256": "5006968b7010560f437e0eb31f55e9092baebc7a4adf347667bfcb154e8708a0",
+      "body_sha256": "b06f8c12a739b80c3d57f41ceada7dd7b1c2af38bc53159353b68425d09d5acf"
+    },
+    "compose_clinical": {
+      "path": "src/generate/pipeline/prompts/compose_clinical.md",
+      "file_sha256": "511071c6204ef05308500a29aeaafd4f06facfceb83c5b9fd5b4590031cb4a7a",
+      "body_sha256": "48613f4d8669369039b77ffdf12828ce72445aaab0fd85f04d4d4ad0a82725fe"
+    },
+    "compose_patient": {
+      "path": "src/generate/pipeline/prompts/compose_patient.md",
+      "file_sha256": "e39708c3e7af772909efb070c0a6793a1f0734dee0e701567c835edb8aad763e",
+      "body_sha256": "12056692f7df3d31653535d915c8cee3d41b4071820bfaeda712ea8563a7821b"
+    }
+  },
+  "prompt_caching": true,
+  "notes_sha256": "ed2e3ee49d11c4bfb7eb6ca95f90d402685abec1913adce3b032619831a2a7d6",
+  "started_at": "2026-11-04T06:39:20+00:00",
+  "elapsed_s": 28.834,
+  "calls": [
+    {
+      "name": "extract_facts",
+      "input_tokens": 830,
+      "output_tokens": 2101,
+      "cache_read_tokens": 4539,
+      "cache_write_tokens": 0,
+      "stop_reason": "tool_use",
+      "latency_s": 12.968,
+      "throttle_retries": 0
+    },
+    {
+      "name": "reconcile_medications",
+      "input_tokens": 894,
+      "output_tokens": 203,
+      "cache_read_tokens": 2290,
+      "cache_write_tokens": 0,
+      "stop_reason": "tool_use",
+      "latency_s": 2.101,
+      "throttle_retries": 0
+    },
+    {
+      "name": "compose_clinical",
+      "input_tokens": 1097,
+      "output_tokens": 1454,
+      "cache_read_tokens": 3182,
+      "cache_write_tokens": 0,
+      "stop_reason": "tool_use",
+      "latency_s": 8.062,
+      "throttle_retries": 0
+    },
+    {
+      "name": "compose_patient",
+      "input_tokens": 782,
+      "output_tokens": 526,
+      "cache_read_tokens": 2814,
+      "cache_write_tokens": 0,
+      "stop_reason": "tool_use",
+      "latency_s": 5.381,
+      "throttle_retries": 0
+    }
+  ],
+  "steps": {
+    "guard_input": {
+      "notes_sha256": "ed2e3ee49d11c4bfb7eb6ca95f90d402685abec1913adce3b032619831a2a7d6",
+      "line_count": 15,
+      "flags": []
+    },
+    "extract_facts": {
+      "call": {
+        "model_id": "anthropic.claude-sonnet-4-6",
+        "prompt_sha256": "481a6c68d94acb1949ab3f0cd694d538b019446ed6cf8e6951560394cf02366c",
+        "stop_reason": "tool_use",
+        "attempts": 1,
+        "input_tokens": 830,
+        "output_tokens": 2101,
+        "cache_read_tokens": 4539,
+        "cache_write_tokens": 0,
+        "latency_ms": 12968
+      }
+    },
+    "validate_facts": {
+      "facts": {
+        "fields": {
+          "age_sex": {
+            "status": "documented",
+            "items": [
+              {
+                "value": "47-year-old male",
+                "cites": [
+                  {
+                    "lines": [
+                      "L001"
+                    ],
+                    "quote": "47M",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "age_sex.0",
+                "citation_status": "verified",
+                "reason": null
+              }
+            ],
+            "field_check": "ok"
+          },
+          "specialty": {
+            "status": "inferred_flagged",
+            "items": [
+              {
+                "value": "Major trauma / multi-specialty (Orthopaedics, General Surgery, Respiratory/Thoracics)",
+                "cites": [
+                  {
+                    "lines": [
+                      "L001",
+                      "L002",
+                      "L003",
+                      "L004"
+                    ],
+                    "quote": "restrained driver, RTC ~40mph. Trauma call. Injuries: closed\nleft tibial shaft fracture, grade II splenic laceration (CT, stable), L 7-9 rib\nfractures + small haemothorax (chest drain), undisplaced L1 transverse process\nfractures",
+                    "verified": false,
+                    "reason": "cite_too_many_lines"
+                  }
+                ],
+                "fact_id": "specialty.0",
+                "citation_status": "citation_unverified",
+                "reason": "cite_too_many_lines"
+              }
+            ],
+            "field_check": "ok"
+          },
+          "legal_status": {
+            "status": "not_documented",
+            "items": [],
+            "field_check": "ok"
+          },
+          "weight": {
+            "status": "not_documented",
+            "items": [],
+            "field_check": "ok"
+          },
+          "admission_date": {
+            "status": "documented",
+            "items": [
+              {
+                "value": "12/05",
+                "cites": [
+                  {
+                    "lines": [
+                      "L001"
+                    ],
+                    "quote": "12/05",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "admission_date.0",
+                "citation_status": "verified",
+                "reason": null
+              }
+            ],
+            "field_check": "ok"
+          },
+          "discharge_date": {
+            "status": "documented",
+            "items": [
+              {
+                "value": "17/05",
+                "cites": [
+                  {
+                    "lines": [
+                      "L011"
+                    ],
+                    "quote": "17/05) Stable across all injuries. Fit for discharge.",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "discharge_date.0",
+                "citation_status": "verified",
+                "reason": null
+              }
+            ],
+            "field_check": "ok"
+          },
+          "presenting_complaint": {
+            "status": "documented",
+            "items": [
+              {
+                "value": "Road traffic collision at approximately 40mph as restrained driver",
+                "cites": [
+                  {
+                    "lines": [
+                      "L001"
+                    ],
+                    "quote": "restrained driver, RTC ~40mph. Trauma call.",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "presenting_complaint.0",
+                "citation_status": "verified",
+                "reason": null
+              }
+            ],
+            "field_check": "ok"
+          },
+          "diagnosis_primary": {
+            "status": "documented",
+            "items": [
+              {
+                "value": "Closed left tibial shaft fracture",
+                "cites": [
+                  {
+                    "lines": [
+                      "L001",
+                      "L002"
+                    ],
+                    "quote": "Injuries: closed\nleft tibial shaft fracture",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "diagnosis_primary.0",
+                "citation_status": "verified",
+                "reason": null
+              }
+            ],
+            "field_check": "ok"
+          },
+          "diagnosis_secondary": {
+            "status": "documented",
+            "items": [
+              {
+                "value": "Grade II splenic laceration (CT, stable)",
+                "cites": [
+                  {
+                    "lines": [
+                      "L002"
+                    ],
+                    "quote": "grade II splenic laceration (CT, stable)",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "diagnosis_secondary.0",
+                "citation_status": "verified",
+                "reason": null
+              },
+              {
+                "value": "Left 7–9 rib fractures with small haemothorax (chest drain inserted)",
+                "cites": [
+                  {
+                    "lines": [
+                      "L002",
+                      "L003"
+                    ],
+                    "quote": "L 7-9 rib\nfractures + small haemothorax (chest drain)",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "diagnosis_secondary.1",
+                "citation_status": "verified",
+                "reason": null
+              },
+              {
+                "value": "Undisplaced L1 transverse process fractures",
+                "cites": [
+                  {
+                    "lines": [
+                      "L003",
+                      "L004"
+                    ],
+                    "quote": "undisplaced L1 transverse process\nfractures",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "diagnosis_secondary.2",
+                "citation_status": "verified",
+                "reason": null
+              }
+            ],
+            "field_check": "ok"
+          },
+          "diagnosis_background": {
+            "status": "not_documented",
+            "items": [],
+            "field_check": "ok"
+          },
+          "key_investigations": {
+            "status": "documented",
+            "items": [
+              {
+                "value": "GCS 15 throughout; pelvis and spine otherwise clear",
+                "cites": [
+                  {
+                    "lines": [
+                      "L004"
+                    ],
+                    "quote": "GCS 15 throughout. Pelvis/spine otherwise clear.",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "key_investigations.0",
+                "citation_status": "verified",
+                "reason": null
+              },
+              {
+                "value": "CT abdomen: grade II splenic laceration, stable",
+                "cites": [
+                  {
+                    "lines": [
+                      "L002"
+                    ],
+                    "quote": "grade II splenic laceration (CT, stable)",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "key_investigations.1",
+                "citation_status": "verified",
+                "reason": null
+              },
+              {
+                "value": "CXR satisfactory following chest drain removal (Day 4)",
+                "cites": [
+                  {
+                    "lines": [
+                      "L009",
+                      "L010"
+                    ],
+                    "quote": "Chest drain removed, CXR satisfactory.",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "key_investigations.2",
+                "citation_status": "verified",
+                "reason": null
+              },
+              {
+                "value": "Hb stable Day 2; chest drain draining, lung re-expanding",
+                "cites": [
+                  {
+                    "lines": [
+                      "L007",
+                      "L008"
+                    ],
+                    "quote": "Hb stable. Chest drain\ndraining, lung re-expanding.",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "key_investigations.3",
+                "citation_status": "verified",
+                "reason": null
+              },
+              {
+                "value": "Hb stable Day 4; repeat CT spleen improving",
+                "cites": [
+                  {
+                    "lines": [
+                      "L010"
+                    ],
+                    "quote": "Hb stable, repeat CT spleen improving.",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "key_investigations.4",
+                "citation_status": "verified",
+                "reason": null
+              }
+            ],
+            "field_check": "ok"
+          },
+          "treatment": {
+            "status": "documented",
+            "items": [
+              {
+                "value": "Splenic injury managed non-operatively with serial observations and Hb monitoring",
+                "cites": [
+                  {
+                    "lines": [
+                      "L005",
+                      "L006"
+                    ],
+                    "quote": "splenic injury non-operative,\nserial obs/Hb.",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "treatment.0",
+                "citation_status": "verified",
+                "reason": null
+              },
+              {
+                "value": "Chest drain inserted for haemothorax by respiratory/thoracics team",
+                "cites": [
+                  {
+                    "lines": [
+                      "L003",
+                      "L006"
+                    ],
+                    "quote": "chest drain), undisplaced L1 transverse process",
+                    "verified": false,
+                    "reason": "non_consecutive_lines"
+                  }
+                ],
+                "fact_id": "treatment.1",
+                "citation_status": "citation_unverified",
+                "reason": "non_consecutive_lines"
+              },
+              {
+                "value": "Intramedullary nailing of left tibia performed (Day 2, 13/05)",
+                "cites": [
+                  {
+                    "lines": [
+                      "L007"
+                    ],
+                    "quote": "IM nail left tibia done.",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "treatment.2",
+                "citation_status": "verified",
+                "reason": null
+              },
+              {
+                "value": "Chest drain removed Day 4 (15/05)",
+                "cites": [
+                  {
+                    "lines": [
+                      "L009"
+                    ],
+                    "quote": "Chest drain removed, CXR satisfactory.",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "treatment.3",
+                "citation_status": "verified",
+                "reason": null
+              },
+              {
+                "value": "Mobilising with physiotherapy; partial weight-bearing left leg as per orthopaedics",
+                "cites": [
+                  {
+                    "lines": [
+                      "L009",
+                      "L010"
+                    ],
+                    "quote": "Mobilising with physio,\npartial weight-bear left leg per ortho.",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "treatment.4",
+                "citation_status": "verified",
+                "reason": null
+              }
+            ],
+            "field_check": "ok"
+          },
+          "risk_assessment": {
+            "status": "not_documented",
+            "items": [],
+            "field_check": "ok"
+          },
+          "allergies": {
+            "status": "not_documented",
+            "items": [],
+            "field_check": "ok"
+          },
+          "follow_up": {
+            "status": "documented",
+            "items": [
+              {
+                "value": "Orthopaedic fracture clinic follow-up at 2 weeks",
+                "cites": [
+                  {
+                    "lines": [
+                      "L013",
+                      "L014"
+                    ],
+                    "quote": "Follow-up: ortho fracture clinic 2/52, general surgery telephone review re spleen\n6/52 + splenic vaccination advice",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "follow_up.0",
+                "citation_status": "verified",
+                "reason": null
+              },
+              {
+                "value": "General surgery telephone review regarding spleen at 6 weeks, with splenic vaccination advice",
+                "cites": [
+                  {
+                    "lines": [
+                      "L013",
+                      "L014"
+                    ],
+                    "quote": "general surgery telephone review re spleen\n6/52 + splenic vaccination advice",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "follow_up.1",
+                "citation_status": "verified",
+                "reason": null
+              },
+              {
+                "value": "Respiratory/thoracics: no routine follow-up",
+                "cites": [
+                  {
+                    "lines": [
+                      "L014",
+                      "L015"
+                    ],
+                    "quote": "resp/thoracic no routine f/u.",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "follow_up.2",
+                "citation_status": "verified",
+                "reason": null
+              }
+            ],
+            "field_check": "ok"
+          },
+          "gp_actions": {
+            "status": "not_documented",
+            "items": [],
+            "field_check": "ok"
+          },
+          "vte_assessment": {
+            "status": "documented",
+            "items": [
+              {
+                "value": "VTE prophylaxis with enoxaparin given inpatient; to continue per orthopaedics on discharge",
+                "cites": [
+                  {
+                    "lines": [
+                      "L011",
+                      "L012"
+                    ],
+                    "quote": "VTE prophylaxis\n(enoxaparin) given inpatient; continue per ortho.",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "vte_assessment.0",
+                "citation_status": "verified",
+                "reason": null
+              }
+            ],
+            "field_check": "ok"
+          }
+        },
+        "medications": {
+          "pre_admission": [],
+          "discharge": [
+            {
+              "value": "TTOs: analgesia, enoxaparin",
+              "cites": [
+                {
+                  "lines": [
+                    "L012"
+                  ],
+                  "quote": "TTOs: analgesia, enoxaparin.",
+                  "verified": true,
+                  "reason": null
+                }
+              ],
+              "fact_id": "medications.discharge.0",
+              "citation_status": "verified",
+              "reason": null
+            }
+          ],
+          "discharge_status": "referenced_not_listed",
+          "medications_check": "ok"
+        },
+        "resus": {
+          "changed": "not_documented",
+          "cites": [
+            {
+              "lines": [
+                "L004"
+              ],
+              "quote": "For resus.",
+              "verified": true,
+              "reason": null
+            }
+          ],
+          "form_or_discussion_documented": false,
+          "status_documented": "for_resuscitation",
+          "fact_id": "resus",
+          "citation_status": "verified",
+          "reason": null
+        },
+        "documented_advice": [
+          {
+            "value": "Pneumococcal/Hib/MenACWY vaccination + prophylaxis advice given for splenic injury",
+            "cites": [
+              {
+                "lines": [
+                  "L014",
+                  "L015"
+                ],
+                "quote": "Pneumococcal/Hib/\nMenACWY vaccination + prophylaxis advice given for splenic injury.",
+                "verified": true,
+                "reason": null
+              }
+            ],
+            "fact_id": "documented_advice.0",
+            "citation_status": "verified",
+            "reason": null
+          }
+        ],
+        "age_group": "adult",
+        "contradictions": [],
+        "suspicious_text": []
+      },
+      "uncited_lines": [],
+      "counts": {
+        "cites_total": 26,
+        "cites_verified": 24,
+        "items_unverified": 2,
+        "fields_inconsistent": 0,
+        "medications_inconsistent": 0
+      }
+    },
+    "retrieve_evidence": {
+      "medication": [
+        {
+          "line": "L012",
+          "sources": [
+            "cited",
+            "med_header"
+          ],
+          "fact_ids": [
+            "medications.discharge.0"
+          ],
+          "flagged": false
+        }
+      ],
+      "resus": [
+        {
+          "line": "L004",
+          "sources": [
+            "cited",
+            "resus_term"
+          ],
+          "fact_ids": [
+            "resus"
+          ],
+          "flagged": false
+        }
+      ],
+      "language": [],
+      "counts": {
+        "medication_lines": 1,
+        "resus_lines": 1,
+        "language_lines": 0,
+        "medication_matched_not_cited": 0,
+        "resus_matched_not_cited": 0
+      }
+    },
+    "route_resus": {
+      "route": "documented",
+      "forced": "no",
+      "status": "for_resuscitation",
+      "changed": "not_documented",
+      "cited_lines": [
+        "L004"
+      ],
+      "rendered": "RESUSCITATION STATUS\nFor resuscitation.\nSource: [L004]: \"For resus.\""
+    },
+    "select_safety_net": {
+      "route": "documented",
+      "audience": "adult",
+      "pinned_line": "If you have been given a number to call, use that first. Otherwise, if you are worried, contact your GP or call NHS 111. Call 999 if it is an emergency.",
+      "advice": [
+        {
+          "fact_id": "documented_advice.0",
+          "lines": [
+            "L014",
+            "L015"
+          ],
+          "quote": "Pneumococcal/Hib/ MenACWY vaccination + prophylaxis advice given for splenic injury."
+        }
+      ],
+      "advice_excluded": 0,
+      "cited_lines": [
+        "L014",
+        "L015"
+      ],
+      "part_ab": "- \"Pneumococcal/Hib/ MenACWY vaccination + prophylaxis advice given for splenic injury.\" [L014–L015]\n\nStandard seek-help line in the patient version (fixed wording, not from the notes):\nIf you have been given a number to call, use that first. Otherwise, if you are worried, contact your GP or call NHS 111. Call 999 if it is an emergency.",
+      "part_c": "Pneumococcal/Hib/ MenACWY vaccination + prophylaxis advice given for splenic injury.\n\nIf you have been given a number to call, use that first. Otherwise, if you are worried, contact your GP or call NHS 111. Call 999 if it is an emergency."
+    },
+    "reconcile_medications": {
+      "reconciliation": [
+        {
+          "entry_id": "reconciliation.0",
+          "drug": "analgesia",
+          "tag": "new",
+          "basis": "documented",
+          "dose": null,
+          "route": null,
+          "frequency": null,
+          "previous": null,
+          "conflict": false,
+          "dh_cites": [],
+          "discharge_cites": [
+            {
+              "lines": [
+                "L012"
+              ],
+              "quote": "TTOs: analgesia, enoxaparin.",
+              "verified": true,
+              "reason": null
+            }
+          ],
+          "citation_status": "verified",
+          "reason": null,
+          "checks": []
+        },
+        {
+          "entry_id": "reconciliation.1",
+          "drug": "enoxaparin",
+          "tag": "new",
+          "basis": "documented",
+          "dose": null,
+          "route": null,
+          "frequency": null,
+          "previous": null,
+          "conflict": false,
+          "dh_cites": [],
+          "discharge_cites": [
+            {
+              "lines": [
+                "L011",
+                "L012"
+              ],
+              "quote": "VTE prophylaxis (enoxaparin) given inpatient; continue per ortho. TTOs: analgesia, enoxaparin.",
+              "verified": true,
+              "reason": null
+            }
+          ],
+          "citation_status": "verified",
+          "reason": null,
+          "checks": []
+        }
+      ],
+      "discharge_status": "referenced_not_listed",
+      "reconciliation_check": "ok",
+      "dh_lines_unreconciled": [],
+      "counts": {
+        "entries": 2,
+        "cites_total": 2,
+        "cites_verified": 2,
+        "entries_unverified": 0,
+        "entries_flagged": 0,
+        "dh_lines_unreconciled": 0
+      },
+      "call": {
+        "model_id": "anthropic.claude-sonnet-4-6",
+        "prompt_sha256": "b06f8c12a739b80c3d57f41ceada7dd7b1c2af38bc53159353b68425d09d5acf",
+        "stop_reason": "tool_use",
+        "attempts": 1,
+        "input_tokens": 894,
+        "output_tokens": 203,
+        "cache_read_tokens": 2290,
+        "cache_write_tokens": 0,
+        "latency_ms": 2101
+      }
+    },
+    "compose_clinical": {
+      "sections": [
+        {
+          "section_id": "sections.0",
+          "part": "part_a",
+          "heading": "presenting_complaint",
+          "fact_ids": [
+            "presenting_complaint.0"
+          ],
+          "text": "Road traffic collision at approximately 40mph as restrained driver.",
+          "unverified_fact_ids": []
+        },
+        {
+          "section_id": "sections.1",
+          "part": "part_a",
+          "heading": "diagnosis",
+          "fact_ids": [
+            "diagnosis_primary.0",
+            "diagnosis_secondary.0",
+            "diagnosis_secondary.1",
+            "diagnosis_secondary.2"
+          ],
+          "text": "Primary: Closed left tibial shaft fracture.\n\nSecondary:\n- Grade II splenic laceration (CT, stable)\n- Left 7–9 rib fractures with small haemothorax (chest drain inserted)\n- Undisplaced L1 transverse process fractures",
+          "unverified_fact_ids": []
+        },
+        {
+          "section_id": "sections.2",
+          "part": "part_a",
+          "heading": "key_investigations",
+          "fact_ids": [
+            "key_investigations.0",
+            "key_investigations.1",
+            "key_investigations.2",
+            "key_investigations.3",
+            "key_investigations.4"
+          ],
+          "text": "- GCS 15 throughout; pelvis and spine otherwise clear on imaging\n- CT abdomen: grade II splenic laceration, stable\n- Hb stable Day 2; chest drain draining, lung re-expanding\n- Hb stable Day 4; repeat CT spleen improving\n- CXR satisfactory following chest drain removal (Day 4)",
+          "unverified_fact_ids": []
+        },
+        {
+          "section_id": "sections.3",
+          "part": "part_a",
+          "heading": "treatment",
+          "fact_ids": [
+            "treatment.0",
+            "treatment.1",
+            "treatment.2",
+            "treatment.3",
+            "treatment.4"
+          ],
+          "text": "- Splenic injury managed non-operatively with serial observations and Hb monitoring\n- Chest drain inserted for haemothorax by respiratory/thoracics team; removed Day 4 (15/05)\n- Intramedullary nailing of left tibia performed Day 2 (13/05)\n- Mobilising with physiotherapy; partial weight-bearing left leg as per orthopaedics",
+          "unverified_fact_ids": [
+            "treatment.1"
+          ]
+        },
+        {
+          "section_id": "sections.4",
+          "part": "part_a",
+          "heading": "resuscitation_status",
+          "fact_ids": [],
+          "text": "{{RESUS}}",
+          "unverified_fact_ids": []
+        },
+        {
+          "section_id": "sections.5",
+          "part": "part_a",
+          "heading": "medications",
+          "fact_ids": [],
+          "text": "{{MEDICATIONS}}",
+          "unverified_fact_ids": []
+        },
+        {
+          "section_id": "sections.6",
+          "part": "part_a",
+          "heading": "allergies",
+          "fact_ids": [],
+          "text": "Not documented",
+          "unverified_fact_ids": []
+        },
+        {
+          "section_id": "sections.7",
+          "part": "part_a",
+          "heading": "follow_up",
+          "fact_ids": [
+            "follow_up.0",
+            "follow_up.1",
+            "follow_up.2"
+          ],
+          "text": "- Orthopaedic fracture clinic follow-up at 2 weeks\n- General surgery telephone review regarding spleen at 6 weeks, with splenic vaccination advice\n- Respiratory/thoracics: no routine follow-up",
+          "unverified_fact_ids": []
+        },
+        {
+          "section_id": "sections.8",
+          "part": "part_a",
+          "heading": "gp_actions",
+          "fact_ids": [],
+          "text": "Not documented",
+          "unverified_fact_ids": []
+        },
+        {
+          "section_id": "sections.9",
+          "part": "part_a",
+          "heading": "safety_net",
+          "fact_ids": [],
+          "text": "{{SAFETY_NET}}",
+          "unverified_fact_ids": []
+        },
+        {
+          "section_id": "sections.10",
+          "part": "part_a",
+          "heading": "vte_assessment",
+          "fact_ids": [
+            "vte_assessment.0"
+          ],
+          "text": "VTE prophylaxis with enoxaparin given inpatient; to continue per orthopaedics on discharge.",
+          "unverified_fact_ids": []
+        },
+        {
+          "section_id": "sections.11",
+          "part": "part_b",
+          "heading": "opening",
+          "fact_ids": [
+            "age_sex.0",
+            "presenting_complaint.0",
+            "diagnosis_primary.0"
+          ],
+          "text": "Thank you for accepting this 47-year-old male who was admitted following a road traffic collision at approximately 40mph as a restrained driver, sustaining a closed left tibial shaft fracture as the primary injury.",
+          "unverified_fact_ids": []
+        },
+        {
+          "section_id": "sections.12",
+          "part": "part_b",
+          "heading": "admission_summary",
+          "fact_ids": [
+            "diagnosis_secondary.0",
+            "diagnosis_secondary.1",
+            "diagnosis_secondary.2",
+            "key_investigations.0",
+            "key_investigations.1",
+            "key_investigations.2",
+            "key_investigations.3",
+            "key_investigations.4",
+            "treatment.0",
+            "treatment.1",
+            "treatment.2",
+            "treatment.3",
+            "treatment.4"
+          ],
+          "text": "On assessment, GCS was 15 throughout and imaging confirmed a grade II splenic laceration on CT abdomen (stable), left 7–9 rib fractures with a small haemothorax, and undisplaced L1 transverse process fractures; pelvis and spine were otherwise clear. Hb was stable by Day 2, with the chest drain draining and the lung re-expanding. By Day 4, Hb remained stable, repeat CT showed the spleen improving, and CXR was satisfactory following chest drain removal (15/05). The splenic injury was managed non-operatively with serial observations and Hb monitoring. The haemothorax was managed with a chest drain inserted by the respiratory/thoracics team, removed Day 4 (15/05). Intramedullary nailing of the left tibia was performed on Day 2 (13/05). He was mobilising with physiotherapy on partial weight-bearing of the left leg as per orthopaedics at discharge.",
+          "unverified_fact_ids": [
+            "treatment.1"
+          ]
+        },
+        {
+          "section_id": "sections.13",
+          "part": "part_b",
+          "heading": "diagnosis",
+          "fact_ids": [
+            "diagnosis_primary.0",
+            "diagnosis_secondary.0",
+            "diagnosis_secondary.1",
+            "diagnosis_secondary.2"
+          ],
+          "text": "Primary: Closed left tibial shaft fracture.\n\nSecondary:\n- Grade II splenic laceration (CT, stable)\n- Left 7–9 rib fractures with small haemothorax\n- Undisplaced L1 transverse process fractures",
+          "unverified_fact_ids": []
+        },
+        {
+          "section_id": "sections.14",
+          "part": "part_b",
+          "heading": "resuscitation_status",
+          "fact_ids": [],
+          "text": "{{RESUS}}",
+          "unverified_fact_ids": []
+        },
+        {
+          "section_id": "sections.15",
+          "part": "part_b",
+          "heading": "medications",
+          "fact_ids": [],
+          "text": "{{MEDICATIONS}}",
+          "unverified_fact_ids": []
+        },
+        {
+          "section_id": "sections.16",
+          "part": "part_b",
+          "heading": "gp_actions",
+          "fact_ids": [],
+          "text": "No GP actions documented.",
+          "unverified_fact_ids": []
+        },
+        {
+          "section_id": "sections.17",
+          "part": "part_b",
+          "heading": "follow_up",
+          "fact_ids": [
+            "follow_up.0",
+            "follow_up.1",
+            "follow_up.2"
+          ],
+          "text": "- Orthopaedic fracture clinic follow-up at 2 weeks\n- General surgery telephone review regarding spleen at 6 weeks, with splenic vaccination advice\n- Respiratory/thoracics: no routine follow-up",
+          "unverified_fact_ids": []
+        },
+        {
+          "section_id": "sections.18",
+          "part": "part_b",
+          "heading": "safety_net",
+          "fact_ids": [],
+          "text": "{{SAFETY_NET}}",
+          "unverified_fact_ids": []
+        }
+      ],
+      "held_back": [],
+      "checks": [],
+      "counts": {
+        "sections": 19,
+        "sections_a": 11,
+        "sections_b": 8,
+        "facts_given": 19,
+        "facts_used_in_a": 19,
+        "header_facts_given": 4,
+        "contradictions_given": 0,
+        "contradictions_in_a": 0,
+        "gp_actions_given": 0,
+        "gp_actions_in_b": 0,
+        "facts_held_back": 0,
+        "gp_actions_held_back": 0,
+        "unverified_given": 2,
+        "unverified_used": 1,
+        "checks": 0
+      },
+      "age_group": "adult",
+      "call": {
+        "model_id": "anthropic.claude-sonnet-4-6",
+        "prompt_sha256": "48613f4d8669369039b77ffdf12828ce72445aaab0fd85f04d4d4ad0a82725fe",
+        "stop_reason": "tool_use",
+        "attempts": 1,
+        "input_tokens": 1097,
+        "output_tokens": 1454,
+        "cache_read_tokens": 3182,
+        "cache_write_tokens": 0,
+        "latency_ms": 8062
+      }
+    },
+    "compose_patient": {
+      "sections": [
+        {
+          "section_id": "c_sections.0",
+          "heading": "why_in_hospital",
+          "source_ids": [
+            "sections.0",
+            "sections.1"
+          ],
+          "text": "You were admitted after a road traffic collision at around 40mph as a restrained driver.\n\nThe team found:\n- A fracture of the left shin bone (closed left tibial shaft fracture)\n- A tear to your spleen (grade II splenic laceration)\n- Fractures of your left ribs 7–9 with a small collection of blood around the lung (haemothorax)\n- Small fractures of a bone in your lower back (undisplaced L1 transverse process fractures)"
+        },
+        {
+          "section_id": "c_sections.1",
+          "heading": "what_we_did",
+          "source_ids": [
+            "sections.2",
+            "sections.3"
+          ],
+          "text": "Scans and tests showed your spleen injury was stable and was improving by Day 4. A chest X-ray after the drain was removed was satisfactory.\n\nThe team treated you in the following ways:\n- Your spleen injury was managed without an operation, with regular checks and blood tests\n- A drain was put into your chest to treat the blood around your lung; it was removed on Day 4 (15/05)\n- An operation was done on Day 2 (13/05) to fix your shin bone fracture using a nail inside the bone (intramedullary nailing of left tibia)\n- Physiotherapists helped you to move around; you are partially bearing weight on your left leg as directed by the bone and joint team"
+        },
+        {
+          "section_id": "c_sections.2",
+          "heading": "medicines",
+          "source_ids": [],
+          "text": "{{MEDICATIONS}}"
+        },
+        {
+          "section_id": "c_sections.3",
+          "heading": "next_steps",
+          "source_ids": [
+            "sections.7"
+          ],
+          "text": "You have the following follow-up arranged:\n- A bone and joint (orthopaedic) fracture clinic appointment in 2 weeks\n- A telephone review with the general surgery team about your spleen at 6 weeks, including advice about vaccination for your spleen\n- No routine follow-up is needed with the respiratory or chest team"
+        },
+        {
+          "section_id": "c_sections.4",
+          "heading": "safety_net",
+          "source_ids": [],
+          "text": "{{SAFETY_NET}}"
+        }
+      ],
+      "checks": [
+        {
+          "check": "test_term_added",
+          "heading": "what_we_did",
+          "source_id": null,
+          "token": "blood test"
+        }
+      ],
+      "counts": {
+        "sections": 5,
+        "sections_given": 5,
+        "sources_cited": 5,
+        "words_prose": 245,
+        "checks": 1
+      },
+      "audience": "adult",
+      "call": {
+        "model_id": "anthropic.claude-sonnet-4-6",
+        "prompt_sha256": "12056692f7df3d31653535d915c8cee3d41b4071820bfaeda712ea8563a7821b",
+        "stop_reason": "tool_use",
+        "attempts": 1,
+        "input_tokens": 782,
+        "output_tokens": 526,
+        "cache_read_tokens": 2814,
+        "cache_write_tokens": 0,
+        "latency_ms": 5381
+      }
+    }
+  },
+  "output": null,
+  "gate": null,
+  "failed_step": null,
+  "error": null,
+  "step_errors": {},
+  "cost_usd_est": 0.086808
+}

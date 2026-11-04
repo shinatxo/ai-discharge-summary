@@ -70,7 +70,11 @@
     "64c1e39117b147af": "acceptable",
     "6a716a8919449eb8": "acceptable",
     "a172ead3f917b7a2": "acceptable",
-    "eee94590173df49d": "acceptable"
+    "eee94590173df49d": "acceptable",
+    "1588103788d8a403": "acceptable",
+    "39b3ae5f067f2be4": "acceptable",
+    "89401a2200af0938": "acceptable",
+    "c389aea76d6ac405": "acceptable"
   },
   "compose_rulings_meta": {
     "by": "Shina Oguntoye (CSO)",
@@ -150,7 +154,23 @@
   },
   "patient_rulings": {
     "ba34c835e0c5fe18": "acceptable",
-    "e67dc1f1dfe50e0f": "acceptable"
+    "e67dc1f1dfe50e0f": "acceptable",
+    "13f65c7769af9061": "acceptable",
+    "1af117a21d847be2": "acceptable",
+    "1d4347ecf899bcb7": "acceptable",
+    "2d01eb0636de97ce": "acceptable",
+    "2d08a8640b76c5b3": "acceptable",
+    "3b30889b8e845784": "acceptable",
+    "601b6e71593485f2": "acceptable",
+    "6370f5edf4e37f7d": "acceptable",
+    "7c3f08c0ad41adca": "acceptable",
+    "8f1a82218d38e54c": "acceptable",
+    "90280240beedd1dc": "defect",
+    "910bdcb7e553c4d4": "acceptable",
+    "9c8d60ff66a23a9f": "acceptable",
+    "a943d343e37b1111": "acceptable",
+    "d3b1c643ead2f0ce": "acceptable",
+    "e5aac13492a82653": "acceptable"
   },
   "patient_rulings_meta_p02": {
     "by": "Shina Oguntoye (CSO)",
@@ -183,5 +203,18 @@
         "eee94590173df49d"
       ]
     }
+  },
+  "patient_rulings_meta_p04": {
+    "by": "author (CSO)",
+    "on": "2026-11-04T11:47",
+    "batch": "w6-pipeline-e09-m01-c02-p04-x5",
+    "how": "groups proposed by Claude 4 Nov 11:23 (B); CSO changes 11:47 (T1 aspirate row acceptable; C6 S10 womb-contraction, S2 r1 hydration, S14 r3 recovery-at-home -> defect; C9 S1 r3 dye link -> defect, next_steps cites only sections 7, 8; X1 r1 defect, r2-r5 acceptable; Q1 defect under G1.2); diagnosis keys per leaflet after the K-A key correction (11:50, disclosed)",
+    "standards": "lines 4, 5, 9 and promise: Q1-Q6 / F3 (1-3 Nov); line 14: written 3 Nov before the p0.3 batch (score_patient.py v3)"
+  },
+  "compose_rulings_meta_p04": {
+    "by": "author (CSO)",
+    "on": "2026-11-04T11:47",
+    "batch": "w6-pipeline-e09-m01-c02-p04-x5",
+    "how": "R10: step 6 line 7, 41 rows / 43 instances acceptable as a group - every drug token in a fact its section cites (checked by Claude); R3/R5/R7/R9 standard"
   }
 }

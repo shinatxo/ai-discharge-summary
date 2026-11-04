@@ -29,7 +29,9 @@
     "e23c3890b006e439": "acceptable",
     "e5cbeba507ca9c44": "acceptable",
     "e71bdeaad558df5b": "acceptable",
-    "fc3e81acc603d428": "acceptable"
+    "fc3e81acc603d428": "acceptable",
+    "52d91809757767c8": "acceptable",
+    "99fc32c86ca05bc3": "acceptable"
   },
   "compose_rulings_meta": {
     "by": "Shina Oguntoye (CSO)",
@@ -108,7 +110,12 @@
     "1b99652f7ae69992": "acceptable",
     "872c8c01fe90f144": "acceptable",
     "a8407f0141d362be": "acceptable",
-    "ac66d2b0dcc2512f": "acceptable"
+    "ac66d2b0dcc2512f": "acceptable",
+    "152f6159ab2c30f9": "acceptable",
+    "44cd9827db6d37f7": "acceptable",
+    "8b840b11e76b2181": "acceptable",
+    "9ddcbac082e93c82": "acceptable",
+    "ed2e5b1e6e835eb3": "acceptable"
   },
   "patient_rulings_meta": {
     "by": "Shina Oguntoye (CSO)",
@@ -184,5 +191,18 @@
         "fc3e81acc603d428"
       ]
     }
+  },
+  "patient_rulings_meta_p04": {
+    "by": "author (CSO)",
+    "on": "2026-11-04T11:47",
+    "batch": "w6-pipeline-e09-m01-c02-p04-x5",
+    "how": "groups proposed by Claude 4 Nov 11:23 (B); CSO changes 11:47 (T1 aspirate row acceptable; C6 S10 womb-contraction, S2 r1 hydration, S14 r3 recovery-at-home -> defect; C9 S1 r3 dye link -> defect, next_steps cites only sections 7, 8; X1 r1 defect, r2-r5 acceptable; Q1 defect under G1.2); diagnosis keys per leaflet after the K-A key correction (11:50, disclosed)",
+    "standards": "lines 4, 5, 9 and promise: Q1-Q6 / F3 (1-3 Nov); line 14: written 3 Nov before the p0.3 batch (score_patient.py v3)"
+  },
+  "compose_rulings_meta_p04": {
+    "by": "author (CSO)",
+    "on": "2026-11-04T11:47",
+    "batch": "w6-pipeline-e09-m01-c02-p04-x5",
+    "how": "R10: step 6 line 7, 41 rows / 43 instances acceptable as a group - every drug token in a fact its section cites (checked by Claude); R3/R5/R7/R9 standard"
   }
 }

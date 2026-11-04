@@ -24,7 +24,11 @@
   "patient_rulings": {
     "7562a06f70a2b9ca": "acceptable",
     "964ee139d87bcb1e": "defect",
-    "ff852cf57f4943e6": "defect"
+    "ff852cf57f4943e6": "defect",
+    "03cceb4683f57df7": "acceptable",
+    "1c35be05ebd27b52": "acceptable",
+    "1e1c76ff76061822": "defect",
+    "d6fdbe644dba3240": "acceptable"
   },
   "patient_rulings_meta_p02": {
     "by": "Shina Oguntoye (CSO)",
@@ -47,5 +51,12 @@
         ]
       }
     }
+  },
+  "patient_rulings_meta_p04": {
+    "by": "author (CSO)",
+    "on": "2026-11-04T11:47",
+    "batch": "w6-pipeline-e09-m01-c02-p04-x5",
+    "how": "groups proposed by Claude 4 Nov 11:23 (B); CSO changes 11:47 (T1 aspirate row acceptable; C6 S10 womb-contraction, S2 r1 hydration, S14 r3 recovery-at-home -> defect; C9 S1 r3 dye link -> defect, next_steps cites only sections 7, 8; X1 r1 defect, r2-r5 acceptable; Q1 defect under G1.2); diagnosis keys per leaflet after the K-A key correction (11:50, disclosed)",
+    "standards": "lines 4, 5, 9 and promise: Q1-Q6 / F3 (1-3 Nov); line 14: written 3 Nov before the p0.3 batch (score_patient.py v3)"
   }
 }

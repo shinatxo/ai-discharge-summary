@@ -67,7 +67,10 @@
     "e920de543a6d082f": "acceptable",
     "89fdff65c0725216": "acceptable",
     "936c8c361057b824": "acceptable",
-    "e1bd3b94b8d520a7": "acceptable"
+    "e1bd3b94b8d520a7": "acceptable",
+    "5af8bf08049f8913": "acceptable",
+    "6687c327f5dee963": "acceptable",
+    "fa1c8d4426be054a": "acceptable"
   },
   "compose_rulings_meta": {
     "by": "Shina Oguntoye (CSO)",
@@ -146,7 +149,28 @@
     "c77acc02fe4d3825": "acceptable",
     "c96facce3958ff7b": "acceptable",
     "d97c8cc25f995783": "acceptable",
-    "e701a5eb5280d910": "acceptable"
+    "e701a5eb5280d910": "acceptable",
+    "043dd16c161aeecb": "acceptable",
+    "1780c1cf2cbea882": "acceptable",
+    "23b78804ee7f1d82": "acceptable",
+    "2ef099f71de25962": "acceptable",
+    "45495896bf026a58": "acceptable",
+    "55e3ac518f718651": "acceptable",
+    "5917254de5a56100": "acceptable",
+    "62a0167535f796dd": "acceptable",
+    "653df4b5991f96fe": "acceptable",
+    "7dd57bb9af12969a": "defect",
+    "984476bef2dfaebd": "acceptable",
+    "999c4eacc6dc8a62": "acceptable",
+    "9febb43070a7a3c9": "acceptable",
+    "a098e8a31f1babe6": "acceptable",
+    "b238aff22c940914": "acceptable",
+    "b9da4061ced5574c": "acceptable",
+    "c5cb054443e4461e": "defect",
+    "c8ccbdde80773caf": "acceptable",
+    "cfe8b3b41b28f65f": "acceptable",
+    "e77e394fdd94d2c8": "acceptable",
+    "eb0f2a14b49020c8": "acceptable"
   },
   "patient_rulings_meta_p02": {
     "by": "Shina Oguntoye (CSO)",
@@ -186,5 +210,18 @@
         "e1bd3b94b8d520a7"
       ]
     }
+  },
+  "patient_rulings_meta_p04": {
+    "by": "author (CSO)",
+    "on": "2026-11-04T11:47",
+    "batch": "w6-pipeline-e09-m01-c02-p04-x5",
+    "how": "groups proposed by Claude 4 Nov 11:23 (B); CSO changes 11:47 (T1 aspirate row acceptable; C6 S10 womb-contraction, S2 r1 hydration, S14 r3 recovery-at-home -> defect; C9 S1 r3 dye link -> defect, next_steps cites only sections 7, 8; X1 r1 defect, r2-r5 acceptable; Q1 defect under G1.2); diagnosis keys per leaflet after the K-A key correction (11:50, disclosed)",
+    "standards": "lines 4, 5, 9 and promise: Q1-Q6 / F3 (1-3 Nov); line 14: written 3 Nov before the p0.3 batch (score_patient.py v3)"
+  },
+  "compose_rulings_meta_p04": {
+    "by": "author (CSO)",
+    "on": "2026-11-04T11:47",
+    "batch": "w6-pipeline-e09-m01-c02-p04-x5",
+    "how": "R10: step 6 line 7, 41 rows / 43 instances acceptable as a group - every drug token in a fact its section cites (checked by Claude); R3/R5/R7/R9 standard"
   }
 }

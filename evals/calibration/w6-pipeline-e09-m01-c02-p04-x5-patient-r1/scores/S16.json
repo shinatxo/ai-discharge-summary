@@ -1,0 +1,25 @@
+{
+  "generation_id": "w6-pipeline-e09-m01-c02-p04-x5/r1/S16",
+  "verdicts": {
+    "added": "fail",
+    "meaning": "fail",
+    "withheld": "pass",
+    "omission": "pass",
+    "audience": "pass"
+  },
+  "findings": [
+    {
+      "dimension": "added",
+      "heading": "why_in_hospital/next_steps",
+      "source_ids": [],
+      "note": "prior-operation cause and home follow-up are not stated"
+    },
+    {
+      "dimension": "meaning",
+      "heading": "next_steps/what_we_did",
+      "source_ids": [],
+      "note": "next_steps: community follow-up becomes a home visit; what_we_did: “no damage” broadens “no ischaemia”"
+    }
+  ],
+  "scored_by": "author (CSO), 4 Nov 2026 07:45, given in chat; written to file by Claude verbatim"
+}

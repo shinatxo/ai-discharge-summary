@@ -72,6 +72,9 @@ call). Lines 1-13 are unchanged. Added: line 14 (G2, stricter, written before th
                               is not a different test; the diagnosis stated in other words,
                               or a by-design omission (sheets v2 list) — defect otherwise.
                               The plain-word tables in meaning.py are the pre-ruled part.
+                              Correction 4 Nov 2026 (CSO K-A, after the p0.4 batch, disclosed):
+                              a diagnosis flag's key includes the leaflet's prose, so each
+                              leaflet is ruled on its own; no verdict logic changed.
 
 A generation whose C cannot be assembled (5a or 5b missing) fails every line that
 needs the assembled leaflet (3, 8, 9's title, 11) — never a pass.
@@ -182,9 +185,14 @@ def review_items(rec: dict) -> list[dict]:
         for kind, token, shown in MN.section_flags(s["text"], cited):
             items.append({"kind": kind, "heading": s["heading"], "token": token,
                           "key": _key(f"{kind}:{token}", s["heading"], shown), "sentence": shown})
-    for _sid, _n, line in MN.diagnoses_unreached(list(given.values()), prose(step7)):
+    # Key = the diagnosis line AND this leaflet's prose (correction of 4 Nov 2026, CSO K-A, after the
+    # p0.4 batch; disclosed): keyed on the input line alone, one ruling covered different leaflets
+    # (S3's line, all 5 runs). Every other kind already keys on step 7's own sentence.
+    text = prose(step7)
+    for _sid, _n, line in MN.diagnoses_unreached(list(given.values()), text):
         items.append({"kind": "diagnosis", "heading": "why_in_hospital", "token": None,
-                      "key": _key("diagnosis", "why_in_hospital", line), "sentence": f"not reached: {line}"})
+                      "key": _key("diagnosis", "why_in_hospital", f"{line}\n{text}"),
+                      "sentence": f"not reached: {line}"})
     return items
 
 

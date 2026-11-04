@@ -321,3 +321,12 @@ def test_review_file_states_the_line_14_standard(tmp_path):
     assert "(bar 14, written 3 Nov 2026 before the p0.3 batch)" in review and "certainty `fine` (bar 14)" in review
     pv = (tmp_path / "PATIENT_VERSION.md").read_text()
     assert "| 14 Meaning flags" in pv and "## Per scenario — meaning flags (bar line 14, v3)" in pv
+
+
+def test_line_14_diagnosis_key_is_per_leaflet():
+    # K-A (4 Nov 2026): the same unreached line in two different leaflets gets two keys
+    a = score(record(_with("why_in_hospital", "You came in with chest pain.")))
+    b = score(record(_with("why_in_hospital", "You came in with pain in your chest.")))
+    c = score(record(_with("why_in_hospital", "You came in with chest pain.")))
+    key = lambda r: [x["key"] for x in r["review"] if x["kind"] == "diagnosis"]  # noqa: E731
+    assert key(a) != key(b) and key(a) == key(c) and len(key(a)) == 1

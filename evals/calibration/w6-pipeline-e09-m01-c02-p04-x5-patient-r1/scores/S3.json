@@ -1,0 +1,41 @@
+{
+  "generation_id": "w6-pipeline-e09-m01-c02-p04-x5/r1/S3",
+  "verdicts": {
+    "added": "pass",
+    "meaning": "partial",
+    "withheld": "pass",
+    "omission": "partial",
+    "audience": "partial"
+  },
+  "findings": [
+    {
+      "dimension": "meaning",
+      "heading": "next_steps",
+      "source_ids": [],
+      "note": "dose review becomes a general sertraline review"
+    },
+    {
+      "dimension": "audience",
+      "heading": "what_we_did",
+      "source_ids": [],
+      "note": "“psychotic features” remains unexplained jargon"
+    },
+    {
+      "dimension": "omission",
+      "heading": "why_in_hospital",
+      "source_ids": [],
+      "note": "psychosocial triggers (relationship breakdown, work stress) not stated; R1 A requires them"
+    }
+  ],
+  "scored_by": "author (CSO), 4 Nov 2026 07:45, given in chat; written to file by Claude verbatim",
+  "corrections": [
+    {
+      "by": "author (CSO)",
+      "on": "2026-11-04T11:47",
+      "field": "verdicts.omission",
+      "from": "pass",
+      "to": "partial",
+      "reason": "R1 A (3 Nov) requires S3's secondary line 'psychosocial triggers — relationship breakdown and work stress'; r1 states neither (r2-r5 state both); made after the bar results and the line-14 flags were reported; does not change bar line 10 (S3 r1 already failed on meaning and audience)"
+    }
+  ]
+}

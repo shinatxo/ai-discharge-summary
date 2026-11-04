@@ -1,0 +1,730 @@
+{
+  "record_version": 1,
+  "generation_id": "w6-pipeline-e09-m01-c02-p04-x5/r3/C7",
+  "batch_id": "w6-pipeline-e09-m01-c02-p04-x5",
+  "run": 3,
+  "scenario_id": "C7",
+  "generator": "pipeline",
+  "path": "steps-1-5b-5a-6-7",
+  "model_id": "anthropic.claude-sonnet-4-6",
+  "region": "eu-west-2",
+  "prompts": {
+    "extract_facts": {
+      "path": "src/generate/pipeline/prompts/extract_facts.md",
+      "file_sha256": "27554f5d32e4281ec3e1e0b135553d33f0f2475d8835b2929cadf3e3e3abd556",
+      "body_sha256": "481a6c68d94acb1949ab3f0cd694d538b019446ed6cf8e6951560394cf02366c"
+    },
+    "reconcile_medications": {
+      "path": "src/generate/pipeline/prompts/reconcile_medications.md",
+      "file_sha256": "5006968b7010560f437e0eb31f55e9092baebc7a4adf347667bfcb154e8708a0",
+      "body_sha256": "b06f8c12a739b80c3d57f41ceada7dd7b1c2af38bc53159353b68425d09d5acf"
+    },
+    "compose_clinical": {
+      "path": "src/generate/pipeline/prompts/compose_clinical.md",
+      "file_sha256": "511071c6204ef05308500a29aeaafd4f06facfceb83c5b9fd5b4590031cb4a7a",
+      "body_sha256": "48613f4d8669369039b77ffdf12828ce72445aaab0fd85f04d4d4ad0a82725fe"
+    },
+    "compose_patient": {
+      "path": "src/generate/pipeline/prompts/compose_patient.md",
+      "file_sha256": "e39708c3e7af772909efb070c0a6793a1f0734dee0e701567c835edb8aad763e",
+      "body_sha256": "12056692f7df3d31653535d915c8cee3d41b4071820bfaeda712ea8563a7821b"
+    }
+  },
+  "prompt_caching": true,
+  "notes_sha256": "d15719c10172a3c9a85deae46695411eb27d652215d6152078b33ea2487a91ca",
+  "started_at": "2026-11-04T06:36:10+00:00",
+  "elapsed_s": 14.819,
+  "calls": [
+    {
+      "name": "extract_facts",
+      "input_tokens": 554,
+      "output_tokens": 923,
+      "cache_read_tokens": 4539,
+      "cache_write_tokens": 0,
+      "stop_reason": "tool_use",
+      "latency_s": 6.023,
+      "throttle_retries": 0
+    },
+    {
+      "name": "reconcile_medications",
+      "input_tokens": 603,
+      "output_tokens": 33,
+      "cache_read_tokens": 2290,
+      "cache_write_tokens": 0,
+      "stop_reason": "tool_use",
+      "latency_s": 0.708,
+      "throttle_retries": 0
+    },
+    {
+      "name": "compose_clinical",
+      "input_tokens": 726,
+      "output_tokens": 836,
+      "cache_read_tokens": 3182,
+      "cache_write_tokens": 0,
+      "stop_reason": "tool_use",
+      "latency_s": 4.734,
+      "throttle_retries": 0
+    },
+    {
+      "name": "compose_patient",
+      "input_tokens": 541,
+      "output_tokens": 313,
+      "cache_read_tokens": 2814,
+      "cache_write_tokens": 0,
+      "stop_reason": "tool_use",
+      "latency_s": 3.212,
+      "throttle_retries": 0
+    }
+  ],
+  "steps": {
+    "guard_input": {
+      "notes_sha256": "d15719c10172a3c9a85deae46695411eb27d652215d6152078b33ea2487a91ca",
+      "line_count": 7,
+      "flags": []
+    },
+    "extract_facts": {
+      "call": {
+        "model_id": "anthropic.claude-sonnet-4-6",
+        "prompt_sha256": "481a6c68d94acb1949ab3f0cd694d538b019446ed6cf8e6951560394cf02366c",
+        "stop_reason": "tool_use",
+        "attempts": 1,
+        "input_tokens": 554,
+        "output_tokens": 923,
+        "cache_read_tokens": 4539,
+        "cache_write_tokens": 0,
+        "latency_ms": 6023
+      }
+    },
+    "validate_facts": {
+      "facts": {
+        "fields": {
+          "age_sex": {
+            "status": "documented",
+            "items": [
+              {
+                "value": "54-year-old female",
+                "cites": [
+                  {
+                    "lines": [
+                      "L001"
+                    ],
+                    "quote": "54F",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "age_sex.0",
+                "citation_status": "verified",
+                "reason": null
+              }
+            ],
+            "field_check": "ok"
+          },
+          "specialty": {
+            "status": "inferred_flagged",
+            "items": [
+              {
+                "value": "Trauma & Orthopaedics",
+                "cites": [
+                  {
+                    "lines": [
+                      "L001",
+                      "L002"
+                    ],
+                    "quote": "Closed displaced distal\nradius fracture (Colles') of the right wrist",
+                    "verified": true,
+                    "reason": null
+                  },
+                  {
+                    "lines": [
+                      "L004"
+                    ],
+                    "quote": "ORIF right wrist performed day 1, uncomplicated",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "specialty.0",
+                "citation_status": "verified",
+                "reason": null
+              }
+            ],
+            "field_check": "ok"
+          },
+          "legal_status": {
+            "status": "not_documented",
+            "items": [],
+            "field_check": "ok"
+          },
+          "weight": {
+            "status": "not_documented",
+            "items": [],
+            "field_check": "ok"
+          },
+          "admission_date": {
+            "status": "documented",
+            "items": [
+              {
+                "value": "19/05",
+                "cites": [
+                  {
+                    "lines": [
+                      "L001"
+                    ],
+                    "quote": "19/05",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "admission_date.0",
+                "citation_status": "verified",
+                "reason": null
+              }
+            ],
+            "field_check": "ok"
+          },
+          "discharge_date": {
+            "status": "documented",
+            "items": [
+              {
+                "value": "20/05",
+                "cites": [
+                  {
+                    "lines": [
+                      "L006"
+                    ],
+                    "quote": "20/05",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "discharge_date.0",
+                "citation_status": "verified",
+                "reason": null
+              }
+            ],
+            "field_check": "ok"
+          },
+          "presenting_complaint": {
+            "status": "documented",
+            "items": [
+              {
+                "value": "Mechanical fall",
+                "cites": [
+                  {
+                    "lines": [
+                      "L001"
+                    ],
+                    "quote": "admitted after a mechanical fall",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "presenting_complaint.0",
+                "citation_status": "verified",
+                "reason": null
+              }
+            ],
+            "field_check": "ok"
+          },
+          "diagnosis_primary": {
+            "status": "documented",
+            "items": [
+              {
+                "value": "Closed displaced distal radius fracture (Colles') of the right wrist",
+                "cites": [
+                  {
+                    "lines": [
+                      "L001",
+                      "L002"
+                    ],
+                    "quote": "Closed displaced distal\nradius fracture (Colles') of the right wrist",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "diagnosis_primary.0",
+                "citation_status": "verified",
+                "reason": null
+              }
+            ],
+            "field_check": "ok"
+          },
+          "diagnosis_secondary": {
+            "status": "not_documented",
+            "items": [],
+            "field_check": "ok"
+          },
+          "diagnosis_background": {
+            "status": "not_documented",
+            "items": [],
+            "field_check": "ok"
+          },
+          "key_investigations": {
+            "status": "documented",
+            "items": [
+              {
+                "value": "Hand neurovascularly intact, backslab in situ",
+                "cites": [
+                  {
+                    "lines": [
+                      "L006"
+                    ],
+                    "quote": "Hand neurovascularly intact, backslab in situ",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "key_investigations.0",
+                "citation_status": "verified",
+                "reason": null
+              }
+            ],
+            "field_check": "ok"
+          },
+          "treatment": {
+            "status": "documented",
+            "items": [
+              {
+                "value": "ORIF right wrist performed day 1, uncomplicated",
+                "cites": [
+                  {
+                    "lines": [
+                      "L004"
+                    ],
+                    "quote": "ORIF right wrist performed day 1, uncomplicated",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "treatment.0",
+                "citation_status": "verified",
+                "reason": null
+              }
+            ],
+            "field_check": "ok"
+          },
+          "risk_assessment": {
+            "status": "not_documented",
+            "items": [],
+            "field_check": "ok"
+          },
+          "allergies": {
+            "status": "not_documented",
+            "items": [],
+            "field_check": "ok"
+          },
+          "follow_up": {
+            "status": "documented",
+            "items": [
+              {
+                "value": "Fracture clinic in 1 week",
+                "cites": [
+                  {
+                    "lines": [
+                      "L007"
+                    ],
+                    "quote": "Fracture clinic in 1 week",
+                    "verified": true,
+                    "reason": null
+                  }
+                ],
+                "fact_id": "follow_up.0",
+                "citation_status": "verified",
+                "reason": null
+              }
+            ],
+            "field_check": "ok"
+          },
+          "gp_actions": {
+            "status": "not_documented",
+            "items": [],
+            "field_check": "ok"
+          },
+          "vte_assessment": {
+            "status": "not_documented",
+            "items": [],
+            "field_check": "ok"
+          }
+        },
+        "medications": {
+          "pre_admission": [],
+          "discharge": [],
+          "discharge_status": "not_documented",
+          "medications_check": "ok"
+        },
+        "resus": {
+          "changed": "not_documented",
+          "cites": [],
+          "form_or_discussion_documented": false,
+          "status_documented": "not_documented",
+          "fact_id": "resus",
+          "citation_status": "verified",
+          "reason": null
+        },
+        "documented_advice": [],
+        "age_group": "adult",
+        "contradictions": [],
+        "suspicious_text": []
+      },
+      "uncited_lines": [
+        "L003"
+      ],
+      "counts": {
+        "cites_total": 10,
+        "cites_verified": 10,
+        "items_unverified": 0,
+        "fields_inconsistent": 0,
+        "medications_inconsistent": 0
+      }
+    },
+    "retrieve_evidence": {
+      "medication": [],
+      "resus": [],
+      "language": [
+        {
+          "line": "L002",
+          "sources": [
+            "language_term"
+          ],
+          "fact_ids": [],
+          "flagged": false
+        },
+        {
+          "line": "L003",
+          "sources": [
+            "language_term"
+          ],
+          "fact_ids": [],
+          "flagged": false
+        }
+      ],
+      "counts": {
+        "medication_lines": 0,
+        "resus_lines": 0,
+        "language_lines": 2,
+        "medication_matched_not_cited": 0,
+        "resus_matched_not_cited": 0
+      }
+    },
+    "route_resus": {
+      "route": "absent",
+      "forced": "no",
+      "status": "not_documented",
+      "changed": "not_documented",
+      "cited_lines": [],
+      "rendered": "RESUSCITATION STATUS\nNot documented."
+    },
+    "select_safety_net": {
+      "route": "fallback",
+      "audience": "adult",
+      "pinned_line": "If you have been given a number to call, use that first. Otherwise, if you are worried, contact your GP or call NHS 111. Call 999 if it is an emergency.",
+      "advice": [],
+      "advice_excluded": 0,
+      "cited_lines": [],
+      "part_ab": "If you have been given a number to call, use that first. Otherwise, if you are worried, contact your GP or call NHS 111. Call 999 if it is an emergency.",
+      "part_c": "If you have been given a number to call, use that first. Otherwise, if you are worried, contact your GP or call NHS 111. Call 999 if it is an emergency."
+    },
+    "reconcile_medications": {
+      "reconciliation": [],
+      "discharge_status": "not_documented",
+      "reconciliation_check": "ok",
+      "dh_lines_unreconciled": [],
+      "counts": {
+        "entries": 0,
+        "cites_total": 0,
+        "cites_verified": 0,
+        "entries_unverified": 0,
+        "entries_flagged": 0,
+        "dh_lines_unreconciled": 0
+      },
+      "call": {
+        "model_id": "anthropic.claude-sonnet-4-6",
+        "prompt_sha256": "b06f8c12a739b80c3d57f41ceada7dd7b1c2af38bc53159353b68425d09d5acf",
+        "stop_reason": "tool_use",
+        "attempts": 1,
+        "input_tokens": 603,
+        "output_tokens": 33,
+        "cache_read_tokens": 2290,
+        "cache_write_tokens": 0,
+        "latency_ms": 708
+      }
+    },
+    "compose_clinical": {
+      "sections": [
+        {
+          "section_id": "sections.0",
+          "part": "part_a",
+          "heading": "presenting_complaint",
+          "fact_ids": [
+            "presenting_complaint.0"
+          ],
+          "text": "Mechanical fall.",
+          "unverified_fact_ids": []
+        },
+        {
+          "section_id": "sections.1",
+          "part": "part_a",
+          "heading": "diagnosis",
+          "fact_ids": [
+            "diagnosis_primary.0"
+          ],
+          "text": "Primary: Closed displaced distal radius fracture (Colles') of the right wrist.",
+          "unverified_fact_ids": []
+        },
+        {
+          "section_id": "sections.2",
+          "part": "part_a",
+          "heading": "key_investigations",
+          "fact_ids": [
+            "key_investigations.0"
+          ],
+          "text": "Hand neurovascularly intact; backslab in situ.",
+          "unverified_fact_ids": []
+        },
+        {
+          "section_id": "sections.3",
+          "part": "part_a",
+          "heading": "treatment",
+          "fact_ids": [
+            "treatment.0"
+          ],
+          "text": "ORIF right wrist performed day 1, uncomplicated.",
+          "unverified_fact_ids": []
+        },
+        {
+          "section_id": "sections.4",
+          "part": "part_a",
+          "heading": "resuscitation_status",
+          "fact_ids": [],
+          "text": "{{RESUS}}",
+          "unverified_fact_ids": []
+        },
+        {
+          "section_id": "sections.5",
+          "part": "part_a",
+          "heading": "medications",
+          "fact_ids": [],
+          "text": "{{MEDICATIONS}}",
+          "unverified_fact_ids": []
+        },
+        {
+          "section_id": "sections.6",
+          "part": "part_a",
+          "heading": "allergies",
+          "fact_ids": [],
+          "text": "Not documented",
+          "unverified_fact_ids": []
+        },
+        {
+          "section_id": "sections.7",
+          "part": "part_a",
+          "heading": "follow_up",
+          "fact_ids": [
+            "follow_up.0"
+          ],
+          "text": "Fracture clinic in 1 week.",
+          "unverified_fact_ids": []
+        },
+        {
+          "section_id": "sections.8",
+          "part": "part_a",
+          "heading": "gp_actions",
+          "fact_ids": [],
+          "text": "Not documented",
+          "unverified_fact_ids": []
+        },
+        {
+          "section_id": "sections.9",
+          "part": "part_a",
+          "heading": "safety_net",
+          "fact_ids": [],
+          "text": "{{SAFETY_NET}}",
+          "unverified_fact_ids": []
+        },
+        {
+          "section_id": "sections.10",
+          "part": "part_a",
+          "heading": "vte_assessment",
+          "fact_ids": [],
+          "text": "Not documented",
+          "unverified_fact_ids": []
+        },
+        {
+          "section_id": "sections.11",
+          "part": "part_b",
+          "heading": "opening",
+          "fact_ids": [
+            "age_sex.0",
+            "presenting_complaint.0",
+            "diagnosis_primary.0"
+          ],
+          "text": "This 54-year-old female was admitted following a mechanical fall and was diagnosed with a closed displaced distal radius fracture (Colles') of the right wrist.",
+          "unverified_fact_ids": []
+        },
+        {
+          "section_id": "sections.12",
+          "part": "part_b",
+          "heading": "admission_summary",
+          "fact_ids": [
+            "key_investigations.0",
+            "treatment.0"
+          ],
+          "text": "On assessment the hand was neurovascularly intact and a backslab was applied. She underwent ORIF of the right wrist on day 1, which was uncomplicated.",
+          "unverified_fact_ids": []
+        },
+        {
+          "section_id": "sections.13",
+          "part": "part_b",
+          "heading": "diagnosis",
+          "fact_ids": [
+            "diagnosis_primary.0"
+          ],
+          "text": "Primary: Closed displaced distal radius fracture (Colles') of the right wrist.",
+          "unverified_fact_ids": []
+        },
+        {
+          "section_id": "sections.14",
+          "part": "part_b",
+          "heading": "resuscitation_status",
+          "fact_ids": [],
+          "text": "{{RESUS}}",
+          "unverified_fact_ids": []
+        },
+        {
+          "section_id": "sections.15",
+          "part": "part_b",
+          "heading": "medications",
+          "fact_ids": [],
+          "text": "{{MEDICATIONS}}",
+          "unverified_fact_ids": []
+        },
+        {
+          "section_id": "sections.16",
+          "part": "part_b",
+          "heading": "gp_actions",
+          "fact_ids": [],
+          "text": "No GP actions documented.",
+          "unverified_fact_ids": []
+        },
+        {
+          "section_id": "sections.17",
+          "part": "part_b",
+          "heading": "follow_up",
+          "fact_ids": [
+            "follow_up.0"
+          ],
+          "text": "Fracture clinic in 1 week (already arranged).",
+          "unverified_fact_ids": []
+        },
+        {
+          "section_id": "sections.18",
+          "part": "part_b",
+          "heading": "safety_net",
+          "fact_ids": [],
+          "text": "{{SAFETY_NET}}",
+          "unverified_fact_ids": []
+        }
+      ],
+      "held_back": [],
+      "checks": [],
+      "counts": {
+        "sections": 19,
+        "sections_a": 11,
+        "sections_b": 8,
+        "facts_given": 5,
+        "facts_used_in_a": 5,
+        "header_facts_given": 4,
+        "contradictions_given": 0,
+        "contradictions_in_a": 0,
+        "gp_actions_given": 0,
+        "gp_actions_in_b": 0,
+        "facts_held_back": 0,
+        "gp_actions_held_back": 0,
+        "unverified_given": 0,
+        "unverified_used": 0,
+        "checks": 0
+      },
+      "age_group": "adult",
+      "call": {
+        "model_id": "anthropic.claude-sonnet-4-6",
+        "prompt_sha256": "48613f4d8669369039b77ffdf12828ce72445aaab0fd85f04d4d4ad0a82725fe",
+        "stop_reason": "tool_use",
+        "attempts": 1,
+        "input_tokens": 726,
+        "output_tokens": 836,
+        "cache_read_tokens": 3182,
+        "cache_write_tokens": 0,
+        "latency_ms": 4734
+      }
+    },
+    "compose_patient": {
+      "sections": [
+        {
+          "section_id": "c_sections.0",
+          "heading": "why_in_hospital",
+          "source_ids": [
+            "sections.0",
+            "sections.1"
+          ],
+          "text": "You came in after a fall. The team found that you had a broken right wrist. The break was in the lower part of the radius bone (a Colles' fracture). The bone was displaced, meaning it had moved out of place."
+        },
+        {
+          "section_id": "c_sections.1",
+          "heading": "what_we_did",
+          "source_ids": [
+            "sections.2",
+            "sections.3"
+          ],
+          "text": "The team checked that the nerves and blood supply in your hand were intact.\n\nOn day 1, you had an operation to fix the broken bone:\n- open reduction and internal fixation of the right wrist (ORIF)\n\nThe operation was uncomplicated.\n\nA backslab (a half-plaster support) was put on your wrist."
+        },
+        {
+          "section_id": "c_sections.2",
+          "heading": "medicines",
+          "source_ids": [],
+          "text": "{{MEDICATIONS}}"
+        },
+        {
+          "section_id": "c_sections.3",
+          "heading": "next_steps",
+          "source_ids": [
+            "sections.7"
+          ],
+          "text": "You have a fracture clinic appointment in 1 week."
+        },
+        {
+          "section_id": "c_sections.4",
+          "heading": "safety_net",
+          "source_ids": [],
+          "text": "{{SAFETY_NET}}"
+        }
+      ],
+      "checks": [],
+      "counts": {
+        "sections": 5,
+        "sections_given": 5,
+        "sources_cited": 5,
+        "words_prose": 101,
+        "checks": 0
+      },
+      "audience": "adult",
+      "call": {
+        "model_id": "anthropic.claude-sonnet-4-6",
+        "prompt_sha256": "12056692f7df3d31653535d915c8cee3d41b4071820bfaeda712ea8563a7821b",
+        "stop_reason": "tool_use",
+        "attempts": 1,
+        "input_tokens": 541,
+        "output_tokens": 313,
+        "cache_read_tokens": 2814,
+        "cache_write_tokens": 0,
+        "latency_ms": 3212
+      }
+    }
+  },
+  "output": null,
+  "gate": null,
+  "failed_step": null,
+  "error": null,
+  "step_errors": {},
+  "cost_usd_est": 0.046964
+}

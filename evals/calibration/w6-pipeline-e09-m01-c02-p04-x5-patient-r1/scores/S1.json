@@ -1,0 +1,31 @@
+{
+  "generation_id": "w6-pipeline-e09-m01-c02-p04-x5/r1/S1",
+  "verdicts": {
+    "added": "fail",
+    "meaning": "partial",
+    "withheld": "pass",
+    "omission": "fail",
+    "audience": "pass"
+  },
+  "findings": [
+    {
+      "dimension": "added",
+      "heading": "what_we_did",
+      "source_ids": [],
+      "note": "angiogram becomes a “camera test”"
+    },
+    {
+      "dimension": "meaning",
+      "heading": "next_steps",
+      "source_ids": [],
+      "note": "“adjust” broadens “uptitrate”"
+    },
+    {
+      "dimension": "omission",
+      "heading": "why_in_hospital",
+      "source_ids": [],
+      "note": "heart failure, CKD and other background diagnoses omitted"
+    }
+  ],
+  "scored_by": "author (CSO), 4 Nov 2026 07:45, given in chat; written to file by Claude verbatim"
+}

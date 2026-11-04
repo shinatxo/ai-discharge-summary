@@ -1,0 +1,56 @@
+{
+  "record_version": 1,
+  "batch_id": "w6-pipeline-e09-m01-c02-p03-s1s16-check",
+  "created_at": "2026-11-03T12:28:55+00:00",
+  "generator": "pipeline",
+  "path": "steps-1-5b-5a-6-7",
+  "model_id": "anthropic.claude-sonnet-4-6",
+  "region": "eu-west-2",
+  "prompts": {
+    "extract_facts": {
+      "path": "src/generate/pipeline/prompts/extract_facts.md",
+      "file_sha256": "27554f5d32e4281ec3e1e0b135553d33f0f2475d8835b2929cadf3e3e3abd556",
+      "body_sha256": "481a6c68d94acb1949ab3f0cd694d538b019446ed6cf8e6951560394cf02366c"
+    },
+    "reconcile_medications": {
+      "path": "src/generate/pipeline/prompts/reconcile_medications.md",
+      "file_sha256": "5006968b7010560f437e0eb31f55e9092baebc7a4adf347667bfcb154e8708a0",
+      "body_sha256": "b06f8c12a739b80c3d57f41ceada7dd7b1c2af38bc53159353b68425d09d5acf"
+    },
+    "compose_clinical": {
+      "path": "src/generate/pipeline/prompts/compose_clinical.md",
+      "file_sha256": "511071c6204ef05308500a29aeaafd4f06facfceb83c5b9fd5b4590031cb4a7a",
+      "body_sha256": "48613f4d8669369039b77ffdf12828ce72445aaab0fd85f04d4d4ad0a82725fe"
+    },
+    "compose_patient": {
+      "path": "src/generate/pipeline/prompts/compose_patient.md",
+      "file_sha256": "bd6df0c53b572e2ee2913f1cbf9ab696e6cc410d852b7fb91f2ca9985a9600af",
+      "body_sha256": "e3a8d78a078a3b3d2450d78036c30cd0fa1ac89c09f0b3384ff8d83450da711c"
+    }
+  },
+  "prompt_caching": true,
+  "corpus": {
+    "path": "src/canary/scenarios.json",
+    "sha256": "d510623686bff3fd851e69dc3943e014aad9b4aff87417fd80e030c71f604321"
+  },
+  "scenarios": [
+    {
+      "id": "S1",
+      "notes_sha256": "deacfb8fe45187fb890a33b6e0c8ad2f5e6902c825879bb20931a69f80969fa3"
+    },
+    {
+      "id": "S16",
+      "notes_sha256": "d762fcf2443af7c65329f6b17d603be9d58f3d3ccdc4df81ce08db03201a197e"
+    }
+  ],
+  "runs": 1,
+  "price_basis": {
+    "usd_per_mtok": {
+      "input": 3.0,
+      "output": 15.0,
+      "cache_write": 3.75,
+      "cache_read": 0.3
+    },
+    "regional_premium": 1.1
+  }
+}

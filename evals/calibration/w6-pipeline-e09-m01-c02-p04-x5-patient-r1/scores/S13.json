@@ -1,0 +1,31 @@
+{
+  "generation_id": "w6-pipeline-e09-m01-c02-p04-x5/r1/S13",
+  "verdicts": {
+    "added": "fail",
+    "meaning": "partial",
+    "withheld": "pass",
+    "omission": "pass",
+    "audience": "partial"
+  },
+  "findings": [
+    {
+      "dimension": "added",
+      "heading": "what_we_did",
+      "source_ids": [],
+      "note": "“breathing on your own from day 18” goes beyond documented extubation"
+    },
+    {
+      "dimension": "meaning",
+      "heading": "what_we_did",
+      "source_ids": [],
+      "note": "tube removal becomes continuing independent breathing"
+    },
+    {
+      "dimension": "audience",
+      "heading": "why_in_hospital",
+      "source_ids": [],
+      "note": "“septic shock” and “ICU” remain unexplained"
+    }
+  ],
+  "scored_by": "author (CSO), 4 Nov 2026 07:45, given in chat; written to file by Claude verbatim"
+}

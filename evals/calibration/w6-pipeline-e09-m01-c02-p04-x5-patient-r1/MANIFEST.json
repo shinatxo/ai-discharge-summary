@@ -1,0 +1,70 @@
+{
+  "sheets_version": 3,
+  "batch_id": "w6-pipeline-e09-m01-c02-p04-x5",
+  "run": 1,
+  "rule": "D5 (CSO 1 Nov 2026): W5 spot-check items (f5c9adc) + S3 + C7: S1, S4, S10, S13, S16, A5, S3, C7",
+  "pass_rule": "an item passes when every dimension is pass",
+  "dimensions": [
+    "added",
+    "meaning",
+    "withheld",
+    "omission",
+    "audience"
+  ],
+  "items": [
+    {
+      "scenario_id": "S1",
+      "generation_id": "w6-pipeline-e09-m01-c02-p04-x5/r1/S1",
+      "sections_sha256": "86be7c9047831b720871ca45a638e10c4c1ebaaf236b9e59d67b8305e8fd2f43"
+    },
+    {
+      "scenario_id": "S4",
+      "generation_id": "w6-pipeline-e09-m01-c02-p04-x5/r1/S4",
+      "sections_sha256": "ac8bc391203afabe5d373985877e35367935b15d1a481db1297bd690a7a8e85a"
+    },
+    {
+      "scenario_id": "S10",
+      "generation_id": "w6-pipeline-e09-m01-c02-p04-x5/r1/S10",
+      "sections_sha256": "ae50d381e514551d2930bc3e1ebbdef822b9ae2fc9dc92f29f2ffcdc377d63b0"
+    },
+    {
+      "scenario_id": "S13",
+      "generation_id": "w6-pipeline-e09-m01-c02-p04-x5/r1/S13",
+      "sections_sha256": "15eb5332759e0e6bac4d51638724f1b8ed4b580fbf016090da58913d42ac05f2"
+    },
+    {
+      "scenario_id": "S16",
+      "generation_id": "w6-pipeline-e09-m01-c02-p04-x5/r1/S16",
+      "sections_sha256": "cdeef4aff44631f802af426dc4fa7647da6d2029602c7ac2952cb7139deea9dd"
+    },
+    {
+      "scenario_id": "A5",
+      "generation_id": "w6-pipeline-e09-m01-c02-p04-x5/r1/A5",
+      "sections_sha256": "1f0a66f654bd595eeea17658df2e7c5be575a5f5becd42fbfff09b06b4824202"
+    },
+    {
+      "scenario_id": "S3",
+      "generation_id": "w6-pipeline-e09-m01-c02-p04-x5/r1/S3",
+      "sections_sha256": "eda973064c8882758ad9a7649b7d75422559e70c8521b8b27dd58d80aeb59853"
+    },
+    {
+      "scenario_id": "C7",
+      "generation_id": "w6-pipeline-e09-m01-c02-p04-x5/r1/C7",
+      "sections_sha256": "3041b8f8cfa98cb4a00d4a2f5f5671b931dbe82912b649292d855ad782d391d7"
+    }
+  ],
+  "box_content_shown": true,
+  "by_design_not_omissions": [
+    "risk scores and levels",
+    "ceilings of care, treatment limits, resuscitation",
+    "risk_assessment, allergies (never given)",
+    "test values and numbers",
+    "medicines and advice (code boxes)"
+  ],
+  "excluded": [
+    "step 7 checks and counts",
+    "scores/",
+    "notes",
+    "facts"
+  ]
+}

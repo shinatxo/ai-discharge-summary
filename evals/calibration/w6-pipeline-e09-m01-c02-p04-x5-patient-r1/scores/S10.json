@@ -1,0 +1,19 @@
+{
+  "generation_id": "w6-pipeline-e09-m01-c02-p04-x5/r1/S10",
+  "verdicts": {
+    "added": "pass",
+    "meaning": "pass",
+    "withheld": "pass",
+    "omission": "pass",
+    "audience": "partial"
+  },
+  "findings": [
+    {
+      "dimension": "audience",
+      "heading": "what_we_did/next_steps",
+      "source_ids": [],
+      "note": "“bimanual compression”, “observations” and “handover” remain unexplained"
+    }
+  ],
+  "scored_by": "author (CSO), 4 Nov 2026 07:45, given in chat; written to file by Claude verbatim"
+}

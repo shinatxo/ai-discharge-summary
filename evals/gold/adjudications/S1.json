@@ -27,7 +27,8 @@
     "f68754bf91e9267d": "acceptable",
     "f75e727963079ca8": "acceptable",
     "cdc128355da626ae": "acceptable",
-    "f1f1509b53582213": "acceptable"
+    "f1f1509b53582213": "acceptable",
+    "952e4d7822d5babb": "acceptable"
   },
   "compose_rulings_meta": {
     "by": "Shina Oguntoye (CSO)",
@@ -100,7 +101,34 @@
     "1da13f3c1680e300": "acceptable",
     "3f666f69175ca1cd": "acceptable",
     "74c70fe621f8b1ba": "acceptable",
-    "84d58343410a75e0": "acceptable"
+    "84d58343410a75e0": "acceptable",
+    "00159fe8d1b9994f": "acceptable",
+    "09158358641e8e34": "defect",
+    "101851a5358c9015": "acceptable",
+    "1a43835f0f5483cb": "acceptable",
+    "23e3d32a61d8abf0": "acceptable",
+    "25b33354264a6599": "defect",
+    "2adc3962d51bf7db": "acceptable",
+    "2b5009b44bed973a": "acceptable",
+    "50378e1239475a29": "acceptable",
+    "557b5d5e43fa4500": "acceptable",
+    "6200d3828595857a": "acceptable",
+    "67a8c8c8318dce7c": "acceptable",
+    "67ea6da480417724": "acceptable",
+    "6fa45a5071f5b9fa": "defect",
+    "76011fa3a9351283": "acceptable",
+    "7d0a5426044fba4b": "acceptable",
+    "83119667605dd581": "acceptable",
+    "9728f03b37dad7c3": "acceptable",
+    "9cec12edbc521dd0": "acceptable",
+    "b408fbfa51752e19": "acceptable",
+    "b5017212ce932f2c": "acceptable",
+    "baec287773ce9d87": "acceptable",
+    "c8123bb2675df9b4": "acceptable",
+    "e2abf8d177afe86f": "acceptable",
+    "e45dc856af2b7916": "defect",
+    "eecae6f15b464837": "defect",
+    "f29203ffafe58f00": "defect"
   },
   "patient_rulings_meta_p02": {
     "by": "Shina Oguntoye (CSO)",
@@ -131,5 +159,18 @@
         "f1f1509b53582213"
       ]
     }
+  },
+  "patient_rulings_meta_p04": {
+    "by": "author (CSO)",
+    "on": "2026-11-04T11:47",
+    "batch": "w6-pipeline-e09-m01-c02-p04-x5",
+    "how": "groups proposed by Claude 4 Nov 11:23 (B); CSO changes 11:47 (T1 aspirate row acceptable; C6 S10 womb-contraction, S2 r1 hydration, S14 r3 recovery-at-home -> defect; C9 S1 r3 dye link -> defect, next_steps cites only sections 7, 8; X1 r1 defect, r2-r5 acceptable; Q1 defect under G1.2); diagnosis keys per leaflet after the K-A key correction (11:50, disclosed)",
+    "standards": "lines 4, 5, 9 and promise: Q1-Q6 / F3 (1-3 Nov); line 14: written 3 Nov before the p0.3 batch (score_patient.py v3)"
+  },
+  "compose_rulings_meta_p04": {
+    "by": "author (CSO)",
+    "on": "2026-11-04T11:47",
+    "batch": "w6-pipeline-e09-m01-c02-p04-x5",
+    "how": "R10: step 6 line 7, 41 rows / 43 instances acceptable as a group - every drug token in a fact its section cites (checked by Claude); R3/R5/R7/R9 standard"
   }
 }

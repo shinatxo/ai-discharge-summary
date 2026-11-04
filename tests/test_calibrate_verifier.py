@@ -143,3 +143,21 @@ def test_score_refuses_mixed_prompts_and_writes_its_reports(tmp_path, monkeypatc
     _write(tmp_path, HELD[0], lambda rec: _oracle(rec, set()))
     (tmp_path / HELD[0] / "manifest.json").write_text(json.dumps({"prompt_sha256": "f" * 64}))
     assert C.cmd_score(_args("score", "--dev", DEV, "--held-out", HELD[0]), sha_dir=tmp_path) == 2
+
+
+@needs_runs
+def test_every_blind_read_map_row_lands_on_one_sentence_or_on_part_a_text():
+    doc = json.loads(C.MAP_PATH.read_text())
+    assert doc["findings"] and all(f["unit"] in ("sentence", "unreached") for f in doc["findings"])
+    empty = {"verdicts": [], "unreached": []}
+    for f in doc["findings"]:
+        bid, run, sid = f["generation_id"].split("/")
+        rec = json.loads((C.RUNS_DIR / bid / run / f"{sid}.json").read_text())
+        lab = dict(f, kind=f["dimension"], sentence=f.get("text", ""))
+        if f["unit"] == "sentence":
+            _, ids = C.match(lab, rec, empty)
+            assert len(ids) == 1, (f["generation_id"], f["text"])
+        else:
+            given = C.CP7.patient_input(rec["steps"]["compose_clinical"])["sections"]
+            assert any(C._norm(f["a_text"]) in C._norm(s["text"]) for s in given), (f["generation_id"], f["a_text"])
+            assert C.MN.head_words(f["a_text"]) or C.MN.stems(f["a_text"])

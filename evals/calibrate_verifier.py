@@ -259,13 +259,17 @@ def evaluate(batch_ids: list[str], sha_dir: Path, repeat: int = 1, exclude_keys:
                 rows.append({"generation_id": rec["generation_id"], "source": "error", "ruling": None,
                              "caught": False, "key": None, "kind": None})
                 continue
-            cov = set()
+            cov, ruled_defect_ids = set(), set()
             labs = labels_for(rec) + [dict(f, ruling="defect", key=f"map:{i}", kind=f.get("dimension", "map"),
                                            sentence=f.get("text", ""))
                                       for i, f in enumerate(bmap) if f["generation_id"] == rec["generation_id"]]
             for lab in labs:
                 caught, ids = match(lab, rec, vp)
                 cov |= set(ids)
+                if lab["key"].startswith("map:") and ids and set(ids) <= ruled_defect_ids:
+                    continue        # the blind read found what a CSO-ruled defect row already covers
+                if lab["ruling"] == "defect" and not lab["key"].startswith("map:"):
+                    ruled_defect_ids |= set(ids)
                 rows.append({"generation_id": rec["generation_id"], "source": "map" if lab["key"].startswith("map:") else "ruling",
                              "key": lab["key"], "kind": lab["kind"], "heading": lab["heading"],
                              "ruling": lab["ruling"], "caught": caught, "leaked": lab["key"] in exclude_keys})

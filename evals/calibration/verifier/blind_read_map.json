@@ -1,10 +1,12 @@
 {
-  "status": "APPROVED by the author as CSO, 4 Nov 2026 ~15:20 (ADR-010 O4), as drafted. Committed before any verifier output existed.",
+  "status": "APPROVED by the author as CSO 4 Nov ~15:20 (O4); AMENDED by the CSO's audit 4 Nov ~15:36 — C7 half-plaster acceptable, p0.1 S13 'closed' removed, S1 Background rows relabelled policy tests, S18 r1 withheld added, p0.2 S13 AF note clarified. To be committed before any measured run.",
   "rules": [
     "one row per sentence or must-keep item a finding names; a finding naming two sentences is two rows",
     "a row whose sentence a CSO-ruled defect row already covers is not counted twice (calibrate_verifier dedupes)",
     "p0.1 'withheld' findings that are omissions are mapped as unreached; those D8 rules out are excluded",
-    "Background diagnoses are must-keep (S6, 4 Nov)"
+    "Background diagnoses are must-keep (S6, 4 Nov)",
+    "each row has ruling (defect | acceptable) and category (historical | policy_test); policy tests are reported separately, never as historical defects",
+    "matching and de-duplication follow calibrate_verifier COUNTING RULE v2 (finding-specific, one-to-one; never section-wide)"
   ],
   "findings": [
     {
@@ -13,7 +15,9 @@
       "unit": "sentence",
       "text": "Please make sure you attend this.",
       "dimension": "added",
-      "note": "advice not in the input"
+      "note": "advice not in the input",
+      "ruling": "defect",
+      "category": "historical"
     },
     {
       "generation_id": "w6-pipeline-e09-m01-c02-p01-x5/r1/S1",
@@ -21,7 +25,9 @@
       "unit": "sentence",
       "text": "the best plan for you",
       "dimension": "meaning",
-      "note": "'best plan' softens 'PCI not suitable'"
+      "note": "'best plan' softens 'PCI not suitable'",
+      "ruling": "defect",
+      "category": "historical"
     },
     {
       "generation_id": "w6-pipeline-e09-m01-c02-p01-x5/r1/S10",
@@ -29,7 +35,9 @@
       "unit": "sentence",
       "text": "to deliver your baby safely",
       "dimension": "added",
-      "note": "purpose not stated"
+      "note": "purpose not stated",
+      "ruling": "defect",
+      "category": "historical"
     },
     {
       "generation_id": "w6-pipeline-e09-m01-c02-p01-x5/r1/S10",
@@ -37,15 +45,9 @@
       "unit": "sentence",
       "text": "A community midwife will visit you at home.",
       "dimension": "meaning",
-      "note": "handover becomes a promised home visit"
-    },
-    {
-      "generation_id": "w6-pipeline-e09-m01-c02-p01-x5/r1/S13",
-      "heading": "what_we_did",
-      "unit": "sentence",
-      "text": "The wound was then closed",
-      "dimension": "meaning",
-      "note": "healed by secondary intention, not closed"
+      "note": "handover becomes a promised home visit",
+      "ruling": "defect",
+      "category": "historical"
     },
     {
       "generation_id": "w6-pipeline-e09-m01-c02-p01-x5/r1/S16",
@@ -53,7 +55,9 @@
       "unit": "sentence",
       "text": "made a temporary stoma",
       "dimension": "added",
-      "note": "reversal is only a possibility"
+      "note": "reversal is only a possibility",
+      "ruling": "defect",
+      "category": "historical"
     },
     {
       "generation_id": "w6-pipeline-e09-m01-c02-p01-x5/r1/S16",
@@ -61,7 +65,9 @@
       "unit": "unreached",
       "a_text": "INR reversed",
       "dimension": "meaning",
-      "note": "INR reversal omitted"
+      "note": "INR reversal omitted",
+      "ruling": "defect",
+      "category": "historical"
     },
     {
       "generation_id": "w6-pipeline-e09-m01-c02-p01-x5/r1/S3",
@@ -69,7 +75,9 @@
       "unit": "sentence",
       "text": "things felt a little easier",
       "dimension": "added",
-      "note": "not reported"
+      "note": "not reported",
+      "ruling": "defect",
+      "category": "historical"
     },
     {
       "generation_id": "w6-pipeline-e09-m01-c02-p01-x5/r1/S3",
@@ -77,7 +85,9 @@
       "unit": "unreached",
       "a_text": "active suicidal ideation with thoughts of overdose",
       "dimension": "meaning/withheld (= omission)",
-      "note": "reason for admission omitted"
+      "note": "reason for admission omitted",
+      "ruling": "defect",
+      "category": "historical"
     },
     {
       "generation_id": "w6-pipeline-e09-m01-c02-p01-x5/r1/S4",
@@ -85,7 +95,9 @@
       "unit": "sentence",
       "text": "will be there if you have any concerns",
       "dimension": "added",
-      "note": "availability not stated"
+      "note": "availability not stated",
+      "ruling": "defect",
+      "category": "historical"
     },
     {
       "generation_id": "w6-pipeline-e09-m01-c02-p01-x5/r1/S4",
@@ -93,7 +105,9 @@
       "unit": "sentence",
       "text": "feeding much better on their own",
       "dimension": "meaning",
-      "note": "overstates the recorded oral intake"
+      "note": "overstates the recorded oral intake",
+      "ruling": "defect",
+      "category": "historical"
     },
     {
       "generation_id": "w6-pipeline-e09-m01-c02-p02-x5/r1/C7",
@@ -101,7 +115,9 @@
       "unit": "sentence",
       "text": "half-plaster support",
       "dimension": "added",
-      "note": "added gloss"
+      "note": "defect ruling WITHDRAWN (CSO audit, 4 Nov 2026 ~15:36 (dev run v0.1 in progress; its verdicts not opened)): faithfully describes a backslab; NHS patient information uses the same description (https://www.uhsussex.nhs.uk/resources/wrist-fracture-manipulation-2/). Acceptable example: a verifier flag on it is a false flag.",
+      "ruling": "acceptable",
+      "category": "historical"
     },
     {
       "generation_id": "w6-pipeline-e09-m01-c02-p02-x5/r1/S1",
@@ -109,7 +125,9 @@
       "unit": "sentence",
       "text": "adjust a blood pressure tablet",
       "dimension": "meaning",
-      "note": "'adjust' weakens 'uptitrate'"
+      "note": "'adjust' weakens 'uptitrate'",
+      "ruling": "defect",
+      "category": "historical"
     },
     {
       "generation_id": "w6-pipeline-e09-m01-c02-p02-x5/r1/S13",
@@ -117,7 +135,9 @@
       "unit": "sentence",
       "text": "then moved on to eating and drinking by mouth",
       "dimension": "added/meaning",
-      "note": "input: improving oral intake"
+      "note": "input: improving oral intake",
+      "ruling": "defect",
+      "category": "historical"
     },
     {
       "generation_id": "w6-pipeline-e09-m01-c02-p02-x5/r1/S13",
@@ -125,7 +145,9 @@
       "unit": "unreached",
       "a_text": "Line sepsis day 14",
       "dimension": "omission",
-      "note": "diagnosis omitted"
+      "note": "diagnosis omitted",
+      "ruling": "defect",
+      "category": "historical"
     },
     {
       "generation_id": "w6-pipeline-e09-m01-c02-p02-x5/r1/S13",
@@ -133,7 +155,9 @@
       "unit": "unreached",
       "a_text": "ICU-acquired weakness",
       "dimension": "omission",
-      "note": "diagnosis omitted"
+      "note": "diagnosis omitted",
+      "ruling": "defect",
+      "category": "historical"
     },
     {
       "generation_id": "w6-pipeline-e09-m01-c02-p02-x5/r1/S13",
@@ -141,7 +165,9 @@
       "unit": "unreached",
       "a_text": "New atrial fibrillation",
       "dimension": "omission",
-      "note": "AF only in follow-up"
+      "note": "AF DOES appear in the leaflet, in next_steps (cardiology follow-up). The finding is about required placement and new-onset detail: why_in_hospital does not say a new heart-rhythm problem was found (CSO audit, 4 Nov 2026 ~15:36 (dev run v0.1 in progress; its verdicts not opened), clarified).",
+      "ruling": "defect",
+      "category": "historical"
     },
     {
       "generation_id": "w6-pipeline-e09-m01-c02-p02-x5/r1/S16",
@@ -149,7 +175,9 @@
       "unit": "sentence",
       "text": "most likely from your previous appendix operation",
       "dimension": "added",
-      "note": "cause not stated"
+      "note": "cause not stated",
+      "ruling": "defect",
+      "category": "historical"
     },
     {
       "generation_id": "w6-pipeline-e09-m01-c02-p02-x5/r1/S16",
@@ -157,7 +185,9 @@
       "unit": "sentence",
       "text": "the bowel was not damaged",
       "dimension": "added/meaning",
-      "note": "broadens 'no ischaemia'"
+      "note": "broadens 'no ischaemia'",
+      "ruling": "defect",
+      "category": "historical"
     },
     {
       "generation_id": "w6-pipeline-e09-m01-c02-p02-x5/r1/S3",
@@ -165,7 +195,9 @@
       "unit": "sentence",
       "text": "carefully",
       "dimension": "added",
-      "note": "grading adverb"
+      "note": "grading adverb",
+      "ruling": "defect",
+      "category": "historical"
     },
     {
       "generation_id": "w6-pipeline-e09-m01-c02-p02-x5/r1/S4",
@@ -173,7 +205,9 @@
       "unit": "sentence",
       "text": "A swab from the nose and throat",
       "dimension": "added/meaning",
-      "note": "NPA (aspirate) called a swab"
+      "note": "NPA (aspirate) called a swab",
+      "ruling": "defect",
+      "category": "historical"
     },
     {
       "generation_id": "w6-pipeline-e09-m01-c02-p04-x5/r1/A5",
@@ -181,7 +215,9 @@
       "unit": "sentence",
       "text": "Blood tests also showed signs of infection.",
       "dimension": "added",
-      "note": "CRP/WCC read as infection; no stated conclusion"
+      "note": "CRP/WCC read as infection; no stated conclusion",
+      "ruling": "defect",
+      "category": "historical"
     },
     {
       "generation_id": "w6-pipeline-e09-m01-c02-p04-x5/r1/S1",
@@ -189,7 +225,9 @@
       "unit": "sentence",
       "text": "camera test of your heart arteries",
       "dimension": "added",
-      "note": "angiogram is not a camera test"
+      "note": "angiogram is not a camera test",
+      "ruling": "defect",
+      "category": "historical"
     },
     {
       "generation_id": "w6-pipeline-e09-m01-c02-p04-x5/r1/S1",
@@ -197,7 +235,9 @@
       "unit": "sentence",
       "text": "Adjust one of your medicines",
       "dimension": "meaning",
-      "note": "'adjust' for 'uptitrate'"
+      "note": "'adjust' for 'uptitrate'",
+      "ruling": "defect",
+      "category": "historical"
     },
     {
       "generation_id": "w6-pipeline-e09-m01-c02-p04-x5/r1/S1",
@@ -205,7 +245,9 @@
       "unit": "unreached",
       "a_text": "Heart failure with reduced ejection fraction",
       "dimension": "omission",
-      "note": "Background diagnosis omitted (S6: kept)"
+      "note": "PROSPECTIVE S6 POLICY TEST (CSO audit, 4 Nov 2026 ~15:36 (dev run v0.1 in progress; its verdicts not opened)) — not a historical p0.4 defect: G1.5 permitted the omission and S1's original omission verdict stands as recorded. Reported on its own line, never in bar item 1.",
+      "category": "policy_test",
+      "ruling": "defect"
     },
     {
       "generation_id": "w6-pipeline-e09-m01-c02-p04-x5/r1/S1",
@@ -213,7 +255,9 @@
       "unit": "unreached",
       "a_text": "Chronic kidney disease stage 3b",
       "dimension": "omission",
-      "note": "Background diagnosis omitted (S6: kept)"
+      "note": "PROSPECTIVE S6 POLICY TEST (CSO audit, 4 Nov 2026 ~15:36 (dev run v0.1 in progress; its verdicts not opened)) — not a historical p0.4 defect: G1.5 permitted the omission and S1's original omission verdict stands as recorded. Reported on its own line, never in bar item 1.",
+      "category": "policy_test",
+      "ruling": "defect"
     },
     {
       "generation_id": "w6-pipeline-e09-m01-c02-p04-x5/r1/S1",
@@ -221,7 +265,9 @@
       "unit": "unreached",
       "a_text": "Type 2 diabetes mellitus",
       "dimension": "omission",
-      "note": "Background diagnosis omitted (S6: kept)"
+      "note": "PROSPECTIVE S6 POLICY TEST (CSO audit, 4 Nov 2026 ~15:36 (dev run v0.1 in progress; its verdicts not opened)) — not a historical p0.4 defect: G1.5 permitted the omission and S1's original omission verdict stands as recorded. Reported on its own line, never in bar item 1.",
+      "category": "policy_test",
+      "ruling": "defect"
     },
     {
       "generation_id": "w6-pipeline-e09-m01-c02-p04-x5/r1/S1",
@@ -229,7 +275,9 @@
       "unit": "unreached",
       "a_text": "Hypertension",
       "dimension": "omission",
-      "note": "Background diagnosis omitted (S6: kept)"
+      "note": "PROSPECTIVE S6 POLICY TEST (CSO audit, 4 Nov 2026 ~15:36 (dev run v0.1 in progress; its verdicts not opened)) — not a historical p0.4 defect: G1.5 permitted the omission and S1's original omission verdict stands as recorded. Reported on its own line, never in bar item 1.",
+      "category": "policy_test",
+      "ruling": "defect"
     },
     {
       "generation_id": "w6-pipeline-e09-m01-c02-p04-x5/r1/S1",
@@ -237,7 +285,9 @@
       "unit": "unreached",
       "a_text": "Previous myocardial infarction 2019",
       "dimension": "omission",
-      "note": "Background diagnosis omitted (S6: kept)"
+      "note": "PROSPECTIVE S6 POLICY TEST (CSO audit, 4 Nov 2026 ~15:36 (dev run v0.1 in progress; its verdicts not opened)) — not a historical p0.4 defect: G1.5 permitted the omission and S1's original omission verdict stands as recorded. Reported on its own line, never in bar item 1.",
+      "category": "policy_test",
+      "ruling": "defect"
     },
     {
       "generation_id": "w6-pipeline-e09-m01-c02-p04-x5/r1/S13",
@@ -245,7 +295,9 @@
       "unit": "sentence",
       "text": "You were breathing on your own from day 18.",
       "dimension": "added/meaning",
-      "note": "extubation became continuing independent breathing"
+      "note": "extubation became continuing independent breathing",
+      "ruling": "defect",
+      "category": "historical"
     },
     {
       "generation_id": "w6-pipeline-e09-m01-c02-p04-x5/r1/S16",
@@ -253,7 +305,9 @@
       "unit": "sentence",
       "text": "It was caused by scar tissue (adhesions) from a previous operation.",
       "dimension": "added",
-      "note": "cause not stated"
+      "note": "cause not stated",
+      "ruling": "defect",
+      "category": "historical"
     },
     {
       "generation_id": "w6-pipeline-e09-m01-c02-p04-x5/r1/S16",
@@ -261,7 +315,9 @@
       "unit": "sentence",
       "text": "A community stoma nurse will follow you up at home.",
       "dimension": "added/meaning",
-      "note": "community follow-up becomes a home visit"
+      "note": "community follow-up becomes a home visit",
+      "ruling": "defect",
+      "category": "historical"
     },
     {
       "generation_id": "w6-pipeline-e09-m01-c02-p04-x5/r1/S16",
@@ -269,7 +325,9 @@
       "unit": "sentence",
       "text": "no sign of damage",
       "dimension": "meaning",
-      "note": "broadens 'no ischaemia'"
+      "note": "broadens 'no ischaemia'",
+      "ruling": "defect",
+      "category": "historical"
     },
     {
       "generation_id": "w6-pipeline-e09-m01-c02-p04-x5/r1/S3",
@@ -277,7 +335,9 @@
       "unit": "sentence",
       "text": "There will be a review of your sertraline at 4 weeks.",
       "dimension": "meaning",
-      "note": "dose review becomes a general review"
+      "note": "dose review becomes a general review",
+      "ruling": "defect",
+      "category": "historical"
     },
     {
       "generation_id": "w6-pipeline-e09-m01-c02-p04-x5/r1/S3",
@@ -285,7 +345,9 @@
       "unit": "unreached",
       "a_text": "recent relationship breakdown and work stress",
       "dimension": "omission",
-      "note": "secondary diagnosis omitted (R1 A)"
+      "note": "secondary diagnosis omitted (R1 A)",
+      "ruling": "defect",
+      "category": "historical"
     },
     {
       "generation_id": "w6-pipeline-e09-m01-c02-p04-x5/r1/S4",
@@ -293,7 +355,19 @@
       "unit": "sentence",
       "text": "A swab was taken from the back of the nose",
       "dimension": "added/meaning",
-      "note": "NPA becomes a swab"
+      "note": "NPA becomes a swab",
+      "ruling": "defect",
+      "category": "historical"
+    },
+    {
+      "generation_id": "w6-pipeline-e09-m01-c02-p04-x5/r1/S18",
+      "heading": "what_we_did",
+      "unit": "sentence",
+      "text": "the immediate risk of another one is low",
+      "dimension": "withheld",
+      "note": "ADDED (CSO audit, 4 Nov 2026 ~15:36 (dev run v0.1 in progress; its verdicts not opened)): a risk level disclosed — the known withheld defect no flag caught (line 9 printed MET, disclosed 4 Nov). The sentence's cause row stays acceptable; under counting rule v2 a correct withheld flag is credited here and is not a false flag against that cause ruling.",
+      "ruling": "defect",
+      "category": "historical"
     }
   ],
   "excluded": [
@@ -311,6 +385,11 @@
       "generation_id": "all",
       "finding": "every 'audience' finding (grammar, unexplained terms)",
       "why": "readability, not faithfulness — outside 7v's standard"
+    },
+    {
+      "generation_id": "w6-pipeline-e09-m01-c02-p01-x5/r1/S13",
+      "finding": "meaning: 'The wound was then closed'",
+      "why": "REMOVED (CSO audit, 4 Nov 2026 ~15:36 (dev run v0.1 in progress; its verdicts not opened)): the input explicitly includes delayed closure; the map's 'not closed' explanation contradicted it"
     }
   ]
 }

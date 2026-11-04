@@ -1,0 +1,86 @@
+{
+  "counting_rule": 3,
+  "frozen": "4 Nov 2026, before the measured v0.2 dev run and before any held-out run; counted from the saved A/C text only (no verifier output)",
+  "sets": {
+    "w6-pipeline-e09-m01-c02-p04-x5": {
+      "role": "dev",
+      "defects": 47,
+      "defects_ruled": 41,
+      "defects_map": 6,
+      "acceptable_eligible": 216,
+      "acceptable_no_opportunity": 13,
+      "acceptable_no_opportunity_by_kind": {
+        "qualifier": 13
+      },
+      "policy_tests": 5,
+      "leaflets_excluded_F1": [],
+      "defects_no_place": 0,
+      "map_rows_deduplicated": [
+        {
+          "generation_id": "w6-pipeline-e09-m01-c02-p04-x5/r1/S1",
+          "map": "camera test of your heart arteries",
+          "same_as_ruled": "test_term"
+        },
+        {
+          "generation_id": "w6-pipeline-e09-m01-c02-p04-x5/r1/S16",
+          "map": "It was caused by scar tissue (adhesions) from a previous operation.",
+          "same_as_ruled": "cause"
+        },
+        {
+          "generation_id": "w6-pipeline-e09-m01-c02-p04-x5/r1/S16",
+          "map": "A community stoma nurse will follow you up at home.",
+          "same_as_ruled": "promise"
+        },
+        {
+          "generation_id": "w6-pipeline-e09-m01-c02-p04-x5/r1/S3",
+          "map": "recent relationship breakdown and work stress",
+          "same_as_ruled": "diagnosis"
+        },
+        {
+          "generation_id": "w6-pipeline-e09-m01-c02-p04-x5/r1/S4",
+          "map": "A swab was taken from the back of the nose",
+          "same_as_ruled": "test_term"
+        }
+      ]
+    },
+    "w6-pipeline-e09-m01-c02-p02-x5": {
+      "role": "held-out",
+      "defects": 21,
+      "defects_ruled": 12,
+      "defects_map": 9,
+      "acceptable_eligible": 104,
+      "acceptable_no_opportunity": 0,
+      "acceptable_no_opportunity_by_kind": {},
+      "policy_tests": 0,
+      "leaflets_excluded_F1": [],
+      "defects_no_place": 0,
+      "map_rows_deduplicated": []
+    },
+    "w6-pipeline-e09-m01-c02-p01-x5": {
+      "role": "held-out",
+      "defects": 19,
+      "defects_ruled": 11,
+      "defects_map": 8,
+      "acceptable_eligible": 53,
+      "acceptable_no_opportunity": 0,
+      "acceptable_no_opportunity_by_kind": {},
+      "policy_tests": 0,
+      "leaflets_excluded_F1": [
+        "w6-pipeline-e09-m01-c02-p01-x5/r5/S12"
+      ],
+      "defects_no_place": 0,
+      "map_rows_deduplicated": [
+        {
+          "generation_id": "w6-pipeline-e09-m01-c02-p01-x5/r1/C7",
+          "map": "Please make sure you attend this.",
+          "same_as_ruled": "advice"
+        },
+        {
+          "generation_id": "w6-pipeline-e09-m01-c02-p01-x5/r1/S4",
+          "map": "will be there if you have any concerns",
+          "same_as_ruled": "advice"
+        }
+      ]
+    }
+  }
+}

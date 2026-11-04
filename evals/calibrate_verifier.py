@@ -25,19 +25,45 @@ The bar (ADR-010 V5, CSO 4 Nov 2026 14:34), written before calibration ran:
   4. precision on NEW flags (sentences no label covers) reported — grouped in
      NEW_FLAGS.md for a CSO ruling; no threshold; never changes items 1-3.
 
-How a label is matched (C1 — to be approved by the CSO before the held-out run):
-  - sentence-level rows (cause, certainty, test_term, advice, medication, drug,
-    number, unit, conflict, sensitive, promise): the numbered sentence in the same
-    C section whose text equals the row's sentence; caught / false flag = that
-    sentence is not `supported`;
-  - qualifier rows (score_patient records them per C SECTION): caught / false
-    flag = any sentence of that C section is not `supported`;
-  - diagnosis rows ("not reached: <line>"): caught / false flag = an `unreached`
-    item on that diagnosis section whose span shares a head word with the line;
-  - blind-read findings: as the map says (a sentence, or an unreached A item).
-Rows are counted per generation (the same sentence in two runs is two rows), and
-also reported per unique key; held-out rows whose key also occurs in dev are
-reported separately (identical leaflets at temperature 0 would leak).
+How a label is matched — COUNTING RULE v3 (v2 + eligibility, audit 2), frozen before any measured run (CSO audit of
+4 Nov 2026 ~15:36, which found that rule v1 — C1 as first approved — could report a
+pass without the required defects being caught):
+  A verifier "unit" is one non-supported item (sentence, reason, span) or one
+  unreached item. A sentence may carry several units (prompt v0.2).
+  - Sentence rows (cause, certainty, test_term, advice, medication, drug, number,
+    unit, conflict, sensitive, promise; and blind-read sentence rows): a unit on the
+    SAME sentence whose reason is in the row's family (FAMILY) and whose span is at
+    the row's place — it contains the row's token (stem match), or, for a map row,
+    shares a content word with the map's words. A row with no token (advice,
+    medication, sensitive, promise, conflict) is sentence-wide: its family alone
+    decides, and generic reasons (new_fact, other) do not count for it.
+  - Qualifier rows (recorded per C section): a unit in that section with verdict
+    qualifier_dropped or reason qualifier / certainty_or_completion. Never "any flag
+    in the section".
+  - Omission rows (diagnosis rows, blind-read unreached rows): an unreached unit in
+    the same C section heading, on the A section that holds the words, whose span
+    covers at least half the row's content words. Never one shared word.
+  - ONE-TO-ONE: a unit is credited to at most one defect row (maximum matching).
+  - A unit credited to a defect row is never also a false flag. A false flag is an
+    acceptable row matched (same rule) by a unit credited to no defect row — so a
+    correct cause flag is not a false positive against an acceptable medication
+    ruling on the same sentence.
+  - A blind-read row is not counted twice only when a CSO-ruled defect row on the
+    SAME sentence (or, for an omission, the same A words) is the same fault — its
+    token lies in the map's words. Never section-wide.
+  - Blind-read rows marked category "policy_test" (S1's Background diagnoses under
+    S6) are reported on their own line, never as historical defects.
+Required for a pass, beside bar items 1-3 (stricter, added before any held-out run):
+  - 5: verifier failures 0 — every leaflet of every judged set has an output; a
+    missing or failed output counts its defect rows as missed AND blocks the pass;
+  - 6: supported verdicts resting on an uncited source 0;
+  - item 3 needs exactly PROTOCOL_REPEATS repeats, every leaflet present in each.
+Leaflets today's step 7 would refuse (F1: p0.1 r5 S12, no labels) are excluded and listed.
+ELIGIBILITY (audit 2): a row no verifier unit could match — decided from the saved A and C
+text, never from verifier results (eligible()) — is excluded from the false-flag denominator
+if acceptable, and reported; a defect row with no place stays a defect (missed) and is reported.
+Rows are counted per generation, and also reported per unique key; held-out rows
+whose key also occurs in dev are reported separately.
 """
 
 from __future__ import annotations
@@ -71,7 +97,10 @@ RUNS_DIR = rce.DEFAULT_RUNS_DIR
 BAR = {"missed_max": 0, "false_flag_max": 0.25, "self_agreement_min": 0.90}
 SECTION_KINDS = ("qualifier",)
 UNREACHED_KINDS = ("diagnosis",)
-EST_TOKENS = {"input": 3500, "output": 900}       # per verifier call (ADR-010 Consequences)
+# Per verifier call, an UPPER bound. Measured on the v0.1 pilot (4 Nov, 270 calls): output p50 1,279,
+# mean 1,319, p90 1,838; input ~1.3k + ~2.3k cache read; actual $0.0335 per call. The first estimate
+# (3,500 / 900 -> $0.026, printed as "<= $7.13") was exceeded by 27% ($9.06) — corrected here.
+EST_TOKENS = {"input": 3600, "output": 1700}
 EST_SECONDS = 12
 
 
@@ -85,12 +114,28 @@ def prompt_sha12() -> str:
 
 # --- run ----------------------------------------------------------------------
 
-def records(batch_dir: Path) -> list[dict]:
+def _step7_would_refuse(rec: dict) -> bool:
+    """A leaflet today's step 7 would refuse (F1, 2 Nov: no presenting_complaint or
+    diagnosis given — p0.1 r5 S12). 7v never sees such a leaflet live, and no valid
+    verifier output exists for it (evidence must be a given section)."""
+    try:
+        CP7._check_input(CP7.patient_input(rec["steps"]["compose_clinical"]))
+        return False
+    except StepError:
+        return True
+
+
+def records(batch_dir: Path, *, excluded: list | None = None) -> list[dict]:
     out = []
     for p in sorted(batch_dir.glob("r*/*.json")):
         rec = json.loads(p.read_text(encoding="utf-8"))
-        if (rec.get("steps") or {}).get("compose_patient"):
-            out.append(rec)
+        if not (rec.get("steps") or {}).get("compose_patient"):
+            continue
+        if _step7_would_refuse(rec):
+            if excluded is not None:
+                excluded.append(rec["generation_id"])
+            continue
+        out.append(rec)
     return out
 
 
@@ -193,45 +238,194 @@ def cmd_run(a, *, client_factory=None, now=None, confirm=input, sleep=time.sleep
 
 # --- labels -------------------------------------------------------------------
 
+PROTOCOL_REPEATS = 3
+GENERIC = {"new_fact", "other"}
+FAMILY = {
+    "cause": {"cause_or_purpose"},
+    "certainty": {"certainty_or_completion"},
+    "test_term": {"term_changed"},
+    "qualifier": {"qualifier", "certainty_or_completion"},
+    "advice": {"instruction_or_promise"},
+    "promise": {"instruction_or_promise"},
+    "sensitive": {"withheld_category"},
+    "conflict": {"withheld_category"},
+    "medication": {"instruction_or_promise", "new_fact", "term_changed"},
+    "drug": {"new_fact", "term_changed"},
+    "number": {"new_fact", "certainty_or_completion"},
+    "unit": {"new_fact"},
+    "withheld": {"withheld_category"},          # blind-read dimension
+}
+TOKENLESS = ("advice", "medication", "sensitive", "promise", "conflict")
+
+
 def rulings_for(sid: str) -> dict:
     return SB.load_adjudications(sid, ADJ_DIR, "patient_rulings")
 
 
 def labels_for(rec: dict) -> list[dict]:
-    """The CSO-ruled step-7 rows of one record: {key, kind, heading, sentence, ruling}."""
+    """The CSO-ruled step-7 rows of one record: {key, kind, heading, sentence, token, ruling}."""
     rul = rulings_for(rec["scenario_id"])
     return [{"key": it["key"], "kind": it["kind"], "heading": it["heading"], "sentence": it["sentence"],
-             "ruling": rul[it["key"]]} for it in SP.review_items(rec) if it["key"] in rul]
+             "token": it["token"], "ruling": rul[it["key"]], "source": "ruling", "category": "historical"}
+            for it in SP.review_items(rec) if it["key"] in rul]
+
+
+def map_doc() -> dict:
+    return json.loads(MAP_PATH.read_text(encoding="utf-8")) if MAP_PATH.exists() else {"findings": []}
 
 
 def blind_read_map() -> list[dict]:
-    if not MAP_PATH.exists():
-        return []
-    return json.loads(MAP_PATH.read_text(encoding="utf-8"))["findings"]
+    return map_doc()["findings"]
 
 
-def _not_supported(vp: dict) -> set[str]:
-    return {v["sentence_id"] for v in vp["verdicts"] if v["verdict"] != V.SUPPORTED}
+def map_labels(rec: dict) -> list[dict]:
+    out = []
+    for i, f in enumerate(blind_read_map()):
+        if f["generation_id"] != rec["generation_id"]:
+            continue
+        out.append(dict(f, key=f"map:{i}", kind=f["dimension"], sentence=f.get("text", ""), token=None,
+                        ruling=f.get("ruling", "defect"), source="map", category=f.get("category", "historical")))
+    return out
 
 
-def match(label: dict, rec: dict, vp: dict) -> tuple[bool, list[str]]:
-    """(flagged by the verifier?, the sentence_ids the label covers). C1 rules."""
-    vin = V.verify_input(CP7.patient_input(rec["steps"]["compose_clinical"]), rec["steps"]["compose_patient"])
-    bad = _not_supported(vp)
-    secs = [s for s in vin["c_sections"] if s["heading"] == label["heading"]]
-    if label.get("unit") == "unreached" or label["kind"] in UNREACHED_KINDS:
-        line = label.get("a_text") or label["sentence"].removeprefix("not reached: ")
-        words = set(MN.head_words(line)) or MN.stems(line)
-        hit = any(words & MN.stems(u["span"]) for u in vp["unreached"])
-        return hit, []
-    if label["kind"] in SECTION_KINDS and label.get("unit") != "sentence":
-        ids = [t["sentence_id"] for s in secs for t in s["sentences"]]
-        return bool(set(ids) & bad), ids
-    target = _norm(label.get("text") or label["sentence"])
-    ids = [t["sentence_id"] for s in secs for t in s["sentences"]
-           if (_norm(t["text"]) == target if label.get("unit") != "sentence" or "text" not in label
-               else target in _norm(t["text"]))]
-    return bool(set(ids) & bad), ids
+def _content(text: str) -> set[str]:
+    return {MN.stem(w) for w in MN._WORD.findall(text) if w.lower() not in MN._STOP and len(w) >= 3} or MN.stems(text)
+
+
+def _located(lab: dict, span: str) -> bool:
+    if lab["source"] == "map":
+        a, b = _norm(lab["sentence"]), _norm(span)
+        return bool(b) and (a in b or b in a or bool(_content(lab["sentence"]) & _content(span)))
+    if lab["kind"] in TOKENLESS or not lab.get("token"):
+        return True
+    tok = str(lab["token"]).replace("_", " ")
+    return _norm(tok) in _norm(span) or MN.stems(tok) <= MN.stems(span)
+
+
+def _typed(lab: dict, unit: dict) -> bool:
+    if lab["source"] == "map":
+        fam = FAMILY.get(lab["kind"])
+        return unit["reason"] in fam if fam else unit["reason"] not in ("none", V.NEVER_DROP)
+    if lab["kind"] == "qualifier":
+        return unit["verdict"] == "qualifier_dropped" or unit["reason"] in FAMILY["qualifier"]
+    fam = FAMILY.get(lab["kind"], set())
+    return unit["reason"] in fam or (lab["kind"] not in TOKENLESS and unit["reason"] in GENERIC)
+
+
+def _a_section_of(words: str, given: list[dict], heading: str = "diagnosis") -> str | None:
+    w = _norm(words)
+    for s in given:
+        if w in _norm(s["text"]):
+            return s["section_id"]
+    return next((s["section_id"] for s in given if s["heading"] == heading), None)
+
+
+def _row_matches(lab: dict, unit: dict, vin: dict, given: list[dict]) -> bool:
+    """COUNTING RULE v2 — one label vs one verifier unit."""
+    omission = lab.get("unit") == "unreached" or lab["kind"] == "diagnosis"
+    if omission:
+        if unit["kind"] != "unreached" or unit["heading"] != lab["heading"]:
+            return False
+        words = lab.get("a_text") or lab["sentence"].removeprefix("not reached: ")
+        if unit["a_section_id"] != _a_section_of(words, given):
+            return False
+        want = set(MN.head_words(words)) if lab["kind"] == "diagnosis" else _content(words)
+        want = want or _content(words)
+        return len(want & MN.stems(unit["span"])) * 2 >= len(want)
+    if unit["kind"] != "sentence" or unit["heading"] != lab["heading"]:
+        return False
+    if lab["kind"] == "qualifier" and lab["source"] == "ruling":
+        # section-level row: a qualifier-type unit on a sentence that re-expresses the PART A
+        # sentence carrying the qualifier (shares a content word with it) — never any flag in
+        # the section (audit 2), and never an unrelated certainty flag (S13 "closed").
+        a_sentence = lab["sentence"].split(" → C: ", 1)[0].removeprefix("input: ")
+        return _typed(lab, unit) and bool(_content(a_sentence) & _content(unit["text"]))
+    target = _norm(lab["sentence"])
+    on_sentence = (target in _norm(unit["text"])) if lab["source"] == "map" else (_norm(unit["text"]) == target)
+    return on_sentence and _typed(lab, unit) and _located(lab, unit["span"])
+
+
+def eligible(lab: dict, vin: dict, given: list[dict]) -> bool:
+    """Can ANY verifier output match this row? Decided from the saved A and C text only —
+    never from verifier results (CSO audit 2, 4 Nov 2026). A row no unit could match is
+    excluded from the false-flag denominator (acceptable) and reported; a defect row with
+    no place would be uncatchable and is reported as such (it stays a defect, so it is missed)."""
+    omission = lab.get("unit") == "unreached" or lab["kind"] == "diagnosis"
+    secs = [s for s in vin["c_sections"] if s["heading"] == lab["heading"]]
+    if omission:
+        words = lab.get("a_text") or lab["sentence"].removeprefix("not reached: ")
+        return bool(secs) and _a_section_of(words, given) is not None
+    if lab["kind"] == "qualifier" and lab["source"] == "ruling":
+        a_sentence = lab["sentence"].split(" → C: ", 1)[0].removeprefix("input: ")
+        return any(_content(a_sentence) & _content(t["text"]) for s in secs for t in s["sentences"])
+    target = _norm(lab["sentence"])
+    return any((target in _norm(t["text"])) if lab["source"] == "map" else (_norm(t["text"]) == target)
+               for s in secs for t in s["sentences"])
+
+
+def _units(vp: dict) -> list[dict]:
+    us = [dict(v, kind="sentence") for v in vp["verdicts"] if v["verdict"] != V.SUPPORTED]
+    us += [dict(u, kind="unreached", text="", verdict=V.UNREACHED) for u in vp["unreached"]]
+    return us
+
+
+def _max_matching(rows: list[dict], units: list[dict], ok) -> dict[int, int]:
+    """Maximum bipartite matching rows -> units (augmenting paths); {row index: unit index}."""
+    adj = {i: [j for j, u in enumerate(units) if ok(r, u)] for i, r in enumerate(rows)}
+    owner: dict[int, int] = {}
+
+    def try_row(i, seen):
+        for j in adj[i]:
+            if j in seen:
+                continue
+            seen.add(j)
+            if j not in owner or try_row(owner[j], seen):
+                owner[j] = i
+                return True
+        return False
+    for i in adj:
+        try_row(i, set())
+    return {i: j for j, i in owner.items()}
+
+
+def _same_fault(m: dict, r: dict, given: list[dict]) -> bool:
+    """A blind-read row duplicates a CSO-ruled defect row: same sentence (or same A words) and same fault."""
+    if m.get("unit") == "unreached":
+        if r["kind"] != "diagnosis":
+            return False
+        line = r["sentence"].removeprefix("not reached: ")
+        # the WHOLE line, not its head phrase: "label — content" lines (S3's triggers) are judged
+        # on their content too (the head-phrase limit is a known line-14 limitation, S7)
+        return (_a_section_of(m["a_text"], given) == _a_section_of(line, given)
+                and bool(_content(m["a_text"]) & _content(line)))
+    if r["kind"] == "qualifier" or r["kind"] == "diagnosis" or r["heading"] != m["heading"]:
+        return False
+    if _norm(m["sentence"]) not in _norm(r["sentence"]):
+        return False
+    if r["kind"] in TOKENLESS:
+        return True        # a token-less ruling covers its whole sentence: the same fault
+    tok = r.get("token")
+    return bool(tok) and (_norm(str(tok)) in _norm(m["sentence"]) or MN.stems(str(tok)) <= MN.stems(m["sentence"]))
+
+
+def _valid_output(vp, vin) -> bool:
+    if vp is None:
+        return False
+    a_ids = {s["section_id"] for s in vin["a_sections"]}
+    return all(v.get("a_section_id") in a_ids for v in vp["verdicts"]) and \
+        all(u.get("a_section_id") in a_ids for u in vp["unreached"])
+
+
+def _uncited_supported(vp, vin) -> int:
+    cites = {s["section_id"]: set(s["source_ids"]) for s in vin["c_sections"]}
+    return sum(1 for v in vp["verdicts"] if v["verdict"] == V.SUPPORTED
+               and v.get("a_section_id") not in cites.get(v["c_section_id"], set()))
+
+
+def _with_text(vp: dict, vin: dict) -> dict:
+    """v0.1 pilot outputs carry no sentence text: add it from the input."""
+    text = {t["sentence_id"]: t["text"] for s in vin["c_sections"] for t in s["sentences"]}
+    return dict(vp, verdicts=[dict(v, text=v.get("text") or text.get(v["sentence_id"], "")) for v in vp["verdicts"]])
 
 
 # --- score --------------------------------------------------------------------
@@ -249,59 +443,96 @@ def load_outputs(sha_dir: Path, batch_id: str) -> dict[int, dict[str, dict]]:
 
 
 def evaluate(batch_ids: list[str], sha_dir: Path, repeat: int = 1, exclude_keys: set[str] = frozenset()) -> dict:
-    rows, covered, unlabelled = [], {}, []
-    bmap = blind_read_map()
+    rows, unlabelled, refused, ineligible_acc, ineligible_def = [], [], [], [], []
+    errors = uncited = 0
     for bid in batch_ids:
         outs = load_outputs(sha_dir, bid).get(repeat, {})
-        for rec in records(RUNS_DIR / bid):
+        for rec in records(RUNS_DIR / bid, excluded=refused):
+            given = CP7.patient_input(rec["steps"]["compose_clinical"])["sections"]
+            vin = V.verify_input({"audience": "adult", "sections": given}, rec["steps"]["compose_patient"])
+            ruled, mapped = labels_for(rec), map_labels(rec)
+            mapped = [m for m in mapped if not any(r["ruling"] == "defect" and _same_fault(m, r, given) for r in ruled)]
+            labs = []
+            for lab in ruled + mapped:
+                if eligible(lab, vin, given):
+                    labs.append(lab)
+                elif lab["ruling"] == "acceptable":
+                    ineligible_acc.append(dict(lab, generation_id=rec["generation_id"]))
+                else:
+                    ineligible_def.append(dict(lab, generation_id=rec["generation_id"]))
+                    labs.append(lab)                      # still a defect: uncatchable, so missed
             vp = outs.get(rec["generation_id"])
-            if vp is None:
-                rows.append({"generation_id": rec["generation_id"], "source": "error", "ruling": None,
-                             "caught": False, "key": None, "kind": None})
+            ok = _valid_output(vp, vin)
+            if not ok:
+                errors += 1
+                rows += [dict(lab, generation_id=rec["generation_id"], caught=False, error=True,
+                              leaked=lab["key"] in exclude_keys) for lab in labs]
                 continue
-            cov, ruled_defect_ids = set(), set()
-            labs = labels_for(rec) + [dict(f, ruling="defect", key=f"map:{i}", kind=f.get("dimension", "map"),
-                                           sentence=f.get("text", ""))
-                                      for i, f in enumerate(bmap) if f["generation_id"] == rec["generation_id"]]
-            for lab in labs:
-                caught, ids = match(lab, rec, vp)
-                cov |= set(ids)
-                if lab["key"].startswith("map:") and ids and set(ids) <= ruled_defect_ids:
-                    continue        # the blind read found what a CSO-ruled defect row already covers
-                if lab["ruling"] == "defect" and not lab["key"].startswith("map:"):
-                    ruled_defect_ids |= set(ids)
-                rows.append({"generation_id": rec["generation_id"], "source": "map" if lab["key"].startswith("map:") else "ruling",
-                             "key": lab["key"], "kind": lab["kind"], "heading": lab["heading"],
-                             "ruling": lab["ruling"], "caught": caught, "leaked": lab["key"] in exclude_keys})
-            for v in vp["verdicts"]:
-                if v["verdict"] != V.SUPPORTED and v["sentence_id"] not in cov:
-                    text = next(t["text"] for s in V.verify_input(CP7.patient_input(rec["steps"]["compose_clinical"]),
-                                                                   rec["steps"]["compose_patient"])["c_sections"]
-                                for t in s["sentences"] if t["sentence_id"] == v["sentence_id"])
-                    unlabelled.append({"generation_id": rec["generation_id"], "heading": v["heading"],
-                                       "sentence": text, "verdict": v["verdict"], "reason": v["reason"], "span": v["span"],
-                                       "key": hashlib.sha256(f"verifier|{v['heading']}|{_norm(text)}".encode()).hexdigest()[:16]})
-    defects = [r for r in rows if r["ruling"] == "defect"]
-    accept = [r for r in rows if r["ruling"] == "acceptable"]
+            vp = _with_text(vp, vin)
+            uncited += _uncited_supported(vp, vin)
+            units = _units(vp)
+            match = lambda lab, u: _row_matches(lab, u, vin, given)   # noqa: E731
+            defects = [l for l in labs if l["ruling"] == "defect"]
+            credited = _max_matching(defects, units, match)
+            used = set(credited.values())
+            for i, lab in enumerate(defects):
+                rows.append(dict(lab, generation_id=rec["generation_id"], caught=i in credited, error=False,
+                                 leaked=lab["key"] in exclude_keys))
+            for lab in (l for l in labs if l["ruling"] == "acceptable"):
+                hit = any(match(lab, u) for j, u in enumerate(units) if j not in used)
+                rows.append(dict(lab, generation_id=rec["generation_id"], caught=hit, error=False,
+                                 leaked=lab["key"] in exclude_keys))
+            covered = {j for j, u in enumerate(units) if j in used or any(match(l, u) for l in labs)}
+            for j, u in enumerate(units):
+                if j not in covered:
+                    key = hashlib.sha256(f"verifier|{u['heading']}|{u['kind']}|{_norm(u['text'] or u['span'])}|"
+                                         f"{u['reason']}".encode()).hexdigest()[:16]
+                    unlabelled.append({"generation_id": rec["generation_id"], "heading": u["heading"],
+                                       "sentence": u["text"] or f"not reached: {u['span']}", "verdict": u["verdict"],
+                                       "reason": u["reason"], "span": u["span"], "key": key})
+    hist = [r for r in rows if r["category"] == "historical"]
+    defects = [r for r in hist if r["ruling"] == "defect"]
+    accept = [r for r in hist if r["ruling"] == "acceptable"]
     missed = [r for r in defects if not r["caught"]]
     false = [r for r in accept if r["caught"]]
+    policy = [r for r in rows if r["category"] == "policy_test"]
     return {"rows": rows, "defects": len(defects), "missed": missed, "acceptable": len(accept),
             "false_flags": len(false), "false_rate": (len(false) / len(accept)) if accept else None,
-            "errors": sum(1 for r in rows if r["source"] == "error"), "unlabelled": unlabelled,
+            "errors": errors, "uncited_supported": uncited, "unlabelled": unlabelled,
+            "policy": {"rows": len(policy), "caught": sum(1 for r in policy if r["caught"])},
+            "excluded_refused_by_step7": refused,
+            "acceptable_no_opportunity": len([r for r in ineligible_acc if r["category"] == "historical"]),
+            "acceptable_no_opportunity_by_kind": {k: sum(1 for r in ineligible_acc if r["kind"] == k)
+                                                  for k in sorted({r["kind"] for r in ineligible_acc})},
+            "defects_no_place": [{"generation_id": r["generation_id"], "kind": r["kind"], "key": r["key"]}
+                                 for r in ineligible_def],
             "missed_unique": sorted({r["key"] for r in missed}),
             "missed_not_leaked": [r for r in missed if not r.get("leaked")]}
 
 
 def self_agreement(batch_id: str, sha_dir: Path) -> float | None:
+    """Sentences whose verdict (acceptable vs not) is the same in all PROTOCOL_REPEATS repeats.
+    None — and so NOT MET — unless exactly that many repeats exist and every leaflet has a
+    valid output in each."""
     reps = load_outputs(sha_dir, batch_id)
-    if len(reps) < 2:
+    if sorted(reps) != list(range(1, PROTOCOL_REPEATS + 1)):
         return None
+    recs = records(RUNS_DIR / batch_id)
     same = total = 0
-    for gid in set.intersection(*(set(r) for r in reps.values())):
-        outs = [reps[k][gid] for k in sorted(reps)]
-        if any(o is None for o in outs):
-            continue
-        per = [{v["sentence_id"]: v["verdict"] == V.SUPPORTED for v in o["verdicts"]} for o in outs]
+    for rec in recs:
+        given = CP7.patient_input(rec["steps"]["compose_clinical"])["sections"]
+        vin = V.verify_input({"audience": "adult", "sections": given}, rec["steps"]["compose_patient"])
+        outs = [reps[k].get(rec["generation_id"]) for k in sorted(reps)]
+        if not all(_valid_output(o, vin) for o in outs):
+            return None
+        per = []
+        for o in outs:
+            ok: dict[str, bool] = {}
+            for v in o["verdicts"]:
+                ok[v["sentence_id"]] = ok.get(v["sentence_id"], True) and V.acceptable(
+                    dict(v, evidence_valid=v.get("a_section_id") in next(
+                        set(s["source_ids"]) for s in vin["c_sections"] if s["section_id"] == v["c_section_id"])))
+            per.append(ok)
         for sid in per[0]:
             total += 1
             same += all(p.get(sid) == per[0][sid] for p in per)
@@ -321,31 +552,44 @@ def cmd_score(a, *, sha_dir: Path | None = None) -> int:
     agree_on = a.dev if a.agreement_on == "dev" else (a.held_out[0] if a.held_out else a.dev)
     agree = self_agreement(agree_on, sha_dir)
     judged = held or dev
+    errs = judged["errors"] + (dev["errors"] if held else 0)
     verdict = {
         "1 missed defects": (len(judged["missed"]), len(judged["missed"]) <= BAR["missed_max"]),
         "2 false-flag rate": (judged["false_rate"], judged["false_rate"] is not None
                               and judged["false_rate"] <= BAR["false_flag_max"]),
         "3 self-agreement": (agree, agree is not None and agree >= BAR["self_agreement_min"]),
+        "5 verifier failures": (errs, errs == 0),
+        "6 supported on an uncited source": (judged["uncited_supported"], judged["uncited_supported"] == 0),
     }
     rulings = json.loads(NEW_FLAG_RULINGS.read_text()) if NEW_FLAG_RULINGS.exists() else {}
     new = judged["unlabelled"]
     ruled = [u for u in new if u["key"] in rulings]
     prec = (sum(1 for u in ruled if rulings[u["key"]] == "defect") / len(ruled)) if ruled else None
-    lines = [f"# Step 7v calibration — prompt `{sha_dir.name}`", "",
+    lines = [f"# Step 7v calibration — prompt `{sha_dir.name}` (counting rule v3)", "",
              f"Dev: `{a.dev}` · held-out: {', '.join(f'`{b}`' for b in a.held_out) or '(none yet)'} · "
              f"judged on: {'held-out' if held else '**dev only — not the bar**'}", "",
              "| Bar item | Value | Bar | Verdict |", "|---|---|---|---|"]
     fmt = {"1 missed defects": lambda v: f"{v} of {judged['defects']}",
            "2 false-flag rate": lambda v: "—" if v is None else f"{v:.1%} ({judged['false_flags']} of {judged['acceptable']})",
-           "3 self-agreement": lambda v: "—" if v is None else f"{v:.1%} (on {agree_on})"}
-    bars = {"1 missed defects": "0", "2 false-flag rate": "≤ 25%", "3 self-agreement": "≥ 90%"}
+           "3 self-agreement": lambda v: "— (needs 3 complete repeats)" if v is None else f"{v:.1%} (on {agree_on})",
+           "5 verifier failures": lambda v: str(v), "6 supported on an uncited source": lambda v: str(v)}
+    bars = {"1 missed defects": "0", "2 false-flag rate": "≤ 25%", "3 self-agreement": "≥ 90%",
+            "5 verifier failures": "0", "6 supported on an uncited source": "0"}
     for k, (val, ok) in verdict.items():
         lines.append(f"| {k} | {fmt[k](val)} | {bars[k]} | {'MET' if ok else '**NOT MET**'} |")
     lines.append(f"| 4 new-flag precision | {'—' if prec is None else f'{prec:.0%}'} ({len(ruled)} of {len(new)} ruled) | report | — |")
-    lines += ["", f"Verifier failures: {judged['errors']}. Missed (unique keys): {len(judged['missed_unique'])}; "
-              f"missed excluding keys also in dev: {len(judged['missed_not_leaked'])}.", "",
-              "## Missed defects", ""]
-    lines += [f"- {r['generation_id']} · {r['kind']} · {r['heading']} · {r['source']}" for r in judged["missed"]] or ["- none"]
+    pol = judged["policy"] if not held else dev["policy"]
+    lines += ["", f"S6 policy tests (prospective, not historical defects; dev): {pol['caught']} of {pol['rows']} caught.",
+              f"Excluded — leaflets today's step 7 would refuse (F1): "
+              f"{', '.join(judged['excluded_refused_by_step7']) or 'none'}.",
+              f"Acceptable rows with no opportunity to be flagged (from the saved A/C text; outside the "
+              f"false-flag denominator): {judged['acceptable_no_opportunity']} "
+              f"{judged['acceptable_no_opportunity_by_kind'] or ''}.",
+              f"Defect rows with no place (uncatchable — counted missed): {len(judged['defects_no_place'])}.",
+              f"Missed (unique keys): {len(judged['missed_unique'])}; missed excluding keys also in dev: "
+              f"{len(judged['missed_not_leaked'])}.", "", "## Missed defects", ""]
+    lines += [f"- {r['generation_id']} · {r['kind']} · {r['heading']} · {r['source']}"
+              + (" · NO OUTPUT" if r.get("error") else "") for r in judged["missed"]] or ["- none"]
     out = sha_dir / "scores"
     out.mkdir(exist_ok=True)
     (out / "CALIBRATION.md").write_text("\n".join(lines) + "\n", encoding="utf-8")
@@ -361,10 +605,12 @@ def cmd_score(a, *, sha_dir: Path | None = None) -> int:
                   f"\"{u['sentence']}\" — span \"{u['span']}\"" + (f" — ruled {rulings[key]}" if key in rulings else ""))
     (out / "NEW_FLAGS.md").write_text("\n".join(nf) + "\n", encoding="utf-8")
     (out / "calibration.json").write_text(json.dumps({
-        "prompt_sha12": sha_dir.name, "dev": a.dev, "held_out": a.held_out,
+        "prompt_sha12": sha_dir.name, "counting_rule": 3, "dev": a.dev, "held_out": a.held_out,
         "bar": BAR, "verdict": {k: {"value": v, "met": ok} for k, (v, ok) in verdict.items()},
-        "new_flag_precision": prec, "missed": judged["missed"]}, indent=2, default=str) + "\n", encoding="utf-8")
-    print("\n".join(lines[:12]))
+        "new_flag_precision": prec, "policy_tests": pol,
+        "missed": [{k: r.get(k) for k in ("generation_id", "kind", "heading", "source", "key", "error")}
+                   for r in judged["missed"]]}, indent=2, default=str) + "\n", encoding="utf-8")
+    print("\n".join(lines[:14]))
     return 0 if all(ok for _v, ok in verdict.values()) else 1
 
 

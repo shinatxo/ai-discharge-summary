@@ -1,0 +1,306 @@
+{
+  "generation_id": "w6-pipeline-e09-m01-c02-p04-x5/r2/S12",
+  "verify_patient": {
+    "verdicts": [
+      {
+        "sentence_id": "c_sections.0.s1",
+        "c_section_id": "c_sections.0",
+        "heading": "why_in_hospital",
+        "verdict": "supported",
+        "reason": "none",
+        "a_section_id": "sections.0",
+        "span": ""
+      },
+      {
+        "sentence_id": "c_sections.0.s2",
+        "c_section_id": "c_sections.0",
+        "heading": "why_in_hospital",
+        "verdict": "supported",
+        "reason": "none",
+        "a_section_id": "sections.0",
+        "span": ""
+      },
+      {
+        "sentence_id": "c_sections.0.s3",
+        "c_section_id": "c_sections.0",
+        "heading": "why_in_hospital",
+        "verdict": "supported",
+        "reason": "none",
+        "a_section_id": "sections.1",
+        "span": ""
+      },
+      {
+        "sentence_id": "c_sections.0.s4",
+        "c_section_id": "c_sections.0",
+        "heading": "why_in_hospital",
+        "verdict": "supported",
+        "reason": "none",
+        "a_section_id": "sections.1",
+        "span": ""
+      },
+      {
+        "sentence_id": "c_sections.0.s5",
+        "c_section_id": "c_sections.0",
+        "heading": "why_in_hospital",
+        "verdict": "supported",
+        "reason": "none",
+        "a_section_id": "sections.1",
+        "span": ""
+      },
+      {
+        "sentence_id": "c_sections.0.s6",
+        "c_section_id": "c_sections.0",
+        "heading": "why_in_hospital",
+        "verdict": "supported",
+        "reason": "none",
+        "a_section_id": "sections.1",
+        "span": ""
+      },
+      {
+        "sentence_id": "c_sections.0.s7",
+        "c_section_id": "c_sections.0",
+        "heading": "why_in_hospital",
+        "verdict": "supported",
+        "reason": "none",
+        "a_section_id": "sections.1",
+        "span": ""
+      },
+      {
+        "sentence_id": "c_sections.0.s8",
+        "c_section_id": "c_sections.0",
+        "heading": "why_in_hospital",
+        "verdict": "supported",
+        "reason": "none",
+        "a_section_id": "sections.1",
+        "span": ""
+      },
+      {
+        "sentence_id": "c_sections.0.s9",
+        "c_section_id": "c_sections.0",
+        "heading": "why_in_hospital",
+        "verdict": "supported",
+        "reason": "none",
+        "a_section_id": "sections.1",
+        "span": ""
+      },
+      {
+        "sentence_id": "c_sections.1.s1",
+        "c_section_id": "c_sections.1",
+        "heading": "what_we_did",
+        "verdict": "supported",
+        "reason": "none",
+        "a_section_id": "sections.3",
+        "span": ""
+      },
+      {
+        "sentence_id": "c_sections.1.s2",
+        "c_section_id": "c_sections.1",
+        "heading": "what_we_did",
+        "verdict": "supported",
+        "reason": "none",
+        "a_section_id": "sections.3",
+        "span": ""
+      },
+      {
+        "sentence_id": "c_sections.1.s3",
+        "c_section_id": "c_sections.1",
+        "heading": "what_we_did",
+        "verdict": "supported",
+        "reason": "none",
+        "a_section_id": "sections.3",
+        "span": ""
+      },
+      {
+        "sentence_id": "c_sections.1.s4",
+        "c_section_id": "c_sections.1",
+        "heading": "what_we_did",
+        "verdict": "supported",
+        "reason": "none",
+        "a_section_id": "sections.3",
+        "span": ""
+      },
+      {
+        "sentence_id": "c_sections.1.s5",
+        "c_section_id": "c_sections.1",
+        "heading": "what_we_did",
+        "verdict": "supported",
+        "reason": "none",
+        "a_section_id": "sections.3",
+        "span": ""
+      },
+      {
+        "sentence_id": "c_sections.1.s6",
+        "c_section_id": "c_sections.1",
+        "heading": "what_we_did",
+        "verdict": "changed",
+        "reason": "certainty_or_completion",
+        "a_section_id": "sections.2",
+        "span": "which showed nothing new or urgent"
+      },
+      {
+        "sentence_id": "c_sections.1.s7",
+        "c_section_id": "c_sections.1",
+        "heading": "what_we_did",
+        "verdict": "added",
+        "reason": "new_fact",
+        "a_section_id": "sections.2",
+        "span": "Did a scan of your tummy, which showed the bowel changes and the bowel inflammation"
+      },
+      {
+        "sentence_id": "c_sections.1.s8",
+        "c_section_id": "c_sections.1",
+        "heading": "what_we_did",
+        "verdict": "supported",
+        "reason": "none",
+        "a_section_id": "sections.2",
+        "span": ""
+      },
+      {
+        "sentence_id": "c_sections.1.s9",
+        "c_section_id": "c_sections.1",
+        "heading": "what_we_did",
+        "verdict": "supported",
+        "reason": "none",
+        "a_section_id": "sections.2",
+        "span": ""
+      },
+      {
+        "sentence_id": "c_sections.1.s10",
+        "c_section_id": "c_sections.1",
+        "heading": "what_we_did",
+        "verdict": "supported",
+        "reason": "none",
+        "a_section_id": "sections.2",
+        "span": ""
+      },
+      {
+        "sentence_id": "c_sections.1.s11",
+        "c_section_id": "c_sections.1",
+        "heading": "what_we_did",
+        "verdict": "supported",
+        "reason": "none",
+        "a_section_id": "sections.3",
+        "span": ""
+      },
+      {
+        "sentence_id": "c_sections.3.s1",
+        "c_section_id": "c_sections.3",
+        "heading": "next_steps",
+        "verdict": "supported",
+        "reason": "none",
+        "a_section_id": "sections.7",
+        "span": ""
+      },
+      {
+        "sentence_id": "c_sections.3.s2",
+        "c_section_id": "c_sections.3",
+        "heading": "next_steps",
+        "verdict": "added",
+        "reason": "cause_or_purpose",
+        "a_section_id": "sections.7",
+        "span": "This is because the team thinks you may have an underlying memory condition."
+      }
+    ],
+    "unreached": [
+      {
+        "c_section_id": "c_sections.0",
+        "heading": "why_in_hospital",
+        "a_section_id": "sections.1",
+        "reason": "never_drop_item",
+        "span": "Recent discharge from CCU following NSTEMI, on DAPT"
+      },
+      {
+        "c_section_id": "c_sections.0",
+        "heading": "why_in_hospital",
+        "a_section_id": "sections.1",
+        "reason": "never_drop_item",
+        "span": "?Underlying dementia — advised to refer to memory clinic as outpatient"
+      },
+      {
+        "c_section_id": "c_sections.0",
+        "heading": "why_in_hospital",
+        "a_section_id": "sections.1",
+        "reason": "never_drop_item",
+        "span": "Hypertension"
+      },
+      {
+        "c_section_id": "c_sections.0",
+        "heading": "why_in_hospital",
+        "a_section_id": "sections.1",
+        "reason": "never_drop_item",
+        "span": "Ischaemic heart disease (IHD)"
+      },
+      {
+        "c_section_id": "c_sections.0",
+        "heading": "why_in_hospital",
+        "a_section_id": "sections.1",
+        "reason": "never_drop_item",
+        "span": "Chronic kidney disease (CKD)"
+      },
+      {
+        "c_section_id": "c_sections.0",
+        "heading": "why_in_hospital",
+        "a_section_id": "sections.1",
+        "reason": "never_drop_item",
+        "span": "Closed fracture of rib"
+      },
+      {
+        "c_section_id": "c_sections.0",
+        "heading": "why_in_hospital",
+        "a_section_id": "sections.1",
+        "reason": "never_drop_item",
+        "span": "Fracture of neck of femur"
+      },
+      {
+        "c_section_id": "c_sections.0",
+        "heading": "why_in_hospital",
+        "a_section_id": "sections.1",
+        "reason": "never_drop_item",
+        "span": "Hyperparathyroidism"
+      },
+      {
+        "c_section_id": "c_sections.0",
+        "heading": "why_in_hospital",
+        "a_section_id": "sections.1",
+        "reason": "never_drop_item",
+        "span": "Carcinoma of cervix"
+      }
+    ],
+    "flagged": 12,
+    "checks": [],
+    "counts": {
+      "sentences": 22,
+      "supported": 19,
+      "by_verdict": {
+        "supported": 19,
+        "added": 2,
+        "changed": 1,
+        "qualifier_dropped": 0
+      },
+      "by_reason": {
+        "cause_or_purpose": 1,
+        "new_fact": 1,
+        "term_changed": 0,
+        "certainty_or_completion": 1,
+        "qualifier": 0,
+        "withheld_category": 0,
+        "instruction_or_promise": 0,
+        "other": 0
+      },
+      "unreached": 9,
+      "checks": 0
+    },
+    "call": {
+      "model_id": "anthropic.claude-sonnet-4-6",
+      "prompt_sha256": "996b88ca22a6b91f3ceb24debb311c26a0942e1c309dcf936edd01aaafaea256",
+      "stop_reason": "tool_use",
+      "attempts": 1,
+      "input_tokens": 1502,
+      "output_tokens": 1909,
+      "cache_read_tokens": 2271,
+      "cache_write_tokens": 0,
+      "latency_ms": 8691
+    }
+  },
+  "error": null
+}

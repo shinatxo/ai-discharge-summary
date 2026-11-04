@@ -1,0 +1,10 @@
+{
+  "batch_id": "w6-pipeline-e09-m01-c02-p04-x5",
+  "prompt_sha256": "996b88ca22a6b91f3ceb24debb311c26a0942e1c309dcf936edd01aaafaea256",
+  "prompt_path": "src/generate/pipeline/prompts/verify_patient.md",
+  "model_id": "anthropic.claude-sonnet-4-6",
+  "region": "eu-west-2",
+  "repeats": 3,
+  "held_out": false,
+  "created_at": "2026-11-04T15:15:10+00:00"
+}

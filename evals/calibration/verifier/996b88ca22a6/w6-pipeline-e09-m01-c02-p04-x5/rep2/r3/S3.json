@@ -1,0 +1,278 @@
+{
+  "generation_id": "w6-pipeline-e09-m01-c02-p04-x5/r3/S3",
+  "verify_patient": {
+    "verdicts": [
+      {
+        "sentence_id": "c_sections.0.s1",
+        "c_section_id": "c_sections.0",
+        "heading": "why_in_hospital",
+        "verdict": "supported",
+        "reason": "none",
+        "a_section_id": "sections.0",
+        "span": ""
+      },
+      {
+        "sentence_id": "c_sections.0.s2",
+        "c_section_id": "c_sections.0",
+        "heading": "why_in_hospital",
+        "verdict": "supported",
+        "reason": "none",
+        "a_section_id": "sections.0",
+        "span": ""
+      },
+      {
+        "sentence_id": "c_sections.0.s3",
+        "c_section_id": "c_sections.0",
+        "heading": "why_in_hospital",
+        "verdict": "supported",
+        "reason": "none",
+        "a_section_id": "sections.0",
+        "span": ""
+      },
+      {
+        "sentence_id": "c_sections.0.s4",
+        "c_section_id": "c_sections.0",
+        "heading": "why_in_hospital",
+        "verdict": "supported",
+        "reason": "none",
+        "a_section_id": "sections.0",
+        "span": ""
+      },
+      {
+        "sentence_id": "c_sections.0.s5",
+        "c_section_id": "c_sections.0",
+        "heading": "why_in_hospital",
+        "verdict": "supported",
+        "reason": "none",
+        "a_section_id": "sections.0",
+        "span": ""
+      },
+      {
+        "sentence_id": "c_sections.0.s6",
+        "c_section_id": "c_sections.0",
+        "heading": "why_in_hospital",
+        "verdict": "supported",
+        "reason": "none",
+        "a_section_id": "sections.0",
+        "span": ""
+      },
+      {
+        "sentence_id": "c_sections.0.s7",
+        "c_section_id": "c_sections.0",
+        "heading": "why_in_hospital",
+        "verdict": "supported",
+        "reason": "none",
+        "a_section_id": "sections.0",
+        "span": ""
+      },
+      {
+        "sentence_id": "c_sections.0.s8",
+        "c_section_id": "c_sections.0",
+        "heading": "why_in_hospital",
+        "verdict": "supported",
+        "reason": "none",
+        "a_section_id": "sections.1",
+        "span": ""
+      },
+      {
+        "sentence_id": "c_sections.0.s9",
+        "c_section_id": "c_sections.0",
+        "heading": "why_in_hospital",
+        "verdict": "qualifier_dropped",
+        "reason": "qualifier",
+        "a_section_id": "sections.1",
+        "span": "The team also noted recent relationship breakdown and work stress as part of what was going on for you."
+      },
+      {
+        "sentence_id": "c_sections.1.s1",
+        "c_section_id": "c_sections.1",
+        "heading": "what_we_did",
+        "verdict": "supported",
+        "reason": "none",
+        "a_section_id": "sections.2",
+        "span": ""
+      },
+      {
+        "sentence_id": "c_sections.1.s2",
+        "c_section_id": "c_sections.1",
+        "heading": "what_we_did",
+        "verdict": "supported",
+        "reason": "none",
+        "a_section_id": "sections.2",
+        "span": ""
+      },
+      {
+        "sentence_id": "c_sections.1.s3",
+        "c_section_id": "c_sections.1",
+        "heading": "what_we_did",
+        "verdict": "supported",
+        "reason": "none",
+        "a_section_id": "sections.2",
+        "span": ""
+      },
+      {
+        "sentence_id": "c_sections.1.s4",
+        "c_section_id": "c_sections.1",
+        "heading": "what_we_did",
+        "verdict": "supported",
+        "reason": "none",
+        "a_section_id": "sections.2",
+        "span": ""
+      },
+      {
+        "sentence_id": "c_sections.1.s5",
+        "c_section_id": "c_sections.1",
+        "heading": "what_we_did",
+        "verdict": "supported",
+        "reason": "none",
+        "a_section_id": "sections.2",
+        "span": ""
+      },
+      {
+        "sentence_id": "c_sections.1.s6",
+        "c_section_id": "c_sections.1",
+        "heading": "what_we_did",
+        "verdict": "supported",
+        "reason": "none",
+        "a_section_id": "sections.2",
+        "span": ""
+      },
+      {
+        "sentence_id": "c_sections.1.s7",
+        "c_section_id": "c_sections.1",
+        "heading": "what_we_did",
+        "verdict": "supported",
+        "reason": "none",
+        "a_section_id": "sections.2",
+        "span": ""
+      },
+      {
+        "sentence_id": "c_sections.1.s8",
+        "c_section_id": "c_sections.1",
+        "heading": "what_we_did",
+        "verdict": "supported",
+        "reason": "none",
+        "a_section_id": "sections.2",
+        "span": ""
+      },
+      {
+        "sentence_id": "c_sections.1.s9",
+        "c_section_id": "c_sections.1",
+        "heading": "what_we_did",
+        "verdict": "supported",
+        "reason": "none",
+        "a_section_id": "sections.3",
+        "span": ""
+      },
+      {
+        "sentence_id": "c_sections.1.s10",
+        "c_section_id": "c_sections.1",
+        "heading": "what_we_did",
+        "verdict": "supported",
+        "reason": "none",
+        "a_section_id": "sections.3",
+        "span": ""
+      },
+      {
+        "sentence_id": "c_sections.1.s11",
+        "c_section_id": "c_sections.1",
+        "heading": "what_we_did",
+        "verdict": "supported",
+        "reason": "none",
+        "a_section_id": "sections.3",
+        "span": ""
+      },
+      {
+        "sentence_id": "c_sections.1.s12",
+        "c_section_id": "c_sections.1",
+        "heading": "what_we_did",
+        "verdict": "supported",
+        "reason": "none",
+        "a_section_id": "sections.3",
+        "span": ""
+      },
+      {
+        "sentence_id": "c_sections.1.s13",
+        "c_section_id": "c_sections.1",
+        "heading": "what_we_did",
+        "verdict": "supported",
+        "reason": "none",
+        "a_section_id": "sections.3",
+        "span": ""
+      },
+      {
+        "sentence_id": "c_sections.1.s14",
+        "c_section_id": "c_sections.1",
+        "heading": "what_we_did",
+        "verdict": "qualifier_dropped",
+        "reason": "qualifier",
+        "a_section_id": "sections.3",
+        "span": "agreed you were ready to go home with early follow-up and a crisis line"
+      },
+      {
+        "sentence_id": "c_sections.3.s1",
+        "c_section_id": "c_sections.3",
+        "heading": "next_steps",
+        "verdict": "supported",
+        "reason": "none",
+        "a_section_id": "sections.8",
+        "span": ""
+      },
+      {
+        "sentence_id": "c_sections.3.s2",
+        "c_section_id": "c_sections.3",
+        "heading": "next_steps",
+        "verdict": "supported",
+        "reason": "none",
+        "a_section_id": "sections.8",
+        "span": ""
+      },
+      {
+        "sentence_id": "c_sections.3.s3",
+        "c_section_id": "c_sections.3",
+        "heading": "next_steps",
+        "verdict": "supported",
+        "reason": "none",
+        "a_section_id": "sections.9",
+        "span": ""
+      }
+    ],
+    "unreached": [],
+    "flagged": 2,
+    "checks": [],
+    "counts": {
+      "sentences": 26,
+      "supported": 24,
+      "by_verdict": {
+        "supported": 24,
+        "added": 0,
+        "changed": 0,
+        "qualifier_dropped": 2
+      },
+      "by_reason": {
+        "cause_or_purpose": 0,
+        "new_fact": 0,
+        "term_changed": 0,
+        "certainty_or_completion": 0,
+        "qualifier": 2,
+        "withheld_category": 0,
+        "instruction_or_promise": 0,
+        "other": 0
+      },
+      "unreached": 0,
+      "checks": 0
+    },
+    "call": {
+      "model_id": "anthropic.claude-sonnet-4-6",
+      "prompt_sha256": "996b88ca22a6b91f3ceb24debb311c26a0942e1c309dcf936edd01aaafaea256",
+      "stop_reason": "tool_use",
+      "attempts": 1,
+      "input_tokens": 1468,
+      "output_tokens": 1557,
+      "cache_read_tokens": 2271,
+      "cache_write_tokens": 0,
+      "latency_ms": 6949
+    }
+  },
+  "error": null
+}

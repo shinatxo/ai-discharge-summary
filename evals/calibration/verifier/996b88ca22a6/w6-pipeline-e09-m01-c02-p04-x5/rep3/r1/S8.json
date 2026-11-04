@@ -1,0 +1,205 @@
+{
+  "generation_id": "w6-pipeline-e09-m01-c02-p04-x5/r1/S8",
+  "verify_patient": {
+    "verdicts": [
+      {
+        "sentence_id": "c_sections.0.s1",
+        "c_section_id": "c_sections.0",
+        "heading": "why_in_hospital",
+        "verdict": "supported",
+        "reason": "none",
+        "a_section_id": "sections.0",
+        "span": ""
+      },
+      {
+        "sentence_id": "c_sections.0.s2",
+        "c_section_id": "c_sections.0",
+        "heading": "why_in_hospital",
+        "verdict": "supported",
+        "reason": "none",
+        "a_section_id": "sections.0",
+        "span": ""
+      },
+      {
+        "sentence_id": "c_sections.0.s3",
+        "c_section_id": "c_sections.0",
+        "heading": "why_in_hospital",
+        "verdict": "supported",
+        "reason": "none",
+        "a_section_id": "sections.0",
+        "span": ""
+      },
+      {
+        "sentence_id": "c_sections.0.s4",
+        "c_section_id": "c_sections.0",
+        "heading": "why_in_hospital",
+        "verdict": "supported",
+        "reason": "none",
+        "a_section_id": "sections.0",
+        "span": ""
+      },
+      {
+        "sentence_id": "c_sections.0.s5",
+        "c_section_id": "c_sections.0",
+        "heading": "why_in_hospital",
+        "verdict": "changed",
+        "reason": "term_changed",
+        "a_section_id": "sections.1",
+        "span": "a blood infection in a newborn"
+      },
+      {
+        "sentence_id": "c_sections.0.s6",
+        "c_section_id": "c_sections.0",
+        "heading": "why_in_hospital",
+        "verdict": "added",
+        "reason": "cause_or_purpose",
+        "a_section_id": "sections.1",
+        "span": "This was linked to"
+      },
+      {
+        "sentence_id": "c_sections.1.s1",
+        "c_section_id": "c_sections.1",
+        "heading": "what_we_did",
+        "verdict": "supported",
+        "reason": "none",
+        "a_section_id": "sections.2",
+        "span": ""
+      },
+      {
+        "sentence_id": "c_sections.1.s2",
+        "c_section_id": "c_sections.1",
+        "heading": "what_we_did",
+        "verdict": "changed",
+        "reason": "withheld_category",
+        "a_section_id": "sections.2",
+        "span": "This included blood tests and a blood culture (a test to look for infection in the blood)."
+      },
+      {
+        "sentence_id": "c_sections.1.s3",
+        "c_section_id": "c_sections.1",
+        "heading": "what_we_did",
+        "verdict": "supported",
+        "reason": "none",
+        "a_section_id": "sections.2",
+        "span": ""
+      },
+      {
+        "sentence_id": "c_sections.1.s4",
+        "c_section_id": "c_sections.1",
+        "heading": "what_we_did",
+        "verdict": "supported",
+        "reason": "none",
+        "a_section_id": "sections.3",
+        "span": ""
+      },
+      {
+        "sentence_id": "c_sections.1.s5",
+        "c_section_id": "c_sections.1",
+        "heading": "what_we_did",
+        "verdict": "supported",
+        "reason": "none",
+        "a_section_id": "sections.3",
+        "span": ""
+      },
+      {
+        "sentence_id": "c_sections.1.s6",
+        "c_section_id": "c_sections.1",
+        "heading": "what_we_did",
+        "verdict": "supported",
+        "reason": "none",
+        "a_section_id": "sections.3",
+        "span": ""
+      },
+      {
+        "sentence_id": "c_sections.1.s7",
+        "c_section_id": "c_sections.1",
+        "heading": "what_we_did",
+        "verdict": "added",
+        "reason": "new_fact",
+        "a_section_id": "sections.3",
+        "span": "and the blood test results"
+      },
+      {
+        "sentence_id": "c_sections.1.s8",
+        "c_section_id": "c_sections.1",
+        "heading": "what_we_did",
+        "verdict": "supported",
+        "reason": "none",
+        "a_section_id": "sections.3",
+        "span": ""
+      },
+      {
+        "sentence_id": "c_sections.1.s9",
+        "c_section_id": "c_sections.1",
+        "heading": "what_we_did",
+        "verdict": "supported",
+        "reason": "none",
+        "a_section_id": "sections.3",
+        "span": ""
+      },
+      {
+        "sentence_id": "c_sections.1.s10",
+        "c_section_id": "c_sections.1",
+        "heading": "what_we_did",
+        "verdict": "supported",
+        "reason": "none",
+        "a_section_id": "sections.2",
+        "span": ""
+      },
+      {
+        "sentence_id": "c_sections.3.s1",
+        "c_section_id": "c_sections.3",
+        "heading": "next_steps",
+        "verdict": "supported",
+        "reason": "none",
+        "a_section_id": "sections.7",
+        "span": ""
+      }
+    ],
+    "unreached": [
+      {
+        "c_section_id": "c_sections.1",
+        "heading": "what_we_did",
+        "a_section_id": "sections.2",
+        "reason": "never_drop_item",
+        "span": "LP was deferred given stable respiratory status."
+      }
+    ],
+    "flagged": 5,
+    "checks": [],
+    "counts": {
+      "sentences": 17,
+      "supported": 13,
+      "by_verdict": {
+        "supported": 13,
+        "added": 2,
+        "changed": 2,
+        "qualifier_dropped": 0
+      },
+      "by_reason": {
+        "cause_or_purpose": 1,
+        "new_fact": 1,
+        "term_changed": 1,
+        "certainty_or_completion": 0,
+        "qualifier": 0,
+        "withheld_category": 1,
+        "instruction_or_promise": 0,
+        "other": 0
+      },
+      "unreached": 1,
+      "checks": 0
+    },
+    "call": {
+      "model_id": "anthropic.claude-sonnet-4-6",
+      "prompt_sha256": "996b88ca22a6b91f3ceb24debb311c26a0942e1c309dcf936edd01aaafaea256",
+      "stop_reason": "tool_use",
+      "attempts": 1,
+      "input_tokens": 1155,
+      "output_tokens": 1133,
+      "cache_read_tokens": 2271,
+      "cache_write_tokens": 0,
+      "latency_ms": 5854
+    }
+  },
+  "error": null
+}

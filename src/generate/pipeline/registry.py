@@ -12,6 +12,7 @@ import json
 from dataclasses import dataclass
 from typing import Callable
 
+from .assemble import assemble_clinical, assemble_patient
 from .context import StepContext
 from .compose import compose_clinical
 from .compose_patient import compose_patient
@@ -49,6 +50,8 @@ _ALL_STEPS = (
     Step("compose_clinical", "06", "model", compose_clinical),
     Step("compose_patient", "07", "model", compose_patient),
     Step("verify_patient", "07v", "model", verify_patient),     # ADR-010 (4 Nov 2026)
+    Step("assemble_clinical", "08a", "code", assemble_clinical),   # piece 4 (5 Nov 2026)
+    Step("assemble_patient", "08b", "code", assemble_patient),     # piece 4: the release check
 )
 
 STEPS: dict[str, Step] = {s.name: s for s in _ALL_STEPS}

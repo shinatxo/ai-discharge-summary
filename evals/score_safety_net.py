@@ -43,7 +43,13 @@ from __future__ import annotations
 import re
 from dataclasses import dataclass, field
 
-import safety_net_gate as gate
+import sys as _sys
+from pathlib import Path as _Path
+
+_GEN = str(_Path(__file__).resolve().parent.parent / "src" / "generate")
+if _GEN not in _sys.path:
+    _sys.path.insert(0, _GEN)
+from pipeline import safety_net_gate as gate  # noqa: E402  (one copy, in the package — [A3])
 
 LOCATE_THRESHOLD = 0.6
 MIN_LOCATABLE_WORDS = 2

@@ -18,7 +18,7 @@ sys.path.insert(0, str(ROOT / "tests"))
 
 import gold as G  # noqa: E402
 import run_cold_eval as rce  # noqa: E402
-import safety_net_gate as gate  # noqa: E402
+from pipeline import safety_net_gate as gate  # noqa: E402
 import score_batch as SB  # noqa: E402
 import score_safety_net as S  # noqa: E402
 from pipeline import run_step  # noqa: E402

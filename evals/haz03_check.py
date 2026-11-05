@@ -37,7 +37,13 @@ Results carry the scenario ID, enum values and fixed labels — never note or ou
 
 from __future__ import annotations
 
-import safety_net_gate as gate
+import sys as _sys
+from pathlib import Path as _Path
+
+_GEN = str(_Path(__file__).resolve().parent.parent / "src" / "generate")
+if _GEN not in _sys.path:
+    _sys.path.insert(0, _GEN)
+from pipeline import safety_net_gate as gate  # noqa: E402  (one copy, in the package — [A3])
 
 CHECK_VERSION = 2
 PAEDIATRIC_GROUPS = ("neonate", "infant", "child")

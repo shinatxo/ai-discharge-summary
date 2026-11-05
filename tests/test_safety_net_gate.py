@@ -1,4 +1,5 @@
-"""Tests for the safety-net gate (evals/safety_net_gate.py).
+"""Tests for the safety-net gate (src/generate/pipeline/safety_net_gate.py — moved from
+evals/ on 5 Nov 2026, piece 4, [A3]).
 
 The FAIL cases are not invented: each is text the deployed prompt actually
 produced, quoted from the saved cold-eval runs, paired with the real source
@@ -29,9 +30,9 @@ from pathlib import Path
 
 import pytest
 
-sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "evals"))
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "src" / "generate"))
 
-from safety_net_gate import (  # noqa: E402
+from pipeline.safety_net_gate import (  # noqa: E402
     CANONICAL_ADULT,
     CANONICAL_PAEDIATRIC,
     PIPELINE_LINES,
@@ -273,12 +274,12 @@ def test_split_parts_of_a_combined_response():
 
 # --- the pipeline's pinned lines (CSO, 1 Oct 2026) — the default ------------
 
-def test_gate_lines_equal_the_pipeline_step_5b_lines():
-    # Two copies until the gate moves into the pipeline package at 8b ([A3]);
-    # this test is what keeps them one string.
-    sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "src" / "generate"))
+def test_gate_lines_are_the_pipeline_step_5b_lines():
+    # One copy since 5 Nov 2026 ([A3]): the gate IMPORTS 5b's strings, so this is
+    # identity, not equality of two copies. tests/test_gate_one_copy.py pins that no
+    # other module defines them.
     from pipeline.safety_net import ADULT_LINE, PAEDIATRIC_LINE
-    assert (CANONICAL_ADULT, CANONICAL_PAEDIATRIC) == (ADULT_LINE, PAEDIATRIC_LINE)
+    assert CANONICAL_ADULT is ADULT_LINE and CANONICAL_PAEDIATRIC is PAEDIATRIC_LINE
     assert PIPELINE_LINES == (ADULT_LINE, PAEDIATRIC_LINE)
 
 

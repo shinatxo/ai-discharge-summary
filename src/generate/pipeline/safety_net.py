@@ -30,8 +30,8 @@ gets the adult line, which is still a correct generic signpost.
 
 The pinned lines are the CSO's wording of 1 Oct 2026, verbatim. They name no
 symptom, threshold or diagnosis (WS2a §6 item 3) — do not edit them without a
-new CSO decision. evals/safety_net_gate.py carries the same two strings until
-the gate moves into this package at 8b; a test pins that they are identical.
+new CSO decision. Defined here ONCE: pipeline/safety_net_gate.py imports them
+(one copy since 5 Nov 2026, piece 4, [A3]; tests/test_gate_one_copy.py).
 """
 
 from __future__ import annotations

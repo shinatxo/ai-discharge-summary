@@ -83,6 +83,7 @@ from .converse import call_block, converse_with_throttle_retry
 from .errors import StepError
 from .retrieve import _RESUS_PATTERNS          # the same terms as 3b, the guard and step 6's check
 from .safety_net import PAEDIATRIC_GROUPS
+from .safety_net_gate import _SIGNPOST  # noqa: F401  (one copy — the gate owns it)
 from .schemas import PATIENT_HEADINGS, record_patient_version_schema, shape_errors
 
 TOOL_NAME = "record_patient_version"
@@ -153,15 +154,9 @@ _PLACEHOLDER = re.compile(r"\{\{[^{}]*\}\}")
 _NOT_DOCUMENTED = re.compile(r"\bnot\s+(?:documented|recorded)\b", re.IGNORECASE)
 _SECTION_ID = re.compile(r"sections\.\d+")
 
-# Urgency tokens — evals/safety_net_gate.py's _SIGNPOST, copied because the package
-# cannot import evals/ (the gate moves into the package at 8b, item 4); a test pins
-# the two together. Bare "emergency" is deliberately not a token ("an emergency
+# Urgency tokens: the gate's own _SIGNPOST, imported (one copy since 5 Nov 2026,
+# piece 4, [A3]). Bare "emergency" is deliberately not a token ("an emergency
 # operation").
-_SIGNPOST = re.compile(
-    r"(nhs\s*111|call\s*111|dial\s*111|\b999\b|\ba\s*&\s*e\b|"
-    r"accident and emergency|emergency department)",
-    re.I,
-)
 
 # Flag patterns. Broad on purpose: a false flag costs one CSO ruling; a miss is
 # HAZ-01's path (advice), [A1]'s (doses), HAZ-16's (sensitive), Q4's (numbers).

@@ -99,7 +99,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "src" / "generat
 import haz03_check as H3  # noqa: E402
 import reading_age as RA  # noqa: E402
 import rubric_checks as RC  # noqa: E402
-import safety_net_gate as gate  # noqa: E402
+from pipeline import safety_net_gate as gate  # noqa: E402
 import score_compose as SC  # noqa: E402
 from pipeline import compose_patient as CP7  # noqa: E402
 from pipeline import meaning as MN  # noqa: E402

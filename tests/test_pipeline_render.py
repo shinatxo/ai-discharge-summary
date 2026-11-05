@@ -15,7 +15,7 @@ sys.path.insert(0, str(ROOT / "evals"))
 from pipeline import StepError  # noqa: E402
 from pipeline import render as R  # noqa: E402
 from pipeline.safety_net import ADULT_LINE, PAEDIATRIC_LINE  # noqa: E402
-import safety_net_gate as gate  # noqa: E402
+from pipeline import safety_net_gate as gate  # noqa: E402
 
 
 def _e(drug="bisoprolol", tag="continued", dose="5mg", route=None, frequency="OD", previous=None,

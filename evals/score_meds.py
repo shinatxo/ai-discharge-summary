@@ -293,7 +293,12 @@ def _split_entries(section: str) -> tuple[list[str], list[str], str]:
 
 
 def view_from_v1(combined: str) -> MedView:
-    import safety_net_gate as gate
+    import sys
+    from pathlib import Path
+    gen = str(Path(__file__).resolve().parent.parent / "src" / "generate")
+    if gen not in sys.path:
+        sys.path.insert(0, gen)
+    from pipeline import safety_net_gate as gate
     part_a, _ = gate.split_parts(combined)
     section = med_section(part_a)
     if section is None:

@@ -1,5 +1,15 @@
 """Safety-net gate — a hard regression check anchored to the SOURCE NOTES.
 
+WHERE IT LIVES (moved 5 Nov 2026, WS1a step build piece 4, ADR-009 [A3]): here, in
+the worker package — ONE copy. Step 8b (pipeline/assemble.py) runs it at the point of
+use on the assembled PART A and PART C, fail-closed; the eval harness imports this
+same module (`from pipeline import safety_net_gate`). Ownership (CSO E1 (a), 5 Nov):
+the two pinned lines are defined in pipeline/safety_net.py (step 5b owns them) and
+imported here; `_SIGNPOST` and the gate logic are defined here and imported by
+step 7. tests/test_gate_one_copy.py fails if any of them is defined anywhere else.
+The v1 payload (V1_LINES, check_combined, split_parts) rides along until v1 is
+retired at the W11 cut-over — WS7 monitors v1 until then.
+
 WHY THIS EXISTS
 ---------------
 Prompt v0.6 forbade the patient version from adding clinical advice, and gave a
@@ -61,7 +71,8 @@ breathing gets worse", a bulleted red-flag list, or a prognostic claim such as
 "the cough can last 2 to 3 weeks". Those remain the eval rubric's job
 (EVAL_RESULTS.md dimension D2, hallucination). This is a floor, not a proof.
 
-Pure stdlib: no boto3, no network, importable from tests.
+Pure code: no boto3, no network. Imports only pipeline/safety_net.py (stdlib +
+pipeline/validate.py).
 """
 
 from __future__ import annotations
@@ -69,27 +80,21 @@ from __future__ import annotations
 import re
 from dataclasses import dataclass, field
 
+from .safety_net import ADULT_LINE, PAEDIATRIC_LINE
+
 # The pinned lines the gate accepts depend on WHICH generator it is checking,
 # so check() takes them as a parameter (decided 2 Oct 2026, ADR-009 W3):
 #
 # - PIPELINE_LINES (the default): the agentic pipeline's two pinned lines, CSO
 #   decision of 1 Oct 2026, adult and paediatric. Step 5b inserts them by code;
 #   the gate cannot tell which audience a document is for, so either is accepted
-#   (5b's own tests check the audience). These strings MUST equal
-#   src/generate/pipeline/safety_net.py — tests/test_safety_net_gate.py fails if
-#   they differ. One copy again when the gate moves into the pipeline at 8b.
+#   (5b's own tests check the audience). Defined ONCE, in pipeline/safety_net.py,
+#   and imported here (5 Nov 2026 — one copy, [A3]).
 # - V1_LINES: the single line the LIVE v1 prompts pin (src/generate/system_prompt.md,
 #   patient_system_prompt.md). Used only by evals/run_cold_eval.py to score v1 —
 #   the W4 baseline. Removed with v1 at the W11 cut-over.
-CANONICAL_ADULT = (
-    "If you have been given a number to call, use that first. Otherwise, if you are "
-    "worried, contact your GP or call NHS 111. Call 999 if it is an emergency."
-)
-CANONICAL_PAEDIATRIC = (
-    "If you have been given a number to call, use that first. Otherwise, if you are "
-    "worried about your child, contact your GP or call NHS 111. Call 999 if it is an "
-    "emergency."
-)
+CANONICAL_ADULT = ADULT_LINE
+CANONICAL_PAEDIATRIC = PAEDIATRIC_LINE
 PIPELINE_LINES = (CANONICAL_ADULT, CANONICAL_PAEDIATRIC)
 
 V1_CANONICAL = (

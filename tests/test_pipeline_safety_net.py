@@ -21,7 +21,7 @@ from pipeline import STEPS, StepError, run_step  # noqa: E402
 from pipeline.safety_net import AB_PINNED_LABEL, ADULT_LINE, PAEDIATRIC_LINE  # noqa: E402
 
 sys.path.insert(0, str(ROOT / "evals"))
-import safety_net_gate as gate  # noqa: E402
+from pipeline import safety_net_gate as gate  # noqa: E402
 from pipeline.schemas import FIELD_NAMES, wire_facts  # noqa: E402
 
 _SCENARIOS = {

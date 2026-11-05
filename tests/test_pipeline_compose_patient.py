@@ -27,7 +27,7 @@ from pipeline import meaning as MN  # noqa: E402
 from pipeline.retrieve import _RESUS_PATTERNS  # noqa: E402
 from pipeline.schemas import PATIENT_HEADINGS, record_patient_version_schema, shape_errors  # noqa: E402
 from test_pipeline_schema import limit_violations  # noqa: E402
-import safety_net_gate as gate  # noqa: E402
+from pipeline import safety_net_gate as gate  # noqa: E402
 
 
 def _a(idx, heading, text, part="part_a", fact_ids=("x.0",), unverified=()):

@@ -74,7 +74,8 @@ from pathlib import Path
 from zoneinfo import ZoneInfo
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-import safety_net_gate  # noqa: E402  (local module, same folder)
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "src" / "generate"))
+from pipeline import safety_net_gate  # noqa: E402  (one copy, in the package — [A3])
 
 try:
     import boto3

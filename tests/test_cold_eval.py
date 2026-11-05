@@ -15,9 +15,10 @@ from botocore.exceptions import ClientError
 
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "evals"))
+sys.path.insert(0, str(ROOT / "src" / "generate"))
 
 import run_cold_eval as rce  # noqa: E402
-import safety_net_gate  # noqa: E402
+from pipeline import safety_net_gate  # noqa: E402
 
 V1_LINE = safety_net_gate.V1_LINES[0]
 CORPUS, CORPUS_SHA = rce.load_corpus(rce.DEFAULT_CORPUS_PATH)

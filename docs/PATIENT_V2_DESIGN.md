@@ -26,7 +26,8 @@ cannot invent *beyond PART A*. It does nothing about advice invented *into* PART
 that is where the WS2a review found the invention actually happening
 (`docs/WS2a-DEVICE-DETERMINATION.md` §5.2). With the second pass on, PART A becomes the
 leaflet's sole input, so a bad PART A is propagated with nothing left to contradict it.
-The real control for that boundary is prompt v0.7 plus `evals/safety_net_gate.py`, which
+The real control for that boundary is prompt v0.7 plus the safety-net gate
+(`src/generate/pipeline/safety_net_gate.py` — moved from `evals/` on 5 Nov 2026), which
 checks PART A against the source notes. Read this section as a guarantee about one
 boundary, not about added advice in general.
 

@@ -1,0 +1,188 @@
+{
+  "generation_id": "w6-pipeline-e09-m01-c02-p04-x5/r2/S8",
+  "verify_patient": {
+    "verdicts": [
+      {
+        "sentence_id": "c_sections.0.s1",
+        "c_section_id": "c_sections.0",
+        "heading": "why_in_hospital",
+        "text": "Your child came in at 6 hours old with fast breathing, grunting, and a high temperature.",
+        "verdict": "supported",
+        "reason": "none",
+        "a_section_id": "sections.0",
+        "span": "",
+        "evidence_valid": true
+      },
+      {
+        "sentence_id": "c_sections.0.s2",
+        "c_section_id": "c_sections.0",
+        "heading": "why_in_hospital",
+        "text": "The team found:",
+        "verdict": "supported",
+        "reason": "none",
+        "a_section_id": "sections.1",
+        "span": "",
+        "evidence_valid": true
+      },
+      {
+        "sentence_id": "c_sections.0.s3",
+        "c_section_id": "c_sections.0",
+        "heading": "why_in_hospital",
+        "text": "- Neonatal sepsis (infection in a newborn)",
+        "verdict": "supported",
+        "reason": "none",
+        "a_section_id": "sections.1",
+        "span": "",
+        "evidence_valid": true
+      },
+      {
+        "sentence_id": "c_sections.1.s1",
+        "c_section_id": "c_sections.1",
+        "heading": "what_we_did",
+        "text": "The team did a septic screen, which included blood tests and a blood culture.",
+        "verdict": "qualifier_dropped",
+        "reason": "qualifier",
+        "a_section_id": "sections.2",
+        "span": "which included blood tests and a blood culture",
+        "evidence_valid": true
+      },
+      {
+        "sentence_id": "c_sections.1.s2",
+        "c_section_id": "c_sections.1",
+        "heading": "what_we_did",
+        "text": "The blood culture showed no growth at 36 hours and was negative at 48 hours.",
+        "verdict": "supported",
+        "reason": "none",
+        "a_section_id": "sections.2",
+        "span": "",
+        "evidence_valid": true
+      },
+      {
+        "sentence_id": "c_sections.1.s3",
+        "c_section_id": "c_sections.1",
+        "heading": "what_we_did",
+        "text": "Your child was treated with two intravenous (IV) antibiotics:",
+        "verdict": "supported",
+        "reason": "none",
+        "a_section_id": "sections.3",
+        "span": "",
+        "evidence_valid": true
+      },
+      {
+        "sentence_id": "c_sections.1.s4",
+        "c_section_id": "c_sections.1",
+        "heading": "what_we_did",
+        "text": "- a penicillin antibiotic (benzylpenicillin)",
+        "verdict": "supported",
+        "reason": "none",
+        "a_section_id": "sections.3",
+        "span": "",
+        "evidence_valid": true
+      },
+      {
+        "sentence_id": "c_sections.1.s5",
+        "c_section_id": "c_sections.1",
+        "heading": "what_we_did",
+        "text": "- an antibiotic (gentamicin)",
+        "verdict": "supported",
+        "reason": "none",
+        "a_section_id": "sections.3",
+        "span": "",
+        "evidence_valid": true
+      },
+      {
+        "sentence_id": "c_sections.1.s6",
+        "c_section_id": "c_sections.1",
+        "heading": "what_we_did",
+        "text": "The team decided to complete a 5-day course of IV antibiotics based on the clinical picture and the blood test results.",
+        "verdict": "changed",
+        "reason": "term_changed",
+        "a_section_id": "sections.3",
+        "span": "the blood test results",
+        "evidence_valid": true
+      },
+      {
+        "sentence_id": "c_sections.1.s7",
+        "c_section_id": "c_sections.1",
+        "heading": "what_we_did",
+        "text": "Your child completed that course.",
+        "verdict": "supported",
+        "reason": "none",
+        "a_section_id": "sections.3",
+        "span": "",
+        "evidence_valid": true
+      },
+      {
+        "sentence_id": "c_sections.1.s8",
+        "c_section_id": "c_sections.1",
+        "heading": "what_we_did",
+        "text": "Routine newborn checks were done.",
+        "verdict": "supported",
+        "reason": "none",
+        "a_section_id": "sections.3",
+        "span": "",
+        "evidence_valid": true
+      },
+      {
+        "sentence_id": "c_sections.1.s9",
+        "c_section_id": "c_sections.1",
+        "heading": "what_we_did",
+        "text": "Your child also had a newborn hearing screen, which passed.",
+        "verdict": "supported",
+        "reason": "none",
+        "a_section_id": "sections.2",
+        "span": "",
+        "evidence_valid": true
+      },
+      {
+        "sentence_id": "c_sections.3.s1",
+        "c_section_id": "c_sections.3",
+        "heading": "next_steps",
+        "text": "No routine follow-up has been arranged.",
+        "verdict": "supported",
+        "reason": "none",
+        "a_section_id": "sections.7",
+        "span": "",
+        "evidence_valid": true
+      }
+    ],
+    "unreached": [],
+    "flagged": 2,
+    "checks": [],
+    "counts": {
+      "sentences": 13,
+      "supported": 11,
+      "faults": 2,
+      "supported_uncited": 0,
+      "by_verdict": {
+        "added": 0,
+        "changed": 1,
+        "qualifier_dropped": 1
+      },
+      "by_reason": {
+        "cause_or_purpose": 0,
+        "new_fact": 0,
+        "term_changed": 1,
+        "certainty_or_completion": 0,
+        "qualifier": 1,
+        "withheld_category": 0,
+        "instruction_or_promise": 0,
+        "other": 0
+      },
+      "unreached": 0,
+      "checks": 0
+    },
+    "call": {
+      "model_id": "anthropic.claude-sonnet-4-6",
+      "prompt_sha256": "5273bb7b4f010279824bcd76daed857d1b3abb60195f36185a53fdf01c6dbb70",
+      "stop_reason": "tool_use",
+      "attempts": 1,
+      "input_tokens": 1110,
+      "output_tokens": 805,
+      "cache_read_tokens": 2767,
+      "cache_write_tokens": 0,
+      "latency_ms": 4203
+    }
+  },
+  "error": null
+}

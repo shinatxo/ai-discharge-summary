@@ -1,0 +1,345 @@
+{
+  "generation_id": "w6-pipeline-e09-m01-c02-p04-x5/r4/S9",
+  "verify_patient": {
+    "verdicts": [
+      {
+        "sentence_id": "c_sections.0.s1",
+        "c_section_id": "c_sections.0",
+        "heading": "why_in_hospital",
+        "text": "Your child came in because she had been:",
+        "verdict": "supported",
+        "reason": "none",
+        "a_section_id": "sections.0",
+        "span": "",
+        "evidence_valid": true
+      },
+      {
+        "sentence_id": "c_sections.0.s2",
+        "c_section_id": "c_sections.0",
+        "heading": "why_in_hospital",
+        "text": "- drinking and weeing much more than usual for 2 weeks",
+        "verdict": "supported",
+        "reason": "none",
+        "a_section_id": "sections.0",
+        "span": "",
+        "evidence_valid": true
+      },
+      {
+        "sentence_id": "c_sections.0.s3",
+        "c_section_id": "c_sections.0",
+        "heading": "why_in_hospital",
+        "text": "- losing weight",
+        "verdict": "supported",
+        "reason": "none",
+        "a_section_id": "sections.0",
+        "span": "",
+        "evidence_valid": true
+      },
+      {
+        "sentence_id": "c_sections.0.s4",
+        "c_section_id": "c_sections.0",
+        "heading": "why_in_hospital",
+        "text": "- vomiting, having tummy pain and feeling drowsy for 2 days",
+        "verdict": "supported",
+        "reason": "none",
+        "a_section_id": "sections.0",
+        "span": "",
+        "evidence_valid": true
+      },
+      {
+        "sentence_id": "c_sections.0.s5",
+        "c_section_id": "c_sections.0",
+        "heading": "why_in_hospital",
+        "text": "The team found that your child has type 1 diabetes.",
+        "verdict": "supported",
+        "reason": "none",
+        "a_section_id": "sections.1",
+        "span": "",
+        "evidence_valid": true
+      },
+      {
+        "sentence_id": "c_sections.0.s6",
+        "c_section_id": "c_sections.0",
+        "heading": "why_in_hospital",
+        "text": "She also had a serious complication of diabetes called diabetic ketoacidosis (DKA).",
+        "verdict": "supported",
+        "reason": "none",
+        "a_section_id": "sections.1",
+        "span": "",
+        "evidence_valid": true
+      },
+      {
+        "sentence_id": "c_sections.0.s7",
+        "c_section_id": "c_sections.0",
+        "heading": "why_in_hospital",
+        "text": "This was a new diagnosis.",
+        "verdict": "supported",
+        "reason": "none",
+        "a_section_id": "sections.1",
+        "span": "",
+        "evidence_valid": true
+      },
+      {
+        "sentence_id": "c_sections.1.s1",
+        "c_section_id": "c_sections.1",
+        "heading": "what_we_did",
+        "text": "The team did blood tests.",
+        "verdict": "supported",
+        "reason": "none",
+        "a_section_id": "sections.2",
+        "span": "",
+        "evidence_valid": true
+      },
+      {
+        "sentence_id": "c_sections.1.s2",
+        "c_section_id": "c_sections.1",
+        "heading": "what_we_did",
+        "text": "These showed high blood sugar and high ketones, and that her blood had become too acidic.",
+        "verdict": "supported",
+        "reason": "none",
+        "a_section_id": "sections.2",
+        "span": "",
+        "evidence_valid": true
+      },
+      {
+        "sentence_id": "c_sections.1.s3",
+        "c_section_id": "c_sections.1",
+        "heading": "what_we_did",
+        "text": "By Day 2, the tests showed the acidosis was getting better.",
+        "verdict": "supported",
+        "reason": "qualifier",
+        "a_section_id": "sections.2",
+        "span": "the acidosis was getting better",
+        "evidence_valid": true
+      },
+      {
+        "sentence_id": "c_sections.1.s4",
+        "c_section_id": "c_sections.1",
+        "heading": "what_we_did",
+        "text": "Your child was cared for in the high-dependency area of the ward.",
+        "verdict": "supported",
+        "reason": "none",
+        "a_section_id": "sections.3",
+        "span": "",
+        "evidence_valid": true
+      },
+      {
+        "sentence_id": "c_sections.1.s5",
+        "c_section_id": "c_sections.1",
+        "heading": "what_we_did",
+        "text": "The team looking after the intensive care unit was also informed.",
+        "verdict": "supported",
+        "reason": "none",
+        "a_section_id": "sections.3",
+        "span": "",
+        "evidence_valid": true
+      },
+      {
+        "sentence_id": "c_sections.1.s6",
+        "c_section_id": "c_sections.1",
+        "heading": "what_we_did",
+        "text": "She was treated with:",
+        "verdict": "supported",
+        "reason": "none",
+        "a_section_id": "sections.3",
+        "span": "",
+        "evidence_valid": true
+      },
+      {
+        "sentence_id": "c_sections.1.s7",
+        "c_section_id": "c_sections.1",
+        "heading": "what_we_did",
+        "text": "- fluids given through a drip",
+        "verdict": "supported",
+        "reason": "qualifier",
+        "a_section_id": "sections.3",
+        "span": "fluids given through a drip",
+        "evidence_valid": true
+      },
+      {
+        "sentence_id": "c_sections.1.s8",
+        "c_section_id": "c_sections.1",
+        "heading": "what_we_did",
+        "text": "- insulin given through a drip",
+        "verdict": "supported",
+        "reason": "none",
+        "a_section_id": "sections.3",
+        "span": "",
+        "evidence_valid": true
+      },
+      {
+        "sentence_id": "c_sections.1.s9",
+        "c_section_id": "c_sections.1",
+        "heading": "what_we_did",
+        "text": "- potassium replacement through the drip",
+        "verdict": "supported",
+        "reason": "none",
+        "a_section_id": "sections.3",
+        "span": "",
+        "evidence_valid": true
+      },
+      {
+        "sentence_id": "c_sections.1.s10",
+        "c_section_id": "c_sections.1",
+        "heading": "what_we_did",
+        "text": "- checks every hour",
+        "verdict": "supported",
+        "reason": "none",
+        "a_section_id": "sections.3",
+        "span": "",
+        "evidence_valid": true
+      },
+      {
+        "sentence_id": "c_sections.1.s11",
+        "c_section_id": "c_sections.1",
+        "heading": "what_we_did",
+        "text": "On Day 2, she moved on to insulin given by injection under the skin (a basal-bolus regimen).",
+        "verdict": "supported",
+        "reason": "none",
+        "a_section_id": "sections.3",
+        "span": "",
+        "evidence_valid": true
+      },
+      {
+        "sentence_id": "c_sections.1.s12",
+        "c_section_id": "c_sections.1",
+        "heading": "what_we_did",
+        "text": "The diabetes nurse and dietician started working with your child and your family.",
+        "verdict": "supported",
+        "reason": "none",
+        "a_section_id": "sections.3",
+        "span": "",
+        "evidence_valid": true
+      },
+      {
+        "sentence_id": "c_sections.1.s13",
+        "c_section_id": "c_sections.1",
+        "heading": "what_we_did",
+        "text": "Education began, including carbohydrate counting, how to manage low blood sugar, and what to do when your child is unwell.",
+        "verdict": "supported",
+        "reason": "none",
+        "a_section_id": "sections.3",
+        "span": "",
+        "evidence_valid": true
+      },
+      {
+        "sentence_id": "c_sections.3.s1",
+        "c_section_id": "c_sections.3",
+        "heading": "next_steps",
+        "text": "- The diabetes team will follow up in 1 week.",
+        "verdict": "supported",
+        "reason": "none",
+        "a_section_id": "sections.7",
+        "span": "",
+        "evidence_valid": true
+      },
+      {
+        "sentence_id": "c_sections.3.s2",
+        "c_section_id": "c_sections.3",
+        "heading": "next_steps",
+        "text": "- Phone support is available in the time before that appointment.",
+        "verdict": "supported",
+        "reason": "none",
+        "a_section_id": "sections.7",
+        "span": "",
+        "evidence_valid": true
+      },
+      {
+        "sentence_id": "c_sections.3.s3",
+        "c_section_id": "c_sections.3",
+        "heading": "next_steps",
+        "text": "- A dietician follow-up has been arranged.",
+        "verdict": "supported",
+        "reason": "none",
+        "a_section_id": "sections.7",
+        "span": "",
+        "evidence_valid": true
+      },
+      {
+        "sentence_id": "c_sections.3.s4",
+        "c_section_id": "c_sections.3",
+        "heading": "next_steps",
+        "text": "- Your child's GP has been made aware.",
+        "verdict": "supported",
+        "reason": "none",
+        "a_section_id": "sections.8",
+        "span": "",
+        "evidence_valid": true
+      },
+      {
+        "sentence_id": "c_sections.3.s5",
+        "c_section_id": "c_sections.3",
+        "heading": "next_steps",
+        "text": "No urgent action is needed from the GP at this time.",
+        "verdict": "supported",
+        "reason": "none",
+        "a_section_id": "sections.8",
+        "span": "",
+        "evidence_valid": true
+      }
+    ],
+    "unreached": [],
+    "flagged": 0,
+    "checks": [
+      {
+        "check": "reason_mismatch",
+        "sentence_id": "c_sections.1.s3",
+        "c_section_id": "c_sections.1",
+        "token": "qualifier"
+      },
+      {
+        "check": "span_on_supported",
+        "sentence_id": "c_sections.1.s3",
+        "c_section_id": "c_sections.1",
+        "token": null
+      },
+      {
+        "check": "reason_mismatch",
+        "sentence_id": "c_sections.1.s7",
+        "c_section_id": "c_sections.1",
+        "token": "qualifier"
+      },
+      {
+        "check": "span_on_supported",
+        "sentence_id": "c_sections.1.s7",
+        "c_section_id": "c_sections.1",
+        "token": null
+      }
+    ],
+    "counts": {
+      "sentences": 25,
+      "supported": 25,
+      "faults": 0,
+      "supported_uncited": 0,
+      "by_verdict": {
+        "added": 0,
+        "changed": 0,
+        "qualifier_dropped": 0
+      },
+      "by_reason": {
+        "cause_or_purpose": 0,
+        "new_fact": 0,
+        "term_changed": 0,
+        "certainty_or_completion": 0,
+        "qualifier": 0,
+        "withheld_category": 0,
+        "instruction_or_promise": 0,
+        "other": 0
+      },
+      "unreached": 0,
+      "checks": 4
+    },
+    "call": {
+      "model_id": "anthropic.claude-sonnet-4-6",
+      "prompt_sha256": "5273bb7b4f010279824bcd76daed857d1b3abb60195f36185a53fdf01c6dbb70",
+      "stop_reason": "tool_use",
+      "attempts": 1,
+      "input_tokens": 1404,
+      "output_tokens": 1474,
+      "cache_read_tokens": 2767,
+      "cache_write_tokens": 0,
+      "latency_ms": 6479
+    }
+  },
+  "error": null
+}

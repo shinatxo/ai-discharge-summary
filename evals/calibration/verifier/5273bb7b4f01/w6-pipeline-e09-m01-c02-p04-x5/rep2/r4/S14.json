@@ -1,0 +1,221 @@
+{
+  "generation_id": "w6-pipeline-e09-m01-c02-p04-x5/r4/S14",
+  "verify_patient": {
+    "verdicts": [
+      {
+        "sentence_id": "c_sections.0.s1",
+        "c_section_id": "c_sections.0",
+        "heading": "why_in_hospital",
+        "text": "You came in with sudden drooping on the right side of your face, weakness in your right arm, and difficulty speaking.",
+        "verdict": "supported",
+        "reason": "none",
+        "a_section_id": "sections.0",
+        "span": "",
+        "evidence_valid": true
+      },
+      {
+        "sentence_id": "c_sections.0.s2",
+        "c_section_id": "c_sections.0",
+        "heading": "why_in_hospital",
+        "text": "The team found you had:",
+        "verdict": "supported",
+        "reason": "none",
+        "a_section_id": "sections.1",
+        "span": "",
+        "evidence_valid": true
+      },
+      {
+        "sentence_id": "c_sections.0.s3",
+        "c_section_id": "c_sections.0",
+        "heading": "why_in_hospital",
+        "text": "- A stroke (acute ischaemic stroke)",
+        "verdict": "supported",
+        "reason": "none",
+        "a_section_id": "sections.1",
+        "span": "",
+        "evidence_valid": true
+      },
+      {
+        "sentence_id": "c_sections.0.s4",
+        "c_section_id": "c_sections.0",
+        "heading": "why_in_hospital",
+        "text": "- An irregular heartbeat (atrial fibrillation), which had not been treated with blood-thinning medicine before",
+        "verdict": "supported",
+        "reason": "none",
+        "a_section_id": "sections.1",
+        "span": "",
+        "evidence_valid": true
+      },
+      {
+        "sentence_id": "c_sections.1.s1",
+        "c_section_id": "c_sections.1",
+        "heading": "what_we_did",
+        "text": "You had a scan of your head.",
+        "verdict": "changed",
+        "reason": "term_changed",
+        "a_section_id": "sections.2",
+        "span": "a scan of your head",
+        "evidence_valid": true
+      },
+      {
+        "sentence_id": "c_sections.1.s2",
+        "c_section_id": "c_sections.1",
+        "heading": "what_we_did",
+        "text": "It showed no bleeding.",
+        "verdict": "added",
+        "reason": "new_fact",
+        "a_section_id": "sections.2",
+        "span": "no bleeding",
+        "evidence_valid": true
+      },
+      {
+        "sentence_id": "c_sections.1.s3",
+        "c_section_id": "c_sections.1",
+        "heading": "what_we_did",
+        "text": "You were given a clot-busting medicine (alteplase) on day 1.",
+        "verdict": "supported",
+        "reason": "none",
+        "a_section_id": "sections.3",
+        "span": "",
+        "evidence_valid": true
+      },
+      {
+        "sentence_id": "c_sections.1.s4",
+        "c_section_id": "c_sections.1",
+        "heading": "what_we_did",
+        "text": "A second scan on day 2 also showed no bleeding.",
+        "verdict": "added",
+        "reason": "new_fact",
+        "a_section_id": "sections.2",
+        "span": "also showed no bleeding",
+        "evidence_valid": true
+      },
+      {
+        "sentence_id": "c_sections.1.s5",
+        "c_section_id": "c_sections.1",
+        "heading": "what_we_did",
+        "text": "A speech and language therapist assessed your swallowing.",
+        "verdict": "supported",
+        "reason": "none",
+        "a_section_id": "sections.3",
+        "span": "",
+        "evidence_valid": true
+      },
+      {
+        "sentence_id": "c_sections.1.s6",
+        "c_section_id": "c_sections.1",
+        "heading": "what_we_did",
+        "text": "At first your swallow was not safe, so you were fed through a tube into your stomach (nasogastric feeding).",
+        "verdict": "supported",
+        "reason": "none",
+        "a_section_id": "sections.3",
+        "span": "",
+        "evidence_valid": true
+      },
+      {
+        "sentence_id": "c_sections.1.s7",
+        "c_section_id": "c_sections.1",
+        "heading": "what_we_did",
+        "text": "Your swallow recovered on day 3.",
+        "verdict": "supported",
+        "reason": "none",
+        "a_section_id": "sections.3",
+        "span": "",
+        "evidence_valid": true
+      },
+      {
+        "sentence_id": "c_sections.1.s8",
+        "c_section_id": "c_sections.1",
+        "heading": "what_we_did",
+        "text": "On day 4, a blood-thinning medicine (apixaban) was started for your irregular heartbeat, following the stroke team's protocol.",
+        "verdict": "supported",
+        "reason": "none",
+        "a_section_id": "sections.3",
+        "span": "",
+        "evidence_valid": true
+      },
+      {
+        "sentence_id": "c_sections.1.s9",
+        "c_section_id": "c_sections.1",
+        "heading": "what_we_did",
+        "text": "The early supported discharge team have accepted you.",
+        "verdict": "supported",
+        "reason": "none",
+        "a_section_id": "sections.3",
+        "span": "",
+        "evidence_valid": true
+      },
+      {
+        "sentence_id": "c_sections.3.s1",
+        "c_section_id": "c_sections.3",
+        "heading": "next_steps",
+        "text": "- You will receive early supported discharge and community stroke rehabilitation.",
+        "verdict": "supported",
+        "reason": "none",
+        "a_section_id": "sections.7",
+        "span": "",
+        "evidence_valid": true
+      },
+      {
+        "sentence_id": "c_sections.3.s2",
+        "c_section_id": "c_sections.3",
+        "heading": "next_steps",
+        "text": "- You have a stroke clinic appointment at 6 weeks.",
+        "verdict": "supported",
+        "reason": "none",
+        "a_section_id": "sections.7",
+        "span": "",
+        "evidence_valid": true
+      },
+      {
+        "sentence_id": "c_sections.3.s3",
+        "c_section_id": "c_sections.3",
+        "heading": "next_steps",
+        "text": "- Your GP will monitor your blood pressure and your blood sugar levels (HbA1c).",
+        "verdict": "supported",
+        "reason": "none",
+        "a_section_id": "sections.8",
+        "span": "",
+        "evidence_valid": true
+      }
+    ],
+    "unreached": [],
+    "flagged": 3,
+    "checks": [],
+    "counts": {
+      "sentences": 16,
+      "supported": 13,
+      "faults": 3,
+      "supported_uncited": 0,
+      "by_verdict": {
+        "added": 2,
+        "changed": 1,
+        "qualifier_dropped": 0
+      },
+      "by_reason": {
+        "cause_or_purpose": 0,
+        "new_fact": 2,
+        "term_changed": 1,
+        "certainty_or_completion": 0,
+        "qualifier": 0,
+        "withheld_category": 0,
+        "instruction_or_promise": 0,
+        "other": 0
+      },
+      "unreached": 0,
+      "checks": 0
+    },
+    "call": {
+      "model_id": "anthropic.claude-sonnet-4-6",
+      "prompt_sha256": "5273bb7b4f010279824bcd76daed857d1b3abb60195f36185a53fdf01c6dbb70",
+      "stop_reason": "tool_use",
+      "attempts": 1,
+      "input_tokens": 1273,
+      "output_tokens": 981,
+      "cache_read_tokens": 2767,
+      "cache_write_tokens": 0,
+      "latency_ms": 4836
+    }
+  },
+  "error": null
+}

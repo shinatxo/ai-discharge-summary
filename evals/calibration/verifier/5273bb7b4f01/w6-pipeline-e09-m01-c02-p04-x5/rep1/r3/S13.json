@@ -1,0 +1,375 @@
+{
+  "generation_id": "w6-pipeline-e09-m01-c02-p04-x5/r3/S13",
+  "verify_patient": {
+    "verdicts": [
+      {
+        "sentence_id": "c_sections.0.s1",
+        "c_section_id": "c_sections.0",
+        "heading": "why_in_hospital",
+        "text": "You came into hospital with a serious infection of the soft tissue in your left thigh.",
+        "verdict": "supported",
+        "reason": "none",
+        "a_section_id": "sections.0",
+        "span": "",
+        "evidence_valid": true
+      },
+      {
+        "sentence_id": "c_sections.0.s2",
+        "c_section_id": "c_sections.0",
+        "heading": "why_in_hospital",
+        "text": "This caused septic shock — a severe response to infection that affected your whole body.",
+        "verdict": "added",
+        "reason": "cause_or_purpose",
+        "a_section_id": "sections.0",
+        "span": "a severe response to infection that affected your whole body",
+        "evidence_valid": true
+      },
+      {
+        "sentence_id": "c_sections.0.s3",
+        "c_section_id": "c_sections.0",
+        "heading": "why_in_hospital",
+        "text": "During your stay, the team also found and treated:",
+        "verdict": "supported",
+        "reason": "none",
+        "a_section_id": "sections.1",
+        "span": "",
+        "evidence_valid": true
+      },
+      {
+        "sentence_id": "c_sections.0.s4",
+        "c_section_id": "c_sections.0",
+        "heading": "why_in_hospital",
+        "text": "- Acute respiratory distress syndrome (ARDS)",
+        "verdict": "supported",
+        "reason": "none",
+        "a_section_id": "sections.1",
+        "span": "",
+        "evidence_valid": true
+      },
+      {
+        "sentence_id": "c_sections.0.s5",
+        "c_section_id": "c_sections.0",
+        "heading": "why_in_hospital",
+        "text": "- Acute kidney injury",
+        "verdict": "supported",
+        "reason": "none",
+        "a_section_id": "sections.1",
+        "span": "",
+        "evidence_valid": true
+      },
+      {
+        "sentence_id": "c_sections.0.s6",
+        "c_section_id": "c_sections.0",
+        "heading": "why_in_hospital",
+        "text": "- Weakness picked up in the ICU",
+        "verdict": "supported",
+        "reason": "none",
+        "a_section_id": "sections.1",
+        "span": "",
+        "evidence_valid": true
+      },
+      {
+        "sentence_id": "c_sections.0.s7",
+        "c_section_id": "c_sections.0",
+        "heading": "why_in_hospital",
+        "text": "- A line infection on day 14",
+        "verdict": "supported",
+        "reason": "none",
+        "a_section_id": "sections.1",
+        "span": "",
+        "evidence_valid": true
+      },
+      {
+        "sentence_id": "c_sections.0.s8",
+        "c_section_id": "c_sections.0",
+        "heading": "why_in_hospital",
+        "text": "- New atrial fibrillation (an irregular heart rhythm), which was rate-controlled",
+        "verdict": "supported",
+        "reason": "none",
+        "a_section_id": "sections.1",
+        "span": "",
+        "evidence_valid": true
+      },
+      {
+        "sentence_id": "c_sections.1.s1",
+        "c_section_id": "c_sections.1",
+        "heading": "what_we_did",
+        "text": "Tests showed the infection was caused by Group A Streptococcus and anaerobes (types of bacteria).",
+        "verdict": "added",
+        "reason": "cause_or_purpose",
+        "a_section_id": "sections.2",
+        "span": "the infection was caused by",
+        "evidence_valid": true
+      },
+      {
+        "sentence_id": "c_sections.1.s2",
+        "c_section_id": "c_sections.1",
+        "heading": "what_we_did",
+        "text": "To support your body, the team:",
+        "verdict": "supported",
+        "reason": "none",
+        "a_section_id": "sections.3",
+        "span": "",
+        "evidence_valid": true
+      },
+      {
+        "sentence_id": "c_sections.1.s3",
+        "c_section_id": "c_sections.1",
+        "heading": "what_we_did",
+        "text": "- Put you on a breathing machine (ventilator)",
+        "verdict": "supported",
+        "reason": "none",
+        "a_section_id": "sections.3",
+        "span": "",
+        "evidence_valid": true
+      },
+      {
+        "sentence_id": "c_sections.1.s4",
+        "c_section_id": "c_sections.1",
+        "heading": "what_we_did",
+        "text": "- Gave you medicine to support your blood pressure",
+        "verdict": "supported",
+        "reason": "none",
+        "a_section_id": "sections.3",
+        "span": "",
+        "evidence_valid": true
+      },
+      {
+        "sentence_id": "c_sections.1.s5",
+        "c_section_id": "c_sections.1",
+        "heading": "what_we_did",
+        "text": "- Used a kidney-filtering machine (continuous veno-venous haemofiltration, CVVH) while your kidneys recovered",
+        "verdict": "added",
+        "reason": "cause_or_purpose",
+        "a_section_id": "sections.3",
+        "span": "while your kidneys recovered",
+        "evidence_valid": true
+      },
+      {
+        "sentence_id": "c_sections.1.s6",
+        "c_section_id": "c_sections.1",
+        "heading": "what_we_did",
+        "text": "- Turned you face-down twice to help your lungs (prone positioning)",
+        "verdict": "added",
+        "reason": "cause_or_purpose",
+        "a_section_id": "sections.3",
+        "span": "to help your lungs",
+        "evidence_valid": true
+      },
+      {
+        "sentence_id": "c_sections.1.s7",
+        "c_section_id": "c_sections.1",
+        "heading": "what_we_did",
+        "text": "For the infection in your thigh, you had four operations to remove infected tissue (debridements) on days 0, 2, 5 and 9.",
+        "verdict": "supported",
+        "reason": "none",
+        "a_section_id": "sections.3",
+        "span": "",
+        "evidence_valid": true
+      },
+      {
+        "sentence_id": "c_sections.1.s8",
+        "c_section_id": "c_sections.1",
+        "heading": "what_we_did",
+        "text": "After that, the wound was washed out, closed, and a wound dressing (VAC dressing) was applied.",
+        "verdict": "changed",
+        "reason": "certainty_or_completion",
+        "a_section_id": "sections.3",
+        "span": "closed",
+        "evidence_valid": true
+      },
+      {
+        "sentence_id": "c_sections.1.s9",
+        "c_section_id": "c_sections.1",
+        "heading": "what_we_did",
+        "text": "Your wound is now healing, with support from the district nurse and tissue viability team.",
+        "verdict": "changed",
+        "reason": "certainty_or_completion",
+        "a_section_id": "sections.3",
+        "span": "is now healing",
+        "evidence_valid": true
+      },
+      {
+        "sentence_id": "c_sections.1.s10",
+        "c_section_id": "c_sections.1",
+        "heading": "what_we_did",
+        "text": "You were given a long course of antibiotics through a drip.",
+        "verdict": "supported",
+        "reason": "none",
+        "a_section_id": "sections.3",
+        "span": "",
+        "evidence_valid": true
+      },
+      {
+        "sentence_id": "c_sections.1.s11",
+        "c_section_id": "c_sections.1",
+        "heading": "what_we_did",
+        "text": "These were later changed to two different antibiotics based on advice from the microbiology team.",
+        "verdict": "supported",
+        "reason": "none",
+        "a_section_id": "sections.3",
+        "span": "",
+        "evidence_valid": true
+      },
+      {
+        "sentence_id": "c_sections.1.s12",
+        "c_section_id": "c_sections.1",
+        "heading": "what_we_did",
+        "text": "When the line infection was found on day 14, the lines were changed.",
+        "verdict": "supported",
+        "reason": "none",
+        "a_section_id": "sections.3",
+        "span": "",
+        "evidence_valid": true
+      },
+      {
+        "sentence_id": "c_sections.1.s13",
+        "c_section_id": "c_sections.1",
+        "heading": "what_we_did",
+        "text": "You were fed through a tube into your stomach at first.",
+        "verdict": "supported",
+        "reason": "none",
+        "a_section_id": "sections.3",
+        "span": "",
+        "evidence_valid": true
+      },
+      {
+        "sentence_id": "c_sections.1.s14",
+        "c_section_id": "c_sections.1",
+        "heading": "what_we_did",
+        "text": "This progressed to improving oral intake.",
+        "verdict": "supported",
+        "reason": "none",
+        "a_section_id": "sections.3",
+        "span": "",
+        "evidence_valid": true
+      },
+      {
+        "sentence_id": "c_sections.1.s15",
+        "c_section_id": "c_sections.1",
+        "heading": "what_we_did",
+        "text": "Your kidney function recovered and the kidney-filtering machine was stopped on day 16.",
+        "verdict": "supported",
+        "reason": "none",
+        "a_section_id": "sections.3",
+        "span": "",
+        "evidence_valid": true
+      },
+      {
+        "sentence_id": "c_sections.1.s16",
+        "c_section_id": "c_sections.1",
+        "heading": "what_we_did",
+        "text": "You came off the ventilator on day 18 and moved to the ward on day 24.",
+        "verdict": "supported",
+        "reason": "none",
+        "a_section_id": "sections.3",
+        "span": "",
+        "evidence_valid": true
+      },
+      {
+        "sentence_id": "c_sections.3.s1",
+        "c_section_id": "c_sections.3",
+        "heading": "next_steps",
+        "text": "The following have been arranged for you:",
+        "verdict": "supported",
+        "reason": "none",
+        "a_section_id": "sections.7",
+        "span": "",
+        "evidence_valid": true
+      },
+      {
+        "sentence_id": "c_sections.3.s2",
+        "c_section_id": "c_sections.3",
+        "heading": "next_steps",
+        "text": "- Plastics/wound clinic at 2 weeks",
+        "verdict": "supported",
+        "reason": "none",
+        "a_section_id": "sections.7",
+        "span": "",
+        "evidence_valid": true
+      },
+      {
+        "sentence_id": "c_sections.3.s3",
+        "c_section_id": "c_sections.3",
+        "heading": "next_steps",
+        "text": "- Cardiology follow-up for your atrial fibrillation at 6 weeks",
+        "verdict": "supported",
+        "reason": "none",
+        "a_section_id": "sections.7",
+        "span": "",
+        "evidence_valid": true
+      },
+      {
+        "sentence_id": "c_sections.3.s4",
+        "c_section_id": "c_sections.3",
+        "heading": "next_steps",
+        "text": "- ICU follow-up clinic",
+        "verdict": "supported",
+        "reason": "none",
+        "a_section_id": "sections.7",
+        "span": "",
+        "evidence_valid": true
+      },
+      {
+        "sentence_id": "c_sections.3.s5",
+        "c_section_id": "c_sections.3",
+        "heading": "next_steps",
+        "text": "- Community physiotherapy and occupational therapy",
+        "verdict": "supported",
+        "reason": "none",
+        "a_section_id": "sections.7",
+        "span": "",
+        "evidence_valid": true
+      },
+      {
+        "sentence_id": "c_sections.3.s6",
+        "c_section_id": "c_sections.3",
+        "heading": "next_steps",
+        "text": "Your GP will monitor your kidney function and blood pressure after your kidney injury.",
+        "verdict": "supported",
+        "reason": "none",
+        "a_section_id": "sections.8",
+        "span": "",
+        "evidence_valid": true
+      }
+    ],
+    "unreached": [],
+    "flagged": 6,
+    "checks": [],
+    "counts": {
+      "sentences": 30,
+      "supported": 24,
+      "faults": 6,
+      "supported_uncited": 0,
+      "by_verdict": {
+        "added": 4,
+        "changed": 2,
+        "qualifier_dropped": 0
+      },
+      "by_reason": {
+        "cause_or_purpose": 4,
+        "new_fact": 0,
+        "term_changed": 0,
+        "certainty_or_completion": 2,
+        "qualifier": 0,
+        "withheld_category": 0,
+        "instruction_or_promise": 0,
+        "other": 0
+      },
+      "unreached": 0,
+      "checks": 0
+    },
+    "call": {
+      "model_id": "anthropic.claude-sonnet-4-6",
+      "prompt_sha256": "5273bb7b4f010279824bcd76daed857d1b3abb60195f36185a53fdf01c6dbb70",
+      "stop_reason": "tool_use",
+      "attempts": 1,
+      "input_tokens": 1714,
+      "output_tokens": 1805,
+      "cache_read_tokens": 2767,
+      "cache_write_tokens": 0,
+      "latency_ms": 8106
+    }
+  },
+  "error": null
+}

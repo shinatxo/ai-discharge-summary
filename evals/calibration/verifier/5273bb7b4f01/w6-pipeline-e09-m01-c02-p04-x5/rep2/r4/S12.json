@@ -1,0 +1,409 @@
+{
+  "generation_id": "w6-pipeline-e09-m01-c02-p04-x5/r4/S12",
+  "verify_patient": {
+    "verdicts": [
+      {
+        "sentence_id": "c_sections.0.s1",
+        "c_section_id": "c_sections.0",
+        "heading": "why_in_hospital",
+        "text": "You were found on the floor by your son after a fall on the way to the commode.",
+        "verdict": "supported",
+        "reason": "none",
+        "a_section_id": "sections.0",
+        "span": "",
+        "evidence_valid": true
+      },
+      {
+        "sentence_id": "c_sections.0.s2",
+        "c_section_id": "c_sections.0",
+        "heading": "why_in_hospital",
+        "text": "You had some difficulty remembering the fall.",
+        "verdict": "supported",
+        "reason": "none",
+        "a_section_id": "sections.0",
+        "span": "",
+        "evidence_valid": true
+      },
+      {
+        "sentence_id": "c_sections.0.s3",
+        "c_section_id": "c_sections.0",
+        "heading": "why_in_hospital",
+        "text": "The team found:",
+        "verdict": "supported",
+        "reason": "none",
+        "a_section_id": "sections.1",
+        "span": "",
+        "evidence_valid": true
+      },
+      {
+        "sentence_id": "c_sections.0.s4",
+        "c_section_id": "c_sections.0",
+        "heading": "why_in_hospital",
+        "text": "- A fall",
+        "verdict": "supported",
+        "reason": "none",
+        "a_section_id": "sections.1",
+        "span": "",
+        "evidence_valid": true
+      },
+      {
+        "sentence_id": "c_sections.0.s5",
+        "c_section_id": "c_sections.0",
+        "heading": "why_in_hospital",
+        "text": "- Sepsis — the team treated you for this",
+        "verdict": "supported",
+        "reason": "none",
+        "a_section_id": "sections.1",
+        "span": "",
+        "evidence_valid": true
+      },
+      {
+        "sentence_id": "c_sections.0.s6",
+        "c_section_id": "c_sections.0",
+        "heading": "why_in_hospital",
+        "text": "- Possible aspiration pneumonia",
+        "verdict": "supported",
+        "reason": "none",
+        "a_section_id": "sections.1",
+        "span": "",
+        "evidence_valid": true
+      },
+      {
+        "sentence_id": "c_sections.0.s7",
+        "c_section_id": "c_sections.0",
+        "heading": "why_in_hospital",
+        "text": "- A condition affecting part of the bowel called sigmoid diverticulitis",
+        "verdict": "supported",
+        "reason": "none",
+        "a_section_id": "sections.1",
+        "span": "",
+        "evidence_valid": true
+      },
+      {
+        "sentence_id": "c_sections.0.s8",
+        "c_section_id": "c_sections.0",
+        "heading": "why_in_hospital",
+        "text": "- Dilated bowel loops, which may mean a blockage, and a build-up of stool",
+        "verdict": "supported",
+        "reason": "none",
+        "a_section_id": "sections.1",
+        "span": "",
+        "evidence_valid": true
+      },
+      {
+        "sentence_id": "c_sections.0.s9",
+        "c_section_id": "c_sections.0",
+        "heading": "why_in_hospital",
+        "text": "- Acute kidney injury (AKI)",
+        "verdict": "supported",
+        "reason": "none",
+        "a_section_id": "sections.1",
+        "span": "",
+        "evidence_valid": true
+      },
+      {
+        "sentence_id": "c_sections.0.s10",
+        "c_section_id": "c_sections.0",
+        "heading": "why_in_hospital",
+        "text": "- Raised markers of inflammation in the blood",
+        "verdict": "supported",
+        "reason": "none",
+        "a_section_id": "sections.1",
+        "span": "",
+        "evidence_valid": true
+      },
+      {
+        "sentence_id": "c_sections.1.s1",
+        "c_section_id": "c_sections.1",
+        "heading": "what_we_did",
+        "text": "While you were in hospital, the team:",
+        "verdict": "supported",
+        "reason": "none",
+        "a_section_id": "sections.2",
+        "span": "",
+        "evidence_valid": true
+      },
+      {
+        "sentence_id": "c_sections.1.s2",
+        "c_section_id": "c_sections.1",
+        "heading": "what_we_did",
+        "text": "- Gave you an antibiotic (Tazocin)",
+        "verdict": "supported",
+        "reason": "none",
+        "a_section_id": "sections.3",
+        "span": "",
+        "evidence_valid": true
+      },
+      {
+        "sentence_id": "c_sections.1.s3",
+        "c_section_id": "c_sections.1",
+        "heading": "what_we_did",
+        "text": "- Gave you fluids through a drip",
+        "verdict": "supported",
+        "reason": "none",
+        "a_section_id": "sections.3",
+        "span": "",
+        "evidence_valid": true
+      },
+      {
+        "sentence_id": "c_sections.1.s4",
+        "c_section_id": "c_sections.1",
+        "heading": "what_we_did",
+        "text": "- Gave you oxygen",
+        "verdict": "supported",
+        "reason": "none",
+        "a_section_id": "sections.3",
+        "span": "",
+        "evidence_valid": true
+      },
+      {
+        "sentence_id": "c_sections.1.s5",
+        "c_section_id": "c_sections.1",
+        "heading": "what_we_did",
+        "text": "- Took blood tests and blood cultures",
+        "verdict": "supported",
+        "reason": "none",
+        "a_section_id": "sections.3",
+        "span": "",
+        "evidence_valid": true
+      },
+      {
+        "sentence_id": "c_sections.1.s6",
+        "c_section_id": "c_sections.1",
+        "heading": "what_we_did",
+        "text": "- Did a scan of your head — this showed nothing new",
+        "verdict": "added",
+        "reason": "new_fact",
+        "a_section_id": "sections.2",
+        "span": "this showed nothing new",
+        "evidence_valid": true
+      },
+      {
+        "sentence_id": "c_sections.1.s7",
+        "c_section_id": "c_sections.1",
+        "heading": "what_we_did",
+        "text": "- Did scans of your neck and chest — these showed nothing new",
+        "verdict": "added",
+        "reason": "new_fact",
+        "a_section_id": "sections.2",
+        "span": "these showed nothing new",
+        "evidence_valid": true
+      },
+      {
+        "sentence_id": "c_sections.1.s8",
+        "c_section_id": "c_sections.1",
+        "heading": "what_we_did",
+        "text": "- Did a chest X-ray on 12/05/26 — this was negative",
+        "verdict": "supported",
+        "reason": "none",
+        "a_section_id": "sections.2",
+        "span": "",
+        "evidence_valid": true
+      },
+      {
+        "sentence_id": "c_sections.1.s9",
+        "c_section_id": "c_sections.1",
+        "heading": "what_we_did",
+        "text": "- Did an abdominal X-ray — this showed dilated bowel loops and a build-up of stool",
+        "verdict": "supported",
+        "reason": "none",
+        "a_section_id": "sections.2",
+        "span": "",
+        "evidence_valid": true
+      },
+      {
+        "sentence_id": "c_sections.1.s10",
+        "c_section_id": "c_sections.1",
+        "heading": "what_we_did",
+        "text": "- Did a CT scan — this showed consolidation in the right lower part of the lung and sigmoid diverticulitis",
+        "verdict": "supported",
+        "reason": "none",
+        "a_section_id": "sections.2",
+        "span": "",
+        "evidence_valid": true
+      },
+      {
+        "sentence_id": "c_sections.1.s11",
+        "c_section_id": "c_sections.1",
+        "heading": "what_we_did",
+        "text": "- Checked a urine culture — this was negative",
+        "verdict": "supported",
+        "reason": "none",
+        "a_section_id": "sections.2",
+        "span": "",
+        "evidence_valid": true
+      },
+      {
+        "sentence_id": "c_sections.1.s12",
+        "c_section_id": "c_sections.1",
+        "heading": "what_we_did",
+        "text": "- Did a heart tracing (ECG) — this showed a short run of atrial flutter",
+        "verdict": "supported",
+        "reason": "none",
+        "a_section_id": "sections.2",
+        "span": "",
+        "evidence_valid": true
+      },
+      {
+        "sentence_id": "c_sections.1.s13",
+        "c_section_id": "c_sections.1",
+        "heading": "what_we_did",
+        "text": "- Started an amber care plan",
+        "verdict": "supported",
+        "reason": "none",
+        "a_section_id": "sections.3",
+        "span": "",
+        "evidence_valid": true
+      },
+      {
+        "sentence_id": "c_sections.3.s1",
+        "c_section_id": "c_sections.3",
+        "heading": "next_steps",
+        "text": "The team advised a referral to the memory clinic as an outpatient.",
+        "verdict": "supported",
+        "reason": "none",
+        "a_section_id": "sections.7",
+        "span": "",
+        "evidence_valid": true
+      },
+      {
+        "sentence_id": "c_sections.3.s2",
+        "c_section_id": "c_sections.3",
+        "heading": "next_steps",
+        "text": "This is because of a possible underlying problem with memory.",
+        "verdict": "added",
+        "reason": "cause_or_purpose",
+        "a_section_id": "sections.7",
+        "span": "This is because of a possible underlying problem with memory.",
+        "evidence_valid": true
+      }
+    ],
+    "unreached": [
+      {
+        "c_section_id": "c_sections.0",
+        "heading": "why_in_hospital",
+        "a_section_id": "sections.1",
+        "reason": "never_drop_item",
+        "span": "Recent discharge from CCU following NSTEMI, on DAPT",
+        "evidence_valid": true
+      },
+      {
+        "c_section_id": "c_sections.0",
+        "heading": "why_in_hospital",
+        "a_section_id": "sections.1",
+        "reason": "never_drop_item",
+        "span": "?Underlying dementia — advised to refer to memory clinic as outpatient",
+        "evidence_valid": true
+      },
+      {
+        "c_section_id": "c_sections.0",
+        "heading": "why_in_hospital",
+        "a_section_id": "sections.1",
+        "reason": "never_drop_item",
+        "span": "Hypertension",
+        "evidence_valid": true
+      },
+      {
+        "c_section_id": "c_sections.0",
+        "heading": "why_in_hospital",
+        "a_section_id": "sections.1",
+        "reason": "never_drop_item",
+        "span": "Ischaemic heart disease (IHD)",
+        "evidence_valid": true
+      },
+      {
+        "c_section_id": "c_sections.0",
+        "heading": "why_in_hospital",
+        "a_section_id": "sections.1",
+        "reason": "never_drop_item",
+        "span": "Chronic kidney disease (CKD)",
+        "evidence_valid": true
+      },
+      {
+        "c_section_id": "c_sections.0",
+        "heading": "why_in_hospital",
+        "a_section_id": "sections.1",
+        "reason": "never_drop_item",
+        "span": "AKI (background history)",
+        "evidence_valid": true
+      },
+      {
+        "c_section_id": "c_sections.0",
+        "heading": "why_in_hospital",
+        "a_section_id": "sections.1",
+        "reason": "never_drop_item",
+        "span": "Closed fracture of rib",
+        "evidence_valid": true
+      },
+      {
+        "c_section_id": "c_sections.0",
+        "heading": "why_in_hospital",
+        "a_section_id": "sections.1",
+        "reason": "never_drop_item",
+        "span": "Fracture of neck of femur",
+        "evidence_valid": true
+      },
+      {
+        "c_section_id": "c_sections.0",
+        "heading": "why_in_hospital",
+        "a_section_id": "sections.1",
+        "reason": "never_drop_item",
+        "span": "Hyperparathyroidism",
+        "evidence_valid": true
+      },
+      {
+        "c_section_id": "c_sections.0",
+        "heading": "why_in_hospital",
+        "a_section_id": "sections.1",
+        "reason": "never_drop_item",
+        "span": "Carcinoma of cervix",
+        "evidence_valid": true
+      },
+      {
+        "c_section_id": "c_sections.1",
+        "heading": "what_we_did",
+        "a_section_id": "sections.3",
+        "reason": "never_drop_item",
+        "span": "Urine culture if possible; consider catheter to monitor urine output",
+        "evidence_valid": true
+      }
+    ],
+    "flagged": 14,
+    "checks": [],
+    "counts": {
+      "sentences": 25,
+      "supported": 22,
+      "faults": 3,
+      "supported_uncited": 0,
+      "by_verdict": {
+        "added": 3,
+        "changed": 0,
+        "qualifier_dropped": 0
+      },
+      "by_reason": {
+        "cause_or_purpose": 1,
+        "new_fact": 2,
+        "term_changed": 0,
+        "certainty_or_completion": 0,
+        "qualifier": 0,
+        "withheld_category": 0,
+        "instruction_or_promise": 0,
+        "other": 0
+      },
+      "unreached": 11,
+      "checks": 0
+    },
+    "call": {
+      "model_id": "anthropic.claude-sonnet-4-6",
+      "prompt_sha256": "5273bb7b4f010279824bcd76daed857d1b3abb60195f36185a53fdf01c6dbb70",
+      "stop_reason": "tool_use",
+      "attempts": 1,
+      "input_tokens": 1589,
+      "output_tokens": 2221,
+      "cache_read_tokens": 2767,
+      "cache_write_tokens": 0,
+      "latency_ms": 9767
+    }
+  },
+  "error": null
+}

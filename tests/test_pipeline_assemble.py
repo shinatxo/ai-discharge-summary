@@ -347,6 +347,26 @@ def test_c02_exception_does_not_extend(text, cite, idx):
     assert code_of(run8a, _pointer_inp(text, cite, idx)) == "resus_text_outside"
 
 
+@pytest.mark.parametrize("cited", [
+    ["contradictions.1"],                 # a real contradiction, but not about resuscitation
+    ["contradictions.9"],                 # an ID that is not a recorded contradiction
+    ["treatment.0"],                      # an ordinary fact only
+])
+def test_c02_exception_needs_a_citation_of_an_actual_resus_contradiction(cited):
+    # Both contradictions are recorded: .0 renders as the resus pointer, .1 as quotes.
+    # The sentence is exempt only in a section citing .0 — citing anything else is scanned.
+    facts = make_facts()
+    facts["contradictions"] = [_contra(0, "Resus status differs"), _contra(1, "Dose differs")]
+    inp = make_inp(facts=facts)
+    s = inp["composition"]["sections"][3]
+    s["text"] = "Aspirin given. " + RESUS_CONFLICT_TEXT
+    s["fact_ids"] = cited
+    assert [r["kind"] for r in AS.contradictions(facts, [])] == ["resus_pointer", "quotes"]
+    assert code_of(run8a, inp) == "resus_text_outside"
+    s["fact_ids"] = cited + ["contradictions.0"]                         # control: now it cites the resus one
+    assert run8a(inp)["counts"]["d1_g3_allowance_used"] == 1
+
+
 def test_c02_exception_switch_off_for_c03(monkeypatch):
     monkeypatch.setattr(AS, "G3_ALLOWANCE", False)
     assert code_of(run8a, _pointer_inp("Aspirin given. " + RESUS_CONFLICT_TEXT)) == "resus_text_outside"

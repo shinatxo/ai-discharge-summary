@@ -1,0 +1,3646 @@
+{
+  "batch": "w6-pipeline-e09-m01-c02-p04-x5",
+  "pipeline_version": "3e4eae346a985e0c466e52404458c1649a871de4637a3df376b414ee46f56bac",
+  "results": [
+    {
+      "callback_calls": 0,
+      "code": null,
+      "code_steps_differ": [],
+      "direct_8b_equal": true,
+      "document_on_failure": false,
+      "failed_step": null,
+      "gate": {
+        "ok": true,
+        "status": "documented_advice"
+      },
+      "hashes": {
+        "part_a": "9fb70f6d452405914bc59983a7b8ca10170971d17b096ae1a0f380179096761e",
+        "part_b": "6b33d4182c9cb125a45418bae42169927766a99206f93be60fef3e6c6aa44cbf",
+        "part_c": "ad6735f08d77f6479fa067cbb1b2876f09ba634f51e6d703bf7cd22438ea6d5c"
+      },
+      "line_index_matches_count": true,
+      "model_calls": 0,
+      "outcome": "bundle",
+      "piece4_gate_equal": true,
+      "piece4_outcome_equal": true,
+      "quote_too_long_placeholders": 0,
+      "released_without_bundle": false,
+      "results_item_bytes": 32620,
+      "run": 1,
+      "scenario": "A5",
+      "stored_quotes_over_200": 0,
+      "trace": {
+        "items": 12,
+        "max_item_bytes": 33525,
+        "notes_text_present": false,
+        "quotes_over_200": 0,
+        "raw_index": 0,
+        "raw_notes_strings": 0,
+        "total_bytes": 153526
+      },
+      "trace_sks_ok": true,
+      "validate_vs_saved": "identical",
+      "warnings": 0
+    },
+    {
+      "callback_calls": 0,
+      "code": null,
+      "code_steps_differ": [],
+      "direct_8b_equal": true,
+      "document_on_failure": false,
+      "failed_step": null,
+      "gate": {
+        "ok": true,
+        "status": "documented_advice"
+      },
+      "hashes": {
+        "part_a": "6a05ec3db5920be8868b89b9f69c12844492152de3867751fe698e80b45abcc3",
+        "part_b": "7d7cf1d87a613d6be0686832507be9f8968bd37c86bc2057002090287713a775",
+        "part_c": "2720b03bdaa3d71f6c8eecf3681ad38e01d9008960ad58c2026d77b05d2a38c7"
+      },
+      "line_index_matches_count": true,
+      "model_calls": 0,
+      "outcome": "bundle",
+      "piece4_gate_equal": true,
+      "piece4_outcome_equal": true,
+      "quote_too_long_placeholders": 0,
+      "released_without_bundle": false,
+      "results_item_bytes": 30889,
+      "run": 1,
+      "scenario": "B6",
+      "stored_quotes_over_200": 0,
+      "trace": {
+        "items": 12,
+        "max_item_bytes": 33056,
+        "notes_text_present": false,
+        "quotes_over_200": 0,
+        "raw_index": 0,
+        "raw_notes_strings": 0,
+        "total_bytes": 138529
+      },
+      "trace_sks_ok": true,
+      "validate_vs_saved": "identical",
+      "warnings": 5
+    },
+    {
+      "callback_calls": 0,
+      "code": null,
+      "code_steps_differ": [],
+      "direct_8b_equal": true,
+      "document_on_failure": false,
+      "failed_step": null,
+      "gate": {
+        "ok": true,
+        "status": "clean"
+      },
+      "hashes": {
+        "part_a": "478f3169b59d2b10e71ae3bdadde252e0e94156224b8e1cbf1706a811303a1d9",
+        "part_b": "0ec2a5e81a657a2c5f676d5fb8f33fd789432817b662cb76a7eed34ed59c04c6",
+        "part_c": "ca45a4c9f0b597ac76a782450252bbd418576d4ff866f0bbec1de0713c32db1d"
+      },
+      "line_index_matches_count": true,
+      "model_calls": 0,
+      "outcome": "bundle",
+      "piece4_gate_equal": true,
+      "piece4_outcome_equal": true,
+      "quote_too_long_placeholders": 0,
+      "released_without_bundle": false,
+      "results_item_bytes": 17206,
+      "run": 1,
+      "scenario": "C7",
+      "stored_quotes_over_200": 0,
+      "trace": {
+        "items": 12,
+        "max_item_bytes": 18497,
+        "notes_text_present": false,
+        "quotes_over_200": 0,
+        "raw_index": 0,
+        "raw_notes_strings": 0,
+        "total_bytes": 74850
+      },
+      "trace_sks_ok": true,
+      "validate_vs_saved": "identical",
+      "warnings": 0
+    },
+    {
+      "callback_calls": 0,
+      "code": null,
+      "code_steps_differ": [],
+      "direct_8b_equal": true,
+      "document_on_failure": false,
+      "failed_step": null,
+      "gate": {
+        "ok": true,
+        "status": "documented_advice"
+      },
+      "hashes": {
+        "part_a": "25a43dfbafd7241f10b66bcaf911ceca38d767270697c16e66036928f093b8df",
+        "part_b": "ced007a10605a85b4fd08d84544253235c97ca2717d6afa81000ecc21f4cbf10",
+        "part_c": "e46b1cf09cbdec509b4ead8296cd80a5efd0b1d6a45c95e4b39522c3b983f700"
+      },
+      "line_index_matches_count": true,
+      "model_calls": 0,
+      "outcome": "bundle",
+      "piece4_gate_equal": true,
+      "piece4_outcome_equal": true,
+      "quote_too_long_placeholders": 0,
+      "released_without_bundle": false,
+      "results_item_bytes": 36974,
+      "run": 1,
+      "scenario": "S1",
+      "stored_quotes_over_200": 0,
+      "trace": {
+        "items": 12,
+        "max_item_bytes": 38633,
+        "notes_text_present": false,
+        "quotes_over_200": 0,
+        "raw_index": 0,
+        "raw_notes_strings": 0,
+        "total_bytes": 165992
+      },
+      "trace_sks_ok": true,
+      "validate_vs_saved": "identical",
+      "warnings": 6
+    },
+    {
+      "callback_calls": 0,
+      "code": null,
+      "code_steps_differ": [],
+      "direct_8b_equal": true,
+      "document_on_failure": false,
+      "failed_step": null,
+      "gate": {
+        "ok": true,
+        "status": "documented_advice"
+      },
+      "hashes": {
+        "part_a": "349c1dfdc4eec21d255d0f7a2230a21828d99877a1cc22897b4de2ac3217b9e4",
+        "part_b": "eda47b0fbc60befad71c76a28e292be76de771dcfb9b25ed80fc7d2453dde375",
+        "part_c": "d2813964041aef97ac7265eeb0c2486637d72a6314dc1305c530242ff8410698"
+      },
+      "line_index_matches_count": true,
+      "model_calls": 0,
+      "outcome": "bundle",
+      "piece4_gate_equal": true,
+      "piece4_outcome_equal": true,
+      "quote_too_long_placeholders": 0,
+      "released_without_bundle": false,
+      "results_item_bytes": 30227,
+      "run": 1,
+      "scenario": "S10",
+      "stored_quotes_over_200": 0,
+      "trace": {
+        "items": 12,
+        "max_item_bytes": 31585,
+        "notes_text_present": false,
+        "quotes_over_200": 0,
+        "raw_index": 0,
+        "raw_notes_strings": 0,
+        "total_bytes": 136213
+      },
+      "trace_sks_ok": true,
+      "validate_vs_saved": "identical",
+      "warnings": 6
+    },
+    {
+      "callback_calls": 0,
+      "code": null,
+      "code_steps_differ": [],
+      "direct_8b_equal": true,
+      "document_on_failure": false,
+      "failed_step": null,
+      "gate": {
+        "ok": true,
+        "status": "clean"
+      },
+      "hashes": {
+        "part_a": "577e6692356381d3dfcabbc63f216d2ec93e516e651987d94855f716c71c360d",
+        "part_b": "b234f2fb7e560200fda6d04b7c99c2152dc18116f4efb206015ed4cbee23b184",
+        "part_c": "63067cb013b3d6efd7f3e5238af99e5429c9d975cf89df96cfda678a508279e4"
+      },
+      "line_index_matches_count": true,
+      "model_calls": 0,
+      "outcome": "bundle",
+      "piece4_gate_equal": true,
+      "piece4_outcome_equal": true,
+      "quote_too_long_placeholders": 0,
+      "released_without_bundle": false,
+      "results_item_bytes": 32155,
+      "run": 1,
+      "scenario": "S11",
+      "stored_quotes_over_200": 0,
+      "trace": {
+        "items": 12,
+        "max_item_bytes": 34832,
+        "notes_text_present": false,
+        "quotes_over_200": 0,
+        "raw_index": 0,
+        "raw_notes_strings": 0,
+        "total_bytes": 149189
+      },
+      "trace_sks_ok": true,
+      "validate_vs_saved": "identical",
+      "warnings": 2
+    },
+    {
+      "callback_calls": 0,
+      "code": null,
+      "code_steps_differ": [],
+      "direct_8b_equal": true,
+      "document_on_failure": false,
+      "failed_step": null,
+      "gate": {
+        "ok": true,
+        "status": "documented_advice"
+      },
+      "hashes": {
+        "part_a": "61c61a4ecc1ee691450da0f517cf724c2b87a3e4279aee44805114277be1f487",
+        "part_b": "d6e5d47b5034f9ee0c613edf31b6632e6d7aeb9cc3a9bce45bc44c36589e0b6f",
+        "part_c": "d5b70255d5e120a541133e3fe8adc502da41ab5955425310ebe89fe89e5a68a7"
+      },
+      "line_index_matches_count": true,
+      "model_calls": 0,
+      "outcome": "bundle",
+      "piece4_gate_equal": true,
+      "piece4_outcome_equal": true,
+      "quote_too_long_placeholders": 0,
+      "released_without_bundle": false,
+      "results_item_bytes": 34778,
+      "run": 1,
+      "scenario": "S12",
+      "stored_quotes_over_200": 0,
+      "trace": {
+        "items": 12,
+        "max_item_bytes": 37870,
+        "notes_text_present": false,
+        "quotes_over_200": 0,
+        "raw_index": 0,
+        "raw_notes_strings": 0,
+        "total_bytes": 171296
+      },
+      "trace_sks_ok": true,
+      "validate_vs_saved": "identical",
+      "warnings": 2
+    },
+    {
+      "callback_calls": 0,
+      "code": null,
+      "code_steps_differ": [],
+      "direct_8b_equal": true,
+      "document_on_failure": false,
+      "failed_step": null,
+      "gate": {
+        "ok": true,
+        "status": "documented_advice"
+      },
+      "hashes": {
+        "part_a": "8b3c5122f36db5033ce3a5f0ff7d13ef97e23b547ef47e1c5393ac33c8a16cce",
+        "part_b": "4ded84406c6826a6cd982f2bb8ea82991dc16968fb9b2d1fc1217df977753020",
+        "part_c": "6de287941d38f5289b6a1674caae5299713de37392c795a0d2c95354a752843b"
+      },
+      "line_index_matches_count": true,
+      "model_calls": 0,
+      "outcome": "bundle",
+      "piece4_gate_equal": true,
+      "piece4_outcome_equal": true,
+      "quote_too_long_placeholders": 0,
+      "released_without_bundle": false,
+      "results_item_bytes": 38497,
+      "run": 1,
+      "scenario": "S13",
+      "stored_quotes_over_200": 0,
+      "trace": {
+        "items": 12,
+        "max_item_bytes": 40566,
+        "notes_text_present": false,
+        "quotes_over_200": 0,
+        "raw_index": 0,
+        "raw_notes_strings": 0,
+        "total_bytes": 174950
+      },
+      "trace_sks_ok": true,
+      "validate_vs_saved": "identical",
+      "warnings": 6
+    },
+    {
+      "callback_calls": 0,
+      "code": null,
+      "code_steps_differ": [],
+      "direct_8b_equal": true,
+      "document_on_failure": false,
+      "failed_step": null,
+      "gate": {
+        "ok": true,
+        "status": "clean"
+      },
+      "hashes": {
+        "part_a": "eff62cefe6bcf03516b276cd6bff81af2c3766a6693d700cf48227436b02b2f5",
+        "part_b": "9ac38fd57951f2ee0b3994f87a735af559e2547e458278326c8522cd67bfee75",
+        "part_c": "a9ac0df19f550aa697f0d7903fff83d3d454dd96a04f6db698de2f6ca6534697"
+      },
+      "line_index_matches_count": true,
+      "model_calls": 0,
+      "outcome": "bundle",
+      "piece4_gate_equal": true,
+      "piece4_outcome_equal": true,
+      "quote_too_long_placeholders": 0,
+      "released_without_bundle": false,
+      "results_item_bytes": 33841,
+      "run": 1,
+      "scenario": "S14",
+      "stored_quotes_over_200": 0,
+      "trace": {
+        "items": 12,
+        "max_item_bytes": 35310,
+        "notes_text_present": false,
+        "quotes_over_200": 0,
+        "raw_index": 0,
+        "raw_notes_strings": 0,
+        "total_bytes": 156575
+      },
+      "trace_sks_ok": true,
+      "validate_vs_saved": "identical",
+      "warnings": 2
+    },
+    {
+      "callback_calls": 0,
+      "code": null,
+      "code_steps_differ": [],
+      "direct_8b_equal": true,
+      "document_on_failure": false,
+      "failed_step": null,
+      "gate": {
+        "ok": true,
+        "status": "clean"
+      },
+      "hashes": {
+        "part_a": "76fdfd9b98a761d0886371b8f5782783320222e3732515b7074280adc624b002",
+        "part_b": "764da72b8c62b50c6401c5863fefc591d852422bb0c3f1b782920b0d761b64c3",
+        "part_c": "bce0c19f26531efab344a8527e336fd40555f80880bc4e8cc0e4cee735eb6ab1"
+      },
+      "line_index_matches_count": true,
+      "model_calls": 0,
+      "outcome": "bundle",
+      "piece4_gate_equal": true,
+      "piece4_outcome_equal": true,
+      "quote_too_long_placeholders": 0,
+      "released_without_bundle": false,
+      "results_item_bytes": 32383,
+      "run": 1,
+      "scenario": "S15",
+      "stored_quotes_over_200": 0,
+      "trace": {
+        "items": 12,
+        "max_item_bytes": 34299,
+        "notes_text_present": false,
+        "quotes_over_200": 0,
+        "raw_index": 0,
+        "raw_notes_strings": 0,
+        "total_bytes": 143820
+      },
+      "trace_sks_ok": true,
+      "validate_vs_saved": "identical",
+      "warnings": 2
+    },
+    {
+      "callback_calls": 0,
+      "code": null,
+      "code_steps_differ": [],
+      "direct_8b_equal": true,
+      "document_on_failure": false,
+      "failed_step": null,
+      "gate": {
+        "ok": true,
+        "status": "clean"
+      },
+      "hashes": {
+        "part_a": "ad0ab054a83a1c956ca2a0fabd66c7eabb032e46281d29c5ae3bd641563d38b0",
+        "part_b": "e718b256e8bb25299393addce926e3cb1475249811d84648207a4b5e118a94c1",
+        "part_c": "2c40201592a9d84407b205cbc7e7439bd9c3113f41e4d45c02cbf5dea6e581ea"
+      },
+      "line_index_matches_count": true,
+      "model_calls": 0,
+      "outcome": "bundle",
+      "piece4_gate_equal": true,
+      "piece4_outcome_equal": true,
+      "quote_too_long_placeholders": 0,
+      "released_without_bundle": false,
+      "results_item_bytes": 35827,
+      "run": 1,
+      "scenario": "S16",
+      "stored_quotes_over_200": 0,
+      "trace": {
+        "items": 12,
+        "max_item_bytes": 37363,
+        "notes_text_present": false,
+        "quotes_over_200": 0,
+        "raw_index": 0,
+        "raw_notes_strings": 0,
+        "total_bytes": 162574
+      },
+      "trace_sks_ok": true,
+      "validate_vs_saved": "identical",
+      "warnings": 3
+    },
+    {
+      "callback_calls": 0,
+      "code": null,
+      "code_steps_differ": [],
+      "direct_8b_equal": true,
+      "document_on_failure": false,
+      "failed_step": null,
+      "gate": {
+        "ok": true,
+        "status": "clean"
+      },
+      "hashes": {
+        "part_a": "e05aae2081954483c7ab56303f1197ce9ee5ddb661057aaa47c859f739f42e22",
+        "part_b": "91c43b01e63508bbd7f39f8e64ac25c0e4e40c03a21fc8e30a18ce8f4aa98964",
+        "part_c": "933d51cfdddbafd90f03da41b83255c0b5d557c25fc7cb11d26725284d9bf3fd"
+      },
+      "line_index_matches_count": true,
+      "model_calls": 0,
+      "outcome": "bundle",
+      "piece4_gate_equal": true,
+      "piece4_outcome_equal": true,
+      "quote_too_long_placeholders": 0,
+      "released_without_bundle": false,
+      "results_item_bytes": 31990,
+      "run": 1,
+      "scenario": "S17",
+      "stored_quotes_over_200": 0,
+      "trace": {
+        "items": 12,
+        "max_item_bytes": 32202,
+        "notes_text_present": false,
+        "quotes_over_200": 0,
+        "raw_index": 0,
+        "raw_notes_strings": 0,
+        "total_bytes": 150999
+      },
+      "trace_sks_ok": true,
+      "validate_vs_saved": "identical",
+      "warnings": 1
+    },
+    {
+      "callback_calls": 0,
+      "code": null,
+      "code_steps_differ": [],
+      "direct_8b_equal": true,
+      "document_on_failure": false,
+      "failed_step": null,
+      "gate": {
+        "ok": true,
+        "status": "clean"
+      },
+      "hashes": {
+        "part_a": "6583293f1a5dcd81a07e249251ee3a06e5618af980be87ae278aa6ab6bd7bd97",
+        "part_b": "8afa4f0fd970ae89e1a6e8217e112a96c0d9cd7dc72bd34e166c19623f3a11d7",
+        "part_c": "dd6813640d1b155996abafd14f9aad786c791c4422d3038fefab9a5c07473a0e"
+      },
+      "line_index_matches_count": true,
+      "model_calls": 0,
+      "outcome": "bundle",
+      "piece4_gate_equal": true,
+      "piece4_outcome_equal": true,
+      "quote_too_long_placeholders": 0,
+      "released_without_bundle": false,
+      "results_item_bytes": 23870,
+      "run": 1,
+      "scenario": "S18",
+      "stored_quotes_over_200": 0,
+      "trace": {
+        "items": 12,
+        "max_item_bytes": 25486,
+        "notes_text_present": false,
+        "quotes_over_200": 0,
+        "raw_index": 0,
+        "raw_notes_strings": 0,
+        "total_bytes": 110384
+      },
+      "trace_sks_ok": true,
+      "validate_vs_saved": "identical",
+      "warnings": 2
+    },
+    {
+      "callback_calls": 0,
+      "code": null,
+      "code_steps_differ": [],
+      "direct_8b_equal": true,
+      "document_on_failure": false,
+      "failed_step": null,
+      "gate": {
+        "ok": true,
+        "status": "documented_advice"
+      },
+      "hashes": {
+        "part_a": "cb64fc6a29857c631f3329e0cdfd0d1d7276117468263e42803510a7c01745ba",
+        "part_b": "3651ed03bdfee18b983e9d456fb82ae08f0d98ba629c981d0c4fe3cd7d765b60",
+        "part_c": "df2f0b99c159d3f80c10e4fa8051fa7bc06eaf31245f950a0d529d25238be541"
+      },
+      "line_index_matches_count": true,
+      "model_calls": 0,
+      "outcome": "bundle",
+      "piece4_gate_equal": true,
+      "piece4_outcome_equal": true,
+      "quote_too_long_placeholders": 0,
+      "released_without_bundle": false,
+      "results_item_bytes": 24023,
+      "run": 1,
+      "scenario": "S2",
+      "stored_quotes_over_200": 0,
+      "trace": {
+        "items": 12,
+        "max_item_bytes": 25759,
+        "notes_text_present": false,
+        "quotes_over_200": 0,
+        "raw_index": 0,
+        "raw_notes_strings": 0,
+        "total_bytes": 107544
+      },
+      "trace_sks_ok": true,
+      "validate_vs_saved": "identical",
+      "warnings": 1
+    },
+    {
+      "callback_calls": 0,
+      "code": null,
+      "code_steps_differ": [],
+      "direct_8b_equal": true,
+      "document_on_failure": false,
+      "failed_step": null,
+      "gate": {
+        "ok": true,
+        "status": "documented_advice"
+      },
+      "hashes": {
+        "part_a": "826f031d9a42cd9b0bc453b1b2c70adf4883ede5d433b144e1db584439b54f64",
+        "part_b": "a891b3c68fee660403a716b9944317c92bfe8cc576c7d62dccbdda090c034ec7",
+        "part_c": "776a1c84ac4b01aaa48f6dfc2dfd4f3cf7fb41a070cdb5d529c93d50c4cc7360"
+      },
+      "line_index_matches_count": true,
+      "model_calls": 0,
+      "outcome": "bundle",
+      "piece4_gate_equal": true,
+      "piece4_outcome_equal": true,
+      "quote_too_long_placeholders": 1,
+      "released_without_bundle": false,
+      "results_item_bytes": 30944,
+      "run": 1,
+      "scenario": "S3",
+      "stored_quotes_over_200": 0,
+      "trace": {
+        "items": 12,
+        "max_item_bytes": 33728,
+        "notes_text_present": false,
+        "quotes_over_200": 0,
+        "raw_index": 0,
+        "raw_notes_strings": 0,
+        "total_bytes": 149581
+      },
+      "trace_sks_ok": true,
+      "validate_vs_saved": "identical",
+      "warnings": 3
+    },
+    {
+      "callback_calls": 0,
+      "code": null,
+      "code_steps_differ": [],
+      "direct_8b_equal": true,
+      "document_on_failure": false,
+      "failed_step": null,
+      "gate": {
+        "ok": true,
+        "status": "documented_advice"
+      },
+      "hashes": {
+        "part_a": "6d4e7d17925969072cca520c25e847ae0ace5a5a7420e9b0896671d26dad39de",
+        "part_b": "f7cf9d974134f4eb05d60a02cbcb15bd15593348cb7e2cda863b0084aa258cb0",
+        "part_c": "c2f87426695df3c34da60df4ff3da12832a86c9b1a016c2f0a147bb32d433493"
+      },
+      "line_index_matches_count": true,
+      "model_calls": 0,
+      "outcome": "bundle",
+      "piece4_gate_equal": true,
+      "piece4_outcome_equal": true,
+      "quote_too_long_placeholders": 0,
+      "released_without_bundle": false,
+      "results_item_bytes": 26290,
+      "run": 1,
+      "scenario": "S4",
+      "stored_quotes_over_200": 0,
+      "trace": {
+        "items": 12,
+        "max_item_bytes": 28532,
+        "notes_text_present": false,
+        "quotes_over_200": 0,
+        "raw_index": 0,
+        "raw_notes_strings": 0,
+        "total_bytes": 121512
+      },
+      "trace_sks_ok": true,
+      "validate_vs_saved": "identical",
+      "warnings": 4
+    },
+    {
+      "callback_calls": 0,
+      "code": null,
+      "code_steps_differ": [],
+      "direct_8b_equal": true,
+      "document_on_failure": false,
+      "failed_step": null,
+      "gate": {
+        "ok": true,
+        "status": "documented_advice"
+      },
+      "hashes": {
+        "part_a": "468956871aceaa290e475380a8d449c8103dd15f512344a488c6d2700f9388f4",
+        "part_b": "7763b1ae875f036f3d6ebb7efe22ea77778232f4f8549600fc985ba00090db79",
+        "part_c": "7fefd3f6327177240da828aafad7b3e7d8df440ed9c78cfe0019a574fe9034b3"
+      },
+      "line_index_matches_count": true,
+      "model_calls": 0,
+      "outcome": "bundle",
+      "piece4_gate_equal": true,
+      "piece4_outcome_equal": true,
+      "quote_too_long_placeholders": 0,
+      "released_without_bundle": false,
+      "results_item_bytes": 24093,
+      "run": 1,
+      "scenario": "S8",
+      "stored_quotes_over_200": 0,
+      "trace": {
+        "items": 12,
+        "max_item_bytes": 26452,
+        "notes_text_present": false,
+        "quotes_over_200": 0,
+        "raw_index": 0,
+        "raw_notes_strings": 0,
+        "total_bytes": 108312
+      },
+      "trace_sks_ok": true,
+      "validate_vs_saved": "identical",
+      "warnings": 2
+    },
+    {
+      "callback_calls": 0,
+      "code": null,
+      "code_steps_differ": [],
+      "direct_8b_equal": true,
+      "document_on_failure": false,
+      "failed_step": null,
+      "gate": {
+        "ok": true,
+        "status": "clean"
+      },
+      "hashes": {
+        "part_a": "e1bd738bf20368df336dedb43563b4868c42e9330bd2ebdfe86e55ed2f15fac5",
+        "part_b": "e14b3cdc677a5cbe5b0ef6723e9bd1451f56016261b0b1c5f241f1fe410ada7d",
+        "part_c": "b50be80efe87078bf040d6aa39a85e52d675e5b42f2f3d296cf86781e63ea8a6"
+      },
+      "line_index_matches_count": true,
+      "model_calls": 0,
+      "outcome": "bundle",
+      "piece4_gate_equal": true,
+      "piece4_outcome_equal": true,
+      "quote_too_long_placeholders": 0,
+      "released_without_bundle": false,
+      "results_item_bytes": 27294,
+      "run": 1,
+      "scenario": "S9",
+      "stored_quotes_over_200": 0,
+      "trace": {
+        "items": 12,
+        "max_item_bytes": 29699,
+        "notes_text_present": false,
+        "quotes_over_200": 0,
+        "raw_index": 0,
+        "raw_notes_strings": 0,
+        "total_bytes": 124669
+      },
+      "trace_sks_ok": true,
+      "validate_vs_saved": "identical",
+      "warnings": 0
+    },
+    {
+      "callback_calls": 0,
+      "code": null,
+      "code_steps_differ": [],
+      "direct_8b_equal": true,
+      "document_on_failure": false,
+      "failed_step": null,
+      "gate": {
+        "ok": true,
+        "status": "documented_advice"
+      },
+      "hashes": {
+        "part_a": "21b3c367e142bb2d8f45577f9e2257013540e08423c404a0e4bb8899195cadb7",
+        "part_b": "a43ed0debaf188f845da85196207a7b45d58f86396245e3527845ef69e48c530",
+        "part_c": "508edc16c6dd87fd4490d6e591c606bdea0bc0cfca699095a7dbebe6ee28eecf"
+      },
+      "line_index_matches_count": true,
+      "model_calls": 0,
+      "outcome": "bundle",
+      "piece4_gate_equal": true,
+      "piece4_outcome_equal": true,
+      "quote_too_long_placeholders": 1,
+      "released_without_bundle": false,
+      "results_item_bytes": 31184,
+      "run": 2,
+      "scenario": "A5",
+      "stored_quotes_over_200": 0,
+      "trace": {
+        "items": 12,
+        "max_item_bytes": 32185,
+        "notes_text_present": false,
+        "quotes_over_200": 0,
+        "raw_index": 0,
+        "raw_notes_strings": 0,
+        "total_bytes": 146257
+      },
+      "trace_sks_ok": true,
+      "validate_vs_saved": "identical",
+      "warnings": 0
+    },
+    {
+      "callback_calls": 0,
+      "code": null,
+      "code_steps_differ": [],
+      "direct_8b_equal": true,
+      "document_on_failure": false,
+      "failed_step": null,
+      "gate": {
+        "ok": true,
+        "status": "documented_advice"
+      },
+      "hashes": {
+        "part_a": "5de3af16d521d045dc67e011fd96b2e0c2afc9a9cd13d44e3de15225f55085cb",
+        "part_b": "04afa20f02ce50ffe3455d42d58bf41d91a0c0024844ea39c763cea088474ca6",
+        "part_c": "5cd1a79debb77c8e980d92206be556ba9c79b03cd5fa1a6724d911c9ef124836"
+      },
+      "line_index_matches_count": true,
+      "model_calls": 0,
+      "outcome": "bundle",
+      "piece4_gate_equal": true,
+      "piece4_outcome_equal": true,
+      "quote_too_long_placeholders": 0,
+      "released_without_bundle": false,
+      "results_item_bytes": 29179,
+      "run": 2,
+      "scenario": "B6",
+      "stored_quotes_over_200": 0,
+      "trace": {
+        "items": 12,
+        "max_item_bytes": 30579,
+        "notes_text_present": false,
+        "quotes_over_200": 0,
+        "raw_index": 0,
+        "raw_notes_strings": 0,
+        "total_bytes": 131707
+      },
+      "trace_sks_ok": true,
+      "validate_vs_saved": "identical",
+      "warnings": 5
+    },
+    {
+      "callback_calls": 0,
+      "code": null,
+      "code_steps_differ": [],
+      "direct_8b_equal": true,
+      "document_on_failure": false,
+      "failed_step": null,
+      "gate": {
+        "ok": true,
+        "status": "clean"
+      },
+      "hashes": {
+        "part_a": "afeb57005c8e7161afe468f62a6dc390010b48c059023f05996bf86d4e3d6254",
+        "part_b": "98e016cc1596f8cff191c51149382fca711bd04df64669a2d0bfd46d3cae5d71",
+        "part_c": "d5e066ce770632152218116c2f38ecb23cdab98f6a155d5bcfcd7b8ce1641506"
+      },
+      "line_index_matches_count": true,
+      "model_calls": 0,
+      "outcome": "bundle",
+      "piece4_gate_equal": true,
+      "piece4_outcome_equal": true,
+      "quote_too_long_placeholders": 0,
+      "released_without_bundle": false,
+      "results_item_bytes": 17054,
+      "run": 2,
+      "scenario": "C7",
+      "stored_quotes_over_200": 0,
+      "trace": {
+        "items": 12,
+        "max_item_bytes": 18415,
+        "notes_text_present": false,
+        "quotes_over_200": 0,
+        "raw_index": 0,
+        "raw_notes_strings": 0,
+        "total_bytes": 74871
+      },
+      "trace_sks_ok": true,
+      "validate_vs_saved": "identical",
+      "warnings": 0
+    },
+    {
+      "callback_calls": 0,
+      "code": null,
+      "code_steps_differ": [],
+      "direct_8b_equal": true,
+      "document_on_failure": false,
+      "failed_step": null,
+      "gate": {
+        "ok": true,
+        "status": "documented_advice"
+      },
+      "hashes": {
+        "part_a": "819ea37af76e3901e0faf9c7d8ef542241e5b08fab5eabbe59ef467f24bf4914",
+        "part_b": "c1c76f0d57290c40ca00401237b13cc03fc6eb4044ab76b4be9fa9b5d8d251aa",
+        "part_c": "c1d26177c4b6eb7f81a21017350c652bb73a26b14c6aff7c467c2ebdd9818c0a"
+      },
+      "line_index_matches_count": true,
+      "model_calls": 0,
+      "outcome": "bundle",
+      "piece4_gate_equal": true,
+      "piece4_outcome_equal": true,
+      "quote_too_long_placeholders": 0,
+      "released_without_bundle": false,
+      "results_item_bytes": 37091,
+      "run": 2,
+      "scenario": "S1",
+      "stored_quotes_over_200": 0,
+      "trace": {
+        "items": 12,
+        "max_item_bytes": 38460,
+        "notes_text_present": false,
+        "quotes_over_200": 0,
+        "raw_index": 0,
+        "raw_notes_strings": 0,
+        "total_bytes": 164426
+      },
+      "trace_sks_ok": true,
+      "validate_vs_saved": "identical",
+      "warnings": 8
+    },
+    {
+      "callback_calls": 0,
+      "code": null,
+      "code_steps_differ": [],
+      "direct_8b_equal": true,
+      "document_on_failure": false,
+      "failed_step": null,
+      "gate": {
+        "ok": true,
+        "status": "documented_advice"
+      },
+      "hashes": {
+        "part_a": "1ff7da104241dfa94a36b2e1a140c84763a1e95acb73bbb9fcff1a24f2d4d8bc",
+        "part_b": "e60e70330d20f62e554ed242abcb43f40320a48ed85b5ff44700f63efd42f3c3",
+        "part_c": "049df7f1fb0f4e88dfc7148ea04263e4a41cd5c4aca248b876ae333ede316ec6"
+      },
+      "line_index_matches_count": true,
+      "model_calls": 0,
+      "outcome": "bundle",
+      "piece4_gate_equal": true,
+      "piece4_outcome_equal": true,
+      "quote_too_long_placeholders": 0,
+      "released_without_bundle": false,
+      "results_item_bytes": 29896,
+      "run": 2,
+      "scenario": "S10",
+      "stored_quotes_over_200": 0,
+      "trace": {
+        "items": 12,
+        "max_item_bytes": 31667,
+        "notes_text_present": false,
+        "quotes_over_200": 0,
+        "raw_index": 0,
+        "raw_notes_strings": 0,
+        "total_bytes": 133582
+      },
+      "trace_sks_ok": true,
+      "validate_vs_saved": "identical",
+      "warnings": 4
+    },
+    {
+      "callback_calls": 0,
+      "code": null,
+      "code_steps_differ": [],
+      "direct_8b_equal": true,
+      "document_on_failure": false,
+      "failed_step": null,
+      "gate": {
+        "ok": true,
+        "status": "clean"
+      },
+      "hashes": {
+        "part_a": "6a4ca1b7193d0279ef44e2222b004631826e1ba74fa0b37d9cf690c72c7bc07a",
+        "part_b": "e121fec97e417a4af07a4e0c875c2d748ef9aba5d2828e1f2640b0047558cb04",
+        "part_c": "d57f47e56ba3136414674783f8e81784714819d1a2cf80f7b303eba2e490b4fe"
+      },
+      "line_index_matches_count": true,
+      "model_calls": 0,
+      "outcome": "bundle",
+      "piece4_gate_equal": true,
+      "piece4_outcome_equal": true,
+      "quote_too_long_placeholders": 0,
+      "released_without_bundle": false,
+      "results_item_bytes": 33205,
+      "run": 2,
+      "scenario": "S11",
+      "stored_quotes_over_200": 0,
+      "trace": {
+        "items": 12,
+        "max_item_bytes": 36010,
+        "notes_text_present": false,
+        "quotes_over_200": 0,
+        "raw_index": 0,
+        "raw_notes_strings": 0,
+        "total_bytes": 154609
+      },
+      "trace_sks_ok": true,
+      "validate_vs_saved": "r3_only",
+      "warnings": 1
+    },
+    {
+      "callback_calls": 0,
+      "code": null,
+      "code_steps_differ": [],
+      "direct_8b_equal": true,
+      "document_on_failure": false,
+      "failed_step": null,
+      "gate": {
+        "ok": true,
+        "status": "documented_advice"
+      },
+      "hashes": {
+        "part_a": "e988db98ee84e0ab5320e37670712943ce40bcaf648c7e17f6a9d831848c387b",
+        "part_b": "614d2d1fcd88f7b355e9fc2f4e5b72884537f0aae0ebb06510d71281c8796063",
+        "part_c": "876c57276d2f10a16709db913794fba51cf7cb1165cb60ef61767008ae8ea2eb"
+      },
+      "line_index_matches_count": true,
+      "model_calls": 0,
+      "outcome": "bundle",
+      "piece4_gate_equal": true,
+      "piece4_outcome_equal": true,
+      "quote_too_long_placeholders": 0,
+      "released_without_bundle": false,
+      "results_item_bytes": 33674,
+      "run": 2,
+      "scenario": "S12",
+      "stored_quotes_over_200": 0,
+      "trace": {
+        "items": 12,
+        "max_item_bytes": 36457,
+        "notes_text_present": false,
+        "quotes_over_200": 0,
+        "raw_index": 0,
+        "raw_notes_strings": 0,
+        "total_bytes": 168031
+      },
+      "trace_sks_ok": true,
+      "validate_vs_saved": "identical",
+      "warnings": 3
+    },
+    {
+      "callback_calls": 0,
+      "code": null,
+      "code_steps_differ": [],
+      "direct_8b_equal": true,
+      "document_on_failure": false,
+      "failed_step": null,
+      "gate": {
+        "ok": true,
+        "status": "documented_advice"
+      },
+      "hashes": {
+        "part_a": "e16b7a944f0f57cfb4fdcf4a4e7aadbb57632b5ed9ca613ab57af9167613e357",
+        "part_b": "6945ea6fc58ed00330de52e91256f54f60ce429e78326bd026a663119297f75f",
+        "part_c": "215750bfd45ce75c9b6c752118d927674a8881f0c2b4568c6e6e8f461a274e28"
+      },
+      "line_index_matches_count": true,
+      "model_calls": 0,
+      "outcome": "bundle",
+      "piece4_gate_equal": true,
+      "piece4_outcome_equal": true,
+      "quote_too_long_placeholders": 0,
+      "released_without_bundle": false,
+      "results_item_bytes": 37308,
+      "run": 2,
+      "scenario": "S13",
+      "stored_quotes_over_200": 0,
+      "trace": {
+        "items": 12,
+        "max_item_bytes": 39333,
+        "notes_text_present": false,
+        "quotes_over_200": 0,
+        "raw_index": 0,
+        "raw_notes_strings": 0,
+        "total_bytes": 169930
+      },
+      "trace_sks_ok": true,
+      "validate_vs_saved": "identical",
+      "warnings": 4
+    },
+    {
+      "callback_calls": 0,
+      "code": null,
+      "code_steps_differ": [],
+      "direct_8b_equal": true,
+      "document_on_failure": false,
+      "failed_step": null,
+      "gate": {
+        "ok": true,
+        "status": "clean"
+      },
+      "hashes": {
+        "part_a": "559ff1f0c385e9d36bf22cf2a75d321768de72ac127ba1fe639f85e83d694af0",
+        "part_b": "a5ecc50d0f40dbe38a5e260e366139a7241cfb279d8f3018ca86f93efb4868f9",
+        "part_c": "1e41c5e476692e25ca1a552ce52ef6ad7ee60edd54443227774e9cc69cb43364"
+      },
+      "line_index_matches_count": true,
+      "model_calls": 0,
+      "outcome": "bundle",
+      "piece4_gate_equal": true,
+      "piece4_outcome_equal": true,
+      "quote_too_long_placeholders": 0,
+      "released_without_bundle": false,
+      "results_item_bytes": 33932,
+      "run": 2,
+      "scenario": "S14",
+      "stored_quotes_over_200": 0,
+      "trace": {
+        "items": 12,
+        "max_item_bytes": 35282,
+        "notes_text_present": false,
+        "quotes_over_200": 0,
+        "raw_index": 0,
+        "raw_notes_strings": 0,
+        "total_bytes": 158061
+      },
+      "trace_sks_ok": true,
+      "validate_vs_saved": "identical",
+      "warnings": 4
+    },
+    {
+      "callback_calls": 0,
+      "code": null,
+      "code_steps_differ": [],
+      "direct_8b_equal": true,
+      "document_on_failure": false,
+      "failed_step": null,
+      "gate": {
+        "ok": true,
+        "status": "clean"
+      },
+      "hashes": {
+        "part_a": "bba5024252451c1c2eb0121f9a11d112aab1a36fbee995686117dcfef930973f",
+        "part_b": "07c9cc78ff73d7cd952d499ea81ae559f22bd02804c37eb9b8888dee79dc2d6b",
+        "part_c": "6d65e0183fcacd007f7f9c8df16e2ea541082d6b5f3aaea088ca94e9d7faef64"
+      },
+      "line_index_matches_count": true,
+      "model_calls": 0,
+      "outcome": "bundle",
+      "piece4_gate_equal": true,
+      "piece4_outcome_equal": true,
+      "quote_too_long_placeholders": 0,
+      "released_without_bundle": false,
+      "results_item_bytes": 29934,
+      "run": 2,
+      "scenario": "S15",
+      "stored_quotes_over_200": 0,
+      "trace": {
+        "items": 12,
+        "max_item_bytes": 31400,
+        "notes_text_present": false,
+        "quotes_over_200": 0,
+        "raw_index": 0,
+        "raw_notes_strings": 0,
+        "total_bytes": 135138
+      },
+      "trace_sks_ok": true,
+      "validate_vs_saved": "identical",
+      "warnings": 1
+    },
+    {
+      "callback_calls": 0,
+      "code": null,
+      "code_steps_differ": [],
+      "direct_8b_equal": true,
+      "document_on_failure": false,
+      "failed_step": null,
+      "gate": {
+        "ok": true,
+        "status": "clean"
+      },
+      "hashes": {
+        "part_a": "c0ed652ada455e3698e0ef9b5aaf217c9cf0b70aa7f19defd890f78f412e83be",
+        "part_b": "4bd193b92fa4def7dc8ee82fe9731f03205f24e32e46b9bd808be4480b7fb7ce",
+        "part_c": "ded2c0611c57b5dcf9b13e4900f6312d4086639e29d443ce860a7caf5a928cfb"
+      },
+      "line_index_matches_count": true,
+      "model_calls": 0,
+      "outcome": "bundle",
+      "piece4_gate_equal": true,
+      "piece4_outcome_equal": true,
+      "quote_too_long_placeholders": 0,
+      "released_without_bundle": false,
+      "results_item_bytes": 35874,
+      "run": 2,
+      "scenario": "S16",
+      "stored_quotes_over_200": 0,
+      "trace": {
+        "items": 12,
+        "max_item_bytes": 37208,
+        "notes_text_present": false,
+        "quotes_over_200": 0,
+        "raw_index": 0,
+        "raw_notes_strings": 0,
+        "total_bytes": 163191
+      },
+      "trace_sks_ok": true,
+      "validate_vs_saved": "identical",
+      "warnings": 5
+    },
+    {
+      "callback_calls": 0,
+      "code": null,
+      "code_steps_differ": [],
+      "direct_8b_equal": true,
+      "document_on_failure": false,
+      "failed_step": null,
+      "gate": {
+        "ok": true,
+        "status": "clean"
+      },
+      "hashes": {
+        "part_a": "edad20672dcf3d290e73bce26dc93dd3a0b949e906c272d59ef8685e7a0ac9c1",
+        "part_b": "2bc30c1c179fccd1c5cfed2907eeb4aab5a9a5c4ac12763d79b1d1b4cd92031c",
+        "part_c": "c6a87f8821d839ff3f8e1284d6d3b2ff2c0f0fd138b51f3cfacb6c5204efa587"
+      },
+      "line_index_matches_count": true,
+      "model_calls": 0,
+      "outcome": "bundle",
+      "piece4_gate_equal": true,
+      "piece4_outcome_equal": true,
+      "quote_too_long_placeholders": 0,
+      "released_without_bundle": false,
+      "results_item_bytes": 32763,
+      "run": 2,
+      "scenario": "S17",
+      "stored_quotes_over_200": 0,
+      "trace": {
+        "items": 12,
+        "max_item_bytes": 32997,
+        "notes_text_present": false,
+        "quotes_over_200": 0,
+        "raw_index": 0,
+        "raw_notes_strings": 0,
+        "total_bytes": 154977
+      },
+      "trace_sks_ok": true,
+      "validate_vs_saved": "identical",
+      "warnings": 1
+    },
+    {
+      "callback_calls": 0,
+      "code": null,
+      "code_steps_differ": [],
+      "direct_8b_equal": true,
+      "document_on_failure": false,
+      "failed_step": null,
+      "gate": {
+        "ok": true,
+        "status": "clean"
+      },
+      "hashes": {
+        "part_a": "a119dc9c9a05a92d122183b75cca28623720df9a0f4da5ac399205c29c5e0994",
+        "part_b": "4bccc97897a3e20cbdf3e579527e03c8f9477f20d09a48e6bd27a7679b08ecf3",
+        "part_c": "72f615c0d12cd2902bd0f497aad58207a8d1028f3d5bdca2cd8975e8fe82a333"
+      },
+      "line_index_matches_count": true,
+      "model_calls": 0,
+      "outcome": "bundle",
+      "piece4_gate_equal": true,
+      "piece4_outcome_equal": true,
+      "quote_too_long_placeholders": 0,
+      "released_without_bundle": false,
+      "results_item_bytes": 25477,
+      "run": 2,
+      "scenario": "S18",
+      "stored_quotes_over_200": 0,
+      "trace": {
+        "items": 12,
+        "max_item_bytes": 27136,
+        "notes_text_present": false,
+        "quotes_over_200": 0,
+        "raw_index": 0,
+        "raw_notes_strings": 0,
+        "total_bytes": 118373
+      },
+      "trace_sks_ok": true,
+      "validate_vs_saved": "identical",
+      "warnings": 1
+    },
+    {
+      "callback_calls": 0,
+      "code": null,
+      "code_steps_differ": [],
+      "direct_8b_equal": true,
+      "document_on_failure": false,
+      "failed_step": null,
+      "gate": {
+        "ok": true,
+        "status": "documented_advice"
+      },
+      "hashes": {
+        "part_a": "f265598fcaecc409f0938c17164791466a4c9933fb98a60957dd2fe987ee104d",
+        "part_b": "53a7d79ca4426852e80469d600f7cb67b15f9d0f596013dfc9b9a1440dd8ef62",
+        "part_c": "aec2124343e28f87749b4f85da2e30dc7e59bf3245567cbfd5955583d4c18cd5"
+      },
+      "line_index_matches_count": true,
+      "model_calls": 0,
+      "outcome": "bundle",
+      "piece4_gate_equal": true,
+      "piece4_outcome_equal": true,
+      "quote_too_long_placeholders": 0,
+      "released_without_bundle": false,
+      "results_item_bytes": 24289,
+      "run": 2,
+      "scenario": "S2",
+      "stored_quotes_over_200": 0,
+      "trace": {
+        "items": 12,
+        "max_item_bytes": 26065,
+        "notes_text_present": false,
+        "quotes_over_200": 0,
+        "raw_index": 0,
+        "raw_notes_strings": 0,
+        "total_bytes": 109463
+      },
+      "trace_sks_ok": true,
+      "validate_vs_saved": "identical",
+      "warnings": 0
+    },
+    {
+      "callback_calls": 0,
+      "code": null,
+      "code_steps_differ": [],
+      "direct_8b_equal": true,
+      "document_on_failure": false,
+      "failed_step": null,
+      "gate": {
+        "ok": true,
+        "status": "documented_advice"
+      },
+      "hashes": {
+        "part_a": "ea1668b6b8d5635f75931700accff5419ecdaa9ea0050b87c64515b87ba065a9",
+        "part_b": "924afecf36b0abf3221cf8153913fcb8b293427a0475460e8c9d94e758f59b03",
+        "part_c": "62c0a951f78244ce21c4e01930ee990b1f6c39d234f280a129843129a9d615d0"
+      },
+      "line_index_matches_count": true,
+      "model_calls": 0,
+      "outcome": "bundle",
+      "piece4_gate_equal": true,
+      "piece4_outcome_equal": true,
+      "quote_too_long_placeholders": 1,
+      "released_without_bundle": false,
+      "results_item_bytes": 30990,
+      "run": 2,
+      "scenario": "S3",
+      "stored_quotes_over_200": 0,
+      "trace": {
+        "items": 12,
+        "max_item_bytes": 33781,
+        "notes_text_present": false,
+        "quotes_over_200": 0,
+        "raw_index": 0,
+        "raw_notes_strings": 0,
+        "total_bytes": 148671
+      },
+      "trace_sks_ok": true,
+      "validate_vs_saved": "identical",
+      "warnings": 3
+    },
+    {
+      "callback_calls": 0,
+      "code": null,
+      "code_steps_differ": [],
+      "direct_8b_equal": true,
+      "document_on_failure": false,
+      "failed_step": null,
+      "gate": {
+        "ok": true,
+        "status": "documented_advice"
+      },
+      "hashes": {
+        "part_a": "7dc99ef2952ad44be0af4a3e441c632194d5986b9dcf533dfdb2b8a0da5435a5",
+        "part_b": "43ef984668de5f0893541bbed5dbc73a7e4b8d8575b0deb5892276fec2041a51",
+        "part_c": "4466ac4af3aba56f5e4e82e54df3ac4c848295e47cb4597c6fff85c189cb1f54"
+      },
+      "line_index_matches_count": true,
+      "model_calls": 0,
+      "outcome": "bundle",
+      "piece4_gate_equal": true,
+      "piece4_outcome_equal": true,
+      "quote_too_long_placeholders": 0,
+      "released_without_bundle": false,
+      "results_item_bytes": 28339,
+      "run": 2,
+      "scenario": "S4",
+      "stored_quotes_over_200": 0,
+      "trace": {
+        "items": 12,
+        "max_item_bytes": 30455,
+        "notes_text_present": false,
+        "quotes_over_200": 0,
+        "raw_index": 0,
+        "raw_notes_strings": 0,
+        "total_bytes": 129864
+      },
+      "trace_sks_ok": true,
+      "validate_vs_saved": "identical",
+      "warnings": 8
+    },
+    {
+      "callback_calls": 0,
+      "code": null,
+      "code_steps_differ": [],
+      "direct_8b_equal": true,
+      "document_on_failure": false,
+      "failed_step": null,
+      "gate": {
+        "ok": true,
+        "status": "documented_advice"
+      },
+      "hashes": {
+        "part_a": "d76cc41ee8dad759c1bb27b6da82d2cf8b03158ab8cbed4665e85677f8f65a04",
+        "part_b": "93e9d4d645467dd55fdc3e3b88f2d27294de07740e0bfc4a557a9d55ad184b1f",
+        "part_c": "b7728fb4f10fa4d38b866c54da72f0f9f432f1c808b232c864abc956941763a1"
+      },
+      "line_index_matches_count": true,
+      "model_calls": 0,
+      "outcome": "bundle",
+      "piece4_gate_equal": true,
+      "piece4_outcome_equal": true,
+      "quote_too_long_placeholders": 0,
+      "released_without_bundle": false,
+      "results_item_bytes": 24365,
+      "run": 2,
+      "scenario": "S8",
+      "stored_quotes_over_200": 0,
+      "trace": {
+        "items": 12,
+        "max_item_bytes": 26607,
+        "notes_text_present": false,
+        "quotes_over_200": 0,
+        "raw_index": 0,
+        "raw_notes_strings": 0,
+        "total_bytes": 113705
+      },
+      "trace_sks_ok": true,
+      "validate_vs_saved": "identical",
+      "warnings": 1
+    },
+    {
+      "callback_calls": 0,
+      "code": null,
+      "code_steps_differ": [],
+      "direct_8b_equal": true,
+      "document_on_failure": false,
+      "failed_step": null,
+      "gate": {
+        "ok": true,
+        "status": "clean"
+      },
+      "hashes": {
+        "part_a": "60f9b545ee73acf69b81fd2a89a53f5cbd9bdc3d00d78b585baedcb310142f2c",
+        "part_b": "f0f43ad9b5a6b1f62bfb9602b2c33cdc74f870c219c9126277f96e61c10f8581",
+        "part_c": "09b223db26fef88f73c1a9061b51eef894479ef1dbce4f575483141511f7f071"
+      },
+      "line_index_matches_count": true,
+      "model_calls": 0,
+      "outcome": "bundle",
+      "piece4_gate_equal": true,
+      "piece4_outcome_equal": true,
+      "quote_too_long_placeholders": 0,
+      "released_without_bundle": false,
+      "results_item_bytes": 27260,
+      "run": 2,
+      "scenario": "S9",
+      "stored_quotes_over_200": 0,
+      "trace": {
+        "items": 12,
+        "max_item_bytes": 29614,
+        "notes_text_present": false,
+        "quotes_over_200": 0,
+        "raw_index": 0,
+        "raw_notes_strings": 0,
+        "total_bytes": 125333
+      },
+      "trace_sks_ok": true,
+      "validate_vs_saved": "identical",
+      "warnings": 0
+    },
+    {
+      "callback_calls": 0,
+      "code": null,
+      "code_steps_differ": [],
+      "direct_8b_equal": true,
+      "document_on_failure": false,
+      "failed_step": null,
+      "gate": {
+        "ok": true,
+        "status": "documented_advice"
+      },
+      "hashes": {
+        "part_a": "930db4a498194d8b6f6a1f8f3f53122d454cd1aae28615871e2aa39ace61b955",
+        "part_b": "da2074fade2e1c1c0bfa8b8d3b857eeaf0d2b9f515c1f895620b8484a5e39f99",
+        "part_c": "03e50d5dd7cebb428b6cca01c90e20f5b4fad73ac0f1b9633f520cc43227c4d9"
+      },
+      "line_index_matches_count": true,
+      "model_calls": 0,
+      "outcome": "bundle",
+      "piece4_gate_equal": true,
+      "piece4_outcome_equal": true,
+      "quote_too_long_placeholders": 1,
+      "released_without_bundle": false,
+      "results_item_bytes": 31188,
+      "run": 3,
+      "scenario": "A5",
+      "stored_quotes_over_200": 0,
+      "trace": {
+        "items": 12,
+        "max_item_bytes": 32195,
+        "notes_text_present": false,
+        "quotes_over_200": 0,
+        "raw_index": 0,
+        "raw_notes_strings": 0,
+        "total_bytes": 145882
+      },
+      "trace_sks_ok": true,
+      "validate_vs_saved": "identical",
+      "warnings": 0
+    },
+    {
+      "callback_calls": 0,
+      "code": null,
+      "code_steps_differ": [],
+      "direct_8b_equal": true,
+      "document_on_failure": false,
+      "failed_step": null,
+      "gate": {
+        "ok": true,
+        "status": "documented_advice"
+      },
+      "hashes": {
+        "part_a": "dde44fef9eb23eefb507086b045b76d7d7b852db8c0d14c275d6f0b82486cc9b",
+        "part_b": "d2d522cd86535c59cf3dfda2c494e7d9a120bc2c36bc6cc4e52ef069fb0037bf",
+        "part_c": "7871e054286067be70b0f6f848bf1522a345cdd19c9e12a4d57c16503bb5972c"
+      },
+      "line_index_matches_count": true,
+      "model_calls": 0,
+      "outcome": "bundle",
+      "piece4_gate_equal": true,
+      "piece4_outcome_equal": true,
+      "quote_too_long_placeholders": 0,
+      "released_without_bundle": false,
+      "results_item_bytes": 29004,
+      "run": 3,
+      "scenario": "B6",
+      "stored_quotes_over_200": 0,
+      "trace": {
+        "items": 12,
+        "max_item_bytes": 30265,
+        "notes_text_present": false,
+        "quotes_over_200": 0,
+        "raw_index": 0,
+        "raw_notes_strings": 0,
+        "total_bytes": 130060
+      },
+      "trace_sks_ok": true,
+      "validate_vs_saved": "identical",
+      "warnings": 3
+    },
+    {
+      "callback_calls": 0,
+      "code": null,
+      "code_steps_differ": [],
+      "direct_8b_equal": true,
+      "document_on_failure": false,
+      "failed_step": null,
+      "gate": {
+        "ok": true,
+        "status": "clean"
+      },
+      "hashes": {
+        "part_a": "e92b600ba4bce346bb6487966ffb35ee8c77f5b765467b62d9ed86a47317c7a8",
+        "part_b": "8f580dda381d0b2938bb8672dd06369d9d210f68a30d7060755c6340c9482593",
+        "part_c": "5b4650290f65532713368dabd1966f8c021f27fa314a75f84fa2240a8e0a833d"
+      },
+      "line_index_matches_count": true,
+      "model_calls": 0,
+      "outcome": "bundle",
+      "piece4_gate_equal": true,
+      "piece4_outcome_equal": true,
+      "quote_too_long_placeholders": 0,
+      "released_without_bundle": false,
+      "results_item_bytes": 17129,
+      "run": 3,
+      "scenario": "C7",
+      "stored_quotes_over_200": 0,
+      "trace": {
+        "items": 12,
+        "max_item_bytes": 18373,
+        "notes_text_present": false,
+        "quotes_over_200": 0,
+        "raw_index": 0,
+        "raw_notes_strings": 0,
+        "total_bytes": 74543
+      },
+      "trace_sks_ok": true,
+      "validate_vs_saved": "identical",
+      "warnings": 0
+    },
+    {
+      "callback_calls": 0,
+      "code": null,
+      "code_steps_differ": [],
+      "direct_8b_equal": true,
+      "document_on_failure": false,
+      "failed_step": null,
+      "gate": {
+        "ok": true,
+        "status": "documented_advice"
+      },
+      "hashes": {
+        "part_a": "67c2ceba36e46be86b4d4d189e88d6c4d3f99b0cfac49d6c71cebee90bea9861",
+        "part_b": "31c0e411b75c5919619c6019e5b4a65e9483cb2a58091311d07b89f3cae026ee",
+        "part_c": "5bd24231148acb7a79f698f1c869c09911830d15393c34ebf39b7be0d41ce559"
+      },
+      "line_index_matches_count": true,
+      "model_calls": 0,
+      "outcome": "bundle",
+      "piece4_gate_equal": true,
+      "piece4_outcome_equal": true,
+      "quote_too_long_placeholders": 0,
+      "released_without_bundle": false,
+      "results_item_bytes": 38504,
+      "run": 3,
+      "scenario": "S1",
+      "stored_quotes_over_200": 0,
+      "trace": {
+        "items": 12,
+        "max_item_bytes": 40043,
+        "notes_text_present": false,
+        "quotes_over_200": 0,
+        "raw_index": 0,
+        "raw_notes_strings": 0,
+        "total_bytes": 171718
+      },
+      "trace_sks_ok": true,
+      "validate_vs_saved": "identical",
+      "warnings": 6
+    },
+    {
+      "callback_calls": 0,
+      "code": null,
+      "code_steps_differ": [],
+      "direct_8b_equal": true,
+      "document_on_failure": false,
+      "failed_step": null,
+      "gate": {
+        "ok": true,
+        "status": "documented_advice"
+      },
+      "hashes": {
+        "part_a": "e5f4e5b9bc59236d787acb9452d8071e46671470a96d733155c2146dbd30aa5e",
+        "part_b": "cf73359fca73b60557cfd08a8872af23eb484dcd95b25a4fd24301f0e2ccd002",
+        "part_c": "631a80a5f65d121078985f9036e432700084bb3e3123ea8135f1a902087f9cbd"
+      },
+      "line_index_matches_count": true,
+      "model_calls": 0,
+      "outcome": "bundle",
+      "piece4_gate_equal": true,
+      "piece4_outcome_equal": true,
+      "quote_too_long_placeholders": 0,
+      "released_without_bundle": false,
+      "results_item_bytes": 28942,
+      "run": 3,
+      "scenario": "S10",
+      "stored_quotes_over_200": 0,
+      "trace": {
+        "items": 12,
+        "max_item_bytes": 30269,
+        "notes_text_present": false,
+        "quotes_over_200": 0,
+        "raw_index": 0,
+        "raw_notes_strings": 0,
+        "total_bytes": 128593
+      },
+      "trace_sks_ok": true,
+      "validate_vs_saved": "identical",
+      "warnings": 6
+    },
+    {
+      "callback_calls": 0,
+      "code": null,
+      "code_steps_differ": [],
+      "direct_8b_equal": true,
+      "document_on_failure": false,
+      "failed_step": null,
+      "gate": {
+        "ok": true,
+        "status": "clean"
+      },
+      "hashes": {
+        "part_a": "7ba3276ee305d8d90cf0d10c13145f860a84add6ace4eea4a23e7307b7076ad8",
+        "part_b": "787ca11f6b5da06a98fc176dde41800720e1caf19374966360902d24b9a361f1",
+        "part_c": "b844304c551fabe7e3b018928e9a651de6d341ac7a9b2bd93a2339b347239d46"
+      },
+      "line_index_matches_count": true,
+      "model_calls": 0,
+      "outcome": "bundle",
+      "piece4_gate_equal": true,
+      "piece4_outcome_equal": true,
+      "quote_too_long_placeholders": 0,
+      "released_without_bundle": false,
+      "results_item_bytes": 32578,
+      "run": 3,
+      "scenario": "S11",
+      "stored_quotes_over_200": 0,
+      "trace": {
+        "items": 12,
+        "max_item_bytes": 35632,
+        "notes_text_present": false,
+        "quotes_over_200": 0,
+        "raw_index": 0,
+        "raw_notes_strings": 0,
+        "total_bytes": 151308
+      },
+      "trace_sks_ok": true,
+      "validate_vs_saved": "r3_only",
+      "warnings": 1
+    },
+    {
+      "callback_calls": 0,
+      "code": null,
+      "code_steps_differ": [],
+      "direct_8b_equal": true,
+      "document_on_failure": false,
+      "failed_step": null,
+      "gate": {
+        "ok": true,
+        "status": "documented_advice"
+      },
+      "hashes": {
+        "part_a": "01caf422a730e5baf7dee8d708ba89c130c87d5fa9bde49684a32484984444c3",
+        "part_b": "6d7ac830a213207f0c483b823cbac3995361ae8a73090c6929e86915ced9a278",
+        "part_c": "9235f911731fd4788fb22d68c0dcad80dc261cb71a956d64e08dbc9289998f31"
+      },
+      "line_index_matches_count": true,
+      "model_calls": 0,
+      "outcome": "bundle",
+      "piece4_gate_equal": true,
+      "piece4_outcome_equal": true,
+      "quote_too_long_placeholders": 0,
+      "released_without_bundle": false,
+      "results_item_bytes": 32640,
+      "run": 3,
+      "scenario": "S12",
+      "stored_quotes_over_200": 0,
+      "trace": {
+        "items": 12,
+        "max_item_bytes": 35170,
+        "notes_text_present": false,
+        "quotes_over_200": 0,
+        "raw_index": 0,
+        "raw_notes_strings": 0,
+        "total_bytes": 162981
+      },
+      "trace_sks_ok": true,
+      "validate_vs_saved": "identical",
+      "warnings": 3
+    },
+    {
+      "callback_calls": 0,
+      "code": null,
+      "code_steps_differ": [],
+      "direct_8b_equal": true,
+      "document_on_failure": false,
+      "failed_step": null,
+      "gate": {
+        "ok": true,
+        "status": "documented_advice"
+      },
+      "hashes": {
+        "part_a": "e72364f27aa49f593324213ca7c410a73d1d5c1c05926283de3237e948dd1c4c",
+        "part_b": "0bdf0bbc1aedc7ef4f9933c941eb8be9c55251d4b4af1d8e3d85fac92d0d9a83",
+        "part_c": "9aede94a378e11026cdf275cc57c2b61628e40ad6fbedc4cdb1c77cfb0202ccf"
+      },
+      "line_index_matches_count": true,
+      "model_calls": 0,
+      "outcome": "bundle",
+      "piece4_gate_equal": true,
+      "piece4_outcome_equal": true,
+      "quote_too_long_placeholders": 0,
+      "released_without_bundle": false,
+      "results_item_bytes": 37929,
+      "run": 3,
+      "scenario": "S13",
+      "stored_quotes_over_200": 0,
+      "trace": {
+        "items": 12,
+        "max_item_bytes": 40003,
+        "notes_text_present": false,
+        "quotes_over_200": 0,
+        "raw_index": 0,
+        "raw_notes_strings": 0,
+        "total_bytes": 173064
+      },
+      "trace_sks_ok": true,
+      "validate_vs_saved": "identical",
+      "warnings": 4
+    },
+    {
+      "callback_calls": 0,
+      "code": null,
+      "code_steps_differ": [],
+      "direct_8b_equal": true,
+      "document_on_failure": false,
+      "failed_step": null,
+      "gate": {
+        "ok": true,
+        "status": "clean"
+      },
+      "hashes": {
+        "part_a": "c8b6f2e6703d9a2bb9219baddb869fa17b30088634e6afe443dd5333c1ca4f72",
+        "part_b": "693fee24c55639c4aacf35037bb106e3909ab0a5ad4bc03c58a7cfd842b2bf62",
+        "part_c": "1b9683c382c98862dc9cbd967dc15cc40e4e628f254b060cf68c08c4427a227b"
+      },
+      "line_index_matches_count": true,
+      "model_calls": 0,
+      "outcome": "bundle",
+      "piece4_gate_equal": true,
+      "piece4_outcome_equal": true,
+      "quote_too_long_placeholders": 0,
+      "released_without_bundle": false,
+      "results_item_bytes": 34573,
+      "run": 3,
+      "scenario": "S14",
+      "stored_quotes_over_200": 0,
+      "trace": {
+        "items": 12,
+        "max_item_bytes": 36013,
+        "notes_text_present": false,
+        "quotes_over_200": 0,
+        "raw_index": 0,
+        "raw_notes_strings": 0,
+        "total_bytes": 159704
+      },
+      "trace_sks_ok": true,
+      "validate_vs_saved": "identical",
+      "warnings": 5
+    },
+    {
+      "callback_calls": 0,
+      "code": null,
+      "code_steps_differ": [],
+      "direct_8b_equal": true,
+      "document_on_failure": false,
+      "failed_step": null,
+      "gate": {
+        "ok": true,
+        "status": "clean"
+      },
+      "hashes": {
+        "part_a": "ecfb13dff1cbebda8a088a0ccc6b52216aa166859fca8a36c0abea82f1230e34",
+        "part_b": "08c542724e1d3d8c10af952703eb4ac0964456bc215aff8776b4c35e4e6ff023",
+        "part_c": "ae126ad76b09f27540553155f277686cfa31bba0392a50e6507ec9f38299eb37"
+      },
+      "line_index_matches_count": true,
+      "model_calls": 0,
+      "outcome": "bundle",
+      "piece4_gate_equal": true,
+      "piece4_outcome_equal": true,
+      "quote_too_long_placeholders": 0,
+      "released_without_bundle": false,
+      "results_item_bytes": 31243,
+      "run": 3,
+      "scenario": "S15",
+      "stored_quotes_over_200": 0,
+      "trace": {
+        "items": 12,
+        "max_item_bytes": 32870,
+        "notes_text_present": false,
+        "quotes_over_200": 0,
+        "raw_index": 0,
+        "raw_notes_strings": 0,
+        "total_bytes": 140387
+      },
+      "trace_sks_ok": true,
+      "validate_vs_saved": "identical",
+      "warnings": 1
+    },
+    {
+      "callback_calls": 0,
+      "code": null,
+      "code_steps_differ": [],
+      "direct_8b_equal": true,
+      "document_on_failure": false,
+      "failed_step": null,
+      "gate": {
+        "ok": true,
+        "status": "clean"
+      },
+      "hashes": {
+        "part_a": "8e170e491cd27caa2929bb8036ae5624816f1c2596b2f663906fc302779b6c29",
+        "part_b": "89ec5733a097046e3ef0b6089db3390a1ffb53fb25482d04c9f8e958447c5981",
+        "part_c": "35a8dfb2f5408a801c94cdd1372e0ef317ed6dfe03f751433a23ac7984e692d4"
+      },
+      "line_index_matches_count": true,
+      "model_calls": 0,
+      "outcome": "bundle",
+      "piece4_gate_equal": true,
+      "piece4_outcome_equal": true,
+      "quote_too_long_placeholders": 0,
+      "released_without_bundle": false,
+      "results_item_bytes": 36070,
+      "run": 3,
+      "scenario": "S16",
+      "stored_quotes_over_200": 0,
+      "trace": {
+        "items": 12,
+        "max_item_bytes": 37327,
+        "notes_text_present": false,
+        "quotes_over_200": 0,
+        "raw_index": 0,
+        "raw_notes_strings": 0,
+        "total_bytes": 164020
+      },
+      "trace_sks_ok": true,
+      "validate_vs_saved": "identical",
+      "warnings": 5
+    },
+    {
+      "callback_calls": 0,
+      "code": null,
+      "code_steps_differ": [],
+      "direct_8b_equal": true,
+      "document_on_failure": false,
+      "failed_step": null,
+      "gate": {
+        "ok": true,
+        "status": "clean"
+      },
+      "hashes": {
+        "part_a": "7a922f430d6d4f8216be42b8c590984602b2c71a3154349b511370013b12582c",
+        "part_b": "4488846a8f3b3e7e6fda1c101ab9a116dffebeaa75a4bd5f3517be31bd2d1d67",
+        "part_c": "2a322e2305fb22eca6fa6891bf2f4290c801bffd9801bc9db5c05ce1e4489db3"
+      },
+      "line_index_matches_count": true,
+      "model_calls": 0,
+      "outcome": "bundle",
+      "piece4_gate_equal": true,
+      "piece4_outcome_equal": true,
+      "quote_too_long_placeholders": 0,
+      "released_without_bundle": false,
+      "results_item_bytes": 33462,
+      "run": 3,
+      "scenario": "S17",
+      "stored_quotes_over_200": 0,
+      "trace": {
+        "items": 12,
+        "max_item_bytes": 33972,
+        "notes_text_present": false,
+        "quotes_over_200": 0,
+        "raw_index": 0,
+        "raw_notes_strings": 0,
+        "total_bytes": 158373
+      },
+      "trace_sks_ok": true,
+      "validate_vs_saved": "identical",
+      "warnings": 1
+    },
+    {
+      "callback_calls": 0,
+      "code": null,
+      "code_steps_differ": [],
+      "direct_8b_equal": true,
+      "document_on_failure": false,
+      "failed_step": null,
+      "gate": {
+        "ok": true,
+        "status": "clean"
+      },
+      "hashes": {
+        "part_a": "a69dc6f3bed871e64c6c39ada1d7104684f30d9f6db931fac18dc847bf9278a8",
+        "part_b": "f99834aa3bd3bc32fcfb07632fac07efed92e835818a25390c9514ca11ce2023",
+        "part_c": "3290e9d8a78565e0a1505c007eb1f6f9a42b0a724ce774baf603c91f251c9966"
+      },
+      "line_index_matches_count": true,
+      "model_calls": 0,
+      "outcome": "bundle",
+      "piece4_gate_equal": true,
+      "piece4_outcome_equal": true,
+      "quote_too_long_placeholders": 0,
+      "released_without_bundle": false,
+      "results_item_bytes": 26576,
+      "run": 3,
+      "scenario": "S18",
+      "stored_quotes_over_200": 0,
+      "trace": {
+        "items": 12,
+        "max_item_bytes": 28588,
+        "notes_text_present": false,
+        "quotes_over_200": 0,
+        "raw_index": 0,
+        "raw_notes_strings": 0,
+        "total_bytes": 122455
+      },
+      "trace_sks_ok": true,
+      "validate_vs_saved": "identical",
+      "warnings": 1
+    },
+    {
+      "callback_calls": 0,
+      "code": null,
+      "code_steps_differ": [],
+      "direct_8b_equal": true,
+      "document_on_failure": false,
+      "failed_step": null,
+      "gate": {
+        "ok": true,
+        "status": "documented_advice"
+      },
+      "hashes": {
+        "part_a": "fc345b0b15ed455cecc1f73d674be0eda4e2806f4da53d74b888b97bb8999bca",
+        "part_b": "9f69407b5a1e7530b6e3c707f226d7658d50e95d71d9cd3b87fef1fbb2f4bcaf",
+        "part_c": "21109954e032f18d37148aaea74870a3a0b5477c88d88848af8fa67e9d861aea"
+      },
+      "line_index_matches_count": true,
+      "model_calls": 0,
+      "outcome": "bundle",
+      "piece4_gate_equal": true,
+      "piece4_outcome_equal": true,
+      "quote_too_long_placeholders": 0,
+      "released_without_bundle": false,
+      "results_item_bytes": 24700,
+      "run": 3,
+      "scenario": "S2",
+      "stored_quotes_over_200": 0,
+      "trace": {
+        "items": 12,
+        "max_item_bytes": 26346,
+        "notes_text_present": false,
+        "quotes_over_200": 0,
+        "raw_index": 0,
+        "raw_notes_strings": 0,
+        "total_bytes": 109441
+      },
+      "trace_sks_ok": true,
+      "validate_vs_saved": "identical",
+      "warnings": 1
+    },
+    {
+      "callback_calls": 0,
+      "code": null,
+      "code_steps_differ": [],
+      "direct_8b_equal": true,
+      "document_on_failure": false,
+      "failed_step": null,
+      "gate": {
+        "ok": true,
+        "status": "documented_advice"
+      },
+      "hashes": {
+        "part_a": "1dffb2b252b2bf330311d8f990c8472b9227ee7b07a6a4515c0792f9ca20db97",
+        "part_b": "d4b88cfd26c0b3ed156d6e73c0a4849537e6f6df6dfae4a80ed6b4ff977f6304",
+        "part_c": "8b2d9408e072d0d12b6ddc60cf99fdc17d45f304904193f02bd9e14c990eadab"
+      },
+      "line_index_matches_count": true,
+      "model_calls": 0,
+      "outcome": "bundle",
+      "piece4_gate_equal": true,
+      "piece4_outcome_equal": true,
+      "quote_too_long_placeholders": 1,
+      "released_without_bundle": false,
+      "results_item_bytes": 31875,
+      "run": 3,
+      "scenario": "S3",
+      "stored_quotes_over_200": 0,
+      "trace": {
+        "items": 12,
+        "max_item_bytes": 34470,
+        "notes_text_present": false,
+        "quotes_over_200": 0,
+        "raw_index": 0,
+        "raw_notes_strings": 0,
+        "total_bytes": 152639
+      },
+      "trace_sks_ok": true,
+      "validate_vs_saved": "identical",
+      "warnings": 3
+    },
+    {
+      "callback_calls": 0,
+      "code": null,
+      "code_steps_differ": [],
+      "direct_8b_equal": true,
+      "document_on_failure": false,
+      "failed_step": null,
+      "gate": {
+        "ok": true,
+        "status": "documented_advice"
+      },
+      "hashes": {
+        "part_a": "dda017c38067653a15ad20cc9943691d58b3740c9717567ea27d7b0cea391c6e",
+        "part_b": "1655909a8ea4e033382ac305f82d24a92e520f26a8b6be35b9926438712bedfa",
+        "part_c": "1d99c42e7c273aa1af3ade4c99c11ab3632f812a9e29350ce7609de43785c5bd"
+      },
+      "line_index_matches_count": true,
+      "model_calls": 0,
+      "outcome": "bundle",
+      "piece4_gate_equal": true,
+      "piece4_outcome_equal": true,
+      "quote_too_long_placeholders": 0,
+      "released_without_bundle": false,
+      "results_item_bytes": 26604,
+      "run": 3,
+      "scenario": "S4",
+      "stored_quotes_over_200": 0,
+      "trace": {
+        "items": 12,
+        "max_item_bytes": 28975,
+        "notes_text_present": false,
+        "quotes_over_200": 0,
+        "raw_index": 0,
+        "raw_notes_strings": 0,
+        "total_bytes": 123185
+      },
+      "trace_sks_ok": true,
+      "validate_vs_saved": "identical",
+      "warnings": 3
+    },
+    {
+      "callback_calls": 0,
+      "code": null,
+      "code_steps_differ": [],
+      "direct_8b_equal": true,
+      "document_on_failure": false,
+      "failed_step": null,
+      "gate": {
+        "ok": true,
+        "status": "documented_advice"
+      },
+      "hashes": {
+        "part_a": "ad3c98b0cd703aa718679bf710d5df3cdd630426f2d75cef7d9f582c592befc9",
+        "part_b": "e9f6b2f8ece1b01a3a2cc4e7b1d3f561f488f1546211e6ac7840787d7df55f2b",
+        "part_c": "22c9570c12617ab9083a1fa56f1ab36e3687ae06972a3b29047e21f5eb4b0eb5"
+      },
+      "line_index_matches_count": true,
+      "model_calls": 0,
+      "outcome": "bundle",
+      "piece4_gate_equal": true,
+      "piece4_outcome_equal": true,
+      "quote_too_long_placeholders": 0,
+      "released_without_bundle": false,
+      "results_item_bytes": 25417,
+      "run": 3,
+      "scenario": "S8",
+      "stored_quotes_over_200": 0,
+      "trace": {
+        "items": 12,
+        "max_item_bytes": 27991,
+        "notes_text_present": false,
+        "quotes_over_200": 0,
+        "raw_index": 0,
+        "raw_notes_strings": 0,
+        "total_bytes": 115802
+      },
+      "trace_sks_ok": true,
+      "validate_vs_saved": "identical",
+      "warnings": 1
+    },
+    {
+      "callback_calls": 0,
+      "code": null,
+      "code_steps_differ": [],
+      "direct_8b_equal": true,
+      "document_on_failure": false,
+      "failed_step": null,
+      "gate": {
+        "ok": true,
+        "status": "clean"
+      },
+      "hashes": {
+        "part_a": "be28c403944865b87e3dc5672db3f38383401889fdecc338660a07f2fd1cb19e",
+        "part_b": "3bdc7c9383e33cb05c89f2b22857a9fb712afad19b53c72bd74df7d78575dc08",
+        "part_c": "7a35d2deb70e17349a571c1a4289325da5f63917295fc16d89483ec19940e655"
+      },
+      "line_index_matches_count": true,
+      "model_calls": 0,
+      "outcome": "bundle",
+      "piece4_gate_equal": true,
+      "piece4_outcome_equal": true,
+      "quote_too_long_placeholders": 0,
+      "released_without_bundle": false,
+      "results_item_bytes": 26961,
+      "run": 3,
+      "scenario": "S9",
+      "stored_quotes_over_200": 0,
+      "trace": {
+        "items": 12,
+        "max_item_bytes": 29441,
+        "notes_text_present": false,
+        "quotes_over_200": 0,
+        "raw_index": 0,
+        "raw_notes_strings": 0,
+        "total_bytes": 122081
+      },
+      "trace_sks_ok": true,
+      "validate_vs_saved": "identical",
+      "warnings": 0
+    },
+    {
+      "callback_calls": 0,
+      "code": null,
+      "code_steps_differ": [],
+      "direct_8b_equal": true,
+      "document_on_failure": false,
+      "failed_step": null,
+      "gate": {
+        "ok": true,
+        "status": "documented_advice"
+      },
+      "hashes": {
+        "part_a": "e310c903da7c423d93bf2fdc7548665511d55c6cb70beb8317c9d60b8360a6bd",
+        "part_b": "d505bae7da1815b39fce3dde101389d9e653eb442b3c462cb9f84a94e084c4de",
+        "part_c": "9848724766ac4a93e64d08c95f7a3e5b40b1f05a87c64b562910c89e781741ed"
+      },
+      "line_index_matches_count": true,
+      "model_calls": 0,
+      "outcome": "bundle",
+      "piece4_gate_equal": true,
+      "piece4_outcome_equal": true,
+      "quote_too_long_placeholders": 1,
+      "released_without_bundle": false,
+      "results_item_bytes": 31355,
+      "run": 4,
+      "scenario": "A5",
+      "stored_quotes_over_200": 0,
+      "trace": {
+        "items": 12,
+        "max_item_bytes": 32416,
+        "notes_text_present": false,
+        "quotes_over_200": 0,
+        "raw_index": 0,
+        "raw_notes_strings": 0,
+        "total_bytes": 146441
+      },
+      "trace_sks_ok": true,
+      "validate_vs_saved": "identical",
+      "warnings": 0
+    },
+    {
+      "callback_calls": 0,
+      "code": null,
+      "code_steps_differ": [],
+      "direct_8b_equal": true,
+      "document_on_failure": false,
+      "failed_step": null,
+      "gate": {
+        "ok": true,
+        "status": "documented_advice"
+      },
+      "hashes": {
+        "part_a": "58c599187c2429af8040d2cc71a64d4542db1f3b5d10ea4f9d28bae1ea615374",
+        "part_b": "4907de73723eed4565a6c4078e816e2c56ba6d7db10e0155e4e60170ffc5c39a",
+        "part_c": "f0129a7e01743e8f1a671d7628c4f0869095457061010ca33f3d9c0bf41b5a8f"
+      },
+      "line_index_matches_count": true,
+      "model_calls": 0,
+      "outcome": "bundle",
+      "piece4_gate_equal": true,
+      "piece4_outcome_equal": true,
+      "quote_too_long_placeholders": 0,
+      "released_without_bundle": false,
+      "results_item_bytes": 29672,
+      "run": 4,
+      "scenario": "B6",
+      "stored_quotes_over_200": 0,
+      "trace": {
+        "items": 12,
+        "max_item_bytes": 31216,
+        "notes_text_present": false,
+        "quotes_over_200": 0,
+        "raw_index": 0,
+        "raw_notes_strings": 0,
+        "total_bytes": 132547
+      },
+      "trace_sks_ok": true,
+      "validate_vs_saved": "identical",
+      "warnings": 7
+    },
+    {
+      "callback_calls": 0,
+      "code": null,
+      "code_steps_differ": [],
+      "direct_8b_equal": true,
+      "document_on_failure": false,
+      "failed_step": null,
+      "gate": {
+        "ok": true,
+        "status": "clean"
+      },
+      "hashes": {
+        "part_a": "478f3169b59d2b10e71ae3bdadde252e0e94156224b8e1cbf1706a811303a1d9",
+        "part_b": "0ec2a5e81a657a2c5f676d5fb8f33fd789432817b662cb76a7eed34ed59c04c6",
+        "part_c": "ca45a4c9f0b597ac76a782450252bbd418576d4ff866f0bbec1de0713c32db1d"
+      },
+      "line_index_matches_count": true,
+      "model_calls": 0,
+      "outcome": "bundle",
+      "piece4_gate_equal": true,
+      "piece4_outcome_equal": true,
+      "quote_too_long_placeholders": 0,
+      "released_without_bundle": false,
+      "results_item_bytes": 17206,
+      "run": 4,
+      "scenario": "C7",
+      "stored_quotes_over_200": 0,
+      "trace": {
+        "items": 12,
+        "max_item_bytes": 18497,
+        "notes_text_present": false,
+        "quotes_over_200": 0,
+        "raw_index": 0,
+        "raw_notes_strings": 0,
+        "total_bytes": 74850
+      },
+      "trace_sks_ok": true,
+      "validate_vs_saved": "identical",
+      "warnings": 0
+    },
+    {
+      "callback_calls": 0,
+      "code": null,
+      "code_steps_differ": [],
+      "direct_8b_equal": true,
+      "document_on_failure": false,
+      "failed_step": null,
+      "gate": {
+        "ok": true,
+        "status": "documented_advice"
+      },
+      "hashes": {
+        "part_a": "f46687fcd18a009d396c740631f00845cad092f09bafef048589b54fb5cf1afc",
+        "part_b": "046779606fbe4f0bb00a7f21af4fee026501940d60e9a9d36c4e34967e1a88e1",
+        "part_c": "4607a2497851cab4b4fb76211ed8e935866ec3f50d3df8e24bb06e94f1105381"
+      },
+      "line_index_matches_count": true,
+      "model_calls": 0,
+      "outcome": "bundle",
+      "piece4_gate_equal": true,
+      "piece4_outcome_equal": true,
+      "quote_too_long_placeholders": 0,
+      "released_without_bundle": false,
+      "results_item_bytes": 36780,
+      "run": 4,
+      "scenario": "S1",
+      "stored_quotes_over_200": 0,
+      "trace": {
+        "items": 12,
+        "max_item_bytes": 38150,
+        "notes_text_present": false,
+        "quotes_over_200": 0,
+        "raw_index": 0,
+        "raw_notes_strings": 0,
+        "total_bytes": 163928
+      },
+      "trace_sks_ok": true,
+      "validate_vs_saved": "identical",
+      "warnings": 7
+    },
+    {
+      "callback_calls": 0,
+      "code": null,
+      "code_steps_differ": [],
+      "direct_8b_equal": true,
+      "document_on_failure": false,
+      "failed_step": null,
+      "gate": {
+        "ok": true,
+        "status": "documented_advice"
+      },
+      "hashes": {
+        "part_a": "1414c5d43e7aebef888c21644036c05639c5766a5ddfa299c0b8d9a89da60459",
+        "part_b": "803b3c1ac3e7af91cfd43a4443b76d3a3f951e242d8511b9ebd376df92e816fd",
+        "part_c": "d57580ac974a474a40eabca98ffc2a7851e8b4868c1c64c7e82fe311776079ef"
+      },
+      "line_index_matches_count": true,
+      "model_calls": 0,
+      "outcome": "bundle",
+      "piece4_gate_equal": true,
+      "piece4_outcome_equal": true,
+      "quote_too_long_placeholders": 0,
+      "released_without_bundle": false,
+      "results_item_bytes": 28958,
+      "run": 4,
+      "scenario": "S10",
+      "stored_quotes_over_200": 0,
+      "trace": {
+        "items": 12,
+        "max_item_bytes": 30286,
+        "notes_text_present": false,
+        "quotes_over_200": 0,
+        "raw_index": 0,
+        "raw_notes_strings": 0,
+        "total_bytes": 129156
+      },
+      "trace_sks_ok": true,
+      "validate_vs_saved": "identical",
+      "warnings": 4
+    },
+    {
+      "callback_calls": 0,
+      "code": null,
+      "code_steps_differ": [],
+      "direct_8b_equal": true,
+      "document_on_failure": false,
+      "failed_step": null,
+      "gate": {
+        "ok": true,
+        "status": "clean"
+      },
+      "hashes": {
+        "part_a": "51a2e8d149f52dc8575fed87f2f718f31f7236ea25e01b8c7a2f7ba8ea7825f3",
+        "part_b": "301389299dedbfbe49a710de015ea1803b85e188b0d00f9093788d21333edb5d",
+        "part_c": "3fdb4889594c05b55b6f80d984a4e34cee7ec818c64593424b168683ab6ff199"
+      },
+      "line_index_matches_count": true,
+      "model_calls": 0,
+      "outcome": "bundle",
+      "piece4_gate_equal": true,
+      "piece4_outcome_equal": true,
+      "quote_too_long_placeholders": 0,
+      "released_without_bundle": false,
+      "results_item_bytes": 31452,
+      "run": 4,
+      "scenario": "S11",
+      "stored_quotes_over_200": 0,
+      "trace": {
+        "items": 12,
+        "max_item_bytes": 34493,
+        "notes_text_present": false,
+        "quotes_over_200": 0,
+        "raw_index": 0,
+        "raw_notes_strings": 0,
+        "total_bytes": 144018
+      },
+      "trace_sks_ok": true,
+      "validate_vs_saved": "r3_only",
+      "warnings": 1
+    },
+    {
+      "callback_calls": 0,
+      "code": null,
+      "code_steps_differ": [],
+      "direct_8b_equal": true,
+      "document_on_failure": false,
+      "failed_step": null,
+      "gate": {
+        "ok": true,
+        "status": "documented_advice"
+      },
+      "hashes": {
+        "part_a": "1b0cbb492ed84039150e7910ed5ac8b69d9341a84d6ed9842a4910b52c3043c2",
+        "part_b": "0ea2805a682803b6bd62d129e4c959b698fd26d7bb7418cce4c62238388e82fb",
+        "part_c": "bdb4decc5716785e899417f4e95436929595fb7891cf37ba50353141ab5c2ec8"
+      },
+      "line_index_matches_count": true,
+      "model_calls": 0,
+      "outcome": "bundle",
+      "piece4_gate_equal": true,
+      "piece4_outcome_equal": true,
+      "quote_too_long_placeholders": 0,
+      "released_without_bundle": false,
+      "results_item_bytes": 34370,
+      "run": 4,
+      "scenario": "S12",
+      "stored_quotes_over_200": 0,
+      "trace": {
+        "items": 12,
+        "max_item_bytes": 37120,
+        "notes_text_present": false,
+        "quotes_over_200": 0,
+        "raw_index": 0,
+        "raw_notes_strings": 0,
+        "total_bytes": 172944
+      },
+      "trace_sks_ok": true,
+      "validate_vs_saved": "identical",
+      "warnings": 2
+    },
+    {
+      "callback_calls": 0,
+      "code": null,
+      "code_steps_differ": [],
+      "direct_8b_equal": true,
+      "document_on_failure": false,
+      "failed_step": null,
+      "gate": {
+        "ok": true,
+        "status": "documented_advice"
+      },
+      "hashes": {
+        "part_a": "b3f5c77923a55ca517c6ed827cbd05b7ac5a7fcc7ebc2fb2d27375202c13c93d",
+        "part_b": "d70636294268a7c7ecfc132b95404fe032af8c69b725aff6ce10c306c6ac64c0",
+        "part_c": "676753291a116167e999cf08b6579723a30161ebbdf2986a01f885d91fad971d"
+      },
+      "line_index_matches_count": true,
+      "model_calls": 0,
+      "outcome": "bundle",
+      "piece4_gate_equal": true,
+      "piece4_outcome_equal": true,
+      "quote_too_long_placeholders": 0,
+      "released_without_bundle": false,
+      "results_item_bytes": 36739,
+      "run": 4,
+      "scenario": "S13",
+      "stored_quotes_over_200": 0,
+      "trace": {
+        "items": 12,
+        "max_item_bytes": 38807,
+        "notes_text_present": false,
+        "quotes_over_200": 0,
+        "raw_index": 0,
+        "raw_notes_strings": 0,
+        "total_bytes": 167730
+      },
+      "trace_sks_ok": true,
+      "validate_vs_saved": "identical",
+      "warnings": 4
+    },
+    {
+      "callback_calls": 0,
+      "code": null,
+      "code_steps_differ": [],
+      "direct_8b_equal": true,
+      "document_on_failure": false,
+      "failed_step": null,
+      "gate": {
+        "ok": true,
+        "status": "clean"
+      },
+      "hashes": {
+        "part_a": "b75a71a5be02938ef9182fd10cc544ea0055f44282b86013fe29e726c9d03706",
+        "part_b": "7866264b8aae94fe6301ec92218663c72c789e5e5bb1477d097238fbd35698dd",
+        "part_c": "6fbdb7a0e5ffe61bd7b2f7b1440a88d18b5d8fd2c6888b304569b81bb7144c89"
+      },
+      "line_index_matches_count": true,
+      "model_calls": 0,
+      "outcome": "bundle",
+      "piece4_gate_equal": true,
+      "piece4_outcome_equal": true,
+      "quote_too_long_placeholders": 0,
+      "released_without_bundle": false,
+      "results_item_bytes": 33530,
+      "run": 4,
+      "scenario": "S14",
+      "stored_quotes_over_200": 0,
+      "trace": {
+        "items": 12,
+        "max_item_bytes": 34920,
+        "notes_text_present": false,
+        "quotes_over_200": 0,
+        "raw_index": 0,
+        "raw_notes_strings": 0,
+        "total_bytes": 157408
+      },
+      "trace_sks_ok": true,
+      "validate_vs_saved": "identical",
+      "warnings": 2
+    },
+    {
+      "callback_calls": 0,
+      "code": null,
+      "code_steps_differ": [],
+      "direct_8b_equal": true,
+      "document_on_failure": false,
+      "failed_step": null,
+      "gate": {
+        "ok": true,
+        "status": "clean"
+      },
+      "hashes": {
+        "part_a": "11cd4f8b8b75f8a467008a4b804cfbca2e22120338232aa17193f6221547eb2d",
+        "part_b": "046f932a5ca62345c8d1257fc411b251bf07a10e0fc56269f64181bf15ea2ac0",
+        "part_c": "1bea7799949e6560fedc81d2b310c657d2bb3a7dba096f8b0d070fe6631968ff"
+      },
+      "line_index_matches_count": true,
+      "model_calls": 0,
+      "outcome": "bundle",
+      "piece4_gate_equal": true,
+      "piece4_outcome_equal": true,
+      "quote_too_long_placeholders": 0,
+      "released_without_bundle": false,
+      "results_item_bytes": 29738,
+      "run": 4,
+      "scenario": "S15",
+      "stored_quotes_over_200": 0,
+      "trace": {
+        "items": 12,
+        "max_item_bytes": 31220,
+        "notes_text_present": false,
+        "quotes_over_200": 0,
+        "raw_index": 0,
+        "raw_notes_strings": 0,
+        "total_bytes": 134812
+      },
+      "trace_sks_ok": true,
+      "validate_vs_saved": "identical",
+      "warnings": 0
+    },
+    {
+      "callback_calls": 0,
+      "code": null,
+      "code_steps_differ": [],
+      "direct_8b_equal": true,
+      "document_on_failure": false,
+      "failed_step": null,
+      "gate": {
+        "ok": true,
+        "status": "clean"
+      },
+      "hashes": {
+        "part_a": "c2db2ba2764a9522978d2db589a93913ba1f9dbb611c634bc4397018fa9b3062",
+        "part_b": "394161e8a164872e7f16eb8958d45406c9e631f3e5e5c67d7eda3a6d43c0923e",
+        "part_c": "b6b5452c8de95b03263b7c71a239da1a6a6be143062c750fef7b5192fc566ab4"
+      },
+      "line_index_matches_count": true,
+      "model_calls": 0,
+      "outcome": "bundle",
+      "piece4_gate_equal": true,
+      "piece4_outcome_equal": true,
+      "quote_too_long_placeholders": 0,
+      "released_without_bundle": false,
+      "results_item_bytes": 35143,
+      "run": 4,
+      "scenario": "S16",
+      "stored_quotes_over_200": 0,
+      "trace": {
+        "items": 12,
+        "max_item_bytes": 36670,
+        "notes_text_present": false,
+        "quotes_over_200": 0,
+        "raw_index": 0,
+        "raw_notes_strings": 0,
+        "total_bytes": 157482
+      },
+      "trace_sks_ok": true,
+      "validate_vs_saved": "identical",
+      "warnings": 4
+    },
+    {
+      "callback_calls": 0,
+      "code": null,
+      "code_steps_differ": [],
+      "direct_8b_equal": true,
+      "document_on_failure": false,
+      "failed_step": null,
+      "gate": {
+        "ok": true,
+        "status": "clean"
+      },
+      "hashes": {
+        "part_a": "1584ce3fe500ffcf353550b857abf9c40f03a9e94244064aad2462524640dc63",
+        "part_b": "c53fccacbea0f8ebb8eacd71faae8634d75073a72d2ab3c8f21864b2faee20cf",
+        "part_c": "33f048fe12d8864616629d65efd9d468cdd9d4c2054686e49becbddb38b6f576"
+      },
+      "line_index_matches_count": true,
+      "model_calls": 0,
+      "outcome": "bundle",
+      "piece4_gate_equal": true,
+      "piece4_outcome_equal": true,
+      "quote_too_long_placeholders": 0,
+      "released_without_bundle": false,
+      "results_item_bytes": 31977,
+      "run": 4,
+      "scenario": "S17",
+      "stored_quotes_over_200": 0,
+      "trace": {
+        "items": 12,
+        "max_item_bytes": 32428,
+        "notes_text_present": false,
+        "quotes_over_200": 0,
+        "raw_index": 0,
+        "raw_notes_strings": 0,
+        "total_bytes": 147462
+      },
+      "trace_sks_ok": true,
+      "validate_vs_saved": "identical",
+      "warnings": 1
+    },
+    {
+      "callback_calls": 0,
+      "code": null,
+      "code_steps_differ": [],
+      "direct_8b_equal": true,
+      "document_on_failure": false,
+      "failed_step": null,
+      "gate": {
+        "ok": true,
+        "status": "clean"
+      },
+      "hashes": {
+        "part_a": "6e88cdefc8e0972deb6113e768f4cbb68a6482c4a29e9794b141ae40caf01770",
+        "part_b": "c3e517114808744b1a1014081f8318c42615831fcf619a207b1ef8e31a12e324",
+        "part_c": "5f5edd4620b75cc692daaa32fd5c1758d895408eedd778260922bc5240ecf9cb"
+      },
+      "line_index_matches_count": true,
+      "model_calls": 0,
+      "outcome": "bundle",
+      "piece4_gate_equal": true,
+      "piece4_outcome_equal": true,
+      "quote_too_long_placeholders": 0,
+      "released_without_bundle": false,
+      "results_item_bytes": 25422,
+      "run": 4,
+      "scenario": "S18",
+      "stored_quotes_over_200": 0,
+      "trace": {
+        "items": 12,
+        "max_item_bytes": 27540,
+        "notes_text_present": false,
+        "quotes_over_200": 0,
+        "raw_index": 0,
+        "raw_notes_strings": 0,
+        "total_bytes": 119296
+      },
+      "trace_sks_ok": true,
+      "validate_vs_saved": "identical",
+      "warnings": 0
+    },
+    {
+      "callback_calls": 0,
+      "code": null,
+      "code_steps_differ": [],
+      "direct_8b_equal": true,
+      "document_on_failure": false,
+      "failed_step": null,
+      "gate": {
+        "ok": true,
+        "status": "documented_advice"
+      },
+      "hashes": {
+        "part_a": "fc345b0b15ed455cecc1f73d674be0eda4e2806f4da53d74b888b97bb8999bca",
+        "part_b": "9f69407b5a1e7530b6e3c707f226d7658d50e95d71d9cd3b87fef1fbb2f4bcaf",
+        "part_c": "efb893d67fdec3c7b285de4787fd735e96542fd1ec0ac5237da324e98526930c"
+      },
+      "line_index_matches_count": true,
+      "model_calls": 0,
+      "outcome": "bundle",
+      "piece4_gate_equal": true,
+      "piece4_outcome_equal": true,
+      "quote_too_long_placeholders": 0,
+      "released_without_bundle": false,
+      "results_item_bytes": 24700,
+      "run": 4,
+      "scenario": "S2",
+      "stored_quotes_over_200": 0,
+      "trace": {
+        "items": 12,
+        "max_item_bytes": 26346,
+        "notes_text_present": false,
+        "quotes_over_200": 0,
+        "raw_index": 0,
+        "raw_notes_strings": 0,
+        "total_bytes": 109441
+      },
+      "trace_sks_ok": true,
+      "validate_vs_saved": "identical",
+      "warnings": 1
+    },
+    {
+      "callback_calls": 0,
+      "code": null,
+      "code_steps_differ": [],
+      "direct_8b_equal": true,
+      "document_on_failure": false,
+      "failed_step": null,
+      "gate": {
+        "ok": true,
+        "status": "documented_advice"
+      },
+      "hashes": {
+        "part_a": "7decf41dfc303c549271857173c10d23292db8db885c8748d6d4f3b2baaff835",
+        "part_b": "2c37acd8202d5292b6fd2f7d6bbb2b1eb015ae7084f8bdae27a9da55038c6c6f",
+        "part_c": "e00f1e04285edc22ab245c8b01031590c7bc227fd375ebb4b63f0d279e61b9a0"
+      },
+      "line_index_matches_count": true,
+      "model_calls": 0,
+      "outcome": "bundle",
+      "piece4_gate_equal": true,
+      "piece4_outcome_equal": true,
+      "quote_too_long_placeholders": 0,
+      "released_without_bundle": false,
+      "results_item_bytes": 32845,
+      "run": 4,
+      "scenario": "S3",
+      "stored_quotes_over_200": 0,
+      "trace": {
+        "items": 12,
+        "max_item_bytes": 35580,
+        "notes_text_present": false,
+        "quotes_over_200": 0,
+        "raw_index": 0,
+        "raw_notes_strings": 0,
+        "total_bytes": 158421
+      },
+      "trace_sks_ok": true,
+      "validate_vs_saved": "identical",
+      "warnings": 5
+    },
+    {
+      "callback_calls": 0,
+      "code": null,
+      "code_steps_differ": [],
+      "direct_8b_equal": true,
+      "document_on_failure": false,
+      "failed_step": null,
+      "gate": {
+        "ok": true,
+        "status": "documented_advice"
+      },
+      "hashes": {
+        "part_a": "114dfe60b514498ccd85c9f2b33934fec9e51bd9ba81e20b7015298dfe35b7bd",
+        "part_b": "f7cf9d974134f4eb05d60a02cbcb15bd15593348cb7e2cda863b0084aa258cb0",
+        "part_c": "01e5740c66ad8c98cdcdc58750b21c9b98fb4aa911965877d2276dc066e90fca"
+      },
+      "line_index_matches_count": true,
+      "model_calls": 0,
+      "outcome": "bundle",
+      "piece4_gate_equal": true,
+      "piece4_outcome_equal": true,
+      "quote_too_long_placeholders": 0,
+      "released_without_bundle": false,
+      "results_item_bytes": 26474,
+      "run": 4,
+      "scenario": "S4",
+      "stored_quotes_over_200": 0,
+      "trace": {
+        "items": 12,
+        "max_item_bytes": 28682,
+        "notes_text_present": false,
+        "quotes_over_200": 0,
+        "raw_index": 0,
+        "raw_notes_strings": 0,
+        "total_bytes": 121738
+      },
+      "trace_sks_ok": true,
+      "validate_vs_saved": "identical",
+      "warnings": 5
+    },
+    {
+      "callback_calls": 0,
+      "code": null,
+      "code_steps_differ": [],
+      "direct_8b_equal": true,
+      "document_on_failure": false,
+      "failed_step": null,
+      "gate": {
+        "ok": true,
+        "status": "documented_advice"
+      },
+      "hashes": {
+        "part_a": "5cc0c74d3dfb846596d77e612607c4d6b3566c816e88058df30e75491a1ef7b6",
+        "part_b": "806d2fd3c1de79a0b400d8402eaed9109c7c2b1e98647735a7f8d51deed14435",
+        "part_c": "25317ded9660fe428c7591ef1a809bdb60665e32278eda680069d1dc891b28fe"
+      },
+      "line_index_matches_count": true,
+      "model_calls": 0,
+      "outcome": "bundle",
+      "piece4_gate_equal": true,
+      "piece4_outcome_equal": true,
+      "quote_too_long_placeholders": 0,
+      "released_without_bundle": false,
+      "results_item_bytes": 26085,
+      "run": 4,
+      "scenario": "S8",
+      "stored_quotes_over_200": 0,
+      "trace": {
+        "items": 12,
+        "max_item_bytes": 28595,
+        "notes_text_present": false,
+        "quotes_over_200": 0,
+        "raw_index": 0,
+        "raw_notes_strings": 0,
+        "total_bytes": 118765
+      },
+      "trace_sks_ok": true,
+      "validate_vs_saved": "identical",
+      "warnings": 2
+    },
+    {
+      "callback_calls": 0,
+      "code": null,
+      "code_steps_differ": [],
+      "direct_8b_equal": true,
+      "document_on_failure": false,
+      "failed_step": null,
+      "gate": {
+        "ok": true,
+        "status": "clean"
+      },
+      "hashes": {
+        "part_a": "302280ae6ac641a2b40b80cbc81990388e4bd4086baed30dd8f2ce0066544a10",
+        "part_b": "f2115b4aae60753eed8addf340211ce136a7cbac9a4ec9d0144bf4d4265b511b",
+        "part_c": "a472b74871dbdd4dd9f387a34e0358c8609de27e5c345ab14f25809f7a644d7c"
+      },
+      "line_index_matches_count": true,
+      "model_calls": 0,
+      "outcome": "bundle",
+      "piece4_gate_equal": true,
+      "piece4_outcome_equal": true,
+      "quote_too_long_placeholders": 0,
+      "released_without_bundle": false,
+      "results_item_bytes": 24764,
+      "run": 4,
+      "scenario": "S9",
+      "stored_quotes_over_200": 0,
+      "trace": {
+        "items": 12,
+        "max_item_bytes": 27092,
+        "notes_text_present": false,
+        "quotes_over_200": 0,
+        "raw_index": 0,
+        "raw_notes_strings": 0,
+        "total_bytes": 109959
+      },
+      "trace_sks_ok": true,
+      "validate_vs_saved": "identical",
+      "warnings": 0
+    },
+    {
+      "callback_calls": 0,
+      "code": null,
+      "code_steps_differ": [],
+      "direct_8b_equal": true,
+      "document_on_failure": false,
+      "failed_step": null,
+      "gate": {
+        "ok": true,
+        "status": "documented_advice"
+      },
+      "hashes": {
+        "part_a": "897fda9d2995d10730eb42d7f01f239e9224deaaea63765f850ff00750436b1b",
+        "part_b": "6c96e454fda5fe1930c7f70a1dffca385244900832a6c817aecdacd451fb2eed",
+        "part_c": "59c067b0c7396352cb07897643ddfc78a290258309832463bf8d6aa8b54cf40c"
+      },
+      "line_index_matches_count": true,
+      "model_calls": 0,
+      "outcome": "bundle",
+      "piece4_gate_equal": true,
+      "piece4_outcome_equal": true,
+      "quote_too_long_placeholders": 0,
+      "released_without_bundle": false,
+      "results_item_bytes": 31838,
+      "run": 5,
+      "scenario": "A5",
+      "stored_quotes_over_200": 0,
+      "trace": {
+        "items": 12,
+        "max_item_bytes": 32627,
+        "notes_text_present": false,
+        "quotes_over_200": 0,
+        "raw_index": 0,
+        "raw_notes_strings": 0,
+        "total_bytes": 149246
+      },
+      "trace_sks_ok": true,
+      "validate_vs_saved": "identical",
+      "warnings": 0
+    },
+    {
+      "callback_calls": 0,
+      "code": null,
+      "code_steps_differ": [],
+      "direct_8b_equal": true,
+      "document_on_failure": false,
+      "failed_step": null,
+      "gate": {
+        "ok": true,
+        "status": "documented_advice"
+      },
+      "hashes": {
+        "part_a": "bae971a4b78ea9b8bb90582830b495cb97aef5aef60486de0b276d147cd1b5dc",
+        "part_b": "fd6c9d52ca8bb95332117eab1cc42a678ddf5bb309628bcc5fb9f9d83ec56ee6",
+        "part_c": "37008743abe021e6b3884501094736644865160916fa79ed88438cea48eabef7"
+      },
+      "line_index_matches_count": true,
+      "model_calls": 0,
+      "outcome": "bundle",
+      "piece4_gate_equal": true,
+      "piece4_outcome_equal": true,
+      "quote_too_long_placeholders": 0,
+      "released_without_bundle": false,
+      "results_item_bytes": 29107,
+      "run": 5,
+      "scenario": "B6",
+      "stored_quotes_over_200": 0,
+      "trace": {
+        "items": 12,
+        "max_item_bytes": 30228,
+        "notes_text_present": false,
+        "quotes_over_200": 0,
+        "raw_index": 0,
+        "raw_notes_strings": 0,
+        "total_bytes": 129676
+      },
+      "trace_sks_ok": true,
+      "validate_vs_saved": "identical",
+      "warnings": 4
+    },
+    {
+      "callback_calls": 0,
+      "code": null,
+      "code_steps_differ": [],
+      "direct_8b_equal": true,
+      "document_on_failure": false,
+      "failed_step": null,
+      "gate": {
+        "ok": true,
+        "status": "clean"
+      },
+      "hashes": {
+        "part_a": "5fa650d5ea8f3ab1378d9f68a6316410a1a2acc094d8187fed05c0486c0df0eb",
+        "part_b": "d368387872b3698794cc0af3d495faa363fa2d1dae45b975c823b4e321a2a2df",
+        "part_c": "993ba5391708835b127cf0520d1665a1d4357a354a3ca9f86a016bd7bd0a3383"
+      },
+      "line_index_matches_count": true,
+      "model_calls": 0,
+      "outcome": "bundle",
+      "piece4_gate_equal": true,
+      "piece4_outcome_equal": true,
+      "quote_too_long_placeholders": 0,
+      "released_without_bundle": false,
+      "results_item_bytes": 17262,
+      "run": 5,
+      "scenario": "C7",
+      "stored_quotes_over_200": 0,
+      "trace": {
+        "items": 12,
+        "max_item_bytes": 18515,
+        "notes_text_present": false,
+        "quotes_over_200": 0,
+        "raw_index": 0,
+        "raw_notes_strings": 0,
+        "total_bytes": 77306
+      },
+      "trace_sks_ok": true,
+      "validate_vs_saved": "identical",
+      "warnings": 0
+    },
+    {
+      "callback_calls": 0,
+      "code": null,
+      "code_steps_differ": [],
+      "direct_8b_equal": true,
+      "document_on_failure": false,
+      "failed_step": null,
+      "gate": {
+        "ok": true,
+        "status": "documented_advice"
+      },
+      "hashes": {
+        "part_a": "80b1e83cbd3b268a1f5e40e90059be668cb7adb54beedf143dc826ca701495fd",
+        "part_b": "43e95c3d42e19633d4d42658f675f5a8969688b09143545bd206c89c8956513a",
+        "part_c": "f7160172e527466e5436032777c982770c238f5c046fabaa98ecc064fd0b60ff"
+      },
+      "line_index_matches_count": true,
+      "model_calls": 0,
+      "outcome": "bundle",
+      "piece4_gate_equal": true,
+      "piece4_outcome_equal": true,
+      "quote_too_long_placeholders": 0,
+      "released_without_bundle": false,
+      "results_item_bytes": 36385,
+      "run": 5,
+      "scenario": "S1",
+      "stored_quotes_over_200": 0,
+      "trace": {
+        "items": 12,
+        "max_item_bytes": 37771,
+        "notes_text_present": false,
+        "quotes_over_200": 0,
+        "raw_index": 0,
+        "raw_notes_strings": 0,
+        "total_bytes": 163307
+      },
+      "trace_sks_ok": true,
+      "validate_vs_saved": "identical",
+      "warnings": 6
+    },
+    {
+      "callback_calls": 0,
+      "code": null,
+      "code_steps_differ": [],
+      "direct_8b_equal": true,
+      "document_on_failure": false,
+      "failed_step": null,
+      "gate": {
+        "ok": true,
+        "status": "documented_advice"
+      },
+      "hashes": {
+        "part_a": "5b0a0bbfa905428842b6662dc8c17ba48e93c5af29c0370ebc7480a3b73999fe",
+        "part_b": "e50660e350f0f1d87cfdbcfbea695e82f0c632345f1f2db8c166f44cc2ad9f22",
+        "part_c": "e7d33157c2ce599ea8c3be972fb1225742e9c615d1092352c76e6c1b67c65118"
+      },
+      "line_index_matches_count": true,
+      "model_calls": 0,
+      "outcome": "bundle",
+      "piece4_gate_equal": true,
+      "piece4_outcome_equal": true,
+      "quote_too_long_placeholders": 0,
+      "released_without_bundle": false,
+      "results_item_bytes": 28854,
+      "run": 5,
+      "scenario": "S10",
+      "stored_quotes_over_200": 0,
+      "trace": {
+        "items": 12,
+        "max_item_bytes": 30149,
+        "notes_text_present": false,
+        "quotes_over_200": 0,
+        "raw_index": 0,
+        "raw_notes_strings": 0,
+        "total_bytes": 128476
+      },
+      "trace_sks_ok": true,
+      "validate_vs_saved": "identical",
+      "warnings": 5
+    },
+    {
+      "callback_calls": 0,
+      "code": null,
+      "code_steps_differ": [],
+      "direct_8b_equal": true,
+      "document_on_failure": false,
+      "failed_step": null,
+      "gate": {
+        "ok": true,
+        "status": "clean"
+      },
+      "hashes": {
+        "part_a": "0c55108ef6f3d45c0f62b329f21dee1209d5c580a01701f15ca57a08abc18695",
+        "part_b": "8516df1f4519217317aabbaa51753b589db5d720abd854ad63505aa650260770",
+        "part_c": "fc99261461910ff9a4505d2c34fe9248941bd64d6634e396c9d5c2878200ae19"
+      },
+      "line_index_matches_count": true,
+      "model_calls": 0,
+      "outcome": "bundle",
+      "piece4_gate_equal": true,
+      "piece4_outcome_equal": true,
+      "quote_too_long_placeholders": 0,
+      "released_without_bundle": false,
+      "results_item_bytes": 32314,
+      "run": 5,
+      "scenario": "S11",
+      "stored_quotes_over_200": 0,
+      "trace": {
+        "items": 12,
+        "max_item_bytes": 35261,
+        "notes_text_present": false,
+        "quotes_over_200": 0,
+        "raw_index": 0,
+        "raw_notes_strings": 0,
+        "total_bytes": 148509
+      },
+      "trace_sks_ok": true,
+      "validate_vs_saved": "r3_only",
+      "warnings": 0
+    },
+    {
+      "callback_calls": 0,
+      "code": null,
+      "code_steps_differ": [],
+      "direct_8b_equal": true,
+      "document_on_failure": false,
+      "failed_step": null,
+      "gate": {
+        "ok": true,
+        "status": "documented_advice"
+      },
+      "hashes": {
+        "part_a": "2feb38cd4ca0fb85fa1543df585d40187c41eb06badf673ce765f05d71b1a774",
+        "part_b": "67da52035511be033e9ee5c95b5bca8e3800db45c6c7da4fc678635aec7cee58",
+        "part_c": "a7e14a9e33897f233486617d2d2e3e9c37f4de2303f7a2b2f02bd1007046f7a0"
+      },
+      "line_index_matches_count": true,
+      "model_calls": 0,
+      "outcome": "bundle",
+      "piece4_gate_equal": true,
+      "piece4_outcome_equal": true,
+      "quote_too_long_placeholders": 0,
+      "released_without_bundle": false,
+      "results_item_bytes": 33995,
+      "run": 5,
+      "scenario": "S12",
+      "stored_quotes_over_200": 0,
+      "trace": {
+        "items": 12,
+        "max_item_bytes": 36665,
+        "notes_text_present": false,
+        "quotes_over_200": 0,
+        "raw_index": 0,
+        "raw_notes_strings": 0,
+        "total_bytes": 168054
+      },
+      "trace_sks_ok": true,
+      "validate_vs_saved": "identical",
+      "warnings": 6
+    },
+    {
+      "callback_calls": 0,
+      "code": null,
+      "code_steps_differ": [],
+      "direct_8b_equal": true,
+      "document_on_failure": false,
+      "failed_step": null,
+      "gate": {
+        "ok": true,
+        "status": "documented_advice"
+      },
+      "hashes": {
+        "part_a": "e3e9f0b001c37a3d266ef8ce2343621453159a9d41a6847ca0d22c29fda8add3",
+        "part_b": "45663b7b6698bbdd111789335ffb0762bcd5905cd5600a403c7486adf6eac5fc",
+        "part_c": "c399e83141db971650fd34129cb277ee2a01ba58977f54453dde1547e448d6eb"
+      },
+      "line_index_matches_count": true,
+      "model_calls": 0,
+      "outcome": "bundle",
+      "piece4_gate_equal": true,
+      "piece4_outcome_equal": true,
+      "quote_too_long_placeholders": 0,
+      "released_without_bundle": false,
+      "results_item_bytes": 37857,
+      "run": 5,
+      "scenario": "S13",
+      "stored_quotes_over_200": 0,
+      "trace": {
+        "items": 12,
+        "max_item_bytes": 39610,
+        "notes_text_present": false,
+        "quotes_over_200": 0,
+        "raw_index": 0,
+        "raw_notes_strings": 0,
+        "total_bytes": 171900
+      },
+      "trace_sks_ok": true,
+      "validate_vs_saved": "identical",
+      "warnings": 6
+    },
+    {
+      "callback_calls": 0,
+      "code": null,
+      "code_steps_differ": [],
+      "direct_8b_equal": true,
+      "document_on_failure": false,
+      "failed_step": null,
+      "gate": {
+        "ok": true,
+        "status": "clean"
+      },
+      "hashes": {
+        "part_a": "5a6c434e8f3fce1f667c498094127e1a413905344ab1875a16fb243d5bf5800a",
+        "part_b": "7bf6d955abcdbb17e308af7af7dfa8dec0d5de584259bd8d2c11c0a1d1b64d35",
+        "part_c": "c4fdec9bf55e049efb571c959b19c8701ebfd5bfdcc0e0617f7ee171dfdc4ab3"
+      },
+      "line_index_matches_count": true,
+      "model_calls": 0,
+      "outcome": "bundle",
+      "piece4_gate_equal": true,
+      "piece4_outcome_equal": true,
+      "quote_too_long_placeholders": 0,
+      "released_without_bundle": false,
+      "results_item_bytes": 34782,
+      "run": 5,
+      "scenario": "S14",
+      "stored_quotes_over_200": 0,
+      "trace": {
+        "items": 12,
+        "max_item_bytes": 36259,
+        "notes_text_present": false,
+        "quotes_over_200": 0,
+        "raw_index": 0,
+        "raw_notes_strings": 0,
+        "total_bytes": 161250
+      },
+      "trace_sks_ok": true,
+      "validate_vs_saved": "identical",
+      "warnings": 4
+    },
+    {
+      "callback_calls": 0,
+      "code": null,
+      "code_steps_differ": [],
+      "direct_8b_equal": true,
+      "document_on_failure": false,
+      "failed_step": null,
+      "gate": {
+        "ok": true,
+        "status": "clean"
+      },
+      "hashes": {
+        "part_a": "e1d09655cf5bd034ca6f2f6b15d51f42d07a05fe649279e51a4f19e7924a704a",
+        "part_b": "8e2c01a70f27ddba74bc3ab6b819a184cd00238029e7e98fa70d13f201ba5249",
+        "part_c": "a6842fd557524742ca9ac2d691908accd527bfb305653078b675136f27529a47"
+      },
+      "line_index_matches_count": true,
+      "model_calls": 0,
+      "outcome": "bundle",
+      "piece4_gate_equal": true,
+      "piece4_outcome_equal": true,
+      "quote_too_long_placeholders": 0,
+      "released_without_bundle": false,
+      "results_item_bytes": 30972,
+      "run": 5,
+      "scenario": "S15",
+      "stored_quotes_over_200": 0,
+      "trace": {
+        "items": 12,
+        "max_item_bytes": 32781,
+        "notes_text_present": false,
+        "quotes_over_200": 0,
+        "raw_index": 0,
+        "raw_notes_strings": 0,
+        "total_bytes": 141188
+      },
+      "trace_sks_ok": true,
+      "validate_vs_saved": "identical",
+      "warnings": 1
+    },
+    {
+      "callback_calls": 0,
+      "code": null,
+      "code_steps_differ": [],
+      "direct_8b_equal": true,
+      "document_on_failure": false,
+      "failed_step": null,
+      "gate": {
+        "ok": true,
+        "status": "clean"
+      },
+      "hashes": {
+        "part_a": "c0413473d460ebb1fdad6c1ab031c2674c23b67b1a57bb2a94e0d1cacd90386b",
+        "part_b": "b1ca579eaad1d04250f711b7d93a73f7a15f9df30fcd32c19e4fbbc1ea6e46ed",
+        "part_c": "45a0df7b4126a0e09c03a73c308b1aa53cd85a82db11dbf975e088b3767c1a01"
+      },
+      "line_index_matches_count": true,
+      "model_calls": 0,
+      "outcome": "bundle",
+      "piece4_gate_equal": true,
+      "piece4_outcome_equal": true,
+      "quote_too_long_placeholders": 0,
+      "released_without_bundle": false,
+      "results_item_bytes": 34859,
+      "run": 5,
+      "scenario": "S16",
+      "stored_quotes_over_200": 0,
+      "trace": {
+        "items": 12,
+        "max_item_bytes": 36468,
+        "notes_text_present": false,
+        "quotes_over_200": 0,
+        "raw_index": 0,
+        "raw_notes_strings": 0,
+        "total_bytes": 158786
+      },
+      "trace_sks_ok": true,
+      "validate_vs_saved": "identical",
+      "warnings": 3
+    },
+    {
+      "callback_calls": 0,
+      "code": null,
+      "code_steps_differ": [],
+      "direct_8b_equal": true,
+      "document_on_failure": false,
+      "failed_step": null,
+      "gate": {
+        "ok": true,
+        "status": "clean"
+      },
+      "hashes": {
+        "part_a": "0bac76bb7b1dce6bec4faa481748b35589add76ec6b8d37c16ba1e790982beed",
+        "part_b": "34a9c4f606eb1488a8132cef1f96229a38ca236e7fcb5714053f19c9adeff003",
+        "part_c": "1977ed799a176957d31e28ec5acd1f908c2cadd89811472563681d5195651c51"
+      },
+      "line_index_matches_count": true,
+      "model_calls": 0,
+      "outcome": "bundle",
+      "piece4_gate_equal": true,
+      "piece4_outcome_equal": true,
+      "quote_too_long_placeholders": 0,
+      "released_without_bundle": false,
+      "results_item_bytes": 32282,
+      "run": 5,
+      "scenario": "S17",
+      "stored_quotes_over_200": 0,
+      "trace": {
+        "items": 12,
+        "max_item_bytes": 32751,
+        "notes_text_present": false,
+        "quotes_over_200": 0,
+        "raw_index": 0,
+        "raw_notes_strings": 0,
+        "total_bytes": 151116
+      },
+      "trace_sks_ok": true,
+      "validate_vs_saved": "identical",
+      "warnings": 1
+    },
+    {
+      "callback_calls": 0,
+      "code": null,
+      "code_steps_differ": [],
+      "direct_8b_equal": true,
+      "document_on_failure": false,
+      "failed_step": null,
+      "gate": {
+        "ok": true,
+        "status": "clean"
+      },
+      "hashes": {
+        "part_a": "8bce0705789f82a4c447309379a018bdab2fdd7284674c0ddfc2b8f14421cd7d",
+        "part_b": "3406652d9d234ed0a8a05481c2cf08bb8a9f6ff935d49d2e6e343551e6ad9ac9",
+        "part_c": "1fcbe1fd2da0b837b54e36769d21675ff3016f6d6ac7c62ed23c5a32790c24a6"
+      },
+      "line_index_matches_count": true,
+      "model_calls": 0,
+      "outcome": "bundle",
+      "piece4_gate_equal": true,
+      "piece4_outcome_equal": true,
+      "quote_too_long_placeholders": 0,
+      "released_without_bundle": false,
+      "results_item_bytes": 23441,
+      "run": 5,
+      "scenario": "S18",
+      "stored_quotes_over_200": 0,
+      "trace": {
+        "items": 12,
+        "max_item_bytes": 25078,
+        "notes_text_present": false,
+        "quotes_over_200": 0,
+        "raw_index": 0,
+        "raw_notes_strings": 0,
+        "total_bytes": 106676
+      },
+      "trace_sks_ok": true,
+      "validate_vs_saved": "identical",
+      "warnings": 2
+    },
+    {
+      "callback_calls": 0,
+      "code": null,
+      "code_steps_differ": [],
+      "direct_8b_equal": true,
+      "document_on_failure": false,
+      "failed_step": null,
+      "gate": {
+        "ok": true,
+        "status": "documented_advice"
+      },
+      "hashes": {
+        "part_a": "305a211a26830e9b6355d4cb9e3eb2b21dcf4c7d27b891805db422c0b84510c4",
+        "part_b": "6c1415f142b8cad233c5e044f8be90ba4cffb7c2bea8096d272b968fb19761e7",
+        "part_c": "aa676300f86a71318bbf27b8330abc6948501db2c1adcf46e2d7ca47b084e425"
+      },
+      "line_index_matches_count": true,
+      "model_calls": 0,
+      "outcome": "bundle",
+      "piece4_gate_equal": true,
+      "piece4_outcome_equal": true,
+      "quote_too_long_placeholders": 0,
+      "released_without_bundle": false,
+      "results_item_bytes": 24054,
+      "run": 5,
+      "scenario": "S2",
+      "stored_quotes_over_200": 0,
+      "trace": {
+        "items": 12,
+        "max_item_bytes": 25808,
+        "notes_text_present": false,
+        "quotes_over_200": 0,
+        "raw_index": 0,
+        "raw_notes_strings": 0,
+        "total_bytes": 106680
+      },
+      "trace_sks_ok": true,
+      "validate_vs_saved": "identical",
+      "warnings": 1
+    },
+    {
+      "callback_calls": 0,
+      "code": null,
+      "code_steps_differ": [],
+      "direct_8b_equal": true,
+      "document_on_failure": false,
+      "failed_step": null,
+      "gate": {
+        "ok": true,
+        "status": "documented_advice"
+      },
+      "hashes": {
+        "part_a": "54a0f0ec2648c09431f3eb900fff3423f152db05dd24bc70cb2ffbd8cb31db06",
+        "part_b": "ff3bec54ec8a77d52d518cebd3a29577bfac27bb280511f7eb1d3c9a7fc1645c",
+        "part_c": "e9613712687c89644c9c601febd3c311770dde661fad65b589cd1e76744271f8"
+      },
+      "line_index_matches_count": true,
+      "model_calls": 0,
+      "outcome": "bundle",
+      "piece4_gate_equal": true,
+      "piece4_outcome_equal": true,
+      "quote_too_long_placeholders": 0,
+      "released_without_bundle": false,
+      "results_item_bytes": 31108,
+      "run": 5,
+      "scenario": "S3",
+      "stored_quotes_over_200": 0,
+      "trace": {
+        "items": 12,
+        "max_item_bytes": 33473,
+        "notes_text_present": false,
+        "quotes_over_200": 0,
+        "raw_index": 0,
+        "raw_notes_strings": 0,
+        "total_bytes": 149864
+      },
+      "trace_sks_ok": true,
+      "validate_vs_saved": "identical",
+      "warnings": 4
+    },
+    {
+      "callback_calls": 0,
+      "code": null,
+      "code_steps_differ": [],
+      "direct_8b_equal": true,
+      "document_on_failure": false,
+      "failed_step": null,
+      "gate": {
+        "ok": true,
+        "status": "documented_advice"
+      },
+      "hashes": {
+        "part_a": "5ccf461ef2efdb340a77bab668d5721d23cee312488f60d34612e75c7cd3df42",
+        "part_b": "eac5a9de3f0fe035178aa4e5ce92dd801ca39c9e7746d576f198fabe04c49547",
+        "part_c": "390905d6e5fd844e5a743f05df12507d7d044aaa36cd1257c1894bf57dc18db3"
+      },
+      "line_index_matches_count": true,
+      "model_calls": 0,
+      "outcome": "bundle",
+      "piece4_gate_equal": true,
+      "piece4_outcome_equal": true,
+      "quote_too_long_placeholders": 0,
+      "released_without_bundle": false,
+      "results_item_bytes": 25893,
+      "run": 5,
+      "scenario": "S4",
+      "stored_quotes_over_200": 0,
+      "trace": {
+        "items": 12,
+        "max_item_bytes": 28072,
+        "notes_text_present": false,
+        "quotes_over_200": 0,
+        "raw_index": 0,
+        "raw_notes_strings": 0,
+        "total_bytes": 120733
+      },
+      "trace_sks_ok": true,
+      "validate_vs_saved": "identical",
+      "warnings": 4
+    },
+    {
+      "callback_calls": 0,
+      "code": null,
+      "code_steps_differ": [],
+      "direct_8b_equal": true,
+      "document_on_failure": false,
+      "failed_step": null,
+      "gate": {
+        "ok": true,
+        "status": "documented_advice"
+      },
+      "hashes": {
+        "part_a": "ab0495cfabe11e3e20e97069c337e60fe1d43e914eb03ebbcf2142f887737da8",
+        "part_b": "fd4ab66fa50b6a97361407986d3cd99a812f2f5de84394b984a00a709fddf209",
+        "part_c": "0ec1d12c3aa99ac1cec1828fe2b984ae0d527e9ff12bf340826fdc6d20636dd0"
+      },
+      "line_index_matches_count": true,
+      "model_calls": 0,
+      "outcome": "bundle",
+      "piece4_gate_equal": true,
+      "piece4_outcome_equal": true,
+      "quote_too_long_placeholders": 0,
+      "released_without_bundle": false,
+      "results_item_bytes": 24127,
+      "run": 5,
+      "scenario": "S8",
+      "stored_quotes_over_200": 0,
+      "trace": {
+        "items": 12,
+        "max_item_bytes": 26550,
+        "notes_text_present": false,
+        "quotes_over_200": 0,
+        "raw_index": 0,
+        "raw_notes_strings": 0,
+        "total_bytes": 111228
+      },
+      "trace_sks_ok": true,
+      "validate_vs_saved": "identical",
+      "warnings": 0
+    },
+    {
+      "callback_calls": 0,
+      "code": null,
+      "code_steps_differ": [],
+      "direct_8b_equal": true,
+      "document_on_failure": false,
+      "failed_step": null,
+      "gate": {
+        "ok": true,
+        "status": "clean"
+      },
+      "hashes": {
+        "part_a": "4d4ae916c83fa65e2a3ffe95d406f5e181fc9a6b8e578356ddb452ceb19e2468",
+        "part_b": "60edeac5b3ab38ca029fd59b39ead505806df78e0846a4344fbbc5713f0c020d",
+        "part_c": "1822774a43354d04b4584edf00b9c43976e31e9e083a9af980060af83b9caaa2"
+      },
+      "line_index_matches_count": true,
+      "model_calls": 0,
+      "outcome": "bundle",
+      "piece4_gate_equal": true,
+      "piece4_outcome_equal": true,
+      "quote_too_long_placeholders": 0,
+      "released_without_bundle": false,
+      "results_item_bytes": 27390,
+      "run": 5,
+      "scenario": "S9",
+      "stored_quotes_over_200": 0,
+      "trace": {
+        "items": 12,
+        "max_item_bytes": 29825,
+        "notes_text_present": false,
+        "quotes_over_200": 0,
+        "raw_index": 0,
+        "raw_notes_strings": 0,
+        "total_bytes": 125756
+      },
+      "trace_sks_ok": true,
+      "validate_vs_saved": "identical",
+      "warnings": 0
+    }
+  ],
+  "summary": {
+    "accounted_for": 90,
+    "bundles": 90,
+    "callback_on_success": 0,
+    "code_steps_differ": {},
+    "direct_8b_equal": 90,
+    "direct_8b_not_equal": [],
+    "document_on_failure": 0,
+    "gate": {
+      "clean": 40,
+      "documented_advice": 50
+    },
+    "model_calls_total": 0,
+    "piece4_compared": 90,
+    "piece4_gate_equal": 90,
+    "piece4_outcome_equal": 90,
+    "quote_too_long_placeholders": 6,
+    "r3_records": [
+      "S11 r2",
+      "S11 r3",
+      "S11 r4",
+      "S11 r5"
+    ],
+    "records": 90,
+    "rejections": {},
+    "released_without_bundle": 0,
+    "results_item_max_bytes": 38504,
+    "stored_quotes_over_200": 0,
+    "trace_max_item_bytes": 40566,
+    "trace_max_total_bytes": 174950,
+    "trace_notes_text_present": 0,
+    "trace_quotes_over_200": 0,
+    "trace_raw_index": 0,
+    "trace_raw_notes_strings": 0,
+    "trace_sks_ok": 90,
+    "validate_vs_saved": {
+      "identical": 86,
+      "r3_only": 4
+    }
+  }
+}

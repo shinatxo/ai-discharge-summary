@@ -1,0 +1,5576 @@
+{
+  "ab_only": false,
+  "batch": "w6-pipeline-e09-m01-c02-p04-x5",
+  "results": [
+    {
+      "a5": {
+        "d1_g3_allowance_used": 0,
+        "in_block_exactly_once": 0,
+        "prose_flags": [],
+        "recorded": 0
+      },
+      "branches": [
+        "med_status_referenced_not_listed",
+        "resus_route_documented",
+        "b_resus_route",
+        "header_inferred",
+        "gate_documented_advice"
+      ],
+      "c_meaning_vs_step7": {
+        "match": true,
+        "n": 0,
+        "only_8b": 0,
+        "only_step7": 0
+      },
+      "code": null,
+      "contradictions": [],
+      "gate": {
+        "ok": true,
+        "status": "documented_advice"
+      },
+      "outcome": "bundle",
+      "placeholders_left": 0,
+      "resus_in_b": {
+        "reasons": [
+          "route"
+        ],
+        "shown": true
+      },
+      "run": 1,
+      "scenario": "A5",
+      "step": null,
+      "warnings": {},
+      "warnings_c": 0,
+      "warnings_located": []
+    },
+    {
+      "a5": {
+        "d1_g3_allowance_used": 0,
+        "in_block_exactly_once": 2,
+        "prose_flags": [
+          {
+            "heading": "medication_conflicts",
+            "part": "part_a",
+            "why": [
+              "cites_contradiction",
+              "notes_conflict_wording"
+            ]
+          },
+          {
+            "heading": "allergies",
+            "part": "part_a",
+            "why": [
+              "cites_contradiction",
+              "notes_conflict_wording"
+            ]
+          },
+          {
+            "heading": "medication_conflicts",
+            "part": "part_b",
+            "why": [
+              "cites_contradiction",
+              "notes_conflict_wording"
+            ]
+          }
+        ],
+        "recorded": 2
+      },
+      "branches": [
+        "med_status_listed",
+        "resus_route_documented",
+        "contradiction_value_unverified",
+        "b_resus_route",
+        "ab_unverified_marker",
+        "b_continued_count",
+        "gate_documented_advice"
+      ],
+      "c_meaning_vs_step7": {
+        "match": true,
+        "n": 0,
+        "only_8b": 0,
+        "only_step7": 0
+      },
+      "code": null,
+      "contradictions": [
+        {
+          "fact_id": "contradictions.0",
+          "kind": "value_unverified"
+        },
+        {
+          "fact_id": "contradictions.1",
+          "kind": "value_unverified"
+        }
+      ],
+      "gate": {
+        "ok": true,
+        "status": "documented_advice"
+      },
+      "outcome": "bundle",
+      "placeholders_left": 0,
+      "resus_in_b": {
+        "reasons": [
+          "route"
+        ],
+        "shown": true
+      },
+      "run": 1,
+      "scenario": "B6",
+      "step": null,
+      "warnings": {
+        "A:dose_outside_box": 2,
+        "B:dose_outside_box": 2,
+        "C:dose_outside_box": 1
+      },
+      "warnings_c": 1,
+      "warnings_located": [
+        [
+          "A",
+          "treatment",
+          "dose_outside_box",
+          3
+        ],
+        [
+          "A",
+          "medication_conflicts",
+          "dose_outside_box",
+          1
+        ],
+        [
+          "B",
+          "admission_summary",
+          "dose_outside_box",
+          3
+        ],
+        [
+          "B",
+          "medication_conflicts",
+          "dose_outside_box",
+          1
+        ],
+        [
+          "C",
+          "what_we_did",
+          "dose_outside_box",
+          8
+        ]
+      ]
+    },
+    {
+      "a5": {
+        "d1_g3_allowance_used": 0,
+        "in_block_exactly_once": 0,
+        "prose_flags": [],
+        "recorded": 0
+      },
+      "branches": [
+        "med_status_not_documented",
+        "resus_route_absent",
+        "language_line",
+        "b_resus_not_shown",
+        "header_inferred",
+        "gate_clean"
+      ],
+      "c_meaning_vs_step7": {
+        "match": true,
+        "n": 0,
+        "only_8b": 0,
+        "only_step7": 0
+      },
+      "code": null,
+      "contradictions": [],
+      "gate": {
+        "ok": true,
+        "status": "clean"
+      },
+      "outcome": "bundle",
+      "placeholders_left": 0,
+      "resus_in_b": {
+        "reasons": [],
+        "shown": false
+      },
+      "run": 1,
+      "scenario": "C7",
+      "step": null,
+      "warnings": {},
+      "warnings_c": 0,
+      "warnings_located": []
+    },
+    {
+      "a5": {
+        "d1_g3_allowance_used": 0,
+        "in_block_exactly_once": 0,
+        "prose_flags": [],
+        "recorded": 0
+      },
+      "branches": [
+        "med_status_listed",
+        "resus_route_documented",
+        "b_resus_route",
+        "header_inferred",
+        "gate_documented_advice"
+      ],
+      "c_meaning_vs_step7": {
+        "match": true,
+        "n": 3,
+        "only_8b": 0,
+        "only_step7": 0
+      },
+      "code": null,
+      "contradictions": [],
+      "gate": {
+        "ok": true,
+        "status": "documented_advice"
+      },
+      "outcome": "bundle",
+      "placeholders_left": 0,
+      "resus_in_b": {
+        "reasons": [
+          "route"
+        ],
+        "shown": true
+      },
+      "run": 1,
+      "scenario": "S1",
+      "step": null,
+      "warnings": {
+        "A:dose_outside_box": 1,
+        "B:dose_outside_box": 1,
+        "C:diagnosis_unreached": 1,
+        "C:dose_outside_box": 1,
+        "C:qualifier_dropped": 1,
+        "C:test_term_added": 1
+      },
+      "warnings_c": 4,
+      "warnings_located": [
+        [
+          "A",
+          "treatment",
+          "dose_outside_box",
+          5
+        ],
+        [
+          "B",
+          "admission_summary",
+          "dose_outside_box",
+          5
+        ],
+        [
+          "C",
+          "what_we_did",
+          "test_term_added",
+          4
+        ],
+        [
+          "C",
+          "what_we_did",
+          "qualifier_dropped",
+          null
+        ],
+        [
+          "C",
+          "what_we_did",
+          "dose_outside_box",
+          8
+        ],
+        [
+          "C",
+          "why_in_hospital",
+          "diagnosis_unreached",
+          null
+        ]
+      ]
+    },
+    {
+      "a5": {
+        "d1_g3_allowance_used": 0,
+        "in_block_exactly_once": 0,
+        "prose_flags": [],
+        "recorded": 0
+      },
+      "branches": [
+        "med_status_listed",
+        "resus_route_absent",
+        "b_resus_not_shown",
+        "ab_unverified_marker",
+        "header_inferred",
+        "c_unverified_note",
+        "gate_documented_advice"
+      ],
+      "c_meaning_vs_step7": {
+        "match": true,
+        "n": 6,
+        "only_8b": 0,
+        "only_step7": 0
+      },
+      "code": null,
+      "contradictions": [],
+      "gate": {
+        "ok": true,
+        "status": "documented_advice"
+      },
+      "outcome": "bundle",
+      "placeholders_left": 0,
+      "resus_in_b": {
+        "reasons": [],
+        "shown": false
+      },
+      "run": 1,
+      "scenario": "S10",
+      "step": null,
+      "warnings": {
+        "C:cause_added": 4,
+        "C:diagnosis_unreached": 2
+      },
+      "warnings_c": 6,
+      "warnings_located": [
+        [
+          "C",
+          "why_in_hospital",
+          "cause_added",
+          3
+        ],
+        [
+          "C",
+          "what_we_did",
+          "cause_added",
+          2
+        ],
+        [
+          "C",
+          "what_we_did",
+          "cause_added",
+          3
+        ],
+        [
+          "C",
+          "what_we_did",
+          "cause_added",
+          9
+        ],
+        [
+          "C",
+          "why_in_hospital",
+          "diagnosis_unreached",
+          null
+        ],
+        [
+          "C",
+          "why_in_hospital",
+          "diagnosis_unreached",
+          null
+        ]
+      ]
+    },
+    {
+      "a5": {
+        "d1_g3_allowance_used": 0,
+        "in_block_exactly_once": 0,
+        "prose_flags": [],
+        "recorded": 0
+      },
+      "branches": [
+        "med_status_referenced_not_listed",
+        "resus_route_documented",
+        "b_resus_route",
+        "ab_unverified_marker",
+        "header_inferred",
+        "c_unverified_note",
+        "gate_clean"
+      ],
+      "c_meaning_vs_step7": {
+        "match": true,
+        "n": 2,
+        "only_8b": 0,
+        "only_step7": 0
+      },
+      "code": null,
+      "contradictions": [],
+      "gate": {
+        "ok": true,
+        "status": "clean"
+      },
+      "outcome": "bundle",
+      "placeholders_left": 0,
+      "resus_in_b": {
+        "reasons": [
+          "route"
+        ],
+        "shown": true
+      },
+      "run": 1,
+      "scenario": "S11",
+      "step": null,
+      "warnings": {
+        "C:certainty_added": 1,
+        "C:test_term_added": 1
+      },
+      "warnings_c": 2,
+      "warnings_located": [
+        [
+          "C",
+          "what_we_did",
+          "certainty_added",
+          8
+        ],
+        [
+          "C",
+          "what_we_did",
+          "test_term_added",
+          8
+        ]
+      ]
+    },
+    {
+      "a5": {
+        "d1_g3_allowance_used": 0,
+        "in_block_exactly_once": 0,
+        "prose_flags": [],
+        "recorded": 0
+      },
+      "branches": [
+        "med_status_not_documented",
+        "resus_route_documented_but_absent",
+        "b_resus_route",
+        "header_not_extracted",
+        "gate_documented_advice"
+      ],
+      "c_meaning_vs_step7": {
+        "match": true,
+        "n": 2,
+        "only_8b": 0,
+        "only_step7": 0
+      },
+      "code": null,
+      "contradictions": [],
+      "gate": {
+        "ok": true,
+        "status": "documented_advice"
+      },
+      "outcome": "bundle",
+      "placeholders_left": 0,
+      "resus_in_b": {
+        "reasons": [
+          "route"
+        ],
+        "shown": true
+      },
+      "run": 1,
+      "scenario": "S12",
+      "step": null,
+      "warnings": {
+        "C:cause_added": 1,
+        "C:certainty_added": 1
+      },
+      "warnings_c": 2,
+      "warnings_located": [
+        [
+          "C",
+          "why_in_hospital",
+          "certainty_added",
+          3
+        ],
+        [
+          "C",
+          "next_steps",
+          "cause_added",
+          2
+        ]
+      ]
+    },
+    {
+      "a5": {
+        "d1_g3_allowance_used": 0,
+        "in_block_exactly_once": 0,
+        "prose_flags": [],
+        "recorded": 0
+      },
+      "branches": [
+        "med_status_listed",
+        "resus_route_documented",
+        "b_resus_route",
+        "header_inferred",
+        "b_continued_count",
+        "gate_documented_advice"
+      ],
+      "c_meaning_vs_step7": {
+        "match": true,
+        "n": 6,
+        "only_8b": 0,
+        "only_step7": 0
+      },
+      "code": null,
+      "contradictions": [],
+      "gate": {
+        "ok": true,
+        "status": "documented_advice"
+      },
+      "outcome": "bundle",
+      "placeholders_left": 0,
+      "resus_in_b": {
+        "reasons": [
+          "route"
+        ],
+        "shown": true
+      },
+      "run": 1,
+      "scenario": "S13",
+      "step": null,
+      "warnings": {
+        "C:cause_added": 4,
+        "C:certainty_added": 1,
+        "C:qualifier_dropped": 1
+      },
+      "warnings_c": 6,
+      "warnings_located": [
+        [
+          "C",
+          "why_in_hospital",
+          "cause_added",
+          3
+        ],
+        [
+          "C",
+          "what_we_did",
+          "cause_added",
+          5
+        ],
+        [
+          "C",
+          "what_we_did",
+          "cause_added",
+          8
+        ],
+        [
+          "C",
+          "what_we_did",
+          "cause_added",
+          9
+        ],
+        [
+          "C",
+          "what_we_did",
+          "certainty_added",
+          12
+        ],
+        [
+          "C",
+          "what_we_did",
+          "qualifier_dropped",
+          null
+        ]
+      ]
+    },
+    {
+      "a5": {
+        "d1_g3_allowance_used": 0,
+        "in_block_exactly_once": 0,
+        "prose_flags": [],
+        "recorded": 0
+      },
+      "branches": [
+        "med_status_listed",
+        "resus_route_documented",
+        "b_resus_route",
+        "ab_unverified_marker",
+        "header_inferred",
+        "b_continued_count",
+        "c_unverified_note",
+        "gate_clean"
+      ],
+      "c_meaning_vs_step7": {
+        "match": true,
+        "n": 2,
+        "only_8b": 0,
+        "only_step7": 0
+      },
+      "code": null,
+      "contradictions": [],
+      "gate": {
+        "ok": true,
+        "status": "clean"
+      },
+      "outcome": "bundle",
+      "placeholders_left": 0,
+      "resus_in_b": {
+        "reasons": [
+          "route"
+        ],
+        "shown": true
+      },
+      "run": 1,
+      "scenario": "S14",
+      "step": null,
+      "warnings": {
+        "C:cause_added": 1,
+        "C:certainty_added": 1
+      },
+      "warnings_c": 2,
+      "warnings_located": [
+        [
+          "C",
+          "why_in_hospital",
+          "cause_added",
+          6
+        ],
+        [
+          "C",
+          "what_we_did",
+          "certainty_added",
+          7
+        ]
+      ]
+    },
+    {
+      "a5": {
+        "d1_g3_allowance_used": 0,
+        "in_block_exactly_once": 0,
+        "prose_flags": [],
+        "recorded": 0
+      },
+      "branches": [
+        "facts_held_back",
+        "med_status_listed",
+        "resus_route_documented",
+        "b_resus_route",
+        "ab_unverified_marker",
+        "header_not_extracted",
+        "b_continued_count",
+        "c_unverified_note",
+        "gate_clean"
+      ],
+      "c_meaning_vs_step7": {
+        "match": true,
+        "n": 2,
+        "only_8b": 0,
+        "only_step7": 0
+      },
+      "code": null,
+      "contradictions": [],
+      "gate": {
+        "ok": true,
+        "status": "clean"
+      },
+      "outcome": "bundle",
+      "placeholders_left": 0,
+      "resus_in_b": {
+        "reasons": [
+          "route"
+        ],
+        "shown": true
+      },
+      "run": 1,
+      "scenario": "S15",
+      "step": null,
+      "warnings": {
+        "C:cause_added": 2
+      },
+      "warnings_c": 2,
+      "warnings_located": [
+        [
+          "C",
+          "why_in_hospital",
+          "cause_added",
+          6
+        ],
+        [
+          "C",
+          "why_in_hospital",
+          "cause_added",
+          6
+        ]
+      ]
+    },
+    {
+      "a5": {
+        "d1_g3_allowance_used": 0,
+        "in_block_exactly_once": 0,
+        "prose_flags": [],
+        "recorded": 0
+      },
+      "branches": [
+        "med_status_referenced_not_listed",
+        "resus_route_absent",
+        "b_resus_not_shown",
+        "header_inferred",
+        "gate_clean"
+      ],
+      "c_meaning_vs_step7": {
+        "match": true,
+        "n": 3,
+        "only_8b": 0,
+        "only_step7": 0
+      },
+      "code": null,
+      "contradictions": [],
+      "gate": {
+        "ok": true,
+        "status": "clean"
+      },
+      "outcome": "bundle",
+      "placeholders_left": 0,
+      "resus_in_b": {
+        "reasons": [],
+        "shown": false
+      },
+      "run": 1,
+      "scenario": "S16",
+      "step": null,
+      "warnings": {
+        "C:cause_added": 1,
+        "C:certainty_added": 1,
+        "C:qualifier_dropped": 1
+      },
+      "warnings_c": 3,
+      "warnings_located": [
+        [
+          "C",
+          "why_in_hospital",
+          "cause_added",
+          8
+        ],
+        [
+          "C",
+          "what_we_did",
+          "certainty_added",
+          10
+        ],
+        [
+          "C",
+          "what_we_did",
+          "qualifier_dropped",
+          null
+        ]
+      ]
+    },
+    {
+      "a5": {
+        "d1_g3_allowance_used": 0,
+        "in_block_exactly_once": 0,
+        "prose_flags": [],
+        "recorded": 0
+      },
+      "branches": [
+        "med_status_listed",
+        "resus_route_documented",
+        "b_resus_route",
+        "header_not_extracted",
+        "b_continued_count",
+        "gate_clean"
+      ],
+      "c_meaning_vs_step7": {
+        "match": true,
+        "n": 1,
+        "only_8b": 0,
+        "only_step7": 0
+      },
+      "code": null,
+      "contradictions": [],
+      "gate": {
+        "ok": true,
+        "status": "clean"
+      },
+      "outcome": "bundle",
+      "placeholders_left": 0,
+      "resus_in_b": {
+        "reasons": [
+          "route"
+        ],
+        "shown": true
+      },
+      "run": 1,
+      "scenario": "S17",
+      "step": null,
+      "warnings": {
+        "C:certainty_added": 1
+      },
+      "warnings_c": 1,
+      "warnings_located": [
+        [
+          "C",
+          "next_steps",
+          "certainty_added",
+          4
+        ]
+      ]
+    },
+    {
+      "a5": {
+        "d1_g3_allowance_used": 0,
+        "in_block_exactly_once": 0,
+        "prose_flags": [],
+        "recorded": 0
+      },
+      "branches": [
+        "med_status_none_required",
+        "resus_route_absent",
+        "b_resus_not_shown",
+        "header_inferred",
+        "gate_clean"
+      ],
+      "c_meaning_vs_step7": {
+        "match": true,
+        "n": 2,
+        "only_8b": 0,
+        "only_step7": 0
+      },
+      "code": null,
+      "contradictions": [],
+      "gate": {
+        "ok": true,
+        "status": "clean"
+      },
+      "outcome": "bundle",
+      "placeholders_left": 0,
+      "resus_in_b": {
+        "reasons": [],
+        "shown": false
+      },
+      "run": 1,
+      "scenario": "S18",
+      "step": null,
+      "warnings": {
+        "C:cause_added": 2
+      },
+      "warnings_c": 2,
+      "warnings_located": [
+        [
+          "C",
+          "why_in_hospital",
+          "cause_added",
+          3
+        ],
+        [
+          "C",
+          "what_we_did",
+          "cause_added",
+          6
+        ]
+      ]
+    },
+    {
+      "a5": {
+        "d1_g3_allowance_used": 0,
+        "in_block_exactly_once": 0,
+        "prose_flags": [],
+        "recorded": 0
+      },
+      "branches": [
+        "med_status_listed",
+        "resus_route_documented",
+        "b_resus_route",
+        "header_inferred",
+        "gate_documented_advice"
+      ],
+      "c_meaning_vs_step7": {
+        "match": true,
+        "n": 1,
+        "only_8b": 0,
+        "only_step7": 0
+      },
+      "code": null,
+      "contradictions": [],
+      "gate": {
+        "ok": true,
+        "status": "documented_advice"
+      },
+      "outcome": "bundle",
+      "placeholders_left": 0,
+      "resus_in_b": {
+        "reasons": [
+          "route"
+        ],
+        "shown": true
+      },
+      "run": 1,
+      "scenario": "S2",
+      "step": null,
+      "warnings": {
+        "C:cause_added": 1
+      },
+      "warnings_c": 1,
+      "warnings_located": [
+        [
+          "C",
+          "what_we_did",
+          "cause_added",
+          4
+        ]
+      ]
+    },
+    {
+      "a5": {
+        "d1_g3_allowance_used": 0,
+        "in_block_exactly_once": 0,
+        "prose_flags": [],
+        "recorded": 0
+      },
+      "branches": [
+        "med_status_listed",
+        "resus_route_absent",
+        "b_resus_not_shown",
+        "ab_unverified_marker",
+        "header_inferred",
+        "gate_documented_advice"
+      ],
+      "c_meaning_vs_step7": {
+        "match": true,
+        "n": 1,
+        "only_8b": 0,
+        "only_step7": 0
+      },
+      "code": null,
+      "contradictions": [],
+      "gate": {
+        "ok": true,
+        "status": "documented_advice"
+      },
+      "outcome": "bundle",
+      "placeholders_left": 0,
+      "resus_in_b": {
+        "reasons": [],
+        "shown": false
+      },
+      "run": 1,
+      "scenario": "S3",
+      "step": null,
+      "warnings": {
+        "A:dose_outside_box": 1,
+        "B:dose_outside_box": 1,
+        "C:diagnosis_unreached": 1
+      },
+      "warnings_c": 1,
+      "warnings_located": [
+        [
+          "A",
+          "treatment",
+          "dose_outside_box",
+          2
+        ],
+        [
+          "B",
+          "admission_summary",
+          "dose_outside_box",
+          5
+        ],
+        [
+          "C",
+          "why_in_hospital",
+          "diagnosis_unreached",
+          null
+        ]
+      ]
+    },
+    {
+      "a5": {
+        "d1_g3_allowance_used": 0,
+        "in_block_exactly_once": 0,
+        "prose_flags": [],
+        "recorded": 0
+      },
+      "branches": [
+        "med_status_none_required",
+        "resus_route_absent",
+        "b_resus_not_shown",
+        "gate_documented_advice"
+      ],
+      "c_meaning_vs_step7": {
+        "match": true,
+        "n": 4,
+        "only_8b": 0,
+        "only_step7": 0
+      },
+      "code": null,
+      "contradictions": [],
+      "gate": {
+        "ok": true,
+        "status": "documented_advice"
+      },
+      "outcome": "bundle",
+      "placeholders_left": 0,
+      "resus_in_b": {
+        "reasons": [],
+        "shown": false
+      },
+      "run": 1,
+      "scenario": "S4",
+      "step": null,
+      "warnings": {
+        "C:cause_added": 2,
+        "C:certainty_added": 1,
+        "C:test_term_added": 1
+      },
+      "warnings_c": 4,
+      "warnings_located": [
+        [
+          "C",
+          "why_in_hospital",
+          "cause_added",
+          8
+        ],
+        [
+          "C",
+          "what_we_did",
+          "test_term_added",
+          2
+        ],
+        [
+          "C",
+          "what_we_did",
+          "cause_added",
+          3
+        ],
+        [
+          "C",
+          "what_we_did",
+          "certainty_added",
+          4
+        ]
+      ]
+    },
+    {
+      "a5": {
+        "d1_g3_allowance_used": 0,
+        "in_block_exactly_once": 0,
+        "prose_flags": [],
+        "recorded": 0
+      },
+      "branches": [
+        "med_status_not_documented",
+        "resus_route_absent",
+        "b_resus_not_shown",
+        "ab_unverified_marker",
+        "c_unverified_note",
+        "gate_documented_advice"
+      ],
+      "c_meaning_vs_step7": {
+        "match": true,
+        "n": 2,
+        "only_8b": 0,
+        "only_step7": 0
+      },
+      "code": null,
+      "contradictions": [],
+      "gate": {
+        "ok": true,
+        "status": "documented_advice"
+      },
+      "outcome": "bundle",
+      "placeholders_left": 0,
+      "resus_in_b": {
+        "reasons": [],
+        "shown": false
+      },
+      "run": 1,
+      "scenario": "S8",
+      "step": null,
+      "warnings": {
+        "C:certainty_added": 1,
+        "C:qualifier_dropped": 1
+      },
+      "warnings_c": 2,
+      "warnings_located": [
+        [
+          "C",
+          "what_we_did",
+          "certainty_added",
+          7
+        ],
+        [
+          "C",
+          "what_we_did",
+          "qualifier_dropped",
+          null
+        ]
+      ]
+    },
+    {
+      "a5": {
+        "d1_g3_allowance_used": 0,
+        "in_block_exactly_once": 0,
+        "prose_flags": [],
+        "recorded": 0
+      },
+      "branches": [
+        "med_status_not_documented",
+        "resus_route_absent",
+        "b_resus_not_shown",
+        "header_inferred",
+        "gate_clean"
+      ],
+      "c_meaning_vs_step7": {
+        "match": true,
+        "n": 0,
+        "only_8b": 0,
+        "only_step7": 0
+      },
+      "code": null,
+      "contradictions": [],
+      "gate": {
+        "ok": true,
+        "status": "clean"
+      },
+      "outcome": "bundle",
+      "placeholders_left": 0,
+      "resus_in_b": {
+        "reasons": [],
+        "shown": false
+      },
+      "run": 1,
+      "scenario": "S9",
+      "step": null,
+      "warnings": {},
+      "warnings_c": 0,
+      "warnings_located": []
+    },
+    {
+      "a5": {
+        "d1_g3_allowance_used": 0,
+        "in_block_exactly_once": 0,
+        "prose_flags": [],
+        "recorded": 0
+      },
+      "branches": [
+        "med_status_referenced_not_listed",
+        "resus_route_documented",
+        "b_resus_route",
+        "header_inferred",
+        "gate_documented_advice"
+      ],
+      "c_meaning_vs_step7": {
+        "match": true,
+        "n": 0,
+        "only_8b": 0,
+        "only_step7": 0
+      },
+      "code": null,
+      "contradictions": [],
+      "gate": {
+        "ok": true,
+        "status": "documented_advice"
+      },
+      "outcome": "bundle",
+      "placeholders_left": 0,
+      "resus_in_b": {
+        "reasons": [
+          "route"
+        ],
+        "shown": true
+      },
+      "run": 2,
+      "scenario": "A5",
+      "step": null,
+      "warnings": {},
+      "warnings_c": 0,
+      "warnings_located": []
+    },
+    {
+      "a5": {
+        "d1_g3_allowance_used": 0,
+        "in_block_exactly_once": 1,
+        "prose_flags": [
+          {
+            "heading": "medication_conflicts",
+            "part": "part_a",
+            "why": [
+              "cites_contradiction",
+              "notes_conflict_wording"
+            ]
+          },
+          {
+            "heading": "allergies",
+            "part": "part_a",
+            "why": [
+              "notes_conflict_wording"
+            ]
+          },
+          {
+            "heading": "medication_conflicts",
+            "part": "part_b",
+            "why": [
+              "cites_contradiction",
+              "notes_conflict_wording"
+            ]
+          }
+        ],
+        "recorded": 1
+      },
+      "branches": [
+        "med_status_listed",
+        "resus_route_documented",
+        "contradiction_quotes",
+        "b_resus_route",
+        "b_continued_count",
+        "gate_documented_advice"
+      ],
+      "c_meaning_vs_step7": {
+        "match": true,
+        "n": 0,
+        "only_8b": 0,
+        "only_step7": 0
+      },
+      "code": null,
+      "contradictions": [
+        {
+          "fact_id": "contradictions.0",
+          "kind": "quotes"
+        }
+      ],
+      "gate": {
+        "ok": true,
+        "status": "documented_advice"
+      },
+      "outcome": "bundle",
+      "placeholders_left": 0,
+      "resus_in_b": {
+        "reasons": [
+          "route"
+        ],
+        "shown": true
+      },
+      "run": 2,
+      "scenario": "B6",
+      "step": null,
+      "warnings": {
+        "A:dose_outside_box": 2,
+        "B:dose_outside_box": 2,
+        "C:dose_outside_box": 1
+      },
+      "warnings_c": 1,
+      "warnings_located": [
+        [
+          "A",
+          "treatment",
+          "dose_outside_box",
+          3
+        ],
+        [
+          "A",
+          "medication_conflicts",
+          "dose_outside_box",
+          1
+        ],
+        [
+          "B",
+          "admission_summary",
+          "dose_outside_box",
+          3
+        ],
+        [
+          "B",
+          "medication_conflicts",
+          "dose_outside_box",
+          1
+        ],
+        [
+          "C",
+          "what_we_did",
+          "dose_outside_box",
+          4
+        ]
+      ]
+    },
+    {
+      "a5": {
+        "d1_g3_allowance_used": 0,
+        "in_block_exactly_once": 0,
+        "prose_flags": [],
+        "recorded": 0
+      },
+      "branches": [
+        "med_status_not_documented",
+        "resus_route_absent",
+        "language_line",
+        "b_resus_not_shown",
+        "header_inferred",
+        "gate_clean"
+      ],
+      "c_meaning_vs_step7": {
+        "match": true,
+        "n": 0,
+        "only_8b": 0,
+        "only_step7": 0
+      },
+      "code": null,
+      "contradictions": [],
+      "gate": {
+        "ok": true,
+        "status": "clean"
+      },
+      "outcome": "bundle",
+      "placeholders_left": 0,
+      "resus_in_b": {
+        "reasons": [],
+        "shown": false
+      },
+      "run": 2,
+      "scenario": "C7",
+      "step": null,
+      "warnings": {},
+      "warnings_c": 0,
+      "warnings_located": []
+    },
+    {
+      "a5": {
+        "d1_g3_allowance_used": 0,
+        "in_block_exactly_once": 0,
+        "prose_flags": [],
+        "recorded": 0
+      },
+      "branches": [
+        "med_status_listed",
+        "resus_route_documented",
+        "b_resus_route",
+        "b_continued_count",
+        "gate_documented_advice"
+      ],
+      "c_meaning_vs_step7": {
+        "match": true,
+        "n": 5,
+        "only_8b": 0,
+        "only_step7": 0
+      },
+      "code": null,
+      "contradictions": [],
+      "gate": {
+        "ok": true,
+        "status": "documented_advice"
+      },
+      "outcome": "bundle",
+      "placeholders_left": 0,
+      "resus_in_b": {
+        "reasons": [
+          "route"
+        ],
+        "shown": true
+      },
+      "run": 2,
+      "scenario": "S1",
+      "step": null,
+      "warnings": {
+        "A:dose_outside_box": 1,
+        "B:dose_outside_box": 1,
+        "C:cause_added": 2,
+        "C:diagnosis_unreached": 1,
+        "C:dose_outside_box": 1,
+        "C:qualifier_dropped": 1,
+        "C:test_term_added": 1
+      },
+      "warnings_c": 6,
+      "warnings_located": [
+        [
+          "A",
+          "treatment",
+          "dose_outside_box",
+          5
+        ],
+        [
+          "B",
+          "admission_summary",
+          "dose_outside_box",
+          5
+        ],
+        [
+          "C",
+          "what_we_did",
+          "test_term_added",
+          4
+        ],
+        [
+          "C",
+          "what_we_did",
+          "cause_added",
+          12
+        ],
+        [
+          "C",
+          "what_we_did",
+          "cause_added",
+          13
+        ],
+        [
+          "C",
+          "what_we_did",
+          "qualifier_dropped",
+          null
+        ],
+        [
+          "C",
+          "what_we_did",
+          "dose_outside_box",
+          11
+        ],
+        [
+          "C",
+          "why_in_hospital",
+          "diagnosis_unreached",
+          null
+        ]
+      ]
+    },
+    {
+      "a5": {
+        "d1_g3_allowance_used": 0,
+        "in_block_exactly_once": 0,
+        "prose_flags": [],
+        "recorded": 0
+      },
+      "branches": [
+        "med_status_listed",
+        "resus_route_absent",
+        "b_resus_not_shown",
+        "ab_unverified_marker",
+        "header_inferred",
+        "c_unverified_note",
+        "gate_documented_advice"
+      ],
+      "c_meaning_vs_step7": {
+        "match": true,
+        "n": 4,
+        "only_8b": 0,
+        "only_step7": 0
+      },
+      "code": null,
+      "contradictions": [],
+      "gate": {
+        "ok": true,
+        "status": "documented_advice"
+      },
+      "outcome": "bundle",
+      "placeholders_left": 0,
+      "resus_in_b": {
+        "reasons": [],
+        "shown": false
+      },
+      "run": 2,
+      "scenario": "S10",
+      "step": null,
+      "warnings": {
+        "C:cause_added": 4
+      },
+      "warnings_c": 4,
+      "warnings_located": [
+        [
+          "C",
+          "why_in_hospital",
+          "cause_added",
+          3
+        ],
+        [
+          "C",
+          "why_in_hospital",
+          "cause_added",
+          5
+        ],
+        [
+          "C",
+          "what_we_did",
+          "cause_added",
+          4
+        ],
+        [
+          "C",
+          "what_we_did",
+          "cause_added",
+          10
+        ]
+      ]
+    },
+    {
+      "a5": {
+        "d1_g3_allowance_used": 0,
+        "in_block_exactly_once": 0,
+        "prose_flags": [],
+        "recorded": 0
+      },
+      "branches": [
+        "med_status_referenced_not_listed",
+        "resus_route_documented",
+        "b_resus_route",
+        "ab_unverified_marker",
+        "header_inferred",
+        "gate_clean"
+      ],
+      "c_meaning_vs_step7": {
+        "match": true,
+        "n": 1,
+        "only_8b": 0,
+        "only_step7": 0
+      },
+      "code": null,
+      "contradictions": [],
+      "gate": {
+        "ok": true,
+        "status": "clean"
+      },
+      "outcome": "bundle",
+      "placeholders_left": 0,
+      "resus_in_b": {
+        "reasons": [
+          "route"
+        ],
+        "shown": true
+      },
+      "run": 2,
+      "scenario": "S11",
+      "step": null,
+      "warnings": {
+        "C:cause_added": 1
+      },
+      "warnings_c": 1,
+      "warnings_located": [
+        [
+          "C",
+          "what_we_did",
+          "cause_added",
+          9
+        ]
+      ]
+    },
+    {
+      "a5": {
+        "d1_g3_allowance_used": 0,
+        "in_block_exactly_once": 0,
+        "prose_flags": [],
+        "recorded": 0
+      },
+      "branches": [
+        "med_status_not_documented",
+        "resus_route_documented_but_absent",
+        "b_resus_route",
+        "header_not_extracted",
+        "gate_documented_advice"
+      ],
+      "c_meaning_vs_step7": {
+        "match": true,
+        "n": 3,
+        "only_8b": 0,
+        "only_step7": 0
+      },
+      "code": null,
+      "contradictions": [],
+      "gate": {
+        "ok": true,
+        "status": "documented_advice"
+      },
+      "outcome": "bundle",
+      "placeholders_left": 0,
+      "resus_in_b": {
+        "reasons": [
+          "route"
+        ],
+        "shown": true
+      },
+      "run": 2,
+      "scenario": "S12",
+      "step": null,
+      "warnings": {
+        "C:cause_added": 1,
+        "C:certainty_added": 1,
+        "C:qualifier_dropped": 1
+      },
+      "warnings_c": 3,
+      "warnings_located": [
+        [
+          "C",
+          "why_in_hospital",
+          "certainty_added",
+          8
+        ],
+        [
+          "C",
+          "what_we_did",
+          "qualifier_dropped",
+          null
+        ],
+        [
+          "C",
+          "next_steps",
+          "cause_added",
+          2
+        ]
+      ]
+    },
+    {
+      "a5": {
+        "d1_g3_allowance_used": 0,
+        "in_block_exactly_once": 0,
+        "prose_flags": [],
+        "recorded": 0
+      },
+      "branches": [
+        "med_status_listed",
+        "resus_route_documented",
+        "b_resus_route",
+        "header_inferred",
+        "b_continued_count",
+        "gate_documented_advice"
+      ],
+      "c_meaning_vs_step7": {
+        "match": true,
+        "n": 4,
+        "only_8b": 0,
+        "only_step7": 0
+      },
+      "code": null,
+      "contradictions": [],
+      "gate": {
+        "ok": true,
+        "status": "documented_advice"
+      },
+      "outcome": "bundle",
+      "placeholders_left": 0,
+      "resus_in_b": {
+        "reasons": [
+          "route"
+        ],
+        "shown": true
+      },
+      "run": 2,
+      "scenario": "S13",
+      "step": null,
+      "warnings": {
+        "C:cause_added": 3,
+        "C:certainty_added": 1
+      },
+      "warnings_c": 4,
+      "warnings_located": [
+        [
+          "C",
+          "why_in_hospital",
+          "cause_added",
+          3
+        ],
+        [
+          "C",
+          "what_we_did",
+          "cause_added",
+          1
+        ],
+        [
+          "C",
+          "what_we_did",
+          "cause_added",
+          6
+        ],
+        [
+          "C",
+          "what_we_did",
+          "certainty_added",
+          9
+        ]
+      ]
+    },
+    {
+      "a5": {
+        "d1_g3_allowance_used": 0,
+        "in_block_exactly_once": 0,
+        "prose_flags": [],
+        "recorded": 0
+      },
+      "branches": [
+        "med_status_listed",
+        "resus_route_documented",
+        "b_resus_route",
+        "header_inferred",
+        "b_continued_count",
+        "gate_clean"
+      ],
+      "c_meaning_vs_step7": {
+        "match": true,
+        "n": 4,
+        "only_8b": 0,
+        "only_step7": 0
+      },
+      "code": null,
+      "contradictions": [],
+      "gate": {
+        "ok": true,
+        "status": "clean"
+      },
+      "outcome": "bundle",
+      "placeholders_left": 0,
+      "resus_in_b": {
+        "reasons": [
+          "route"
+        ],
+        "shown": true
+      },
+      "run": 2,
+      "scenario": "S14",
+      "step": null,
+      "warnings": {
+        "C:cause_added": 1,
+        "C:certainty_added": 2,
+        "C:qualifier_dropped": 1
+      },
+      "warnings_c": 4,
+      "warnings_located": [
+        [
+          "C",
+          "what_we_did",
+          "cause_added",
+          6
+        ],
+        [
+          "C",
+          "what_we_did",
+          "certainty_added",
+          6
+        ],
+        [
+          "C",
+          "what_we_did",
+          "certainty_added",
+          9
+        ],
+        [
+          "C",
+          "what_we_did",
+          "qualifier_dropped",
+          null
+        ]
+      ]
+    },
+    {
+      "a5": {
+        "d1_g3_allowance_used": 0,
+        "in_block_exactly_once": 0,
+        "prose_flags": [],
+        "recorded": 0
+      },
+      "branches": [
+        "facts_held_back",
+        "med_status_listed",
+        "resus_route_documented",
+        "b_resus_route",
+        "header_not_extracted",
+        "b_continued_count",
+        "gate_clean"
+      ],
+      "c_meaning_vs_step7": {
+        "match": true,
+        "n": 1,
+        "only_8b": 0,
+        "only_step7": 0
+      },
+      "code": null,
+      "contradictions": [],
+      "gate": {
+        "ok": true,
+        "status": "clean"
+      },
+      "outcome": "bundle",
+      "placeholders_left": 0,
+      "resus_in_b": {
+        "reasons": [
+          "route"
+        ],
+        "shown": true
+      },
+      "run": 2,
+      "scenario": "S15",
+      "step": null,
+      "warnings": {
+        "C:cause_added": 1
+      },
+      "warnings_c": 1,
+      "warnings_located": [
+        [
+          "C",
+          "what_we_did",
+          "cause_added",
+          4
+        ]
+      ]
+    },
+    {
+      "a5": {
+        "d1_g3_allowance_used": 0,
+        "in_block_exactly_once": 0,
+        "prose_flags": [],
+        "recorded": 0
+      },
+      "branches": [
+        "med_status_referenced_not_listed",
+        "resus_route_absent",
+        "b_resus_not_shown",
+        "header_inferred",
+        "gate_clean"
+      ],
+      "c_meaning_vs_step7": {
+        "match": true,
+        "n": 5,
+        "only_8b": 0,
+        "only_step7": 0
+      },
+      "code": null,
+      "contradictions": [],
+      "gate": {
+        "ok": true,
+        "status": "clean"
+      },
+      "outcome": "bundle",
+      "placeholders_left": 0,
+      "resus_in_b": {
+        "reasons": [],
+        "shown": false
+      },
+      "run": 2,
+      "scenario": "S16",
+      "step": null,
+      "warnings": {
+        "C:cause_added": 3,
+        "C:certainty_added": 1,
+        "C:qualifier_dropped": 1
+      },
+      "warnings_c": 5,
+      "warnings_located": [
+        [
+          "C",
+          "why_in_hospital",
+          "cause_added",
+          8
+        ],
+        [
+          "C",
+          "what_we_did",
+          "cause_added",
+          8
+        ],
+        [
+          "C",
+          "what_we_did",
+          "cause_added",
+          9
+        ],
+        [
+          "C",
+          "what_we_did",
+          "certainty_added",
+          12
+        ],
+        [
+          "C",
+          "what_we_did",
+          "qualifier_dropped",
+          null
+        ]
+      ]
+    },
+    {
+      "a5": {
+        "d1_g3_allowance_used": 0,
+        "in_block_exactly_once": 0,
+        "prose_flags": [],
+        "recorded": 0
+      },
+      "branches": [
+        "med_status_listed",
+        "resus_route_documented",
+        "b_resus_route",
+        "header_not_extracted",
+        "b_continued_count",
+        "gate_clean"
+      ],
+      "c_meaning_vs_step7": {
+        "match": true,
+        "n": 1,
+        "only_8b": 0,
+        "only_step7": 0
+      },
+      "code": null,
+      "contradictions": [],
+      "gate": {
+        "ok": true,
+        "status": "clean"
+      },
+      "outcome": "bundle",
+      "placeholders_left": 0,
+      "resus_in_b": {
+        "reasons": [
+          "route"
+        ],
+        "shown": true
+      },
+      "run": 2,
+      "scenario": "S17",
+      "step": null,
+      "warnings": {
+        "C:certainty_added": 1
+      },
+      "warnings_c": 1,
+      "warnings_located": [
+        [
+          "C",
+          "next_steps",
+          "certainty_added",
+          6
+        ]
+      ]
+    },
+    {
+      "a5": {
+        "d1_g3_allowance_used": 0,
+        "in_block_exactly_once": 0,
+        "prose_flags": [],
+        "recorded": 0
+      },
+      "branches": [
+        "med_status_none_required",
+        "resus_route_absent",
+        "b_resus_not_shown",
+        "gate_clean"
+      ],
+      "c_meaning_vs_step7": {
+        "match": true,
+        "n": 1,
+        "only_8b": 0,
+        "only_step7": 0
+      },
+      "code": null,
+      "contradictions": [],
+      "gate": {
+        "ok": true,
+        "status": "clean"
+      },
+      "outcome": "bundle",
+      "placeholders_left": 0,
+      "resus_in_b": {
+        "reasons": [],
+        "shown": false
+      },
+      "run": 2,
+      "scenario": "S18",
+      "step": null,
+      "warnings": {
+        "C:cause_added": 1
+      },
+      "warnings_c": 1,
+      "warnings_located": [
+        [
+          "C",
+          "what_we_did",
+          "cause_added",
+          6
+        ]
+      ]
+    },
+    {
+      "a5": {
+        "d1_g3_allowance_used": 0,
+        "in_block_exactly_once": 0,
+        "prose_flags": [],
+        "recorded": 0
+      },
+      "branches": [
+        "med_status_listed",
+        "resus_route_documented",
+        "b_resus_route",
+        "gate_documented_advice"
+      ],
+      "c_meaning_vs_step7": {
+        "match": true,
+        "n": 0,
+        "only_8b": 0,
+        "only_step7": 0
+      },
+      "code": null,
+      "contradictions": [],
+      "gate": {
+        "ok": true,
+        "status": "documented_advice"
+      },
+      "outcome": "bundle",
+      "placeholders_left": 0,
+      "resus_in_b": {
+        "reasons": [
+          "route"
+        ],
+        "shown": true
+      },
+      "run": 2,
+      "scenario": "S2",
+      "step": null,
+      "warnings": {},
+      "warnings_c": 0,
+      "warnings_located": []
+    },
+    {
+      "a5": {
+        "d1_g3_allowance_used": 0,
+        "in_block_exactly_once": 0,
+        "prose_flags": [],
+        "recorded": 0
+      },
+      "branches": [
+        "med_status_listed",
+        "resus_route_absent",
+        "b_resus_not_shown",
+        "ab_unverified_marker",
+        "header_inferred",
+        "gate_documented_advice"
+      ],
+      "c_meaning_vs_step7": {
+        "match": true,
+        "n": 1,
+        "only_8b": 0,
+        "only_step7": 0
+      },
+      "code": null,
+      "contradictions": [],
+      "gate": {
+        "ok": true,
+        "status": "documented_advice"
+      },
+      "outcome": "bundle",
+      "placeholders_left": 0,
+      "resus_in_b": {
+        "reasons": [],
+        "shown": false
+      },
+      "run": 2,
+      "scenario": "S3",
+      "step": null,
+      "warnings": {
+        "A:dose_outside_box": 1,
+        "B:dose_outside_box": 1,
+        "C:diagnosis_unreached": 1
+      },
+      "warnings_c": 1,
+      "warnings_located": [
+        [
+          "A",
+          "treatment",
+          "dose_outside_box",
+          1
+        ],
+        [
+          "B",
+          "admission_summary",
+          "dose_outside_box",
+          4
+        ],
+        [
+          "C",
+          "why_in_hospital",
+          "diagnosis_unreached",
+          null
+        ]
+      ]
+    },
+    {
+      "a5": {
+        "d1_g3_allowance_used": 0,
+        "in_block_exactly_once": 0,
+        "prose_flags": [],
+        "recorded": 0
+      },
+      "branches": [
+        "med_status_none_required",
+        "resus_route_absent",
+        "b_resus_not_shown",
+        "ab_unverified_marker",
+        "c_unverified_note",
+        "gate_documented_advice"
+      ],
+      "c_meaning_vs_step7": {
+        "match": true,
+        "n": 8,
+        "only_8b": 0,
+        "only_step7": 0
+      },
+      "code": null,
+      "contradictions": [],
+      "gate": {
+        "ok": true,
+        "status": "documented_advice"
+      },
+      "outcome": "bundle",
+      "placeholders_left": 0,
+      "resus_in_b": {
+        "reasons": [],
+        "shown": false
+      },
+      "run": 2,
+      "scenario": "S4",
+      "step": null,
+      "warnings": {
+        "C:cause_added": 3,
+        "C:certainty_added": 1,
+        "C:qualifier_dropped": 1,
+        "C:test_term_added": 3
+      },
+      "warnings_c": 8,
+      "warnings_located": [
+        [
+          "C",
+          "why_in_hospital",
+          "cause_added",
+          8
+        ],
+        [
+          "C",
+          "why_in_hospital",
+          "test_term_added",
+          8
+        ],
+        [
+          "C",
+          "why_in_hospital",
+          "test_term_added",
+          8
+        ],
+        [
+          "C",
+          "what_we_did",
+          "test_term_added",
+          2
+        ],
+        [
+          "C",
+          "what_we_did",
+          "cause_added",
+          4
+        ],
+        [
+          "C",
+          "what_we_did",
+          "certainty_added",
+          5
+        ],
+        [
+          "C",
+          "what_we_did",
+          "cause_added",
+          6
+        ],
+        [
+          "C",
+          "what_we_did",
+          "qualifier_dropped",
+          null
+        ]
+      ]
+    },
+    {
+      "a5": {
+        "d1_g3_allowance_used": 0,
+        "in_block_exactly_once": 0,
+        "prose_flags": [],
+        "recorded": 0
+      },
+      "branches": [
+        "med_status_not_documented",
+        "resus_route_absent",
+        "b_resus_not_shown",
+        "gate_documented_advice"
+      ],
+      "c_meaning_vs_step7": {
+        "match": true,
+        "n": 1,
+        "only_8b": 0,
+        "only_step7": 0
+      },
+      "code": null,
+      "contradictions": [],
+      "gate": {
+        "ok": true,
+        "status": "documented_advice"
+      },
+      "outcome": "bundle",
+      "placeholders_left": 0,
+      "resus_in_b": {
+        "reasons": [],
+        "shown": false
+      },
+      "run": 2,
+      "scenario": "S8",
+      "step": null,
+      "warnings": {
+        "C:qualifier_dropped": 1
+      },
+      "warnings_c": 1,
+      "warnings_located": [
+        [
+          "C",
+          "what_we_did",
+          "qualifier_dropped",
+          null
+        ]
+      ]
+    },
+    {
+      "a5": {
+        "d1_g3_allowance_used": 0,
+        "in_block_exactly_once": 0,
+        "prose_flags": [],
+        "recorded": 0
+      },
+      "branches": [
+        "med_status_not_documented",
+        "resus_route_absent",
+        "b_resus_not_shown",
+        "header_inferred",
+        "gate_clean"
+      ],
+      "c_meaning_vs_step7": {
+        "match": true,
+        "n": 0,
+        "only_8b": 0,
+        "only_step7": 0
+      },
+      "code": null,
+      "contradictions": [],
+      "gate": {
+        "ok": true,
+        "status": "clean"
+      },
+      "outcome": "bundle",
+      "placeholders_left": 0,
+      "resus_in_b": {
+        "reasons": [],
+        "shown": false
+      },
+      "run": 2,
+      "scenario": "S9",
+      "step": null,
+      "warnings": {},
+      "warnings_c": 0,
+      "warnings_located": []
+    },
+    {
+      "a5": {
+        "d1_g3_allowance_used": 0,
+        "in_block_exactly_once": 0,
+        "prose_flags": [],
+        "recorded": 0
+      },
+      "branches": [
+        "med_status_referenced_not_listed",
+        "resus_route_documented",
+        "b_resus_route",
+        "header_inferred",
+        "gate_documented_advice"
+      ],
+      "c_meaning_vs_step7": {
+        "match": true,
+        "n": 0,
+        "only_8b": 0,
+        "only_step7": 0
+      },
+      "code": null,
+      "contradictions": [],
+      "gate": {
+        "ok": true,
+        "status": "documented_advice"
+      },
+      "outcome": "bundle",
+      "placeholders_left": 0,
+      "resus_in_b": {
+        "reasons": [
+          "route"
+        ],
+        "shown": true
+      },
+      "run": 3,
+      "scenario": "A5",
+      "step": null,
+      "warnings": {},
+      "warnings_c": 0,
+      "warnings_located": []
+    },
+    {
+      "a5": {
+        "d1_g3_allowance_used": 0,
+        "in_block_exactly_once": 1,
+        "prose_flags": [
+          {
+            "heading": "allergies",
+            "part": "part_a",
+            "why": [
+              "cites_contradiction",
+              "notes_conflict_wording"
+            ]
+          },
+          {
+            "heading": "medication_conflicts",
+            "part": "part_b",
+            "why": [
+              "cites_contradiction",
+              "notes_conflict_wording"
+            ]
+          }
+        ],
+        "recorded": 1
+      },
+      "branches": [
+        "med_status_listed",
+        "resus_route_documented",
+        "contradiction_value_unverified",
+        "b_resus_route",
+        "ab_unverified_marker",
+        "b_continued_count",
+        "gate_documented_advice"
+      ],
+      "c_meaning_vs_step7": {
+        "match": true,
+        "n": 0,
+        "only_8b": 0,
+        "only_step7": 0
+      },
+      "code": null,
+      "contradictions": [
+        {
+          "fact_id": "contradictions.0",
+          "kind": "value_unverified"
+        }
+      ],
+      "gate": {
+        "ok": true,
+        "status": "documented_advice"
+      },
+      "outcome": "bundle",
+      "placeholders_left": 0,
+      "resus_in_b": {
+        "reasons": [
+          "route"
+        ],
+        "shown": true
+      },
+      "run": 3,
+      "scenario": "B6",
+      "step": null,
+      "warnings": {
+        "A:dose_outside_box": 1,
+        "B:dose_outside_box": 1,
+        "C:dose_outside_box": 1
+      },
+      "warnings_c": 1,
+      "warnings_located": [
+        [
+          "A",
+          "treatment",
+          "dose_outside_box",
+          3
+        ],
+        [
+          "B",
+          "admission_summary",
+          "dose_outside_box",
+          3
+        ],
+        [
+          "C",
+          "what_we_did",
+          "dose_outside_box",
+          7
+        ]
+      ]
+    },
+    {
+      "a5": {
+        "d1_g3_allowance_used": 0,
+        "in_block_exactly_once": 0,
+        "prose_flags": [],
+        "recorded": 0
+      },
+      "branches": [
+        "med_status_not_documented",
+        "resus_route_absent",
+        "language_line",
+        "b_resus_not_shown",
+        "header_inferred",
+        "gate_clean"
+      ],
+      "c_meaning_vs_step7": {
+        "match": true,
+        "n": 0,
+        "only_8b": 0,
+        "only_step7": 0
+      },
+      "code": null,
+      "contradictions": [],
+      "gate": {
+        "ok": true,
+        "status": "clean"
+      },
+      "outcome": "bundle",
+      "placeholders_left": 0,
+      "resus_in_b": {
+        "reasons": [],
+        "shown": false
+      },
+      "run": 3,
+      "scenario": "C7",
+      "step": null,
+      "warnings": {},
+      "warnings_c": 0,
+      "warnings_located": []
+    },
+    {
+      "a5": {
+        "d1_g3_allowance_used": 0,
+        "in_block_exactly_once": 0,
+        "prose_flags": [],
+        "recorded": 0
+      },
+      "branches": [
+        "med_status_listed",
+        "resus_route_documented",
+        "b_resus_route",
+        "b_continued_count",
+        "gate_documented_advice"
+      ],
+      "c_meaning_vs_step7": {
+        "match": true,
+        "n": 3,
+        "only_8b": 0,
+        "only_step7": 0
+      },
+      "code": null,
+      "contradictions": [],
+      "gate": {
+        "ok": true,
+        "status": "documented_advice"
+      },
+      "outcome": "bundle",
+      "placeholders_left": 0,
+      "resus_in_b": {
+        "reasons": [
+          "route"
+        ],
+        "shown": true
+      },
+      "run": 3,
+      "scenario": "S1",
+      "step": null,
+      "warnings": {
+        "A:dose_outside_box": 1,
+        "B:dose_outside_box": 1,
+        "C:cause_added": 1,
+        "C:dose_outside_box": 1,
+        "C:qualifier_dropped": 1,
+        "C:test_term_added": 1
+      },
+      "warnings_c": 4,
+      "warnings_located": [
+        [
+          "A",
+          "treatment",
+          "dose_outside_box",
+          5
+        ],
+        [
+          "B",
+          "admission_summary",
+          "dose_outside_box",
+          5
+        ],
+        [
+          "C",
+          "what_we_did",
+          "test_term_added",
+          4
+        ],
+        [
+          "C",
+          "what_we_did",
+          "qualifier_dropped",
+          null
+        ],
+        [
+          "C",
+          "what_we_did",
+          "dose_outside_box",
+          11
+        ],
+        [
+          "C",
+          "next_steps",
+          "cause_added",
+          5
+        ]
+      ]
+    },
+    {
+      "a5": {
+        "d1_g3_allowance_used": 0,
+        "in_block_exactly_once": 0,
+        "prose_flags": [],
+        "recorded": 0
+      },
+      "branches": [
+        "med_status_listed",
+        "resus_route_absent",
+        "b_resus_not_shown",
+        "ab_unverified_marker",
+        "header_inferred",
+        "c_unverified_note",
+        "gate_documented_advice"
+      ],
+      "c_meaning_vs_step7": {
+        "match": true,
+        "n": 6,
+        "only_8b": 0,
+        "only_step7": 0
+      },
+      "code": null,
+      "contradictions": [],
+      "gate": {
+        "ok": true,
+        "status": "documented_advice"
+      },
+      "outcome": "bundle",
+      "placeholders_left": 0,
+      "resus_in_b": {
+        "reasons": [],
+        "shown": false
+      },
+      "run": 3,
+      "scenario": "S10",
+      "step": null,
+      "warnings": {
+        "C:cause_added": 6
+      },
+      "warnings_c": 6,
+      "warnings_located": [
+        [
+          "C",
+          "why_in_hospital",
+          "cause_added",
+          3
+        ],
+        [
+          "C",
+          "why_in_hospital",
+          "cause_added",
+          5
+        ],
+        [
+          "C",
+          "what_we_did",
+          "cause_added",
+          2
+        ],
+        [
+          "C",
+          "what_we_did",
+          "cause_added",
+          3
+        ],
+        [
+          "C",
+          "what_we_did",
+          "cause_added",
+          8
+        ],
+        [
+          "C",
+          "what_we_did",
+          "cause_added",
+          9
+        ]
+      ]
+    },
+    {
+      "a5": {
+        "d1_g3_allowance_used": 0,
+        "in_block_exactly_once": 0,
+        "prose_flags": [],
+        "recorded": 0
+      },
+      "branches": [
+        "med_status_referenced_not_listed",
+        "resus_route_documented",
+        "b_resus_route",
+        "header_inferred",
+        "gate_clean"
+      ],
+      "c_meaning_vs_step7": {
+        "match": true,
+        "n": 1,
+        "only_8b": 0,
+        "only_step7": 0
+      },
+      "code": null,
+      "contradictions": [],
+      "gate": {
+        "ok": true,
+        "status": "clean"
+      },
+      "outcome": "bundle",
+      "placeholders_left": 0,
+      "resus_in_b": {
+        "reasons": [
+          "route"
+        ],
+        "shown": true
+      },
+      "run": 3,
+      "scenario": "S11",
+      "step": null,
+      "warnings": {
+        "C:test_term_added": 1
+      },
+      "warnings_c": 1,
+      "warnings_located": [
+        [
+          "C",
+          "what_we_did",
+          "test_term_added",
+          5
+        ]
+      ]
+    },
+    {
+      "a5": {
+        "d1_g3_allowance_used": 0,
+        "in_block_exactly_once": 0,
+        "prose_flags": [],
+        "recorded": 0
+      },
+      "branches": [
+        "med_status_not_documented",
+        "resus_route_documented_but_absent",
+        "b_resus_route",
+        "header_not_extracted",
+        "gate_documented_advice"
+      ],
+      "c_meaning_vs_step7": {
+        "match": true,
+        "n": 3,
+        "only_8b": 0,
+        "only_step7": 0
+      },
+      "code": null,
+      "contradictions": [],
+      "gate": {
+        "ok": true,
+        "status": "documented_advice"
+      },
+      "outcome": "bundle",
+      "placeholders_left": 0,
+      "resus_in_b": {
+        "reasons": [
+          "route"
+        ],
+        "shown": true
+      },
+      "run": 3,
+      "scenario": "S12",
+      "step": null,
+      "warnings": {
+        "C:cause_added": 1,
+        "C:qualifier_dropped": 1,
+        "C:test_term_added": 1
+      },
+      "warnings_c": 3,
+      "warnings_located": [
+        [
+          "C",
+          "why_in_hospital",
+          "test_term_added",
+          8
+        ],
+        [
+          "C",
+          "what_we_did",
+          "qualifier_dropped",
+          null
+        ],
+        [
+          "C",
+          "next_steps",
+          "cause_added",
+          2
+        ]
+      ]
+    },
+    {
+      "a5": {
+        "d1_g3_allowance_used": 0,
+        "in_block_exactly_once": 0,
+        "prose_flags": [],
+        "recorded": 0
+      },
+      "branches": [
+        "med_status_listed",
+        "resus_route_documented",
+        "b_resus_route",
+        "header_inferred",
+        "b_continued_count",
+        "gate_documented_advice"
+      ],
+      "c_meaning_vs_step7": {
+        "match": true,
+        "n": 4,
+        "only_8b": 0,
+        "only_step7": 0
+      },
+      "code": null,
+      "contradictions": [],
+      "gate": {
+        "ok": true,
+        "status": "documented_advice"
+      },
+      "outcome": "bundle",
+      "placeholders_left": 0,
+      "resus_in_b": {
+        "reasons": [
+          "route"
+        ],
+        "shown": true
+      },
+      "run": 3,
+      "scenario": "S13",
+      "step": null,
+      "warnings": {
+        "C:cause_added": 3,
+        "C:certainty_added": 1
+      },
+      "warnings_c": 4,
+      "warnings_located": [
+        [
+          "C",
+          "why_in_hospital",
+          "cause_added",
+          2
+        ],
+        [
+          "C",
+          "what_we_did",
+          "cause_added",
+          1
+        ],
+        [
+          "C",
+          "what_we_did",
+          "cause_added",
+          6
+        ],
+        [
+          "C",
+          "what_we_did",
+          "certainty_added",
+          8
+        ]
+      ]
+    },
+    {
+      "a5": {
+        "d1_g3_allowance_used": 0,
+        "in_block_exactly_once": 0,
+        "prose_flags": [],
+        "recorded": 0
+      },
+      "branches": [
+        "med_status_listed",
+        "resus_route_documented",
+        "b_resus_route",
+        "header_inferred",
+        "b_continued_count",
+        "gate_clean"
+      ],
+      "c_meaning_vs_step7": {
+        "match": true,
+        "n": 5,
+        "only_8b": 0,
+        "only_step7": 0
+      },
+      "code": null,
+      "contradictions": [],
+      "gate": {
+        "ok": true,
+        "status": "clean"
+      },
+      "outcome": "bundle",
+      "placeholders_left": 0,
+      "resus_in_b": {
+        "reasons": [
+          "route"
+        ],
+        "shown": true
+      },
+      "run": 3,
+      "scenario": "S14",
+      "step": null,
+      "warnings": {
+        "C:cause_added": 2,
+        "C:certainty_added": 2,
+        "C:qualifier_dropped": 1
+      },
+      "warnings_c": 5,
+      "warnings_located": [
+        [
+          "C",
+          "what_we_did",
+          "cause_added",
+          6
+        ],
+        [
+          "C",
+          "what_we_did",
+          "certainty_added",
+          6
+        ],
+        [
+          "C",
+          "what_we_did",
+          "cause_added",
+          9
+        ],
+        [
+          "C",
+          "what_we_did",
+          "certainty_added",
+          9
+        ],
+        [
+          "C",
+          "what_we_did",
+          "qualifier_dropped",
+          null
+        ]
+      ]
+    },
+    {
+      "a5": {
+        "d1_g3_allowance_used": 0,
+        "in_block_exactly_once": 0,
+        "prose_flags": [],
+        "recorded": 0
+      },
+      "branches": [
+        "facts_held_back",
+        "med_status_listed",
+        "resus_route_documented",
+        "b_resus_route",
+        "header_not_extracted",
+        "gate_clean"
+      ],
+      "c_meaning_vs_step7": {
+        "match": true,
+        "n": 1,
+        "only_8b": 0,
+        "only_step7": 0
+      },
+      "code": null,
+      "contradictions": [],
+      "gate": {
+        "ok": true,
+        "status": "clean"
+      },
+      "outcome": "bundle",
+      "placeholders_left": 0,
+      "resus_in_b": {
+        "reasons": [
+          "route"
+        ],
+        "shown": true
+      },
+      "run": 3,
+      "scenario": "S15",
+      "step": null,
+      "warnings": {
+        "C:certainty_added": 1
+      },
+      "warnings_c": 1,
+      "warnings_located": [
+        [
+          "C",
+          "what_we_did",
+          "certainty_added",
+          9
+        ]
+      ]
+    },
+    {
+      "a5": {
+        "d1_g3_allowance_used": 0,
+        "in_block_exactly_once": 0,
+        "prose_flags": [],
+        "recorded": 0
+      },
+      "branches": [
+        "med_status_referenced_not_listed",
+        "resus_route_absent",
+        "b_resus_not_shown",
+        "ab_unverified_marker",
+        "header_inferred",
+        "c_unverified_note",
+        "gate_clean"
+      ],
+      "c_meaning_vs_step7": {
+        "match": true,
+        "n": 5,
+        "only_8b": 0,
+        "only_step7": 0
+      },
+      "code": null,
+      "contradictions": [],
+      "gate": {
+        "ok": true,
+        "status": "clean"
+      },
+      "outcome": "bundle",
+      "placeholders_left": 0,
+      "resus_in_b": {
+        "reasons": [],
+        "shown": false
+      },
+      "run": 3,
+      "scenario": "S16",
+      "step": null,
+      "warnings": {
+        "C:cause_added": 1,
+        "C:certainty_added": 3,
+        "C:qualifier_dropped": 1
+      },
+      "warnings_c": 5,
+      "warnings_located": [
+        [
+          "C",
+          "why_in_hospital",
+          "cause_added",
+          8
+        ],
+        [
+          "C",
+          "what_we_did",
+          "certainty_added",
+          6
+        ],
+        [
+          "C",
+          "what_we_did",
+          "certainty_added",
+          9
+        ],
+        [
+          "C",
+          "what_we_did",
+          "certainty_added",
+          12
+        ],
+        [
+          "C",
+          "what_we_did",
+          "qualifier_dropped",
+          null
+        ]
+      ]
+    },
+    {
+      "a5": {
+        "d1_g3_allowance_used": 0,
+        "in_block_exactly_once": 0,
+        "prose_flags": [],
+        "recorded": 0
+      },
+      "branches": [
+        "med_status_listed",
+        "resus_route_documented",
+        "b_resus_route",
+        "header_not_extracted",
+        "b_continued_count",
+        "gate_clean"
+      ],
+      "c_meaning_vs_step7": {
+        "match": true,
+        "n": 1,
+        "only_8b": 0,
+        "only_step7": 0
+      },
+      "code": null,
+      "contradictions": [],
+      "gate": {
+        "ok": true,
+        "status": "clean"
+      },
+      "outcome": "bundle",
+      "placeholders_left": 0,
+      "resus_in_b": {
+        "reasons": [
+          "route"
+        ],
+        "shown": true
+      },
+      "run": 3,
+      "scenario": "S17",
+      "step": null,
+      "warnings": {
+        "C:certainty_added": 1
+      },
+      "warnings_c": 1,
+      "warnings_located": [
+        [
+          "C",
+          "next_steps",
+          "certainty_added",
+          4
+        ]
+      ]
+    },
+    {
+      "a5": {
+        "d1_g3_allowance_used": 0,
+        "in_block_exactly_once": 0,
+        "prose_flags": [],
+        "recorded": 0
+      },
+      "branches": [
+        "med_status_none_required",
+        "resus_route_absent",
+        "b_resus_not_shown",
+        "gate_clean"
+      ],
+      "c_meaning_vs_step7": {
+        "match": true,
+        "n": 1,
+        "only_8b": 0,
+        "only_step7": 0
+      },
+      "code": null,
+      "contradictions": [],
+      "gate": {
+        "ok": true,
+        "status": "clean"
+      },
+      "outcome": "bundle",
+      "placeholders_left": 0,
+      "resus_in_b": {
+        "reasons": [],
+        "shown": false
+      },
+      "run": 3,
+      "scenario": "S18",
+      "step": null,
+      "warnings": {
+        "C:cause_added": 1
+      },
+      "warnings_c": 1,
+      "warnings_located": [
+        [
+          "C",
+          "what_we_did",
+          "cause_added",
+          7
+        ]
+      ]
+    },
+    {
+      "a5": {
+        "d1_g3_allowance_used": 0,
+        "in_block_exactly_once": 0,
+        "prose_flags": [],
+        "recorded": 0
+      },
+      "branches": [
+        "med_status_listed",
+        "resus_route_documented",
+        "b_resus_route",
+        "gate_documented_advice"
+      ],
+      "c_meaning_vs_step7": {
+        "match": true,
+        "n": 1,
+        "only_8b": 0,
+        "only_step7": 0
+      },
+      "code": null,
+      "contradictions": [],
+      "gate": {
+        "ok": true,
+        "status": "documented_advice"
+      },
+      "outcome": "bundle",
+      "placeholders_left": 0,
+      "resus_in_b": {
+        "reasons": [
+          "route"
+        ],
+        "shown": true
+      },
+      "run": 3,
+      "scenario": "S2",
+      "step": null,
+      "warnings": {
+        "C:cause_added": 1
+      },
+      "warnings_c": 1,
+      "warnings_located": [
+        [
+          "C",
+          "next_steps",
+          "cause_added",
+          1
+        ]
+      ]
+    },
+    {
+      "a5": {
+        "d1_g3_allowance_used": 0,
+        "in_block_exactly_once": 0,
+        "prose_flags": [],
+        "recorded": 0
+      },
+      "branches": [
+        "med_status_listed",
+        "resus_route_absent",
+        "b_resus_not_shown",
+        "ab_unverified_marker",
+        "header_inferred",
+        "gate_documented_advice"
+      ],
+      "c_meaning_vs_step7": {
+        "match": true,
+        "n": 1,
+        "only_8b": 0,
+        "only_step7": 0
+      },
+      "code": null,
+      "contradictions": [],
+      "gate": {
+        "ok": true,
+        "status": "documented_advice"
+      },
+      "outcome": "bundle",
+      "placeholders_left": 0,
+      "resus_in_b": {
+        "reasons": [],
+        "shown": false
+      },
+      "run": 3,
+      "scenario": "S3",
+      "step": null,
+      "warnings": {
+        "A:dose_outside_box": 1,
+        "B:dose_outside_box": 1,
+        "C:diagnosis_unreached": 1
+      },
+      "warnings_c": 1,
+      "warnings_located": [
+        [
+          "A",
+          "treatment",
+          "dose_outside_box",
+          1
+        ],
+        [
+          "B",
+          "admission_summary",
+          "dose_outside_box",
+          3
+        ],
+        [
+          "C",
+          "why_in_hospital",
+          "diagnosis_unreached",
+          null
+        ]
+      ]
+    },
+    {
+      "a5": {
+        "d1_g3_allowance_used": 0,
+        "in_block_exactly_once": 0,
+        "prose_flags": [],
+        "recorded": 0
+      },
+      "branches": [
+        "med_status_none_required",
+        "resus_route_absent",
+        "b_resus_not_shown",
+        "ab_unverified_marker",
+        "c_unverified_note",
+        "gate_documented_advice"
+      ],
+      "c_meaning_vs_step7": {
+        "match": true,
+        "n": 3,
+        "only_8b": 0,
+        "only_step7": 0
+      },
+      "code": null,
+      "contradictions": [],
+      "gate": {
+        "ok": true,
+        "status": "documented_advice"
+      },
+      "outcome": "bundle",
+      "placeholders_left": 0,
+      "resus_in_b": {
+        "reasons": [],
+        "shown": false
+      },
+      "run": 3,
+      "scenario": "S4",
+      "step": null,
+      "warnings": {
+        "C:cause_added": 2,
+        "C:test_term_added": 1
+      },
+      "warnings_c": 3,
+      "warnings_located": [
+        [
+          "C",
+          "what_we_did",
+          "test_term_added",
+          1
+        ],
+        [
+          "C",
+          "what_we_did",
+          "cause_added",
+          6
+        ],
+        [
+          "C",
+          "what_we_did",
+          "cause_added",
+          8
+        ]
+      ]
+    },
+    {
+      "a5": {
+        "d1_g3_allowance_used": 0,
+        "in_block_exactly_once": 0,
+        "prose_flags": [],
+        "recorded": 0
+      },
+      "branches": [
+        "med_status_not_documented",
+        "resus_route_absent",
+        "b_resus_not_shown",
+        "ab_unverified_marker",
+        "c_unverified_note",
+        "gate_documented_advice"
+      ],
+      "c_meaning_vs_step7": {
+        "match": true,
+        "n": 1,
+        "only_8b": 0,
+        "only_step7": 0
+      },
+      "code": null,
+      "contradictions": [],
+      "gate": {
+        "ok": true,
+        "status": "documented_advice"
+      },
+      "outcome": "bundle",
+      "placeholders_left": 0,
+      "resus_in_b": {
+        "reasons": [],
+        "shown": false
+      },
+      "run": 3,
+      "scenario": "S8",
+      "step": null,
+      "warnings": {
+        "C:qualifier_dropped": 1
+      },
+      "warnings_c": 1,
+      "warnings_located": [
+        [
+          "C",
+          "what_we_did",
+          "qualifier_dropped",
+          null
+        ]
+      ]
+    },
+    {
+      "a5": {
+        "d1_g3_allowance_used": 0,
+        "in_block_exactly_once": 0,
+        "prose_flags": [],
+        "recorded": 0
+      },
+      "branches": [
+        "med_status_not_documented",
+        "resus_route_absent",
+        "b_resus_not_shown",
+        "header_inferred",
+        "gate_clean"
+      ],
+      "c_meaning_vs_step7": {
+        "match": true,
+        "n": 0,
+        "only_8b": 0,
+        "only_step7": 0
+      },
+      "code": null,
+      "contradictions": [],
+      "gate": {
+        "ok": true,
+        "status": "clean"
+      },
+      "outcome": "bundle",
+      "placeholders_left": 0,
+      "resus_in_b": {
+        "reasons": [],
+        "shown": false
+      },
+      "run": 3,
+      "scenario": "S9",
+      "step": null,
+      "warnings": {},
+      "warnings_c": 0,
+      "warnings_located": []
+    },
+    {
+      "a5": {
+        "d1_g3_allowance_used": 0,
+        "in_block_exactly_once": 0,
+        "prose_flags": [],
+        "recorded": 0
+      },
+      "branches": [
+        "med_status_referenced_not_listed",
+        "resus_route_documented",
+        "b_resus_route",
+        "header_inferred",
+        "gate_documented_advice"
+      ],
+      "c_meaning_vs_step7": {
+        "match": true,
+        "n": 0,
+        "only_8b": 0,
+        "only_step7": 0
+      },
+      "code": null,
+      "contradictions": [],
+      "gate": {
+        "ok": true,
+        "status": "documented_advice"
+      },
+      "outcome": "bundle",
+      "placeholders_left": 0,
+      "resus_in_b": {
+        "reasons": [
+          "route"
+        ],
+        "shown": true
+      },
+      "run": 4,
+      "scenario": "A5",
+      "step": null,
+      "warnings": {},
+      "warnings_c": 0,
+      "warnings_located": []
+    },
+    {
+      "a5": {
+        "d1_g3_allowance_used": 0,
+        "in_block_exactly_once": 1,
+        "prose_flags": [
+          {
+            "heading": "medication_conflicts",
+            "part": "part_a",
+            "why": [
+              "notes_conflict_wording"
+            ]
+          },
+          {
+            "heading": "allergies",
+            "part": "part_a",
+            "why": [
+              "notes_conflict_wording"
+            ]
+          },
+          {
+            "heading": "medication_conflicts",
+            "part": "part_b",
+            "why": [
+              "notes_conflict_wording"
+            ]
+          }
+        ],
+        "recorded": 1
+      },
+      "branches": [
+        "med_status_listed",
+        "resus_route_documented",
+        "contradiction_quotes",
+        "b_resus_route",
+        "b_continued_count",
+        "gate_documented_advice"
+      ],
+      "c_meaning_vs_step7": {
+        "match": true,
+        "n": 0,
+        "only_8b": 0,
+        "only_step7": 0
+      },
+      "code": null,
+      "contradictions": [
+        {
+          "fact_id": "contradictions.0",
+          "kind": "quotes"
+        }
+      ],
+      "gate": {
+        "ok": true,
+        "status": "documented_advice"
+      },
+      "outcome": "bundle",
+      "placeholders_left": 0,
+      "resus_in_b": {
+        "reasons": [
+          "route"
+        ],
+        "shown": true
+      },
+      "run": 4,
+      "scenario": "B6",
+      "step": null,
+      "warnings": {
+        "A:dose_outside_box": 2,
+        "A:drug_not_in_cited_facts": 1,
+        "B:dose_outside_box": 2,
+        "B:drug_not_in_cited_facts": 1,
+        "C:dose_outside_box": 1
+      },
+      "warnings_c": 1,
+      "warnings_located": [
+        [
+          "A",
+          "treatment",
+          "dose_outside_box",
+          3
+        ],
+        [
+          "A",
+          "medication_conflicts",
+          "dose_outside_box",
+          1
+        ],
+        [
+          "A",
+          "medication_conflicts",
+          "drug_not_in_cited_facts",
+          1
+        ],
+        [
+          "B",
+          "admission_summary",
+          "dose_outside_box",
+          3
+        ],
+        [
+          "B",
+          "medication_conflicts",
+          "dose_outside_box",
+          1
+        ],
+        [
+          "B",
+          "medication_conflicts",
+          "drug_not_in_cited_facts",
+          1
+        ],
+        [
+          "C",
+          "what_we_did",
+          "dose_outside_box",
+          4
+        ]
+      ]
+    },
+    {
+      "a5": {
+        "d1_g3_allowance_used": 0,
+        "in_block_exactly_once": 0,
+        "prose_flags": [],
+        "recorded": 0
+      },
+      "branches": [
+        "med_status_not_documented",
+        "resus_route_absent",
+        "language_line",
+        "b_resus_not_shown",
+        "header_inferred",
+        "gate_clean"
+      ],
+      "c_meaning_vs_step7": {
+        "match": true,
+        "n": 0,
+        "only_8b": 0,
+        "only_step7": 0
+      },
+      "code": null,
+      "contradictions": [],
+      "gate": {
+        "ok": true,
+        "status": "clean"
+      },
+      "outcome": "bundle",
+      "placeholders_left": 0,
+      "resus_in_b": {
+        "reasons": [],
+        "shown": false
+      },
+      "run": 4,
+      "scenario": "C7",
+      "step": null,
+      "warnings": {},
+      "warnings_c": 0,
+      "warnings_located": []
+    },
+    {
+      "a5": {
+        "d1_g3_allowance_used": 0,
+        "in_block_exactly_once": 0,
+        "prose_flags": [],
+        "recorded": 0
+      },
+      "branches": [
+        "med_status_listed",
+        "resus_route_documented",
+        "b_resus_route",
+        "b_continued_count",
+        "gate_documented_advice"
+      ],
+      "c_meaning_vs_step7": {
+        "match": true,
+        "n": 4,
+        "only_8b": 0,
+        "only_step7": 0
+      },
+      "code": null,
+      "contradictions": [],
+      "gate": {
+        "ok": true,
+        "status": "documented_advice"
+      },
+      "outcome": "bundle",
+      "placeholders_left": 0,
+      "resus_in_b": {
+        "reasons": [
+          "route"
+        ],
+        "shown": true
+      },
+      "run": 4,
+      "scenario": "S1",
+      "step": null,
+      "warnings": {
+        "A:dose_outside_box": 1,
+        "B:dose_outside_box": 1,
+        "C:cause_added": 1,
+        "C:diagnosis_unreached": 1,
+        "C:dose_outside_box": 1,
+        "C:qualifier_dropped": 1,
+        "C:test_term_added": 1
+      },
+      "warnings_c": 5,
+      "warnings_located": [
+        [
+          "A",
+          "treatment",
+          "dose_outside_box",
+          5
+        ],
+        [
+          "B",
+          "admission_summary",
+          "dose_outside_box",
+          6
+        ],
+        [
+          "C",
+          "what_we_did",
+          "test_term_added",
+          4
+        ],
+        [
+          "C",
+          "what_we_did",
+          "cause_added",
+          10
+        ],
+        [
+          "C",
+          "what_we_did",
+          "qualifier_dropped",
+          null
+        ],
+        [
+          "C",
+          "what_we_did",
+          "dose_outside_box",
+          8
+        ],
+        [
+          "C",
+          "why_in_hospital",
+          "diagnosis_unreached",
+          null
+        ]
+      ]
+    },
+    {
+      "a5": {
+        "d1_g3_allowance_used": 0,
+        "in_block_exactly_once": 0,
+        "prose_flags": [],
+        "recorded": 0
+      },
+      "branches": [
+        "med_status_listed",
+        "resus_route_absent",
+        "b_resus_not_shown",
+        "header_inferred",
+        "gate_documented_advice"
+      ],
+      "c_meaning_vs_step7": {
+        "match": true,
+        "n": 4,
+        "only_8b": 0,
+        "only_step7": 0
+      },
+      "code": null,
+      "contradictions": [],
+      "gate": {
+        "ok": true,
+        "status": "documented_advice"
+      },
+      "outcome": "bundle",
+      "placeholders_left": 0,
+      "resus_in_b": {
+        "reasons": [],
+        "shown": false
+      },
+      "run": 4,
+      "scenario": "S10",
+      "step": null,
+      "warnings": {
+        "C:cause_added": 4
+      },
+      "warnings_c": 4,
+      "warnings_located": [
+        [
+          "C",
+          "why_in_hospital",
+          "cause_added",
+          3
+        ],
+        [
+          "C",
+          "why_in_hospital",
+          "cause_added",
+          6
+        ],
+        [
+          "C",
+          "what_we_did",
+          "cause_added",
+          2
+        ],
+        [
+          "C",
+          "what_we_did",
+          "cause_added",
+          3
+        ]
+      ]
+    },
+    {
+      "a5": {
+        "d1_g3_allowance_used": 0,
+        "in_block_exactly_once": 0,
+        "prose_flags": [],
+        "recorded": 0
+      },
+      "branches": [
+        "med_status_referenced_not_listed",
+        "resus_route_documented",
+        "b_resus_route",
+        "ab_unverified_marker",
+        "header_inferred",
+        "c_unverified_note",
+        "gate_clean"
+      ],
+      "c_meaning_vs_step7": {
+        "match": true,
+        "n": 1,
+        "only_8b": 0,
+        "only_step7": 0
+      },
+      "code": null,
+      "contradictions": [],
+      "gate": {
+        "ok": true,
+        "status": "clean"
+      },
+      "outcome": "bundle",
+      "placeholders_left": 0,
+      "resus_in_b": {
+        "reasons": [
+          "route"
+        ],
+        "shown": true
+      },
+      "run": 4,
+      "scenario": "S11",
+      "step": null,
+      "warnings": {
+        "C:test_term_added": 1
+      },
+      "warnings_c": 1,
+      "warnings_located": [
+        [
+          "C",
+          "what_we_did",
+          "test_term_added",
+          4
+        ]
+      ]
+    },
+    {
+      "a5": {
+        "d1_g3_allowance_used": 0,
+        "in_block_exactly_once": 0,
+        "prose_flags": [],
+        "recorded": 0
+      },
+      "branches": [
+        "med_status_not_documented",
+        "resus_route_documented_but_absent",
+        "b_resus_route",
+        "header_not_extracted",
+        "gate_documented_advice"
+      ],
+      "c_meaning_vs_step7": {
+        "match": true,
+        "n": 2,
+        "only_8b": 0,
+        "only_step7": 0
+      },
+      "code": null,
+      "contradictions": [],
+      "gate": {
+        "ok": true,
+        "status": "documented_advice"
+      },
+      "outcome": "bundle",
+      "placeholders_left": 0,
+      "resus_in_b": {
+        "reasons": [
+          "route"
+        ],
+        "shown": true
+      },
+      "run": 4,
+      "scenario": "S12",
+      "step": null,
+      "warnings": {
+        "C:cause_added": 1,
+        "C:qualifier_dropped": 1
+      },
+      "warnings_c": 2,
+      "warnings_located": [
+        [
+          "C",
+          "what_we_did",
+          "qualifier_dropped",
+          null
+        ],
+        [
+          "C",
+          "next_steps",
+          "cause_added",
+          2
+        ]
+      ]
+    },
+    {
+      "a5": {
+        "d1_g3_allowance_used": 0,
+        "in_block_exactly_once": 0,
+        "prose_flags": [],
+        "recorded": 0
+      },
+      "branches": [
+        "med_status_listed",
+        "resus_route_documented",
+        "b_resus_route",
+        "header_inferred",
+        "b_continued_count",
+        "gate_documented_advice"
+      ],
+      "c_meaning_vs_step7": {
+        "match": true,
+        "n": 4,
+        "only_8b": 0,
+        "only_step7": 0
+      },
+      "code": null,
+      "contradictions": [],
+      "gate": {
+        "ok": true,
+        "status": "documented_advice"
+      },
+      "outcome": "bundle",
+      "placeholders_left": 0,
+      "resus_in_b": {
+        "reasons": [
+          "route"
+        ],
+        "shown": true
+      },
+      "run": 4,
+      "scenario": "S13",
+      "step": null,
+      "warnings": {
+        "C:cause_added": 2,
+        "C:certainty_added": 1,
+        "C:qualifier_dropped": 1
+      },
+      "warnings_c": 4,
+      "warnings_located": [
+        [
+          "C",
+          "why_in_hospital",
+          "cause_added",
+          3
+        ],
+        [
+          "C",
+          "what_we_did",
+          "cause_added",
+          1
+        ],
+        [
+          "C",
+          "what_we_did",
+          "certainty_added",
+          9
+        ],
+        [
+          "C",
+          "what_we_did",
+          "qualifier_dropped",
+          null
+        ]
+      ]
+    },
+    {
+      "a5": {
+        "d1_g3_allowance_used": 0,
+        "in_block_exactly_once": 0,
+        "prose_flags": [],
+        "recorded": 0
+      },
+      "branches": [
+        "med_status_listed",
+        "resus_route_documented",
+        "b_resus_route",
+        "header_inferred",
+        "b_continued_count",
+        "gate_clean"
+      ],
+      "c_meaning_vs_step7": {
+        "match": true,
+        "n": 2,
+        "only_8b": 0,
+        "only_step7": 0
+      },
+      "code": null,
+      "contradictions": [],
+      "gate": {
+        "ok": true,
+        "status": "clean"
+      },
+      "outcome": "bundle",
+      "placeholders_left": 0,
+      "resus_in_b": {
+        "reasons": [
+          "route"
+        ],
+        "shown": true
+      },
+      "run": 4,
+      "scenario": "S14",
+      "step": null,
+      "warnings": {
+        "C:certainty_added": 1,
+        "C:qualifier_dropped": 1
+      },
+      "warnings_c": 2,
+      "warnings_located": [
+        [
+          "C",
+          "what_we_did",
+          "certainty_added",
+          6
+        ],
+        [
+          "C",
+          "what_we_did",
+          "qualifier_dropped",
+          null
+        ]
+      ]
+    },
+    {
+      "a5": {
+        "d1_g3_allowance_used": 0,
+        "in_block_exactly_once": 0,
+        "prose_flags": [],
+        "recorded": 0
+      },
+      "branches": [
+        "facts_held_back",
+        "med_status_listed",
+        "resus_route_documented",
+        "b_resus_route",
+        "header_not_extracted",
+        "b_continued_count",
+        "gate_clean"
+      ],
+      "c_meaning_vs_step7": {
+        "match": true,
+        "n": 0,
+        "only_8b": 0,
+        "only_step7": 0
+      },
+      "code": null,
+      "contradictions": [],
+      "gate": {
+        "ok": true,
+        "status": "clean"
+      },
+      "outcome": "bundle",
+      "placeholders_left": 0,
+      "resus_in_b": {
+        "reasons": [
+          "route"
+        ],
+        "shown": true
+      },
+      "run": 4,
+      "scenario": "S15",
+      "step": null,
+      "warnings": {},
+      "warnings_c": 0,
+      "warnings_located": []
+    },
+    {
+      "a5": {
+        "d1_g3_allowance_used": 0,
+        "in_block_exactly_once": 0,
+        "prose_flags": [],
+        "recorded": 0
+      },
+      "branches": [
+        "med_status_referenced_not_listed",
+        "resus_route_absent",
+        "b_resus_not_shown",
+        "ab_unverified_marker",
+        "header_inferred",
+        "c_unverified_note",
+        "gate_clean"
+      ],
+      "c_meaning_vs_step7": {
+        "match": true,
+        "n": 4,
+        "only_8b": 0,
+        "only_step7": 0
+      },
+      "code": null,
+      "contradictions": [],
+      "gate": {
+        "ok": true,
+        "status": "clean"
+      },
+      "outcome": "bundle",
+      "placeholders_left": 0,
+      "resus_in_b": {
+        "reasons": [],
+        "shown": false
+      },
+      "run": 4,
+      "scenario": "S16",
+      "step": null,
+      "warnings": {
+        "C:cause_added": 2,
+        "C:certainty_added": 1,
+        "C:qualifier_dropped": 1
+      },
+      "warnings_c": 4,
+      "warnings_located": [
+        [
+          "C",
+          "why_in_hospital",
+          "cause_added",
+          7
+        ],
+        [
+          "C",
+          "what_we_did",
+          "cause_added",
+          6
+        ],
+        [
+          "C",
+          "what_we_did",
+          "certainty_added",
+          13
+        ],
+        [
+          "C",
+          "what_we_did",
+          "qualifier_dropped",
+          null
+        ]
+      ]
+    },
+    {
+      "a5": {
+        "d1_g3_allowance_used": 0,
+        "in_block_exactly_once": 0,
+        "prose_flags": [],
+        "recorded": 0
+      },
+      "branches": [
+        "med_status_listed",
+        "resus_route_documented",
+        "b_resus_route",
+        "header_not_extracted",
+        "b_continued_count",
+        "gate_clean"
+      ],
+      "c_meaning_vs_step7": {
+        "match": true,
+        "n": 1,
+        "only_8b": 0,
+        "only_step7": 0
+      },
+      "code": null,
+      "contradictions": [],
+      "gate": {
+        "ok": true,
+        "status": "clean"
+      },
+      "outcome": "bundle",
+      "placeholders_left": 0,
+      "resus_in_b": {
+        "reasons": [
+          "route"
+        ],
+        "shown": true
+      },
+      "run": 4,
+      "scenario": "S17",
+      "step": null,
+      "warnings": {
+        "C:certainty_added": 1
+      },
+      "warnings_c": 1,
+      "warnings_located": [
+        [
+          "C",
+          "next_steps",
+          "certainty_added",
+          4
+        ]
+      ]
+    },
+    {
+      "a5": {
+        "d1_g3_allowance_used": 0,
+        "in_block_exactly_once": 0,
+        "prose_flags": [],
+        "recorded": 0
+      },
+      "branches": [
+        "med_status_none_required",
+        "resus_route_absent",
+        "b_resus_not_shown",
+        "header_inferred",
+        "gate_clean"
+      ],
+      "c_meaning_vs_step7": {
+        "match": true,
+        "n": 0,
+        "only_8b": 0,
+        "only_step7": 0
+      },
+      "code": null,
+      "contradictions": [],
+      "gate": {
+        "ok": true,
+        "status": "clean"
+      },
+      "outcome": "bundle",
+      "placeholders_left": 0,
+      "resus_in_b": {
+        "reasons": [],
+        "shown": false
+      },
+      "run": 4,
+      "scenario": "S18",
+      "step": null,
+      "warnings": {},
+      "warnings_c": 0,
+      "warnings_located": []
+    },
+    {
+      "a5": {
+        "d1_g3_allowance_used": 0,
+        "in_block_exactly_once": 0,
+        "prose_flags": [],
+        "recorded": 0
+      },
+      "branches": [
+        "med_status_listed",
+        "resus_route_documented",
+        "b_resus_route",
+        "gate_documented_advice"
+      ],
+      "c_meaning_vs_step7": {
+        "match": true,
+        "n": 1,
+        "only_8b": 0,
+        "only_step7": 0
+      },
+      "code": null,
+      "contradictions": [],
+      "gate": {
+        "ok": true,
+        "status": "documented_advice"
+      },
+      "outcome": "bundle",
+      "placeholders_left": 0,
+      "resus_in_b": {
+        "reasons": [
+          "route"
+        ],
+        "shown": true
+      },
+      "run": 4,
+      "scenario": "S2",
+      "step": null,
+      "warnings": {
+        "C:cause_added": 1
+      },
+      "warnings_c": 1,
+      "warnings_located": [
+        [
+          "C",
+          "next_steps",
+          "cause_added",
+          1
+        ]
+      ]
+    },
+    {
+      "a5": {
+        "d1_g3_allowance_used": 0,
+        "in_block_exactly_once": 0,
+        "prose_flags": [],
+        "recorded": 0
+      },
+      "branches": [
+        "med_status_listed",
+        "resus_route_absent",
+        "b_resus_not_shown",
+        "gate_documented_advice"
+      ],
+      "c_meaning_vs_step7": {
+        "match": true,
+        "n": 3,
+        "only_8b": 0,
+        "only_step7": 0
+      },
+      "code": null,
+      "contradictions": [],
+      "gate": {
+        "ok": true,
+        "status": "documented_advice"
+      },
+      "outcome": "bundle",
+      "placeholders_left": 0,
+      "resus_in_b": {
+        "reasons": [],
+        "shown": false
+      },
+      "run": 4,
+      "scenario": "S3",
+      "step": null,
+      "warnings": {
+        "A:dose_outside_box": 1,
+        "B:dose_outside_box": 1,
+        "C:certainty_added": 1,
+        "C:diagnosis_unreached": 1,
+        "C:qualifier_dropped": 1
+      },
+      "warnings_c": 3,
+      "warnings_located": [
+        [
+          "A",
+          "treatment",
+          "dose_outside_box",
+          1
+        ],
+        [
+          "B",
+          "admission_summary",
+          "dose_outside_box",
+          3
+        ],
+        [
+          "C",
+          "what_we_did",
+          "certainty_added",
+          1
+        ],
+        [
+          "C",
+          "what_we_did",
+          "qualifier_dropped",
+          null
+        ],
+        [
+          "C",
+          "why_in_hospital",
+          "diagnosis_unreached",
+          null
+        ]
+      ]
+    },
+    {
+      "a5": {
+        "d1_g3_allowance_used": 0,
+        "in_block_exactly_once": 0,
+        "prose_flags": [],
+        "recorded": 0
+      },
+      "branches": [
+        "med_status_none_required",
+        "resus_route_absent",
+        "b_resus_not_shown",
+        "gate_documented_advice"
+      ],
+      "c_meaning_vs_step7": {
+        "match": true,
+        "n": 5,
+        "only_8b": 0,
+        "only_step7": 0
+      },
+      "code": null,
+      "contradictions": [],
+      "gate": {
+        "ok": true,
+        "status": "documented_advice"
+      },
+      "outcome": "bundle",
+      "placeholders_left": 0,
+      "resus_in_b": {
+        "reasons": [],
+        "shown": false
+      },
+      "run": 4,
+      "scenario": "S4",
+      "step": null,
+      "warnings": {
+        "C:cause_added": 3,
+        "C:test_term_added": 2
+      },
+      "warnings_c": 5,
+      "warnings_located": [
+        [
+          "C",
+          "why_in_hospital",
+          "cause_added",
+          8
+        ],
+        [
+          "C",
+          "why_in_hospital",
+          "test_term_added",
+          9
+        ],
+        [
+          "C",
+          "what_we_did",
+          "cause_added",
+          4
+        ],
+        [
+          "C",
+          "what_we_did",
+          "test_term_added",
+          6
+        ],
+        [
+          "C",
+          "what_we_did",
+          "cause_added",
+          9
+        ]
+      ]
+    },
+    {
+      "a5": {
+        "d1_g3_allowance_used": 0,
+        "in_block_exactly_once": 0,
+        "prose_flags": [],
+        "recorded": 0
+      },
+      "branches": [
+        "med_status_not_documented",
+        "resus_route_absent",
+        "b_resus_not_shown",
+        "ab_unverified_marker",
+        "c_unverified_note",
+        "gate_documented_advice"
+      ],
+      "c_meaning_vs_step7": {
+        "match": true,
+        "n": 2,
+        "only_8b": 0,
+        "only_step7": 0
+      },
+      "code": null,
+      "contradictions": [],
+      "gate": {
+        "ok": true,
+        "status": "documented_advice"
+      },
+      "outcome": "bundle",
+      "placeholders_left": 0,
+      "resus_in_b": {
+        "reasons": [],
+        "shown": false
+      },
+      "run": 4,
+      "scenario": "S8",
+      "step": null,
+      "warnings": {
+        "C:cause_added": 1,
+        "C:qualifier_dropped": 1
+      },
+      "warnings_c": 2,
+      "warnings_located": [
+        [
+          "C",
+          "why_in_hospital",
+          "qualifier_dropped",
+          null
+        ],
+        [
+          "C",
+          "what_we_did",
+          "cause_added",
+          7
+        ]
+      ]
+    },
+    {
+      "a5": {
+        "d1_g3_allowance_used": 0,
+        "in_block_exactly_once": 0,
+        "prose_flags": [],
+        "recorded": 0
+      },
+      "branches": [
+        "med_status_not_documented",
+        "resus_route_absent",
+        "b_resus_not_shown",
+        "header_inferred",
+        "gate_clean"
+      ],
+      "c_meaning_vs_step7": {
+        "match": true,
+        "n": 0,
+        "only_8b": 0,
+        "only_step7": 0
+      },
+      "code": null,
+      "contradictions": [],
+      "gate": {
+        "ok": true,
+        "status": "clean"
+      },
+      "outcome": "bundle",
+      "placeholders_left": 0,
+      "resus_in_b": {
+        "reasons": [],
+        "shown": false
+      },
+      "run": 4,
+      "scenario": "S9",
+      "step": null,
+      "warnings": {},
+      "warnings_c": 0,
+      "warnings_located": []
+    },
+    {
+      "a5": {
+        "d1_g3_allowance_used": 0,
+        "in_block_exactly_once": 0,
+        "prose_flags": [],
+        "recorded": 0
+      },
+      "branches": [
+        "med_status_referenced_not_listed",
+        "resus_route_documented",
+        "b_resus_route",
+        "header_inferred",
+        "gate_documented_advice"
+      ],
+      "c_meaning_vs_step7": {
+        "match": true,
+        "n": 0,
+        "only_8b": 0,
+        "only_step7": 0
+      },
+      "code": null,
+      "contradictions": [],
+      "gate": {
+        "ok": true,
+        "status": "documented_advice"
+      },
+      "outcome": "bundle",
+      "placeholders_left": 0,
+      "resus_in_b": {
+        "reasons": [
+          "route"
+        ],
+        "shown": true
+      },
+      "run": 5,
+      "scenario": "A5",
+      "step": null,
+      "warnings": {},
+      "warnings_c": 0,
+      "warnings_located": []
+    },
+    {
+      "a5": {
+        "d1_g3_allowance_used": 0,
+        "in_block_exactly_once": 1,
+        "prose_flags": [
+          {
+            "heading": "allergies",
+            "part": "part_a",
+            "why": [
+              "cites_contradiction",
+              "notes_conflict_wording"
+            ]
+          },
+          {
+            "heading": "medication_conflicts",
+            "part": "part_b",
+            "why": [
+              "cites_contradiction",
+              "notes_conflict_wording"
+            ]
+          }
+        ],
+        "recorded": 1
+      },
+      "branches": [
+        "med_status_listed",
+        "resus_route_documented",
+        "contradiction_value_unverified",
+        "b_resus_route",
+        "ab_unverified_marker",
+        "b_continued_count",
+        "gate_documented_advice"
+      ],
+      "c_meaning_vs_step7": {
+        "match": true,
+        "n": 1,
+        "only_8b": 0,
+        "only_step7": 0
+      },
+      "code": null,
+      "contradictions": [
+        {
+          "fact_id": "contradictions.0",
+          "kind": "value_unverified"
+        }
+      ],
+      "gate": {
+        "ok": true,
+        "status": "documented_advice"
+      },
+      "outcome": "bundle",
+      "placeholders_left": 0,
+      "resus_in_b": {
+        "reasons": [
+          "route"
+        ],
+        "shown": true
+      },
+      "run": 5,
+      "scenario": "B6",
+      "step": null,
+      "warnings": {
+        "A:dose_outside_box": 1,
+        "B:dose_outside_box": 1,
+        "C:cause_added": 1,
+        "C:dose_outside_box": 1
+      },
+      "warnings_c": 2,
+      "warnings_located": [
+        [
+          "A",
+          "treatment",
+          "dose_outside_box",
+          3
+        ],
+        [
+          "B",
+          "admission_summary",
+          "dose_outside_box",
+          3
+        ],
+        [
+          "C",
+          "what_we_did",
+          "cause_added",
+          6
+        ],
+        [
+          "C",
+          "what_we_did",
+          "dose_outside_box",
+          7
+        ]
+      ]
+    },
+    {
+      "a5": {
+        "d1_g3_allowance_used": 0,
+        "in_block_exactly_once": 0,
+        "prose_flags": [],
+        "recorded": 0
+      },
+      "branches": [
+        "med_status_not_documented",
+        "resus_route_absent",
+        "language_line",
+        "b_resus_not_shown",
+        "header_inferred",
+        "gate_clean"
+      ],
+      "c_meaning_vs_step7": {
+        "match": true,
+        "n": 0,
+        "only_8b": 0,
+        "only_step7": 0
+      },
+      "code": null,
+      "contradictions": [],
+      "gate": {
+        "ok": true,
+        "status": "clean"
+      },
+      "outcome": "bundle",
+      "placeholders_left": 0,
+      "resus_in_b": {
+        "reasons": [],
+        "shown": false
+      },
+      "run": 5,
+      "scenario": "C7",
+      "step": null,
+      "warnings": {},
+      "warnings_c": 0,
+      "warnings_located": []
+    },
+    {
+      "a5": {
+        "d1_g3_allowance_used": 0,
+        "in_block_exactly_once": 0,
+        "prose_flags": [],
+        "recorded": 0
+      },
+      "branches": [
+        "med_status_listed",
+        "resus_route_documented",
+        "b_resus_route",
+        "b_continued_count",
+        "gate_documented_advice"
+      ],
+      "c_meaning_vs_step7": {
+        "match": true,
+        "n": 3,
+        "only_8b": 0,
+        "only_step7": 0
+      },
+      "code": null,
+      "contradictions": [],
+      "gate": {
+        "ok": true,
+        "status": "documented_advice"
+      },
+      "outcome": "bundle",
+      "placeholders_left": 0,
+      "resus_in_b": {
+        "reasons": [
+          "route"
+        ],
+        "shown": true
+      },
+      "run": 5,
+      "scenario": "S1",
+      "step": null,
+      "warnings": {
+        "A:dose_outside_box": 1,
+        "B:dose_outside_box": 1,
+        "C:diagnosis_unreached": 1,
+        "C:dose_outside_box": 1,
+        "C:qualifier_dropped": 1,
+        "C:test_term_added": 1
+      },
+      "warnings_c": 4,
+      "warnings_located": [
+        [
+          "A",
+          "treatment",
+          "dose_outside_box",
+          5
+        ],
+        [
+          "B",
+          "admission_summary",
+          "dose_outside_box",
+          5
+        ],
+        [
+          "C",
+          "what_we_did",
+          "test_term_added",
+          4
+        ],
+        [
+          "C",
+          "what_we_did",
+          "qualifier_dropped",
+          null
+        ],
+        [
+          "C",
+          "what_we_did",
+          "dose_outside_box",
+          8
+        ],
+        [
+          "C",
+          "why_in_hospital",
+          "diagnosis_unreached",
+          null
+        ]
+      ]
+    },
+    {
+      "a5": {
+        "d1_g3_allowance_used": 0,
+        "in_block_exactly_once": 0,
+        "prose_flags": [],
+        "recorded": 0
+      },
+      "branches": [
+        "med_status_listed",
+        "resus_route_absent",
+        "b_resus_not_shown",
+        "ab_unverified_marker",
+        "header_inferred",
+        "c_unverified_note",
+        "gate_documented_advice"
+      ],
+      "c_meaning_vs_step7": {
+        "match": true,
+        "n": 5,
+        "only_8b": 0,
+        "only_step7": 0
+      },
+      "code": null,
+      "contradictions": [],
+      "gate": {
+        "ok": true,
+        "status": "documented_advice"
+      },
+      "outcome": "bundle",
+      "placeholders_left": 0,
+      "resus_in_b": {
+        "reasons": [],
+        "shown": false
+      },
+      "run": 5,
+      "scenario": "S10",
+      "step": null,
+      "warnings": {
+        "C:cause_added": 5
+      },
+      "warnings_c": 5,
+      "warnings_located": [
+        [
+          "C",
+          "why_in_hospital",
+          "cause_added",
+          3
+        ],
+        [
+          "C",
+          "why_in_hospital",
+          "cause_added",
+          5
+        ],
+        [
+          "C",
+          "what_we_did",
+          "cause_added",
+          2
+        ],
+        [
+          "C",
+          "what_we_did",
+          "cause_added",
+          3
+        ],
+        [
+          "C",
+          "what_we_did",
+          "cause_added",
+          8
+        ]
+      ]
+    },
+    {
+      "a5": {
+        "d1_g3_allowance_used": 0,
+        "in_block_exactly_once": 0,
+        "prose_flags": [],
+        "recorded": 0
+      },
+      "branches": [
+        "med_status_referenced_not_listed",
+        "resus_route_documented",
+        "b_resus_route",
+        "ab_unverified_marker",
+        "header_inferred",
+        "c_unverified_note",
+        "gate_clean"
+      ],
+      "c_meaning_vs_step7": {
+        "match": true,
+        "n": 0,
+        "only_8b": 0,
+        "only_step7": 0
+      },
+      "code": null,
+      "contradictions": [],
+      "gate": {
+        "ok": true,
+        "status": "clean"
+      },
+      "outcome": "bundle",
+      "placeholders_left": 0,
+      "resus_in_b": {
+        "reasons": [
+          "route"
+        ],
+        "shown": true
+      },
+      "run": 5,
+      "scenario": "S11",
+      "step": null,
+      "warnings": {},
+      "warnings_c": 0,
+      "warnings_located": []
+    },
+    {
+      "a5": {
+        "d1_g3_allowance_used": 0,
+        "in_block_exactly_once": 0,
+        "prose_flags": [],
+        "recorded": 0
+      },
+      "branches": [
+        "med_status_not_documented",
+        "resus_route_documented_but_absent",
+        "b_resus_route",
+        "header_not_extracted",
+        "gate_documented_advice"
+      ],
+      "c_meaning_vs_step7": {
+        "match": true,
+        "n": 6,
+        "only_8b": 0,
+        "only_step7": 0
+      },
+      "code": null,
+      "contradictions": [],
+      "gate": {
+        "ok": true,
+        "status": "documented_advice"
+      },
+      "outcome": "bundle",
+      "placeholders_left": 0,
+      "resus_in_b": {
+        "reasons": [
+          "route"
+        ],
+        "shown": true
+      },
+      "run": 5,
+      "scenario": "S12",
+      "step": null,
+      "warnings": {
+        "C:cause_added": 1,
+        "C:certainty_added": 1,
+        "C:diagnosis_unreached": 3,
+        "C:qualifier_dropped": 1
+      },
+      "warnings_c": 6,
+      "warnings_located": [
+        [
+          "C",
+          "why_in_hospital",
+          "certainty_added",
+          7
+        ],
+        [
+          "C",
+          "what_we_did",
+          "qualifier_dropped",
+          null
+        ],
+        [
+          "C",
+          "next_steps",
+          "cause_added",
+          2
+        ],
+        [
+          "C",
+          "why_in_hospital",
+          "diagnosis_unreached",
+          null
+        ],
+        [
+          "C",
+          "why_in_hospital",
+          "diagnosis_unreached",
+          null
+        ],
+        [
+          "C",
+          "why_in_hospital",
+          "diagnosis_unreached",
+          null
+        ]
+      ]
+    },
+    {
+      "a5": {
+        "d1_g3_allowance_used": 0,
+        "in_block_exactly_once": 0,
+        "prose_flags": [],
+        "recorded": 0
+      },
+      "branches": [
+        "med_status_listed",
+        "resus_route_documented",
+        "b_resus_route",
+        "header_inferred",
+        "b_continued_count",
+        "gate_documented_advice"
+      ],
+      "c_meaning_vs_step7": {
+        "match": true,
+        "n": 6,
+        "only_8b": 0,
+        "only_step7": 0
+      },
+      "code": null,
+      "contradictions": [],
+      "gate": {
+        "ok": true,
+        "status": "documented_advice"
+      },
+      "outcome": "bundle",
+      "placeholders_left": 0,
+      "resus_in_b": {
+        "reasons": [
+          "route"
+        ],
+        "shown": true
+      },
+      "run": 5,
+      "scenario": "S13",
+      "step": null,
+      "warnings": {
+        "C:cause_added": 5,
+        "C:diagnosis_unreached": 1
+      },
+      "warnings_c": 6,
+      "warnings_located": [
+        [
+          "C",
+          "why_in_hospital",
+          "cause_added",
+          3
+        ],
+        [
+          "C",
+          "why_in_hospital",
+          "cause_added",
+          7
+        ],
+        [
+          "C",
+          "what_we_did",
+          "cause_added",
+          1
+        ],
+        [
+          "C",
+          "what_we_did",
+          "cause_added",
+          7
+        ],
+        [
+          "C",
+          "what_we_did",
+          "cause_added",
+          8
+        ],
+        [
+          "C",
+          "why_in_hospital",
+          "diagnosis_unreached",
+          null
+        ]
+      ]
+    },
+    {
+      "a5": {
+        "d1_g3_allowance_used": 0,
+        "in_block_exactly_once": 0,
+        "prose_flags": [],
+        "recorded": 0
+      },
+      "branches": [
+        "facts_held_back",
+        "med_status_listed",
+        "resus_route_documented",
+        "b_resus_route",
+        "ab_unverified_marker",
+        "header_inferred",
+        "b_continued_count",
+        "c_unverified_note",
+        "gate_clean"
+      ],
+      "c_meaning_vs_step7": {
+        "match": true,
+        "n": 4,
+        "only_8b": 0,
+        "only_step7": 0
+      },
+      "code": null,
+      "contradictions": [],
+      "gate": {
+        "ok": true,
+        "status": "clean"
+      },
+      "outcome": "bundle",
+      "placeholders_left": 0,
+      "resus_in_b": {
+        "reasons": [
+          "route"
+        ],
+        "shown": true
+      },
+      "run": 5,
+      "scenario": "S14",
+      "step": null,
+      "warnings": {
+        "C:cause_added": 1,
+        "C:certainty_added": 2,
+        "C:qualifier_dropped": 1
+      },
+      "warnings_c": 4,
+      "warnings_located": [
+        [
+          "C",
+          "what_we_did",
+          "cause_added",
+          6
+        ],
+        [
+          "C",
+          "what_we_did",
+          "certainty_added",
+          6
+        ],
+        [
+          "C",
+          "what_we_did",
+          "certainty_added",
+          9
+        ],
+        [
+          "C",
+          "what_we_did",
+          "qualifier_dropped",
+          null
+        ]
+      ]
+    },
+    {
+      "a5": {
+        "d1_g3_allowance_used": 0,
+        "in_block_exactly_once": 0,
+        "prose_flags": [],
+        "recorded": 0
+      },
+      "branches": [
+        "facts_held_back",
+        "med_status_listed",
+        "resus_route_documented_but_absent",
+        "b_resus_route",
+        "header_not_extracted",
+        "gate_clean"
+      ],
+      "c_meaning_vs_step7": {
+        "match": true,
+        "n": 1,
+        "only_8b": 0,
+        "only_step7": 0
+      },
+      "code": null,
+      "contradictions": [],
+      "gate": {
+        "ok": true,
+        "status": "clean"
+      },
+      "outcome": "bundle",
+      "placeholders_left": 0,
+      "resus_in_b": {
+        "reasons": [
+          "route"
+        ],
+        "shown": true
+      },
+      "run": 5,
+      "scenario": "S15",
+      "step": null,
+      "warnings": {
+        "C:cause_added": 1
+      },
+      "warnings_c": 1,
+      "warnings_located": [
+        [
+          "C",
+          "why_in_hospital",
+          "cause_added",
+          6
+        ]
+      ]
+    },
+    {
+      "a5": {
+        "d1_g3_allowance_used": 0,
+        "in_block_exactly_once": 0,
+        "prose_flags": [],
+        "recorded": 0
+      },
+      "branches": [
+        "med_status_referenced_not_listed",
+        "resus_route_absent",
+        "b_resus_not_shown",
+        "ab_unverified_marker",
+        "header_inferred",
+        "c_unverified_note",
+        "gate_clean"
+      ],
+      "c_meaning_vs_step7": {
+        "match": true,
+        "n": 3,
+        "only_8b": 0,
+        "only_step7": 0
+      },
+      "code": null,
+      "contradictions": [],
+      "gate": {
+        "ok": true,
+        "status": "clean"
+      },
+      "outcome": "bundle",
+      "placeholders_left": 0,
+      "resus_in_b": {
+        "reasons": [],
+        "shown": false
+      },
+      "run": 5,
+      "scenario": "S16",
+      "step": null,
+      "warnings": {
+        "C:cause_added": 1,
+        "C:certainty_added": 1,
+        "C:qualifier_dropped": 1
+      },
+      "warnings_c": 3,
+      "warnings_located": [
+        [
+          "C",
+          "what_we_did",
+          "cause_added",
+          2
+        ],
+        [
+          "C",
+          "what_we_did",
+          "certainty_added",
+          9
+        ],
+        [
+          "C",
+          "what_we_did",
+          "qualifier_dropped",
+          null
+        ]
+      ]
+    },
+    {
+      "a5": {
+        "d1_g3_allowance_used": 0,
+        "in_block_exactly_once": 0,
+        "prose_flags": [],
+        "recorded": 0
+      },
+      "branches": [
+        "med_status_listed",
+        "resus_route_documented",
+        "b_resus_route",
+        "header_not_extracted",
+        "b_continued_count",
+        "gate_clean"
+      ],
+      "c_meaning_vs_step7": {
+        "match": true,
+        "n": 1,
+        "only_8b": 0,
+        "only_step7": 0
+      },
+      "code": null,
+      "contradictions": [],
+      "gate": {
+        "ok": true,
+        "status": "clean"
+      },
+      "outcome": "bundle",
+      "placeholders_left": 0,
+      "resus_in_b": {
+        "reasons": [
+          "route"
+        ],
+        "shown": true
+      },
+      "run": 5,
+      "scenario": "S17",
+      "step": null,
+      "warnings": {
+        "C:certainty_added": 1
+      },
+      "warnings_c": 1,
+      "warnings_located": [
+        [
+          "C",
+          "next_steps",
+          "certainty_added",
+          4
+        ]
+      ]
+    },
+    {
+      "a5": {
+        "d1_g3_allowance_used": 0,
+        "in_block_exactly_once": 0,
+        "prose_flags": [],
+        "recorded": 0
+      },
+      "branches": [
+        "med_status_none_required",
+        "resus_route_absent",
+        "b_resus_not_shown",
+        "gate_clean"
+      ],
+      "c_meaning_vs_step7": {
+        "match": true,
+        "n": 2,
+        "only_8b": 0,
+        "only_step7": 0
+      },
+      "code": null,
+      "contradictions": [],
+      "gate": {
+        "ok": true,
+        "status": "clean"
+      },
+      "outcome": "bundle",
+      "placeholders_left": 0,
+      "resus_in_b": {
+        "reasons": [],
+        "shown": false
+      },
+      "run": 5,
+      "scenario": "S18",
+      "step": null,
+      "warnings": {
+        "C:cause_added": 1,
+        "C:diagnosis_unreached": 1
+      },
+      "warnings_c": 2,
+      "warnings_located": [
+        [
+          "C",
+          "what_we_did",
+          "cause_added",
+          6
+        ],
+        [
+          "C",
+          "why_in_hospital",
+          "diagnosis_unreached",
+          null
+        ]
+      ]
+    },
+    {
+      "a5": {
+        "d1_g3_allowance_used": 0,
+        "in_block_exactly_once": 0,
+        "prose_flags": [],
+        "recorded": 0
+      },
+      "branches": [
+        "med_status_listed",
+        "resus_route_documented",
+        "b_resus_route",
+        "gate_documented_advice"
+      ],
+      "c_meaning_vs_step7": {
+        "match": true,
+        "n": 1,
+        "only_8b": 0,
+        "only_step7": 0
+      },
+      "code": null,
+      "contradictions": [],
+      "gate": {
+        "ok": true,
+        "status": "documented_advice"
+      },
+      "outcome": "bundle",
+      "placeholders_left": 0,
+      "resus_in_b": {
+        "reasons": [
+          "route"
+        ],
+        "shown": true
+      },
+      "run": 5,
+      "scenario": "S2",
+      "step": null,
+      "warnings": {
+        "C:qualifier_dropped": 1
+      },
+      "warnings_c": 1,
+      "warnings_located": [
+        [
+          "C",
+          "next_steps",
+          "qualifier_dropped",
+          null
+        ]
+      ]
+    },
+    {
+      "a5": {
+        "d1_g3_allowance_used": 0,
+        "in_block_exactly_once": 0,
+        "prose_flags": [],
+        "recorded": 0
+      },
+      "branches": [
+        "med_status_listed",
+        "resus_route_absent",
+        "b_resus_not_shown",
+        "gate_documented_advice"
+      ],
+      "c_meaning_vs_step7": {
+        "match": true,
+        "n": 2,
+        "only_8b": 0,
+        "only_step7": 0
+      },
+      "code": null,
+      "contradictions": [],
+      "gate": {
+        "ok": true,
+        "status": "documented_advice"
+      },
+      "outcome": "bundle",
+      "placeholders_left": 0,
+      "resus_in_b": {
+        "reasons": [],
+        "shown": false
+      },
+      "run": 5,
+      "scenario": "S3",
+      "step": null,
+      "warnings": {
+        "A:dose_outside_box": 1,
+        "B:dose_outside_box": 1,
+        "C:certainty_added": 1,
+        "C:diagnosis_unreached": 1
+      },
+      "warnings_c": 2,
+      "warnings_located": [
+        [
+          "A",
+          "treatment",
+          "dose_outside_box",
+          1
+        ],
+        [
+          "B",
+          "admission_summary",
+          "dose_outside_box",
+          1
+        ],
+        [
+          "C",
+          "what_we_did",
+          "certainty_added",
+          8
+        ],
+        [
+          "C",
+          "why_in_hospital",
+          "diagnosis_unreached",
+          null
+        ]
+      ]
+    },
+    {
+      "a5": {
+        "d1_g3_allowance_used": 0,
+        "in_block_exactly_once": 0,
+        "prose_flags": [],
+        "recorded": 0
+      },
+      "branches": [
+        "med_status_none_required",
+        "resus_route_absent",
+        "b_resus_not_shown",
+        "gate_documented_advice"
+      ],
+      "c_meaning_vs_step7": {
+        "match": true,
+        "n": 4,
+        "only_8b": 0,
+        "only_step7": 0
+      },
+      "code": null,
+      "contradictions": [],
+      "gate": {
+        "ok": true,
+        "status": "documented_advice"
+      },
+      "outcome": "bundle",
+      "placeholders_left": 0,
+      "resus_in_b": {
+        "reasons": [],
+        "shown": false
+      },
+      "run": 5,
+      "scenario": "S4",
+      "step": null,
+      "warnings": {
+        "C:cause_added": 3,
+        "C:certainty_added": 1
+      },
+      "warnings_c": 4,
+      "warnings_located": [
+        [
+          "C",
+          "why_in_hospital",
+          "cause_added",
+          8
+        ],
+        [
+          "C",
+          "what_we_did",
+          "cause_added",
+          2
+        ],
+        [
+          "C",
+          "what_we_did",
+          "certainty_added",
+          3
+        ],
+        [
+          "C",
+          "what_we_did",
+          "cause_added",
+          4
+        ]
+      ]
+    },
+    {
+      "a5": {
+        "d1_g3_allowance_used": 0,
+        "in_block_exactly_once": 0,
+        "prose_flags": [],
+        "recorded": 0
+      },
+      "branches": [
+        "med_status_not_documented",
+        "resus_route_absent",
+        "b_resus_not_shown",
+        "ab_unverified_marker",
+        "c_unverified_note",
+        "gate_documented_advice"
+      ],
+      "c_meaning_vs_step7": {
+        "match": true,
+        "n": 0,
+        "only_8b": 0,
+        "only_step7": 0
+      },
+      "code": null,
+      "contradictions": [],
+      "gate": {
+        "ok": true,
+        "status": "documented_advice"
+      },
+      "outcome": "bundle",
+      "placeholders_left": 0,
+      "resus_in_b": {
+        "reasons": [],
+        "shown": false
+      },
+      "run": 5,
+      "scenario": "S8",
+      "step": null,
+      "warnings": {},
+      "warnings_c": 0,
+      "warnings_located": []
+    },
+    {
+      "a5": {
+        "d1_g3_allowance_used": 0,
+        "in_block_exactly_once": 0,
+        "prose_flags": [],
+        "recorded": 0
+      },
+      "branches": [
+        "med_status_not_documented",
+        "resus_route_absent",
+        "b_resus_not_shown",
+        "header_inferred",
+        "gate_clean"
+      ],
+      "c_meaning_vs_step7": {
+        "match": true,
+        "n": 0,
+        "only_8b": 0,
+        "only_step7": 0
+      },
+      "code": null,
+      "contradictions": [],
+      "gate": {
+        "ok": true,
+        "status": "clean"
+      },
+      "outcome": "bundle",
+      "placeholders_left": 0,
+      "resus_in_b": {
+        "reasons": [],
+        "shown": false
+      },
+      "run": 5,
+      "scenario": "S9",
+      "step": null,
+      "warnings": {},
+      "warnings_c": 0,
+      "warnings_located": []
+    }
+  ],
+  "summary": {
+    "a5": {
+      "d1_g3_allowance_used": 0,
+      "d1_g3_records": [],
+      "in_block_exactly_once": 6,
+      "prose_flags": 13,
+      "prose_flags_by_place": {
+        "part_a/allergies": 5,
+        "part_a/medication_conflicts": 3,
+        "part_b/medication_conflicts": 5
+      },
+      "recorded": 6
+    },
+    "branches": {
+      "ab_unverified_marker": 26,
+      "b_continued_count": 27,
+      "b_resus_not_shown": 40,
+      "b_resus_route": 50,
+      "c_unverified_note": 19,
+      "contradiction_quotes": 2,
+      "contradiction_value_unverified": 3,
+      "facts_held_back": 6,
+      "gate_clean": 40,
+      "gate_documented_advice": 50,
+      "header_inferred": 47,
+      "header_not_extracted": 15,
+      "language_line": 5,
+      "med_status_listed": 45,
+      "med_status_none_required": 10,
+      "med_status_not_documented": 20,
+      "med_status_referenced_not_listed": 15,
+      "resus_route_absent": 40,
+      "resus_route_documented": 44,
+      "resus_route_documented_but_absent": 6
+    },
+    "c_meaning_vs_step7": {
+      "match": 90,
+      "only_8b": 0,
+      "only_step7": 0,
+      "records": 90
+    },
+    "gate": {
+      "clean": 40,
+      "documented_advice": 50
+    },
+    "outcomes": {
+      "bundle": 90
+    },
+    "placeholders_left": 0,
+    "records": 90,
+    "rejections": {},
+    "warnings": {
+      "A:dose_outside_box": 18,
+      "A:drug_not_in_cited_facts": 1,
+      "B:dose_outside_box": 18,
+      "B:drug_not_in_cited_facts": 1,
+      "C:cause_added": 90,
+      "C:certainty_added": 35,
+      "C:diagnosis_unreached": 16,
+      "C:dose_outside_box": 10,
+      "C:qualifier_dropped": 27,
+      "C:test_term_added": 16
+    }
+  }
+}

@@ -1,0 +1,2983 @@
+{
+  "ab_only": true,
+  "batch": "w6-pipeline-e09-m01-c02-x5",
+  "results": [
+    {
+      "a5": {
+        "d1_g3_allowance_used": 0,
+        "in_block_exactly_once": 0,
+        "prose_flags": [],
+        "recorded": 0
+      },
+      "branches": [
+        "med_status_referenced_not_listed",
+        "resus_route_documented",
+        "b_resus_route",
+        "header_inferred"
+      ],
+      "code": null,
+      "contradictions": [],
+      "outcome": "candidates_ab",
+      "resus_in_b": {
+        "reasons": [
+          "route"
+        ],
+        "shown": true
+      },
+      "run": 1,
+      "scenario": "A5",
+      "step": null,
+      "warnings": {},
+      "warnings_located": []
+    },
+    {
+      "a5": {
+        "d1_g3_allowance_used": 0,
+        "in_block_exactly_once": 1,
+        "prose_flags": [
+          {
+            "heading": "allergies",
+            "part": "part_a",
+            "why": [
+              "cites_contradiction",
+              "notes_conflict_wording"
+            ]
+          },
+          {
+            "heading": "medication_conflicts",
+            "part": "part_b",
+            "why": [
+              "cites_contradiction",
+              "notes_conflict_wording"
+            ]
+          }
+        ],
+        "recorded": 1
+      },
+      "branches": [
+        "med_status_listed",
+        "resus_route_documented",
+        "contradiction_value_unverified",
+        "b_resus_route",
+        "ab_unverified_marker",
+        "b_continued_count"
+      ],
+      "code": null,
+      "contradictions": [
+        {
+          "fact_id": "contradictions.0",
+          "kind": "value_unverified"
+        }
+      ],
+      "outcome": "candidates_ab",
+      "resus_in_b": {
+        "reasons": [
+          "route"
+        ],
+        "shown": true
+      },
+      "run": 1,
+      "scenario": "B6",
+      "step": null,
+      "warnings": {
+        "A:dose_outside_box": 1,
+        "B:dose_outside_box": 1
+      },
+      "warnings_located": [
+        [
+          "A",
+          "treatment",
+          "dose_outside_box",
+          3
+        ],
+        [
+          "B",
+          "admission_summary",
+          "dose_outside_box",
+          3
+        ]
+      ]
+    },
+    {
+      "a5": {
+        "d1_g3_allowance_used": 0,
+        "in_block_exactly_once": 0,
+        "prose_flags": [],
+        "recorded": 0
+      },
+      "branches": [
+        "med_status_not_documented",
+        "resus_route_absent",
+        "b_resus_not_shown",
+        "header_inferred"
+      ],
+      "code": null,
+      "contradictions": [],
+      "outcome": "candidates_ab",
+      "resus_in_b": {
+        "reasons": [],
+        "shown": false
+      },
+      "run": 1,
+      "scenario": "C7",
+      "step": null,
+      "warnings": {},
+      "warnings_located": []
+    },
+    {
+      "a5": {
+        "d1_g3_allowance_used": 0,
+        "in_block_exactly_once": 0,
+        "prose_flags": [],
+        "recorded": 0
+      },
+      "branches": [
+        "med_status_listed",
+        "resus_route_documented",
+        "b_resus_route",
+        "b_continued_count"
+      ],
+      "code": null,
+      "contradictions": [],
+      "outcome": "candidates_ab",
+      "resus_in_b": {
+        "reasons": [
+          "route"
+        ],
+        "shown": true
+      },
+      "run": 1,
+      "scenario": "S1",
+      "step": null,
+      "warnings": {
+        "A:dose_outside_box": 1,
+        "B:dose_outside_box": 1
+      },
+      "warnings_located": [
+        [
+          "A",
+          "treatment",
+          "dose_outside_box",
+          5
+        ],
+        [
+          "B",
+          "admission_summary",
+          "dose_outside_box",
+          5
+        ]
+      ]
+    },
+    {
+      "a5": {
+        "d1_g3_allowance_used": 0,
+        "in_block_exactly_once": 0,
+        "prose_flags": [],
+        "recorded": 0
+      },
+      "branches": [
+        "med_status_listed",
+        "resus_route_absent",
+        "b_resus_not_shown",
+        "ab_unverified_marker",
+        "header_inferred"
+      ],
+      "code": null,
+      "contradictions": [],
+      "outcome": "candidates_ab",
+      "resus_in_b": {
+        "reasons": [],
+        "shown": false
+      },
+      "run": 1,
+      "scenario": "S10",
+      "step": null,
+      "warnings": {},
+      "warnings_located": []
+    },
+    {
+      "a5": {
+        "d1_g3_allowance_used": 0,
+        "in_block_exactly_once": 0,
+        "prose_flags": [],
+        "recorded": 0
+      },
+      "branches": [
+        "med_status_referenced_not_listed",
+        "resus_route_documented",
+        "b_resus_route",
+        "ab_unverified_marker",
+        "header_inferred"
+      ],
+      "code": null,
+      "contradictions": [],
+      "outcome": "candidates_ab",
+      "resus_in_b": {
+        "reasons": [
+          "route"
+        ],
+        "shown": true
+      },
+      "run": 1,
+      "scenario": "S11",
+      "step": null,
+      "warnings": {},
+      "warnings_located": []
+    },
+    {
+      "a5": {
+        "d1_g3_allowance_used": 0,
+        "in_block_exactly_once": 0,
+        "prose_flags": [],
+        "recorded": 0
+      },
+      "branches": [
+        "med_status_not_documented",
+        "resus_route_documented_but_absent",
+        "b_resus_route",
+        "header_not_extracted"
+      ],
+      "code": null,
+      "contradictions": [],
+      "outcome": "candidates_ab",
+      "resus_in_b": {
+        "reasons": [
+          "route"
+        ],
+        "shown": true
+      },
+      "run": 1,
+      "scenario": "S12",
+      "step": null,
+      "warnings": {},
+      "warnings_located": []
+    },
+    {
+      "a5": {
+        "d1_g3_allowance_used": 0,
+        "in_block_exactly_once": 0,
+        "prose_flags": [],
+        "recorded": 0
+      },
+      "branches": [
+        "med_status_listed",
+        "resus_route_documented",
+        "b_resus_route",
+        "header_inferred",
+        "b_continued_count"
+      ],
+      "code": null,
+      "contradictions": [],
+      "outcome": "candidates_ab",
+      "resus_in_b": {
+        "reasons": [
+          "route"
+        ],
+        "shown": true
+      },
+      "run": 1,
+      "scenario": "S13",
+      "step": null,
+      "warnings": {},
+      "warnings_located": []
+    },
+    {
+      "a5": {
+        "d1_g3_allowance_used": 0,
+        "in_block_exactly_once": 0,
+        "prose_flags": [],
+        "recorded": 0
+      },
+      "branches": [
+        "med_status_listed",
+        "resus_route_documented",
+        "b_resus_route",
+        "header_inferred",
+        "b_continued_count"
+      ],
+      "code": null,
+      "contradictions": [],
+      "outcome": "candidates_ab",
+      "resus_in_b": {
+        "reasons": [
+          "route"
+        ],
+        "shown": true
+      },
+      "run": 1,
+      "scenario": "S14",
+      "step": null,
+      "warnings": {},
+      "warnings_located": []
+    },
+    {
+      "a5": {
+        "d1_g3_allowance_used": 0,
+        "in_block_exactly_once": 0,
+        "prose_flags": [],
+        "recorded": 0
+      },
+      "branches": [
+        "facts_held_back",
+        "med_status_listed",
+        "resus_route_documented",
+        "b_resus_route",
+        "ab_unverified_marker",
+        "header_not_extracted"
+      ],
+      "code": null,
+      "contradictions": [],
+      "outcome": "candidates_ab",
+      "resus_in_b": {
+        "reasons": [
+          "route"
+        ],
+        "shown": true
+      },
+      "run": 1,
+      "scenario": "S15",
+      "step": null,
+      "warnings": {},
+      "warnings_located": []
+    },
+    {
+      "a5": {
+        "d1_g3_allowance_used": 0,
+        "in_block_exactly_once": 0,
+        "prose_flags": [],
+        "recorded": 0
+      },
+      "branches": [
+        "med_status_referenced_not_listed",
+        "resus_route_absent",
+        "b_resus_not_shown",
+        "ab_unverified_marker",
+        "header_not_extracted",
+        "header_inferred"
+      ],
+      "code": null,
+      "contradictions": [],
+      "outcome": "candidates_ab",
+      "resus_in_b": {
+        "reasons": [],
+        "shown": false
+      },
+      "run": 1,
+      "scenario": "S16",
+      "step": null,
+      "warnings": {},
+      "warnings_located": []
+    },
+    {
+      "a5": {
+        "d1_g3_allowance_used": 0,
+        "in_block_exactly_once": 0,
+        "prose_flags": [],
+        "recorded": 0
+      },
+      "branches": [
+        "med_status_listed",
+        "resus_route_documented",
+        "b_resus_route",
+        "ab_unverified_marker",
+        "header_not_extracted",
+        "b_continued_count"
+      ],
+      "code": null,
+      "contradictions": [],
+      "outcome": "candidates_ab",
+      "resus_in_b": {
+        "reasons": [
+          "route"
+        ],
+        "shown": true
+      },
+      "run": 1,
+      "scenario": "S17",
+      "step": null,
+      "warnings": {},
+      "warnings_located": []
+    },
+    {
+      "a5": {
+        "d1_g3_allowance_used": 0,
+        "in_block_exactly_once": 0,
+        "prose_flags": [],
+        "recorded": 0
+      },
+      "branches": [
+        "med_status_none_required",
+        "resus_route_absent",
+        "b_resus_not_shown",
+        "ab_unverified_marker"
+      ],
+      "code": null,
+      "contradictions": [],
+      "outcome": "candidates_ab",
+      "resus_in_b": {
+        "reasons": [],
+        "shown": false
+      },
+      "run": 1,
+      "scenario": "S18",
+      "step": null,
+      "warnings": {},
+      "warnings_located": []
+    },
+    {
+      "a5": {
+        "d1_g3_allowance_used": 0,
+        "in_block_exactly_once": 0,
+        "prose_flags": [],
+        "recorded": 0
+      },
+      "branches": [
+        "med_status_listed",
+        "resus_route_documented",
+        "b_resus_route"
+      ],
+      "code": null,
+      "contradictions": [],
+      "outcome": "candidates_ab",
+      "resus_in_b": {
+        "reasons": [
+          "route"
+        ],
+        "shown": true
+      },
+      "run": 1,
+      "scenario": "S2",
+      "step": null,
+      "warnings": {},
+      "warnings_located": []
+    },
+    {
+      "a5": {
+        "d1_g3_allowance_used": 0,
+        "in_block_exactly_once": 0,
+        "prose_flags": [],
+        "recorded": 0
+      },
+      "branches": [
+        "med_status_listed",
+        "resus_route_absent",
+        "b_resus_not_shown",
+        "ab_unverified_marker",
+        "header_inferred"
+      ],
+      "code": null,
+      "contradictions": [],
+      "outcome": "candidates_ab",
+      "resus_in_b": {
+        "reasons": [],
+        "shown": false
+      },
+      "run": 1,
+      "scenario": "S3",
+      "step": null,
+      "warnings": {
+        "A:dose_outside_box": 1,
+        "B:dose_outside_box": 1
+      },
+      "warnings_located": [
+        [
+          "A",
+          "treatment",
+          "dose_outside_box",
+          1
+        ],
+        [
+          "B",
+          "admission_summary",
+          "dose_outside_box",
+          3
+        ]
+      ]
+    },
+    {
+      "a5": {
+        "d1_g3_allowance_used": 0,
+        "in_block_exactly_once": 0,
+        "prose_flags": [],
+        "recorded": 0
+      },
+      "branches": [
+        "med_status_none_required",
+        "resus_route_absent",
+        "b_resus_not_shown",
+        "ab_unverified_marker"
+      ],
+      "code": null,
+      "contradictions": [],
+      "outcome": "candidates_ab",
+      "resus_in_b": {
+        "reasons": [],
+        "shown": false
+      },
+      "run": 1,
+      "scenario": "S4",
+      "step": null,
+      "warnings": {},
+      "warnings_located": []
+    },
+    {
+      "a5": {
+        "d1_g3_allowance_used": 0,
+        "in_block_exactly_once": 0,
+        "prose_flags": [],
+        "recorded": 0
+      },
+      "branches": [
+        "med_status_not_documented",
+        "resus_route_absent",
+        "b_resus_not_shown",
+        "ab_unverified_marker"
+      ],
+      "code": null,
+      "contradictions": [],
+      "outcome": "candidates_ab",
+      "resus_in_b": {
+        "reasons": [],
+        "shown": false
+      },
+      "run": 1,
+      "scenario": "S8",
+      "step": null,
+      "warnings": {},
+      "warnings_located": []
+    },
+    {
+      "a5": {
+        "d1_g3_allowance_used": 0,
+        "in_block_exactly_once": 0,
+        "prose_flags": [],
+        "recorded": 0
+      },
+      "branches": [
+        "med_status_not_documented",
+        "resus_route_absent",
+        "b_resus_not_shown",
+        "header_inferred"
+      ],
+      "code": null,
+      "contradictions": [],
+      "outcome": "candidates_ab",
+      "resus_in_b": {
+        "reasons": [],
+        "shown": false
+      },
+      "run": 1,
+      "scenario": "S9",
+      "step": null,
+      "warnings": {},
+      "warnings_located": []
+    },
+    {
+      "a5": {
+        "d1_g3_allowance_used": 0,
+        "in_block_exactly_once": 0,
+        "prose_flags": [],
+        "recorded": 0
+      },
+      "branches": [
+        "med_status_referenced_not_listed",
+        "resus_route_documented",
+        "b_resus_route",
+        "header_inferred"
+      ],
+      "code": null,
+      "contradictions": [],
+      "outcome": "candidates_ab",
+      "resus_in_b": {
+        "reasons": [
+          "route"
+        ],
+        "shown": true
+      },
+      "run": 2,
+      "scenario": "A5",
+      "step": null,
+      "warnings": {},
+      "warnings_located": []
+    },
+    {
+      "a5": {
+        "d1_g3_allowance_used": 0,
+        "in_block_exactly_once": 1,
+        "prose_flags": [
+          {
+            "heading": "medication_conflicts",
+            "part": "part_a",
+            "why": [
+              "cites_contradiction",
+              "notes_conflict_wording"
+            ]
+          },
+          {
+            "heading": "allergies",
+            "part": "part_a",
+            "why": [
+              "notes_conflict_wording"
+            ]
+          },
+          {
+            "heading": "medication_conflicts",
+            "part": "part_b",
+            "why": [
+              "cites_contradiction",
+              "notes_conflict_wording"
+            ]
+          }
+        ],
+        "recorded": 1
+      },
+      "branches": [
+        "med_status_listed",
+        "resus_route_documented",
+        "contradiction_quotes",
+        "b_resus_route",
+        "b_continued_count"
+      ],
+      "code": null,
+      "contradictions": [
+        {
+          "fact_id": "contradictions.0",
+          "kind": "quotes"
+        }
+      ],
+      "outcome": "candidates_ab",
+      "resus_in_b": {
+        "reasons": [
+          "route"
+        ],
+        "shown": true
+      },
+      "run": 2,
+      "scenario": "B6",
+      "step": null,
+      "warnings": {
+        "A:dose_outside_box": 2,
+        "B:dose_outside_box": 2
+      },
+      "warnings_located": [
+        [
+          "A",
+          "treatment",
+          "dose_outside_box",
+          3
+        ],
+        [
+          "A",
+          "medication_conflicts",
+          "dose_outside_box",
+          1
+        ],
+        [
+          "B",
+          "admission_summary",
+          "dose_outside_box",
+          3
+        ],
+        [
+          "B",
+          "medication_conflicts",
+          "dose_outside_box",
+          1
+        ]
+      ]
+    },
+    {
+      "a5": {
+        "d1_g3_allowance_used": 0,
+        "in_block_exactly_once": 0,
+        "prose_flags": [],
+        "recorded": 0
+      },
+      "branches": [
+        "med_status_not_documented",
+        "resus_route_absent",
+        "b_resus_not_shown",
+        "header_inferred"
+      ],
+      "code": null,
+      "contradictions": [],
+      "outcome": "candidates_ab",
+      "resus_in_b": {
+        "reasons": [],
+        "shown": false
+      },
+      "run": 2,
+      "scenario": "C7",
+      "step": null,
+      "warnings": {},
+      "warnings_located": []
+    },
+    {
+      "a5": {
+        "d1_g3_allowance_used": 0,
+        "in_block_exactly_once": 0,
+        "prose_flags": [],
+        "recorded": 0
+      },
+      "branches": [
+        "med_status_listed",
+        "resus_route_documented",
+        "b_resus_route",
+        "b_continued_count"
+      ],
+      "code": null,
+      "contradictions": [],
+      "outcome": "candidates_ab",
+      "resus_in_b": {
+        "reasons": [
+          "route"
+        ],
+        "shown": true
+      },
+      "run": 2,
+      "scenario": "S1",
+      "step": null,
+      "warnings": {
+        "A:dose_outside_box": 1,
+        "B:dose_outside_box": 1
+      },
+      "warnings_located": [
+        [
+          "A",
+          "treatment",
+          "dose_outside_box",
+          5
+        ],
+        [
+          "B",
+          "admission_summary",
+          "dose_outside_box",
+          5
+        ]
+      ]
+    },
+    {
+      "a5": {
+        "d1_g3_allowance_used": 0,
+        "in_block_exactly_once": 0,
+        "prose_flags": [],
+        "recorded": 0
+      },
+      "branches": [
+        "med_status_listed",
+        "resus_route_absent",
+        "b_resus_not_shown",
+        "ab_unverified_marker",
+        "header_inferred"
+      ],
+      "code": null,
+      "contradictions": [],
+      "outcome": "candidates_ab",
+      "resus_in_b": {
+        "reasons": [],
+        "shown": false
+      },
+      "run": 2,
+      "scenario": "S10",
+      "step": null,
+      "warnings": {},
+      "warnings_located": []
+    },
+    {
+      "a5": {
+        "d1_g3_allowance_used": 0,
+        "in_block_exactly_once": 0,
+        "prose_flags": [],
+        "recorded": 0
+      },
+      "branches": [
+        "med_status_referenced_not_listed",
+        "resus_route_documented",
+        "b_resus_route",
+        "ab_unverified_marker",
+        "header_not_extracted",
+        "header_inferred"
+      ],
+      "code": null,
+      "contradictions": [],
+      "outcome": "candidates_ab",
+      "resus_in_b": {
+        "reasons": [
+          "route"
+        ],
+        "shown": true
+      },
+      "run": 2,
+      "scenario": "S11",
+      "step": null,
+      "warnings": {},
+      "warnings_located": []
+    },
+    {
+      "a5": {
+        "d1_g3_allowance_used": 0,
+        "in_block_exactly_once": 0,
+        "prose_flags": [],
+        "recorded": 0
+      },
+      "branches": [
+        "med_status_not_documented",
+        "resus_route_documented_but_absent",
+        "b_resus_route",
+        "header_not_extracted"
+      ],
+      "code": null,
+      "contradictions": [],
+      "outcome": "candidates_ab",
+      "resus_in_b": {
+        "reasons": [
+          "route"
+        ],
+        "shown": true
+      },
+      "run": 2,
+      "scenario": "S12",
+      "step": null,
+      "warnings": {},
+      "warnings_located": []
+    },
+    {
+      "a5": {
+        "d1_g3_allowance_used": 0,
+        "in_block_exactly_once": 0,
+        "prose_flags": [],
+        "recorded": 0
+      },
+      "branches": [
+        "med_status_listed",
+        "resus_route_documented",
+        "b_resus_route",
+        "header_inferred",
+        "b_continued_count"
+      ],
+      "code": null,
+      "contradictions": [],
+      "outcome": "candidates_ab",
+      "resus_in_b": {
+        "reasons": [
+          "route"
+        ],
+        "shown": true
+      },
+      "run": 2,
+      "scenario": "S13",
+      "step": null,
+      "warnings": {},
+      "warnings_located": []
+    },
+    {
+      "a5": {
+        "d1_g3_allowance_used": 0,
+        "in_block_exactly_once": 0,
+        "prose_flags": [],
+        "recorded": 0
+      },
+      "branches": [
+        "med_status_listed",
+        "resus_route_documented",
+        "b_resus_route",
+        "header_inferred",
+        "b_continued_count"
+      ],
+      "code": null,
+      "contradictions": [],
+      "outcome": "candidates_ab",
+      "resus_in_b": {
+        "reasons": [
+          "route"
+        ],
+        "shown": true
+      },
+      "run": 2,
+      "scenario": "S14",
+      "step": null,
+      "warnings": {},
+      "warnings_located": []
+    },
+    {
+      "a5": {
+        "d1_g3_allowance_used": 0,
+        "in_block_exactly_once": 0,
+        "prose_flags": [],
+        "recorded": 0
+      },
+      "branches": [
+        "facts_held_back",
+        "med_status_listed",
+        "resus_route_documented",
+        "b_resus_route",
+        "header_not_extracted"
+      ],
+      "code": null,
+      "contradictions": [],
+      "outcome": "candidates_ab",
+      "resus_in_b": {
+        "reasons": [
+          "route"
+        ],
+        "shown": true
+      },
+      "run": 2,
+      "scenario": "S15",
+      "step": null,
+      "warnings": {},
+      "warnings_located": []
+    },
+    {
+      "a5": {
+        "d1_g3_allowance_used": 0,
+        "in_block_exactly_once": 0,
+        "prose_flags": [],
+        "recorded": 0
+      },
+      "branches": [
+        "med_status_referenced_not_listed",
+        "resus_route_absent",
+        "b_resus_not_shown",
+        "ab_unverified_marker",
+        "header_inferred"
+      ],
+      "code": null,
+      "contradictions": [],
+      "outcome": "candidates_ab",
+      "resus_in_b": {
+        "reasons": [],
+        "shown": false
+      },
+      "run": 2,
+      "scenario": "S16",
+      "step": null,
+      "warnings": {},
+      "warnings_located": []
+    },
+    {
+      "a5": {
+        "d1_g3_allowance_used": 0,
+        "in_block_exactly_once": 0,
+        "prose_flags": [],
+        "recorded": 0
+      },
+      "branches": [
+        "med_status_listed",
+        "resus_route_documented",
+        "b_resus_route",
+        "header_not_extracted",
+        "b_continued_count"
+      ],
+      "code": null,
+      "contradictions": [],
+      "outcome": "candidates_ab",
+      "resus_in_b": {
+        "reasons": [
+          "route"
+        ],
+        "shown": true
+      },
+      "run": 2,
+      "scenario": "S17",
+      "step": null,
+      "warnings": {
+        "B:drug_not_in_cited_facts": 1
+      },
+      "warnings_located": [
+        [
+          "B",
+          "admission_summary",
+          "drug_not_in_cited_facts",
+          7
+        ]
+      ]
+    },
+    {
+      "a5": {
+        "d1_g3_allowance_used": 0,
+        "in_block_exactly_once": 0,
+        "prose_flags": [],
+        "recorded": 0
+      },
+      "branches": [
+        "med_status_none_required",
+        "resus_route_absent",
+        "b_resus_not_shown"
+      ],
+      "code": null,
+      "contradictions": [],
+      "outcome": "candidates_ab",
+      "resus_in_b": {
+        "reasons": [],
+        "shown": false
+      },
+      "run": 2,
+      "scenario": "S18",
+      "step": null,
+      "warnings": {},
+      "warnings_located": []
+    },
+    {
+      "a5": {
+        "d1_g3_allowance_used": 0,
+        "in_block_exactly_once": 0,
+        "prose_flags": [],
+        "recorded": 0
+      },
+      "branches": [
+        "med_status_listed",
+        "resus_route_documented",
+        "b_resus_route"
+      ],
+      "code": null,
+      "contradictions": [],
+      "outcome": "candidates_ab",
+      "resus_in_b": {
+        "reasons": [
+          "route"
+        ],
+        "shown": true
+      },
+      "run": 2,
+      "scenario": "S2",
+      "step": null,
+      "warnings": {},
+      "warnings_located": []
+    },
+    {
+      "a5": {
+        "d1_g3_allowance_used": 0,
+        "in_block_exactly_once": 0,
+        "prose_flags": [],
+        "recorded": 0
+      },
+      "branches": [
+        "med_status_listed",
+        "resus_route_absent",
+        "b_resus_not_shown",
+        "ab_unverified_marker",
+        "header_inferred"
+      ],
+      "code": null,
+      "contradictions": [],
+      "outcome": "candidates_ab",
+      "resus_in_b": {
+        "reasons": [],
+        "shown": false
+      },
+      "run": 2,
+      "scenario": "S3",
+      "step": null,
+      "warnings": {
+        "A:dose_outside_box": 1,
+        "B:dose_outside_box": 1
+      },
+      "warnings_located": [
+        [
+          "A",
+          "treatment",
+          "dose_outside_box",
+          1
+        ],
+        [
+          "B",
+          "admission_summary",
+          "dose_outside_box",
+          4
+        ]
+      ]
+    },
+    {
+      "a5": {
+        "d1_g3_allowance_used": 0,
+        "in_block_exactly_once": 0,
+        "prose_flags": [],
+        "recorded": 0
+      },
+      "branches": [
+        "med_status_none_required",
+        "resus_route_absent",
+        "b_resus_not_shown",
+        "ab_unverified_marker"
+      ],
+      "code": null,
+      "contradictions": [],
+      "outcome": "candidates_ab",
+      "resus_in_b": {
+        "reasons": [],
+        "shown": false
+      },
+      "run": 2,
+      "scenario": "S4",
+      "step": null,
+      "warnings": {},
+      "warnings_located": []
+    },
+    {
+      "a5": {
+        "d1_g3_allowance_used": 0,
+        "in_block_exactly_once": 0,
+        "prose_flags": [],
+        "recorded": 0
+      },
+      "branches": [
+        "med_status_not_documented",
+        "resus_route_absent",
+        "b_resus_not_shown",
+        "ab_unverified_marker"
+      ],
+      "code": null,
+      "contradictions": [],
+      "outcome": "candidates_ab",
+      "resus_in_b": {
+        "reasons": [],
+        "shown": false
+      },
+      "run": 2,
+      "scenario": "S8",
+      "step": null,
+      "warnings": {},
+      "warnings_located": []
+    },
+    {
+      "a5": {
+        "d1_g3_allowance_used": 0,
+        "in_block_exactly_once": 0,
+        "prose_flags": [],
+        "recorded": 0
+      },
+      "branches": [
+        "med_status_not_documented",
+        "resus_route_absent",
+        "b_resus_not_shown",
+        "header_inferred"
+      ],
+      "code": null,
+      "contradictions": [],
+      "outcome": "candidates_ab",
+      "resus_in_b": {
+        "reasons": [],
+        "shown": false
+      },
+      "run": 2,
+      "scenario": "S9",
+      "step": null,
+      "warnings": {},
+      "warnings_located": []
+    },
+    {
+      "a5": {
+        "d1_g3_allowance_used": 0,
+        "in_block_exactly_once": 0,
+        "prose_flags": [],
+        "recorded": 0
+      },
+      "branches": [
+        "med_status_referenced_not_listed",
+        "resus_route_documented",
+        "b_resus_route",
+        "header_inferred"
+      ],
+      "code": null,
+      "contradictions": [],
+      "outcome": "candidates_ab",
+      "resus_in_b": {
+        "reasons": [
+          "route"
+        ],
+        "shown": true
+      },
+      "run": 3,
+      "scenario": "A5",
+      "step": null,
+      "warnings": {},
+      "warnings_located": []
+    },
+    {
+      "a5": {
+        "d1_g3_allowance_used": 0,
+        "in_block_exactly_once": 2,
+        "prose_flags": [
+          {
+            "heading": "medication_conflicts",
+            "part": "part_a",
+            "why": [
+              "cites_contradiction",
+              "notes_conflict_wording"
+            ]
+          },
+          {
+            "heading": "allergies",
+            "part": "part_a",
+            "why": [
+              "cites_contradiction",
+              "notes_conflict_wording"
+            ]
+          },
+          {
+            "heading": "medication_conflicts",
+            "part": "part_b",
+            "why": [
+              "cites_contradiction",
+              "notes_conflict_wording"
+            ]
+          }
+        ],
+        "recorded": 2
+      },
+      "branches": [
+        "med_status_listed",
+        "resus_route_documented",
+        "contradiction_quotes",
+        "contradiction_value_unverified",
+        "b_resus_route",
+        "ab_unverified_marker",
+        "b_continued_count"
+      ],
+      "code": null,
+      "contradictions": [
+        {
+          "fact_id": "contradictions.0",
+          "kind": "value_unverified"
+        },
+        {
+          "fact_id": "contradictions.1",
+          "kind": "quotes"
+        }
+      ],
+      "outcome": "candidates_ab",
+      "resus_in_b": {
+        "reasons": [
+          "route"
+        ],
+        "shown": true
+      },
+      "run": 3,
+      "scenario": "B6",
+      "step": null,
+      "warnings": {
+        "A:dose_outside_box": 2,
+        "B:dose_outside_box": 2
+      },
+      "warnings_located": [
+        [
+          "A",
+          "treatment",
+          "dose_outside_box",
+          3
+        ],
+        [
+          "A",
+          "medication_conflicts",
+          "dose_outside_box",
+          1
+        ],
+        [
+          "B",
+          "admission_summary",
+          "dose_outside_box",
+          3
+        ],
+        [
+          "B",
+          "medication_conflicts",
+          "dose_outside_box",
+          1
+        ]
+      ]
+    },
+    {
+      "a5": {
+        "d1_g3_allowance_used": 0,
+        "in_block_exactly_once": 0,
+        "prose_flags": [],
+        "recorded": 0
+      },
+      "branches": [
+        "med_status_not_documented",
+        "resus_route_absent",
+        "b_resus_not_shown",
+        "header_inferred"
+      ],
+      "code": null,
+      "contradictions": [],
+      "outcome": "candidates_ab",
+      "resus_in_b": {
+        "reasons": [],
+        "shown": false
+      },
+      "run": 3,
+      "scenario": "C7",
+      "step": null,
+      "warnings": {},
+      "warnings_located": []
+    },
+    {
+      "a5": {
+        "d1_g3_allowance_used": 0,
+        "in_block_exactly_once": 0,
+        "prose_flags": [],
+        "recorded": 0
+      },
+      "branches": [
+        "med_status_listed",
+        "resus_route_documented",
+        "b_resus_route"
+      ],
+      "code": null,
+      "contradictions": [],
+      "outcome": "candidates_ab",
+      "resus_in_b": {
+        "reasons": [
+          "route"
+        ],
+        "shown": true
+      },
+      "run": 3,
+      "scenario": "S1",
+      "step": null,
+      "warnings": {
+        "A:dose_outside_box": 1,
+        "B:dose_outside_box": 1
+      },
+      "warnings_located": [
+        [
+          "A",
+          "treatment",
+          "dose_outside_box",
+          5
+        ],
+        [
+          "B",
+          "admission_summary",
+          "dose_outside_box",
+          5
+        ]
+      ]
+    },
+    {
+      "a5": {
+        "d1_g3_allowance_used": 0,
+        "in_block_exactly_once": 0,
+        "prose_flags": [],
+        "recorded": 0
+      },
+      "branches": [
+        "med_status_listed",
+        "resus_route_absent",
+        "b_resus_not_shown",
+        "header_inferred"
+      ],
+      "code": null,
+      "contradictions": [],
+      "outcome": "candidates_ab",
+      "resus_in_b": {
+        "reasons": [],
+        "shown": false
+      },
+      "run": 3,
+      "scenario": "S10",
+      "step": null,
+      "warnings": {},
+      "warnings_located": []
+    },
+    {
+      "a5": {
+        "d1_g3_allowance_used": 0,
+        "in_block_exactly_once": 0,
+        "prose_flags": [],
+        "recorded": 0
+      },
+      "branches": [
+        "med_status_referenced_not_listed",
+        "resus_route_documented",
+        "b_resus_route",
+        "header_inferred"
+      ],
+      "code": null,
+      "contradictions": [],
+      "outcome": "candidates_ab",
+      "resus_in_b": {
+        "reasons": [
+          "route"
+        ],
+        "shown": true
+      },
+      "run": 3,
+      "scenario": "S11",
+      "step": null,
+      "warnings": {},
+      "warnings_located": []
+    },
+    {
+      "a5": {
+        "d1_g3_allowance_used": 0,
+        "in_block_exactly_once": 0,
+        "prose_flags": [],
+        "recorded": 0
+      },
+      "branches": [
+        "med_status_not_documented",
+        "resus_route_documented_but_absent",
+        "b_resus_route",
+        "header_not_extracted"
+      ],
+      "code": null,
+      "contradictions": [],
+      "outcome": "candidates_ab",
+      "resus_in_b": {
+        "reasons": [
+          "route"
+        ],
+        "shown": true
+      },
+      "run": 3,
+      "scenario": "S12",
+      "step": null,
+      "warnings": {},
+      "warnings_located": []
+    },
+    {
+      "a5": {
+        "d1_g3_allowance_used": 0,
+        "in_block_exactly_once": 0,
+        "prose_flags": [],
+        "recorded": 0
+      },
+      "branches": [
+        "med_status_listed",
+        "resus_route_documented",
+        "b_resus_route",
+        "header_inferred",
+        "b_continued_count"
+      ],
+      "code": null,
+      "contradictions": [],
+      "outcome": "candidates_ab",
+      "resus_in_b": {
+        "reasons": [
+          "route"
+        ],
+        "shown": true
+      },
+      "run": 3,
+      "scenario": "S13",
+      "step": null,
+      "warnings": {},
+      "warnings_located": []
+    },
+    {
+      "a5": {
+        "d1_g3_allowance_used": 0,
+        "in_block_exactly_once": 0,
+        "prose_flags": [],
+        "recorded": 0
+      },
+      "branches": [
+        "med_status_listed",
+        "resus_route_documented",
+        "b_resus_route",
+        "header_inferred",
+        "b_continued_count"
+      ],
+      "code": null,
+      "contradictions": [],
+      "outcome": "candidates_ab",
+      "resus_in_b": {
+        "reasons": [
+          "route"
+        ],
+        "shown": true
+      },
+      "run": 3,
+      "scenario": "S14",
+      "step": null,
+      "warnings": {},
+      "warnings_located": []
+    },
+    {
+      "a5": {
+        "d1_g3_allowance_used": 0,
+        "in_block_exactly_once": 0,
+        "prose_flags": [],
+        "recorded": 0
+      },
+      "branches": [
+        "facts_held_back",
+        "med_status_listed",
+        "resus_route_documented",
+        "b_resus_route",
+        "header_not_extracted"
+      ],
+      "code": null,
+      "contradictions": [],
+      "outcome": "candidates_ab",
+      "resus_in_b": {
+        "reasons": [
+          "route"
+        ],
+        "shown": true
+      },
+      "run": 3,
+      "scenario": "S15",
+      "step": null,
+      "warnings": {},
+      "warnings_located": []
+    },
+    {
+      "a5": {
+        "d1_g3_allowance_used": 0,
+        "in_block_exactly_once": 0,
+        "prose_flags": [],
+        "recorded": 0
+      },
+      "branches": [
+        "med_status_referenced_not_listed",
+        "resus_route_absent",
+        "b_resus_not_shown",
+        "ab_unverified_marker",
+        "header_inferred"
+      ],
+      "code": null,
+      "contradictions": [],
+      "outcome": "candidates_ab",
+      "resus_in_b": {
+        "reasons": [],
+        "shown": false
+      },
+      "run": 3,
+      "scenario": "S16",
+      "step": null,
+      "warnings": {},
+      "warnings_located": []
+    },
+    {
+      "a5": {
+        "d1_g3_allowance_used": 0,
+        "in_block_exactly_once": 0,
+        "prose_flags": [],
+        "recorded": 0
+      },
+      "branches": [
+        "med_status_listed",
+        "resus_route_documented",
+        "b_resus_route",
+        "header_not_extracted",
+        "b_continued_count"
+      ],
+      "code": null,
+      "contradictions": [],
+      "outcome": "candidates_ab",
+      "resus_in_b": {
+        "reasons": [
+          "route"
+        ],
+        "shown": true
+      },
+      "run": 3,
+      "scenario": "S17",
+      "step": null,
+      "warnings": {},
+      "warnings_located": []
+    },
+    {
+      "a5": {
+        "d1_g3_allowance_used": 0,
+        "in_block_exactly_once": 0,
+        "prose_flags": [],
+        "recorded": 0
+      },
+      "branches": [
+        "med_status_none_required",
+        "resus_route_absent",
+        "b_resus_not_shown",
+        "ab_unverified_marker"
+      ],
+      "code": null,
+      "contradictions": [],
+      "outcome": "candidates_ab",
+      "resus_in_b": {
+        "reasons": [],
+        "shown": false
+      },
+      "run": 3,
+      "scenario": "S18",
+      "step": null,
+      "warnings": {},
+      "warnings_located": []
+    },
+    {
+      "a5": {
+        "d1_g3_allowance_used": 0,
+        "in_block_exactly_once": 0,
+        "prose_flags": [],
+        "recorded": 0
+      },
+      "branches": [
+        "med_status_listed",
+        "resus_route_documented",
+        "b_resus_route"
+      ],
+      "code": null,
+      "contradictions": [],
+      "outcome": "candidates_ab",
+      "resus_in_b": {
+        "reasons": [
+          "route"
+        ],
+        "shown": true
+      },
+      "run": 3,
+      "scenario": "S2",
+      "step": null,
+      "warnings": {},
+      "warnings_located": []
+    },
+    {
+      "a5": {
+        "d1_g3_allowance_used": 0,
+        "in_block_exactly_once": 0,
+        "prose_flags": [],
+        "recorded": 0
+      },
+      "branches": [
+        "med_status_listed",
+        "resus_route_absent",
+        "b_resus_not_shown",
+        "ab_unverified_marker",
+        "header_inferred"
+      ],
+      "code": null,
+      "contradictions": [],
+      "outcome": "candidates_ab",
+      "resus_in_b": {
+        "reasons": [],
+        "shown": false
+      },
+      "run": 3,
+      "scenario": "S3",
+      "step": null,
+      "warnings": {
+        "A:dose_outside_box": 1,
+        "B:dose_outside_box": 1
+      },
+      "warnings_located": [
+        [
+          "A",
+          "treatment",
+          "dose_outside_box",
+          2
+        ],
+        [
+          "B",
+          "admission_summary",
+          "dose_outside_box",
+          3
+        ]
+      ]
+    },
+    {
+      "a5": {
+        "d1_g3_allowance_used": 0,
+        "in_block_exactly_once": 0,
+        "prose_flags": [],
+        "recorded": 0
+      },
+      "branches": [
+        "med_status_none_required",
+        "resus_route_absent",
+        "b_resus_not_shown"
+      ],
+      "code": null,
+      "contradictions": [],
+      "outcome": "candidates_ab",
+      "resus_in_b": {
+        "reasons": [],
+        "shown": false
+      },
+      "run": 3,
+      "scenario": "S4",
+      "step": null,
+      "warnings": {},
+      "warnings_located": []
+    },
+    {
+      "a5": {
+        "d1_g3_allowance_used": 0,
+        "in_block_exactly_once": 0,
+        "prose_flags": [],
+        "recorded": 0
+      },
+      "branches": [
+        "med_status_not_documented",
+        "resus_route_absent",
+        "b_resus_not_shown",
+        "ab_unverified_marker"
+      ],
+      "code": null,
+      "contradictions": [],
+      "outcome": "candidates_ab",
+      "resus_in_b": {
+        "reasons": [],
+        "shown": false
+      },
+      "run": 3,
+      "scenario": "S8",
+      "step": null,
+      "warnings": {},
+      "warnings_located": []
+    },
+    {
+      "a5": {
+        "d1_g3_allowance_used": 0,
+        "in_block_exactly_once": 0,
+        "prose_flags": [],
+        "recorded": 0
+      },
+      "branches": [
+        "med_status_not_documented",
+        "resus_route_absent",
+        "b_resus_not_shown",
+        "header_inferred"
+      ],
+      "code": null,
+      "contradictions": [],
+      "outcome": "candidates_ab",
+      "resus_in_b": {
+        "reasons": [],
+        "shown": false
+      },
+      "run": 3,
+      "scenario": "S9",
+      "step": null,
+      "warnings": {},
+      "warnings_located": []
+    },
+    {
+      "a5": {
+        "d1_g3_allowance_used": 0,
+        "in_block_exactly_once": 0,
+        "prose_flags": [],
+        "recorded": 0
+      },
+      "branches": [
+        "med_status_referenced_not_listed",
+        "resus_route_documented",
+        "b_resus_route",
+        "header_inferred"
+      ],
+      "code": null,
+      "contradictions": [],
+      "outcome": "candidates_ab",
+      "resus_in_b": {
+        "reasons": [
+          "route"
+        ],
+        "shown": true
+      },
+      "run": 4,
+      "scenario": "A5",
+      "step": null,
+      "warnings": {},
+      "warnings_located": []
+    },
+    {
+      "a5": {
+        "d1_g3_allowance_used": 0,
+        "in_block_exactly_once": 1,
+        "prose_flags": [
+          {
+            "heading": "allergies",
+            "part": "part_a",
+            "why": [
+              "cites_contradiction",
+              "notes_conflict_wording"
+            ]
+          },
+          {
+            "heading": "medication_conflicts",
+            "part": "part_b",
+            "why": [
+              "cites_contradiction",
+              "notes_conflict_wording"
+            ]
+          }
+        ],
+        "recorded": 1
+      },
+      "branches": [
+        "med_status_listed",
+        "resus_route_documented",
+        "contradiction_value_unverified",
+        "b_resus_route",
+        "ab_unverified_marker",
+        "b_continued_count"
+      ],
+      "code": null,
+      "contradictions": [
+        {
+          "fact_id": "contradictions.0",
+          "kind": "value_unverified"
+        }
+      ],
+      "outcome": "candidates_ab",
+      "resus_in_b": {
+        "reasons": [
+          "route"
+        ],
+        "shown": true
+      },
+      "run": 4,
+      "scenario": "B6",
+      "step": null,
+      "warnings": {
+        "A:dose_outside_box": 1,
+        "B:dose_outside_box": 1
+      },
+      "warnings_located": [
+        [
+          "A",
+          "treatment",
+          "dose_outside_box",
+          3
+        ],
+        [
+          "B",
+          "admission_summary",
+          "dose_outside_box",
+          3
+        ]
+      ]
+    },
+    {
+      "a5": {
+        "d1_g3_allowance_used": 0,
+        "in_block_exactly_once": 0,
+        "prose_flags": [],
+        "recorded": 0
+      },
+      "branches": [
+        "med_status_not_documented",
+        "resus_route_absent",
+        "b_resus_not_shown",
+        "header_not_extracted"
+      ],
+      "code": null,
+      "contradictions": [],
+      "outcome": "candidates_ab",
+      "resus_in_b": {
+        "reasons": [],
+        "shown": false
+      },
+      "run": 4,
+      "scenario": "C7",
+      "step": null,
+      "warnings": {},
+      "warnings_located": []
+    },
+    {
+      "a5": {
+        "d1_g3_allowance_used": 0,
+        "in_block_exactly_once": 0,
+        "prose_flags": [],
+        "recorded": 0
+      },
+      "branches": [
+        "med_status_listed",
+        "resus_route_documented",
+        "b_resus_route",
+        "header_inferred",
+        "b_continued_count"
+      ],
+      "code": null,
+      "contradictions": [],
+      "outcome": "candidates_ab",
+      "resus_in_b": {
+        "reasons": [
+          "route"
+        ],
+        "shown": true
+      },
+      "run": 4,
+      "scenario": "S1",
+      "step": null,
+      "warnings": {
+        "A:dose_outside_box": 1,
+        "B:dose_outside_box": 1
+      },
+      "warnings_located": [
+        [
+          "A",
+          "treatment",
+          "dose_outside_box",
+          5
+        ],
+        [
+          "B",
+          "admission_summary",
+          "dose_outside_box",
+          5
+        ]
+      ]
+    },
+    {
+      "a5": {
+        "d1_g3_allowance_used": 0,
+        "in_block_exactly_once": 0,
+        "prose_flags": [],
+        "recorded": 0
+      },
+      "branches": [
+        "med_status_listed",
+        "resus_route_absent",
+        "b_resus_not_shown",
+        "ab_unverified_marker",
+        "header_inferred"
+      ],
+      "code": null,
+      "contradictions": [],
+      "outcome": "candidates_ab",
+      "resus_in_b": {
+        "reasons": [],
+        "shown": false
+      },
+      "run": 4,
+      "scenario": "S10",
+      "step": null,
+      "warnings": {},
+      "warnings_located": []
+    },
+    {
+      "a5": {
+        "d1_g3_allowance_used": 0,
+        "in_block_exactly_once": 0,
+        "prose_flags": [],
+        "recorded": 0
+      },
+      "branches": [
+        "med_status_referenced_not_listed",
+        "resus_route_documented",
+        "b_resus_route",
+        "ab_unverified_marker",
+        "header_inferred"
+      ],
+      "code": null,
+      "contradictions": [],
+      "outcome": "candidates_ab",
+      "resus_in_b": {
+        "reasons": [
+          "route"
+        ],
+        "shown": true
+      },
+      "run": 4,
+      "scenario": "S11",
+      "step": null,
+      "warnings": {},
+      "warnings_located": []
+    },
+    {
+      "a5": {
+        "d1_g3_allowance_used": 0,
+        "in_block_exactly_once": 0,
+        "prose_flags": [],
+        "recorded": 0
+      },
+      "branches": [
+        "med_status_not_documented",
+        "resus_route_documented_but_absent",
+        "b_resus_route",
+        "header_not_extracted"
+      ],
+      "code": null,
+      "contradictions": [],
+      "outcome": "candidates_ab",
+      "resus_in_b": {
+        "reasons": [
+          "route"
+        ],
+        "shown": true
+      },
+      "run": 4,
+      "scenario": "S12",
+      "step": null,
+      "warnings": {},
+      "warnings_located": []
+    },
+    {
+      "a5": {
+        "d1_g3_allowance_used": 0,
+        "in_block_exactly_once": 0,
+        "prose_flags": [],
+        "recorded": 0
+      },
+      "branches": [
+        "med_status_listed",
+        "resus_route_documented",
+        "b_resus_route",
+        "header_inferred",
+        "b_continued_count"
+      ],
+      "code": null,
+      "contradictions": [],
+      "outcome": "candidates_ab",
+      "resus_in_b": {
+        "reasons": [
+          "route"
+        ],
+        "shown": true
+      },
+      "run": 4,
+      "scenario": "S13",
+      "step": null,
+      "warnings": {},
+      "warnings_located": []
+    },
+    {
+      "a5": {
+        "d1_g3_allowance_used": 0,
+        "in_block_exactly_once": 0,
+        "prose_flags": [],
+        "recorded": 0
+      },
+      "branches": [
+        "med_status_listed",
+        "resus_route_documented",
+        "b_resus_route",
+        "ab_unverified_marker",
+        "header_inferred",
+        "b_continued_count"
+      ],
+      "code": null,
+      "contradictions": [],
+      "outcome": "candidates_ab",
+      "resus_in_b": {
+        "reasons": [
+          "route"
+        ],
+        "shown": true
+      },
+      "run": 4,
+      "scenario": "S14",
+      "step": null,
+      "warnings": {},
+      "warnings_located": []
+    },
+    {
+      "a5": {
+        "d1_g3_allowance_used": 0,
+        "in_block_exactly_once": 0,
+        "prose_flags": [],
+        "recorded": 0
+      },
+      "branches": [
+        "facts_held_back",
+        "med_status_listed",
+        "resus_route_documented",
+        "b_resus_route",
+        "header_not_extracted",
+        "b_continued_count"
+      ],
+      "code": null,
+      "contradictions": [],
+      "outcome": "candidates_ab",
+      "resus_in_b": {
+        "reasons": [
+          "route"
+        ],
+        "shown": true
+      },
+      "run": 4,
+      "scenario": "S15",
+      "step": null,
+      "warnings": {},
+      "warnings_located": []
+    },
+    {
+      "a5": {
+        "d1_g3_allowance_used": 0,
+        "in_block_exactly_once": 0,
+        "prose_flags": [],
+        "recorded": 0
+      },
+      "branches": [
+        "med_status_referenced_not_listed",
+        "resus_route_absent",
+        "b_resus_not_shown",
+        "header_inferred"
+      ],
+      "code": null,
+      "contradictions": [],
+      "outcome": "candidates_ab",
+      "resus_in_b": {
+        "reasons": [],
+        "shown": false
+      },
+      "run": 4,
+      "scenario": "S16",
+      "step": null,
+      "warnings": {},
+      "warnings_located": []
+    },
+    {
+      "a5": {
+        "d1_g3_allowance_used": 0,
+        "in_block_exactly_once": 0,
+        "prose_flags": [],
+        "recorded": 0
+      },
+      "branches": [
+        "med_status_listed",
+        "resus_route_documented",
+        "b_resus_route",
+        "ab_unverified_marker",
+        "header_not_extracted",
+        "b_continued_count"
+      ],
+      "code": null,
+      "contradictions": [],
+      "outcome": "candidates_ab",
+      "resus_in_b": {
+        "reasons": [
+          "route"
+        ],
+        "shown": true
+      },
+      "run": 4,
+      "scenario": "S17",
+      "step": null,
+      "warnings": {},
+      "warnings_located": []
+    },
+    {
+      "a5": {
+        "d1_g3_allowance_used": 0,
+        "in_block_exactly_once": 0,
+        "prose_flags": [],
+        "recorded": 0
+      },
+      "branches": [
+        "med_status_none_required",
+        "resus_route_absent",
+        "b_resus_not_shown",
+        "header_inferred"
+      ],
+      "code": null,
+      "contradictions": [],
+      "outcome": "candidates_ab",
+      "resus_in_b": {
+        "reasons": [],
+        "shown": false
+      },
+      "run": 4,
+      "scenario": "S18",
+      "step": null,
+      "warnings": {},
+      "warnings_located": []
+    },
+    {
+      "a5": {
+        "d1_g3_allowance_used": 0,
+        "in_block_exactly_once": 0,
+        "prose_flags": [],
+        "recorded": 0
+      },
+      "branches": [
+        "med_status_listed",
+        "resus_route_documented",
+        "b_resus_route"
+      ],
+      "code": null,
+      "contradictions": [],
+      "outcome": "candidates_ab",
+      "resus_in_b": {
+        "reasons": [
+          "route"
+        ],
+        "shown": true
+      },
+      "run": 4,
+      "scenario": "S2",
+      "step": null,
+      "warnings": {},
+      "warnings_located": []
+    },
+    {
+      "a5": {
+        "d1_g3_allowance_used": 0,
+        "in_block_exactly_once": 0,
+        "prose_flags": [],
+        "recorded": 0
+      },
+      "branches": [
+        "med_status_listed",
+        "resus_route_absent",
+        "b_resus_not_shown"
+      ],
+      "code": null,
+      "contradictions": [],
+      "outcome": "candidates_ab",
+      "resus_in_b": {
+        "reasons": [],
+        "shown": false
+      },
+      "run": 4,
+      "scenario": "S3",
+      "step": null,
+      "warnings": {
+        "A:dose_outside_box": 1,
+        "B:dose_outside_box": 1
+      },
+      "warnings_located": [
+        [
+          "A",
+          "treatment",
+          "dose_outside_box",
+          1
+        ],
+        [
+          "B",
+          "admission_summary",
+          "dose_outside_box",
+          3
+        ]
+      ]
+    },
+    {
+      "a5": {
+        "d1_g3_allowance_used": 0,
+        "in_block_exactly_once": 0,
+        "prose_flags": [],
+        "recorded": 0
+      },
+      "branches": [
+        "med_status_none_required",
+        "resus_route_absent",
+        "b_resus_not_shown",
+        "ab_unverified_marker"
+      ],
+      "code": null,
+      "contradictions": [],
+      "outcome": "candidates_ab",
+      "resus_in_b": {
+        "reasons": [],
+        "shown": false
+      },
+      "run": 4,
+      "scenario": "S4",
+      "step": null,
+      "warnings": {},
+      "warnings_located": []
+    },
+    {
+      "a5": {
+        "d1_g3_allowance_used": 0,
+        "in_block_exactly_once": 0,
+        "prose_flags": [],
+        "recorded": 0
+      },
+      "branches": [
+        "med_status_not_documented",
+        "resus_route_absent",
+        "b_resus_not_shown",
+        "ab_unverified_marker"
+      ],
+      "code": null,
+      "contradictions": [],
+      "outcome": "candidates_ab",
+      "resus_in_b": {
+        "reasons": [],
+        "shown": false
+      },
+      "run": 4,
+      "scenario": "S8",
+      "step": null,
+      "warnings": {},
+      "warnings_located": []
+    },
+    {
+      "a5": {
+        "d1_g3_allowance_used": 0,
+        "in_block_exactly_once": 0,
+        "prose_flags": [],
+        "recorded": 0
+      },
+      "branches": [
+        "med_status_not_documented",
+        "resus_route_absent",
+        "b_resus_not_shown",
+        "header_inferred"
+      ],
+      "code": null,
+      "contradictions": [],
+      "outcome": "candidates_ab",
+      "resus_in_b": {
+        "reasons": [],
+        "shown": false
+      },
+      "run": 4,
+      "scenario": "S9",
+      "step": null,
+      "warnings": {},
+      "warnings_located": []
+    },
+    {
+      "a5": {
+        "d1_g3_allowance_used": 0,
+        "in_block_exactly_once": 0,
+        "prose_flags": [],
+        "recorded": 0
+      },
+      "branches": [
+        "med_status_referenced_not_listed",
+        "resus_route_documented",
+        "b_resus_route",
+        "header_inferred"
+      ],
+      "code": null,
+      "contradictions": [],
+      "outcome": "candidates_ab",
+      "resus_in_b": {
+        "reasons": [
+          "route"
+        ],
+        "shown": true
+      },
+      "run": 5,
+      "scenario": "A5",
+      "step": null,
+      "warnings": {},
+      "warnings_located": []
+    },
+    {
+      "a5": {
+        "d1_g3_allowance_used": 0,
+        "in_block_exactly_once": 1,
+        "prose_flags": [
+          {
+            "heading": "medication_conflicts",
+            "part": "part_a",
+            "why": [
+              "cites_contradiction",
+              "notes_conflict_wording"
+            ]
+          },
+          {
+            "heading": "allergies",
+            "part": "part_a",
+            "why": [
+              "notes_conflict_wording"
+            ]
+          },
+          {
+            "heading": "medication_conflicts",
+            "part": "part_b",
+            "why": [
+              "cites_contradiction",
+              "notes_conflict_wording"
+            ]
+          }
+        ],
+        "recorded": 1
+      },
+      "branches": [
+        "med_status_listed",
+        "resus_route_documented",
+        "contradiction_quotes",
+        "b_resus_route",
+        "b_continued_count"
+      ],
+      "code": null,
+      "contradictions": [
+        {
+          "fact_id": "contradictions.0",
+          "kind": "quotes"
+        }
+      ],
+      "outcome": "candidates_ab",
+      "resus_in_b": {
+        "reasons": [
+          "route"
+        ],
+        "shown": true
+      },
+      "run": 5,
+      "scenario": "B6",
+      "step": null,
+      "warnings": {
+        "A:dose_outside_box": 2,
+        "B:dose_outside_box": 2
+      },
+      "warnings_located": [
+        [
+          "A",
+          "treatment",
+          "dose_outside_box",
+          3
+        ],
+        [
+          "A",
+          "medication_conflicts",
+          "dose_outside_box",
+          1
+        ],
+        [
+          "B",
+          "admission_summary",
+          "dose_outside_box",
+          3
+        ],
+        [
+          "B",
+          "medication_conflicts",
+          "dose_outside_box",
+          1
+        ]
+      ]
+    },
+    {
+      "a5": {
+        "d1_g3_allowance_used": 0,
+        "in_block_exactly_once": 0,
+        "prose_flags": [],
+        "recorded": 0
+      },
+      "branches": [
+        "med_status_not_documented",
+        "resus_route_absent",
+        "b_resus_not_shown",
+        "header_inferred"
+      ],
+      "code": null,
+      "contradictions": [],
+      "outcome": "candidates_ab",
+      "resus_in_b": {
+        "reasons": [],
+        "shown": false
+      },
+      "run": 5,
+      "scenario": "C7",
+      "step": null,
+      "warnings": {},
+      "warnings_located": []
+    },
+    {
+      "a5": {
+        "d1_g3_allowance_used": 0,
+        "in_block_exactly_once": 0,
+        "prose_flags": [],
+        "recorded": 0
+      },
+      "branches": [
+        "med_status_listed",
+        "resus_route_documented",
+        "b_resus_route"
+      ],
+      "code": null,
+      "contradictions": [],
+      "outcome": "candidates_ab",
+      "resus_in_b": {
+        "reasons": [
+          "route"
+        ],
+        "shown": true
+      },
+      "run": 5,
+      "scenario": "S1",
+      "step": null,
+      "warnings": {
+        "A:dose_outside_box": 1,
+        "B:dose_outside_box": 1
+      },
+      "warnings_located": [
+        [
+          "A",
+          "treatment",
+          "dose_outside_box",
+          3
+        ],
+        [
+          "B",
+          "admission_summary",
+          "dose_outside_box",
+          3
+        ]
+      ]
+    },
+    {
+      "a5": {
+        "d1_g3_allowance_used": 0,
+        "in_block_exactly_once": 0,
+        "prose_flags": [],
+        "recorded": 0
+      },
+      "branches": [
+        "med_status_listed",
+        "resus_route_absent",
+        "b_resus_not_shown",
+        "ab_unverified_marker",
+        "header_inferred"
+      ],
+      "code": null,
+      "contradictions": [],
+      "outcome": "candidates_ab",
+      "resus_in_b": {
+        "reasons": [],
+        "shown": false
+      },
+      "run": 5,
+      "scenario": "S10",
+      "step": null,
+      "warnings": {
+        "A:unit_added": 1,
+        "B:dose_outside_box": 1,
+        "B:unit_added": 1
+      },
+      "warnings_located": [
+        [
+          "A",
+          "key_investigations",
+          "unit_added",
+          2
+        ],
+        [
+          "B",
+          "admission_summary",
+          "unit_added",
+          3
+        ],
+        [
+          "B",
+          "admission_summary",
+          "dose_outside_box",
+          3
+        ]
+      ]
+    },
+    {
+      "a5": {
+        "d1_g3_allowance_used": 0,
+        "in_block_exactly_once": 0,
+        "prose_flags": [],
+        "recorded": 0
+      },
+      "branches": [
+        "med_status_referenced_not_listed",
+        "resus_route_documented",
+        "b_resus_route",
+        "header_inferred"
+      ],
+      "code": null,
+      "contradictions": [],
+      "outcome": "candidates_ab",
+      "resus_in_b": {
+        "reasons": [
+          "route"
+        ],
+        "shown": true
+      },
+      "run": 5,
+      "scenario": "S11",
+      "step": null,
+      "warnings": {},
+      "warnings_located": []
+    },
+    {
+      "a5": {
+        "d1_g3_allowance_used": 0,
+        "in_block_exactly_once": 0,
+        "prose_flags": [],
+        "recorded": 0
+      },
+      "branches": [
+        "med_status_not_documented",
+        "resus_route_documented_but_absent",
+        "b_resus_route",
+        "header_not_extracted"
+      ],
+      "code": null,
+      "contradictions": [],
+      "outcome": "candidates_ab",
+      "resus_in_b": {
+        "reasons": [
+          "route"
+        ],
+        "shown": true
+      },
+      "run": 5,
+      "scenario": "S12",
+      "step": null,
+      "warnings": {},
+      "warnings_located": []
+    },
+    {
+      "a5": {
+        "d1_g3_allowance_used": 0,
+        "in_block_exactly_once": 0,
+        "prose_flags": [],
+        "recorded": 0
+      },
+      "branches": [
+        "med_status_listed",
+        "resus_route_documented",
+        "b_resus_route",
+        "header_inferred",
+        "b_continued_count"
+      ],
+      "code": null,
+      "contradictions": [],
+      "outcome": "candidates_ab",
+      "resus_in_b": {
+        "reasons": [
+          "route"
+        ],
+        "shown": true
+      },
+      "run": 5,
+      "scenario": "S13",
+      "step": null,
+      "warnings": {},
+      "warnings_located": []
+    },
+    {
+      "a5": {
+        "d1_g3_allowance_used": 0,
+        "in_block_exactly_once": 0,
+        "prose_flags": [],
+        "recorded": 0
+      },
+      "branches": [
+        "facts_held_back",
+        "med_status_listed",
+        "resus_route_documented",
+        "b_resus_route",
+        "ab_unverified_marker",
+        "header_inferred",
+        "b_continued_count"
+      ],
+      "code": null,
+      "contradictions": [],
+      "outcome": "candidates_ab",
+      "resus_in_b": {
+        "reasons": [
+          "route"
+        ],
+        "shown": true
+      },
+      "run": 5,
+      "scenario": "S14",
+      "step": null,
+      "warnings": {},
+      "warnings_located": []
+    },
+    {
+      "a5": {
+        "d1_g3_allowance_used": 0,
+        "in_block_exactly_once": 0,
+        "prose_flags": [],
+        "recorded": 0
+      },
+      "branches": [
+        "facts_held_back",
+        "med_status_listed",
+        "resus_route_documented",
+        "b_resus_route",
+        "header_not_extracted"
+      ],
+      "code": null,
+      "contradictions": [],
+      "outcome": "candidates_ab",
+      "resus_in_b": {
+        "reasons": [
+          "route"
+        ],
+        "shown": true
+      },
+      "run": 5,
+      "scenario": "S15",
+      "step": null,
+      "warnings": {},
+      "warnings_located": []
+    },
+    {
+      "a5": {
+        "d1_g3_allowance_used": 0,
+        "in_block_exactly_once": 0,
+        "prose_flags": [],
+        "recorded": 0
+      },
+      "branches": [
+        "med_status_referenced_not_listed",
+        "resus_route_absent",
+        "b_resus_not_shown",
+        "header_inferred"
+      ],
+      "code": null,
+      "contradictions": [],
+      "outcome": "candidates_ab",
+      "resus_in_b": {
+        "reasons": [],
+        "shown": false
+      },
+      "run": 5,
+      "scenario": "S16",
+      "step": null,
+      "warnings": {},
+      "warnings_located": []
+    },
+    {
+      "a5": {
+        "d1_g3_allowance_used": 0,
+        "in_block_exactly_once": 0,
+        "prose_flags": [],
+        "recorded": 0
+      },
+      "branches": [
+        "med_status_listed",
+        "resus_route_documented",
+        "b_resus_route",
+        "ab_unverified_marker",
+        "header_not_extracted",
+        "b_continued_count"
+      ],
+      "code": null,
+      "contradictions": [],
+      "outcome": "candidates_ab",
+      "resus_in_b": {
+        "reasons": [
+          "route"
+        ],
+        "shown": true
+      },
+      "run": 5,
+      "scenario": "S17",
+      "step": null,
+      "warnings": {},
+      "warnings_located": []
+    },
+    {
+      "a5": {
+        "d1_g3_allowance_used": 0,
+        "in_block_exactly_once": 0,
+        "prose_flags": [],
+        "recorded": 0
+      },
+      "branches": [
+        "med_status_none_required",
+        "resus_route_absent",
+        "b_resus_not_shown"
+      ],
+      "code": null,
+      "contradictions": [],
+      "outcome": "candidates_ab",
+      "resus_in_b": {
+        "reasons": [],
+        "shown": false
+      },
+      "run": 5,
+      "scenario": "S18",
+      "step": null,
+      "warnings": {},
+      "warnings_located": []
+    },
+    {
+      "a5": {
+        "d1_g3_allowance_used": 0,
+        "in_block_exactly_once": 0,
+        "prose_flags": [],
+        "recorded": 0
+      },
+      "branches": [
+        "med_status_listed",
+        "resus_route_documented",
+        "b_resus_route",
+        "header_inferred"
+      ],
+      "code": null,
+      "contradictions": [],
+      "outcome": "candidates_ab",
+      "resus_in_b": {
+        "reasons": [
+          "route"
+        ],
+        "shown": true
+      },
+      "run": 5,
+      "scenario": "S2",
+      "step": null,
+      "warnings": {},
+      "warnings_located": []
+    },
+    {
+      "a5": {
+        "d1_g3_allowance_used": 0,
+        "in_block_exactly_once": 0,
+        "prose_flags": [],
+        "recorded": 0
+      },
+      "branches": [
+        "med_status_listed",
+        "resus_route_absent",
+        "b_resus_not_shown"
+      ],
+      "code": null,
+      "contradictions": [],
+      "outcome": "candidates_ab",
+      "resus_in_b": {
+        "reasons": [],
+        "shown": false
+      },
+      "run": 5,
+      "scenario": "S3",
+      "step": null,
+      "warnings": {
+        "A:dose_outside_box": 1,
+        "B:dose_outside_box": 1
+      },
+      "warnings_located": [
+        [
+          "A",
+          "treatment",
+          "dose_outside_box",
+          1
+        ],
+        [
+          "B",
+          "admission_summary",
+          "dose_outside_box",
+          3
+        ]
+      ]
+    },
+    {
+      "a5": {
+        "d1_g3_allowance_used": 0,
+        "in_block_exactly_once": 0,
+        "prose_flags": [],
+        "recorded": 0
+      },
+      "branches": [
+        "med_status_none_required",
+        "resus_route_absent",
+        "b_resus_not_shown",
+        "ab_unverified_marker"
+      ],
+      "code": null,
+      "contradictions": [],
+      "outcome": "candidates_ab",
+      "resus_in_b": {
+        "reasons": [],
+        "shown": false
+      },
+      "run": 5,
+      "scenario": "S4",
+      "step": null,
+      "warnings": {},
+      "warnings_located": []
+    },
+    {
+      "a5": {
+        "d1_g3_allowance_used": 0,
+        "in_block_exactly_once": 0,
+        "prose_flags": [],
+        "recorded": 0
+      },
+      "branches": [
+        "med_status_not_documented",
+        "resus_route_absent",
+        "b_resus_not_shown"
+      ],
+      "code": null,
+      "contradictions": [],
+      "outcome": "candidates_ab",
+      "resus_in_b": {
+        "reasons": [],
+        "shown": false
+      },
+      "run": 5,
+      "scenario": "S8",
+      "step": null,
+      "warnings": {},
+      "warnings_located": []
+    },
+    {
+      "a5": {
+        "d1_g3_allowance_used": 0,
+        "in_block_exactly_once": 0,
+        "prose_flags": [],
+        "recorded": 0
+      },
+      "branches": [
+        "med_status_not_documented",
+        "resus_route_absent",
+        "b_resus_not_shown",
+        "header_inferred"
+      ],
+      "code": null,
+      "contradictions": [],
+      "outcome": "candidates_ab",
+      "resus_in_b": {
+        "reasons": [],
+        "shown": false
+      },
+      "run": 5,
+      "scenario": "S9",
+      "step": null,
+      "warnings": {},
+      "warnings_located": []
+    }
+  ],
+  "summary": {
+    "a5": {
+      "d1_g3_allowance_used": 0,
+      "d1_g3_records": [],
+      "in_block_exactly_once": 6,
+      "prose_flags": 13,
+      "prose_flags_by_place": {
+        "part_a/allergies": 5,
+        "part_a/medication_conflicts": 3,
+        "part_b/medication_conflicts": 5
+      },
+      "recorded": 6
+    },
+    "branches": {
+      "ab_unverified_marker": 32,
+      "b_continued_count": 24,
+      "b_resus_not_shown": 40,
+      "b_resus_route": 50,
+      "contradiction_quotes": 3,
+      "contradiction_value_unverified": 3,
+      "facts_held_back": 6,
+      "header_inferred": 45,
+      "header_not_extracted": 18,
+      "med_status_listed": 45,
+      "med_status_none_required": 10,
+      "med_status_not_documented": 20,
+      "med_status_referenced_not_listed": 15,
+      "resus_route_absent": 40,
+      "resus_route_documented": 45,
+      "resus_route_documented_but_absent": 5
+    },
+    "c_meaning_vs_step7": {
+      "match": 0,
+      "only_8b": 0,
+      "only_step7": 0,
+      "records": 0
+    },
+    "gate": {},
+    "outcomes": {
+      "candidates_ab": 90
+    },
+    "placeholders_left": 0,
+    "records": 90,
+    "rejections": {},
+    "warnings": {
+      "A:dose_outside_box": 18,
+      "A:unit_added": 1,
+      "B:dose_outside_box": 19,
+      "B:drug_not_in_cited_facts": 1,
+      "B:unit_added": 1
+    }
+  }
+}

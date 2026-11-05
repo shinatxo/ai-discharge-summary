@@ -58,7 +58,7 @@ Honest limit (ADR-009 Q4, again): a fact_id shows the model CLAIMED to use a
 fact, not that its sentence states it correctly; and provenance is per
 section, not per sentence. Faithfulness is not checked here.
 
-The caller builds the client with read_timeout 90 s and max_attempts 1
+The caller builds the client with read_timeout 90 s and total_max_attempts 1
 (ADR-009 Q3 (2)). Nothing here creates an AWS client (package rule).
 """
 

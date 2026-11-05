@@ -98,7 +98,7 @@ def live_client():
     import boto3
     from botocore.config import Config
     cfg = Config(connect_timeout=10, read_timeout=READ_TIMEOUT_S,
-                 retries={"mode": "standard", "max_attempts": 1})   # retries: the step's job
+                 retries={"mode": "standard", "total_max_attempts": 1})   # retries: the step's job
     session = boto3.Session(region_name=REGION)
     ident = session.client("sts").get_caller_identity()
     print(f"caller: {ident['Arn'].split(':')[-1]}  account: …{ident['Account'][-4:]}  region: {REGION}")

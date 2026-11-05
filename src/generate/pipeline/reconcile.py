@@ -32,7 +32,7 @@ What the output may carry: drug names, doses and frequencies as the model wrote
 them, and quotes of <= 200 characters (verify_cite drops a longer one) — the
 same class of content as step 3's facts. Never the line index or a whole note.
 
-The caller builds the client with read_timeout 60 s and max_attempts 1
+The caller builds the client with read_timeout 60 s and total_max_attempts 1
 (ADR-009 Q3 (2)). Nothing here creates an AWS client (package rule).
 """
 

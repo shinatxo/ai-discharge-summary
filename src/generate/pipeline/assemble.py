@@ -171,6 +171,18 @@ def _check_step6_structure(comp: dict) -> None:
                 raise StepError("box_structure")
 
 
+def check_step6_structure(comp: dict) -> None:
+    """Public for item 5's upstream PRE-FLIGHT (orchestrate.py): the same rule 8a applies,
+    run on step 6's output BEFORE step 7 starts. Raises required_heading_missing or
+    box_structure — the two stay distinct (CSO, 5 Nov 2026). Malformed input -> bad_input."""
+    try:
+        _check_step6_structure(comp)
+    except StepError:
+        raise
+    except (KeyError, TypeError, AttributeError):
+        raise StepError("bad_input") from None
+
+
 def _check_step7_structure(step7: dict) -> None:
     for heading, token in BOXES_7.items():
         secs = [s for s in step7["sections"] if s["heading"] == heading]

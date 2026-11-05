@@ -59,7 +59,12 @@ def verify_cite(cite: dict, lines: dict) -> dict:
     step 5a's citations are re-verified with this same function (ADR-009)."""
     ids = cite.get("lines") or []
     quote = cite.get("quote", "")
-    out = {"lines": list(ids), "quote": quote, "verified": False, "reason": None}
+    # R3 (CSO, 5 Nov 2026, piece 5): an over-long quote is cleared on EVERY path, before the
+    # structural checks, so a cite that fails for another reason (e.g. cite_too_many_lines)
+    # can no longer carry more than QUOTE_MAX_CHARS of note text out of step 3. The reason
+    # reported is unchanged: the first structural failure still wins.
+    too_long = isinstance(quote, str) and len(quote) > QUOTE_MAX_CHARS
+    out = {"lines": list(ids), "quote": "" if too_long else quote, "verified": False, "reason": None}
 
     if not ids:
         out["reason"] = "missing_lines"
@@ -77,8 +82,8 @@ def verify_cite(cite: dict, lines: dict) -> dict:
     if any(b != a + 1 for a, b in zip(nums, nums[1:])):
         out["reason"] = "non_consecutive_lines"   # also catches duplicates and reversed order
         return out
-    if len(quote) > QUOTE_MAX_CHARS:
-        out["quote"] = ""                          # dropped, not truncated: truncating then passing is a repair
+    if too_long:
+        # already cleared above — dropped, not truncated: truncating then passing is a repair
         out["reason"] = "quote_too_long"
         return out
     needle = normalise(quote)

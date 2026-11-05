@@ -4,8 +4,9 @@ steps (2 extract_facts, 5a reconcile_medications; later 6 and 7).
 ADR-009 Q3 (3): retry ThrottlingException only, at most twice, 20–30 s jittered.
 Never a read timeout (the 6 Jun 2026 lesson: silent retries of timeouts). Every
 other failure becomes a StepError with a fixed code — never the provider's
-message, which could echo request content. The deadline check before a retry
-sleep belongs to the orchestrator (checklist item 5).
+message, which could echo request content. The deadline and cancellation checks
+belong to the orchestrator (pipeline/orchestrate.py, piece 5): it wraps the client so
+they run immediately before EVERY request, and passes a deadline-aware sleep.
 
 Moved out of extract.py on 27 Oct 2026 (step build piece 1) so step 5a uses the
 same function, not a copy; behaviour unchanged.
@@ -30,6 +31,10 @@ def converse_with_throttle_retry(ctx: StepContext, request: dict) -> tuple[dict,
         attempts += 1
         try:
             return ctx.bedrock.converse(**request), attempts
+        except StepError:
+            # A guarded client (the orchestrator's, piece 5) refuses a request with a fixed
+            # code — deadline_reached or cancelled. Pass it through; never bedrock_error.
+            raise
         except ClientError as exc:
             code = exc.response.get("Error", {}).get("Code", "")
             if code == "ThrottlingException":

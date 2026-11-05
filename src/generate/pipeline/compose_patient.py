@@ -65,7 +65,7 @@ dropped qualifiers, test words the cited text does not justify, unreached
 diagnoses) — the CSO blind read stays the evidence. The pattern checks are
 floors: they flag, the CSO rules.
 
-The caller builds the client with read_timeout 60 s and max_attempts 1
+The caller builds the client with read_timeout 60 s and total_max_attempts 1
 (ADR-009 Q3 (2)). Nothing here creates an AWS client (package rule).
 """
 

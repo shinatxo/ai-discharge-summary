@@ -12,6 +12,7 @@ from __future__ import annotations
 import importlib
 import json
 import os
+import re
 import sys
 from pathlib import Path
 from typing import Any
@@ -91,6 +92,11 @@ class FakeDynamoDB:
                 expected = (ExpressionAttributeValues or {}).get(":pending", {}).get("S")
                 if current_status != expected:
                     self._raise("ConditionalCheckFailedException", "wrong status")
+            # attribute_not_exists(<attr>) clauses (piece 5: the worker's claim on
+            # pipeline_version). AND-ed with the status check above.
+            for attr in re.findall(r"attribute_not_exists\((\w+)\)", ConditionExpression):
+                if attr in self.items[key]:
+                    self._raise("ConditionalCheckFailedException", "attribute exists")
         # Apply a very small subset of UpdateExpression - "SET attr = :val, ..."
         # parsed naively. Good enough for our use cases.
         self._apply_set(self.items[key], UpdateExpression,

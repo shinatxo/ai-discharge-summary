@@ -45,7 +45,7 @@ are what offline calibration measures (ADR-010 V5) — on already-ruled outputs,
 against a bar written before calibration ran. Until that bar is met, no live
 generation relies on it.
 
-The caller builds the client with read_timeout 60 s and max_attempts 1, as
+The caller builds the client with read_timeout 60 s and total_max_attempts 1, as
 step 7. Nothing here creates an AWS client (package rule).
 """
 

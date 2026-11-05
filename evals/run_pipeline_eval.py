@@ -163,11 +163,16 @@ class DryRunBedrock:
 
 
 def live_client(read_timeout=READ_TIMEOUT_S):
-    """One client per read timeout (ADR-009 W2 part 2): 90 s for steps 2 and 6, 60 s for 5a."""
+    """One client per read timeout (ADR-009 W2 part 2): 90 s for steps 2 and 6, 60 s for 5a.
+
+    total_max_attempts=1 since 5 Nov 2026 (step build piece 5). Batches made before then
+    used max_attempts=1, which botocore reads as ONE RETRY: a throttle or a read timeout
+    could be retried once, invisibly, inside a step attempt. Their recorded attempt and
+    throttle_retries counts are therefore a lower bound on requests sent. Records unchanged."""
     import boto3
     from botocore.config import Config
     cfg = Config(connect_timeout=10, read_timeout=read_timeout,
-                 retries={"mode": "standard", "max_attempts": 1})   # retries are the step's job
+                 retries={"mode": "standard", "total_max_attempts": 1})   # retries are the step's job
     return boto3.Session(region_name=REGION).client("bedrock-runtime", config=cfg)
 
 

@@ -6,8 +6,10 @@ keyword-only. Code steps never see it; a model step without one fails closed
 with StepError("no_client").
 
 The caller builds the client. Its botocore Config carries the read timeout and
-must set max_attempts=1 — retries are the step's job, and only for throttling
-(ADR-009 Q3 (3)). Step 2 wants read_timeout=90. Nothing in this package
+must set total_max_attempts=1 — retries are the step's job, and only for throttling
+(ADR-009 Q3 (3)). NOT max_attempts=1: botocore's max_attempts counts RETRIES, so
+max_attempts=1 allows one hidden retry of a throttle or a read timeout (verified
+against botocore 1.43.110, 5 Nov 2026, step build piece 5). Step 2 wants read_timeout=90. Nothing in this package
 creates a client.
 """
 

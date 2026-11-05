@@ -1,345 +1,166 @@
 """
-AI Discharge Summary Assistant - generate Lambda (Phase 2, slice 4b).
+AI Discharge Summary Assistant - generate Lambda: the ADR-009 PIPELINE WORKER
+(feature branch feat/agentic-pipeline; WS1a step build piece 5, 5 Nov 2026).
 
-This function is the BEDROCK WORKER. In slice 4a it sat directly behind the
-HTTP API; slice 4b moves it behind the dispatcher (src/dispatcher/) so the
-async `202 + poll` pattern can absorb Bedrock's ~20-25 s warm latency without
-hitting API Gateway's hard 30 s integration cap. There are three invocation
-contracts this handler supports, in priority order:
+main still carries the v1 worker (one combined Bedrock call + the Patient v2 second
+pass) until the W11 cut-over. This branch has NO switch between the two (ADR-009 (d):
+"no runtime pipeline parameter"; CSO 5 Nov 2026): on the branch the dispatcher path
+runs the pipeline, and main is the released configuration until the merge. The v1
+direct-invoke path is not kept (ADR-009: "the agentic worker does not keep" it); its
+audit PutItem permission is removed from the role at the cut-over.
 
-(1) DISPATCHER EVENT (the production hot path - slice 4b onwards).
-    Invoked asynchronously by src/dispatcher/ via lambda.invoke
-    (InvocationType='Event'). The dispatcher has ALREADY written the pending
-    GEN# audit row, so this function:
-       - runs Bedrock,
-       - splits the combined output into PART A/B/C,
-       - writes the three outputs to the transient ResultsTable
-         (NOT the audit table - ADR-002 keeps the audit log hash-only),
-       - UpdateItem-s the existing GEN# row to status=complete (with hashes +
-         model_version + parse_ok + tokens) or status=failed (with error_code).
-    Returns a small status dict, but the caller (Lambda async invoke pipeline)
-    discards it; the client sees the result via GET /generations/{id}.
+Invocation contracts:
 
-    Event shape:
-        {
-          "job_id":       "<ulid>",
-          "user_sub":     "<verified cognito sub>",
-          "notes":        "<free-text ward-round notes>",
-          "input_sha256": "<hex>",       # already computed by dispatcher
-          "started_at":   "<iso8601>"
-        }
+(1) DISPATCHER EVENT - the only working path. Invoked asynchronously by
+    src/dispatcher/ (InvocationType='Event'); the dispatcher has ALREADY written the
+    pending GEN# audit row. Event:
+        {"job_id": "<ulid>", "user_sub": "<cognito sub>", "notes": "<notes>",
+         "input_sha256": "<hex>", "started_at": "<iso8601 utc>"}
+    The worker:
+      a. CLAIMS the job (R2, CSO 5 Nov 2026): UpdateItem SET pipeline_version, only if
+         status = pending AND pipeline_version is not yet set. A duplicate delivery fails
+         the condition and exits WITHOUT calling Bedrock, writing a trace or marking the
+         job failed. An uncertain claim response (any other error: DynamoDB documents that
+         some failed writes leave the outcome unknown) also stops before any model call and
+         is NOT cleared or taken over. Limitation (recorded): one confirmed claimant does
+         not guarantee completion or recovery - a committed claim followed by a lost
+         response or a crash leaves the job pending; the SPA gives up at 5 minutes.
+      a2. REJECTS a mismatched or missing input_sha256 (input_hash_mismatch, before any
+         model call): the audit row's input hash must describe the notes generated from.
+      b. runs pipeline/orchestrate.py under a deadline: the earliest of 270 s from the
+         dispatcher's started_at (the SPA's clock starts at the 202), 270 s from worker
+         start, and Lambda's remaining time - 30 s. Any failure calls _mark_failed
+         IMMEDIATELY (the orchestrator's failure callback), before in-flight requests are
+         drained. The row gets a stable error_code and the fixed FAILURE_MESSAGE.
+      c. releases only after 8b succeeded and the trace (every step + META) is written:
+         one CONDITIONAL PutItem to ResultsTable (never overwrites; an existing item ->
+         results_exists, job failed), then the audit flip to complete with 8b's hashes.
+      d. writes a best-effort DELIVERY trace item (results / audit outcome). META is the
+         pipeline outcome; DELIVERY is the delivery outcome.
 
-(2) DIRECT INVOKE (slice 2/3 smoke tests, console "Test" button - preserved).
-    No job_id, no HTTP context. Worker writes its own audit row in the old
-    schema (SK=GEN#<timestamp>#<ulid>) for backwards compatibility and
-    returns outputs synchronously. ADR-002 invariants hold.
+(2) HTTP API event - refused with 410 Gone (anti-regression, slice 4b).
 
-(3) HTTP API DIRECT (slice 4a's old hot path - kept fail-closed). If anyone
-    ever wires API Gateway to this function again (which slice 4b unwired),
-    we refuse with 410 Gone and a pointer to the dispatcher route. The reason
-    is honesty: if a future operator re-attaches it, they should see the
-    failure immediately, not a silent regression to the 30-s-timeout shape.
+Anything else is refused: {"ok": false, "error": "unsupported_event"}.
 
-The execution role (see infra/template.yaml) is scoped to exactly:
-  - dynamodb:PutItem / UpdateItem on the audit table (write row OR flip pending
-    -> complete/failed; never Delete, never Scan),
-  - dynamodb:PutItem on the results table (transient outputs),
-  - kms:Decrypt / GenerateDataKey on the CMK via DynamoDB only (kms:ViaService),
-  - bedrock:InvokeModel on the ONE pinned model,
-  - write to this function's own log group.
+Logs and the audit row never carry note text or model output text: logs carry job ids,
+fixed codes and counts; the audit row carries hashes and fixed codes. The restricted
+trace (item 6) deliberately keeps intermediate step outputs and short citations (quotes
+<= 200 characters) for diagnosis, but never the raw notes or the line index
+(orchestrate.scrub), and is never served to the SPA (ADR-009 (b)).
+
+The execution role (infra/template.yaml): UpdateItem on the audit table with an attribute
+whitelist; PutItem on ResultsTable; KMS via DynamoDB only; bedrock:InvokeModel on the one
+pinned model; its own log group. TraceTable PutItem arrives with checklist item 6.
 """
 
 import hashlib
 import json
 import logging
 import os
-import re
-import secrets
 import time
 from datetime import datetime, timezone
+from zoneinfo import ZoneInfo
 
 import boto3
 from botocore.config import Config
 from botocore.exceptions import BotoCoreError, ClientError
 
-# --- configuration (all injected by the template; no hard-coded resource ids) -
+from pipeline import orchestrate
+
+# --- configuration (injected by the template; no hard-coded resource ids) --------------
 REGION = os.environ.get("AWS_REGION", "eu-west-2")
 TABLE_NAME = os.environ["AUDIT_TABLE_NAME"]
-# RESULTS_TABLE_NAME is new for slice 4b. Defaulting to empty keeps the unit
-# tests on the legacy code path (direct-invoke) able to run without setting it.
 RESULTS_TABLE_NAME = os.environ.get("RESULTS_TABLE_NAME", "")
+TRACE_TABLE_NAME = os.environ.get("TRACE_TABLE_NAME", "")      # checklist item 6
 MODEL_ID = os.environ["BEDROCK_MODEL_ID"]
-SCHEMA_VERSION = int(os.environ.get("SCHEMA_VERSION", "1"))
-# Results TTL - matches the dispatcher's IDEM TTL by default. The transient
-# outputs are auto-cleaned by DynamoDB TTL after this window; the GEN# audit
-# row (hash-only) persists indefinitely.
 RESULTS_TTL_HOURS = int(os.environ.get("RESULTS_TTL_HOURS", "24"))
+PROMPT_CACHING = os.environ.get("PROMPT_CACHING", "").strip().lower() in ("1", "true", "yes", "on")
 
-# Deterministic, safety-first generation: temperature 0 so the model doesn't
-# get "creative" with clinical facts. maxTokens sized for three full outputs.
-MAX_TOKENS = int(os.environ.get("MAX_TOKENS", "4096"))
-TEMPERATURE = float(os.environ.get("TEMPERATURE", "0"))
-
-# --- Prompt caching (cost optimisation, 2026-06-16) --------------------------
-# The ~18k-char system prompt is byte-identical on every call. Bedrock prompt
-# caching reads a cached prefix at ~0.1x the normal input price, so under bursty
-# traffic (the nightly canary fires its scenarios back-to-back within the cache
-# TTL) the prompt is paid for once per window instead of once per call. Off by
-# default so behaviour is bit-identical until deliberately enabled AND verified
-# in-region (eu-west-2 Sonnet support + the usage block shows cacheRead tokens).
-# See docs/COST_OPTIMISATION_GUIDE.md, Lever 2.
-PROMPT_CACHING = os.environ.get("PROMPT_CACHING", "").strip().lower() in (
-    "1", "true", "yes", "on",
-)
-
-# --- Bedrock client resilience (surfaced 2026-06-06) -------------------------
-# The worker runs behind the async 202+poll path, so it HAS time - but a Bedrock
-# call must FAIL FAST under a stalled/throttled endpoint rather than hang to the
-# Lambda timeout. botocore's DEFAULT read_timeout is 60s with silent retries;
-# real generations run up to ~83s, so a normal call could overrun 60s, get
-# silently retried (a fresh Bedrock request burning more of the tiny on-demand
-# quota), and stack up to the 240s Lambda kill - which Lambda then counts as a
-# function error and AUTO-RETRIES, amplifying load into a throttle storm.
-# Fix: an explicit read_timeout safely above the slowest real generation, and a
-# capped attempt count so a genuinely stalled call fails (and the job is marked
-# failed) well inside the Lambda budget, with no silent quota-burning retries.
-BEDROCK_READ_TIMEOUT = int(os.environ.get("BEDROCK_READ_TIMEOUT", "150"))
-BEDROCK_MAX_ATTEMPTS = int(os.environ.get("BEDROCK_MAX_ATTEMPTS", "1"))
-_BEDROCK_CONFIG = Config(
-    connect_timeout=10,
-    read_timeout=BEDROCK_READ_TIMEOUT,
-    retries={"mode": "standard", "max_attempts": BEDROCK_MAX_ATTEMPTS},
-)
-
-# --- Patient v2: optional second-pass patient-version generation -------------
-# When enabled, the patient version (PART C) is regenerated in a SEPARATE Bedrock
-# call whose only input is the curated PART A summary - never the raw notes. This
-# makes it structurally unable to reintroduce undocumented standard-of-care
-# advice (the Run 4 / Ibrahim "helpful hallucination" failure mode), independent
-# of the v0.6 prompt rule. See docs/PATIENT_V2_DESIGN.md. Off by default: flag
-# off => today's single combined call, bit-identical. The second pass stays on
-# the SAME pinned Sonnet model, on-demand in eu-west-2 (ADR-003 rule 1: UK-only
-# inference; deliberately NOT a Haiku/EU-profile pass).
-PATIENT_V2_SECOND_PASS = os.environ.get("PATIENT_V2_SECOND_PASS", "").strip().lower() in (
-    "1", "true", "yes", "on",
-)
-# The leaflet alone is short, so the second pass is capped tighter than the
-# combined call to keep the marginal token cost small.
-PATIENT_MAX_TOKENS = int(os.environ.get("PATIENT_MAX_TOKENS", "1500"))
+# R1 (CSO, 5 Nov 2026): one fixed message for every failure. The specific diagnosis is
+# the stable error_code; this text never describes the cause.
+FAILURE_MESSAGE = ("No draft was released. Generation could not be completed. "
+                   "Try again or complete the summary manually.")
+RESULTS_ITEM_MAX_BYTES = 400_000
+LONDON = ZoneInfo("Europe/London")   # generated_on; confirm on the Lambda runtime in item 7
 
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
-# Reuse clients across warm invocations.
-_bedrock = boto3.client("bedrock-runtime", region_name=REGION, config=_BEDROCK_CONFIG)
 _ddb = boto3.client("dynamodb", region_name=REGION)
-_table = boto3.resource("dynamodb", region_name=REGION).Table(TABLE_NAME)
-
-# Load the system prompt once per container.
-_PROMPT_PATH = os.path.join(os.path.dirname(__file__), "system_prompt.md")
 
 
-def _load_system_prompt() -> str:
-    with open(_PROMPT_PATH, "r", encoding="utf-8") as fh:
-        raw = fh.read()
-    marker = "## SYSTEM PROMPT"
-    idx = raw.find(marker)
-    if idx == -1:
-        raise RuntimeError("system_prompt.md is missing the '## SYSTEM PROMPT' marker")
-    body = raw[idx:]
-    body = body.split("\n", 1)[1] if "\n" in body else body
-    return body.strip()
+def _bedrock_client(read_timeout: int):
+    """One client per read timeout (ADR-009 Q3 (2)). total_max_attempts=1: botocore's
+    max_attempts counts RETRIES, so max_attempts=1 would allow one hidden retry of a
+    throttle or a read timeout (verified 5 Nov 2026). Retries are the step's job, for
+    throttling only."""
+    return boto3.client("bedrock-runtime", region_name=REGION, config=Config(
+        connect_timeout=10, read_timeout=read_timeout,
+        retries={"mode": "standard", "total_max_attempts": 1}))
 
 
-SYSTEM_PROMPT = _load_system_prompt()
+_BEDROCK = {rt: _bedrock_client(rt) for rt in sorted(set(orchestrate.READ_TIMEOUT_S.values()))}
 
 
-_PATIENT_PROMPT_PATH = os.path.join(os.path.dirname(__file__), "patient_system_prompt.md")
+def _make_trace_writer():
+    """Checklist item 6 returns the TraceTable writer here. Until then there is no trace
+    store, and a generation without a trace may not be released (CSO decision 6, 5 Nov
+    2026), so the worker fails closed with config_error."""
+    return None
 
 
-def _load_patient_prompt() -> str:
-    """Load the dedicated patient-version (PART C) prompt for the v2 second pass.
-
-    Returns "" if the file is absent so the worker can fall back to v1 cleanly
-    rather than crash at import time. The body after the '## SYSTEM PROMPT'
-    marker is used (same convention as the combined prompt)."""
-    try:
-        with open(_PATIENT_PROMPT_PATH, "r", encoding="utf-8") as fh:
-            raw = fh.read()
-    except FileNotFoundError:
-        return ""
-    marker = "## SYSTEM PROMPT"
-    idx = raw.find(marker)
-    body = raw[idx:] if idx != -1 else raw
-    body = body.split("\n", 1)[1] if "\n" in body else body
-    return body.strip()
-
-
-PATIENT_SYSTEM_PROMPT = _load_patient_prompt()
-
-
-# -----------------------------------------------------------------------------
-# Small helpers
-# -----------------------------------------------------------------------------
-_CROCKFORD = "0123456789ABCDEFGHJKMNPQRSTVWXYZ"
-
-
-def _ulid() -> str:
-    ms = int(time.time() * 1000)
-    rand = secrets.randbits(80)
-    value = (ms << 80) | rand
-    chars = []
-    for _ in range(26):
-        chars.append(_CROCKFORD[value & 0x1F])
-        value >>= 5
-    return "".join(reversed(chars))
-
-
+# --- small helpers ---------------------------------------------------------------------
 def _sha256(text: str) -> str:
     return hashlib.sha256(text.encode("utf-8")).hexdigest()
 
 
-def _part_marker(label: str):
-    return re.compile(rf"(?im)^[#*>\s]*PART\s+{label}\b.*$")
+def _opt_number(n):
+    return {"NULL": True} if n is None else {"N": str(int(n))}
 
 
-def _split_outputs(text: str):
-    """Split the combined model output into {summary, gp_letter, patient}.
-
-    Two parse paths both count as parse_ok=True:
-      1. STRICT: all three markers present and ordered (A then B then C).
-      2. FORGIVING: B and C present and ordered, A absent (model dove straight
-         into the summary). Everything before B becomes the summary. Observed
-         2026-05-26 on a short UTI case.
-    Anything else: fail safe, return whole text under 'summary', parse_ok=False.
-    """
-    pos = {}
-    for label in ("A", "B", "C"):
-        m = _part_marker(label).search(text)
-        if m:
-            pos[label] = m.start()
-
-    if {"A", "B", "C"} <= pos.keys() and pos["A"] < pos["B"] < pos["C"]:
-        return ({
-            "summary":   text[pos["A"]:pos["B"]].strip(),
-            "gp_letter": text[pos["B"]:pos["C"]].strip(),
-            "patient":   text[pos["C"]:].strip(),
-        }, True)
-
-    if "B" in pos and "C" in pos and pos["B"] < pos["C"] and pos["B"] > 0:
-        return ({
-            "summary":   text[:pos["B"]].strip(),
-            "gp_letter": text[pos["B"]:pos["C"]].strip(),
-            "patient":   text[pos["C"]:].strip(),
-        }, True)
-
-    return ({"summary": text.strip(), "gp_letter": "", "patient": ""}, False)
+def _now_iso() -> str:
+    return datetime.now(timezone.utc).isoformat()
 
 
-def _converse(system_prompt: str, user_text: str, max_tokens: int):
-    """Single Bedrock Converse call on the pinned model. Centralised so the
-    combined pass and the patient second pass share one code path / config.
-
-    When PROMPT_CACHING is enabled a cachePoint is appended AFTER the system
-    prompt block, telling Bedrock to cache everything above it (the static
-    prompt). The user notes stay below the cache point so they are never cached
-    across calls. system[0] remains the prompt text block, so callers/tests that
-    read system[0]['text'] are unaffected."""
-    system_blocks = [{"text": system_prompt}]
-    if PROMPT_CACHING:
-        system_blocks.append({"cachePoint": {"type": "default"}})
-    return _bedrock.converse(
-        modelId=MODEL_ID,
-        system=system_blocks,
-        messages=[{"role": "user", "content": [{"text": user_text}]}],
-        inferenceConfig={"maxTokens": max_tokens, "temperature": TEMPERATURE},
-    )
+def _parse_epoch(started_at):
+    try:
+        dt = datetime.fromisoformat(started_at)
+        if dt.tzinfo is None:
+            return None
+        return dt.timestamp()
+    except (TypeError, ValueError):
+        return None
 
 
-def _bedrock_err_code(exc) -> str:
-    """A clean error label for either a ClientError (the AWS error code, e.g.
-    ThrottlingException) or a BotoCoreError (e.g. ReadTimeoutError) - so a stalled
-    call logs a tidy code and is handled, never bubbling up as a Lambda timeout."""
+def _generated_on(started_at, wall0: float) -> str:
+    """The London date of the job's start (the dispatcher's started_at), as the harness
+    dates its records. 8a and 8b receive the same value; a different one is clinical_stale."""
+    t = _parse_epoch(started_at)
+    return datetime.fromtimestamp(t if t is not None else wall0, LONDON).date().isoformat()
+
+
+def _deadline(mono0: float, wall0: float, started_at, context) -> float:
+    budget = float(orchestrate.DEADLINE_S)
+    t = _parse_epoch(started_at)
+    if t is not None:
+        budget = min(budget, t + orchestrate.DEADLINE_S - wall0)
+    remaining = getattr(context, "get_remaining_time_in_millis", None)
+    if callable(remaining):
+        budget = min(budget, remaining() / 1000.0 - orchestrate.LAMBDA_RESERVE_S)
+    return mono0 + budget
+
+
+def _key(user_sub: str, job_id: str) -> dict:
+    return {"PK": {"S": f"USER#{user_sub}"}, "SK": {"S": f"GEN#{job_id}"}}
+
+
+def _error_code(exc) -> str:
     if isinstance(exc, ClientError):
         return exc.response.get("Error", {}).get("Code", "Unknown")
     return type(exc).__name__
 
 
-_PART_C_HEADER = re.compile(r"(?im)^[#*>\s]*PART\s+C\b.*$")
-
-
-def _strip_part_c_marker(text: str) -> str:
-    """The second-pass prompt asks for the leaflet body only, but if the model
-    still emits a 'PART C ...' header line, drop that one leading line so the
-    stored patient version is clean."""
-    m = _PART_C_HEADER.match(text.lstrip())
-    if not m:
-        return text.strip()
-    after = text.lstrip()[m.end():]
-    return after.strip()
-
-
-def _maybe_second_pass(outputs: dict, parse_ok: bool):
-    """Patient v2: optionally regenerate the patient version from PART A alone.
-
-    Returns (patient_version, patient_model_version, patient_parse_ok,
-    patient_usage). Mutates ``outputs['patient']`` in place when the v2 pass
-    runs successfully. Degrades gracefully — any failure (flag off, no prompt,
-    unparsed output, empty summary, Bedrock error, empty result) leaves the v1
-    combined-pass patient text untouched and is reflected in the returned status:
-
-      - "v1"          : second pass not attempted (flag off / unparsed / no prompt)
-      - "v2"          : second pass produced the leaflet (outputs mutated)
-      - "v1_fallback" : second pass was attempted but failed; v1 text kept
-
-    ``parse_ok`` is the flag from :func:`_split_outputs`. It is deliberately a
-    required argument with no default: a default would let a future caller omit it
-    and silently get the pre-fix unsafe behaviour.
-    When the split fails, ``_split_outputs`` fails safe by returning the whole
-    A+B+C blob under ``summary`` — which is non-empty, so an emptiness check
-    alone does not catch it and the second pass would anchor to unparsed output
-    instead of to PART A. The whole point of v2 is that its only input is the
-    curated PART A, so an unparsed response must skip the pass, not feed it.
-    (Found by the WS2a determination review, 2026-09-11.)
-    """
-    base_mv = f"{MODEL_ID} ({REGION}, on-demand)"
-    if not PATIENT_V2_SECOND_PASS:
-        return ("v1", base_mv, True, {})
-    if not PATIENT_SYSTEM_PROMPT:
-        logger.warning(json.dumps({"event": "patient_v2_no_prompt"}))
-        return ("v1", base_mv, True, {})
-    if not parse_ok:
-        # Split failed upstream; outputs['summary'] holds the whole unparsed
-        # response, not PART A. There is no trustworthy anchor — skip.
-        logger.info(json.dumps({"event": "patient_v2_skipped_parse_failed"}))
-        return ("v1", base_mv, True, {})
-
-    summary = (outputs.get("summary") or "").strip()
-    if not summary:
-        logger.info(json.dumps({"event": "patient_v2_skipped_no_summary"}))
-        return ("v1", base_mv, True, {})
-
-    try:
-        resp = _converse(PATIENT_SYSTEM_PROMPT, summary, PATIENT_MAX_TOKENS)
-    except (ClientError, BotoCoreError) as exc:
-        code = _bedrock_err_code(exc)
-        logger.error("patient_v2_bedrock_failed: %s", code)
-        return ("v1_fallback", base_mv, False, {})
-
-    text = _strip_part_c_marker(resp["output"]["message"]["content"][0]["text"])
-    if not text:
-        logger.warning(json.dumps({"event": "patient_v2_empty_result"}))
-        return ("v1_fallback", base_mv, False, {})
-
-    outputs["patient"] = text
-    logger.info(json.dumps({"event": "patient_v2_applied"}))
-    return ("v2", base_mv, True, resp.get("usage", {}))
-
-
-def _bad_request(message: str):
-    return {"ok": False, "error": "bad_request", "message": message}
-
-
+# --- event shapes ----------------------------------------------------------------------
 def _is_http_api_event(event) -> bool:
     if not isinstance(event, dict):
         return False
@@ -348,349 +169,241 @@ def _is_http_api_event(event) -> bool:
 
 
 def _is_dispatcher_event(event) -> bool:
-    """The new (slice 4b) async worker event shape: created by the dispatcher,
-    delivered via lambda.invoke(InvocationType='Event'). Distinguished from
-    the direct-invoke shape by the presence of `job_id`."""
-    return (
-        isinstance(event, dict)
-        and isinstance(event.get("job_id"), str)
-        and isinstance(event.get("user_sub"), str)
-        and isinstance(event.get("notes"), str)
-        and not _is_http_api_event(event)
-    )
+    return (isinstance(event, dict)
+            and isinstance(event.get("job_id"), str)
+            and isinstance(event.get("user_sub"), str)
+            and isinstance(event.get("notes"), str)
+            and not _is_http_api_event(event))
 
 
 def _http_response(status: int, body: dict) -> dict:
-    return {
-        "statusCode": status,
-        "headers": {"content-type": "application/json", "cache-control": "no-store"},
-        "body": json.dumps(body),
-    }
+    return {"statusCode": status,
+            "headers": {"content-type": "application/json", "cache-control": "no-store"},
+            "body": json.dumps(body)}
 
 
-# -----------------------------------------------------------------------------
-# Handler
-# -----------------------------------------------------------------------------
 def lambda_handler(event, context):
-    """Multiplex on event shape - dispatcher (slice 4b) vs direct invoke
-    (slice 2/3 smoke tests) vs accidentally re-attached HTTP API (refuse)."""
     if _is_http_api_event(event):
-        # Slice 4b moved the HTTP API to the dispatcher. Fail loudly rather
-        # than silently regressing to the 30 s timeout shape.
         return _http_response(410, {
             "ok": False, "error": "deprecated_path",
             "message": ("POST /generate now routes to the dispatcher (slice 4b). "
                         "If you are seeing this from API Gateway, the route is "
                         "misconfigured: it should target DispatcherFunction."),
         })
-
     if _is_dispatcher_event(event):
-        return _run_async_worker(event)
+        return _run_async_worker(event, context)
+    logger.warning(json.dumps({"event": "worker_unsupported_event"}))
+    return {"ok": False, "error": "unsupported_event"}
 
-    # Otherwise: legacy direct-invoke. Preserve the slice 2/3 contract.
-    return _run_direct_invoke(event)
 
-
-# -----------------------------------------------------------------------------
-# (1) Slice 4b async worker - the production hot path
-# -----------------------------------------------------------------------------
-def _run_async_worker(event):
-    """Update the pending GEN# row to complete / failed, and write outputs to
-    the transient ResultsTable."""
-    started = time.time()
-    job_id = event["job_id"]
-    user_sub = event["user_sub"]
-    notes = event["notes"]
-    input_hash_dispatched = event.get("input_sha256")
-
-    # Recompute the input hash and compare with the dispatcher's value.
-    # Mismatch implies the dispatcher and worker disagree about the payload -
-    # the audit log should record the value WE actually generated against.
-    input_hash = _sha256(notes)
-    if input_hash_dispatched and input_hash_dispatched != input_hash:
-        logger.warning(json.dumps({
-            "event": "input_hash_mismatch",
-            "job_id": job_id, "user_sub": user_sub,
-            "dispatched": input_hash_dispatched, "worker": input_hash,
-        }))
-
-    # --- 1) Bedrock Converse on the pinned model -----------------------------
-    try:
-        response = _converse(SYSTEM_PROMPT, notes, MAX_TOKENS)
-    except (ClientError, BotoCoreError) as exc:
-        code = _bedrock_err_code(exc)
-        # PHI-free log: error class only, never the notes. Catching BotoCoreError
-        # too means a read-timeout / connection stall marks the job FAILED and
-        # returns cleanly - it does NOT bubble up as a Lambda timeout (which would
-        # trigger an async retry and amplify a throttle storm; see 2026-06-06).
-        logger.error("worker_bedrock_failed: %s job=%s", code, job_id)
-        _mark_failed(user_sub, job_id, "bedrock_error", code)
-        return {"ok": False, "job_id": job_id, "status": "failed",
-                "error_code": "bedrock_error", "error_message": code}
-
-    model_text = response["output"]["message"]["content"][0]["text"]
-    usage = response.get("usage", {})
-    outputs, parse_ok = _split_outputs(model_text)
-
-    # --- 1b) Patient v2 (optional): regenerate PART C from PART A alone -------
-    # No-op unless PATIENT_V2_SECOND_PASS is enabled. Mutates outputs['patient']
-    # in place on success; never fails the job (graceful fallback to v1 text).
-    patient_version, patient_mv, patient_parse_ok, patient_usage = _maybe_second_pass(
-        outputs, parse_ok)
-
-    # --- 2) Hashes (the only representation we keep in the audit log) --------
-    output_hashes = {k: _sha256(v) for k, v in outputs.items()}
-
-    # --- 3) Write outputs to the transient ResultsTable (NOT audit) ----------
-    # If RESULTS_TABLE_NAME is empty (misconfig) we still flip status=failed
-    # rather than leave the row pending forever.
-    if not RESULTS_TABLE_NAME:
-        _mark_failed(user_sub, job_id, "config_error", "RESULTS_TABLE_NAME unset")
-        return {"ok": False, "job_id": job_id, "status": "failed",
-                "error_code": "config_error", "error_message": "RESULTS_TABLE_NAME unset"}
-
-    try:
-        _ddb.put_item(
-            TableName=RESULTS_TABLE_NAME,
-            Item={
-                "PK":        {"S": f"USER#{user_sub}"},
-                "SK":        {"S": f"RES#{job_id}"},
-                "user_sub":  {"S": user_sub},
-                "job_id":    {"S": job_id},
-                "summary":   {"S": outputs["summary"]},
-                "gp_letter": {"S": outputs["gp_letter"]},
-                "patient":   {"S": outputs["patient"]},
-                "completed_at": {"S": datetime.now(timezone.utc).isoformat()},
-                # TTL for auto-cleanup of transient outputs. The audit row
-                # (hash-only) outlives this and remains the system of record.
-                "ttl":       {"N": str(int(time.time()) + RESULTS_TTL_HOURS * 3600)},
-            },
-        )
-    except ClientError as exc:
-        code = exc.response.get("Error", {}).get("Code", "Unknown")
-        logger.error("worker_results_put_failed: %s job=%s", code, job_id)
-        _mark_failed(user_sub, job_id, "results_write_error", code)
-        return {"ok": False, "job_id": job_id, "status": "failed",
-                "error_code": "results_write_error", "error_message": code}
-
-    # --- 4) Flip the GEN# row from pending -> complete -----------------------
-    now = datetime.now(timezone.utc).isoformat()
-    model_version = f"{MODEL_ID} ({REGION}, on-demand)"
+# --- the audit row -----------------------------------------------------------------------
+def _claim(user_sub: str, job_id: str, pv: str) -> str:
+    """'claimed' | 'not_claimed' (a duplicate, or the row is no longer pending) |
+    'uncertain' (the outcome of the write is unknown: stop, do not clear, do not take over)."""
     try:
         _ddb.update_item(
-            TableName=TABLE_NAME,
-            Key={"PK": {"S": f"USER#{user_sub}"},
-                 "SK": {"S": f"GEN#{job_id}"}},
-            UpdateExpression=(
-                "SET #st = :complete, "
-                "    completed_at = :now, "
-                "    model_version = :mv, "
-                "    output_sha256 = :hashes, "
-                "    parse_ok = :parse_ok, "
-                "    input_tokens = :in_tok, "
-                "    output_tokens = :out_tok, "
-                "    patient_version = :pv, "
-                "    patient_model_version = :pmv, "
-                "    patient_parse_ok = :ppok, "
-                "    patient_output_tokens = :ptok"
-            ),
+            TableName=TABLE_NAME, Key=_key(user_sub, job_id),
+            UpdateExpression="SET pipeline_version = :pv",
+            ConditionExpression="#st = :pending AND attribute_not_exists(pipeline_version)",
             ExpressionAttributeNames={"#st": "status"},
-            ExpressionAttributeValues={
-                ":complete": {"S": "complete"},
-                ":now":      {"S": now},
-                ":mv":       {"S": model_version},
-                ":hashes":   {"M": {k: {"S": v} for k, v in output_hashes.items()}},
-                ":parse_ok": {"BOOL": parse_ok},
-                ":in_tok":   _opt_number(usage.get("inputTokens")),
-                ":out_tok":  _opt_number(usage.get("outputTokens")),
-                # Patient v2 provenance: which path produced the leaflet, so the
-                # audit log distinguishes a combined-pass (v1) leaflet from a
-                # second-pass (v2) one. See docs/PATIENT_V2_DESIGN.md.
-                ":pv":       {"S": patient_version},
-                ":pmv":      {"S": patient_mv},
-                ":ppok":     {"BOOL": patient_parse_ok},
-                ":ptok":     _opt_number(patient_usage.get("outputTokens")),
-                ":pending":  {"S": "pending"},
-            },
-            # Only flip from pending; never overwrite a complete OR failed row.
-            # This makes a double-invocation (Lambda async retry) idempotent at
-            # the data layer: the second worker can't clobber the first.
-            ConditionExpression="#st = :pending",
+            ExpressionAttributeValues={":pv": {"S": pv}, ":pending": {"S": "pending"}},
         )
+        return "claimed"
     except ClientError as exc:
-        code = exc.response.get("Error", {}).get("Code", "Unknown")
-        # ConditionalCheckFailed means another invocation already finished this
-        # job. That's fine - log and move on, outputs are already in place.
-        if code == "ConditionalCheckFailedException":
-            logger.info(json.dumps({
-                "event": "worker_already_terminal",
-                "job_id": job_id, "user_sub": user_sub,
-            }))
-            return {"ok": True, "job_id": job_id, "status": "already_terminal"}
-        logger.error("worker_audit_update_failed: %s job=%s", code, job_id)
-        return {"ok": False, "job_id": job_id, "status": "failed_to_mark_complete",
-                "error_message": code}
-
-    logger.info(json.dumps({
-        "event": "worker_complete",
-        "job_id": job_id, "user_sub": user_sub,
-        "model_version": model_version,
-        "parse_ok": parse_ok,
-        "patient_version": patient_version,
-        "input_tokens": usage.get("inputTokens"),
-        "output_tokens": usage.get("outputTokens"),
-        "patient_output_tokens": patient_usage.get("outputTokens"),
-        # Cache-usage telemetry (present only when PROMPT_CACHING is on and the
-        # region/model supports it). A cache WRITE on the first call of a window,
-        # READS on subsequent calls; both being None means caching isn't engaging.
-        "cache_read_tokens": usage.get("cacheReadInputTokens"),
-        "cache_write_tokens": usage.get("cacheWriteInputTokens"),
-        "latency_ms": int((time.time() - started) * 1000),
-    }))
-    return {"ok": True, "job_id": job_id, "status": "complete",
-            "parse_ok": parse_ok, "patient_version": patient_version}
+        if _error_code(exc) == "ConditionalCheckFailedException":
+            return "not_claimed"
+        return "uncertain"
+    except BotoCoreError:
+        return "uncertain"
 
 
-def _mark_failed(user_sub: str, job_id: str, error_code: str, error_message: str):
-    """Flip the GEN# row from pending -> failed. Best-effort: if it's already
-    terminal (a parallel invoke beat us, or this is a retry of a known-failed
-    row) we just log and move on."""
+def _mark_failed(user_sub: str, job_id: str, f: "orchestrate.Failure") -> str:
+    """Flip pending -> failed with a stable code and the fixed message. Called only by the
+    confirmed claimant. 'failed' | 'already_terminal' | 'audit_update_error'."""
+    expr = ("SET #st = :failed, error_code = :ec, error_message = :em, failed_at = :now, "
+            "failed_step = :fs, model_calls = :mc, input_tokens = :it, output_tokens = :ot")
+    values = {
+        ":failed": {"S": "failed"}, ":ec": {"S": f.code}, ":em": {"S": FAILURE_MESSAGE},
+        ":now": {"S": _now_iso()}, ":fs": {"S": f.step}, ":mc": {"N": str(f.model_calls)},
+        ":it": _opt_number(f.input_tokens), ":ot": _opt_number(f.output_tokens),
+        ":pending": {"S": "pending"},
+    }
+    if f.safety_net_gate == "fail":            # only for safety_net_gate_failed
+        expr += ", safety_net_gate = :sng"
+        values[":sng"] = {"S": "fail"}
+    try:
+        _ddb.update_item(TableName=TABLE_NAME, Key=_key(user_sub, job_id), UpdateExpression=expr,
+                         ExpressionAttributeNames={"#st": "status"},
+                         ExpressionAttributeValues=values, ConditionExpression="#st = :pending")
+        return "failed"
+    except ClientError as exc:
+        if _error_code(exc) == "ConditionalCheckFailedException":
+            return "already_terminal"
+        logger.error(json.dumps({"event": "mark_failed_error", "job_id": job_id,
+                                 "aws_code": _error_code(exc)}))
+        return "audit_update_error"
+    except BotoCoreError as exc:
+        logger.error(json.dumps({"event": "mark_failed_error", "job_id": job_id,
+                                 "aws_code": _error_code(exc)}))
+        return "audit_update_error"
+
+
+def _flip_complete(user_sub: str, job_id: str, outcome: "orchestrate.Outcome") -> str:
+    """'complete' | 'already_terminal' | 'audit_update_error'. output_sha256 = 8b's hashes
+    under the keys the status endpoint and SPA already use."""
+    h = outcome.bundle["hashes"]
+    hashes = {"summary": h["part_a"], "gp_letter": h["part_b"], "patient": h["part_c"]}
     try:
         _ddb.update_item(
-            TableName=TABLE_NAME,
-            Key={"PK": {"S": f"USER#{user_sub}"},
-                 "SK": {"S": f"GEN#{job_id}"}},
-            UpdateExpression=("SET #st = :failed, error_code = :ec, "
-                              "error_message = :em, failed_at = :now"),
+            TableName=TABLE_NAME, Key=_key(user_sub, job_id),
+            UpdateExpression=("SET #st = :complete, completed_at = :now, model_version = :mv, "
+                              "output_sha256 = :hashes, parse_ok = :pok, input_tokens = :it, "
+                              "output_tokens = :ot, model_calls = :mc, safety_net_gate = :sng"),
             ExpressionAttributeNames={"#st": "status"},
             ExpressionAttributeValues={
-                ":failed":  {"S": "failed"},
-                ":ec":      {"S": error_code},
-                ":em":      {"S": error_message},
-                ":now":     {"S": datetime.now(timezone.utc).isoformat()},
+                ":complete": {"S": "complete"}, ":now": {"S": _now_iso()},
+                ":mv": {"S": f"{MODEL_ID} ({REGION}, on-demand)"},
+                ":hashes": {"M": {k: {"S": v} for k, v in hashes.items()}},
+                ":pok": {"BOOL": True},   # ADR-009: never false on a delivered pipeline generation
+                ":it": _opt_number(outcome.input_tokens), ":ot": _opt_number(outcome.output_tokens),
+                ":mc": {"N": str(outcome.model_calls)}, ":sng": {"S": "pass"},
                 ":pending": {"S": "pending"},
             },
             ConditionExpression="#st = :pending",
         )
+        return "complete"
     except ClientError as exc:
-        logger.error("mark_failed_skipped: %s", exc.response.get("Error", {}))
+        if _error_code(exc) == "ConditionalCheckFailedException":
+            return "already_terminal"
+        logger.error(json.dumps({"event": "audit_flip_error", "job_id": job_id,
+                                 "aws_code": _error_code(exc)}))
+        return "audit_update_error"
+    except BotoCoreError as exc:
+        logger.error(json.dumps({"event": "audit_flip_error", "job_id": job_id,
+                                 "aws_code": _error_code(exc)}))
+        return "audit_update_error"
 
 
-def _opt_number(n):
-    """DynamoDB N attribute or NULL if None. Bedrock omits token counts in
-    some error paths; we want to write a clean NULL, not crash on .str()."""
-    if n is None:
-        return {"NULL": True}
-    return {"N": str(int(n))}
-
-
-# -----------------------------------------------------------------------------
-# (2) Legacy direct-invoke path - kept for slice 2/3 smoke tests
-# -----------------------------------------------------------------------------
-def _run_direct_invoke(event):
-    """Old slice-2 sync handler: synthesize a generation row in one go, return
-    the outputs directly. Used by `aws lambda invoke` smoke tests."""
-    started = time.time()
-
-    if isinstance(event, str):
-        try:
-            event = json.loads(event)
-        except json.JSONDecodeError:
-            return _bad_request("event was a string but not valid JSON")
-
-    body_obj = {}
-    if isinstance(event.get("body"), str):
-        try:
-            body_obj = json.loads(event["body"])
-        except json.JSONDecodeError:
-            return _bad_request("body was a string but not valid JSON")
-    elif isinstance(event.get("body"), dict):
-        body_obj = event["body"]
-
-    merged = {**event, **body_obj}
-    user_sub = (merged.get("user_sub") or "").strip()
-    notes = (merged.get("notes") or "").strip()
-    output_type = (merged.get("output_type") or "summary,gp_letter,patient").strip()
-
-    if not user_sub:
-        return _bad_request("'user_sub' is required (the Cognito subject)")
-    if not notes:
-        return _bad_request("'notes' is required and must be non-empty")
-
-    try:
-        response = _converse(SYSTEM_PROMPT, notes, MAX_TOKENS)
-    except (ClientError, BotoCoreError) as exc:
-        code = _bedrock_err_code(exc)
-        logger.error("direct_bedrock_failed: %s", code)
-        return {"ok": False, "error": "bedrock_error", "message": code}
-
-    model_text = response["output"]["message"]["content"][0]["text"]
-    usage = response.get("usage", {})
-    outputs, parse_ok = _split_outputs(model_text)
-
-    # Patient v2 (optional): regenerate PART C from PART A alone. No-op unless
-    # PATIENT_V2_SECOND_PASS is enabled; mutates outputs['patient'] on success.
-    patient_version, patient_mv, patient_parse_ok, _patient_usage = _maybe_second_pass(
-        outputs, parse_ok)
-
-    input_hash = _sha256(notes)
-    output_hashes = {k: _sha256(v) for k, v in outputs.items()}
-
-    now = datetime.now(timezone.utc).isoformat()
-    generation_id = _ulid()
-    model_version = f"{MODEL_ID} ({REGION}, on-demand)"
-
-    # Legacy SK format keeps slice 2/3 smoke tests bit-identical to before
-    # slice 4b: SK=GEN#<timestamp>#<ulid>. New async path uses SK=GEN#<ulid>.
-    item = {
-        "PK": f"USER#{user_sub}",
-        "SK": f"GEN#{now}#{generation_id}",
-        "generation_id": generation_id,
-        "user_sub": user_sub,
-        "timestamp": now,
-        "input_sha256": input_hash,
-        "output_sha256": output_hashes,
-        "model_version": model_version,
-        "output_type": output_type,
-        "draft": True,
-        "reviewed_at": None,
-        "request_region": REGION,
-        "inference_profile": "n/a (on-demand)",
-        "parse_ok": parse_ok,
-        "patient_version": patient_version,
-        "patient_model_version": patient_mv,
-        "patient_parse_ok": patient_parse_ok,
-        "input_tokens": usage.get("inputTokens"),
-        "output_tokens": usage.get("outputTokens"),
-        "schema_version": SCHEMA_VERSION,
-        # status field added so direct-invoke rows match the new schema shape.
-        "status": "complete",
-        "started_at": now,
-        "completed_at": now,
-    }
-
-    try:
-        _table.put_item(
-            Item=item,
-            ConditionExpression="attribute_not_exists(PK) AND attribute_not_exists(SK)",
-        )
-    except ClientError as exc:
-        logger.error("direct_audit_put_failed: %s", exc.response.get("Error", {}))
-        return {"ok": False, "error": "audit_write_error",
-                "message": exc.response.get("Error", {}).get("Code", "Unknown")}
-
-    logger.info(json.dumps({
-        "event": "direct_invoke_complete",
-        "generation_id": generation_id, "user_sub": user_sub,
-        "model_version": model_version, "parse_ok": parse_ok,
-        "input_tokens": usage.get("inputTokens"),
-        "output_tokens": usage.get("outputTokens"),
-        "latency_ms": int((time.time() - started) * 1000),
-    }))
-
+# --- ResultsTable ------------------------------------------------------------------------
+def _results_item(user_sub: str, job_id: str, outcome: "orchestrate.Outcome") -> dict:
+    b, s = outcome.bundle, outcome.stored
     return {
-        "ok": True, "generation_id": generation_id, "draft": True,
-        "model_version": model_version, "parse_ok": parse_ok,
-        "outputs": outputs,
-        "input_sha256": input_hash, "output_sha256": output_hashes,
+        "PK": {"S": f"USER#{user_sub}"}, "SK": {"S": f"RES#{job_id}"},
+        "user_sub": {"S": user_sub}, "job_id": {"S": job_id},
+        # The three documents under the names the status endpoint already serves.
+        "summary": {"S": b["part_a"]}, "gp_letter": {"S": b["part_b"]}, "patient": {"S": b["part_c"]},
+        # ADR-009 (c), for W10 - never served by the status endpoint (it reads the three above).
+        "units_json": {"S": json.dumps(s["units"], ensure_ascii=False)},
+        "templates_json": {"S": json.dumps(s["templates"], ensure_ascii=False)},
+        "warnings_json": {"S": json.dumps(s["warnings"], ensure_ascii=False)},
+        "output_sha256_json": {"S": json.dumps(s["hashes"])},   # W10: a changed document resets review
+        "pipeline_version": {"S": outcome.pipeline_version},
+        "generated_on": {"S": outcome.generated_on},
+        "completed_at": {"S": _now_iso()},
+        "ttl": {"N": str(int(time.time()) + RESULTS_TTL_HOURS * 3600)},
     }
+
+
+def _write_results(user_sub: str, job_id: str, outcome: "orchestrate.Outcome") -> str:
+    """'written' | 'results_too_large' | 'results_exists' | 'results_write_error'.
+    Conditional: a result item is created once and never overwritten."""
+    item = _results_item(user_sub, job_id, outcome)
+    size = sum(len(k.encode()) + len(json.dumps(v).encode()) for k, v in item.items())
+    if size > RESULTS_ITEM_MAX_BYTES:
+        return "results_too_large"
+    try:
+        _ddb.put_item(TableName=RESULTS_TABLE_NAME, Item=item,
+                      ConditionExpression="attribute_not_exists(PK) AND attribute_not_exists(SK)")
+        return "written"
+    except ClientError as exc:
+        if _error_code(exc) == "ConditionalCheckFailedException":
+            return "results_exists"
+        logger.error(json.dumps({"event": "results_write_error", "job_id": job_id,
+                                 "aws_code": _error_code(exc)}))
+        return "results_write_error"
+    except BotoCoreError as exc:
+        logger.error(json.dumps({"event": "results_write_error", "job_id": job_id,
+                                 "aws_code": _error_code(exc)}))
+        return "results_write_error"
+
+
+def _deliver(writer, job_id: str, results: str, audit: str) -> None:
+    """Best effort: the DELIVERY trace item (META is the pipeline outcome)."""
+    if writer is None:
+        return
+    try:
+        writer.put({"PK": f"GEN#{job_id}", "SK": "DELIVERY", "outcome_of": "delivery",
+                    "results": results, "audit": audit, "at": _now_iso(),
+                    "ttl": int(time.time()) + orchestrate.TRACE_TTL_S})
+    except Exception:  # noqa: BLE001
+        logger.error(json.dumps({"event": "delivery_trace_error", "job_id": job_id}))
+
+
+def _worker_failure(code: str) -> "orchestrate.Failure":
+    return orchestrate.Failure(step="worker", code=code, model_calls=0, input_tokens=0,
+                               output_tokens=0, safety_net_gate=None)
+
+
+# --- (1) the dispatcher path -------------------------------------------------------------
+def _run_async_worker(event, context):
+    mono0, wall0 = time.monotonic(), time.time()
+    job_id, user_sub, notes = event["job_id"], event["user_sub"], event["notes"]
+
+    # a. claim - only the confirmed claimant may call Bedrock, mark failure or write results
+    pv = orchestrate.pipeline_version()
+    claim = _claim(user_sub, job_id, pv)
+    if claim != "claimed":
+        logger.info(json.dumps({"event": f"worker_{claim}", "job_id": job_id}))
+        return {"ok": claim == "not_claimed", "job_id": job_id, "status": claim}
+
+    # Input provenance (CSO review, 5 Nov 2026 19:36): the notes must be the notes the
+    # dispatcher hashed into the audit row's input_sha256, or the record would describe a
+    # different input. A missing hash cannot be verified and is treated as a mismatch.
+    if event.get("input_sha256") != _sha256(notes):
+        audit = _mark_failed(user_sub, job_id, _worker_failure("input_hash_mismatch"))
+        logger.error(json.dumps({"event": "input_hash_mismatch", "job_id": job_id}))
+        return {"ok": False, "job_id": job_id, "status": "failed",
+                "error_code": "input_hash_mismatch", "audit": audit}
+
+    writer = _make_trace_writer()
+    if writer is None or not RESULTS_TABLE_NAME:
+        audit = _mark_failed(user_sub, job_id, _worker_failure("config_error"))
+        logger.error(json.dumps({"event": "worker_config_error", "job_id": job_id}))
+        return {"ok": False, "job_id": job_id, "status": "failed", "error_code": "config_error",
+                "audit": audit}
+
+    # b. the pipeline
+    generated_on = _generated_on(event.get("started_at"), wall0)
+    deadline = _deadline(mono0, wall0, event.get("started_at"), context)
+    marked: dict = {}
+
+    def on_failure(f):
+        marked["audit"] = _mark_failed(user_sub, job_id, f)
+
+    outcome = orchestrate.run(notes, generation_id=job_id, clients=_BEDROCK, model_id=MODEL_ID,
+                              prompt_caching=PROMPT_CACHING, trace=writer, deadline=deadline,
+                              generated_on=generated_on, on_failure=on_failure)
+    if not outcome.ok:
+        _deliver(writer, job_id, "not_written", marked.get("audit", "not_marked"))
+        logger.info(json.dumps({"event": "worker_failed", "job_id": job_id,
+                                "failed_step": outcome.failure.step, "error_code": outcome.failure.code,
+                                "model_calls": outcome.model_calls}))
+        return {"ok": False, "job_id": job_id, "status": "failed",
+                "error_code": outcome.failure.code}
+
+    # c. release: results (conditional), then the audit flip
+    res = _write_results(user_sub, job_id, outcome)
+    if res != "written":
+        f = orchestrate.Failure(step="results", code=res, model_calls=outcome.model_calls,
+                                input_tokens=outcome.input_tokens, output_tokens=outcome.output_tokens,
+                                safety_net_gate=None)
+        audit = _mark_failed(user_sub, job_id, f)
+        _deliver(writer, job_id, res, audit)
+        return {"ok": False, "job_id": job_id, "status": "failed", "error_code": res}
+
+    audit = _flip_complete(user_sub, job_id, outcome)
+    _deliver(writer, job_id, "written", audit)
+    logger.info(json.dumps({"event": "worker_complete" if audit == "complete" else "worker_flip_" + audit,
+                            "job_id": job_id, "model_calls": outcome.model_calls,
+                            "latency_ms": int((time.monotonic() - mono0) * 1000)}))
+    return {"ok": audit == "complete", "job_id": job_id, "status": audit}

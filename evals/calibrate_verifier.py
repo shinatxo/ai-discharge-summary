@@ -95,6 +95,11 @@ ADJ_DIR = REPO / "evals" / "gold" / "adjudications"
 RUNS_DIR = rce.DEFAULT_RUNS_DIR
 
 BAR = {"missed_max": 0, "false_flag_max": 0.25, "self_agreement_min": 0.90}
+# DEV GATE (CSO, 4 Nov 2026 16:11), written before the v0.3 dev run: a progression gate, not the bar.
+# All must hold on the dev set, or the verifier work stops and the evidence goes to the 1 Dec checkpoint.
+# The held-out bar (BAR: 0 missed) is unchanged and decides whether the verifier qualifies.
+DEV_GATE = {"missed_max": 2, "false_flag_max": 0.25, "self_agreement_min": 0.90,
+            "failures_max": 0, "uncited_supported_max": 0}
 SECTION_KINDS = ("qualifier",)
 UNREACHED_KINDS = ("diagnosis",)
 # Per verifier call, an UPPER bound. Measured on the v0.1 pilot (4 Nov, 270 calls): output p50 1,279,
@@ -180,6 +185,13 @@ def cmd_run(a, *, client_factory=None, now=None, confirm=input, sleep=time.sleep
         print(f"refused: a held-out run needs --frozen {sha} (the verifier prompt's body sha) — "
               f"freeze and commit the prompt first.", file=sys.stderr)
         return 2
+    if a.held_out:
+        gate = cal_dir / sha / "scores" / "calibration.json"
+        g = json.loads(gate.read_text()) if gate.exists() else {}
+        if g.get("dev_gate") != "PROCEED" or g.get("held_out"):
+            print(f"refused: the dev gate for prompt {sha} has not passed (scores/calibration.json "
+                  f"dev_gate = {g.get('dev_gate')!r}). Score dev first.", file=sys.stderr)
+            return 2
     batch_id = recs[0]["batch_id"]
     out_dir = cal_dir / sha / batch_id
     n = len(recs) * a.repeats
@@ -561,6 +573,14 @@ def cmd_score(a, *, sha_dir: Path | None = None) -> int:
         "5 verifier failures": (errs, errs == 0),
         "6 supported on an uncited source": (judged["uncited_supported"], judged["uncited_supported"] == 0),
     }
+    gate = None
+    if not held:
+        g_ok = (len(dev["missed"]) <= DEV_GATE["missed_max"]
+                and dev["false_rate"] is not None and dev["false_rate"] <= DEV_GATE["false_flag_max"]
+                and agree is not None and agree >= DEV_GATE["self_agreement_min"]
+                and dev["errors"] <= DEV_GATE["failures_max"]
+                and dev["uncited_supported"] <= DEV_GATE["uncited_supported_max"])
+        gate = "PROCEED" if g_ok else "STOP"
     rulings = json.loads(NEW_FLAG_RULINGS.read_text()) if NEW_FLAG_RULINGS.exists() else {}
     new = judged["unlabelled"]
     ruled = [u for u in new if u["key"] in rulings]
@@ -568,6 +588,9 @@ def cmd_score(a, *, sha_dir: Path | None = None) -> int:
     lines = [f"# Step 7v calibration — prompt `{sha_dir.name}` (counting rule v3)", "",
              f"Dev: `{a.dev}` · held-out: {', '.join(f'`{b}`' for b in a.held_out) or '(none yet)'} · "
              f"judged on: {'held-out' if held else '**dev only — not the bar**'}", "",
+             *([f"**DEV GATE: {gate}** — ≤ {DEV_GATE['missed_max']} missed, false flags ≤ 25%, self-agreement "
+                f"≥ 90% over 3 complete repeats, 0 failures, 0 supported on an uncited source "
+                f"(written before the run, CSO 4 Nov 16:11).", ""] if gate else []),
              "| Bar item | Value | Bar | Verdict |", "|---|---|---|---|"]
     fmt = {"1 missed defects": lambda v: f"{v} of {judged['defects']}",
            "2 false-flag rate": lambda v: "—" if v is None else f"{v:.1%} ({judged['false_flags']} of {judged['acceptable']})",
@@ -606,7 +629,8 @@ def cmd_score(a, *, sha_dir: Path | None = None) -> int:
     (out / "NEW_FLAGS.md").write_text("\n".join(nf) + "\n", encoding="utf-8")
     (out / "calibration.json").write_text(json.dumps({
         "prompt_sha12": sha_dir.name, "counting_rule": 3, "dev": a.dev, "held_out": a.held_out,
-        "bar": BAR, "verdict": {k: {"value": v, "met": ok} for k, (v, ok) in verdict.items()},
+        "bar": BAR, "dev_gate_rule": DEV_GATE, "dev_gate": gate,
+        "verdict": {k: {"value": v, "met": ok} for k, (v, ok) in verdict.items()},
         "new_flag_precision": prec, "policy_tests": pol,
         "missed": [{k: r.get(k) for k in ("generation_id", "kind", "heading", "source", "key", "error")}
                    for r in judged["missed"]]}, indent=2, default=str) + "\n", encoding="utf-8")

@@ -116,6 +116,8 @@ def _write(tmp, bid, make, repeats=1, skip=()):
 
 def test_bar_and_protocol_are_the_ones_written_before_calibration():
     assert C.BAR == {"missed_max": 0, "false_flag_max": 0.25, "self_agreement_min": 0.90}
+    assert C.DEV_GATE == {"missed_max": 2, "false_flag_max": 0.25, "self_agreement_min": 0.90,
+                          "failures_max": 0, "uncited_supported_max": 0}
     assert C.PROTOCOL_REPEATS == 3
 
 
@@ -453,3 +455,68 @@ def test_audit2_the_same_fault_is_not_counted_twice(gid, words):
     _, given = _ctx(rec)
     m = next(l for l in C.map_labels(rec) if words in (l.get("text") or l.get("a_text") or ""))
     assert any(r["ruling"] == "defect" and C._same_fault(m, r, given) for r in C.labels_for(rec))
+
+
+
+# --- the dev gate (CSO, 4 Nov 16:11) ---------------------------------------------------
+
+@needs_runs
+def test_dev_gate_proceeds_for_a_perfect_verifier_and_stops_for_a_silent_one(tmp_path):
+    _write(tmp_path / "p", DEV, _oracle, repeats=3)
+    C.cmd_score(_args("score", "--dev", DEV), sha_dir=tmp_path / "p")
+    assert json.loads((tmp_path / "p" / "scores" / "calibration.json").read_text())["dev_gate"] == "PROCEED"
+    _write(tmp_path / "s", DEV, lambda rec: {"verdicts": _supported_all(_ctx(rec)[0]), "unreached": []}, repeats=3)
+    C.cmd_score(_args("score", "--dev", DEV), sha_dir=tmp_path / "s")
+    assert json.loads((tmp_path / "s" / "scores" / "calibration.json").read_text())["dev_gate"] == "STOP"
+
+
+@needs_runs
+def test_dev_gate_stops_at_three_misses_but_not_at_two(tmp_path):
+    def drop(n):
+        def make(rec):
+            o = _oracle(rec)
+            if rec["generation_id"] == f"{DEV}/r1/S16":
+                o["unreached"] = o["unreached"][n:]
+            return o
+        return make
+    for n, want in ((0, "PROCEED"),):
+        _write(tmp_path / str(n), DEV, drop(n), repeats=3)
+        C.cmd_score(_args("score", "--dev", DEV), sha_dir=tmp_path / str(n))
+        assert json.loads((tmp_path / str(n) / "scores" / "calibration.json").read_text())["dev_gate"] == want
+    misses = [l["key"] for rec in C.records(C.RUNS_DIR / DEV) for l in C.labels_for(rec)
+              if l["ruling"] == "defect"][:3]
+    for k, want in ((2, "PROCEED"), (3, "STOP")):
+        skip = set(misses[:k])
+
+        def make(rec, skip=skip):
+            vin, given = _ctx(rec)
+            o = {"verdicts": _supported_all(vin), "unreached": [], "flagged": 0, "checks": [], "counts": {}, "call": {}}
+            for lab in C.labels_for(rec) + C.map_labels(rec):
+                if lab["ruling"] != "defect" or lab["key"] in skip:
+                    continue
+                kind, u = _unit_for(lab, vin, given)
+                if kind == "unreached":
+                    o["unreached"].append(u)
+                elif kind:
+                    o["verdicts"] = [v for v in o["verdicts"]
+                                     if not (v["sentence_id"] == u["sentence_id"] and v["verdict"] == "supported")]
+                    o["verdicts"].append(u)
+            return o
+        d = tmp_path / f"k{k}"
+        _write(d, DEV, make, repeats=3)
+        C.cmd_score(_args("score", "--dev", DEV), sha_dir=d)
+        got = json.loads((d / "scores" / "calibration.json").read_text())
+        n_missed = got["verdict"]["1 missed defects"]["value"]
+        assert got["dev_gate"] == ("PROCEED" if n_missed <= 2 else "STOP")
+
+
+@needs_runs
+def test_a_held_out_run_is_refused_until_the_dev_gate_has_passed(tmp_path):
+    sha = C.prompt_sha12()
+    a = _args("run", str(C.RUNS_DIR / HELD[0]), "--held-out", "--frozen", sha, "--yes")
+    assert C.cmd_run(a, client_factory=C.DryVerifier, now=lambda: QUIET, cal_dir=tmp_path) == 2
+    (tmp_path / sha / "scores").mkdir(parents=True)
+    (tmp_path / sha / "scores" / "calibration.json").write_text(json.dumps({"dev_gate": "STOP", "held_out": []}))
+    assert C.cmd_run(a, client_factory=C.DryVerifier, now=lambda: QUIET, cal_dir=tmp_path) == 2
+    (tmp_path / sha / "scores" / "calibration.json").write_text(json.dumps({"dev_gate": "PROCEED", "held_out": []}))
+    assert C.cmd_run(a, client_factory=C.DryVerifier, now=lambda: QUIET, cal_dir=tmp_path, sleep=lambda s: None) == 0

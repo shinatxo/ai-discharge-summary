@@ -149,7 +149,10 @@ def test_registered_as_seq_07v_model_step_and_60_s():
 # calibration reads (ADR-010 V5: an example copied from a labelled defect would
 # inflate recall on the held-out set too).
 PROMPT_EXAMPLES = ("skin scraping", "biopsy", "hearing test", "slow heartbeat", "bradycardia",
-                   "24-hour recording", "camera on a tube", "heart monitoring")
+                   "24-hour recording", "camera on a tube", "heart monitoring",
+                   # v0.3 (STATED, NOT TRUE)
+                   "tonsillitis", "infection of the tonsils", "a sling so that the bone heals",
+                   "at your gp surgery", "x-ray of your ankle was normal")
 
 
 def test_v02_dropped_the_glaucoma_example():
@@ -163,7 +166,7 @@ CAL_BATCHES = ("w6-pipeline-e09-m01-c02-p01-x5", "w6-pipeline-e09-m01-c02-p02-x5
 def test_prompt_body_only_and_its_sha():
     import hashlib
     text, sha = V.system_prompt()
-    assert text.startswith("You check a patient leaflet") and "v0.2 (2026-11-04)" not in text
+    assert text.startswith("You check a patient leaflet") and "v0.3 (2026-11-04)" not in text
     assert sha == hashlib.sha256(text.encode("utf-8")).hexdigest()
 
 
@@ -592,3 +595,57 @@ def test_the_v3_sequence_holds_back_a_sentence_whose_only_problem_is_a_second_un
     p["items"] += [valid, uncited] if order == "valid_first" else [uncited, valid]
     out, _, _ = _seq(p, p, _good7())
     assert out["patient_held_back"] == [{"section_id": "c_sections.3", "heading": "next_steps"}]
+
+
+
+@pytest.mark.skipif(not all((ROOT / "evals" / "runs" / b).is_dir() for b in CAL_BATCHES),
+                    reason="calibration batches not mounted")
+def test_the_prompt_shares_no_three_word_sequence_with_any_labelled_defect():
+    """v0.3 rule: the prompt must not teach the verifier the labelled defects (dev OR held-out)."""
+    import calibrate_verifier as CV
+
+    def grams(text):
+        w = re.findall(r"[a-z0-9']+", text.casefold())
+        return {" ".join(w[i:i + 3]) for i in range(len(w) - 2)}
+    prompt = grams(V.system_prompt()[0])
+    hits = set()
+    for b in CAL_BATCHES:
+        for rec in CV.records(ROOT / "evals" / "runs" / b):
+            for lab in CV.labels_for(rec) + CV.map_labels(rec):
+                if lab["ruling"] == "defect":
+                    hits |= prompt & grams(lab.get("text") or lab.get("a_text") or lab["sentence"])
+    assert hits == set()
+
+
+def test_v03_keeps_faithful_definitions_and_rejects_unstated_patient_facts():
+    text = " ".join(V.system_prompt()[0].split())
+    assert "STATED, NOT TRUE" in text and "What a term means" in text and "What happened to this patient" in text
+    for word in ("purpose", "cause", "place", "result", "outcome"):
+        assert word in text
+
+
+
+# Class vocabulary the verifier needs to recognise a category (kept on purpose); any OTHER
+# ruled-defect token or short blind-read phrase found in the prompt is an instance word = a leak.
+CLASS_VOCABULARY = {"because", "cause", "caused by", "to help", "improving", "scan", "camera test"}
+
+
+@pytest.mark.skipif(not all((ROOT / "evals" / "runs" / b).is_dir() for b in CAL_BATCHES),
+                    reason="calibration batches not mounted")
+def test_no_instance_word_from_a_labelled_defect_is_in_the_prompt():
+    import calibrate_verifier as CV
+
+    def norm(s):
+        return " " + " ".join(re.findall(r"[a-z0-9']+", s.casefold())) + " "
+    prompt = norm(V.system_prompt()[0])
+    found = set()
+    for b in CAL_BATCHES:
+        for rec in CV.records(ROOT / "evals" / "runs" / b):
+            for lab in CV.labels_for(rec) + CV.map_labels(rec):
+                if lab["ruling"] != "defect":
+                    continue
+                cues = [str(lab["token"]).replace("_", " ")] if lab.get("token") else []
+                if lab["source"] == "map" and lab.get("text") and len(lab["text"].split()) <= 4:
+                    cues.append(lab["text"])
+                found |= {c.casefold() for c in cues if norm(c).strip() and norm(c) in prompt}
+    assert found <= CLASS_VOCABULARY, found - CLASS_VOCABULARY

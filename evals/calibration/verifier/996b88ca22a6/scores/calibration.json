@@ -1,0 +1,224 @@
+{
+  "prompt_sha12": "996b88ca22a6",
+  "counting_rule": 3,
+  "dev": "w6-pipeline-e09-m01-c02-p04-x5",
+  "held_out": [],
+  "bar": {
+    "missed_max": 0,
+    "false_flag_max": 0.25,
+    "self_agreement_min": 0.9
+  },
+  "verdict": {
+    "1 missed defects": {
+      "value": 23,
+      "met": false
+    },
+    "2 false-flag rate": {
+      "value": 0.19444444444444445,
+      "met": true
+    },
+    "3 self-agreement": {
+      "value": 0.9683751363140676,
+      "met": true
+    },
+    "5 verifier failures": {
+      "value": 0,
+      "met": true
+    },
+    "6 supported on an uncited source": {
+      "value": 1,
+      "met": false
+    }
+  },
+  "new_flag_precision": null,
+  "policy_tests": {
+    "rows": 5,
+    "caught": 5
+  },
+  "missed": [
+    {
+      "generation_id": "w6-pipeline-e09-m01-c02-p04-x5/r1/A5",
+      "kind": "added",
+      "heading": "what_we_did",
+      "source": "map",
+      "key": "map:20",
+      "error": false
+    },
+    {
+      "generation_id": "w6-pipeline-e09-m01-c02-p04-x5/r1/S1",
+      "kind": "meaning",
+      "heading": "next_steps",
+      "source": "map",
+      "key": "map:22",
+      "error": false
+    },
+    {
+      "generation_id": "w6-pipeline-e09-m01-c02-p04-x5/r1/S13",
+      "kind": "qualifier",
+      "heading": "what_we_did",
+      "source": "ruling",
+      "key": "a258e5a9a3880b23",
+      "error": false
+    },
+    {
+      "generation_id": "w6-pipeline-e09-m01-c02-p04-x5/r1/S13",
+      "kind": "added/meaning",
+      "heading": "what_we_did",
+      "source": "map",
+      "key": "map:28",
+      "error": false
+    },
+    {
+      "generation_id": "w6-pipeline-e09-m01-c02-p04-x5/r1/S16",
+      "kind": "promise",
+      "heading": "next_steps",
+      "source": "ruling",
+      "key": "f1c8a20920b0e257",
+      "error": false
+    },
+    {
+      "generation_id": "w6-pipeline-e09-m01-c02-p04-x5/r1/S18",
+      "kind": "withheld",
+      "heading": "what_we_did",
+      "source": "map",
+      "key": "map:35",
+      "error": false
+    },
+    {
+      "generation_id": "w6-pipeline-e09-m01-c02-p04-x5/r1/S2",
+      "kind": "cause",
+      "heading": "what_we_did",
+      "source": "ruling",
+      "key": "1e1c76ff76061822",
+      "error": false
+    },
+    {
+      "generation_id": "w6-pipeline-e09-m01-c02-p04-x5/r1/S3",
+      "kind": "diagnosis",
+      "heading": "why_in_hospital",
+      "source": "ruling",
+      "key": "c5cb054443e4461e",
+      "error": false
+    },
+    {
+      "generation_id": "w6-pipeline-e09-m01-c02-p04-x5/r1/S3",
+      "kind": "meaning",
+      "heading": "next_steps",
+      "source": "map",
+      "key": "map:32",
+      "error": false
+    },
+    {
+      "generation_id": "w6-pipeline-e09-m01-c02-p04-x5/r2/S10",
+      "kind": "cause",
+      "heading": "what_we_did",
+      "source": "ruling",
+      "key": "711dcb90a6fce3de",
+      "error": false
+    },
+    {
+      "generation_id": "w6-pipeline-e09-m01-c02-p04-x5/r2/S16",
+      "kind": "promise",
+      "heading": "next_steps",
+      "source": "ruling",
+      "key": "f1c8a20920b0e257",
+      "error": false
+    },
+    {
+      "generation_id": "w6-pipeline-e09-m01-c02-p04-x5/r2/S4",
+      "kind": "test_term",
+      "heading": "why_in_hospital",
+      "source": "ruling",
+      "key": "f55efd7653d745e2",
+      "error": false
+    },
+    {
+      "generation_id": "w6-pipeline-e09-m01-c02-p04-x5/r2/S4",
+      "kind": "test_term",
+      "heading": "what_we_did",
+      "source": "ruling",
+      "key": "f1b746f548492595",
+      "error": false
+    },
+    {
+      "generation_id": "w6-pipeline-e09-m01-c02-p04-x5/r3/S10",
+      "kind": "cause",
+      "heading": "what_we_did",
+      "source": "ruling",
+      "key": "120d24c7018ffa6e",
+      "error": false
+    },
+    {
+      "generation_id": "w6-pipeline-e09-m01-c02-p04-x5/r3/S10",
+      "kind": "cause",
+      "heading": "what_we_did",
+      "source": "ruling",
+      "key": "369c63f8da9599be",
+      "error": false
+    },
+    {
+      "generation_id": "w6-pipeline-e09-m01-c02-p04-x5/r3/S16",
+      "kind": "promise",
+      "heading": "next_steps",
+      "source": "ruling",
+      "key": "313433ba07cdc5f3",
+      "error": false
+    },
+    {
+      "generation_id": "w6-pipeline-e09-m01-c02-p04-x5/r3/S4",
+      "kind": "test_term",
+      "heading": "what_we_did",
+      "source": "ruling",
+      "key": "e314040c95ced50a",
+      "error": false
+    },
+    {
+      "generation_id": "w6-pipeline-e09-m01-c02-p04-x5/r4/S10",
+      "kind": "cause",
+      "heading": "what_we_did",
+      "source": "ruling",
+      "key": "120d24c7018ffa6e",
+      "error": false
+    },
+    {
+      "generation_id": "w6-pipeline-e09-m01-c02-p04-x5/r4/S10",
+      "kind": "cause",
+      "heading": "what_we_did",
+      "source": "ruling",
+      "key": "369c63f8da9599be",
+      "error": false
+    },
+    {
+      "generation_id": "w6-pipeline-e09-m01-c02-p04-x5/r4/S13",
+      "kind": "qualifier",
+      "heading": "what_we_did",
+      "source": "ruling",
+      "key": "f455a80425929aaa",
+      "error": false
+    },
+    {
+      "generation_id": "w6-pipeline-e09-m01-c02-p04-x5/r4/S16",
+      "kind": "promise",
+      "heading": "next_steps",
+      "source": "ruling",
+      "key": "f1c8a20920b0e257",
+      "error": false
+    },
+    {
+      "generation_id": "w6-pipeline-e09-m01-c02-p04-x5/r5/S10",
+      "kind": "cause",
+      "heading": "what_we_did",
+      "source": "ruling",
+      "key": "120d24c7018ffa6e",
+      "error": false
+    },
+    {
+      "generation_id": "w6-pipeline-e09-m01-c02-p04-x5/r5/S10",
+      "kind": "cause",
+      "heading": "what_we_did",
+      "source": "ruling",
+      "key": "369c63f8da9599be",
+      "error": false
+    }
+  ]
+}

@@ -44,6 +44,8 @@ class FakeDynamoDB:
         self.get_calls: list[dict] = []
         self.update_calls: list[dict] = []
         self.transact_calls: list[list] = []
+        self.query_calls: list[dict] = []
+        self.page_size: int | None = None        # force pagination in query tests
 
     @staticmethod
     def _key_of(item_or_key):
@@ -58,11 +60,41 @@ class FakeDynamoDB:
                                 "ConditionExpression": ConditionExpression})
         pk, sk = self._key_of(Item)
         key = (TableName, pk, sk)
-        if ConditionExpression == "attribute_not_exists(PK) AND attribute_not_exists(SK)":
-            if key in self.items:
-                self._raise("ConditionalCheckFailedException", "exists")
+        # Strict (piece 6, 6 Nov 2026): a condition the fake does not implement is an error,
+        # never ignored - an ignored condition would let a never-overwrite test pass while
+        # the item was silently replaced.
+        if ConditionExpression not in self.PUT_CONDITIONS:
+            raise AssertionError(f"FakeDynamoDB: unsupported ConditionExpression {ConditionExpression!r}")
+        if ConditionExpression is not None and key in self.items:
+            self._raise("ConditionalCheckFailedException", "exists")
         self.items[key] = dict(Item)
         return {}
+
+    # Every supported put condition fails when an item with the same (PK, SK) exists.
+    PUT_CONDITIONS = (None, "attribute_not_exists(PK) AND attribute_not_exists(SK)",
+                      "attribute_not_exists(SK)")
+
+    def query(self, *, TableName, KeyConditionExpression, ExpressionAttributeValues,
+              ScanIndexForward=True, ExclusiveStartKey=None, Limit=None, ConsistentRead=False):
+        """Query on the partition key only ("PK = :pk"), sorted by SK in UTF-8 byte order
+        (DynamoDB's order for string sort keys). `page_size` (attribute) or Limit splits
+        the result into pages with LastEvaluatedKey, as DynamoDB does past 1 MB."""
+        if KeyConditionExpression != "PK = :pk":
+            raise AssertionError(f"FakeDynamoDB: unsupported KeyConditionExpression {KeyConditionExpression!r}")
+        pk = ExpressionAttributeValues[":pk"]["S"]
+        self.query_calls.append({"TableName": TableName, "pk": pk, "start": ExclusiveStartKey})
+        rows = sorted(((k[2], v) for k, v in self.items.items() if k[0] == TableName and k[1] == pk),
+                      key=lambda kv: kv[0].encode("utf-8"), reverse=not ScanIndexForward)
+        if ExclusiveStartKey is not None:
+            start = ExclusiveStartKey["SK"]["S"]
+            idx = next(i for i, (sk, _) in enumerate(rows) if sk == start)
+            rows = rows[idx + 1:]
+        n = min(x for x in (Limit, self.page_size, len(rows)) if x is not None)
+        page, rest = rows[:n], rows[n:]
+        out = {"Items": [dict(v) for _, v in page], "Count": len(page)}
+        if rest:
+            out["LastEvaluatedKey"] = {"PK": {"S": pk}, "SK": {"S": page[-1][0]}}
+        return out
 
     def get_item(self, *, TableName, Key, ConsistentRead=False):
         self.get_calls.append({"TableName": TableName, "Key": Key,

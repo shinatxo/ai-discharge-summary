@@ -1,5 +1,6 @@
 """The orchestrator — runs the ADR-009 pipeline end to end, fail-closed (WS1a step
-build piece 5, 5 Nov 2026; CSO rulings of 5 Nov 16:01 and 16:21).
+build piece 5, 5 Nov 2026; Shina (author/CSO) decisions of 5 Nov 16:21, informed by Codex
+recommendations of 16:01; piece 6, 6 Nov 2026: META under the deadline watch).
 
 Only this module knows the step order. It has no AWS code: the worker (app.py) passes
 in the Bedrock clients, the trace writer, the deadline, the clocks and a failure
@@ -17,7 +18,7 @@ PART C stays a DRAFT FOR CLINICIAN REVIEW; checklist item 3 is NOT MET.
 FAIL-CLOSED (ADR-009 Q5). The first failure fails the job: `on_failure` is called once,
 immediately — by the thread that found the failure, BEFORE that step's trace item is
 written and before requests already underway are drained — so the status row can say
-"failed" without waiting (CSO review, 5 Nov 2026 19:36). After it, no step and no request starts; requests already sent
+"failed" without waiting (Codex read-only code inspection, 5 Nov 2026 19:36). After it, no step and no request starts; requests already sent
 are waited for, because a thread left running when the handler returns is frozen by
 Lambda and would wake inside the next job. Only a successful 8b, with every step item and
 META written, returns a bundle. Release contract (CSO, 5 Nov 2026): no document bundle is
@@ -46,7 +47,13 @@ TRACES (ADR-009 (b), [A6]). One item per step, written as the step ends (SK
 STEP#<seq>#<name>#A<attempt>); META — the PIPELINE outcome, not delivery — once at the
 end. Everything traced goes through `scrub`. Before release every write is required (a
 failure fails the job: trace_write_failed / trace_item_too_large); after a failure,
-writes are best effort.
+writes are best effort. The required META write runs on the pool under the same deadline
+watch as the steps, and the clock is checked again after it (piece 6, decision 1): a META
+write still in flight at the deadline fails the job `deadline_reached` at that moment. Such a
+write may still land afterwards with status "complete" although nothing was released — META
+alone does not prove release; the ResultsTable item and the audit row do. Every item's `ttl`
+is `trace_ttl(started)` from the run's one start epoch, returned in Outcome.started_epoch so
+the worker's DELIVERY item matches.
 
 Fixed orchestrator codes: deadline_reached; cancelled (a step stopped because another
 failed — never the job's code); trace_write_failed; trace_item_too_large;
@@ -93,6 +100,7 @@ PROMPT_MODULES = {"extract_facts": extract, "reconcile_medications": reconcile,
 TRACE_SCHEMA_VERSION = 1
 TRACE_TTL_S = 30 * 86400
 TRACE_ITEM_MAX_BYTES = 400_000     # DynamoDB's item limit; the writer fails, never truncates
+META_RUNNING_KEY = "trace"         # failed_step when the deadline passes during the META write
 ATTEMPT = 1                        # regeneration (W10) writes A2, A3 ...
 WITHHELD = "[withheld]"
 ORCHESTRATOR_CODES = ("deadline_reached", "cancelled", "trace_write_failed",
@@ -165,9 +173,19 @@ def _iso(epoch: float) -> str:
 # --- what the orchestrator hands back ----------------------------------------------------
 
 class TraceWriter(Protocol):
-    """Item 6 implements this on TraceTable (PutItem, attribute_not_exists(SK)). A fake in
-    the tests. `put` raises on any failure; it never overwrites an existing SK."""
+    """Implemented on TraceTable by `trace_store.TraceStore` (item 6: PutItem with
+    attribute_not_exists(SK)). `put` raises on any failure — TraceItemTooLarge for an item
+    over the size bound — and never overwrites an existing SK."""
     def put(self, item: dict) -> None: ...
+
+
+class TraceItemTooLarge(Exception):
+    """Raised by a trace writer whose own size bound rejects an item (never truncated)."""
+
+
+def trace_ttl(started_epoch: float) -> int:
+    """ADR-009 (b): `ttl` = started_at + 30 days on every item of a run."""
+    return int(started_epoch + TRACE_TTL_S)
 
 
 @dataclass(frozen=True)
@@ -191,6 +209,7 @@ class Outcome:
     output_tokens: int | None
     pipeline_version: str
     generated_on: str
+    started_epoch: float = 0.0   # the run's one start epoch (wall clock): every item's ttl
 
 
 class _Failed(Exception):
@@ -321,6 +340,8 @@ class _Run:
                 err = "trace_item_too_large"
             else:
                 self.trace.put(item)
+        except TraceItemTooLarge:
+            err = "trace_item_too_large"
         except Exception:  # noqa: BLE001
             err = err or "trace_write_failed"
         if err and required and self.failure is None:
@@ -335,7 +356,7 @@ class _Run:
             "attempt": ATTEMPT, "started_at": _iso(started), "latency_ms": latency_ms,
             "input": scrub(inp, self.notes_sha256),
             "output": scrub(out, self.notes_sha256) if out is not None else None,
-            "error_code": code, "ttl": int(self.started_wall + TRACE_TTL_S),
+            "error_code": code, "ttl": trace_ttl(self.started_wall),
         }
         if spec.kind == "model":
             with self.lock:
@@ -357,7 +378,7 @@ class _Run:
             "notes_sha256": self.notes_sha256, "line_count": self.line_count,
             "model_id": self.model_id, "generated_on": generated_on,
             "model_calls": n, "input_tokens": it, "output_tokens": ot, "requests": reqs,
-            "ttl": int(self.started_wall + TRACE_TTL_S),
+            "ttl": trace_ttl(self.started_wall),
         }
 
     # steps ----------------------------------------------------------------------------
@@ -386,7 +407,7 @@ class _Run:
                 self.running.pop(name, None)
         latency_ms = int((self.now() - t0) * 1000)
         if code and code != "cancelled":
-            self.fail(name, code)                   # signal BEFORE the trace write (19:36 review)
+            self.fail(name, code)                   # signal BEFORE the trace write (Codex, 19:36)
         self.write(self._step_item(name, status, code, inp, out, started, latency_ms),
                    required=(status == "ok"))
         if code:
@@ -510,10 +531,20 @@ def run(notes: str, *, generation_id: str, clients: dict, model_id: str, trace: 
              model_id=model_id, prompt_caching=prompt_caching, trace=trace, deadline=deadline,
              now=now, wall=wall, sleep=sleep, jitter=jitter, on_failure=on_failure,
              step_runner=step_runner)
-    result = None
+    result, meta_written = None, False
     ex = ThreadPoolExecutor(max_workers=2, thread_name_prefix="pipeline")
     try:
         result = _coordinate(r, ex, notes, generated_on)
+        # The required META write (piece 6, decision 1): on the pool, under the deadline
+        # watch like every step, then the clock checked again — a write that returns after
+        # the deadline releases nothing.
+        running = {META_RUNNING_KEY: ex.submit(r.write, r.meta_item(True, generated_on), required=True)}
+        while running:
+            for name in r.next_done(running):
+                running.pop(name).result()
+        meta_written = True
+        if r.now() > r.deadline:
+            raise _Failed(META_RUNNING_KEY, "deadline_reached")
     except _Failed as f:
         r.fail(f.step, f.code)
     except Exception:  # noqa: BLE001 — a crash in the order must not let a bundle out
@@ -521,14 +552,12 @@ def run(notes: str, *, generation_id: str, clients: dict, model_id: str, trace: 
     finally:
         ex.shutdown(wait=True, cancel_futures=True)      # drain: nothing new, in-flight finishes
 
-    ok = r.failure is None and result is not None
-    try:
-        r.write(r.meta_item(ok, generated_on), required=ok)
-    except _Failed as f:
-        r.fail(f.step, f.code)
-        ok = False
+    ok = r.failure is None and result is not None and meta_written
+    if not ok and not meta_written:
+        r.write(r.meta_item(False, generated_on), required=False)   # best effort after a failure
     n, it, ot = r.accounting()
     if not ok:
-        return Outcome(False, r.failure, None, None, n, it, ot, pipeline_version(), generated_on)
+        return Outcome(False, r.failure, None, None, n, it, ot, pipeline_version(), generated_on,
+                       r.started_wall)
     return Outcome(True, None, result["bundle"], result["stored"], n, it, ot,
-                   pipeline_version(), generated_on)
+                   pipeline_version(), generated_on, r.started_wall)

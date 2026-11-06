@@ -340,18 +340,18 @@ Re-check both at W11, on a stack that runs the step prompts.
 ## Step 8 — delete, day 1
 
 *Why this order:* `delete-stack` fails on a table with deletion protection on, so protection comes
-off first. Today's template has **two** tables (`TraceTable` arrives with the W2 build — from then
-on, three).
+off first. The template has **three** protected tables since checklist item 6 (6 Nov 2026):
+audit, results and traces (`TraceTable`). (The 28 Sep stack had two.)
 
 ```bash
 source $EPH/env.sh
-for t in audit results; do aws dynamodb update-table --table-name $STACK-$t --no-deletion-protection-enabled --query "TableDescription.DeletionProtectionEnabled" --output text; done
+for t in audit results traces; do aws dynamodb update-table --table-name $STACK-$t --no-deletion-protection-enabled --query "TableDescription.DeletionProtectionEnabled" --output text; done
 aws cloudformation delete-stack --stack-name $STACK
 aws cloudformation wait stack-delete-complete --stack-name $STACK && echo DELETED
 aws cloudformation describe-stack-events --stack-name $STACK_ID --query "StackEvents[?ResourceStatus=='DELETE_SKIPPED'].[LogicalResourceId,PhysicalResourceId]" --output table
 ```
 
-Expect `False` twice, then `DELETED`, then exactly **two** `DELETE_SKIPPED` rows — `AuditKey` and
+Expect `False` three times, then `DELETED`, then exactly **two** `DELETE_SKIPPED` rows — `AuditKey` and
 `LedgerBucket`, both `Retain` by design. Everything else is gone, including the Cognito pool and the
 test user.
 

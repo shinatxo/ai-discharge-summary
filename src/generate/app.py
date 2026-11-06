@@ -50,7 +50,11 @@ trace (item 6) deliberately keeps intermediate step outputs and short citations 
 
 The execution role (infra/template.yaml): UpdateItem on the audit table with an attribute
 whitelist; PutItem on ResultsTable; KMS via DynamoDB only; bedrock:InvokeModel on the one
-pinned model; its own log group. TraceTable PutItem arrives with checklist item 6.
+pinned model; its own log group; PutItem on TraceTable only (checklist item 6, 6 Nov 2026;
+ReturnValues NONE), through `trace_store.TraceStore` on its own client (one request per
+write). Botocore's DEFAULT retries still apply to `_ddb` below (claim, marking, results,
+flip): ten attempts on a throttle or a timeout — a recorded residual (piece 6, decision 8;
+item-7 check), not changed here.
 """
 
 import hashlib
@@ -65,6 +69,7 @@ import boto3
 from botocore.config import Config
 from botocore.exceptions import BotoCoreError, ClientError
 
+import trace_store
 from pipeline import orchestrate
 
 # --- configuration (injected by the template; no hard-coded resource ids) --------------
@@ -102,11 +107,16 @@ def _bedrock_client(read_timeout: int):
 _BEDROCK = {rt: _bedrock_client(rt) for rt in sorted(set(orchestrate.READ_TIMEOUT_S.values()))}
 
 
+_TRACE_DDB = boto3.client("dynamodb", region_name=REGION, config=trace_store.CLIENT_CONFIG)
+
+
 def _make_trace_writer():
-    """Checklist item 6 returns the TraceTable writer here. Until then there is no trace
-    store, and a generation without a trace may not be released (CSO decision 6, 5 Nov
-    2026), so the worker fails closed with config_error."""
-    return None
+    """The TraceTable writer (checklist item 6). Without TRACE_TABLE_NAME there is no trace
+    store, and a generation without a trace may not be released (decision 6, 5 Nov 2026 —
+    Shina, author/CSO), so the worker fails closed with config_error."""
+    if not TRACE_TABLE_NAME:
+        return None
+    return trace_store.TraceStore(_TRACE_DDB, TRACE_TABLE_NAME)
 
 
 # --- small helpers ---------------------------------------------------------------------
@@ -327,14 +337,15 @@ def _write_results(user_sub: str, job_id: str, outcome: "orchestrate.Outcome") -
         return "results_write_error"
 
 
-def _deliver(writer, job_id: str, results: str, audit: str) -> None:
-    """Best effort: the DELIVERY trace item (META is the pipeline outcome)."""
+def _deliver(writer, job_id: str, results: str, audit: str, started_epoch: float) -> None:
+    """Best effort: the DELIVERY trace item (META is the pipeline outcome). Its failure does
+    not undo a release. `ttl` from the run's own start epoch, like every other item."""
     if writer is None:
         return
     try:
         writer.put({"PK": f"GEN#{job_id}", "SK": "DELIVERY", "outcome_of": "delivery",
                     "results": results, "audit": audit, "at": _now_iso(),
-                    "ttl": int(time.time()) + orchestrate.TRACE_TTL_S})
+                    "ttl": orchestrate.trace_ttl(started_epoch)})
     except Exception:  # noqa: BLE001
         logger.error(json.dumps({"event": "delivery_trace_error", "job_id": job_id}))
 
@@ -356,7 +367,7 @@ def _run_async_worker(event, context):
         logger.info(json.dumps({"event": f"worker_{claim}", "job_id": job_id}))
         return {"ok": claim == "not_claimed", "job_id": job_id, "status": claim}
 
-    # Input provenance (CSO review, 5 Nov 2026 19:36): the notes must be the notes the
+    # Input provenance (Codex read-only code inspection, 5 Nov 2026 19:36): the notes must be the notes the
     # dispatcher hashed into the audit row's input_sha256, or the record would describe a
     # different input. A missing hash cannot be verified and is treated as a mismatch.
     if event.get("input_sha256") != _sha256(notes):
@@ -384,7 +395,7 @@ def _run_async_worker(event, context):
                               prompt_caching=PROMPT_CACHING, trace=writer, deadline=deadline,
                               generated_on=generated_on, on_failure=on_failure)
     if not outcome.ok:
-        _deliver(writer, job_id, "not_written", marked.get("audit", "not_marked"))
+        _deliver(writer, job_id, "not_written", marked.get("audit", "not_marked"), outcome.started_epoch)
         logger.info(json.dumps({"event": "worker_failed", "job_id": job_id,
                                 "failed_step": outcome.failure.step, "error_code": outcome.failure.code,
                                 "model_calls": outcome.model_calls}))
@@ -398,11 +409,11 @@ def _run_async_worker(event, context):
                                 input_tokens=outcome.input_tokens, output_tokens=outcome.output_tokens,
                                 safety_net_gate=None)
         audit = _mark_failed(user_sub, job_id, f)
-        _deliver(writer, job_id, res, audit)
+        _deliver(writer, job_id, res, audit, outcome.started_epoch)
         return {"ok": False, "job_id": job_id, "status": "failed", "error_code": res}
 
     audit = _flip_complete(user_sub, job_id, outcome)
-    _deliver(writer, job_id, "written", audit)
+    _deliver(writer, job_id, "written", audit, outcome.started_epoch)
     logger.info(json.dumps({"event": "worker_complete" if audit == "complete" else "worker_flip_" + audit,
                             "job_id": job_id, "model_calls": outcome.model_calls,
                             "latency_ms": int((time.monotonic() - mono0) * 1000)}))

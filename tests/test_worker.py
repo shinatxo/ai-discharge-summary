@@ -133,7 +133,8 @@ def _status(load_status):
 def test_pipeline_run_releases_documents_and_flips_the_row(worker, fake_ddb):
     _seed_pending(fake_ddb)
     app, b, w = worker()
-    result = app.lambda_handler(_event(), Ctx())
+    event = _event()
+    result = app.lambda_handler(event, Ctx())
     assert result == {"ok": True, "job_id": JOB_ID, "status": "complete"}
 
     row, res = _row(fake_ddb), _res(fake_ddb)
@@ -153,7 +154,12 @@ def test_pipeline_run_releases_documents_and_flips_the_row(worker, fake_ddb):
     assert set(json.loads(res["units_json"]["S"])) == {"facts", "evidence", "flags", "resus",
                                                         "safety_net", "reconciliation"}
     assert set(json.loads(res["templates_json"]["S"])) == {"composition", "patient"}
-    assert res["generated_on"]["S"] == "2026-11-05" and int(res["ttl"]["N"]) > 0
+    # generated_on = the London date of the dispatch (the event's started_at). Piece 6, 6 Nov
+    # 2026: was hard-coded "2026-11-05", so this test passed only on the day it was written.
+    from datetime import datetime
+    from zoneinfo import ZoneInfo
+    london = datetime.fromisoformat(event["started_at"]).astimezone(ZoneInfo("Europe/London")).date().isoformat()
+    assert res["generated_on"]["S"] == london and int(res["ttl"]["N"]) > 0
     assert w.sks()[-2:] == ["META", "DELIVERY"]
     assert w.items[-1]["results"] == "written" and w.items[-1]["audit"] == "complete"
 
@@ -307,7 +313,8 @@ def test_a_model_step_failure_marks_failed_with_its_code(worker, fake_ddb, step)
 
 
 def test_failure_is_marked_before_inflight_requests_are_drained(worker, fake_ddb, monkeypatch):
-    """CSO correction 3: the screen sees `failed` while a sibling request is still running."""
+    """Codex correction 3 (16:01), adopted by Shina (author/CSO) 16:21: the screen sees
+    `failed` while a sibling request is still running."""
     from botocore.exceptions import ReadTimeoutError
     from pipeline import compose, reconcile
     release, five_a_in = threading.Event(), threading.Event()
@@ -346,7 +353,7 @@ def test_no_trace_store_fails_closed_before_any_model_call(load_worker, monkeypa
     app = load_worker()
     b = CountingBedrock()
     monkeypatch.setattr(app, "_BEDROCK", {90: b, 60: b})
-    result = app.lambda_handler(_event(), Ctx())             # item 6 not built: no writer
+    result = app.lambda_handler(_event(), Ctx())             # TRACE_TABLE_NAME unset: no writer
     assert result["error_code"] == "config_error" and b.calls == 0
     assert _row(fake_ddb)["error_code"]["S"] == "config_error"
     assert _row(fake_ddb)["error_message"]["S"] == FIXED_MESSAGE
@@ -472,7 +479,7 @@ def test_audit_attributes_written_are_on_the_role_whitelist(worker, fake_ddb, mo
     assert written and written <= allowed, written - allowed
 
 
-# --- CSO review 5 Nov 2026 19:36: input provenance ----------------------------------------
+# --- Codex read-only code inspection 5 Nov 2026 19:36: input provenance -----------------
 
 @pytest.mark.parametrize("bad", ["0" * 64, None])
 def test_a_mismatched_or_missing_input_hash_is_rejected_before_any_model_call(worker, fake_ddb, bad):
@@ -497,3 +504,80 @@ def test_a_duplicate_with_a_bad_hash_still_exits_without_marking(worker, fake_dd
     evt["input_sha256"] = "0" * 64
     assert app.lambda_handler(evt, Ctx())["status"] == "not_claimed"
     assert _row(fake_ddb)["status"]["S"] == "pending" and b.calls == 0
+
+
+# --- item 6 (6 Nov 2026): the real TraceTable writer through the worker --------------------
+
+TRACES = "discharge-audit-traces"
+
+
+def _real_writer_worker(load_worker, monkeypatch):
+    app = load_worker(extra_env={"TRACE_TABLE_NAME": TRACES})
+    b = CountingBedrock()
+    monkeypatch.setattr(app, "_BEDROCK", {90: b, 60: b})
+    return app, b
+
+
+def _trace_query(fake_ddb):
+    resp = fake_ddb.query(TableName=TRACES, KeyConditionExpression="PK = :pk",
+                          ExpressionAttributeValues={":pk": {"S": f"GEN#{JOB_ID}"}})
+    return [i["SK"]["S"] for i in resp["Items"]], resp["Items"]
+
+
+def test_make_trace_writer_is_the_trace_store_when_configured(load_worker):
+    app = load_worker(extra_env={"TRACE_TABLE_NAME": TRACES})
+    w = app._make_trace_writer()
+    assert isinstance(w, app.trace_store.TraceStore) and w._table == TRACES
+
+
+def test_worker_release_writes_thirteen_items_one_query_in_order_one_ttl(load_worker, monkeypatch, fake_ddb):
+    _seed_pending(fake_ddb)
+    app, _ = _real_writer_worker(load_worker, monkeypatch)
+    # app.py's wall clock steps 7 s per read (the orchestrator keeps the real clock: its
+    # `wall` default is bound at import), so a DELIVERY ttl taken from "now" would differ
+    # from the run's start epoch by whole seconds and the one-ttl check below would fail.
+    import itertools
+    real, ticks = app.time.time, itertools.count()
+    base = real()
+    monkeypatch.setattr(app.time, "time", lambda: base + 7.0 * next(ticks))
+    assert app.lambda_handler(_event(), Ctx())["status"] == "complete"
+    sks, items = _trace_query(fake_ddb)
+    assert len(sks) == 13 and sks[:2] == ["DELIVERY", "META"]
+    assert all(s.startswith("STEP#") for s in sks[2:]) and sks == sorted(sks, key=lambda s: s.encode())
+    assert len({i["ttl"]["N"] for i in items}) == 1                  # one epoch for every item
+    delivery = items[0]
+    assert delivery["results"]["S"] == "written" and delivery["audit"]["S"] == "complete"
+    assert not any("user_sub" in json.dumps(i) for i in items)
+
+
+def test_a_failed_delivery_write_does_not_undo_the_release(load_worker, monkeypatch, fake_ddb, caplog):
+    _seed_pending(fake_ddb)
+    app, _ = _real_writer_worker(load_worker, monkeypatch)
+    real_put = fake_ddb.put_item
+
+    def put(**kw):
+        if kw["TableName"] == TRACES and kw["Item"]["SK"]["S"] == "DELIVERY":
+            raise ClientError({"Error": {"Code": "ThrottlingException", "Message": "m"}}, "PutItem")
+        return real_put(**kw)
+    monkeypatch.setattr(fake_ddb, "put_item", put)
+    result = app.lambda_handler(_event(), Ctx())
+    assert result == {"ok": True, "job_id": JOB_ID, "status": "complete"}
+    assert _row(fake_ddb)["status"]["S"] == "complete" and _res(fake_ddb) is not None
+    sks, _ = _trace_query(fake_ddb)
+    assert len(sks) == 12 and "DELIVERY" not in sks
+    assert "delivery_trace_error" in caplog.text
+
+
+def test_a_failed_trace_write_before_release_fails_closed_with_the_real_writer(load_worker, monkeypatch, fake_ddb):
+    _seed_pending(fake_ddb)
+    app, _ = _real_writer_worker(load_worker, monkeypatch)
+    real_put = fake_ddb.put_item
+
+    def put(**kw):
+        if kw["TableName"] == TRACES and kw["Item"]["SK"]["S"].startswith("STEP#06#"):
+            raise ClientError({"Error": {"Code": "InternalServerError", "Message": "m"}}, "PutItem")
+        return real_put(**kw)
+    monkeypatch.setattr(fake_ddb, "put_item", put)
+    result = app.lambda_handler(_event(), Ctx())
+    assert result["error_code"] == "trace_write_failed" and _res(fake_ddb) is None
+    assert _row(fake_ddb)["status"]["S"] == "failed"

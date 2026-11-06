@@ -368,6 +368,51 @@ Resources:
       # ledger handles immutability.
       DeletionProtectionEnabled: true
 
+  # ---------------------------------------------------------------------------
+  # 2c) Step traces (ADR-009 (b); WS1a checklist item 6, 6 Nov 2026).
+  #
+  #   - PK = GEN#<generation_id>   (the job_id; NO user_sub anywhere in the table)
+  #   - SK = META | DELIVERY | STEP#<seq>#<step_name>#A<attempt>
+  #     One Query on PK returns the run sorted by SK (UTF-8 byte order): DELIVERY,
+  #     META, STEP#01 ... STEP#08b = step-number order; started_at gives execution
+  #     order (5b before 5a, 5a beside 6, 8a may finish before 7).
+  #   - Every item carries ttl = started_at + 30 days (per-item TTL; AWS deletes
+  #     expired items "within a few days"). Incident hold is an operator EXPORT,
+  #     never a ttl change.
+  #   - SSE-KMS with the SAME CMK as the audit and results tables (same data
+  #     class as ResultsTable). An ephemeral stack creates and uses its own key
+  #     (28 Sep 2026 decision; no ExistingCmkArn parameter).
+  #   - NO stream, NO PITR (PITR would keep deleted traces for 35 days, past the
+  #     30-day period the DPIA and notice state), NO WORM ledger: a working
+  #     record, not the audit trail.
+  #   - Only the worker may write (PutItem, ReturnValues NONE). Nobody reads it
+  #     through the application: no Lambda and no API route has a read grant
+  #     (HAZ-19). Reading traces is an operator action (infra/trace_query.py).
+  # ---------------------------------------------------------------------------
+  TraceTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: !Sub "${AWS::StackName}-traces"
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: PK
+          AttributeType: S
+        - AttributeName: SK
+          AttributeType: S
+      KeySchema:
+        - AttributeName: PK
+          KeyType: HASH
+        - AttributeName: SK
+          KeyType: RANGE
+      SSESpecification:
+        SSEEnabled: true
+        SSEType: KMS
+        KMSMasterKeyId: !Ref AuditKey
+      TimeToLiveSpecification:
+        AttributeName: ttl
+        Enabled: true
+      DeletionProtectionEnabled: true
+
   # ===========================================================================
   # SLICE 2 - the Bedrock-calling Lambda + its least-privilege execution role.
   # ===========================================================================
@@ -438,8 +483,11 @@ Resources:
         #     (ADR-009). Overwrites are DETECTED, not prevented: the stream
         #     copies old and new images to the WORM ledger (LedgerRetentionDays).
         #   - ReturnValues is pinned to NONE, which limits using a write to
-        #     read a row back (ReturnValuesOnConditionCheckFailure has no IAM
-        #     condition key; no code sets it).
+        #     read a row back. (Corrected 6 Nov 2026, piece 6: AWS documents the
+        #     dynamodb:ReturnValues key as also controlling
+        #     ReturnValuesOnConditionCheckFailure - this comment used to say it
+        #     had no IAM condition key. Documented, not yet verified live: an
+        #     item-7 check on the ephemeral stack. No code sets it.)
         #   The UpdateItem list includes ADR-009's future attributes
         #   (pipeline_version, failed_step, model_calls, safety_net_gate) so
         #   the W11 worker is not denied at the audit flip. PK and SK must be
@@ -525,6 +573,27 @@ Resources:
                 Action:
                   - dynamodb:PutItem
                 Resource: !GetAtt ResultsTable.Arn
+        # (a3) Trace table (ADR-009 (b), item 6): PutItem ONLY - no Get, Query,
+        #      Update, Delete or Scan. ReturnValues pinned to NONE: AWS documents
+        #      this key as covering ReturnValues and
+        #      ReturnValuesOnConditionCheckFailure, so a failed conditional put
+        #      cannot return an existing item (documented; verified live only on
+        #      the ephemeral stack, item 7). "Never overwrite" is NOT an IAM
+        #      property - no condition key can require a ConditionExpression; the
+        #      writer sends attribute_not_exists(SK) (src/generate/trace_store.py).
+        #      The dispatcher, status, ledger and canary roles get nothing here.
+        - PolicyName: trace-table-put-only
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Sid: PutTracesOnly
+                Effect: Allow
+                Action:
+                  - dynamodb:PutItem
+                Resource: !GetAtt TraceTable.Arn
+                Condition:
+                  StringEqualsIfExists:
+                    dynamodb:ReturnValues: NONE
         # (b) CMK - usable ONLY when the call flows through DynamoDB.
         #     DynamoDB actually performs at-rest encryption via a grant on its
         #     own behalf, so the data-plane PutItem path does not strictly need
@@ -625,6 +694,8 @@ Resources:
           # polling client to fetch. Hash-only audit invariant on AuditTable
           # therefore holds (ADR-002 + ADR-005).
           RESULTS_TABLE_NAME: !Ref ResultsTable
+          # Item 6: the step-trace store (PutItem only; see the role).
+          TRACE_TABLE_NAME: !Ref TraceTable
           BEDROCK_MODEL_ID: !Ref ModelId
           # Patient v2 second-pass toggle (off by default; see Parameters +
           # docs/PATIENT_V2_DESIGN.md). The patient prompt ships in the function
@@ -1851,6 +1922,9 @@ Outputs:
     Export:
       Name: !Sub "${AWS::StackName}-HttpApiDomain"
   # --- Slice 4b additions ---------------------------------------------------
+  TraceTableName:
+    Description: Step-trace table (ADR-009 (b)); read by the operator only (infra/trace_query.py)
+    Value: !Ref TraceTable
   ResultsTableName:
     Description: Transient outputs table (slice 4b, 24h TTL). NOT part of the audit log.
     Value: !Ref ResultsTable

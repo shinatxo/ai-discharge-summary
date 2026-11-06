@@ -2,7 +2,8 @@
 
 A scripted fake Bedrock (the harness's dry-run payloads, overridable per step), a fake
 clock and a fake trace writer. No AWS, no live calls, synthetic notes only; no note text
-is asserted into logs. CSO rulings of 5 Nov 2026 16:01 / 16:21 are cited by number.
+is asserted into logs. Decisions of 5 Nov 2026 16:21 (Shina, author/CSO, informed by Codex
+recommendations of 16:01) are cited by number.
 """
 
 from __future__ import annotations
@@ -650,7 +651,7 @@ def test_harness_client_sends_exactly_one_request(monkeypatch):
     assert seen[0].read_timeout == 60
 
 
-# --- CSO review 5 Nov 2026 19:36: three concurrency gaps --------------------------------
+# --- Codex read-only code inspection 5 Nov 2026 19:36: three concurrency gaps ------------
 
 def test_a_step_failure_is_signalled_before_its_trace_item_is_written():
     events = []

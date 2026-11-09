@@ -1,0 +1,102 @@
+{
+ "binding": {
+  "deployed_commit": "b57f4bce75abe0075d2dc4daf51a2bc72c3c9446",
+  "job_id": "01M6V35PH1GQBC07TSQNB7PVKS",
+  "notes_sha256": "deacfb8fe45187fb890a33b6e0c8ad2f5e6902c825879bb20931a69f80969fa3",
+  "pipeline_version": "d3df2826d8bbbdac21f62bec560889fb28bc4ce05829ba4b5bfb6d6ed940cad1",
+  "scenario": "S1",
+  "snapshot": "snap-1",
+  "stack_name": "discharge-eph-20261107"
+ },
+ "corpus": {
+  "corpus_file_sha256_at_export": "d510623686bff3fd851e69dc3943e014aad9b4aff87417fd80e030c71f604321",
+  "notes_sha256": "deacfb8fe45187fb890a33b6e0c8ad2f5e6902c825879bb20931a69f80969fa3",
+  "path": "src/canary/scenarios.json",
+  "scenario_id": "S1"
+ },
+ "export": {
+  "checker_sha256": "d8ebc36f429ab77c828769e06b41ecf220ca4ed5b12bde5d2859a1c1a87176c3",
+  "exported_at": "2026-11-09T15:49:34+00:00",
+  "exporter_sha256": "8c57e6bb6f5d5c191abe100cbd2fd3e5c902548f2ea067e4194995bbcf75b689",
+  "files": {
+   "audit.json": {
+    "bytes": 983,
+    "relation": "allow-list projection of the source audit.json: 19 fields, values unchanged; dropped PK, SK, user_sub, idempotency_key; re-serialised",
+    "sha256": "77977572069a2736f9433e5090df291daff7f82b89428ef337e7e5cd8255d313"
+   },
+   "release.json": {
+    "bytes": 36311,
+    "relation": "allow-list projection of the source results.json: 11 fields, values unchanged (JSON-string fields kept as the same strings); dropped PK, SK, user_sub, ttl; re-serialised",
+    "sha256": "7b1c9814d7d09a4f94dd31f0e66f1b949b2fbca8d2e87fbe8ca5a89086d4136f"
+   },
+   "trace.json": {
+    "bytes": 234445,
+    "relation": "byte-identical copy of the source trace.json (p7.py's saved form: DynamoDB values decoded, numbers as int)",
+    "sha256": "046b52dfcdd54aef990fcec00376ba2f5d2d75187ce319401089039d99703a39"
+   },
+   "trail.json": {
+    "bytes": 1247,
+    "relation": "computed from trace.json by evals/check_worked_example.trail_report",
+    "sha256": "fc55e7f1f5d3820086306708ee8640781a73b38430f2ca65941137d74b2e61ea"
+   }
+  }
+ },
+ "receipt": {
+  "check_json_sha256": "21af29b89180c2164a6c4fad02a021cf41e6f11f1f23c1bebbe58f4d0dd40165",
+  "coverage": {
+   "gate_documented_advice": true,
+   "resus_box_shown": true
+  },
+  "criteria": {
+   "admission_next_ok": true,
+   "audit_complete": true,
+   "e2e_le_120s": true,
+   "items_13_expected_sks": true,
+   "log_evidence_complete": true,
+   "no_failed_step_or_code": true,
+   "not_twelve_item_release_shape": true,
+   "one_page": true,
+   "overlap_5a_6": true,
+   "pipeline_version_audit": true,
+   "pipeline_version_meta": true,
+   "privacy_controls_fire": true,
+   "privacy_groups_nonempty": true,
+   "privacy_zero_hits": true,
+   "results_item": true,
+   "sk_byte_order": true,
+   "status_endpoint_complete": true
+  },
+  "hard_stops_clear": true,
+  "met": true,
+  "repeat_eligible": false
+ },
+ "schema": "w6-worked-example/1",
+ "source": {
+  "files": {
+   "_snapshot.json": {
+    "bytes": 64,
+    "sha256": "b597a5d2c2caecbd80e4c6990843d21c7edf27f947a92f0de93f9530e299771f"
+   },
+   "audit.json": {
+    "bytes": 1188,
+    "sha256": "36a6623cb73b7d13584298ef858d9716a28e13151a4b14e0fe2273e6dea34ca7"
+   },
+   "check.json": {
+    "bytes": 3676,
+    "sha256": "21af29b89180c2164a6c4fad02a021cf41e6f11f1f23c1bebbe58f4d0dd40165"
+   },
+   "results.json": {
+    "bytes": 36476,
+    "sha256": "99e08e066b02f519c9016e489a97ccbfabdc3d75a0fae02bd0a30acee999d2ac"
+   },
+   "trace.json": {
+    "bytes": 234445,
+    "sha256": "046b52dfcdd54aef990fcec00376ba2f5d2d75187ce319401089039d99703a39"
+   }
+  },
+  "manifest_attempt_n": 2,
+  "root": "~/eph-20261107 on the operator's machine (piece 7 evidence; not in the repository)",
+  "snapshot": "snap-1",
+  "snapshot_at": "2026-11-07T13:29:59.366354+00:00"
+ }
+}

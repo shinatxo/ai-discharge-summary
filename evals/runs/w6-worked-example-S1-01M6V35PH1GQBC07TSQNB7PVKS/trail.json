@@ -1,0 +1,71 @@
+{
+ "lines": {
+  "line_ids": 22,
+  "withheld_markers": 0
+ },
+ "rules_pipeline_version": "d3df2826d8bbbdac21f62bec560889fb28bc4ce05829ba4b5bfb6d6ed940cad1",
+ "step3_facts_to_lines": {
+  "cites_total": 38,
+  "cites_verified": 38,
+  "items_checked": 36,
+  "items_unverified": 0,
+  "suspicious_text_cites": 0,
+  "unverified_cites": [],
+  "unverified_items": []
+ },
+ "step6_sections_to_facts": {
+  "boxes": [
+   {
+    "heading": "resuscitation_status",
+    "part": "part_a"
+   },
+   {
+    "heading": "medications",
+    "part": "part_a"
+   },
+   {
+    "heading": "safety_net",
+    "part": "part_a"
+   },
+   {
+    "heading": "resuscitation_status",
+    "part": "part_b"
+   },
+   {
+    "heading": "medications",
+    "part": "part_b"
+   },
+   {
+    "heading": "safety_net",
+    "part": "part_b"
+   }
+  ],
+  "empty_non_box": [
+   {
+    "heading": "vte_assessment",
+    "part": "part_a"
+   }
+  ],
+  "facts_given": 28,
+  "flags": [],
+  "held_back": [],
+  "links_resolved": 49,
+  "sections": 19,
+  "unverified_links": []
+ },
+ "step7_sections_to_a_sections": {
+  "a_sections_given": 6,
+  "boxes": [
+   {
+    "heading": "medicines"
+   },
+   {
+    "heading": "safety_net"
+   }
+  ],
+  "empty_non_box": [],
+  "flags": [],
+  "links_resolved": 6,
+  "sections": 5
+ }
+}

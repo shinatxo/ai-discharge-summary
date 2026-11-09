@@ -1,0 +1,25 @@
+{
+ "completed_at": "2026-11-07T13:29:45.481407+00:00",
+ "draft": true,
+ "generation_id": "01M6V35PH1GQBC07TSQNB7PVKS",
+ "inference_profile": "n/a (on-demand)",
+ "input_sha256": "deacfb8fe45187fb890a33b6e0c8ad2f5e6902c825879bb20931a69f80969fa3",
+ "input_tokens": 4026,
+ "model_calls": 4,
+ "model_version": "anthropic.claude-sonnet-4-6 (eu-west-2, on-demand)",
+ "output_sha256": {
+  "gp_letter": "2867d5a271bc20b3eabf714c47f3d2874e6a4c1ba887d26b6b674a1f5dc66219",
+  "patient": "1af46c00ef96f313cbab7692d10ba6efb0770034798aa88b17420194d08a639b",
+  "summary": "75051c785e1cf0d0fe68a99d9cae0578fb25f1ba20001fff37992381c95ca1ba"
+ },
+ "output_tokens": 4800,
+ "output_type": "summary,gp_letter,patient",
+ "parse_ok": true,
+ "pipeline_version": "d3df2826d8bbbdac21f62bec560889fb28bc4ce05829ba4b5bfb6d6ed940cad1",
+ "request_region": "eu-west-2",
+ "reviewed_at": null,
+ "safety_net_gate": "pass",
+ "schema_version": 2,
+ "started_at": "2026-11-07T13:29:08.385523+00:00",
+ "status": "complete"
+}

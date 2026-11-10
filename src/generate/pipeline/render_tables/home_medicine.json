@@ -1,0 +1,18 @@
+{
+  "table": "home_medicine",
+  "version": 1,
+  "status": "stub",
+  "approved_by": null,
+  "approved_at": null,
+  "entries": [
+    {
+      "id": "h_stub",
+      "category": "stub",
+      "pattern": "stubhomemed",
+      "number_slot": false,
+      "examples": [
+        "stubhomemed"
+      ]
+    }
+  ]
+}

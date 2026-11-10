@@ -1,0 +1,39 @@
+{
+  "table": "lead_ins",
+  "version": 1,
+  "status": "stub",
+  "approved_by": null,
+  "approved_at": null,
+  "entries": [
+    {
+      "heading": "why_in_hospital",
+      "audience": "adult",
+      "text": ""
+    },
+    {
+      "heading": "why_in_hospital",
+      "audience": "parent_or_carer",
+      "text": ""
+    },
+    {
+      "heading": "what_we_did",
+      "audience": "adult",
+      "text": ""
+    },
+    {
+      "heading": "what_we_did",
+      "audience": "parent_or_carer",
+      "text": ""
+    },
+    {
+      "heading": "next_steps",
+      "audience": "adult",
+      "text": ""
+    },
+    {
+      "heading": "next_steps",
+      "audience": "parent_or_carer",
+      "text": ""
+    }
+  ]
+}

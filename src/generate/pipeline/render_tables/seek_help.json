@@ -1,0 +1,18 @@
+{
+  "table": "seek_help",
+  "version": 1,
+  "status": "stub",
+  "approved_by": null,
+  "approved_at": null,
+  "entries": [
+    {
+      "id": "s_stub",
+      "category": "stub",
+      "pattern": "stubseekhelp",
+      "number_slot": false,
+      "examples": [
+        "stubseekhelp"
+      ]
+    }
+  ]
+}

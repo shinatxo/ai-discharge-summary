@@ -1,0 +1,25 @@
+{
+  "table": "phrases",
+  "version": 1,
+  "status": "stub",
+  "approved_by": null,
+  "approved_at": null,
+  "entries": [
+    {
+      "id": "p_inferred",
+      "kind": "inferred",
+      "forms": [
+        "(inferred — not documented, confirm)"
+      ],
+      "plain": {
+        "adult": "(the notes point to this but do not say it; the team must check it)",
+        "parent_or_carer": "(the notes point to this but do not say it; the team must check it)"
+      },
+      "keeps": {},
+      "flag_words": [
+        "do not",
+        "must"
+      ]
+    }
+  ]
+}

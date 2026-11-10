@@ -1,0 +1,21 @@
+{
+  "table": "glossary",
+  "version": 1,
+  "status": "stub",
+  "approved_by": null,
+  "approved_at": null,
+  "entries": [
+    {
+      "id": "g_stub",
+      "forms": [
+        "stubterm"
+      ],
+      "case_sensitive": false,
+      "plain": "placeholder words",
+      "category": "other",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    }
+  ]
+}

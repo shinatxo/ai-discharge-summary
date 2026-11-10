@@ -1,0 +1,13 @@
+{
+  "table": "required_content",
+  "version": 1,
+  "status": "stub",
+  "approved_by": null,
+  "approved_at": null,
+  "entries": [
+    {
+      "id": "r_stub",
+      "pattern": "stubrequired"
+    }
+  ]
+}

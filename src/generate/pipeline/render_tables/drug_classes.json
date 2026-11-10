@@ -1,0 +1,19 @@
+{
+  "table": "drug_classes",
+  "version": 1,
+  "status": "stub",
+  "approved_by": null,
+  "approved_at": null,
+  "entries": [
+    {
+      "id": "d_stub",
+      "forms": [
+        "stubdrug"
+      ],
+      "case_sensitive": false,
+      "plain": "a placeholder medicine",
+      "origin": "general",
+      "flag_words": []
+    }
+  ]
+}

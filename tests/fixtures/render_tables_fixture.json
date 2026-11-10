@@ -1,0 +1,357 @@
+{
+  "_comment": "Invented fixture tables for the renderer's tests (item 3 R1 step 2), written from c0.2's rules and general vocabulary — not the step-3 tables, not CSO-approved, never used on the 90.",
+  "tables": {
+    "glossary": {
+      "table": "glossary",
+      "version": 1,
+      "status": "approved",
+      "approved_by": "TEST FIXTURE — not a CSO approval",
+      "approved_at": "2026-11-10T00:00:00Z",
+      "entries": [
+        {
+          "id": "g_quinsy",
+          "forms": [
+            "peritonsillar abscess",
+            "quinsy"
+          ],
+          "case_sensitive": false,
+          "plain": "a collection of pus beside the tonsil",
+          "category": "condition",
+          "origin": "general",
+          "flag_words": [],
+          "keeps": {}
+        },
+        {
+          "id": "g_needle",
+          "forms": [
+            "needle aspiration"
+          ],
+          "case_sensitive": false,
+          "plain": "removing fluid through a needle",
+          "category": "procedure",
+          "origin": "general",
+          "flag_words": [],
+          "keeps": {}
+        },
+        {
+          "id": "g_aspiration",
+          "forms": [
+            "aspiration"
+          ],
+          "case_sensitive": false,
+          "plain": "removing fluid",
+          "category": "procedure",
+          "origin": "general",
+          "flag_words": [],
+          "keeps": {}
+        },
+        {
+          "id": "g_ent",
+          "forms": [
+            "ENT"
+          ],
+          "case_sensitive": true,
+          "plain": "ear, nose and throat",
+          "category": "other",
+          "origin": "general",
+          "flag_words": [],
+          "keeps": {}
+        },
+        {
+          "id": "g_tonsillectomy",
+          "forms": [
+            "tonsillectomy"
+          ],
+          "case_sensitive": false,
+          "plain": "an operation to remove the tonsils",
+          "category": "procedure",
+          "origin": "general",
+          "flag_words": [],
+          "keeps": {}
+        },
+        {
+          "id": "g_iv",
+          "forms": [
+            "IV"
+          ],
+          "case_sensitive": true,
+          "plain": "into a vein",
+          "category": "treatment",
+          "origin": "general",
+          "flag_words": [],
+          "keeps": {}
+        }
+      ]
+    },
+    "drug_classes": {
+      "table": "drug_classes",
+      "version": 1,
+      "status": "approved",
+      "approved_by": "TEST FIXTURE — not a CSO approval",
+      "approved_at": "2026-11-10T00:00:00Z",
+      "entries": [
+        {
+          "id": "d_pen",
+          "forms": [
+            "phenoxymethylpenicillin"
+          ],
+          "case_sensitive": false,
+          "plain": "an antibiotic",
+          "origin": "general",
+          "flag_words": []
+        }
+      ]
+    },
+    "phrases": {
+      "table": "phrases",
+      "version": 1,
+      "status": "approved",
+      "approved_by": "TEST FIXTURE — not a CSO approval",
+      "approved_at": "2026-11-10T00:00:00Z",
+      "entries": [
+        {
+          "id": "p_primary",
+          "kind": "label",
+          "forms": [
+            "primary"
+          ],
+          "plain": {
+            "adult": "Main problem:",
+            "parent_or_carer": "Main problem:"
+          },
+          "keeps": {},
+          "flag_words": []
+        },
+        {
+          "id": "p_secondary",
+          "kind": "label",
+          "forms": [
+            "secondary"
+          ],
+          "plain": {
+            "adult": "Also found:",
+            "parent_or_carer": "Also found:"
+          },
+          "keeps": {},
+          "flag_words": []
+        },
+        {
+          "id": "p_background",
+          "kind": "label",
+          "forms": [
+            "background"
+          ],
+          "plain": {
+            "adult": "Health conditions you have:",
+            "parent_or_carer": "Health conditions your child has:"
+          },
+          "keeps": {},
+          "flag_words": []
+        },
+        {
+          "id": "p_query",
+          "kind": "query",
+          "forms": [
+            "?",
+            "query"
+          ],
+          "plain": {
+            "adult": "possible",
+            "parent_or_carer": "possible"
+          },
+          "keeps": {
+            "?": "possible",
+            "query": "possible"
+          },
+          "flag_words": []
+        },
+        {
+          "id": "p_patient",
+          "kind": "person",
+          "forms": [
+            "the patient"
+          ],
+          "plain": {
+            "adult": "you",
+            "parent_or_carer": "your child"
+          },
+          "keeps": {},
+          "flag_words": []
+        },
+        {
+          "id": "p_fluids",
+          "kind": "literal",
+          "forms": [
+            "oral fluids"
+          ],
+          "plain": {
+            "adult": "drinks",
+            "parent_or_carer": "drinks"
+          },
+          "keeps": {},
+          "flag_words": []
+        },
+        {
+          "id": "p_inferred",
+          "kind": "inferred",
+          "forms": [
+            "(inferred — not documented, confirm)"
+          ],
+          "plain": {
+            "adult": "(the notes point to this but do not say it; the team must check it)",
+            "parent_or_carer": "(the notes point to this but do not say it; the team must check it)"
+          },
+          "keeps": {},
+          "flag_words": [
+            "do not",
+            "must"
+          ]
+        }
+      ]
+    },
+    "withheld": {
+      "table": "withheld",
+      "version": 1,
+      "status": "approved",
+      "approved_by": "TEST FIXTURE — not a CSO approval",
+      "approved_at": "2026-11-10T00:00:00Z",
+      "entries": [
+        {
+          "id": "w_wells",
+          "category": "risk_score",
+          "pattern": "Wells score(?: of)? \\d+",
+          "number_slot": true,
+          "examples": [
+            "Wells score 4",
+            "Wells score of 4"
+          ]
+        },
+        {
+          "id": "w_level",
+          "category": "risk_level",
+          "pattern": "(?:low|moderate|high) risk",
+          "number_slot": false,
+          "examples": [
+            "high risk",
+            "low risk"
+          ]
+        },
+        {
+          "id": "w_police",
+          "category": "police",
+          "pattern": "police(?: informed| involved)?",
+          "number_slot": false,
+          "examples": [
+            "police informed",
+            "police"
+          ]
+        }
+      ]
+    },
+    "seek_help": {
+      "table": "seek_help",
+      "version": 1,
+      "status": "approved",
+      "approved_by": "TEST FIXTURE — not a CSO approval",
+      "approved_at": "2026-11-10T00:00:00Z",
+      "entries": [
+        {
+          "id": "s_ed",
+          "category": "seek_help",
+          "pattern": "attend the emergency department",
+          "number_slot": false,
+          "examples": [
+            "attend the emergency department"
+          ]
+        }
+      ]
+    },
+    "home_medicine": {
+      "table": "home_medicine",
+      "version": 1,
+      "status": "approved",
+      "approved_by": "TEST FIXTURE — not a CSO approval",
+      "approved_at": "2026-11-10T00:00:00Z",
+      "entries": [
+        {
+          "id": "h_supply",
+          "category": "home_medicine",
+          "pattern": "antibiotic supply given",
+          "number_slot": false,
+          "examples": [
+            "antibiotic supply given"
+          ]
+        }
+      ]
+    },
+    "required_content": {
+      "table": "required_content",
+      "version": 1,
+      "status": "approved",
+      "approved_by": "TEST FIXTURE — not a CSO approval",
+      "approved_at": "2026-11-10T00:00:00Z",
+      "entries": [
+        {
+          "id": "r_clinic",
+          "pattern": "clinic"
+        },
+        {
+          "id": "r_referral",
+          "pattern": "referr\\w*"
+        },
+        {
+          "id": "r_appointment",
+          "pattern": "appointments?"
+        },
+        {
+          "id": "r_review",
+          "pattern": "review\\w*"
+        },
+        {
+          "id": "r_gp",
+          "pattern": "GP"
+        }
+      ]
+    },
+    "lead_ins": {
+      "table": "lead_ins",
+      "version": 1,
+      "status": "approved",
+      "approved_by": "TEST FIXTURE — not a CSO approval",
+      "approved_at": "2026-11-10T00:00:00Z",
+      "entries": [
+        {
+          "heading": "why_in_hospital",
+          "audience": "adult",
+          "text": "Why you came in:"
+        },
+        {
+          "heading": "why_in_hospital",
+          "audience": "parent_or_carer",
+          "text": "Why your child came in:"
+        },
+        {
+          "heading": "what_we_did",
+          "audience": "adult",
+          "text": "What the team did:"
+        },
+        {
+          "heading": "what_we_did",
+          "audience": "parent_or_carer",
+          "text": "What the team did:"
+        },
+        {
+          "heading": "next_steps",
+          "audience": "adult",
+          "text": "What happens next:"
+        },
+        {
+          "heading": "next_steps",
+          "audience": "parent_or_carer",
+          "text": "What happens next:"
+        }
+      ]
+    }
+  },
+  "general_words": "# status: approved\na\nadvised\nan\nand\nantibiotic\nat\navoid\nbeside\ncell\ncheck\nchild\nclinic\ncollection\ncontact\ncount\ndrinks\near\nencouraged\nexamination\nfever\nfluid\nhad\nin\nintake\ninto\nneedle\nnose\nof\non\npus\nremoving\nrepeat\nreview\nreviewed\nright\nsore\nsports\nswallow\nthe\nthree\nthroat\nthrough\nto\ntonsil\nunable\nuntil\nvein\nweek\nweeks\nwhite\nyou\nyour\n"
+}

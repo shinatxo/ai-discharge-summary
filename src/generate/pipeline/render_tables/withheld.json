@@ -1,0 +1,18 @@
+{
+  "table": "withheld",
+  "version": 1,
+  "status": "stub",
+  "approved_by": null,
+  "approved_at": null,
+  "entries": [
+    {
+      "id": "w_stub",
+      "category": "stub",
+      "pattern": "stubwithheld",
+      "number_slot": false,
+      "examples": [
+        "stubwithheld"
+      ]
+    }
+  ]
+}

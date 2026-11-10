@@ -558,3 +558,33 @@ def test_no_client_fails_closed():
 
 def test_shape_errors_on_good_payload_is_empty():
     assert shape_errors(_good(), record_patient_version_schema()) == []
+
+
+# --- v4 (9 Nov 2026): S7 as amended by Shina (author/CSO), 2(a); D8 ----------------
+# Invented sentences. Both patterns only add flags (v3's forms kept).
+
+@pytest.mark.parametrize("text", [
+    "The risk of it happening again is small.", "You are at low risk.", "It was a low-risk procedure.",
+    "The risks were explained.", "Your risk score was low.", "A risk assessment was done.",
+])
+def test_v4_any_risk_word_is_sensitive(text):
+    assert P._SENSITIVE.search(text)
+    assert ("sensitive_text", "next_steps", None, None) in _checks(_run(_with("next_steps", text)))
+
+
+@pytest.mark.parametrize("text", ["We went for a brisk walk.", "Mark it with an asterisk."])
+def test_v4_risk_inside_another_word_is_not_sensitive(text):
+    assert not P._SENSITIVE.search(text)
+
+
+@pytest.mark.parametrize("text", [
+    "You will be told your results.", "You'll be told the plan.", "You’ll be told the plan.",
+    "Your child will be told about the plan.",
+])
+def test_v4_will_be_told_is_promise_wording(text):
+    assert P._PROMISE.search(text)
+    assert ("promise_shaped", "next_steps", None, None) in _checks(_run(_with("next_steps", text)))
+
+
+def test_v4_told_in_the_past_is_not_promise_wording():
+    assert not P._PROMISE.search("You were told about the plan.")

@@ -31,6 +31,19 @@ glosses ("adjust" for "uptitrate") are outside every list.
 The step reports these as checks (8b shows them to the reviewing clinician —
 item 4 carry-in); evals/score_patient.py computes them from the saved sections
 with these same functions, so older batches are measured too.
+
+v4 (9 Nov 2026, scorer v4 — decision S7 of 4 Nov as amended by Shina (author/CSO)
+on 9 Nov, 2(a); D8 of the step 7 decision round 2; design adopted 9 Nov ~21:15;
+committed before the item-3 R1 run). Three of S7's five items live here:
+  - "damage" added to the certainty words (S16's "no sign of damage" was missed);
+  - Hb added to the words that justify "blood test" (the only change that can
+    REMOVE flags; under 2(a) each flag it removes on the p0.4 re-score must have
+    been ruled acceptable at p0.4, or the entry is not adopted);
+  - the dash, in the stricter form: a "label — content" diagnosis line is
+    reached only when its head phrase (as in v3; head_words unchanged) AND every
+    segment after a dash are reached, each by the same rule.
+The other two (risk wording beyond the four forms; "will be told") are in
+compose_patient.py's _SENSITIVE and _PROMISE.
 """
 
 from __future__ import annotations
@@ -57,7 +70,8 @@ _REASON_FRAME = re.compile(
 _CERTAINTY = re.compile(
     r"\b(?:fully|full|completely|complete|recovered|recovery|normal|normally|healed|gone|cured|damaged|"
     r"closed|permanent|permanently|temporary|temporarily|settled|safe|safely|careful|carefully|closely|"
-    r"gently|successful|successfully|well|resolved|cleared|clear|fine|healthy)\b", re.IGNORECASE)
+    r"gently|successful|successfully|well|resolved|cleared|clear|fine|healthy|"
+    r"damage)\b", re.IGNORECASE)                    # v4 (9 Nov 2026, S7): + damage
 
 # Qualifier groups: (name, in the cited text, an equivalent that keeps it in C).
 _QUALIFIERS = (
@@ -102,7 +116,8 @@ _TEST_TERMS = (
      r"\becg\b|heart trac|telemetry|\bholt[eo]r\b|\b24\s*-?\s*h(?:ou)?rs?\s+tape\b"),   # CSO 3 Nov: +24hr tape, Holter / Holtor
     ("blood test", r"\bblood tests?\b",
      r"\bblood|\bfbc\b|u&e|\bcrp\b|troponin|hba1c|\binr\b|lactate|\bgas\b|\bvbg\b|\babg\b|\blfts?\b|"
-     r"\bculture|\bpanel\b|\btfts?\b"),                       # CSO 3 Nov: +TFTs
+     r"\bculture|\bpanel\b|\btfts?\b|"                        # CSO 3 Nov: +TFTs
+     r"\bhb\b"),                                              # v4 (9 Nov 2026, S7 as amended 2(a)): +Hb
     ("urine test", r"\burine tests?\b", r"\burin|dipstick|\bmsu\b"),
 )
 _TEST_TERMS = tuple((n, re.compile(a, re.IGNORECASE), re.compile(b, re.IGNORECASE)) for n, a, b in _TEST_TERMS)
@@ -195,6 +210,8 @@ def diagnosis_lines(text: str) -> list[str]:
 
 
 _HEAD_END = re.compile(r"\s*(?:[(;,:]|\s[-–—]\s|—)")
+# v4 (9 Nov 2026, S7's dash item, the stricter form): the same dash _HEAD_END cuts at.
+_DASH = re.compile(r"\s[-–—]\s|—")
 
 
 def head_words(line: str) -> list[str]:
@@ -203,9 +220,17 @@ def head_words(line: str) -> list[str]:
     return [stem(w) for w in _WORD.findall(head) if (len(w) >= 3 or w.isupper()) and w.lower() not in _STOP]
 
 
+def _reached(words: list[str], have: set[str]) -> bool:
+    """A head phrase is reached by its last content word or by at least half its content words."""
+    return words[-1] in have or len(set(words) & have) >= math.ceil(len(set(words)) / 2)
+
+
 def diagnoses_unreached(given: list[dict], prose: str) -> list[tuple[str, int, str]]:
     """(section_id, line number from 1, line) for each diagnosis line of a GIVEN
-    diagnosis section whose head phrase step 7's prose does not reach."""
+    diagnosis section that step 7's prose does not reach: its head phrase (v3) is not
+    reached, OR (v4, 9 Nov 2026, the stricter dash form) a segment after a dash is not
+    reached (each segment judged by its own head phrase, the same rule). Never fewer
+    lines than v3: the v3 test is one side of the conjunction."""
     have = stems(prose)
     out = []
     for s in given:
@@ -213,9 +238,10 @@ def diagnoses_unreached(given: list[dict], prose: str) -> list[tuple[str, int, s
             continue
         for i, line in enumerate(diagnosis_lines(s["text"]), 1):
             words = head_words(line)
-            if not words:
+            segments = [w for w in (head_words(seg) for seg in _DASH.split(line)[1:]) if w]
+            if not words and not segments:
                 continue
-            reached = words[-1] in have or len(set(words) & have) >= math.ceil(len(set(words)) / 2)
+            reached = (not words or _reached(words, have)) and all(_reached(w, have) for w in segments)
             if not reached:
                 out.append((s["section_id"], i, line))
     return out

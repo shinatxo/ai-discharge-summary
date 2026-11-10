@@ -220,7 +220,7 @@ def test_review_file_quotes_and_report_files(tmp_path):
 
 
 def test_translation_scenarios_are_pre_declared():
-    assert SP.TRANSLATION_SCENARIOS == ("C7",) and SP.METRIC_VERSION == 3
+    assert SP.TRANSLATION_SCENARIOS == ("C7",) and SP.METRIC_VERSION == 4      # v4, 9 Nov 2026 (was 3)
 
 
 # --- metric v2 (2 Nov 2026, F1-F5): line 13, promise (report only), refusals ------
@@ -320,7 +320,7 @@ def test_review_file_states_the_line_14_standard(tmp_path):
     review = (tmp_path / "review_patient.md").read_text()
     assert "(bar 14, written 3 Nov 2026 before the p0.3 batch)" in review and "certainty `fine` (bar 14)" in review
     pv = (tmp_path / "PATIENT_VERSION.md").read_text()
-    assert "| 14 Meaning flags" in pv and "## Per scenario — meaning flags (bar line 14, v3)" in pv
+    assert "| 14 Meaning flags" in pv and "## Per scenario — meaning flags (bar line 14, v4)" in pv   # was v3
 
 
 def test_line_14_diagnosis_key_is_per_leaflet():
@@ -330,3 +330,33 @@ def test_line_14_diagnosis_key_is_per_leaflet():
     c = score(record(_with("why_in_hospital", "You came in with chest pain.")))
     key = lambda r: [x["key"] for x in r["review"] if x["kind"] == "diagnosis"]  # noqa: E731
     assert key(a) != key(b) and key(a) == key(c) and len(key(a)) == 1
+
+
+# --- v4 (9 Nov 2026): flags change, the verdict rule does not (Codex 20:57:39) ----------
+
+def test_v4_a_retained_defect_with_a_new_unruled_flag_is_not_met():
+    r = score(record(_with("what_we_did", "Blood tests showed your heart is fine. There was no sign of damage.")))
+    rows = {(x["kind"], x["token"]): x["key"] for x in r["review"]}
+    assert ("certainty", "fine") in rows and ("certainty", "damage") in rows        # damage: v4
+    ruled = score(record(_with("what_we_did", "Blood tests showed your heart is fine. There was no sign of damage.")),
+                  rulings={rows[("certainty", "fine")]: "defect"})
+    b, sm = bar_of([ruled])
+    assert sm["review"]["certainty"]["defect"] == 1 and sm["review"]["certainty"]["pending"] >= 1
+    assert b["14"][1] == "NOT MET"                                  # a defect wins over pending
+    all_acc = {x["key"]: "acceptable" for x in r["review"] if x["kind"] in SP.MEANING_KINDS
+               and x["key"] != rows[("certainty", "damage")]}
+    b, _ = bar_of([score(record(_with("what_we_did", "Blood tests showed your heart is fine. "
+                                      "There was no sign of damage.")), rulings=all_acc)])
+    assert b["14"][1] == "PENDING REVIEW"                           # nothing a defect, one pending
+
+
+def test_v4_a_new_risk_flag_is_line_9_and_leaves_it_pending():
+    r = score(record(_with("next_steps", "You will see the heart team in 6 weeks. The risk of this is low.")))
+    sens = [x for x in r["review"] if x["kind"] == "sensitive"]
+    assert len(sens) == 1 and SP.BAR_OF["sensitive"] == 9
+    assert bar_of([r])[0]["9"][1] == "PENDING REVIEW"
+
+
+def test_v4_will_be_told_is_promise_and_report_only():
+    r = score(record(_with("next_steps", "You will see the heart team in 6 weeks. You will be told the plan.")))
+    assert [x["kind"] for x in r["review"] if x["kind"] == "promise"] == ["promise"] and SP.BAR_OF["promise"] is None

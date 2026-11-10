@@ -76,6 +76,22 @@ call). Lines 1-13 are unchanged. Added: line 14 (G2, stricter, written before th
                               a diagnosis flag's key includes the leaflet's prose, so each
                               leaflet is ruled on its own; no verdict logic changed.
 
+Metric v4 (9 Nov 2026, item 3 R1 step 1 — decision S7 of 4 Nov as amended by Shina
+(author/CSO) on 9 Nov, 2(a); D8 of the step 7 decision round 2; design adopted 9 Nov
+~21:15; committed before the R1 development run, one instrument for development and
+acceptance). Lines 1-14, their thresholds and their ruling standards are unchanged;
+the five S7 fixes are in the shared check functions (pipeline/meaning.py and
+compose_patient.py's _SENSITIVE / _PROMISE), so step 7's own checks, 8b's meaning
+warnings and this scorer measure the same thing:
+  - line 14: "damage" a certainty word; a "label — content" diagnosis line reached
+    only when its head phrase AND every segment after a dash are reached (stricter);
+    Hb justifies "blood test" (the one change that can remove flags — allowed only
+    where each removed flag was ruled acceptable at p0.4, shown by the p0.4 re-score);
+  - line 9: any risk word is a sensitive flag (beside v3's four forms);
+  - promise (report only): "will be told".
+Every retained flag keeps its key, so its ruling attaches as before; added flags are
+PENDING until ruled. Any later change is v5, CSO-ruled, before acceptance.
+
 A generation whose C cannot be assembled (5a or 5b missing) fails every line that
 needs the assembled leaflet (3, 8, 9's title, 11) — never a pass.
 
@@ -105,7 +121,7 @@ from pipeline import compose_patient as CP7  # noqa: E402
 from pipeline import meaning as MN  # noqa: E402
 from pipeline import render as RN  # noqa: E402
 
-METRIC_VERSION = 3
+METRIC_VERSION = 4
 # Pre-declared from the scenario files (adversarial-scenarios.md C7: Polish-speaking,
 # interpreter used): the one scenario of the 18 whose notes record a language need.
 TRANSLATION_SCENARIOS = ("C7",)
@@ -360,7 +376,9 @@ def summarise(results: list[dict], skipped: list[dict], n_records: int) -> dict:
 
 
 def bar(sm: dict) -> list[tuple[str, str, str]]:
-    """(bar line, result, verdict) for bar lines 1-9, 11, 12 (frozen 1 Nov), 13 (v2, 2 Nov), 14 (v3, 3 Nov)."""
+    """(bar line, result, verdict) for bar lines 1-9, 11, 12 (frozen 1 Nov), 13 (v2, 2 Nov), 14 (v3, 3 Nov).
+    v4 (9 Nov) changes what is flagged, not how a line is decided: a ruled defect gives NOT MET
+    whatever else is pending; PENDING REVIEW only when nothing is a defect."""
     n = sm["n_records"]
     full = sm["n_scored"] == n
     asm_full = sm["n_assembled"] == n
@@ -477,7 +495,7 @@ def write_reports(out: Path, scored: dict, batch_dir: Path) -> None:
                      f"{sum(1 for r in rows if r['header'] and r['header']['present'])} | "
                      f"{rk('advice')} / {rk('medication', 'drug')} / {rk('number', 'unit')} / "
                      f"{rk('conflict', 'sensitive')} | {rk('promise')} |")
-    lines += ["", "## Per scenario — meaning flags (bar line 14, v3)", "",
+    lines += ["", f"## Per scenario — meaning flags (bar line 14, v{METRIC_VERSION})", "",
               "| Scenario | " + " | ".join(MEANING_KINDS) + " |", "| --- |" + " --- |" * len(MEANING_KINDS)]
     for sid in dict.fromkeys(r["scenario_id"] for r in res):
         rows = [r for r in res if r["scenario_id"] == sid]

@@ -65,6 +65,14 @@ dropped qualifiers, test words the cited text does not justify, unreached
 diagnoses) — the CSO blind read stays the evidence. The pattern checks are
 floors: they flag, the CSO rules.
 
+v4 checks (9 Nov 2026; scorer v4 — S7 of 4 Nov as amended by Shina (author/CSO),
+2(a); D8 of the step 7 decision round 2; design adopted 9 Nov ~21:15): `_SENSITIVE`
+also flags any risk word (beside v3's four forms "risk score / level /
+assessment / rating", kept as they were — S18 r1's "the risk ... is low" was
+missed); `_PROMISE` adds "will be
+told" (report only). Both only add flags. The other three S7 items are in
+pipeline/meaning.py. Flags, never blocks: release behaviour is unchanged.
+
 The caller builds the client with read_timeout 60 s and total_max_attempts 1
 (ADR-009 Q3 (2)). Nothing here creates an AWS client (package rule).
 """
@@ -176,6 +184,7 @@ _CONFLICT = re.compile(
 _SENSITIVE = re.compile(
     r"safeguard\w*|social services|social worker|\bpolice\b|self[- ]harm|overdose|suicid\w*|"
     r"risk (?:score|level|assessment|rating)|ceiling of care|escalat\w*|palliat\w*|end of life|"
+    r"\brisk\w*|"                       # v4 (9 Nov 2026, S7): any risk word, beside v3's four forms (kept)
     r"\bNEWS2?\b|\bPHQ-?9\b|\bGAD-?7\b",
     re.IGNORECASE)
 # F5 (2 Nov): a service, availability or visit the input may not state (S4 "will be
@@ -184,7 +193,8 @@ _SENSITIVE = re.compile(
 _PROMISE = re.compile(
     r"\bwill be (?:there|available|able to|on hand|around|in touch)\b|\bavailable\b|"
     r"\b(?:there|here) for you\b|\bvisits?\b|\bvisit(?:ed|ing)? you\b|\bcome (?:and|to) see you\b|"
-    r"\bcheck on you\b|\blook after you\b|\bkeep an eye on\b|\bsupport you\b|\bfollow you up\b",
+    r"\bcheck on you\b|\blook after you\b|\bkeep an eye on\b|\bsupport you\b|\bfollow you up\b|"
+    r"\b(?:will|['’]ll) be told\b",                     # v4 (9 Nov 2026, S7): "you will be told"
     re.IGNORECASE)
 _NUMBER = re.compile(r"(?<![\w.])\d+(?:\.\d+)?(?![\w.]*\d)")
 _UNIT = re.compile(

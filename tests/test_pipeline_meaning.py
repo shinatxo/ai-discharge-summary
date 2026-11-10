@@ -128,3 +128,96 @@ def test_only_given_diagnosis_sections_are_read():
 def test_kinds_and_check_names_are_fixed():
     assert MN.KINDS == ("cause", "certainty", "qualifier", "test_term", "diagnosis")
     assert set(MN.CHECK_OF) == set(MN.KINDS)
+
+
+# --- v4 (9 Nov 2026): S7 as amended by Shina (author/CSO), 2(a); D8 ----------------
+# Every text below is invented for these tests.
+
+def test_v4_damage_is_a_certainty_word():
+    assert ("certainty", "damage") in _flags("There was no sign of damage to the bowel.", "No ischaemia seen.")
+    assert ("certainty", "damage") not in _flags("There was no damage to the bowel.", "No damage to the bowel.")
+    # the existing stem rule, kept: "damaged" in A does not justify "damage" in C (the stricter side)
+    assert ("certainty", "damage") in _flags("There was no damage.", "Bowel not damaged.")
+    assert ("certainty", "damaged") in _flags("It was not damaged.", "No ischaemia seen.")       # v3 word kept
+
+
+def test_v4_hb_controls_supported_and_unsupported_blood_test():
+    # the two blood-test controls (2(a)): Hb justifies "blood test"; without a blood-test term it is flagged
+    assert ("test_term", "blood test") not in _flags("A blood test showed you were short of blood.", "Hb 92 g/L.")
+    assert ("test_term", "blood test") not in _flags("A blood test showed you were short of blood.", "HB 92.")
+    assert ("test_term", "blood test") in _flags("A blood test was done.", "Chest X-ray clear.")
+    assert ("test_term", "blood test") in _flags("A blood test was done.", "HbA-type pattern noted.")   # not "Hb" alone
+
+
+def test_v4_hb_justifies_only_blood_test():
+    assert ("test_term", "scan") in _flags("A scan was done.", "Hb 92 g/L.")
+    assert ("test_term", "urine test") in _flags("A urine test was done.", "Hb 92 g/L.")
+
+
+DASH_DX = [{"section_id": "sections.4", "heading": "diagnosis",
+            "text": "Primary: Gout.\n\nSecondary:\n- Psychosocial stressors — housing loss and debt\n\n"
+                    "Background:\n- Asthma"}]
+DASH_LINE = "Psychosocial stressors — housing loss and debt"
+
+
+def test_v4_dash_label_reached_but_content_not_is_flagged():
+    prose = "You had gout. You told us about psychosocial stressors."
+    assert MN.diagnoses_unreached(DASH_DX, prose) == [("sections.4", 2, DASH_LINE)]
+
+
+def test_v4_dash_content_reached_but_label_not_is_still_flagged():
+    # v3's behaviour kept (S3 r2-r5 at p0.4): the head phrase alone still decides one side
+    prose = "You had gout. You told us about losing your housing and about debt."
+    assert MN.diagnoses_unreached(DASH_DX, prose) == [("sections.4", 2, DASH_LINE)]
+
+
+def test_v4_dash_both_reached_is_not_flagged():
+    prose = "You had gout. Psychosocial stressors: losing your housing and debt."
+    assert MN.diagnoses_unreached(DASH_DX, prose) == []
+
+
+@pytest.mark.parametrize("line", ["Low mood – poor sleep – weight loss", "Low mood — poor sleep — weight loss",
+                                  "Low mood - poor sleep - weight loss", "Low mood—poor sleep—weight loss"])
+def test_v4_every_segment_after_a_dash_must_be_reached(line):
+    dx = [{"section_id": "sections.4", "heading": "diagnosis", "text": f"Primary: {line}"}]
+    assert MN.diagnoses_unreached(dx, "Low mood, poor sleep and weight loss.") == []
+    assert MN.diagnoses_unreached(dx, "Low mood and poor sleep.") == [("sections.4", 1, line)]
+    assert MN.diagnoses_unreached(dx, "Low mood and weight loss.") == [("sections.4", 1, line)]
+
+
+def test_v4_a_hyphen_or_an_unspaced_en_dash_is_not_a_segment_break():
+    dx = [{"section_id": "sections.4", "heading": "diagnosis",
+           "text": "Primary: Hospital-acquired weakness\n- Fever days 3–5\n- Wolff–Parkinson–White syndrome"}]
+    # half the head words reach the eponym line; split at its en dashes, "White syndrome" would not be reached
+    assert MN.diagnoses_unreached(dx, "You had weakness and a fever. You have the Wolff and Parkinson pattern.") == []
+
+
+def test_v4_head_words_is_unchanged():
+    # calibrate_verifier.py imports head_words: the head phrase still stops at the first dash
+    assert MN.head_words(DASH_LINE) == ["psychosocial", "stressor"]
+
+
+def _v3_unreached(given, prose):
+    """The v3 rule (3 Nov 2026, committed 8549f91), frozen here: the head phrase only."""
+    have = MN.stems(prose)
+    out = []
+    for s in given:
+        if s["heading"] != "diagnosis":
+            continue
+        for i, line in enumerate(MN.diagnosis_lines(s["text"]), 1):
+            w = MN.head_words(line)
+            if w and not (w[-1] in have or len(set(w) & have) >= -(-len(set(w)) // 2)):
+                out.append((s["section_id"], i, line))
+    return out
+
+
+@pytest.mark.parametrize("prose", [
+    "", "You had gout.", "You told us about psychosocial stressors.", "Losing your housing and debt.",
+    "You had gout, kidney stones and pneumonia. Psychosocial stressors: housing loss and debt.",
+    "You had weakness after your stay. Low mood.",
+])
+def test_v4_never_fewer_unreached_lines_than_v3(prose):
+    given = DX + DASH_DX + [{"section_id": "sections.5", "heading": "diagnosis",
+                             "text": "Primary: Low mood — sleep loss\n- — orphan segment\n- Pneumonia (CURB-65 1) — improving"}]
+    v3, v4 = _v3_unreached(given, prose), MN.diagnoses_unreached(given, prose)
+    assert set(v3) <= set(v4)

@@ -32,6 +32,17 @@ def _tables():
     return R.build_tables(raw, words, {"glossary.json": "fixture"})
 
 
+def _stub_tables():
+    """The fixture tables marked "stub" — since step 3 the package ships approved tables, so the stub path
+    is exercised with an explicit stub set."""
+    raw, words = F.raw_tables()
+    for d in raw.values():
+        d.update(status="stub", approved_by=None, approved_at=None)
+    assert words.startswith("# status: approved\n")
+    words = "# status: stub\n" + words.split("\n", 1)[1]
+    return R.build_tables(raw, words, {"glossary.json": "fixture-stub"})
+
+
 def _cc(sections_a):
     return {"sections": [{"part": "part_a", "heading": s["heading"], "section_id": s["section_id"], "text": s["text"],
                           "fact_ids": [], "unverified_fact_ids": []} for s in sections_a],
@@ -192,7 +203,7 @@ def test_refusals(tmp_path, case):
         d["generations"][0]["input_sha256"] = "0" * 64
         inputs.write_text(json.dumps(d))
     elif case == "stub":
-        kw = {}                                   # the package's stub tables, without --dev
+        kw = {"tables": _stub_tables()}           # stub tables, without --dev
     elif case == "dev_on_measurement":
         kw["dev"] = True
     with pytest.raises(H.HarnessError):
@@ -203,7 +214,7 @@ def test_refusals(tmp_path, case):
 
 def test_stub_tables_run_only_with_dev_and_are_marked(batch, tmp_path):
     src, inputs = batch
-    s = H.render_batch(src, tmp_path / "out", inputs, "fx-dev", dev=True)
+    s = H.render_batch(src, tmp_path / "out", inputs, "fx-dev", dev=True, tables=_stub_tables())
     assert s["records"] == 5
     m = json.loads((tmp_path / "out" / "manifest.json").read_text())
     assert m["derived_from"]["dev"] is True and m["prompts"]["compose_patient"]["tables_status"] == "stub"
@@ -238,7 +249,11 @@ def test_cli_inputs_and_refusal_exit_codes(batch, tmp_path):
     assert json.loads(p.read_text()) == H.make_inputs(src)
     assert _cli(["inputs", str(src), "--out", str(p)], "0").returncode == 2            # never written over
     r = _cli(["render", str(src), "--out", str(tmp_path / "o"), "--inputs", str(p), "--batch-id", "fx"], "0")
-    assert r.returncode == 2 and "refused" in r.stderr and not (tmp_path / "o").exists()   # stub tables, no --dev
+    assert r.returncode == 0 and (tmp_path / "o" / "manifest.json").exists(), r.stderr   # approved tables, no --dev
+    m = json.loads((tmp_path / "o" / "manifest.json").read_text())
+    assert m["derived_from"]["dev"] is False and m["prompts"]["compose_patient"]["tables_status"] == "approved"
+    r = _cli(["render", str(src), "--out", str(tmp_path / "o"), "--inputs", str(p), "--batch-id", "fx"], "0")
+    assert r.returncode == 2 and "refused" in r.stderr                                    # never written over
 
 
 def test_only_run_json_depends_on_the_clock(batch, tmp_path):

@@ -1,17 +1,64 @@
 {
   "table": "seek_help",
   "version": 1,
-  "status": "stub",
-  "approved_by": null,
-  "approved_at": null,
+  "status": "approved",
+  "approved_by": "Shina (author/CSO) — D1–D12 adopted 11 Nov 2026, 07:45–07:52 Europe/London",
+  "approved_at": "2026-11-11",
   "entries": [
     {
-      "id": "s_stub",
-      "category": "stub",
-      "pattern": "stubseekhelp",
+      "id": "s_111",
+      "category": "seek_help",
+      "pattern": "(?:NHS\\ 111|NHS111)(?:\\ safety\\ netting|\\ safety\\-netting|\\ safetynetting|\\ safety\\ net|\\ safety\\-net|\\ safetynet|)(?:\\ advice)(?:\\ discussed|\\ explained|\\ provided|\\ given|)",
+      "number_slot": true,
+      "examples": [
+        "NHS 111 advice given",
+        "NHS 111 advice",
+        "NHS 111 safety-netting advice given"
+      ]
+    },
+    {
+      "id": "s_999",
+      "category": "seek_help",
+      "pattern": "(?:999)(?:\\ safety\\ netting|\\ safety\\-netting|\\ safetynetting|\\ safety\\ net|\\ safety\\-net|\\ safetynet|)(?:\\ advice)(?:\\ discussed|\\ explained|\\ provided|\\ given|)",
+      "number_slot": true,
+      "examples": [
+        "999 advice given",
+        "999 advice"
+      ]
+    },
+    {
+      "id": "s_111_999",
+      "category": "seek_help",
+      "pattern": "(?:NHS\\ 111|NHS111|111)(?:\\ and\\ |\\ or\\ |\\ /\\ |\\ /|/\\ |/)(?:999)(?:\\ safety\\ netting|\\ safety\\-netting|\\ safetynetting|\\ safety\\ net|\\ safety\\-net|\\ safetynet|)(?:\\ advice)(?:\\ discussed|\\ explained|\\ provided|\\ given|)",
+      "number_slot": true,
+      "examples": [
+        "111/999 advice given",
+        "NHS 111 and 999 advice",
+        "NHS 111 or 999 advice given"
+      ]
+    },
+    {
+      "id": "s_ae",
+      "category": "seek_help",
+      "pattern": "(?:emergency\\ department|A\\ \\&\\ E|A\\&E)(?:\\ safety\\ netting|\\ safety\\-netting|\\ safetynetting|\\ safety\\ net|\\ safety\\-net|\\ safetynet|)(?:\\ advice)(?:\\ discussed|\\ explained|\\ provided|\\ given|)",
       "number_slot": false,
       "examples": [
-        "stubseekhelp"
+        "A&E advice given",
+        "emergency department advice",
+        "A & E safety-netting advice given"
+      ]
+    },
+    {
+      "id": "s_safetynet_re",
+      "category": "seek_help",
+      "pattern": "(?:safety\\ netting|safety\\-netting|safety\\ netted|safety\\-netted|safetynetting|safetynetted|safety\\ net|safety\\-net|safetynet)(?:\\ advice|)(?:\\ regarding\\ |\\ about\\ |\\ for\\ |\\ re\\ )(?:NHS\\ 111|NHS111|A\\ \\&\\ E|999|A\\&E)(?:\\ and\\ NHS\\ 111|\\ and\\ NHS111|\\ or\\ NHS\\ 111|\\ /\\ NHS\\ 111|\\ and\\ A\\ \\&\\ E|\\ or\\ NHS111|\\ /\\ NHS111|\\ /NHS\\ 111|\\ or\\ A\\ \\&\\ E|/\\ NHS\\ 111|\\ /\\ A\\ \\&\\ E|\\ /NHS111|\\ and\\ 999|\\ and\\ A\\&E|/\\ NHS111|/NHS\\ 111|\\ /A\\ \\&\\ E|\\ or\\ 999|\\ or\\ A\\&E|/\\ A\\ \\&\\ E|/NHS111|\\ /\\ 999|\\ /\\ A\\&E|/A\\ \\&\\ E|\\ /999|\\ /A\\&E|/\\ 999|/\\ A\\&E|/999|/A\\&E|)",
+      "number_slot": true,
+      "examples": [
+        "safety-netting advice re NHS 111",
+        "safety netted regarding 999",
+        "safety-netting about 999",
+        "safety-net advice re A&E",
+        "safety-netting re NHS 111 and 999"
       ]
     }
   ]

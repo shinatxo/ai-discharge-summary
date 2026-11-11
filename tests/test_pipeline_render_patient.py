@@ -88,15 +88,16 @@ def test_fixture_terms_are_clear_of_the_scenario_files():
         assert t not in scen, t
 
 
-# --- the package tables: stubs, pinned ----------------------------------------------------------------
+# --- the package tables: approved (step 3, 11 Nov 2026), pinned -------------------------------------------
+# (the content of the shipped tables is tested in test_render_tables_approved.py)
 
-def test_package_tables_are_valid_stubs_and_match_their_pins():
+def test_package_tables_are_the_approved_set_and_match_their_pins():
     t = R.load_tables()
-    assert t.status == "stub"
+    assert t.status == "approved"
     assert set(t.sha256) == set(R.TABLE_FILES) and t.sha256 == R.TABLE_SHA256
-    out = R.render_patient(two("Two days of stubterm pain."), t)
-    assert "placeholder words (stubterm)" in c_text(out, "why_in_hospital")
-    assert out["renderer"]["tables_status"] == "stub"
+    out = R.render_patient(two("Two days of dyspnoea."), t)
+    assert "breathlessness (dyspnoea)" in c_text(out, "why_in_hospital")
+    assert out["renderer"]["tables_status"] == "approved" and out["renderer"]["version"] == 2
 
 
 def test_a_changed_table_byte_is_tables_changed(tmp_path):
@@ -107,10 +108,10 @@ def test_a_changed_table_byte_is_tables_changed(tmp_path):
     with pytest.raises(R.RenderRefusal) as e:
         R.load_tables(d)
     assert e.value.code == "tables_changed"
-    assert R.load_tables(d, pins=None).status == "stub"         # the content itself is still valid
+    assert R.load_tables(d, pins=None).status == "approved"     # the content itself is still valid
 
 
-def test_the_stub_inferred_entry_is_the_adopted_wording():
+def test_the_shipped_inferred_entry_is_the_adopted_wording():
     t = R.load_tables()
     inf = [e for e in t.phrases if e.raw["kind"] == "inferred"]
     assert len(inf) == 1 and set(inf[0].raw["plain"].values()) == {R.ADOPTED_INFERRED}
@@ -757,3 +758,95 @@ def test_protected_spans_are_the_protected_multiset_with_positions():
                 assert " ".join(seg.lower().split()) == k[len("phrase:"):]
             elif k.startswith("#"):
                 assert seg == k[1:]
+
+
+# --- D5 (step 3, adopted 11 Nov 2026): no protected token leaves with a drop --------------------------------
+# A drop pattern broader than its clean examples passes table validation; the runtime rule stops it removing a
+# negation, an uncertainty marker or a timing word. Only a digit token inside a number-slot match may leave.
+
+def _police(pattern):
+    return {"police": lambda r: r["withheld"]["entries"][2].update(pattern=pattern,
+                                                                     examples=["police informed", "police"])}
+
+
+@pytest.mark.parametrize("pattern, line, token", [
+    (r"police(?: not)?(?: informed| involved)?", "- Police not informed.", "negation"),
+    (r"(?:possible )?police(?: informed)?", "- Possible police informed.", "uncertainty word"),
+    (r"\??police(?: informed)?", "- ?Police informed.", "uncertainty mark"),
+    (r"police(?: informed)?(?: today)?", "- Police informed today.", "timing"),
+])
+def test_d5_a_drop_may_not_remove_a_protected_token(pattern, line, token):
+    t = _tables_with(**_police(pattern))
+    assert refusal(two("Fever.", "treatment", line), t).code == "withheld_not_isolable", token
+
+
+def test_d5_the_same_entry_still_drops_a_clean_span():
+    t = _tables_with(**_police(r"police(?: not)?(?: informed| involved)?"))
+    out = R.render_patient(two("Fever.", "treatment", "- Police informed\n- Needle aspiration"), t)
+    assert [d["entry"] for d in out["ledger"]["drops"]] == ["w_police"]
+
+
+def test_d5_a_number_in_a_number_slot_still_leaves_with_its_drop(T):
+    out = R.render_patient(two("Fever.", "diagnosis", "Primary: Right quinsy (Wells score 4)"), T)
+    assert [d["entry"] for d in out["ledger"]["drops"]] == ["w_wells"]
+    assert "4" not in c_text(out, "why_in_hospital").split("\n")[2]
+
+
+def test_d5_only_the_digit_is_exempt_inside_a_number_slot():
+    t = _tables_with(wells=lambda r: r["withheld"]["entries"][0].update(pattern=r"Wells score(?: of)? \d+(?: mg)?"))
+    assert refusal(two("Fever.", "diagnosis", "Primary: Right quinsy (Wells score 4 mg)"), t).code == \
+        "withheld_not_isolable"
+
+
+def test_d5_authorisation_rejects_such_a_drop_independently():
+    t = _tables_with(**_police(r"police(?: not)?(?: informed| involved)?"))
+    text = "Police not informed."
+    u = _unit(text)
+    ops = [{"op": "drop", "a": 0, "b": len(text), "rule": "withheld", "entry": "w_police", "unit": "line"}]
+    assert R.authorise_ops(u, "treatment", "adult", ops, t) == ["op0:drop_protected_token"]
+
+
+# --- D11 (step 3, adopted 11 Nov 2026): no signpost in the line AS WRITTEN -----------------------------------
+@pytest.mark.parametrize("gap", ["  ", "\t", " \t "])
+def test_d11_a_spaced_out_signpost_refuses_rather_than_leaking(T, gap):
+    # _normalise collapses white space, so the copied text would carry the gate's literal "emergency department".
+    for heading, text in (("treatment", f"- Wound repaired in the emergency{gap}department."),
+                          ("presenting_complaint", f"Seen in the accident{gap}and emergency unit.")):
+        inp = two("Fever.", heading, text) if heading != "presenting_complaint" else two(text)
+        assert refusal(inp, T).code == "signpost_not_isolable", (heading, gap)
+
+
+def test_d11_a_signpost_formed_by_joining_the_pieces_round_a_drop_refuses(T):
+    # Codex 11 Nov 07:07 P2: the score in brackets is an authorised drop; neither kept piece holds a signpost, the
+    # joined line does.
+    assert refusal(two("Seen in the emergency (Wells score 4) department."), T).code == "signpost_not_isolable"
+
+
+def test_d11_a_diagnosis_with_a_score_dropped_is_still_permitted(T):
+    out = R.render_patient(two("Fever.", "diagnosis", "Primary: Right quinsy (Wells score 4)"), T)
+    assert c_text(out, "why_in_hospital").split("\n")[2] == "Main problem: Right a collection of pus beside the tonsil (quinsy)"
+    assert [d["entry"] for d in out["ledger"]["drops"]] == ["w_wells"]
+
+
+def test_d11_authorisation_checks_the_joined_line_independently(T):
+    text = "Seen in the emergency (Wells score 4) department."
+    u = _unit(text, heading="presenting_complaint", form="prose")
+    s, e, kind = next(c for c in R.candidate_units(text, R.content_start(text, "prose")) if c[2] == "aside")
+    assert text[s:e].strip() == "(Wells score 4)"
+    assert R.drop_problem(text, s, e, kind, "withheld", "w_wells", T, "presenting_complaint",
+                          "prose") is None                      # the drop on its own is authorised
+    ops = [{"op": "copy", "a": 0, "b": s},
+           {"op": "drop", "a": s, "b": e, "rule": "withheld", "entry": "w_wells", "unit": kind},
+           {"op": "copy", "a": e, "b": len(text)}]
+    assert R.authorise_ops(u, "presenting_complaint", "adult", ops, T) == ["line:written_signpost_not_isolable"]
+
+
+def test_d11_audit_rejects_a_copy_whose_written_form_is_a_signpost(T):
+    text = "seen in the emergency  department"
+    assert R.authorise_ops(_unit(text), "treatment", "adult",
+                           [{"op": "copy", "a": 0, "b": len(text)}], T) == ["line:written_signpost_not_isolable"]
+
+
+def test_d11_spaced_out_text_without_a_signpost_still_copies(T):
+    out = R.render_patient(two("Fever.", "treatment", "- Wound  dressing\tchanged."), T)
+    assert "Wound dressing changed." in json.dumps(out)

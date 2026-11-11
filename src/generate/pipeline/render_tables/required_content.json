@@ -1,13 +1,61 @@
 {
   "table": "required_content",
   "version": 1,
-  "status": "stub",
-  "approved_by": null,
-  "approved_at": null,
+  "status": "approved",
+  "approved_by": "Shina (author/CSO) — D1–D12 adopted 11 Nov 2026, 07:45–07:52 Europe/London",
+  "approved_at": "2026-11-11",
   "entries": [
     {
-      "id": "r_stub",
-      "pattern": "stubrequired"
+      "id": "r_appointment",
+      "pattern": "appointments?"
+    },
+    {
+      "id": "r_clinic",
+      "pattern": "clinics?"
+    },
+    {
+      "id": "r_refer",
+      "pattern": "refer\\w*"
+    },
+    {
+      "id": "r_follow_up",
+      "pattern": "follow[- ]?ups?|followed\\s+up"
+    },
+    {
+      "id": "r_review",
+      "pattern": "review\\w*"
+    },
+    {
+      "id": "r_gp",
+      "pattern": "GPs?"
+    },
+    {
+      "id": "r_outpatient",
+      "pattern": "outpatients?|OPA|OPD"
+    },
+    {
+      "id": "r_letter",
+      "pattern": "letters?"
+    },
+    {
+      "id": "r_result",
+      "pattern": "results?"
+    },
+    {
+      "id": "r_booked",
+      "pattern": "booked|scheduled|arranged"
+    },
+    {
+      "id": "r_repeat",
+      "pattern": "repeat\\w*|recheck\\w*|re-check\\w*"
+    },
+    {
+      "id": "r_chase",
+      "pattern": "chase\\w*"
+    },
+    {
+      "id": "r_operation",
+      "pattern": "operation|operations|surgery|procedure|procedures"
     }
   ]
 }

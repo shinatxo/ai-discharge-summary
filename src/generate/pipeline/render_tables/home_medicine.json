@@ -1,18 +1,8 @@
 {
   "table": "home_medicine",
   "version": 1,
-  "status": "stub",
-  "approved_by": null,
-  "approved_at": null,
-  "entries": [
-    {
-      "id": "h_stub",
-      "category": "stub",
-      "pattern": "stubhomemed",
-      "number_slot": false,
-      "examples": [
-        "stubhomemed"
-      ]
-    }
-  ]
+  "status": "approved",
+  "approved_by": "Shina (author/CSO) — D1–D12 adopted 11 Nov 2026, 07:45–07:52 Europe/London",
+  "approved_at": "2026-11-11",
+  "entries": []
 }

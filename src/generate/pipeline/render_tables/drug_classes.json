@@ -1,18 +1,2389 @@
 {
   "table": "drug_classes",
   "version": 1,
-  "status": "stub",
-  "approved_by": null,
-  "approved_at": null,
+  "status": "approved",
+  "approved_by": "Shina (author/CSO) — D1–D12 adopted 11 Nov 2026, 07:45–07:52 Europe/London",
+  "approved_at": "2026-11-11",
   "entries": [
     {
-      "id": "d_stub",
+      "id": "d_amoxicillin",
       "forms": [
-        "stubdrug"
+        "amoxicillin"
       ],
       "case_sensitive": false,
-      "plain": "a placeholder medicine",
+      "plain": "antibiotic",
       "origin": "general",
+      "flag_words": []
+    },
+    {
+      "id": "d_co_amoxiclav",
+      "forms": [
+        "co-amoxiclav"
+      ],
+      "case_sensitive": false,
+      "plain": "antibiotic",
+      "origin": "general",
+      "flag_words": []
+    },
+    {
+      "id": "d_augmentin",
+      "forms": [
+        "Augmentin"
+      ],
+      "case_sensitive": false,
+      "plain": "antibiotic",
+      "origin": "general",
+      "flag_words": []
+    },
+    {
+      "id": "d_flucloxacillin",
+      "forms": [
+        "flucloxacillin"
+      ],
+      "case_sensitive": false,
+      "plain": "antibiotic",
+      "origin": "general",
+      "flag_words": []
+    },
+    {
+      "id": "d_clarithromycin",
+      "forms": [
+        "clarithromycin"
+      ],
+      "case_sensitive": false,
+      "plain": "antibiotic",
+      "origin": "general",
+      "flag_words": []
+    },
+    {
+      "id": "d_erythromycin",
+      "forms": [
+        "erythromycin"
+      ],
+      "case_sensitive": false,
+      "plain": "antibiotic",
+      "origin": "general",
+      "flag_words": []
+    },
+    {
+      "id": "d_azithromycin",
+      "forms": [
+        "azithromycin"
+      ],
+      "case_sensitive": false,
+      "plain": "antibiotic",
+      "origin": "general",
+      "flag_words": []
+    },
+    {
+      "id": "d_doxycycline",
+      "forms": [
+        "doxycycline"
+      ],
+      "case_sensitive": false,
+      "plain": "antibiotic",
+      "origin": "general",
+      "flag_words": []
+    },
+    {
+      "id": "d_gentamicin",
+      "forms": [
+        "gentamicin"
+      ],
+      "case_sensitive": false,
+      "plain": "antibiotic",
+      "origin": "general",
+      "flag_words": []
+    },
+    {
+      "id": "d_amikacin",
+      "forms": [
+        "amikacin"
+      ],
+      "case_sensitive": false,
+      "plain": "antibiotic",
+      "origin": "general",
+      "flag_words": []
+    },
+    {
+      "id": "d_piperacillin_tazobactam",
+      "forms": [
+        "piperacillin-tazobactam"
+      ],
+      "case_sensitive": false,
+      "plain": "antibiotic",
+      "origin": "general",
+      "flag_words": []
+    },
+    {
+      "id": "d_piperacillin_tazobactam_2",
+      "forms": [
+        "piperacillin/tazobactam"
+      ],
+      "case_sensitive": false,
+      "plain": "antibiotic",
+      "origin": "general",
+      "flag_words": []
+    },
+    {
+      "id": "d_tazocin",
+      "forms": [
+        "Tazocin"
+      ],
+      "case_sensitive": false,
+      "plain": "antibiotic",
+      "origin": "general",
+      "flag_words": []
+    },
+    {
+      "id": "d_pip_taz",
+      "forms": [
+        "pip-taz"
+      ],
+      "case_sensitive": false,
+      "plain": "antibiotic",
+      "origin": "general",
+      "flag_words": []
+    },
+    {
+      "id": "d_ceftriaxone",
+      "forms": [
+        "ceftriaxone"
+      ],
+      "case_sensitive": false,
+      "plain": "antibiotic",
+      "origin": "general",
+      "flag_words": []
+    },
+    {
+      "id": "d_cefuroxime",
+      "forms": [
+        "cefuroxime"
+      ],
+      "case_sensitive": false,
+      "plain": "antibiotic",
+      "origin": "general",
+      "flag_words": []
+    },
+    {
+      "id": "d_cefalexin",
+      "forms": [
+        "cefalexin"
+      ],
+      "case_sensitive": false,
+      "plain": "antibiotic",
+      "origin": "general",
+      "flag_words": []
+    },
+    {
+      "id": "d_cefotaxime",
+      "forms": [
+        "cefotaxime"
+      ],
+      "case_sensitive": false,
+      "plain": "antibiotic",
+      "origin": "general",
+      "flag_words": []
+    },
+    {
+      "id": "d_ceftazidime",
+      "forms": [
+        "ceftazidime"
+      ],
+      "case_sensitive": false,
+      "plain": "antibiotic",
+      "origin": "general",
+      "flag_words": []
+    },
+    {
+      "id": "d_cefazolin",
+      "forms": [
+        "cefazolin"
+      ],
+      "case_sensitive": false,
+      "plain": "antibiotic",
+      "origin": "general",
+      "flag_words": []
+    },
+    {
+      "id": "d_meropenem",
+      "forms": [
+        "meropenem"
+      ],
+      "case_sensitive": false,
+      "plain": "antibiotic",
+      "origin": "general",
+      "flag_words": []
+    },
+    {
+      "id": "d_ertapenem",
+      "forms": [
+        "ertapenem"
+      ],
+      "case_sensitive": false,
+      "plain": "antibiotic",
+      "origin": "general",
+      "flag_words": []
+    },
+    {
+      "id": "d_metronidazole",
+      "forms": [
+        "metronidazole"
+      ],
+      "case_sensitive": false,
+      "plain": "antibiotic",
+      "origin": "general",
+      "flag_words": []
+    },
+    {
+      "id": "d_nitrofurantoin",
+      "forms": [
+        "nitrofurantoin"
+      ],
+      "case_sensitive": false,
+      "plain": "antibiotic",
+      "origin": "general",
+      "flag_words": []
+    },
+    {
+      "id": "d_trimethoprim",
+      "forms": [
+        "trimethoprim"
+      ],
+      "case_sensitive": false,
+      "plain": "antibiotic",
+      "origin": "general",
+      "flag_words": []
+    },
+    {
+      "id": "d_fosfomycin",
+      "forms": [
+        "fosfomycin"
+      ],
+      "case_sensitive": false,
+      "plain": "antibiotic",
+      "origin": "general",
+      "flag_words": []
+    },
+    {
+      "id": "d_vancomycin",
+      "forms": [
+        "vancomycin"
+      ],
+      "case_sensitive": false,
+      "plain": "antibiotic",
+      "origin": "general",
+      "flag_words": []
+    },
+    {
+      "id": "d_teicoplanin",
+      "forms": [
+        "teicoplanin"
+      ],
+      "case_sensitive": false,
+      "plain": "antibiotic",
+      "origin": "general",
+      "flag_words": []
+    },
+    {
+      "id": "d_ciprofloxacin",
+      "forms": [
+        "ciprofloxacin"
+      ],
+      "case_sensitive": false,
+      "plain": "antibiotic",
+      "origin": "general",
+      "flag_words": []
+    },
+    {
+      "id": "d_levofloxacin",
+      "forms": [
+        "levofloxacin"
+      ],
+      "case_sensitive": false,
+      "plain": "antibiotic",
+      "origin": "general",
+      "flag_words": []
+    },
+    {
+      "id": "d_ofloxacin",
+      "forms": [
+        "ofloxacin"
+      ],
+      "case_sensitive": false,
+      "plain": "antibiotic",
+      "origin": "general",
+      "flag_words": []
+    },
+    {
+      "id": "d_moxifloxacin",
+      "forms": [
+        "moxifloxacin"
+      ],
+      "case_sensitive": false,
+      "plain": "antibiotic",
+      "origin": "general",
+      "flag_words": []
+    },
+    {
+      "id": "d_benzylpenicillin",
+      "forms": [
+        "benzylpenicillin"
+      ],
+      "case_sensitive": false,
+      "plain": "antibiotic",
+      "origin": "general",
+      "flag_words": []
+    },
+    {
+      "id": "d_phenoxymethylpenicillin",
+      "forms": [
+        "phenoxymethylpenicillin"
+      ],
+      "case_sensitive": false,
+      "plain": "antibiotic",
+      "origin": "general",
+      "flag_words": []
+    },
+    {
+      "id": "d_clindamycin",
+      "forms": [
+        "clindamycin"
+      ],
+      "case_sensitive": false,
+      "plain": "antibiotic",
+      "origin": "general",
+      "flag_words": []
+    },
+    {
+      "id": "d_linezolid",
+      "forms": [
+        "linezolid"
+      ],
+      "case_sensitive": false,
+      "plain": "antibiotic",
+      "origin": "general",
+      "flag_words": []
+    },
+    {
+      "id": "d_rifampicin",
+      "forms": [
+        "rifampicin"
+      ],
+      "case_sensitive": false,
+      "plain": "antibiotic",
+      "origin": "general",
+      "flag_words": []
+    },
+    {
+      "id": "d_co_trimoxazole",
+      "forms": [
+        "co-trimoxazole"
+      ],
+      "case_sensitive": false,
+      "plain": "antibiotic",
+      "origin": "general",
+      "flag_words": []
+    },
+    {
+      "id": "d_septrin",
+      "forms": [
+        "Septrin"
+      ],
+      "case_sensitive": false,
+      "plain": "antibiotic",
+      "origin": "general",
+      "flag_words": []
+    },
+    {
+      "id": "d_temocillin",
+      "forms": [
+        "temocillin"
+      ],
+      "case_sensitive": false,
+      "plain": "antibiotic",
+      "origin": "general",
+      "flag_words": []
+    },
+    {
+      "id": "d_aztreonam",
+      "forms": [
+        "aztreonam"
+      ],
+      "case_sensitive": false,
+      "plain": "antibiotic",
+      "origin": "general",
+      "flag_words": []
+    },
+    {
+      "id": "d_daptomycin",
+      "forms": [
+        "daptomycin"
+      ],
+      "case_sensitive": false,
+      "plain": "antibiotic",
+      "origin": "general",
+      "flag_words": []
+    },
+    {
+      "id": "d_fidaxomicin",
+      "forms": [
+        "fidaxomicin"
+      ],
+      "case_sensitive": false,
+      "plain": "antibiotic",
+      "origin": "general",
+      "flag_words": []
+    },
+    {
+      "id": "d_penicillin",
+      "forms": [
+        "penicillin"
+      ],
+      "case_sensitive": false,
+      "plain": "antibiotic",
+      "origin": "general",
+      "flag_words": []
+    },
+    {
+      "id": "d_aciclovir",
+      "forms": [
+        "aciclovir"
+      ],
+      "case_sensitive": false,
+      "plain": "antiviral medicine",
+      "origin": "general",
+      "flag_words": []
+    },
+    {
+      "id": "d_acyclovir",
+      "forms": [
+        "acyclovir"
+      ],
+      "case_sensitive": false,
+      "plain": "antiviral medicine",
+      "origin": "general",
+      "flag_words": []
+    },
+    {
+      "id": "d_valaciclovir",
+      "forms": [
+        "valaciclovir"
+      ],
+      "case_sensitive": false,
+      "plain": "antiviral medicine",
+      "origin": "general",
+      "flag_words": []
+    },
+    {
+      "id": "d_oseltamivir",
+      "forms": [
+        "oseltamivir"
+      ],
+      "case_sensitive": false,
+      "plain": "antiviral medicine",
+      "origin": "general",
+      "flag_words": []
+    },
+    {
+      "id": "d_tamiflu",
+      "forms": [
+        "Tamiflu"
+      ],
+      "case_sensitive": false,
+      "plain": "antiviral medicine",
+      "origin": "general",
+      "flag_words": []
+    },
+    {
+      "id": "d_remdesivir",
+      "forms": [
+        "remdesivir"
+      ],
+      "case_sensitive": false,
+      "plain": "antiviral medicine",
+      "origin": "general",
+      "flag_words": []
+    },
+    {
+      "id": "d_fluconazole",
+      "forms": [
+        "fluconazole"
+      ],
+      "case_sensitive": false,
+      "plain": "antifungal medicine",
+      "origin": "general",
+      "flag_words": []
+    },
+    {
+      "id": "d_nystatin",
+      "forms": [
+        "nystatin"
+      ],
+      "case_sensitive": false,
+      "plain": "antifungal medicine",
+      "origin": "general",
+      "flag_words": []
+    },
+    {
+      "id": "d_enoxaparin",
+      "forms": [
+        "enoxaparin"
+      ],
+      "case_sensitive": false,
+      "plain": "blood thinner",
+      "origin": "general",
+      "flag_words": []
+    },
+    {
+      "id": "d_clexane",
+      "forms": [
+        "Clexane"
+      ],
+      "case_sensitive": false,
+      "plain": "blood thinner",
+      "origin": "general",
+      "flag_words": []
+    },
+    {
+      "id": "d_dalteparin",
+      "forms": [
+        "dalteparin"
+      ],
+      "case_sensitive": false,
+      "plain": "blood thinner",
+      "origin": "general",
+      "flag_words": []
+    },
+    {
+      "id": "d_fragmin",
+      "forms": [
+        "Fragmin"
+      ],
+      "case_sensitive": false,
+      "plain": "blood thinner",
+      "origin": "general",
+      "flag_words": []
+    },
+    {
+      "id": "d_tinzaparin",
+      "forms": [
+        "tinzaparin"
+      ],
+      "case_sensitive": false,
+      "plain": "blood thinner",
+      "origin": "general",
+      "flag_words": []
+    },
+    {
+      "id": "d_heparin",
+      "forms": [
+        "heparin"
+      ],
+      "case_sensitive": false,
+      "plain": "blood thinner",
+      "origin": "general",
+      "flag_words": []
+    },
+    {
+      "id": "d_fondaparinux",
+      "forms": [
+        "fondaparinux"
+      ],
+      "case_sensitive": false,
+      "plain": "blood thinner",
+      "origin": "general",
+      "flag_words": []
+    },
+    {
+      "id": "d_apixaban",
+      "forms": [
+        "apixaban"
+      ],
+      "case_sensitive": false,
+      "plain": "blood thinner",
+      "origin": "general",
+      "flag_words": []
+    },
+    {
+      "id": "d_eliquis",
+      "forms": [
+        "Eliquis"
+      ],
+      "case_sensitive": false,
+      "plain": "blood thinner",
+      "origin": "general",
+      "flag_words": []
+    },
+    {
+      "id": "d_rivaroxaban",
+      "forms": [
+        "rivaroxaban"
+      ],
+      "case_sensitive": false,
+      "plain": "blood thinner",
+      "origin": "general",
+      "flag_words": []
+    },
+    {
+      "id": "d_xarelto",
+      "forms": [
+        "Xarelto"
+      ],
+      "case_sensitive": false,
+      "plain": "blood thinner",
+      "origin": "general",
+      "flag_words": []
+    },
+    {
+      "id": "d_edoxaban",
+      "forms": [
+        "edoxaban"
+      ],
+      "case_sensitive": false,
+      "plain": "blood thinner",
+      "origin": "general",
+      "flag_words": []
+    },
+    {
+      "id": "d_lixiana",
+      "forms": [
+        "Lixiana"
+      ],
+      "case_sensitive": false,
+      "plain": "blood thinner",
+      "origin": "general",
+      "flag_words": []
+    },
+    {
+      "id": "d_dabigatran",
+      "forms": [
+        "dabigatran"
+      ],
+      "case_sensitive": false,
+      "plain": "blood thinner",
+      "origin": "general",
+      "flag_words": []
+    },
+    {
+      "id": "d_pradaxa",
+      "forms": [
+        "Pradaxa"
+      ],
+      "case_sensitive": false,
+      "plain": "blood thinner",
+      "origin": "general",
+      "flag_words": []
+    },
+    {
+      "id": "d_warfarin",
+      "forms": [
+        "warfarin"
+      ],
+      "case_sensitive": false,
+      "plain": "blood thinner",
+      "origin": "general",
+      "flag_words": []
+    },
+    {
+      "id": "d_clopidogrel",
+      "forms": [
+        "clopidogrel"
+      ],
+      "case_sensitive": false,
+      "plain": "blood thinner",
+      "origin": "general",
+      "flag_words": []
+    },
+    {
+      "id": "d_ticagrelor",
+      "forms": [
+        "ticagrelor"
+      ],
+      "case_sensitive": false,
+      "plain": "blood thinner",
+      "origin": "general",
+      "flag_words": []
+    },
+    {
+      "id": "d_brilique",
+      "forms": [
+        "Brilique"
+      ],
+      "case_sensitive": false,
+      "plain": "blood thinner",
+      "origin": "general",
+      "flag_words": []
+    },
+    {
+      "id": "d_prasugrel",
+      "forms": [
+        "prasugrel"
+      ],
+      "case_sensitive": false,
+      "plain": "blood thinner",
+      "origin": "general",
+      "flag_words": []
+    },
+    {
+      "id": "d_dipyridamole",
+      "forms": [
+        "dipyridamole"
+      ],
+      "case_sensitive": false,
+      "plain": "blood thinner",
+      "origin": "general",
+      "flag_words": []
+    },
+    {
+      "id": "d_alteplase",
+      "forms": [
+        "alteplase"
+      ],
+      "case_sensitive": false,
+      "plain": "clot-busting medicine",
+      "origin": "general",
+      "flag_words": []
+    },
+    {
+      "id": "d_tenecteplase",
+      "forms": [
+        "tenecteplase"
+      ],
+      "case_sensitive": false,
+      "plain": "clot-busting medicine",
+      "origin": "general",
+      "flag_words": []
+    },
+    {
+      "id": "d_furosemide",
+      "forms": [
+        "furosemide"
+      ],
+      "case_sensitive": false,
+      "plain": "medicine that makes the kidneys pass more water",
+      "origin": "general",
+      "flag_words": []
+    },
+    {
+      "id": "d_frusemide",
+      "forms": [
+        "frusemide"
+      ],
+      "case_sensitive": false,
+      "plain": "medicine that makes the kidneys pass more water",
+      "origin": "general",
+      "flag_words": []
+    },
+    {
+      "id": "d_bumetanide",
+      "forms": [
+        "bumetanide"
+      ],
+      "case_sensitive": false,
+      "plain": "medicine that makes the kidneys pass more water",
+      "origin": "general",
+      "flag_words": []
+    },
+    {
+      "id": "d_bendroflumethiazide",
+      "forms": [
+        "bendroflumethiazide"
+      ],
+      "case_sensitive": false,
+      "plain": "medicine that makes the kidneys pass more water",
+      "origin": "general",
+      "flag_words": []
+    },
+    {
+      "id": "d_indapamide",
+      "forms": [
+        "indapamide"
+      ],
+      "case_sensitive": false,
+      "plain": "medicine that makes the kidneys pass more water",
+      "origin": "general",
+      "flag_words": []
+    },
+    {
+      "id": "d_spironolactone",
+      "forms": [
+        "spironolactone"
+      ],
+      "case_sensitive": false,
+      "plain": "medicine that makes the kidneys pass more water",
+      "origin": "general",
+      "flag_words": []
+    },
+    {
+      "id": "d_eplerenone",
+      "forms": [
+        "eplerenone"
+      ],
+      "case_sensitive": false,
+      "plain": "medicine that makes the kidneys pass more water",
+      "origin": "general",
+      "flag_words": []
+    },
+    {
+      "id": "d_metolazone",
+      "forms": [
+        "metolazone"
+      ],
+      "case_sensitive": false,
+      "plain": "medicine that makes the kidneys pass more water",
+      "origin": "general",
+      "flag_words": []
+    },
+    {
+      "id": "d_prednisolone",
+      "forms": [
+        "prednisolone"
+      ],
+      "case_sensitive": false,
+      "plain": "steroid",
+      "origin": "general",
+      "flag_words": []
+    },
+    {
+      "id": "d_hydrocortisone",
+      "forms": [
+        "hydrocortisone"
+      ],
+      "case_sensitive": false,
+      "plain": "steroid",
+      "origin": "general",
+      "flag_words": []
+    },
+    {
+      "id": "d_dexamethasone",
+      "forms": [
+        "dexamethasone"
+      ],
+      "case_sensitive": false,
+      "plain": "steroid",
+      "origin": "general",
+      "flag_words": []
+    },
+    {
+      "id": "d_methylprednisolone",
+      "forms": [
+        "methylprednisolone"
+      ],
+      "case_sensitive": false,
+      "plain": "steroid",
+      "origin": "general",
+      "flag_words": []
+    },
+    {
+      "id": "d_atrovent",
+      "forms": [
+        "Atrovent"
+      ],
+      "case_sensitive": false,
+      "plain": "medicine that opens the airways",
+      "origin": "general",
+      "flag_words": []
+    },
+    {
+      "id": "d_seretide",
+      "forms": [
+        "Seretide"
+      ],
+      "case_sensitive": false,
+      "plain": "inhaler",
+      "origin": "general",
+      "flag_words": []
+    },
+    {
+      "id": "d_symbicort",
+      "forms": [
+        "Symbicort"
+      ],
+      "case_sensitive": false,
+      "plain": "inhaler",
+      "origin": "general",
+      "flag_words": []
+    },
+    {
+      "id": "d_fostair",
+      "forms": [
+        "Fostair"
+      ],
+      "case_sensitive": false,
+      "plain": "inhaler",
+      "origin": "general",
+      "flag_words": []
+    },
+    {
+      "id": "d_trelegy",
+      "forms": [
+        "Trelegy"
+      ],
+      "case_sensitive": false,
+      "plain": "inhaler",
+      "origin": "general",
+      "flag_words": []
+    },
+    {
+      "id": "d_spiriva",
+      "forms": [
+        "Spiriva"
+      ],
+      "case_sensitive": false,
+      "plain": "inhaler",
+      "origin": "general",
+      "flag_words": []
+    },
+    {
+      "id": "d_tiotropium",
+      "forms": [
+        "tiotropium"
+      ],
+      "case_sensitive": false,
+      "plain": "inhaler",
+      "origin": "general",
+      "flag_words": []
+    },
+    {
+      "id": "d_lantus",
+      "forms": [
+        "Lantus"
+      ],
+      "case_sensitive": false,
+      "plain": "insulin",
+      "origin": "general",
+      "flag_words": []
+    },
+    {
+      "id": "d_glargine",
+      "forms": [
+        "glargine"
+      ],
+      "case_sensitive": false,
+      "plain": "insulin",
+      "origin": "general",
+      "flag_words": []
+    },
+    {
+      "id": "d_levemir",
+      "forms": [
+        "Levemir"
+      ],
+      "case_sensitive": false,
+      "plain": "insulin",
+      "origin": "general",
+      "flag_words": []
+    },
+    {
+      "id": "d_detemir",
+      "forms": [
+        "detemir"
+      ],
+      "case_sensitive": false,
+      "plain": "insulin",
+      "origin": "general",
+      "flag_words": []
+    },
+    {
+      "id": "d_tresiba",
+      "forms": [
+        "Tresiba"
+      ],
+      "case_sensitive": false,
+      "plain": "insulin",
+      "origin": "general",
+      "flag_words": []
+    },
+    {
+      "id": "d_degludec",
+      "forms": [
+        "degludec"
+      ],
+      "case_sensitive": false,
+      "plain": "insulin",
+      "origin": "general",
+      "flag_words": []
+    },
+    {
+      "id": "d_novorapid",
+      "forms": [
+        "NovoRapid"
+      ],
+      "case_sensitive": false,
+      "plain": "insulin",
+      "origin": "general",
+      "flag_words": []
+    },
+    {
+      "id": "d_aspart",
+      "forms": [
+        "aspart"
+      ],
+      "case_sensitive": false,
+      "plain": "insulin",
+      "origin": "general",
+      "flag_words": []
+    },
+    {
+      "id": "d_humalog",
+      "forms": [
+        "Humalog"
+      ],
+      "case_sensitive": false,
+      "plain": "insulin",
+      "origin": "general",
+      "flag_words": []
+    },
+    {
+      "id": "d_lispro",
+      "forms": [
+        "lispro"
+      ],
+      "case_sensitive": false,
+      "plain": "insulin",
+      "origin": "general",
+      "flag_words": []
+    },
+    {
+      "id": "d_actrapid",
+      "forms": [
+        "Actrapid"
+      ],
+      "case_sensitive": false,
+      "plain": "insulin",
+      "origin": "general",
+      "flag_words": []
+    },
+    {
+      "id": "d_humulin",
+      "forms": [
+        "Humulin"
+      ],
+      "case_sensitive": false,
+      "plain": "insulin",
+      "origin": "general",
+      "flag_words": []
+    },
+    {
+      "id": "d_novomix",
+      "forms": [
+        "NovoMix"
+      ],
+      "case_sensitive": false,
+      "plain": "insulin",
+      "origin": "general",
+      "flag_words": []
+    },
+    {
+      "id": "d_abasaglar",
+      "forms": [
+        "Abasaglar"
+      ],
+      "case_sensitive": false,
+      "plain": "insulin",
+      "origin": "general",
+      "flag_words": []
+    },
+    {
+      "id": "d_toujeo",
+      "forms": [
+        "Toujeo"
+      ],
+      "case_sensitive": false,
+      "plain": "insulin",
+      "origin": "general",
+      "flag_words": []
+    },
+    {
+      "id": "d_gliclazide",
+      "forms": [
+        "gliclazide"
+      ],
+      "case_sensitive": false,
+      "plain": "medicine that lowers blood sugar",
+      "origin": "general",
+      "flag_words": []
+    },
+    {
+      "id": "d_sitagliptin",
+      "forms": [
+        "sitagliptin"
+      ],
+      "case_sensitive": false,
+      "plain": "medicine that lowers blood sugar",
+      "origin": "general",
+      "flag_words": []
+    },
+    {
+      "id": "d_linagliptin",
+      "forms": [
+        "linagliptin"
+      ],
+      "case_sensitive": false,
+      "plain": "medicine that lowers blood sugar",
+      "origin": "general",
+      "flag_words": []
+    },
+    {
+      "id": "d_alogliptin",
+      "forms": [
+        "alogliptin"
+      ],
+      "case_sensitive": false,
+      "plain": "medicine that lowers blood sugar",
+      "origin": "general",
+      "flag_words": []
+    },
+    {
+      "id": "d_saxagliptin",
+      "forms": [
+        "saxagliptin"
+      ],
+      "case_sensitive": false,
+      "plain": "medicine that lowers blood sugar",
+      "origin": "general",
+      "flag_words": []
+    },
+    {
+      "id": "d_pioglitazone",
+      "forms": [
+        "pioglitazone"
+      ],
+      "case_sensitive": false,
+      "plain": "medicine that lowers blood sugar",
+      "origin": "general",
+      "flag_words": []
+    },
+    {
+      "id": "d_glimepiride",
+      "forms": [
+        "glimepiride"
+      ],
+      "case_sensitive": false,
+      "plain": "medicine that lowers blood sugar",
+      "origin": "general",
+      "flag_words": []
+    },
+    {
+      "id": "d_codeine",
+      "forms": [
+        "codeine"
+      ],
+      "case_sensitive": false,
+      "plain": "morphine-type medicine",
+      "origin": "general",
+      "flag_words": []
+    },
+    {
+      "id": "d_co_codamol",
+      "forms": [
+        "co-codamol"
+      ],
+      "case_sensitive": false,
+      "plain": "painkiller",
+      "origin": "general",
+      "flag_words": []
+    },
+    {
+      "id": "d_dihydrocodeine",
+      "forms": [
+        "dihydrocodeine"
+      ],
+      "case_sensitive": false,
+      "plain": "painkiller",
+      "origin": "general",
+      "flag_words": []
+    },
+    {
+      "id": "d_tramadol",
+      "forms": [
+        "tramadol"
+      ],
+      "case_sensitive": false,
+      "plain": "painkiller",
+      "origin": "general",
+      "flag_words": []
+    },
+    {
+      "id": "d_morphine",
+      "forms": [
+        "morphine"
+      ],
+      "case_sensitive": false,
+      "plain": "morphine-type medicine",
+      "origin": "general",
+      "flag_words": []
+    },
+    {
+      "id": "d_oramorph",
+      "forms": [
+        "Oramorph"
+      ],
+      "case_sensitive": false,
+      "plain": "morphine-type medicine",
+      "origin": "general",
+      "flag_words": []
+    },
+    {
+      "id": "d_oxycodone",
+      "forms": [
+        "oxycodone"
+      ],
+      "case_sensitive": false,
+      "plain": "morphine-type medicine",
+      "origin": "general",
+      "flag_words": []
+    },
+    {
+      "id": "d_oxynorm",
+      "forms": [
+        "OxyNorm"
+      ],
+      "case_sensitive": false,
+      "plain": "morphine-type medicine",
+      "origin": "general",
+      "flag_words": []
+    },
+    {
+      "id": "d_oxycontin",
+      "forms": [
+        "OxyContin"
+      ],
+      "case_sensitive": false,
+      "plain": "morphine-type medicine",
+      "origin": "general",
+      "flag_words": []
+    },
+    {
+      "id": "d_fentanyl",
+      "forms": [
+        "fentanyl"
+      ],
+      "case_sensitive": false,
+      "plain": "morphine-type medicine",
+      "origin": "general",
+      "flag_words": []
+    },
+    {
+      "id": "d_buprenorphine",
+      "forms": [
+        "buprenorphine"
+      ],
+      "case_sensitive": false,
+      "plain": "morphine-type medicine",
+      "origin": "general",
+      "flag_words": []
+    },
+    {
+      "id": "d_ibuprofen",
+      "forms": [
+        "ibuprofen"
+      ],
+      "case_sensitive": false,
+      "plain": "anti-inflammatory medicine",
+      "origin": "general",
+      "flag_words": []
+    },
+    {
+      "id": "d_naproxen",
+      "forms": [
+        "naproxen"
+      ],
+      "case_sensitive": false,
+      "plain": "anti-inflammatory medicine",
+      "origin": "general",
+      "flag_words": []
+    },
+    {
+      "id": "d_diclofenac",
+      "forms": [
+        "diclofenac"
+      ],
+      "case_sensitive": false,
+      "plain": "anti-inflammatory medicine",
+      "origin": "general",
+      "flag_words": []
+    },
+    {
+      "id": "d_co_dydramol",
+      "forms": [
+        "co-dydramol"
+      ],
+      "case_sensitive": false,
+      "plain": "painkiller",
+      "origin": "general",
+      "flag_words": []
+    },
+    {
+      "id": "d_tapentadol",
+      "forms": [
+        "tapentadol"
+      ],
+      "case_sensitive": false,
+      "plain": "painkiller",
+      "origin": "general",
+      "flag_words": []
+    },
+    {
+      "id": "d_ondansetron",
+      "forms": [
+        "ondansetron"
+      ],
+      "case_sensitive": false,
+      "plain": "anti-sickness medicine",
+      "origin": "general",
+      "flag_words": []
+    },
+    {
+      "id": "d_omeprazole",
+      "forms": [
+        "omeprazole"
+      ],
+      "case_sensitive": false,
+      "plain": "stomach acid medicine",
+      "origin": "general",
+      "flag_words": []
+    },
+    {
+      "id": "d_lansoprazole",
+      "forms": [
+        "lansoprazole"
+      ],
+      "case_sensitive": false,
+      "plain": "stomach acid medicine",
+      "origin": "general",
+      "flag_words": []
+    },
+    {
+      "id": "d_pantoprazole",
+      "forms": [
+        "pantoprazole"
+      ],
+      "case_sensitive": false,
+      "plain": "stomach acid medicine",
+      "origin": "general",
+      "flag_words": []
+    },
+    {
+      "id": "d_esomeprazole",
+      "forms": [
+        "esomeprazole"
+      ],
+      "case_sensitive": false,
+      "plain": "stomach acid medicine",
+      "origin": "general",
+      "flag_words": []
+    },
+    {
+      "id": "d_famotidine",
+      "forms": [
+        "famotidine"
+      ],
+      "case_sensitive": false,
+      "plain": "stomach acid medicine",
+      "origin": "general",
+      "flag_words": []
+    },
+    {
+      "id": "d_ranitidine",
+      "forms": [
+        "ranitidine"
+      ],
+      "case_sensitive": false,
+      "plain": "stomach acid medicine",
+      "origin": "general",
+      "flag_words": []
+    },
+    {
+      "id": "d_gaviscon",
+      "forms": [
+        "Gaviscon"
+      ],
+      "case_sensitive": false,
+      "plain": "indigestion medicine",
+      "origin": "general",
+      "flag_words": []
+    },
+    {
+      "id": "d_peptac",
+      "forms": [
+        "Peptac"
+      ],
+      "case_sensitive": false,
+      "plain": "indigestion medicine",
+      "origin": "general",
+      "flag_words": []
+    },
+    {
+      "id": "d_lactulose",
+      "forms": [
+        "lactulose"
+      ],
+      "case_sensitive": false,
+      "plain": "laxative",
+      "origin": "general",
+      "flag_words": []
+    },
+    {
+      "id": "d_senna",
+      "forms": [
+        "senna"
+      ],
+      "case_sensitive": false,
+      "plain": "laxative",
+      "origin": "general",
+      "flag_words": []
+    },
+    {
+      "id": "d_macrogol",
+      "forms": [
+        "macrogol"
+      ],
+      "case_sensitive": false,
+      "plain": "laxative",
+      "origin": "general",
+      "flag_words": []
+    },
+    {
+      "id": "d_laxido",
+      "forms": [
+        "Laxido"
+      ],
+      "case_sensitive": false,
+      "plain": "laxative",
+      "origin": "general",
+      "flag_words": []
+    },
+    {
+      "id": "d_movicol",
+      "forms": [
+        "Movicol"
+      ],
+      "case_sensitive": false,
+      "plain": "laxative",
+      "origin": "general",
+      "flag_words": []
+    },
+    {
+      "id": "d_bisacodyl",
+      "forms": [
+        "bisacodyl"
+      ],
+      "case_sensitive": false,
+      "plain": "laxative",
+      "origin": "general",
+      "flag_words": []
+    },
+    {
+      "id": "d_atorvastatin",
+      "forms": [
+        "atorvastatin"
+      ],
+      "case_sensitive": false,
+      "plain": "cholesterol medicine",
+      "origin": "general",
+      "flag_words": []
+    },
+    {
+      "id": "d_simvastatin",
+      "forms": [
+        "simvastatin"
+      ],
+      "case_sensitive": false,
+      "plain": "cholesterol medicine",
+      "origin": "general",
+      "flag_words": []
+    },
+    {
+      "id": "d_rosuvastatin",
+      "forms": [
+        "rosuvastatin"
+      ],
+      "case_sensitive": false,
+      "plain": "cholesterol medicine",
+      "origin": "general",
+      "flag_words": []
+    },
+    {
+      "id": "d_pravastatin",
+      "forms": [
+        "pravastatin"
+      ],
+      "case_sensitive": false,
+      "plain": "cholesterol medicine",
+      "origin": "general",
+      "flag_words": []
+    },
+    {
+      "id": "d_bisoprolol",
+      "forms": [
+        "bisoprolol"
+      ],
+      "case_sensitive": false,
+      "plain": "medicine that slows the heart rate",
+      "origin": "general",
+      "flag_words": []
+    },
+    {
+      "id": "d_metoprolol",
+      "forms": [
+        "metoprolol"
+      ],
+      "case_sensitive": false,
+      "plain": "medicine that slows the heart rate",
+      "origin": "general",
+      "flag_words": []
+    },
+    {
+      "id": "d_atenolol",
+      "forms": [
+        "atenolol"
+      ],
+      "case_sensitive": false,
+      "plain": "medicine that slows the heart rate",
+      "origin": "general",
+      "flag_words": []
+    },
+    {
+      "id": "d_nebivolol",
+      "forms": [
+        "nebivolol"
+      ],
+      "case_sensitive": false,
+      "plain": "medicine that slows the heart rate",
+      "origin": "general",
+      "flag_words": []
+    },
+    {
+      "id": "d_ramipril",
+      "forms": [
+        "ramipril"
+      ],
+      "case_sensitive": false,
+      "plain": "medicine that lowers blood pressure",
+      "origin": "general",
+      "flag_words": []
+    },
+    {
+      "id": "d_lisinopril",
+      "forms": [
+        "lisinopril"
+      ],
+      "case_sensitive": false,
+      "plain": "medicine that lowers blood pressure",
+      "origin": "general",
+      "flag_words": []
+    },
+    {
+      "id": "d_perindopril",
+      "forms": [
+        "perindopril"
+      ],
+      "case_sensitive": false,
+      "plain": "medicine that lowers blood pressure",
+      "origin": "general",
+      "flag_words": []
+    },
+    {
+      "id": "d_enalapril",
+      "forms": [
+        "enalapril"
+      ],
+      "case_sensitive": false,
+      "plain": "medicine that lowers blood pressure",
+      "origin": "general",
+      "flag_words": []
+    },
+    {
+      "id": "d_losartan",
+      "forms": [
+        "losartan"
+      ],
+      "case_sensitive": false,
+      "plain": "medicine that lowers blood pressure",
+      "origin": "general",
+      "flag_words": []
+    },
+    {
+      "id": "d_candesartan",
+      "forms": [
+        "candesartan"
+      ],
+      "case_sensitive": false,
+      "plain": "medicine that lowers blood pressure",
+      "origin": "general",
+      "flag_words": []
+    },
+    {
+      "id": "d_irbesartan",
+      "forms": [
+        "irbesartan"
+      ],
+      "case_sensitive": false,
+      "plain": "medicine that lowers blood pressure",
+      "origin": "general",
+      "flag_words": []
+    },
+    {
+      "id": "d_valsartan",
+      "forms": [
+        "valsartan"
+      ],
+      "case_sensitive": false,
+      "plain": "medicine that lowers blood pressure",
+      "origin": "general",
+      "flag_words": []
+    },
+    {
+      "id": "d_entresto",
+      "forms": [
+        "Entresto"
+      ],
+      "case_sensitive": false,
+      "plain": "medicine that lowers blood pressure",
+      "origin": "general",
+      "flag_words": []
+    },
+    {
+      "id": "d_sacubitril_valsartan",
+      "forms": [
+        "sacubitril/valsartan"
+      ],
+      "case_sensitive": false,
+      "plain": "medicine that lowers blood pressure",
+      "origin": "general",
+      "flag_words": []
+    },
+    {
+      "id": "d_amlodipine",
+      "forms": [
+        "amlodipine"
+      ],
+      "case_sensitive": false,
+      "plain": "medicine that widens blood vessels",
+      "origin": "general",
+      "flag_words": []
+    },
+    {
+      "id": "d_felodipine",
+      "forms": [
+        "felodipine"
+      ],
+      "case_sensitive": false,
+      "plain": "medicine that widens blood vessels",
+      "origin": "general",
+      "flag_words": []
+    },
+    {
+      "id": "d_nifedipine",
+      "forms": [
+        "nifedipine"
+      ],
+      "case_sensitive": false,
+      "plain": "medicine that widens blood vessels",
+      "origin": "general",
+      "flag_words": []
+    },
+    {
+      "id": "d_lercanidipine",
+      "forms": [
+        "lercanidipine"
+      ],
+      "case_sensitive": false,
+      "plain": "medicine that widens blood vessels",
+      "origin": "general",
+      "flag_words": []
+    },
+    {
+      "id": "d_verapamil",
+      "forms": [
+        "verapamil"
+      ],
+      "case_sensitive": false,
+      "plain": "medicine that slows the heart rate",
+      "origin": "general",
+      "flag_words": []
+    },
+    {
+      "id": "d_digoxin",
+      "forms": [
+        "digoxin"
+      ],
+      "case_sensitive": false,
+      "plain": "heart medicine",
+      "origin": "general",
+      "flag_words": []
+    },
+    {
+      "id": "d_amiodarone",
+      "forms": [
+        "amiodarone"
+      ],
+      "case_sensitive": false,
+      "plain": "heart rhythm medicine",
+      "origin": "general",
+      "flag_words": []
+    },
+    {
+      "id": "d_gtn",
+      "forms": [
+        "GTN"
+      ],
+      "case_sensitive": false,
+      "plain": "medicine that widens blood vessels",
+      "origin": "general",
+      "flag_words": []
+    },
+    {
+      "id": "d_glyceryl_trinitrate",
+      "forms": [
+        "glyceryl trinitrate"
+      ],
+      "case_sensitive": false,
+      "plain": "medicine that widens blood vessels",
+      "origin": "general",
+      "flag_words": []
+    },
+    {
+      "id": "d_isosorbide_mononitrate",
+      "forms": [
+        "isosorbide mononitrate"
+      ],
+      "case_sensitive": false,
+      "plain": "medicine that widens blood vessels",
+      "origin": "general",
+      "flag_words": []
+    },
+    {
+      "id": "d_ismn",
+      "forms": [
+        "ISMN"
+      ],
+      "case_sensitive": false,
+      "plain": "medicine that widens blood vessels",
+      "origin": "general",
+      "flag_words": []
+    },
+    {
+      "id": "d_nicorandil",
+      "forms": [
+        "nicorandil"
+      ],
+      "case_sensitive": false,
+      "plain": "medicine that widens blood vessels",
+      "origin": "general",
+      "flag_words": []
+    },
+    {
+      "id": "d_ivabradine",
+      "forms": [
+        "ivabradine"
+      ],
+      "case_sensitive": false,
+      "plain": "medicine that slows the heart rate",
+      "origin": "general",
+      "flag_words": []
+    },
+    {
+      "id": "d_ranolazine",
+      "forms": [
+        "ranolazine"
+      ],
+      "case_sensitive": false,
+      "plain": "heart medicine",
+      "origin": "general",
+      "flag_words": []
+    },
+    {
+      "id": "d_flecainide",
+      "forms": [
+        "flecainide"
+      ],
+      "case_sensitive": false,
+      "plain": "heart rhythm medicine",
+      "origin": "general",
+      "flag_words": []
+    },
+    {
+      "id": "d_levetiracetam",
+      "forms": [
+        "levetiracetam"
+      ],
+      "case_sensitive": false,
+      "plain": "anti-seizure medicine",
+      "origin": "general",
+      "flag_words": []
+    },
+    {
+      "id": "d_keppra",
+      "forms": [
+        "Keppra"
+      ],
+      "case_sensitive": false,
+      "plain": "anti-seizure medicine",
+      "origin": "general",
+      "flag_words": []
+    },
+    {
+      "id": "d_phenytoin",
+      "forms": [
+        "phenytoin"
+      ],
+      "case_sensitive": false,
+      "plain": "anti-seizure medicine",
+      "origin": "general",
+      "flag_words": []
+    },
+    {
+      "id": "d_sertraline",
+      "forms": [
+        "sertraline"
+      ],
+      "case_sensitive": false,
+      "plain": "antidepressant",
+      "origin": "general",
+      "flag_words": []
+    },
+    {
+      "id": "d_citalopram",
+      "forms": [
+        "citalopram"
+      ],
+      "case_sensitive": false,
+      "plain": "antidepressant",
+      "origin": "general",
+      "flag_words": []
+    },
+    {
+      "id": "d_escitalopram",
+      "forms": [
+        "escitalopram"
+      ],
+      "case_sensitive": false,
+      "plain": "antidepressant",
+      "origin": "general",
+      "flag_words": []
+    },
+    {
+      "id": "d_fluoxetine",
+      "forms": [
+        "fluoxetine"
+      ],
+      "case_sensitive": false,
+      "plain": "antidepressant",
+      "origin": "general",
+      "flag_words": []
+    },
+    {
+      "id": "d_paroxetine",
+      "forms": [
+        "paroxetine"
+      ],
+      "case_sensitive": false,
+      "plain": "antidepressant",
+      "origin": "general",
+      "flag_words": []
+    },
+    {
+      "id": "d_mirtazapine",
+      "forms": [
+        "mirtazapine"
+      ],
+      "case_sensitive": false,
+      "plain": "antidepressant",
+      "origin": "general",
+      "flag_words": []
+    },
+    {
+      "id": "d_venlafaxine",
+      "forms": [
+        "venlafaxine"
+      ],
+      "case_sensitive": false,
+      "plain": "antidepressant",
+      "origin": "general",
+      "flag_words": []
+    },
+    {
+      "id": "d_levothyroxine",
+      "forms": [
+        "levothyroxine"
+      ],
+      "case_sensitive": false,
+      "plain": "thyroid hormone",
+      "origin": "general",
+      "flag_words": []
+    },
+    {
+      "id": "d_thyroxine",
+      "forms": [
+        "thyroxine"
+      ],
+      "case_sensitive": false,
+      "plain": "thyroid hormone",
+      "origin": "general",
+      "flag_words": []
+    },
+    {
+      "id": "d_carbimazole",
+      "forms": [
+        "carbimazole"
+      ],
+      "case_sensitive": false,
+      "plain": "thyroid medicine",
+      "origin": "general",
+      "flag_words": []
+    },
+    {
+      "id": "d_propylthiouracil",
+      "forms": [
+        "propylthiouracil"
+      ],
+      "case_sensitive": false,
+      "plain": "thyroid medicine",
+      "origin": "general",
+      "flag_words": []
+    },
+    {
+      "id": "d_thiamine",
+      "forms": [
+        "thiamine"
+      ],
+      "case_sensitive": false,
+      "plain": "vitamin",
+      "origin": "general",
+      "flag_words": []
+    },
+    {
+      "id": "d_pabrinex",
+      "forms": [
+        "Pabrinex"
+      ],
+      "case_sensitive": false,
+      "plain": "vitamin",
+      "origin": "general",
+      "flag_words": []
+    },
+    {
+      "id": "d_folic_acid",
+      "forms": [
+        "folic acid"
+      ],
+      "case_sensitive": false,
+      "plain": "vitamin",
+      "origin": "general",
+      "flag_words": []
+    },
+    {
+      "id": "d_phytomenadione",
+      "forms": [
+        "phytomenadione"
+      ],
+      "case_sensitive": false,
+      "plain": "vitamin",
+      "origin": "general",
+      "flag_words": []
+    },
+    {
+      "id": "d_ferrous_sulfate",
+      "forms": [
+        "ferrous sulfate"
+      ],
+      "case_sensitive": false,
+      "plain": "iron supplement",
+      "origin": "general",
+      "flag_words": []
+    },
+    {
+      "id": "d_ferrous_sulphate",
+      "forms": [
+        "ferrous sulphate"
+      ],
+      "case_sensitive": false,
+      "plain": "iron supplement",
+      "origin": "general",
+      "flag_words": []
+    },
+    {
+      "id": "d_ferrous_fumarate",
+      "forms": [
+        "ferrous fumarate"
+      ],
+      "case_sensitive": false,
+      "plain": "iron supplement",
+      "origin": "general",
+      "flag_words": []
+    },
+    {
+      "id": "d_ferinject",
+      "forms": [
+        "Ferinject"
+      ],
+      "case_sensitive": false,
+      "plain": "iron supplement",
+      "origin": "general",
+      "flag_words": []
+    },
+    {
+      "id": "d_iron_sucrose",
+      "forms": [
+        "iron sucrose"
+      ],
+      "case_sensitive": false,
+      "plain": "iron supplement",
+      "origin": "general",
+      "flag_words": []
+    },
+    {
+      "id": "d_monofer",
+      "forms": [
+        "Monofer"
+      ],
+      "case_sensitive": false,
+      "plain": "iron supplement",
+      "origin": "general",
+      "flag_words": []
+    },
+    {
+      "id": "d_sando_k",
+      "forms": [
+        "Sando-K"
+      ],
+      "case_sensitive": false,
+      "plain": "potassium supplement",
+      "origin": "general",
+      "flag_words": []
+    },
+    {
+      "id": "d_potassium_chloride",
+      "forms": [
+        "potassium chloride"
+      ],
+      "case_sensitive": false,
+      "plain": "potassium supplement",
+      "origin": "general",
+      "flag_words": []
+    },
+    {
+      "id": "d_naloxone",
+      "forms": [
+        "naloxone"
+      ],
+      "case_sensitive": false,
+      "plain": "opioid reversal medicine",
+      "origin": "general",
+      "flag_words": []
+    },
+    {
+      "id": "d_parvolex",
+      "forms": [
+        "Parvolex"
+      ],
+      "case_sensitive": false,
+      "plain": "paracetamol antidote",
+      "origin": "general",
+      "flag_words": []
+    },
+    {
+      "id": "d_tranexamic_acid",
+      "forms": [
+        "tranexamic acid"
+      ],
+      "case_sensitive": false,
+      "plain": "anti-bleeding medicine",
+      "origin": "general",
+      "flag_words": []
+    },
+    {
+      "id": "d_octaplex",
+      "forms": [
+        "Octaplex"
+      ],
+      "case_sensitive": false,
+      "plain": "clotting factor treatment",
+      "origin": "general",
+      "flag_words": []
+    },
+    {
+      "id": "d_beriplex",
+      "forms": [
+        "Beriplex"
+      ],
+      "case_sensitive": false,
+      "plain": "clotting factor treatment",
+      "origin": "general",
+      "flag_words": []
+    },
+    {
+      "id": "d_chlorphenamine",
+      "forms": [
+        "chlorphenamine"
+      ],
+      "case_sensitive": false,
+      "plain": "antihistamine",
+      "origin": "general",
+      "flag_words": []
+    },
+    {
+      "id": "d_cetirizine",
+      "forms": [
+        "cetirizine"
+      ],
+      "case_sensitive": false,
+      "plain": "antihistamine",
+      "origin": "general",
+      "flag_words": []
+    },
+    {
+      "id": "d_loratadine",
+      "forms": [
+        "loratadine"
+      ],
+      "case_sensitive": false,
+      "plain": "antihistamine",
+      "origin": "general",
+      "flag_words": []
+    },
+    {
+      "id": "d_fexofenadine",
+      "forms": [
+        "fexofenadine"
+      ],
+      "case_sensitive": false,
+      "plain": "antihistamine",
+      "origin": "general",
+      "flag_words": []
+    },
+    {
+      "id": "d_allopurinol",
+      "forms": [
+        "allopurinol"
+      ],
+      "case_sensitive": false,
+      "plain": "medicine that lowers uric acid",
+      "origin": "general",
+      "flag_words": []
+    },
+    {
+      "id": "d_colchicine",
+      "forms": [
+        "colchicine"
+      ],
+      "case_sensitive": false,
+      "plain": "anti-inflammatory medicine",
+      "origin": "general",
+      "flag_words": []
+    },
+    {
+      "id": "d_febuxostat",
+      "forms": [
+        "febuxostat"
+      ],
+      "case_sensitive": false,
+      "plain": "medicine that lowers uric acid",
+      "origin": "general",
+      "flag_words": []
+    },
+    {
+      "id": "d_donepezil",
+      "forms": [
+        "donepezil"
+      ],
+      "case_sensitive": false,
+      "plain": "dementia medicine",
+      "origin": "general",
+      "flag_words": []
+    },
+    {
+      "id": "d_memantine",
+      "forms": [
+        "memantine"
+      ],
+      "case_sensitive": false,
+      "plain": "dementia medicine",
+      "origin": "general",
+      "flag_words": []
+    },
+    {
+      "id": "d_rivastigmine",
+      "forms": [
+        "rivastigmine"
+      ],
+      "case_sensitive": false,
+      "plain": "dementia medicine",
+      "origin": "general",
+      "flag_words": []
+    },
+    {
+      "id": "d_galantamine",
+      "forms": [
+        "galantamine"
+      ],
+      "case_sensitive": false,
+      "plain": "dementia medicine",
+      "origin": "general",
+      "flag_words": []
+    },
+    {
+      "id": "d_co_careldopa",
+      "forms": [
+        "co-careldopa"
+      ],
+      "case_sensitive": false,
+      "plain": "dopamine-replacing medicine",
+      "origin": "general",
+      "flag_words": []
+    },
+    {
+      "id": "d_sinemet",
+      "forms": [
+        "Sinemet"
+      ],
+      "case_sensitive": false,
+      "plain": "dopamine-replacing medicine",
+      "origin": "general",
+      "flag_words": []
+    },
+    {
+      "id": "d_madopar",
+      "forms": [
+        "Madopar"
+      ],
+      "case_sensitive": false,
+      "plain": "dopamine-replacing medicine",
+      "origin": "general",
+      "flag_words": []
+    },
+    {
+      "id": "d_co_beneldopa",
+      "forms": [
+        "co-beneldopa"
+      ],
+      "case_sensitive": false,
+      "plain": "dopamine-replacing medicine",
+      "origin": "general",
+      "flag_words": []
+    },
+    {
+      "id": "d_levodopa",
+      "forms": [
+        "levodopa"
+      ],
+      "case_sensitive": false,
+      "plain": "dopamine-replacing medicine",
+      "origin": "general",
+      "flag_words": []
+    },
+    {
+      "id": "d_solifenacin",
+      "forms": [
+        "solifenacin"
+      ],
+      "case_sensitive": false,
+      "plain": "medicine that calms the bladder",
+      "origin": "general",
+      "flag_words": []
+    },
+    {
+      "id": "d_tolterodine",
+      "forms": [
+        "tolterodine"
+      ],
+      "case_sensitive": false,
+      "plain": "medicine that calms the bladder",
+      "origin": "general",
+      "flag_words": []
+    },
+    {
+      "id": "d_alendronic_acid",
+      "forms": [
+        "alendronic acid"
+      ],
+      "case_sensitive": false,
+      "plain": "medicine that slows bone loss",
+      "origin": "general",
+      "flag_words": []
+    },
+    {
+      "id": "d_alendronate",
+      "forms": [
+        "alendronate"
+      ],
+      "case_sensitive": false,
+      "plain": "medicine that slows bone loss",
+      "origin": "general",
+      "flag_words": []
+    },
+    {
+      "id": "d_zoledronic_acid",
+      "forms": [
+        "zoledronic acid"
+      ],
+      "case_sensitive": false,
+      "plain": "medicine that slows bone loss",
+      "origin": "general",
+      "flag_words": []
+    },
+    {
+      "id": "d_risedronate",
+      "forms": [
+        "risedronate"
+      ],
+      "case_sensitive": false,
+      "plain": "medicine that slows bone loss",
+      "origin": "general",
+      "flag_words": []
+    },
+    {
+      "id": "d_loperamide",
+      "forms": [
+        "loperamide"
+      ],
+      "case_sensitive": false,
+      "plain": "anti-diarrhoea medicine",
+      "origin": "general",
+      "flag_words": []
+    },
+    {
+      "id": "d_imodium",
+      "forms": [
+        "Imodium"
+      ],
+      "case_sensitive": false,
+      "plain": "anti-diarrhoea medicine",
+      "origin": "general",
+      "flag_words": []
+    },
+    {
+      "id": "a_ergometrine",
+      "forms": [
+        "ergometrine"
+      ],
+      "case_sensitive": false,
+      "plain": "womb-tightening medicine",
+      "origin": "added_after_inputs",
+      "flag_words": []
+    },
+    {
+      "id": "a_oxytocin",
+      "forms": [
+        "oxytocin"
+      ],
+      "case_sensitive": false,
+      "plain": "womb-tightening medicine",
+      "origin": "added_after_inputs",
+      "flag_words": []
+    },
+    {
+      "id": "a_noradrenaline",
+      "forms": [
+        "noradrenaline",
+        "norepinephrine"
+      ],
+      "case_sensitive": false,
+      "plain": "blood pressure support medicine",
+      "origin": "added_after_inputs",
       "flag_words": []
     }
   ]

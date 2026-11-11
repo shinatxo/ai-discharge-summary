@@ -1,19 +1,6437 @@
 {
   "table": "glossary",
   "version": 1,
-  "status": "stub",
-  "approved_by": null,
-  "approved_at": null,
+  "status": "approved",
+  "approved_by": "Shina (author/CSO) — D1–D12 adopted 11 Nov 2026, 07:45–07:52 Europe/London",
+  "approved_at": "2026-11-11",
   "entries": [
     {
-      "id": "g_stub",
+      "id": "g_nstemi",
       "forms": [
-        "stubterm"
+        "NSTEMI"
+      ],
+      "case_sensitive": true,
+      "plain": "heart attack",
+      "category": "condition",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_stemi",
+      "forms": [
+        "STEMI"
+      ],
+      "case_sensitive": true,
+      "plain": "heart attack",
+      "category": "condition",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_mi",
+      "forms": [
+        "myocardial infarction"
       ],
       "case_sensitive": false,
-      "plain": "placeholder words",
+      "plain": "heart attack",
+      "category": "condition",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_acs",
+      "forms": [
+        "acute coronary syndrome"
+      ],
+      "case_sensitive": false,
+      "plain": "sudden reduced blood flow to the heart",
+      "category": "condition",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_angina",
+      "forms": [
+        "angina"
+      ],
+      "case_sensitive": false,
+      "plain": "chest pain from the heart",
+      "category": "condition",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_af",
+      "forms": [
+        "atrial fibrillation"
+      ],
+      "case_sensitive": false,
+      "plain": "irregular heartbeat",
+      "category": "condition",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_flutter",
+      "forms": [
+        "atrial flutter"
+      ],
+      "case_sensitive": false,
+      "plain": "fast heart rhythm problem",
+      "category": "condition",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_svt",
+      "forms": [
+        "SVT"
+      ],
+      "case_sensitive": true,
+      "plain": "fast heart rhythm problem",
+      "category": "condition",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_svt_long",
+      "forms": [
+        "supraventricular tachycardia"
+      ],
+      "case_sensitive": false,
+      "plain": "fast heart rhythm problem",
+      "category": "condition",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_hf",
+      "forms": [
+        "heart failure",
+        "cardiac failure",
+        "congestive cardiac failure",
+        "congestive heart failure"
+      ],
+      "case_sensitive": false,
+      "plain": "heart struggling to pump enough blood",
+      "category": "condition",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_hf_abbr",
+      "forms": [
+        "CCF",
+        "LVF",
+        "LVSD"
+      ],
+      "case_sensitive": true,
+      "plain": "heart struggling to pump enough blood",
+      "category": "condition",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_htn",
+      "forms": [
+        "hypertension"
+      ],
+      "case_sensitive": false,
+      "plain": "high blood pressure",
+      "category": "condition",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_htn_abbr",
+      "forms": [
+        "HTN"
+      ],
+      "case_sensitive": true,
+      "plain": "high blood pressure",
+      "category": "condition",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_hypotension",
+      "forms": [
+        "hypotension"
+      ],
+      "case_sensitive": false,
+      "plain": "low blood pressure",
+      "category": "condition",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_postural",
+      "forms": [
+        "postural hypotension",
+        "orthostatic hypotension"
+      ],
+      "case_sensitive": false,
+      "plain": "blood pressure drop on standing up",
+      "category": "condition",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_brady",
+      "forms": [
+        "bradycardia"
+      ],
+      "case_sensitive": false,
+      "plain": "slow heart rate",
+      "category": "sign",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_tachy",
+      "forms": [
+        "tachycardia",
+        "sinus tachycardia"
+      ],
+      "case_sensitive": false,
+      "plain": "fast heart rate",
+      "category": "sign",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_tachycardic",
+      "forms": [
+        "tachycardic"
+      ],
+      "case_sensitive": false,
+      "plain": "with a fast heart rate",
+      "category": "sign",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_palpitations",
+      "forms": [
+        "palpitations"
+      ],
+      "case_sensitive": false,
+      "plain": "awareness of a pounding or fluttering heartbeat",
+      "category": "symptom",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_syncope",
+      "forms": [
+        "syncope"
+      ],
+      "case_sensitive": false,
+      "plain": "fainting",
+      "category": "symptom",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_presyncope",
+      "forms": [
+        "presyncope",
+        "pre-syncope"
+      ],
+      "case_sensitive": false,
+      "plain": "feeling faint",
+      "category": "symptom",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_aortic_stenosis",
+      "forms": [
+        "aortic stenosis"
+      ],
+      "case_sensitive": false,
+      "plain": "narrowed heart valve",
+      "category": "condition",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_valve_disease",
+      "forms": [
+        "valve disease",
+        "valvular heart disease"
+      ],
+      "case_sensitive": false,
+      "plain": "heart valve problem",
+      "category": "condition",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_pericarditis",
+      "forms": [
+        "pericarditis"
+      ],
+      "case_sensitive": false,
+      "plain": "inflamed lining around the heart",
+      "category": "condition",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_endocarditis",
+      "forms": [
+        "endocarditis",
+        "infective endocarditis"
+      ],
+      "case_sensitive": false,
+      "plain": "infection of the heart lining or valves",
+      "category": "condition",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_cardiomyopathy",
+      "forms": [
+        "cardiomyopathy"
+      ],
+      "case_sensitive": false,
+      "plain": "heart muscle disease",
+      "category": "condition",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_chol",
+      "forms": [
+        "hypercholesterolaemia",
+        "hyperlipidaemia",
+        "dyslipidaemia"
+      ],
+      "case_sensitive": false,
+      "plain": "high cholesterol",
+      "category": "condition",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_ihd_abbr",
+      "forms": [
+        "IHD",
+        "CAD"
+      ],
+      "case_sensitive": true,
+      "plain": "narrowed heart arteries",
+      "category": "condition",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_ihd",
+      "forms": [
+        "ischaemic heart disease",
+        "coronary artery disease",
+        "coronary heart disease"
+      ],
+      "case_sensitive": false,
+      "plain": "narrowed heart arteries",
+      "category": "condition",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_pvd_abbr",
+      "forms": [
+        "PAD"
+      ],
+      "case_sensitive": true,
+      "plain": "narrowed leg arteries",
+      "category": "condition",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_pvd",
+      "forms": [
+        "peripheral vascular disease",
+        "peripheral arterial disease"
+      ],
+      "case_sensitive": false,
+      "plain": "narrowed leg arteries",
+      "category": "condition",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_dvt_abbr",
+      "forms": [
+        "DVT"
+      ],
+      "case_sensitive": true,
+      "plain": "blood clot in a deep vein",
+      "category": "condition",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_dvt",
+      "forms": [
+        "deep vein thrombosis"
+      ],
+      "case_sensitive": false,
+      "plain": "blood clot in a deep vein",
+      "category": "condition",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_pe",
+      "forms": [
+        "pulmonary embolism",
+        "pulmonary emboli",
+        "pulmonary embolus"
+      ],
+      "case_sensitive": false,
+      "plain": "blood clot in the lungs",
+      "category": "condition",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_vte_abbr",
+      "forms": [
+        "VTE"
+      ],
+      "case_sensitive": true,
+      "plain": "blood clot in a vein",
+      "category": "condition",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_vte",
+      "forms": [
+        "venous thromboembolism"
+      ],
+      "case_sensitive": false,
+      "plain": "blood clot in a vein",
+      "category": "condition",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_thrombus",
+      "forms": [
+        "thrombus",
+        "thrombosis"
+      ],
+      "case_sensitive": false,
+      "plain": "blood clot",
+      "category": "condition",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_aneurysm",
+      "forms": [
+        "aneurysm"
+      ],
+      "case_sensitive": false,
+      "plain": "bulge in a blood vessel",
+      "category": "condition",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_aaa_abbr",
+      "forms": [
+        "AAA"
+      ],
+      "case_sensitive": true,
+      "plain": "bulge in the main artery in the tummy",
+      "category": "condition",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_aaa",
+      "forms": [
+        "abdominal aortic aneurysm"
+      ],
+      "case_sensitive": false,
+      "plain": "bulge in the main artery in the tummy",
+      "category": "condition",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_cva",
+      "forms": [
+        "cerebrovascular accident"
+      ],
+      "case_sensitive": false,
+      "plain": "stroke",
+      "category": "condition",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_isch_stroke",
+      "forms": [
+        "ischaemic stroke",
+        "ischemic stroke"
+      ],
+      "case_sensitive": false,
+      "plain": "stroke from a blocked artery",
+      "category": "condition",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_haem_stroke",
+      "forms": [
+        "haemorrhagic stroke",
+        "hemorrhagic stroke"
+      ],
+      "case_sensitive": false,
+      "plain": "stroke from bleeding in the brain",
+      "category": "condition",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_tia_abbr",
+      "forms": [
+        "TIA"
+      ],
+      "case_sensitive": true,
+      "plain": "mini-stroke",
+      "category": "condition",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_tia",
+      "forms": [
+        "transient ischaemic attack"
+      ],
+      "case_sensitive": false,
+      "plain": "mini-stroke",
+      "category": "condition",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_ich_abbr",
+      "forms": [
+        "ICH"
+      ],
+      "case_sensitive": true,
+      "plain": "bleeding inside the head",
+      "category": "condition",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_ich",
+      "forms": [
+        "intracerebral haemorrhage",
+        "intracranial haemorrhage",
+        "intracerebral bleed"
+      ],
+      "case_sensitive": false,
+      "plain": "bleeding inside the head",
+      "category": "condition",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_sah_abbr",
+      "forms": [
+        "SAH"
+      ],
+      "case_sensitive": true,
+      "plain": "bleeding around the brain",
+      "category": "condition",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_sah",
+      "forms": [
+        "subarachnoid haemorrhage"
+      ],
+      "case_sensitive": false,
+      "plain": "bleeding around the brain",
+      "category": "condition",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_sdh",
+      "forms": [
+        "subdural haematoma",
+        "subdural haemorrhage"
+      ],
+      "case_sensitive": false,
+      "plain": "blood collection between the brain and skull",
+      "category": "condition",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_sdh_abbr",
+      "forms": [
+        "SDH"
+      ],
+      "case_sensitive": true,
+      "plain": "blood collection between the brain and skull",
+      "category": "condition",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_pneumonia",
+      "forms": [
+        "pneumonia"
+      ],
+      "case_sensitive": false,
+      "plain": "lung infection",
+      "category": "condition",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_cap_abbr",
+      "forms": [
+        "CAP",
+        "HAP"
+      ],
+      "case_sensitive": true,
+      "plain": "lung infection",
+      "category": "condition",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_cap",
+      "forms": [
+        "community-acquired pneumonia",
+        "community acquired pneumonia",
+        "hospital-acquired pneumonia",
+        "hospital acquired pneumonia"
+      ],
+      "case_sensitive": false,
+      "plain": "lung infection",
+      "category": "condition",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_asp_pneu",
+      "forms": [
+        "aspiration pneumonia"
+      ],
+      "case_sensitive": false,
+      "plain": "lung infection from breathing in food or drink",
+      "category": "condition",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_lrti_abbr",
+      "forms": [
+        "LRTI"
+      ],
+      "case_sensitive": true,
+      "plain": "chest infection",
+      "category": "condition",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_lrti",
+      "forms": [
+        "lower respiratory tract infection"
+      ],
+      "case_sensitive": false,
+      "plain": "chest infection",
+      "category": "condition",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_urti_abbr",
+      "forms": [
+        "URTI"
+      ],
+      "case_sensitive": true,
+      "plain": "nose, throat or upper airway infection",
+      "category": "condition",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_urti",
+      "forms": [
+        "upper respiratory tract infection"
+      ],
+      "case_sensitive": false,
+      "plain": "nose, throat or upper airway infection",
+      "category": "condition",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_copd_abbr",
+      "forms": [
+        "COPD"
+      ],
+      "case_sensitive": true,
+      "plain": "long-term lung condition",
+      "category": "condition",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_copd",
+      "forms": [
+        "chronic obstructive pulmonary disease"
+      ],
+      "case_sensitive": false,
+      "plain": "long-term lung condition",
+      "category": "condition",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_iecopd",
+      "forms": [
+        "IECOPD"
+      ],
+      "case_sensitive": true,
+      "plain": "flare-up of long-term lung condition with infection",
+      "category": "condition",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_exacerbation",
+      "forms": [
+        "exacerbation"
+      ],
+      "case_sensitive": false,
+      "plain": "flare-up",
+      "category": "condition",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_ild_abbr",
+      "forms": [
+        "ILD"
+      ],
+      "case_sensitive": true,
+      "plain": "lung tissue disease",
+      "category": "condition",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_ild",
+      "forms": [
+        "interstitial lung disease"
+      ],
+      "case_sensitive": false,
+      "plain": "lung tissue disease",
+      "category": "condition",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_fibrosis",
+      "forms": [
+        "pulmonary fibrosis"
+      ],
+      "case_sensitive": false,
+      "plain": "scarring of the lungs",
+      "category": "condition",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_effusion_pl",
+      "forms": [
+        "pleural effusion",
+        "pleural effusions"
+      ],
+      "case_sensitive": false,
+      "plain": "fluid around the lung",
+      "category": "condition",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_effusion",
+      "forms": [
+        "effusion"
+      ],
+      "case_sensitive": false,
+      "plain": "build-up of fluid",
+      "category": "condition",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_ptx",
+      "forms": [
+        "pneumothorax"
+      ],
+      "case_sensitive": false,
+      "plain": "collapsed lung",
+      "category": "condition",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_hypoxia",
+      "forms": [
+        "hypoxia",
+        "hypoxaemia",
+        "hypoxic"
+      ],
+      "case_sensitive": false,
+      "plain": "low oxygen level",
+      "category": "sign",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_hypercapnia",
+      "forms": [
+        "hypercapnia",
+        "hypercapnic"
+      ],
+      "case_sensitive": false,
+      "plain": "high carbon dioxide level",
+      "category": "sign",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_sob",
+      "forms": [
+        "SOB"
+      ],
+      "case_sensitive": true,
+      "plain": "short of breath",
+      "category": "symptom",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_soboe",
+      "forms": [
+        "SOBOE"
+      ],
+      "case_sensitive": true,
+      "plain": "short of breath when active",
+      "category": "symptom",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_dyspnoea",
+      "forms": [
+        "dyspnoea",
+        "dyspnea"
+      ],
+      "case_sensitive": false,
+      "plain": "breathlessness",
+      "category": "symptom",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_orthopnoea",
+      "forms": [
+        "orthopnoea"
+      ],
+      "case_sensitive": false,
+      "plain": "breathless when lying flat",
+      "category": "symptom",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_haemoptysis",
+      "forms": [
+        "haemoptysis"
+      ],
+      "case_sensitive": false,
+      "plain": "coughing up blood",
+      "category": "symptom",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_sputum",
+      "forms": [
+        "sputum"
+      ],
+      "case_sensitive": false,
+      "plain": "phlegm",
+      "category": "symptom",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_productive",
+      "forms": [
+        "productive cough"
+      ],
+      "case_sensitive": false,
+      "plain": "cough with phlegm",
+      "category": "symptom",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_atelectasis",
+      "forms": [
+        "atelectasis"
+      ],
+      "case_sensitive": false,
+      "plain": "small area of collapsed lung",
+      "category": "finding",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_bronchiectasis",
+      "forms": [
+        "bronchiectasis"
+      ],
+      "case_sensitive": false,
+      "plain": "widened airways",
+      "category": "condition",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_bronchiolitis",
+      "forms": [
+        "bronchiolitis"
+      ],
+      "case_sensitive": false,
+      "plain": "chest infection of the small airways",
+      "category": "condition",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_croup",
+      "forms": [
+        "croup"
+      ],
+      "case_sensitive": false,
+      "plain": "infection of the voice box and windpipe",
+      "category": "condition",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_osa_abbr",
+      "forms": [
+        "OSA"
+      ],
+      "case_sensitive": true,
+      "plain": "pauses in breathing in sleep",
+      "category": "condition",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_osa",
+      "forms": [
+        "obstructive sleep apnoea",
+        "sleep apnoea"
+      ],
+      "case_sensitive": false,
+      "plain": "pauses in breathing in sleep",
+      "category": "condition",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_niv",
+      "forms": [
+        "NIV",
+        "BiPAP",
+        "CPAP"
+      ],
+      "case_sensitive": true,
+      "plain": "breathing support through a mask",
+      "category": "treatment",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_neb",
+      "forms": [
+        "nebuliser",
+        "nebulisers",
+        "nebs"
+      ],
+      "case_sensitive": false,
+      "plain": "mist breathing treatment",
+      "category": "treatment",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_nebulised",
+      "forms": [
+        "nebulised"
+      ],
+      "case_sensitive": false,
+      "plain": "breathed in as a mist",
+      "category": "treatment",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_itu",
+      "forms": [
+        "ITU",
+        "ICU"
+      ],
+      "case_sensitive": true,
+      "plain": "intensive care",
+      "category": "service",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_hdu",
+      "forms": [
+        "HDU"
+      ],
+      "case_sensitive": true,
+      "plain": "ward for closer care",
+      "category": "service",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_intubated",
+      "forms": [
+        "intubated"
+      ],
+      "case_sensitive": false,
+      "plain": "given a breathing tube",
+      "category": "treatment",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_gi",
+      "forms": [
+        "GI"
+      ],
+      "case_sensitive": true,
+      "plain": "gut",
+      "category": "body",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_ugib",
+      "forms": [
+        "UGIB"
+      ],
+      "case_sensitive": true,
+      "plain": "bleeding from the upper gut",
+      "category": "condition",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_ugib_long",
+      "forms": [
+        "upper GI bleed",
+        "upper gastrointestinal bleed",
+        "upper GI haemorrhage"
+      ],
+      "case_sensitive": false,
+      "plain": "bleeding from the upper gut",
+      "category": "condition",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_lgib",
+      "forms": [
+        "lower GI bleed",
+        "lower gastrointestinal bleed"
+      ],
+      "case_sensitive": false,
+      "plain": "bleeding from the lower gut",
+      "category": "condition",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_gibleed",
+      "forms": [
+        "GI bleed",
+        "gastrointestinal bleed"
+      ],
+      "case_sensitive": false,
+      "plain": "bleeding in the gut",
+      "category": "condition",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_melaena",
+      "forms": [
+        "melaena",
+        "melena"
+      ],
+      "case_sensitive": false,
+      "plain": "black, tarry poo",
+      "category": "symptom",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_haematemesis",
+      "forms": [
+        "haematemesis"
+      ],
+      "case_sensitive": false,
+      "plain": "vomiting blood",
+      "category": "symptom",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_pr_bleed",
+      "forms": [
+        "rectal bleeding",
+        "PR bleeding",
+        "PR bleed"
+      ],
+      "case_sensitive": false,
+      "plain": "bleeding from the bottom",
+      "category": "symptom",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_dyspepsia",
+      "forms": [
+        "dyspepsia"
+      ],
+      "case_sensitive": false,
+      "plain": "indigestion",
+      "category": "symptom",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_gord",
+      "forms": [
+        "GORD",
+        "GERD"
+      ],
+      "case_sensitive": true,
+      "plain": "acid reflux",
+      "category": "condition",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_gastritis",
+      "forms": [
+        "gastritis"
+      ],
+      "case_sensitive": false,
+      "plain": "inflamed stomach lining",
+      "category": "condition",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_pud",
+      "forms": [
+        "peptic ulcer",
+        "gastric ulcer",
+        "duodenal ulcer",
+        "peptic ulcer disease"
+      ],
+      "case_sensitive": false,
+      "plain": "ulcer in the stomach or first part of the gut",
+      "category": "condition",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_oesophagitis",
+      "forms": [
+        "oesophagitis"
+      ],
+      "case_sensitive": false,
+      "plain": "inflamed gullet",
+      "category": "condition",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_varices",
+      "forms": [
+        "oesophageal varices"
+      ],
+      "case_sensitive": false,
+      "plain": "swollen veins in the gullet",
+      "category": "condition",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_pancreatitis",
+      "forms": [
+        "pancreatitis",
+        "acute pancreatitis"
+      ],
+      "case_sensitive": false,
+      "plain": "inflamed pancreas",
+      "category": "condition",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_cholecystitis",
+      "forms": [
+        "cholecystitis",
+        "acute cholecystitis"
+      ],
+      "case_sensitive": false,
+      "plain": "inflamed gallbladder",
+      "category": "condition",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_cholelithiasis",
+      "forms": [
+        "cholelithiasis"
+      ],
+      "case_sensitive": false,
+      "plain": "gallstones",
+      "category": "condition",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_biliary_colic",
+      "forms": [
+        "biliary colic"
+      ],
+      "case_sensitive": false,
+      "plain": "gallstone pain",
+      "category": "symptom",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_cholangitis",
+      "forms": [
+        "cholangitis",
+        "ascending cholangitis"
+      ],
+      "case_sensitive": false,
+      "plain": "infection of the bile ducts",
+      "category": "condition",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_cbd_stone",
+      "forms": [
+        "choledocholithiasis"
+      ],
+      "case_sensitive": false,
+      "plain": "gallstone in the bile duct",
+      "category": "condition",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_appendicitis",
+      "forms": [
+        "appendicitis"
+      ],
+      "case_sensitive": false,
+      "plain": "inflamed appendix",
+      "category": "condition",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_sbo",
+      "forms": [
+        "small bowel obstruction"
+      ],
+      "case_sensitive": false,
+      "plain": "blocked small bowel",
+      "category": "condition",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_sbo_abbr",
+      "forms": [
+        "SBO"
+      ],
+      "case_sensitive": true,
+      "plain": "blocked small bowel",
+      "category": "condition",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_bo",
+      "forms": [
+        "bowel obstruction",
+        "large bowel obstruction"
+      ],
+      "case_sensitive": false,
+      "plain": "blocked bowel",
+      "category": "condition",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_ileus",
+      "forms": [
+        "ileus"
+      ],
+      "case_sensitive": false,
+      "plain": "stalled bowel",
+      "category": "condition",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_diverticulitis",
+      "forms": [
+        "diverticulitis"
+      ],
+      "case_sensitive": false,
+      "plain": "inflamed pouches in the bowel wall",
+      "category": "condition",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_diverticular",
+      "forms": [
+        "diverticular disease",
+        "diverticulosis"
+      ],
+      "case_sensitive": false,
+      "plain": "pouches in the bowel wall",
+      "category": "condition",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_colitis",
+      "forms": [
+        "colitis"
+      ],
+      "case_sensitive": false,
+      "plain": "inflamed bowel",
+      "category": "condition",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_uc",
+      "forms": [
+        "ulcerative colitis"
+      ],
+      "case_sensitive": false,
+      "plain": "long-term bowel inflammation",
+      "category": "condition",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_crohns",
+      "forms": [
+        "Crohn's disease",
+        "Crohn’s disease",
+        "Crohn's",
+        "Crohn’s"
+      ],
+      "case_sensitive": false,
+      "plain": "long-term gut inflammation",
+      "category": "condition",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_ibd",
+      "forms": [
+        "IBD"
+      ],
+      "case_sensitive": true,
+      "plain": "long-term gut inflammation",
+      "category": "condition",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_ibd_long",
+      "forms": [
+        "inflammatory bowel disease"
+      ],
+      "case_sensitive": false,
+      "plain": "long-term gut inflammation",
+      "category": "condition",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_gastro",
+      "forms": [
+        "gastroenteritis"
+      ],
+      "case_sensitive": false,
+      "plain": "tummy bug",
+      "category": "condition",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_cdiff",
+      "forms": [
+        "C. diff",
+        "C diff",
+        "C. difficile",
+        "Clostridioides difficile",
+        "Clostridium difficile"
+      ],
+      "case_sensitive": false,
+      "plain": "bowel infection",
+      "category": "condition",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_nausea",
+      "forms": [
+        "nausea"
+      ],
+      "case_sensitive": false,
+      "plain": "feeling sick",
+      "category": "symptom",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_dysphagia",
+      "forms": [
+        "dysphagia"
+      ],
+      "case_sensitive": false,
+      "plain": "difficulty swallowing",
+      "category": "symptom",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_odynophagia",
+      "forms": [
+        "odynophagia"
+      ],
+      "case_sensitive": false,
+      "plain": "painful swallowing",
+      "category": "symptom",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_jaundice",
+      "forms": [
+        "jaundice",
+        "jaundiced"
+      ],
+      "case_sensitive": false,
+      "plain": "yellowing of the skin and eyes",
+      "category": "sign",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_ascites",
+      "forms": [
+        "ascites"
+      ],
+      "case_sensitive": false,
+      "plain": "fluid in the tummy",
+      "category": "sign",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_paracentesis",
+      "forms": [
+        "paracentesis",
+        "ascitic drain",
+        "ascitic tap"
+      ],
+      "case_sensitive": false,
+      "plain": "draining fluid from the tummy",
+      "category": "procedure",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_cirrhosis",
+      "forms": [
+        "cirrhosis",
+        "liver cirrhosis"
+      ],
+      "case_sensitive": false,
+      "plain": "scarring of the liver",
+      "category": "condition",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_ald",
+      "forms": [
+        "alcohol-related liver disease",
+        "alcoholic liver disease"
+      ],
+      "case_sensitive": false,
+      "plain": "liver disease from alcohol",
+      "category": "condition",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_ald_abbr",
+      "forms": [
+        "ARLD"
+      ],
+      "case_sensitive": true,
+      "plain": "liver disease from alcohol",
+      "category": "condition",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_hep_enc",
+      "forms": [
+        "hepatic encephalopathy"
+      ],
+      "case_sensitive": false,
+      "plain": "confusion from liver disease",
+      "category": "condition",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_hepatitis",
+      "forms": [
+        "hepatitis"
+      ],
+      "case_sensitive": false,
+      "plain": "inflamed liver",
+      "category": "condition",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_nafld",
+      "forms": [
+        "NAFLD",
+        "MASLD"
+      ],
+      "case_sensitive": true,
+      "plain": "fatty liver",
+      "category": "condition",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_abdo_pain",
+      "forms": [
+        "abdominal pain",
+        "abdo pain"
+      ],
+      "case_sensitive": false,
+      "plain": "tummy pain",
+      "category": "symptom",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_abdomen",
+      "forms": [
+        "abdomen",
+        "abdominal",
+        "abdo"
+      ],
+      "case_sensitive": false,
+      "plain": "tummy",
+      "category": "body",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_epigastric",
+      "forms": [
+        "epigastric pain"
+      ],
+      "case_sensitive": false,
+      "plain": "pain in the upper tummy",
+      "category": "symptom",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_epigastrium",
+      "forms": [
+        "epigastrium",
+        "epigastric"
+      ],
+      "case_sensitive": false,
+      "plain": "upper tummy",
+      "category": "body",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_hernia_ing",
+      "forms": [
+        "inguinal hernia"
+      ],
+      "case_sensitive": false,
+      "plain": "hernia in the groin",
+      "category": "condition",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_ngt",
+      "forms": [
+        "NG tube",
+        "NGT",
+        "nasogastric tube"
+      ],
+      "case_sensitive": false,
+      "plain": "tube through the nose into the stomach",
+      "category": "treatment",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_tpn",
+      "forms": [
+        "TPN"
+      ],
+      "case_sensitive": true,
+      "plain": "feeding through a vein",
+      "category": "treatment",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_tpn_long",
+      "forms": [
+        "parenteral nutrition",
+        "total parenteral nutrition"
+      ],
+      "case_sensitive": false,
+      "plain": "feeding through a vein",
+      "category": "treatment",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_aki_abbr",
+      "forms": [
+        "AKI"
+      ],
+      "case_sensitive": true,
+      "plain": "sudden drop in kidney function",
+      "category": "condition",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_aki",
+      "forms": [
+        "acute kidney injury"
+      ],
+      "case_sensitive": false,
+      "plain": "sudden drop in kidney function",
+      "category": "condition",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_ckd_abbr",
+      "forms": [
+        "CKD"
+      ],
+      "case_sensitive": true,
+      "plain": "long-term kidney disease",
+      "category": "condition",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_ckd",
+      "forms": [
+        "chronic kidney disease"
+      ],
+      "case_sensitive": false,
+      "plain": "long-term kidney disease",
+      "category": "condition",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_esrf",
+      "forms": [
+        "ESRF",
+        "ESRD",
+        "ESKD"
+      ],
+      "case_sensitive": true,
+      "plain": "kidney failure",
+      "category": "condition",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_renal_failure",
+      "forms": [
+        "renal failure",
+        "end-stage renal failure",
+        "end stage renal failure"
+      ],
+      "case_sensitive": false,
+      "plain": "kidney failure",
+      "category": "condition",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_renal",
+      "forms": [
+        "renal"
+      ],
+      "case_sensitive": false,
+      "plain": "kidney",
+      "category": "body",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_renal_colic",
+      "forms": [
+        "renal colic",
+        "ureteric colic"
+      ],
+      "case_sensitive": false,
+      "plain": "kidney stone pain",
+      "category": "symptom",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_stones",
+      "forms": [
+        "nephrolithiasis",
+        "renal calculi",
+        "renal calculus",
+        "renal stones",
+        "urolithiasis"
+      ],
+      "case_sensitive": false,
+      "plain": "kidney stones",
+      "category": "condition",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_ureteric_stone",
+      "forms": [
+        "ureteric calculus",
+        "ureteric stone",
+        "ureteric calculi",
+        "ureteric stones"
+      ],
+      "case_sensitive": false,
+      "plain": "kidney stone in the tube to the bladder",
+      "category": "condition",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_hydronephrosis",
+      "forms": [
+        "hydronephrosis"
+      ],
+      "case_sensitive": false,
+      "plain": "swelling of the kidney with urine",
+      "category": "finding",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_uti_abbr",
+      "forms": [
+        "UTI",
+        "UTIs"
+      ],
+      "case_sensitive": false,
+      "plain": "urine infection",
+      "category": "condition",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_uti",
+      "forms": [
+        "urinary tract infection"
+      ],
+      "case_sensitive": false,
+      "plain": "urine infection",
+      "category": "condition",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_pyelo",
+      "forms": [
+        "pyelonephritis"
+      ],
+      "case_sensitive": false,
+      "plain": "kidney infection",
+      "category": "condition",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_cystitis",
+      "forms": [
+        "cystitis"
+      ],
+      "case_sensitive": false,
+      "plain": "bladder infection",
+      "category": "condition",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_urosepsis",
+      "forms": [
+        "urosepsis"
+      ],
+      "case_sensitive": false,
+      "plain": "body-wide reaction to a urine infection",
+      "category": "condition",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_retention",
+      "forms": [
+        "urinary retention",
+        "acute urinary retention"
+      ],
+      "case_sensitive": false,
+      "plain": "unable to pass urine",
+      "category": "condition",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_catheter",
+      "forms": [
+        "urinary catheter"
+      ],
+      "case_sensitive": false,
+      "plain": "tube to drain urine from the bladder",
+      "category": "treatment",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_bph",
+      "forms": [
+        "BPH"
+      ],
+      "case_sensitive": true,
+      "plain": "enlarged prostate",
+      "category": "condition",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_haematuria",
+      "forms": [
+        "haematuria",
+        "hematuria"
+      ],
+      "case_sensitive": false,
+      "plain": "blood in the urine",
+      "category": "symptom",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_k_high",
+      "forms": [
+        "hyperkalaemia",
+        "hyperkalemia"
+      ],
+      "case_sensitive": false,
+      "plain": "high potassium level",
+      "category": "finding",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_k_low",
+      "forms": [
+        "hypokalaemia",
+        "hypokalemia"
+      ],
+      "case_sensitive": false,
+      "plain": "low potassium level",
+      "category": "finding",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_na_low",
+      "forms": [
+        "hyponatraemia",
+        "hyponatremia"
+      ],
+      "case_sensitive": false,
+      "plain": "low sodium level",
+      "category": "finding",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_na_high",
+      "forms": [
+        "hypernatraemia",
+        "hypernatremia"
+      ],
+      "case_sensitive": false,
+      "plain": "high sodium level",
+      "category": "finding",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_ca_high",
+      "forms": [
+        "hypercalcaemia"
+      ],
+      "case_sensitive": false,
+      "plain": "high calcium level",
+      "category": "finding",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_ca_low",
+      "forms": [
+        "hypocalcaemia"
+      ],
+      "case_sensitive": false,
+      "plain": "low calcium level",
+      "category": "finding",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_mg_low",
+      "forms": [
+        "hypomagnesaemia"
+      ],
+      "case_sensitive": false,
+      "plain": "low magnesium level",
+      "category": "finding",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_po4_low",
+      "forms": [
+        "hypophosphataemia"
+      ],
+      "case_sensitive": false,
+      "plain": "low phosphate level",
+      "category": "finding",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_dehydration",
+      "forms": [
+        "hypovolaemia",
+        "hypovolaemic"
+      ],
+      "case_sensitive": false,
+      "plain": "low body fluid",
+      "category": "finding",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_t2dm",
+      "forms": [
+        "T2DM"
+      ],
+      "case_sensitive": true,
+      "plain": "diabetes",
+      "category": "condition",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_t1dm",
+      "forms": [
+        "T1DM"
+      ],
+      "case_sensitive": true,
+      "plain": "diabetes",
+      "category": "condition",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_dm_long",
+      "forms": [
+        "diabetes mellitus"
+      ],
+      "case_sensitive": false,
+      "plain": "diabetes",
+      "category": "condition",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_dka_abbr",
+      "forms": [
+        "DKA"
+      ],
+      "case_sensitive": true,
+      "plain": "acid build-up in the blood in diabetes",
+      "category": "condition",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_dka",
+      "forms": [
+        "diabetic ketoacidosis"
+      ],
+      "case_sensitive": false,
+      "plain": "acid build-up in the blood in diabetes",
+      "category": "condition",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_hhs",
+      "forms": [
+        "HHS"
+      ],
+      "case_sensitive": true,
+      "plain": "very high blood sugar with dehydration",
+      "category": "condition",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_hypo_gly",
+      "forms": [
+        "hypoglycaemia",
+        "hypoglycemia",
+        "hypo",
+        "hypos"
+      ],
+      "case_sensitive": false,
+      "plain": "low blood sugar",
+      "category": "condition",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_hyper_gly",
+      "forms": [
+        "hyperglycaemia",
+        "hyperglycemia"
+      ],
+      "case_sensitive": false,
+      "plain": "high blood sugar",
+      "category": "condition",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_hypothyroid",
+      "forms": [
+        "hypothyroidism"
+      ],
+      "case_sensitive": false,
+      "plain": "underactive thyroid",
+      "category": "condition",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_hyperthyroid",
+      "forms": [
+        "hyperthyroidism",
+        "thyrotoxicosis"
+      ],
+      "case_sensitive": false,
+      "plain": "overactive thyroid",
+      "category": "condition",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_adrenal",
+      "forms": [
+        "adrenal insufficiency",
+        "Addison's disease",
+        "Addison’s disease"
+      ],
+      "case_sensitive": false,
+      "plain": "underactive adrenal glands",
+      "category": "condition",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_bmi",
+      "forms": [
+        "BMI"
+      ],
+      "case_sensitive": true,
+      "plain": "weight-for-height measure",
+      "category": "measure",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_seizure",
+      "forms": [
+        "seizure",
+        "seizures"
+      ],
+      "case_sensitive": false,
+      "plain": "fit",
+      "category": "symptom",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_status_ep",
+      "forms": [
+        "status epilepticus"
+      ],
+      "case_sensitive": false,
+      "plain": "prolonged fit",
+      "category": "condition",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_postictal",
+      "forms": [
+        "post-ictal",
+        "postictal"
+      ],
+      "case_sensitive": false,
+      "plain": "recovering from a fit",
+      "category": "sign",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_febrile_conv",
+      "forms": [
+        "febrile convulsion",
+        "febrile seizure"
+      ],
+      "case_sensitive": false,
+      "plain": "fit with a fever",
+      "category": "condition",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_meningitis",
+      "forms": [
+        "meningitis"
+      ],
+      "case_sensitive": false,
+      "plain": "infection of the lining of the brain",
+      "category": "condition",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_encephalitis",
+      "forms": [
+        "encephalitis"
+      ],
+      "case_sensitive": false,
+      "plain": "inflamed brain",
+      "category": "condition",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_delirium",
+      "forms": [
+        "delirium",
+        "acute confusional state"
+      ],
+      "case_sensitive": false,
+      "plain": "sudden confusion",
+      "category": "condition",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_cog",
+      "forms": [
+        "cognitive impairment"
+      ],
+      "case_sensitive": false,
+      "plain": "memory and thinking problems",
+      "category": "condition",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_neuropathy",
+      "forms": [
+        "neuropathy",
+        "peripheral neuropathy"
+      ],
+      "case_sensitive": false,
+      "plain": "nerve problems in the hands or feet",
+      "category": "condition",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_hemiparesis",
+      "forms": [
+        "hemiparesis"
+      ],
+      "case_sensitive": false,
+      "plain": "weakness down one side of the body",
+      "category": "sign",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_hemiplegia",
+      "forms": [
+        "hemiplegia"
+      ],
+      "case_sensitive": false,
+      "plain": "paralysis down one side of the body",
+      "category": "sign",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_aphasia",
+      "forms": [
+        "aphasia",
+        "dysphasia",
+        "expressive dysphasia",
+        "receptive dysphasia"
+      ],
+      "case_sensitive": false,
+      "plain": "difficulty with speech or language",
+      "category": "sign",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_dysarthria",
+      "forms": [
+        "dysarthria"
+      ],
+      "case_sensitive": false,
+      "plain": "slurred speech",
+      "category": "sign",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_ataxia",
+      "forms": [
+        "ataxia"
+      ],
+      "case_sensitive": false,
+      "plain": "unsteadiness",
+      "category": "sign",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_vertigo",
+      "forms": [
+        "vertigo"
+      ],
+      "case_sensitive": false,
+      "plain": "spinning dizziness",
+      "category": "symptom",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_diplopia",
+      "forms": [
+        "diplopia"
+      ],
+      "case_sensitive": false,
+      "plain": "double vision",
+      "category": "symptom",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_gcs",
+      "forms": [
+        "GCS"
+      ],
+      "case_sensitive": true,
+      "plain": "level of alertness",
+      "category": "measure",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_lp",
+      "forms": [
+        "lumbar puncture"
+      ],
+      "case_sensitive": false,
+      "plain": "needle test of fluid from the lower back",
+      "category": "procedure",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_eeg",
+      "forms": [
+        "EEG"
+      ],
+      "case_sensitive": true,
+      "plain": "brain wave test",
+      "category": "test",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_thrombolysis",
+      "forms": [
+        "thrombolysis",
+        "thrombolysed"
+      ],
+      "case_sensitive": false,
+      "plain": "clot-busting treatment",
+      "category": "treatment",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_thrombectomy",
+      "forms": [
+        "thrombectomy",
+        "mechanical thrombectomy"
+      ],
+      "case_sensitive": false,
+      "plain": "procedure to remove a clot",
+      "category": "procedure",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_sepsis",
+      "forms": [
+        "sepsis"
+      ],
+      "case_sensitive": false,
+      "plain": "body-wide reaction to infection",
+      "category": "condition",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_septic_shock",
+      "forms": [
+        "septic shock"
+      ],
+      "case_sensitive": false,
+      "plain": "body-wide reaction to infection with low blood pressure",
+      "category": "condition",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_neutropenic_sepsis",
+      "forms": [
+        "neutropenic sepsis"
+      ],
+      "case_sensitive": false,
+      "plain": "infection with low white blood cells",
+      "category": "condition",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_cellulitis",
+      "forms": [
+        "cellulitis"
+      ],
+      "case_sensitive": false,
+      "plain": "skin infection",
+      "category": "condition",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_abscess",
+      "forms": [
+        "abscess"
+      ],
+      "case_sensitive": false,
+      "plain": "collection of pus",
+      "category": "condition",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_osteomyelitis",
+      "forms": [
+        "osteomyelitis"
+      ],
+      "case_sensitive": false,
+      "plain": "bone infection",
+      "category": "condition",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_septic_arthritis",
+      "forms": [
+        "septic arthritis"
+      ],
+      "case_sensitive": false,
+      "plain": "joint infection",
+      "category": "condition",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_empyema",
+      "forms": [
+        "empyema"
+      ],
+      "case_sensitive": false,
+      "plain": "pus around the lung",
+      "category": "condition",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_bacteraemia",
+      "forms": [
+        "bacteraemia",
+        "bacteremia"
+      ],
+      "case_sensitive": false,
+      "plain": "germs in the blood",
+      "category": "condition",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_influenza",
+      "forms": [
+        "influenza"
+      ],
+      "case_sensitive": false,
+      "plain": "flu",
+      "category": "condition",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_mrsa",
+      "forms": [
+        "MRSA"
+      ],
+      "case_sensitive": true,
+      "plain": "germ that resists common antibiotics",
+      "category": "condition",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_esbl",
+      "forms": [
+        "ESBL"
+      ],
+      "case_sensitive": true,
+      "plain": "germ that resists many antibiotics",
+      "category": "condition",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_pyrexia",
+      "forms": [
+        "pyrexia",
+        "pyrexial",
+        "febrile"
+      ],
+      "case_sensitive": false,
+      "plain": "fever",
+      "category": "sign",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_rigors",
+      "forms": [
+        "rigors"
+      ],
+      "case_sensitive": false,
+      "plain": "shaking chills",
+      "category": "symptom",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_fracture",
+      "forms": [
+        "fracture",
+        "fractures"
+      ],
+      "case_sensitive": false,
+      "plain": "broken bone",
+      "category": "condition",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_fractured",
+      "forms": [
+        "fractured"
+      ],
+      "case_sensitive": false,
+      "plain": "broken",
+      "category": "condition",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_nof",
+      "forms": [
+        "NOF"
+      ],
+      "case_sensitive": true,
+      "plain": "hip",
+      "category": "body",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_nof_long",
+      "forms": [
+        "neck of femur"
+      ],
+      "case_sensitive": false,
+      "plain": "top of the thigh bone",
+      "category": "body",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_nof_fx",
+      "forms": [
+        "NOF fracture",
+        "neck of femur fracture",
+        "fractured neck of femur",
+        "hip fracture"
+      ],
+      "case_sensitive": false,
+      "plain": "broken hip",
+      "category": "condition",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_thr",
+      "forms": [
+        "total hip replacement"
+      ],
+      "case_sensitive": false,
+      "plain": "hip replacement operation",
+      "category": "procedure",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_hemi",
+      "forms": [
+        "hemiarthroplasty"
+      ],
+      "case_sensitive": false,
+      "plain": "half hip replacement",
+      "category": "procedure",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_dhs",
+      "forms": [
+        "DHS",
+        "dynamic hip screw"
+      ],
+      "case_sensitive": false,
+      "plain": "hip screw operation",
+      "category": "procedure",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_orif",
+      "forms": [
+        "ORIF"
+      ],
+      "case_sensitive": true,
+      "plain": "operation to fix a broken bone with metal",
+      "category": "procedure",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_oa",
+      "forms": [
+        "osteoarthritis"
+      ],
+      "case_sensitive": false,
+      "plain": "wear-and-tear arthritis",
+      "category": "condition",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_ra",
+      "forms": [
+        "rheumatoid arthritis"
+      ],
+      "case_sensitive": false,
+      "plain": "long-term joint inflammation",
+      "category": "condition",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_osteoporosis",
+      "forms": [
+        "osteoporosis"
+      ],
+      "case_sensitive": false,
+      "plain": "thinning bones",
+      "category": "condition",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_mech_fall",
+      "forms": [
+        "mechanical fall"
+      ],
+      "case_sensitive": false,
+      "plain": "trip, slip or loss of balance",
+      "category": "event",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_loc_long",
+      "forms": [
+        "loss of consciousness"
+      ],
+      "case_sensitive": false,
+      "plain": "passing out",
+      "category": "symptom",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_long_lie",
+      "forms": [
+        "long lie"
+      ],
+      "case_sensitive": false,
+      "plain": "lying on the floor for a long time",
+      "category": "event",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_rhabdo",
+      "forms": [
+        "rhabdomyolysis"
+      ],
+      "case_sensitive": false,
+      "plain": "muscle breakdown",
+      "category": "condition",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_mobilising",
+      "forms": [
+        "mobilising",
+        "mobilizing"
+      ],
+      "case_sensitive": false,
+      "plain": "moving around",
+      "category": "function",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_mobility",
+      "forms": [
+        "mobility"
+      ],
+      "case_sensitive": false,
+      "plain": "getting around",
+      "category": "function",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_mobilise",
+      "forms": [
+        "mobilise",
+        "mobilised",
+        "mobilize",
+        "mobilized"
+      ],
+      "case_sensitive": false,
+      "plain": "move around",
+      "category": "function",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_wzf",
+      "forms": [
+        "WZF",
+        "Zimmer frame"
+      ],
+      "case_sensitive": false,
+      "plain": "walking frame",
+      "category": "aid",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_ot",
+      "forms": [
+        "occupational therapy",
+        "occupational therapist"
+      ],
+      "case_sensitive": false,
+      "plain": "therapy for everyday tasks",
+      "category": "service",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_salt",
+      "forms": [
+        "SALT"
+      ],
+      "case_sensitive": true,
+      "plain": "speech and swallowing therapy",
+      "category": "service",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_salt_long",
+      "forms": [
+        "speech and language therapy",
+        "speech and language therapist"
+      ],
+      "case_sensitive": false,
+      "plain": "speech and swallowing therapy",
+      "category": "service",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_anaemia",
+      "forms": [
+        "anaemia",
+        "anemia",
+        "anaemic"
+      ],
+      "case_sensitive": false,
+      "plain": "low level of red blood cells",
+      "category": "condition",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_ida",
+      "forms": [
+        "iron deficiency anaemia"
+      ],
+      "case_sensitive": false,
+      "plain": "low level of red blood cells from low iron",
+      "category": "condition",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_ida_abbr",
+      "forms": [
+        "IDA"
+      ],
+      "case_sensitive": true,
+      "plain": "low level of red blood cells from low iron",
+      "category": "condition",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_thrombocytopenia",
+      "forms": [
+        "thrombocytopenia"
+      ],
+      "case_sensitive": false,
+      "plain": "low platelets",
+      "category": "condition",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_neutropenia",
+      "forms": [
+        "neutropenia",
+        "neutropenic"
+      ],
+      "case_sensitive": false,
+      "plain": "low white blood cells",
+      "category": "condition",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_pancytopenia",
+      "forms": [
+        "pancytopenia"
+      ],
+      "case_sensitive": false,
+      "plain": "low levels of blood cells",
+      "category": "condition",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_malignancy",
+      "forms": [
+        "malignancy"
+      ],
+      "case_sensitive": false,
+      "plain": "cancer",
+      "category": "condition",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_carcinoma",
+      "forms": [
+        "carcinoma"
+      ],
+      "case_sensitive": false,
+      "plain": "cancer",
+      "category": "condition",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_metastases",
+      "forms": [
+        "metastases",
+        "metastatic disease"
+      ],
+      "case_sensitive": false,
+      "plain": "cancer spread",
+      "category": "condition",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_metastatic",
+      "forms": [
+        "metastatic"
+      ],
+      "case_sensitive": false,
+      "plain": "spread",
+      "category": "condition",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_lymphoma",
+      "forms": [
+        "lymphoma"
+      ],
+      "case_sensitive": false,
+      "plain": "cancer of the lymph glands",
+      "category": "condition",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_leukaemia",
+      "forms": [
+        "leukaemia",
+        "leukemia"
+      ],
+      "case_sensitive": false,
+      "plain": "blood cancer",
+      "category": "condition",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_myeloma",
+      "forms": [
+        "myeloma",
+        "multiple myeloma"
+      ],
+      "case_sensitive": false,
+      "plain": "bone marrow cancer",
+      "category": "condition",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_neoplasm",
+      "forms": [
+        "neoplasm"
+      ],
+      "case_sensitive": false,
+      "plain": "growth",
+      "category": "condition",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_lesion",
+      "forms": [
+        "lesion",
+        "lesions"
+      ],
+      "case_sensitive": false,
+      "plain": "abnormal area",
+      "category": "finding",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_si",
+      "forms": [
+        "suicidal ideation"
+      ],
+      "case_sensitive": false,
+      "plain": "thoughts of suicide",
+      "category": "symptom",
+      "origin": "general",
+      "flag_words": [
+        "suicide"
+      ],
+      "keeps": {}
+    },
+    {
+      "id": "g_psychosis",
+      "forms": [
+        "psychosis",
+        "psychotic"
+      ],
+      "case_sensitive": false,
+      "plain": "losing touch with what is real",
+      "category": "condition",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_etoh",
+      "forms": [
+        "ETOH",
+        "EtOH"
+      ],
+      "case_sensitive": true,
+      "plain": "alcohol",
       "category": "other",
       "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_pressure_ulcer",
+      "forms": [
+        "pressure ulcer",
+        "pressure ulcers"
+      ],
+      "case_sensitive": false,
+      "plain": "pressure sore",
+      "category": "condition",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_laceration",
+      "forms": [
+        "laceration",
+        "lacerations"
+      ],
+      "case_sensitive": false,
+      "plain": "cut",
+      "category": "condition",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_abrasion",
+      "forms": [
+        "abrasion",
+        "abrasions"
+      ],
+      "case_sensitive": false,
+      "plain": "graze",
+      "category": "condition",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_contusion",
+      "forms": [
+        "contusion",
+        "contusions"
+      ],
+      "case_sensitive": false,
+      "plain": "bruise",
+      "category": "condition",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_haematoma",
+      "forms": [
+        "haematoma",
+        "hematoma"
+      ],
+      "case_sensitive": false,
+      "plain": "collection of blood",
+      "category": "condition",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_oedema",
+      "forms": [
+        "oedema",
+        "edema"
+      ],
+      "case_sensitive": false,
+      "plain": "swelling from fluid",
+      "category": "sign",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_pedal_oedema",
+      "forms": [
+        "pedal oedema",
+        "ankle oedema",
+        "peripheral oedema"
+      ],
+      "case_sensitive": false,
+      "plain": "swelling of the ankles or legs",
+      "category": "sign",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_pulm_oedema",
+      "forms": [
+        "pulmonary oedema",
+        "pulmonary edema"
+      ],
+      "case_sensitive": false,
+      "plain": "fluid on the lungs",
+      "category": "condition",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_urticaria",
+      "forms": [
+        "urticaria"
+      ],
+      "case_sensitive": false,
+      "plain": "hives",
+      "category": "condition",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_anaphylaxis",
+      "forms": [
+        "anaphylaxis"
+      ],
+      "case_sensitive": false,
+      "plain": "severe allergic reaction",
+      "category": "condition",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_obs",
+      "forms": [
+        "observations"
+      ],
+      "case_sensitive": false,
+      "plain": "routine body checks",
+      "category": "measure",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_sats",
+      "forms": [
+        "sats",
+        "oxygen saturations",
+        "oxygen saturation",
+        "saturations",
+        "SpO2"
+      ],
+      "case_sensitive": false,
+      "plain": "oxygen level",
+      "category": "measure",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_rr_long",
+      "forms": [
+        "respiratory rate"
+      ],
+      "case_sensitive": false,
+      "plain": "breathing rate",
+      "category": "measure",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_hr",
+      "forms": [
+        "HR"
+      ],
+      "case_sensitive": true,
+      "plain": "heart rate",
+      "category": "measure",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_cbg",
+      "forms": [
+        "CBG",
+        "capillary blood glucose"
+      ],
+      "case_sensitive": false,
+      "plain": "finger-prick blood sugar",
+      "category": "measure",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_glucose",
+      "forms": [
+        "glucose",
+        "blood glucose"
+      ],
+      "case_sensitive": false,
+      "plain": "sugar",
+      "category": "measure",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_iv_long",
+      "forms": [
+        "intravenous",
+        "intravenously"
+      ],
+      "case_sensitive": false,
+      "plain": "into a vein",
+      "category": "route",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_ivf",
+      "forms": [
+        "IV fluids",
+        "IV fluid"
+      ],
+      "case_sensitive": false,
+      "plain": "fluids into a vein",
+      "category": "treatment",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_ivab",
+      "forms": [
+        "IV antibiotics",
+        "IVABs",
+        "IVAB"
+      ],
+      "case_sensitive": false,
+      "plain": "antibiotics into a vein",
+      "category": "treatment",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_sc",
+      "forms": [
+        "s/c"
+      ],
+      "case_sensitive": false,
+      "plain": "under the skin",
+      "category": "route",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_subcut",
+      "forms": [
+        "subcutaneous",
+        "subcut"
+      ],
+      "case_sensitive": false,
+      "plain": "under the skin",
+      "category": "route",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_po",
+      "forms": [
+        "PO"
+      ],
+      "case_sensitive": true,
+      "plain": "by mouth",
+      "category": "route",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_oral_abx",
+      "forms": [
+        "oral antibiotics"
+      ],
+      "case_sensitive": false,
+      "plain": "antibiotics by mouth",
+      "category": "treatment",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_picc",
+      "forms": [
+        "PICC line",
+        "PICC"
+      ],
+      "case_sensitive": false,
+      "plain": "long thin tube in an arm vein",
+      "category": "device",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_central_line",
+      "forms": [
+        "central line",
+        "CVC"
+      ],
+      "case_sensitive": false,
+      "plain": "thin tube in a large vein",
+      "category": "device",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_stent",
+      "forms": [
+        "stent",
+        "stents"
+      ],
+      "case_sensitive": false,
+      "plain": "small tube",
+      "category": "device",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_pci",
+      "forms": [
+        "PCI"
+      ],
+      "case_sensitive": true,
+      "plain": "procedure to open a narrowed heart artery",
+      "category": "procedure",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_angioplasty",
+      "forms": [
+        "angioplasty",
+        "primary PCI"
+      ],
+      "case_sensitive": false,
+      "plain": "procedure to widen a narrowed artery",
+      "category": "procedure",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_angiogram",
+      "forms": [
+        "angiogram",
+        "angiography"
+      ],
+      "case_sensitive": false,
+      "plain": "dye test of the blood vessels",
+      "category": "test",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_cor_angio",
+      "forms": [
+        "coronary angiogram",
+        "coronary angiography"
+      ],
+      "case_sensitive": false,
+      "plain": "dye test of the heart arteries",
+      "category": "test",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_cabg",
+      "forms": [
+        "CABG"
+      ],
+      "case_sensitive": true,
+      "plain": "heart bypass operation",
+      "category": "procedure",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_ppm",
+      "forms": [
+        "PPM"
+      ],
+      "case_sensitive": true,
+      "plain": "pacemaker",
+      "category": "device",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_cardioversion",
+      "forms": [
+        "cardioversion",
+        "DC cardioversion"
+      ],
+      "case_sensitive": false,
+      "plain": "resetting the heart rhythm",
+      "category": "procedure",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_ecg",
+      "forms": [
+        "ECG"
+      ],
+      "case_sensitive": true,
+      "plain": "heart trace",
+      "category": "test",
+      "origin": "general",
+      "flag_words": [
+        "heart trace"
+      ],
+      "keeps": {}
+    },
+    {
+      "id": "g_ecgs",
+      "forms": [
+        "ECGs"
+      ],
+      "case_sensitive": false,
+      "plain": "heart traces",
+      "category": "test",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_telemetry",
+      "forms": [
+        "telemetry"
+      ],
+      "case_sensitive": false,
+      "plain": "heart monitoring",
+      "category": "test",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_holter",
+      "forms": [
+        "Holter",
+        "Holter monitor",
+        "24-hour tape",
+        "24hr tape",
+        "24 hour tape"
+      ],
+      "case_sensitive": false,
+      "plain": "portable heart monitor",
+      "category": "test",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_echo",
+      "forms": [
+        "echo",
+        "echocardiogram",
+        "transthoracic echo",
+        "transthoracic echocardiogram"
+      ],
+      "case_sensitive": false,
+      "plain": "heart scan",
+      "category": "test",
+      "origin": "general",
+      "flag_words": [
+        "scan"
+      ],
+      "keeps": {}
+    },
+    {
+      "id": "g_cxr",
+      "forms": [
+        "CXR"
+      ],
+      "case_sensitive": true,
+      "plain": "chest X-ray",
+      "category": "test",
+      "origin": "general",
+      "flag_words": [
+        "x-ray"
+      ],
+      "keeps": {}
+    },
+    {
+      "id": "g_axr",
+      "forms": [
+        "AXR"
+      ],
+      "case_sensitive": true,
+      "plain": "tummy X-ray",
+      "category": "test",
+      "origin": "general",
+      "flag_words": [
+        "x-ray"
+      ],
+      "keeps": {}
+    },
+    {
+      "id": "g_ct_head",
+      "forms": [
+        "CT head",
+        "CT brain"
+      ],
+      "case_sensitive": false,
+      "plain": "head scan",
+      "category": "test",
+      "origin": "general",
+      "flag_words": [
+        "scan"
+      ],
+      "keeps": {}
+    },
+    {
+      "id": "g_ctpa",
+      "forms": [
+        "CTPA",
+        "CT pulmonary angiogram"
+      ],
+      "case_sensitive": false,
+      "plain": "dye test of the lung blood vessels",
+      "category": "test",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_ct_kub",
+      "forms": [
+        "CT KUB"
+      ],
+      "case_sensitive": false,
+      "plain": "kidney and bladder scan",
+      "category": "test",
+      "origin": "general",
+      "flag_words": [
+        "scan"
+      ],
+      "keeps": {}
+    },
+    {
+      "id": "g_ct_abdo",
+      "forms": [
+        "CT abdomen",
+        "CT abdomen and pelvis",
+        "CT AP"
+      ],
+      "case_sensitive": false,
+      "plain": "tummy scan",
+      "category": "test",
+      "origin": "general",
+      "flag_words": [
+        "scan"
+      ],
+      "keeps": {}
+    },
+    {
+      "id": "g_mri",
+      "forms": [
+        "MRI"
+      ],
+      "case_sensitive": true,
+      "plain": "scan",
+      "category": "test",
+      "origin": "general",
+      "flag_words": [
+        "scan"
+      ],
+      "keeps": {}
+    },
+    {
+      "id": "g_mri_head",
+      "forms": [
+        "MRI head",
+        "MRI brain"
+      ],
+      "case_sensitive": false,
+      "plain": "brain scan",
+      "category": "test",
+      "origin": "general",
+      "flag_words": [
+        "scan"
+      ],
+      "keeps": {}
+    },
+    {
+      "id": "g_mrcp",
+      "forms": [
+        "MRCP"
+      ],
+      "case_sensitive": true,
+      "plain": "detailed picture of the bile ducts",
+      "category": "test",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_uss",
+      "forms": [
+        "USS"
+      ],
+      "case_sensitive": true,
+      "plain": "ultrasound scan",
+      "category": "test",
+      "origin": "general",
+      "flag_words": [
+        "ultrasound",
+        "scan"
+      ],
+      "keeps": {}
+    },
+    {
+      "id": "g_doppler",
+      "forms": [
+        "Doppler",
+        "Doppler ultrasound"
+      ],
+      "case_sensitive": false,
+      "plain": "ultrasound of blood flow",
+      "category": "test",
+      "origin": "general",
+      "flag_words": [
+        "ultrasound"
+      ],
+      "keeps": {}
+    },
+    {
+      "id": "g_ogd",
+      "forms": [
+        "OGD",
+        "gastroscopy"
+      ],
+      "case_sensitive": false,
+      "plain": "camera test of the gullet and stomach",
+      "category": "test",
+      "origin": "general",
+      "flag_words": [
+        "camera"
+      ],
+      "keeps": {}
+    },
+    {
+      "id": "g_endoscopy",
+      "forms": [
+        "endoscopy"
+      ],
+      "case_sensitive": false,
+      "plain": "camera test",
+      "category": "test",
+      "origin": "general",
+      "flag_words": [
+        "camera"
+      ],
+      "keeps": {}
+    },
+    {
+      "id": "g_colonoscopy",
+      "forms": [
+        "colonoscopy"
+      ],
+      "case_sensitive": false,
+      "plain": "camera test of the bowel",
+      "category": "test",
+      "origin": "general",
+      "flag_words": [
+        "camera"
+      ],
+      "keeps": {}
+    },
+    {
+      "id": "g_sigmoidoscopy",
+      "forms": [
+        "sigmoidoscopy",
+        "flexible sigmoidoscopy"
+      ],
+      "case_sensitive": false,
+      "plain": "camera test of the lower bowel",
+      "category": "test",
+      "origin": "general",
+      "flag_words": [
+        "camera"
+      ],
+      "keeps": {}
+    },
+    {
+      "id": "g_cystoscopy",
+      "forms": [
+        "cystoscopy"
+      ],
+      "case_sensitive": false,
+      "plain": "camera test of the bladder",
+      "category": "test",
+      "origin": "general",
+      "flag_words": [
+        "camera"
+      ],
+      "keeps": {}
+    },
+    {
+      "id": "g_bronchoscopy",
+      "forms": [
+        "bronchoscopy"
+      ],
+      "case_sensitive": false,
+      "plain": "camera test of the airways",
+      "category": "test",
+      "origin": "general",
+      "flag_words": [
+        "camera"
+      ],
+      "keeps": {}
+    },
+    {
+      "id": "g_ercp",
+      "forms": [
+        "ERCP"
+      ],
+      "case_sensitive": true,
+      "plain": "scope test of the bile ducts",
+      "category": "test",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_fbc",
+      "forms": [
+        "FBC"
+      ],
+      "case_sensitive": true,
+      "plain": "blood cell count",
+      "category": "test",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_ue",
+      "forms": [
+        "U&E",
+        "U&Es",
+        "U+E",
+        "U+Es",
+        "UEs"
+      ],
+      "case_sensitive": false,
+      "plain": "kidney and salt levels",
+      "category": "test",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_lft",
+      "forms": [
+        "LFT",
+        "LFTs"
+      ],
+      "case_sensitive": false,
+      "plain": "liver tests",
+      "category": "test",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_tft",
+      "forms": [
+        "TFT",
+        "TFTs",
+        "TSH"
+      ],
+      "case_sensitive": false,
+      "plain": "thyroid tests",
+      "category": "test",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_crp",
+      "forms": [
+        "CRP"
+      ],
+      "case_sensitive": true,
+      "plain": "inflammation marker",
+      "category": "test",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_wcc",
+      "forms": [
+        "WCC",
+        "WBC"
+      ],
+      "case_sensitive": true,
+      "plain": "white cell count",
+      "category": "test",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_hb",
+      "forms": [
+        "Hb",
+        "haemoglobin",
+        "hemoglobin"
+      ],
+      "case_sensitive": false,
+      "plain": "red blood cell level",
+      "category": "test",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_plt",
+      "forms": [
+        "platelets",
+        "PLT"
+      ],
+      "case_sensitive": false,
+      "plain": "clotting cells",
+      "category": "test",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_troponin",
+      "forms": [
+        "troponin",
+        "hs-troponin",
+        "high-sensitivity troponin"
+      ],
+      "case_sensitive": false,
+      "plain": "heart blood test",
+      "category": "test",
+      "origin": "general",
+      "flag_words": [
+        "blood test"
+      ],
+      "keeps": {}
+    },
+    {
+      "id": "g_bnp",
+      "forms": [
+        "BNP",
+        "NT-proBNP"
+      ],
+      "case_sensitive": false,
+      "plain": "heart strain marker",
+      "category": "test",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_ddimer",
+      "forms": [
+        "D-dimer",
+        "d-dimer",
+        "D dimer"
+      ],
+      "case_sensitive": false,
+      "plain": "clot marker",
+      "category": "test",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_inr",
+      "forms": [
+        "INR"
+      ],
+      "case_sensitive": true,
+      "plain": "blood clotting test",
+      "category": "test",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_coag",
+      "forms": [
+        "clotting screen",
+        "coagulation screen",
+        "coag screen",
+        "APTT",
+        "PT/INR"
+      ],
+      "case_sensitive": false,
+      "plain": "clotting tests",
+      "category": "test",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_egfr",
+      "forms": [
+        "eGFR",
+        "GFR"
+      ],
+      "case_sensitive": false,
+      "plain": "kidney function",
+      "category": "test",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_creatinine",
+      "forms": [
+        "creatinine"
+      ],
+      "case_sensitive": false,
+      "plain": "kidney blood marker",
+      "category": "test",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_lactate",
+      "forms": [
+        "lactate",
+        "lactic acid"
+      ],
+      "case_sensitive": false,
+      "plain": "blood acid level",
+      "category": "test",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_ph",
+      "forms": [
+        "pH"
+      ],
+      "case_sensitive": true,
+      "plain": "acid level",
+      "category": "test",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_ketones",
+      "forms": [
+        "ketones",
+        "blood ketones"
+      ],
+      "case_sensitive": false,
+      "plain": "fat-burning acids",
+      "category": "test",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_hba1c",
+      "forms": [
+        "HbA1c"
+      ],
+      "case_sensitive": false,
+      "plain": "average blood sugar test",
+      "category": "test",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_gas",
+      "forms": [
+        "VBG",
+        "ABG",
+        "blood gas",
+        "venous blood gas",
+        "arterial blood gas"
+      ],
+      "case_sensitive": false,
+      "plain": "blood gas test",
+      "category": "test",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_ferritin",
+      "forms": [
+        "ferritin"
+      ],
+      "case_sensitive": false,
+      "plain": "iron store level",
+      "category": "test",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_bcx",
+      "forms": [
+        "blood cultures",
+        "blood culture"
+      ],
+      "case_sensitive": false,
+      "plain": "test for germs in the blood",
+      "category": "test",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_mcs",
+      "forms": [
+        "MC&S"
+      ],
+      "case_sensitive": false,
+      "plain": "test for germs",
+      "category": "test",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_urine_dip",
+      "forms": [
+        "urine dip",
+        "urine dipstick",
+        "urinalysis"
+      ],
+      "case_sensitive": false,
+      "plain": "urine test",
+      "category": "test",
+      "origin": "general",
+      "flag_words": [
+        "urine test"
+      ],
+      "keeps": {}
+    },
+    {
+      "id": "g_msu",
+      "forms": [
+        "MSU"
+      ],
+      "case_sensitive": true,
+      "plain": "urine test for germs",
+      "category": "test",
+      "origin": "general",
+      "flag_words": [
+        "urine test"
+      ],
+      "keeps": {}
+    },
+    {
+      "id": "g_stool",
+      "forms": [
+        "stool culture",
+        "stool sample",
+        "stool MC&S"
+      ],
+      "case_sensitive": false,
+      "plain": "poo test",
+      "category": "test",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_cardiology",
+      "forms": [
+        "cardiology"
+      ],
+      "case_sensitive": false,
+      "plain": "heart team",
+      "category": "service",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_resp_team",
+      "forms": [
+        "respiratory team"
+      ],
+      "case_sensitive": false,
+      "plain": "lung team",
+      "category": "service",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_gastroenterology",
+      "forms": [
+        "gastroenterology"
+      ],
+      "case_sensitive": false,
+      "plain": "gut team",
+      "category": "service",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_hepatology",
+      "forms": [
+        "hepatology"
+      ],
+      "case_sensitive": false,
+      "plain": "liver team",
+      "category": "service",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_neurology",
+      "forms": [
+        "neurology"
+      ],
+      "case_sensitive": false,
+      "plain": "brain and nerve team",
+      "category": "service",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_nephrology",
+      "forms": [
+        "nephrology",
+        "renal team"
+      ],
+      "case_sensitive": false,
+      "plain": "kidney team",
+      "category": "service",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_urology",
+      "forms": [
+        "urology"
+      ],
+      "case_sensitive": false,
+      "plain": "bladder and kidney surgeons",
+      "category": "service",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_orthopaedics",
+      "forms": [
+        "orthopaedics",
+        "orthopedics",
+        "orthopaedic team",
+        "T&O"
+      ],
+      "case_sensitive": false,
+      "plain": "bone team",
+      "category": "service",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_geriatrics",
+      "forms": [
+        "geriatrics",
+        "COTE",
+        "care of the elderly",
+        "elderly care"
+      ],
+      "case_sensitive": false,
+      "plain": "older people's team",
+      "category": "service",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_rheumatology",
+      "forms": [
+        "rheumatology"
+      ],
+      "case_sensitive": false,
+      "plain": "joint team",
+      "category": "service",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_endocrinology",
+      "forms": [
+        "endocrinology",
+        "endocrine team"
+      ],
+      "case_sensitive": false,
+      "plain": "hormone team",
+      "category": "service",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_diabetes_team",
+      "forms": [
+        "diabetes team",
+        "DSN",
+        "diabetes specialist nurse"
+      ],
+      "case_sensitive": false,
+      "plain": "diabetes nurses",
+      "category": "service",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_dermatology",
+      "forms": [
+        "dermatology"
+      ],
+      "case_sensitive": false,
+      "plain": "skin team",
+      "category": "service",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_ent",
+      "forms": [
+        "ENT"
+      ],
+      "case_sensitive": true,
+      "plain": "ear, nose and throat team",
+      "category": "service",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_haematology",
+      "forms": [
+        "haematology"
+      ],
+      "case_sensitive": false,
+      "plain": "blood team",
+      "category": "service",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_oncology",
+      "forms": [
+        "oncology"
+      ],
+      "case_sensitive": false,
+      "plain": "cancer team",
+      "category": "service",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_psychiatry",
+      "forms": [
+        "psychiatry",
+        "psychiatric team"
+      ],
+      "case_sensitive": false,
+      "plain": "mental health team",
+      "category": "service",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_cmht",
+      "forms": [
+        "CMHT",
+        "community mental health team"
+      ],
+      "case_sensitive": false,
+      "plain": "local mental health team",
+      "category": "service",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_crht",
+      "forms": [
+        "CRHT",
+        "HTT",
+        "crisis team",
+        "home treatment team",
+        "crisis resolution team"
+      ],
+      "case_sensitive": false,
+      "plain": "mental health crisis team",
+      "category": "service",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_liaison",
+      "forms": [
+        "liaison psychiatry",
+        "psychiatric liaison",
+        "mental health liaison"
+      ],
+      "case_sensitive": false,
+      "plain": "hospital mental health team",
+      "category": "service",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_mdt",
+      "forms": [
+        "MDT",
+        "multidisciplinary team"
+      ],
+      "case_sensitive": false,
+      "plain": "team of different specialists",
+      "category": "service",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_amu",
+      "forms": [
+        "AMU",
+        "MAU",
+        "acute medical unit"
+      ],
+      "case_sensitive": false,
+      "plain": "medical admissions ward",
+      "category": "service",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_sdec",
+      "forms": [
+        "SDEC",
+        "ambulatory care"
+      ],
+      "case_sensitive": false,
+      "plain": "same-day care unit",
+      "category": "service",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_opd",
+      "forms": [
+        "OPD",
+        "outpatient clinic",
+        "outpatients"
+      ],
+      "case_sensitive": false,
+      "plain": "hospital clinic",
+      "category": "service",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_opa_long",
+      "forms": [
+        "outpatient appointment"
+      ],
+      "case_sensitive": false,
+      "plain": "hospital appointment",
+      "category": "service",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_poc",
+      "forms": [
+        "package of care",
+        "care package"
+      ],
+      "case_sensitive": false,
+      "plain": "home care",
+      "category": "service",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_nok",
+      "forms": [
+        "NOK"
+      ],
+      "case_sensitive": true,
+      "plain": "next of kin",
+      "category": "other",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_mffd",
+      "forms": [
+        "MFFD",
+        "medically fit for discharge"
+      ],
+      "case_sensitive": false,
+      "plain": "medically ready to go home",
+      "category": "other",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_pmh",
+      "forms": [
+        "PMH",
+        "PMHx"
+      ],
+      "case_sensitive": false,
+      "plain": "past health problems",
+      "category": "other",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_hx",
+      "forms": [
+        "Hx"
+      ],
+      "case_sensitive": true,
+      "plain": "history",
+      "category": "other",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_n_v",
+      "forms": [
+        "N&V"
+      ],
+      "case_sensitive": true,
+      "plain": "feeling and being sick",
+      "category": "symptom",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_d_v",
+      "forms": [
+        "D&V"
+      ],
+      "case_sensitive": true,
+      "plain": "diarrhoea and vomiting",
+      "category": "symptom",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_doac",
+      "forms": [
+        "DOAC",
+        "DOACs",
+        "NOAC"
+      ],
+      "case_sensitive": false,
+      "plain": "blood thinner",
+      "category": "treatment",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_lmwh",
+      "forms": [
+        "LMWH"
+      ],
+      "case_sensitive": true,
+      "plain": "blood-thinning injection",
+      "category": "treatment",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_dapt",
+      "forms": [
+        "DAPT",
+        "dual antiplatelet therapy"
+      ],
+      "case_sensitive": false,
+      "plain": "two blood thinners together",
+      "category": "treatment",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_ppi",
+      "forms": [
+        "PPI"
+      ],
+      "case_sensitive": true,
+      "plain": "stomach acid medicine",
+      "category": "treatment",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_nsaid",
+      "forms": [
+        "NSAID",
+        "NSAIDs"
+      ],
+      "case_sensitive": false,
+      "plain": "anti-inflammatory medicine",
+      "category": "treatment",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_opioid",
+      "forms": [
+        "opioid",
+        "opioids",
+        "opiate",
+        "opiates"
+      ],
+      "case_sensitive": false,
+      "plain": "morphine-type medicine",
+      "category": "treatment",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_abx",
+      "forms": [
+        "abx"
+      ],
+      "case_sensitive": false,
+      "plain": "antibiotics",
+      "category": "treatment",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "g_nrt",
+      "forms": [
+        "NRT",
+        "nicotine replacement therapy"
+      ],
+      "case_sensitive": false,
+      "plain": "stop-smoking medicine",
+      "category": "treatment",
+      "origin": "general",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "a_orally",
+      "forms": [
+        "orally"
+      ],
+      "case_sensitive": false,
+      "plain": "by mouth",
+      "category": "route",
+      "origin": "added_after_inputs",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "a_respiratory",
+      "forms": [
+        "respiratory"
+      ],
+      "case_sensitive": false,
+      "plain": "lung and breathing",
+      "category": "body",
+      "origin": "added_after_inputs",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "a_bloods",
+      "forms": [
+        "bloods"
+      ],
+      "case_sensitive": false,
+      "plain": "blood tests",
+      "category": "test",
+      "origin": "added_after_inputs",
+      "flag_words": [
+        "blood tests"
+      ],
+      "keeps": {}
+    },
+    {
+      "id": "a_anticoagulation",
+      "forms": [
+        "anticoagulation"
+      ],
+      "case_sensitive": false,
+      "plain": "blood-thinning treatment",
+      "category": "treatment",
+      "origin": "added_after_inputs",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "a_anticoagulated",
+      "forms": [
+        "anticoagulated"
+      ],
+      "case_sensitive": false,
+      "plain": "on a blood thinner",
+      "category": "treatment",
+      "origin": "added_after_inputs",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "a_appendicectomy",
+      "forms": [
+        "appendicectomy",
+        "appendectomy"
+      ],
+      "case_sensitive": false,
+      "plain": "operation to remove the appendix",
+      "category": "procedure",
+      "origin": "added_after_inputs",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "a_haemorrhage",
+      "forms": [
+        "haemorrhage",
+        "hemorrhage"
+      ],
+      "case_sensitive": false,
+      "plain": "bleeding",
+      "category": "condition",
+      "origin": "added_after_inputs",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "a_creps",
+      "forms": [
+        "creps",
+        "crepitations"
+      ],
+      "case_sensitive": false,
+      "plain": "crackles in the lungs",
+      "category": "sign",
+      "origin": "added_after_inputs",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "a_nasogastric",
+      "forms": [
+        "nasogastric"
+      ],
+      "case_sensitive": false,
+      "plain": "through the nose into the stomach",
+      "category": "route",
+      "origin": "added_after_inputs",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "a_imaging",
+      "forms": [
+        "imaging"
+      ],
+      "case_sensitive": false,
+      "plain": "medical pictures",
+      "category": "test",
+      "origin": "added_after_inputs",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "a_splenic",
+      "forms": [
+        "splenic"
+      ],
+      "case_sensitive": false,
+      "plain": "spleen",
+      "category": "body",
+      "origin": "added_after_inputs",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "a_cvvh",
+      "forms": [
+        "CVVH",
+        "haemofiltration"
+      ],
+      "case_sensitive": false,
+      "plain": "blood-filtering kidney machine",
+      "category": "treatment",
+      "origin": "added_after_inputs",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "a_hpylori",
+      "forms": [
+        "H. pylori",
+        "H.pylori",
+        "Helicobacter pylori"
+      ],
+      "case_sensitive": false,
+      "plain": "stomach germ",
+      "category": "condition",
+      "origin": "added_after_inputs",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "a_rsv",
+      "forms": [
+        "RSV"
+      ],
+      "case_sensitive": true,
+      "plain": "chest virus",
+      "category": "condition",
+      "origin": "added_after_inputs",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "a_iliac_fossa",
+      "forms": [
+        "iliac fossa"
+      ],
+      "case_sensitive": false,
+      "plain": "lower tummy",
+      "category": "body",
+      "origin": "added_after_inputs",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "a_stoma",
+      "forms": [
+        "stoma"
+      ],
+      "case_sensitive": false,
+      "plain": "surgical opening on the body",
+      "category": "device",
+      "origin": "added_after_inputs",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "a_adhesional",
+      "forms": [
+        "adhesional"
+      ],
+      "case_sensitive": false,
+      "plain": "scar tissue",
+      "category": "condition",
+      "origin": "added_after_inputs",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "a_clo",
+      "forms": [
+        "CLO",
+        "CLO test"
+      ],
+      "case_sensitive": false,
+      "plain": "stomach germ test",
+      "category": "test",
+      "origin": "added_after_inputs",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "a_ctg",
+      "forms": [
+        "CTG"
+      ],
+      "case_sensitive": true,
+      "plain": "monitoring of the baby's heartbeat",
+      "category": "test",
+      "origin": "added_after_inputs",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "a_faecal",
+      "forms": [
+        "faecal",
+        "fecal"
+      ],
+      "case_sensitive": false,
+      "plain": "poo",
+      "category": "body",
+      "origin": "added_after_inputs",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "a_fetal",
+      "forms": [
+        "fetal",
+        "foetal"
+      ],
+      "case_sensitive": false,
+      "plain": "unborn baby's",
+      "category": "body",
+      "origin": "added_after_inputs",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "a_ileostomy",
+      "forms": [
+        "ileostomy"
+      ],
+      "case_sensitive": false,
+      "plain": "opening of the small bowel onto the tummy",
+      "category": "procedure",
+      "origin": "added_after_inputs",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "a_necrotising",
+      "forms": [
+        "necrotising",
+        "necrotizing"
+      ],
+      "case_sensitive": false,
+      "plain": "with tissue death",
+      "category": "condition",
+      "origin": "added_after_inputs",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "a_neonatal",
+      "forms": [
+        "neonatal"
+      ],
+      "case_sensitive": false,
+      "plain": "newborn",
+      "category": "other",
+      "origin": "added_after_inputs",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "a_nihss",
+      "forms": [
+        "NIHSS"
+      ],
+      "case_sensitive": true,
+      "plain": "stroke severity score",
+      "category": "measure",
+      "origin": "added_after_inputs",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "a_obstruction",
+      "forms": [
+        "obstruction"
+      ],
+      "case_sensitive": false,
+      "plain": "blockage",
+      "category": "condition",
+      "origin": "added_after_inputs",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "a_pathological_fx",
+      "forms": [
+        "pathological fracture"
+      ],
+      "case_sensitive": false,
+      "plain": "bone break from disease",
+      "category": "condition",
+      "origin": "added_after_inputs",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "a_subcostal_rec",
+      "forms": [
+        "subcostal recession"
+      ],
+      "case_sensitive": false,
+      "plain": "sucking in below the ribs",
+      "category": "sign",
+      "origin": "added_after_inputs",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "a_subcostal",
+      "forms": [
+        "subcostal"
+      ],
+      "case_sensitive": false,
+      "plain": "below the ribs",
+      "category": "body",
+      "origin": "added_after_inputs",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "a_sigmoid",
+      "forms": [
+        "sigmoid"
+      ],
+      "case_sensitive": false,
+      "plain": "lower bowel",
+      "category": "body",
+      "origin": "added_after_inputs",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "a_ards",
+      "forms": [
+        "ARDS"
+      ],
+      "case_sensitive": true,
+      "plain": "lung inflammation and fluid",
+      "category": "condition",
+      "origin": "added_after_inputs",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "a_haemostasis",
+      "forms": [
+        "haemostasis",
+        "hemostasis"
+      ],
+      "case_sensitive": false,
+      "plain": "stopping bleeding",
+      "category": "treatment",
+      "origin": "added_after_inputs",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "a_haemothorax",
+      "forms": [
+        "haemothorax",
+        "hemothorax"
+      ],
+      "case_sensitive": false,
+      "plain": "blood around the lung",
+      "category": "condition",
+      "origin": "added_after_inputs",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "a_lscs",
+      "forms": [
+        "LSCS",
+        "caesarean section",
+        "C-section"
+      ],
+      "case_sensitive": false,
+      "plain": "caesarean birth",
+      "category": "procedure",
+      "origin": "added_after_inputs",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "a_postnatal",
+      "forms": [
+        "postnatal",
+        "postpartum",
+        "post-partum"
+      ],
+      "case_sensitive": false,
+      "plain": "following the birth",
+      "category": "other",
+      "origin": "added_after_inputs",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "a_commode",
+      "forms": [
+        "commode"
+      ],
+      "case_sensitive": false,
+      "plain": "bedside toilet",
+      "category": "aid",
+      "origin": "added_after_inputs",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "a_conservative",
+      "forms": [
+        "conservative management"
+      ],
+      "case_sensitive": false,
+      "plain": "non-surgical care",
+      "category": "treatment",
+      "origin": "added_after_inputs",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "a_antiepileptic",
+      "forms": [
+        "antiepileptic",
+        "antiepileptics",
+        "anti-epileptic"
+      ],
+      "case_sensitive": false,
+      "plain": "anti-seizure medicine",
+      "category": "treatment",
+      "origin": "added_after_inputs",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "a_intrapartum",
+      "forms": [
+        "intrapartum"
+      ],
+      "case_sensitive": false,
+      "plain": "in labour",
+      "category": "other",
+      "origin": "added_after_inputs",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "a_maternal",
+      "forms": [
+        "maternal"
+      ],
+      "case_sensitive": false,
+      "plain": "mother's",
+      "category": "other",
+      "origin": "added_after_inputs",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "a_microbiology",
+      "forms": [
+        "microbiology"
+      ],
+      "case_sensitive": false,
+      "plain": "germ testing lab",
+      "category": "service",
+      "origin": "added_after_inputs",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "a_nasopharyngeal",
+      "forms": [
+        "nasopharyngeal"
+      ],
+      "case_sensitive": false,
+      "plain": "nose and throat",
+      "category": "body",
+      "origin": "added_after_inputs",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "a_ace",
+      "forms": [
+        "ACE inhibitor",
+        "ACE inhibitors",
+        "ACEi",
+        "ACE-I"
+      ],
+      "case_sensitive": false,
+      "plain": "medicine that lowers blood pressure",
+      "category": "treatment",
+      "origin": "added_after_inputs",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "a_acidosis",
+      "forms": [
+        "acidosis"
+      ],
+      "case_sensitive": false,
+      "plain": "acid build-up in the blood",
+      "category": "condition",
+      "origin": "added_after_inputs",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "a_adhesiolysis",
+      "forms": [
+        "adhesiolysis"
+      ],
+      "case_sensitive": false,
+      "plain": "operation to free scar tissue",
+      "category": "procedure",
+      "origin": "added_after_inputs",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "a_aetiology",
+      "forms": [
+        "aetiology",
+        "etiology"
+      ],
+      "case_sensitive": false,
+      "plain": "origin",
+      "category": "other",
+      "origin": "added_after_inputs",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "a_anaerobes",
+      "forms": [
+        "anaerobes"
+      ],
+      "case_sensitive": false,
+      "plain": "oxygen-hating germs",
+      "category": "condition",
+      "origin": "added_after_inputs",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "a_anastomosis",
+      "forms": [
+        "anastomosis"
+      ],
+      "case_sensitive": false,
+      "plain": "surgical join",
+      "category": "procedure",
+      "origin": "added_after_inputs",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "a_anhedonia",
+      "forms": [
+        "anhedonia"
+      ],
+      "case_sensitive": false,
+      "plain": "loss of pleasure",
+      "category": "symptom",
+      "origin": "added_after_inputs",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "a_atony",
+      "forms": [
+        "uterine atony"
+      ],
+      "case_sensitive": false,
+      "plain": "weak tightening of the womb",
+      "category": "condition",
+      "origin": "added_after_inputs",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "a_atopy",
+      "forms": [
+        "atopy"
+      ],
+      "case_sensitive": false,
+      "plain": "tendency to allergies",
+      "category": "condition",
+      "origin": "added_after_inputs",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "a_backslab",
+      "forms": [
+        "backslab"
+      ],
+      "case_sensitive": false,
+      "plain": "half plaster cast",
+      "category": "device",
+      "origin": "added_after_inputs",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "a_bibasal",
+      "forms": [
+        "bibasal crackles",
+        "bibasal creps",
+        "bibasal crepitations"
+      ],
+      "case_sensitive": false,
+      "plain": "crackles at the bottom of the lungs",
+      "category": "sign",
+      "origin": "added_after_inputs",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "a_bibasal_adj",
+      "forms": [
+        "bibasal"
+      ],
+      "case_sensitive": false,
+      "plain": "at the bottom of the lungs",
+      "category": "body",
+      "origin": "added_after_inputs",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "a_bimanual",
+      "forms": [
+        "bimanual compression"
+      ],
+      "case_sensitive": false,
+      "plain": "two-handed pressure on the womb",
+      "category": "treatment",
+      "origin": "added_after_inputs",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "a_cardiac",
+      "forms": [
+        "cardiac"
+      ],
+      "case_sensitive": false,
+      "plain": "heart",
+      "category": "body",
+      "origin": "added_after_inputs",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "a_cervix",
+      "forms": [
+        "cervix"
+      ],
+      "case_sensitive": false,
+      "plain": "neck of the womb",
+      "category": "body",
+      "origin": "added_after_inputs",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "a_ck",
+      "forms": [
+        "CK"
+      ],
+      "case_sensitive": true,
+      "plain": "muscle enzyme level",
+      "category": "test",
+      "origin": "added_after_inputs",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "a_colicky",
+      "forms": [
+        "colicky"
+      ],
+      "case_sensitive": false,
+      "plain": "cramping",
+      "category": "symptom",
+      "origin": "added_after_inputs",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "a_colles",
+      "forms": [
+        "Colles fracture",
+        "Colles' fracture",
+        "Colles’ fracture"
+      ],
+      "case_sensitive": false,
+      "plain": "broken wrist",
+      "category": "condition",
+      "origin": "added_after_inputs",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "a_coryza",
+      "forms": [
+        "coryza"
+      ],
+      "case_sensitive": false,
+      "plain": "runny nose",
+      "category": "symptom",
+      "origin": "added_after_inputs",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "a_debridement",
+      "forms": [
+        "debridements",
+        "debrided"
+      ],
+      "case_sensitive": false,
+      "plain": "removing dead tissue",
+      "category": "procedure",
+      "origin": "added_after_inputs",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "a_decompensated",
+      "forms": [
+        "decompensated"
+      ],
+      "case_sensitive": false,
+      "plain": "failing",
+      "category": "condition",
+      "origin": "added_after_inputs",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "a_defunctioning",
+      "forms": [
+        "defunctioning"
+      ],
+      "case_sensitive": false,
+      "plain": "bypassing",
+      "category": "procedure",
+      "origin": "added_after_inputs",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "a_distal_radius",
+      "forms": [
+        "distal radius"
+      ],
+      "case_sensitive": false,
+      "plain": "wrist end of the forearm bone",
+      "category": "body",
+      "origin": "added_after_inputs",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "a_distension",
+      "forms": [
+        "distension",
+        "distention"
+      ],
+      "case_sensitive": false,
+      "plain": "swelling",
+      "category": "sign",
+      "origin": "added_after_inputs",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "a_ef",
+      "forms": [
+        "EF",
+        "ejection fraction",
+        "LVEF"
+      ],
+      "case_sensitive": false,
+      "plain": "pumping strength",
+      "category": "measure",
+      "origin": "added_after_inputs",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "a_extubated",
+      "forms": [
+        "extubated"
+      ],
+      "case_sensitive": false,
+      "plain": "breathing tube removed",
+      "category": "treatment",
+      "origin": "added_after_inputs",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "a_histology",
+      "forms": [
+        "histology"
+      ],
+      "case_sensitive": false,
+      "plain": "tissue lab test",
+      "category": "test",
+      "origin": "added_after_inputs",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "a_hpt",
+      "forms": [
+        "hyperparathyroidism"
+      ],
+      "case_sensitive": false,
+      "plain": "overactive parathyroid glands",
+      "category": "condition",
+      "origin": "added_after_inputs",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "a_im_nail",
+      "forms": [
+        "intramedullary nail",
+        "intramedullary nailing"
+      ],
+      "case_sensitive": false,
+      "plain": "metal rod inside the bone",
+      "category": "procedure",
+      "origin": "added_after_inputs",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "a_ischaemia",
+      "forms": [
+        "ischaemia",
+        "ischemia"
+      ],
+      "case_sensitive": false,
+      "plain": "reduced blood supply",
+      "category": "condition",
+      "origin": "added_after_inputs",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "a_laparoscopic",
+      "forms": [
+        "laparoscopic"
+      ],
+      "case_sensitive": false,
+      "plain": "keyhole",
+      "category": "procedure",
+      "origin": "added_after_inputs",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "a_laparotomy",
+      "forms": [
+        "laparotomy"
+      ],
+      "case_sensitive": false,
+      "plain": "operation through a cut in the tummy",
+      "category": "procedure",
+      "origin": "added_after_inputs",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "a_neurovasc",
+      "forms": [
+        "neurovascularly intact"
+      ],
+      "case_sensitive": false,
+      "plain": "nerves and blood flow working",
+      "category": "sign",
+      "origin": "added_after_inputs",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "a_orthopaedic",
+      "forms": [
+        "orthopaedic",
+        "orthopedic"
+      ],
+      "case_sensitive": false,
+      "plain": "bone",
+      "category": "service",
+      "origin": "added_after_inputs",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "a_perforation",
+      "forms": [
+        "perforation"
+      ],
+      "case_sensitive": false,
+      "plain": "hole",
+      "category": "condition",
+      "origin": "added_after_inputs",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "a_periumbilical",
+      "forms": [
+        "periumbilically",
+        "periumbilical"
+      ],
+      "case_sensitive": false,
+      "plain": "around the belly button",
+      "category": "body",
+      "origin": "added_after_inputs",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "a_picu",
+      "forms": [
+        "PICU"
+      ],
+      "case_sensitive": true,
+      "plain": "children's intensive care",
+      "category": "service",
+      "origin": "added_after_inputs",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "a_polydipsia",
+      "forms": [
+        "polydipsia"
+      ],
+      "case_sensitive": false,
+      "plain": "drinking a lot",
+      "category": "symptom",
+      "origin": "added_after_inputs",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "a_polyuria",
+      "forms": [
+        "polyuria"
+      ],
+      "case_sensitive": false,
+      "plain": "passing a lot of urine",
+      "category": "symptom",
+      "origin": "added_after_inputs",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "a_pph",
+      "forms": [
+        "postpartum haemorrhage"
+      ],
+      "case_sensitive": false,
+      "plain": "heavy bleeding following the birth",
+      "category": "condition",
+      "origin": "added_after_inputs",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "a_psychoed",
+      "forms": [
+        "psychoeducation"
+      ],
+      "case_sensitive": false,
+      "plain": "learning about the condition",
+      "category": "treatment",
+      "origin": "added_after_inputs",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "a_psychosocial",
+      "forms": [
+        "psychosocial"
+      ],
+      "case_sensitive": false,
+      "plain": "mental and social",
+      "category": "other",
+      "origin": "added_after_inputs",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "a_resection",
+      "forms": [
+        "resection"
+      ],
+      "case_sensitive": false,
+      "plain": "removal",
+      "category": "procedure",
+      "origin": "added_after_inputs",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "a_strep",
+      "forms": [
+        "streptococcus",
+        "streptococcal"
+      ],
+      "case_sensitive": false,
+      "plain": "strep germ",
+      "category": "condition",
+      "origin": "added_after_inputs",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "a_tachypnoea",
+      "forms": [
+        "tachypnoea",
+        "tachypnea",
+        "tachypnoeic"
+      ],
+      "case_sensitive": false,
+      "plain": "fast breathing",
+      "category": "sign",
+      "origin": "added_after_inputs",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "a_thorax",
+      "forms": [
+        "thorax"
+      ],
+      "case_sensitive": false,
+      "plain": "chest",
+      "category": "body",
+      "origin": "added_after_inputs",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "a_tibia",
+      "forms": [
+        "tibia",
+        "tibial"
+      ],
+      "case_sensitive": false,
+      "plain": "shin bone",
+      "category": "body",
+      "origin": "added_after_inputs",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "a_toxicology",
+      "forms": [
+        "toxicology"
+      ],
+      "case_sensitive": false,
+      "plain": "drug and poison tests",
+      "category": "test",
+      "origin": "added_after_inputs",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "a_uptitrate",
+      "forms": [
+        "uptitrate",
+        "uptitrated",
+        "uptitration"
+      ],
+      "case_sensitive": false,
+      "plain": "increase step by step",
+      "category": "treatment",
+      "origin": "added_after_inputs",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "a_uterine",
+      "forms": [
+        "uterine"
+      ],
+      "case_sensitive": false,
+      "plain": "womb",
+      "category": "body",
+      "origin": "added_after_inputs",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "a_vac",
+      "forms": [
+        "VAC dressing"
+      ],
+      "case_sensitive": false,
+      "plain": "wound suction dressing",
+      "category": "device",
+      "origin": "added_after_inputs",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "a_health_visitor",
+      "forms": [
+        "health visitor"
+      ],
+      "case_sensitive": false,
+      "plain": "child health nurse",
+      "category": "service",
+      "origin": "added_after_inputs",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "a_washout",
+      "forms": [
+        "washout"
+      ],
+      "case_sensitive": false,
+      "plain": "washing out",
+      "category": "procedure",
+      "origin": "added_after_inputs",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "a_npa2",
+      "forms": [
+        "nasopharyngeal aspirate"
+      ],
+      "case_sensitive": false,
+      "plain": "nose and throat fluid test",
+      "category": "test",
+      "origin": "added_after_inputs",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "a_diuresis",
+      "forms": [
+        "diuresis",
+        "diurese"
+      ],
+      "case_sensitive": false,
+      "plain": "passing extra urine",
+      "category": "sign",
+      "origin": "added_after_inputs",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "a_proned",
+      "forms": [
+        "proned"
+      ],
+      "case_sensitive": false,
+      "plain": "turned onto the front",
+      "category": "treatment",
+      "origin": "added_after_inputs",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "a_prophylactic",
+      "forms": [
+        "prophylactic"
+      ],
+      "case_sensitive": false,
+      "plain": "preventive",
+      "category": "treatment",
+      "origin": "added_after_inputs",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "a_prophylaxis",
+      "forms": [
+        "prophylaxis"
+      ],
+      "case_sensitive": false,
+      "plain": "preventive treatment",
+      "category": "treatment",
+      "origin": "added_after_inputs",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "a_ventilated",
+      "forms": [
+        "ventilated"
+      ],
+      "case_sensitive": false,
+      "plain": "on a breathing machine",
+      "category": "treatment",
+      "origin": "added_after_inputs",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "a_ventilation",
+      "forms": [
+        "ventilation",
+        "mechanical ventilation"
+      ],
+      "case_sensitive": false,
+      "plain": "breathing support",
+      "category": "treatment",
+      "origin": "added_after_inputs",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "a_niv_long",
+      "forms": [
+        "non-invasive ventilation"
+      ],
+      "case_sensitive": false,
+      "plain": "breathing support through a mask",
+      "category": "treatment",
+      "origin": "added_after_inputs",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "a_organisms",
+      "forms": [
+        "organisms",
+        "organism"
+      ],
+      "case_sensitive": false,
+      "plain": "germs",
+      "category": "condition",
+      "origin": "added_after_inputs",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "a_asymptomatic",
+      "forms": [
+        "asymptomatic"
+      ],
+      "case_sensitive": false,
+      "plain": "symptom-free",
+      "category": "sign",
+      "origin": "added_after_inputs",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "a_gestation",
+      "forms": [
+        "gestation"
+      ],
+      "case_sensitive": false,
+      "plain": "length of pregnancy",
+      "category": "other",
+      "origin": "added_after_inputs",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "a_gest_dm",
+      "forms": [
+        "gestational diabetes"
+      ],
+      "case_sensitive": false,
+      "plain": "diabetes in pregnancy",
+      "category": "condition",
+      "origin": "added_after_inputs",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "a_gestational",
+      "forms": [
+        "gestational"
+      ],
+      "case_sensitive": false,
+      "plain": "pregnancy",
+      "category": "other",
+      "origin": "added_after_inputs",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "a_intraop",
+      "forms": [
+        "intraoperative",
+        "intra-operative",
+        "intraoperatively"
+      ],
+      "case_sensitive": false,
+      "plain": "in the operation",
+      "category": "other",
+      "origin": "added_after_inputs",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "a_parity",
+      "forms": [
+        "parity"
+      ],
+      "case_sensitive": false,
+      "plain": "number of births",
+      "category": "other",
+      "origin": "added_after_inputs",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "a_sutures",
+      "forms": [
+        "sutures",
+        "suture",
+        "sutured"
+      ],
+      "case_sensitive": false,
+      "plain": "stitches",
+      "category": "treatment",
+      "origin": "added_after_inputs",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "a_antimicrobial",
+      "forms": [
+        "antimicrobial",
+        "antimicrobials"
+      ],
+      "case_sensitive": false,
+      "plain": "germ-killing medicine",
+      "category": "treatment",
+      "origin": "added_after_inputs",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "a_intubation",
+      "forms": [
+        "intubation"
+      ],
+      "case_sensitive": false,
+      "plain": "breathing tube put in",
+      "category": "treatment",
+      "origin": "added_after_inputs",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "a_lochia",
+      "forms": [
+        "lochia"
+      ],
+      "case_sensitive": false,
+      "plain": "bleeding following the birth",
+      "category": "sign",
+      "origin": "added_after_inputs",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "a_vasopressor",
+      "forms": [
+        "vasopressor",
+        "vasopressors"
+      ],
+      "case_sensitive": false,
+      "plain": "blood pressure support medicine",
+      "category": "treatment",
+      "origin": "added_after_inputs",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "a_decompression",
+      "forms": [
+        "decompression"
+      ],
+      "case_sensitive": false,
+      "plain": "release of pressure",
+      "category": "procedure",
+      "origin": "added_after_inputs",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "a_o2",
+      "forms": [
+        "O2"
+      ],
+      "case_sensitive": true,
+      "plain": "oxygen",
+      "category": "treatment",
+      "origin": "added_after_inputs",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "a_paco2",
+      "forms": [
+        "PaCO2",
+        "pCO2"
+      ],
+      "case_sensitive": false,
+      "plain": "carbon dioxide level",
+      "category": "test",
+      "origin": "added_after_inputs",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "a_hco3",
+      "forms": [
+        "HCO3",
+        "bicarbonate"
+      ],
+      "case_sensitive": false,
+      "plain": "bicarbonate level",
+      "category": "test",
+      "origin": "added_after_inputs",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "a_fev1",
+      "forms": [
+        "FEV1"
+      ],
+      "case_sensitive": true,
+      "plain": "breath-out test",
+      "category": "test",
+      "origin": "added_after_inputs",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "a_cspine",
+      "forms": [
+        "C-spine",
+        "cervical spine"
+      ],
+      "case_sensitive": false,
+      "plain": "neck bones",
+      "category": "body",
+      "origin": "added_after_inputs",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "a_postop",
+      "forms": [
+        "post-op",
+        "post-operatively",
+        "post-operative",
+        "postoperative",
+        "postoperatively"
+      ],
+      "case_sensitive": false,
+      "plain": "following the operation",
+      "category": "other",
+      "origin": "added_after_inputs",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "a_tonic_clonic",
+      "forms": [
+        "tonic-clonic"
+      ],
+      "case_sensitive": false,
+      "plain": "stiffening and jerking",
+      "category": "symptom",
+      "origin": "added_after_inputs",
+      "flag_words": [],
+      "keeps": {}
+    },
+    {
+      "id": "a_noncontrast",
+      "forms": [
+        "non-contrast"
+      ],
+      "case_sensitive": false,
+      "plain": "dye-free",
+      "category": "test",
+      "origin": "added_after_inputs",
       "flag_words": [],
       "keeps": {}
     }

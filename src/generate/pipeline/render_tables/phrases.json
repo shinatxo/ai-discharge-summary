@@ -1,10 +1,66 @@
 {
   "table": "phrases",
   "version": 1,
-  "status": "stub",
-  "approved_by": null,
-  "approved_at": null,
+  "status": "approved",
+  "approved_by": "Shina (author/CSO) — D1–D12 adopted 11 Nov 2026, 07:45–07:52 Europe/London",
+  "approved_at": "2026-11-11",
   "entries": [
+    {
+      "id": "p_primary",
+      "kind": "label",
+      "forms": [
+        "primary"
+      ],
+      "plain": {
+        "adult": "Main problem:",
+        "parent_or_carer": "Main problem:"
+      },
+      "keeps": {},
+      "flag_words": []
+    },
+    {
+      "id": "p_secondary",
+      "kind": "label",
+      "forms": [
+        "secondary"
+      ],
+      "plain": {
+        "adult": "Other problems:",
+        "parent_or_carer": "Other problems:"
+      },
+      "keeps": {},
+      "flag_words": []
+    },
+    {
+      "id": "p_background",
+      "kind": "label",
+      "forms": [
+        "background"
+      ],
+      "plain": {
+        "adult": "Health history:",
+        "parent_or_carer": "Your child's health history:"
+      },
+      "keeps": {},
+      "flag_words": []
+    },
+    {
+      "id": "p_query",
+      "kind": "query",
+      "forms": [
+        "?",
+        "query"
+      ],
+      "plain": {
+        "adult": "possible",
+        "parent_or_carer": "possible"
+      },
+      "keeps": {
+        "?": "possible",
+        "query": "possible"
+      },
+      "flag_words": []
+    },
     {
       "id": "p_inferred",
       "kind": "inferred",
@@ -20,6 +76,173 @@
         "do not",
         "must"
       ]
+    },
+    {
+      "id": "p_patient_was",
+      "kind": "person",
+      "forms": [
+        "the patient was",
+        "patient was"
+      ],
+      "plain": {
+        "adult": "you were",
+        "parent_or_carer": "your child was"
+      },
+      "keeps": {},
+      "flag_words": []
+    },
+    {
+      "id": "p_patient_is",
+      "kind": "person",
+      "forms": [
+        "the patient is",
+        "patient is"
+      ],
+      "plain": {
+        "adult": "you are",
+        "parent_or_carer": "your child is"
+      },
+      "keeps": {},
+      "flag_words": []
+    },
+    {
+      "id": "p_patient_has",
+      "kind": "person",
+      "forms": [
+        "the patient has",
+        "patient has"
+      ],
+      "plain": {
+        "adult": "you have",
+        "parent_or_carer": "your child has"
+      },
+      "keeps": {},
+      "flag_words": []
+    },
+    {
+      "id": "p_patient_had",
+      "kind": "person",
+      "forms": [
+        "the patient had",
+        "patient had"
+      ],
+      "plain": {
+        "adult": "you had",
+        "parent_or_carer": "your child had"
+      },
+      "keeps": {},
+      "flag_words": []
+    },
+    {
+      "id": "p_patient_s",
+      "kind": "person",
+      "forms": [
+        "the patient's",
+        "patient's",
+        "the patient’s",
+        "patient’s"
+      ],
+      "plain": {
+        "adult": "your",
+        "parent_or_carer": "your child's"
+      },
+      "keeps": {},
+      "flag_words": []
+    },
+    {
+      "id": "p_patient",
+      "kind": "person",
+      "forms": [
+        "the patient",
+        "patient"
+      ],
+      "plain": {
+        "adult": "you",
+        "parent_or_carer": "your child"
+      },
+      "keeps": {},
+      "flag_words": []
+    },
+    {
+      "id": "p_the_child",
+      "kind": "person",
+      "forms": [
+        "the child"
+      ],
+      "plain": {
+        "adult": "the child",
+        "parent_or_carer": "your child"
+      },
+      "keeps": {},
+      "flag_words": []
+    },
+    {
+      "id": "p_the_childs",
+      "kind": "person",
+      "forms": [
+        "the child's",
+        "the child’s"
+      ],
+      "plain": {
+        "adult": "the child's",
+        "parent_or_carer": "your child's"
+      },
+      "keeps": {},
+      "flag_words": []
+    },
+    {
+      "id": "p_not_documented",
+      "kind": "literal",
+      "forms": [
+        "not documented",
+        "not recorded"
+      ],
+      "plain": {
+        "adult": "not written in the notes",
+        "parent_or_carer": "not written in the notes"
+      },
+      "keeps": {},
+      "flag_words": []
+    },
+    {
+      "id": "p_c_o",
+      "kind": "literal",
+      "forms": [
+        "c/o"
+      ],
+      "plain": {
+        "adult": "complaining of",
+        "parent_or_carer": "complaining of"
+      },
+      "keeps": {},
+      "flag_words": []
+    },
+    {
+      "id": "p_h_o",
+      "kind": "literal",
+      "forms": [
+        "h/o"
+      ],
+      "plain": {
+        "adult": "history of",
+        "parent_or_carer": "history of"
+      },
+      "keeps": {},
+      "flag_words": []
+    },
+    {
+      "id": "p_o_e",
+      "kind": "literal",
+      "forms": [
+        "O/E",
+        "o/e"
+      ],
+      "plain": {
+        "adult": "when examined",
+        "parent_or_carer": "when examined"
+      },
+      "keeps": {},
+      "flag_words": []
     }
   ]
 }

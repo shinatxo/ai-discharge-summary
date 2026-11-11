@@ -34,8 +34,18 @@ positions only, never text).
 
 Tables live in render_tables/ (JSON + general_words.txt); their sha256 are pinned below, so a
 table change also changes pipeline_version (which hashes this package's .py bytes). Step 2
-ships STUBS (status "stub"); step 3 fills them for the CSO's approval (D4). The offline harness
-(evals/render_offline.py) refuses stub tables unless --dev, and --dev on the measurement batch.
+shipped STUBS; step 3 installs the tables approved by Shina (author/CSO) on 11 Nov 2026 (D1-D12 of
+the step-3 report, Round 4; status "approved"). The offline harness (evals/render_offline.py)
+refuses tables that are not approved unless --dev, and --dev on the measurement batch.
+
+Step 3 additions (adopted 11 Nov 2026 with the tables; renderer version 2):
+D5 — a drop may remove no protected token (negation, uncertainty, change, timing, scope, units, the
+fixed phrases, "?") other than a digit token inside a number-slot match of the dropping table; checked
+on the actual span in drop_problem, so the builder, authorise_ops and audit() all apply it.
+D11 — the line AS WRITTEN (every kept piece and substitution joined and normalised) may hold no
+_SIGNPOST match: a phrase that forms only across a dropped span ("emergency (GRACE score 142)
+department") or through collapsed white space ("emergency  department") refuses
+(signpost_not_isolable) in the builder, and authorise_ops rejects such ops independently.
 
 Implementation choices beyond the adopted text (10 Nov 2026; disclosed in the build record, each
 stricter or narrower, none looser): the case rule applies at a line's start only; a box-owned
@@ -74,7 +84,7 @@ from .safety_net_gate import _SIGNPOST
 from .schemas import record_patient_version_schema, shape_errors
 
 RENDERER_NAME = "constrained_renderer"
-RENDERER_VERSION = 1
+RENDERER_VERSION = 2                       # 1 = step 2 (3231750); 2 = step 3 (D5, D11)
 MODULE_PATH = Path(__file__).resolve()
 TABLES_DIR = MODULE_PATH.parent / "render_tables"
 
@@ -82,17 +92,18 @@ JSON_TABLES = ("glossary", "drug_classes", "phrases", "withheld", "seek_help", "
                "required_content", "lead_ins")
 WORDS_FILE = "general_words.txt"
 TABLE_FILES = tuple(f"{t}.json" for t in JSON_TABLES) + (WORDS_FILE,)
-# sha256 of each table file — the pins (Round 1). Stubs in step 2; the CSO-approved tables at step 3/5.
+# sha256 of each table file — the pins (Round 1). Stubs in step 2; the CSO-approved tables from step 3
+# (approved 11 Nov 2026 — Round 4 of the step-3 report).
 TABLE_SHA256 = {
-    "glossary.json": "f6df976f2ce481bbb471326a584cae5586dacba8b320397da61339f1e9d021c1",
-    "drug_classes.json": "8ca20dfe16ef2c099a7ef1e7f2139c650366aae5b77697be108ce141921b5abe",
-    "phrases.json": "037ff80f9959cab53dd720e64b6553c04c758ff09113666261d4a400d2d17224",
-    "withheld.json": "34f06e449a5540e641d62316ab201c2acaaf81de9b031710a086b93975fea6a1",
-    "seek_help.json": "ddc49c507b01ae972c5ed6d4935cac442b08806a75d8cdeb6797fa51907fd8bc",
-    "home_medicine.json": "f62efda9a7a20cc119cf94c7525c5e5b5f9010f24c5dc9e5d49c091b1ffeafe3",
-    "required_content.json": "32f58db91081316ef5ced766de7669421d78c733c2fc0529671c00474f88714a",
-    "lead_ins.json": "d01448f09bfa8aa8a6a670f55539f3beab220cf625e27d3e4633d784c0000ed0",
-    "general_words.txt": "eafd434fcae9451aa9e01615c4c3cec3d49c550b924419bb29f2d4f2fe2475f0",
+    "glossary.json": "49b4832e55156a054109685199641b8061a9237ab4dac2f941223dabbddde41c",
+    "drug_classes.json": "db37ab75293bd664d3da2d8bc27e836fb870c03b859b7553b48d480bde3f2800",
+    "phrases.json": "1ce3d670efd758e382a6b0372ce50e559983576653f7fa49f0c031b8a92b9032",
+    "withheld.json": "b23285a92b53cbc21ef5ea4997dd54a332e28c1940cdf4538121c00ab846bd7f",
+    "seek_help.json": "717aa3e51b9793131efa3860d9c533f1a4b68d5250391915d397397b06cef36c",
+    "home_medicine.json": "394fe396572f98fb95f985caed23040582d5c12ff63f1bd856020c817b4b9464",
+    "required_content.json": "9461c6ae686193dd250d74fdcfd8607a26931a14e3ae24a48c75fe701900bcbd",
+    "lead_ins.json": "28f105a263e0668a17753e750deaf98b11ad25d4a86ff550a1d6288d8115e198",
+    "general_words.txt": "cb58bf20d38aee24dd1fa0f630e8ecc4d3d80e30e7a25bae3da0957e1f4b82d4",
 }
 
 # The inferred-suffix wording adopted by Shina (author/CSO), 9 Nov 2026 ~20:00 (1(a)). The phrase
@@ -719,6 +730,14 @@ def drop_problem(text: str, a: int, b: int, kind: str, rule: str, entry_id, tabl
                 return "number_outside_slot"
         elif not inside and w.lower() not in FILLERS:
             return "not_covered"
+    # D5 (step 3): no protected token may leave with a drop, except a digit token inside a number-slot
+    # match of the dropping table — checked on the actual span, located on the complete line.
+    slots = [(s, e) for s, e, en in matches if en.raw.get("number_slot")]
+    for ps, pe, key in protected_spans(text):
+        if pe <= a or ps >= b:
+            continue
+        if not (key.startswith("#") and a <= ps and pe <= b and any(s <= ps and pe <= e for s, e in slots)):
+            return "protected_token"
     span = text[a:b]
     if F3_NEVER_DROP.search(span):                                                 # F3, on the real span
         return "f3_content"
@@ -833,6 +852,18 @@ def _normalise(s: str) -> str:
     return s.strip()
 
 
+def written_line_problem(line: str | None) -> str | None:
+    """D11 (step 3): the line AS WRITTEN — every kept piece and substitution joined and normalised — may hold
+    no signpost. The source-side screen in _plan_drops cannot see a phrase that only forms when the pieces
+    either side of a drop join ("emergency (GRACE score 142) department"), or when _normalise collapses a run
+    of white space ("emergency  department"). The gate's _SIGNPOST is used unchanged. (Resus wording cannot
+    form this way: every resus pattern has a one-word alternative — CPR, resus…, ReSPECT — that the
+    source-side screen already sees.)"""
+    if line and _SIGNPOST.search(line):
+        return "signpost_not_isolable"
+    return None
+
+
 def reproduce(text: str, ops: list[dict]) -> str:
     parts = []
     for op in ops:
@@ -918,6 +949,9 @@ def render_line(u: dict, heading: str, audience: str, tables: Tables) -> tuple[l
     if pos < len(text):
         ops.append({"op": "copy", "a": pos, "b": len(text)})
     body = reproduce(text, ops)
+    why = written_line_problem(body)                                                     # D11
+    if why:
+        raise RenderRefusal(why, _where(u))
     return ops, (u["marker"] + body) if body else None
 
 
@@ -1004,6 +1038,10 @@ def authorise_ops(u: dict, heading: str, audience: str, ops: list[dict], tables:
                 probs.append(f"op{i}:drop_{why}")
         else:
             probs.append(f"op{i}:kind")
+    if not probs:                                                                        # D11
+        why = written_line_problem(reproduce(text, ops))
+        if why:
+            probs.append(f"line:written_{why}")
     return probs
 
 

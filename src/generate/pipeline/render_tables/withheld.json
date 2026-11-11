@@ -1,17 +1,291 @@
 {
   "table": "withheld",
   "version": 1,
-  "status": "stub",
-  "approved_by": null,
-  "approved_at": null,
+  "status": "approved",
+  "approved_by": "Shina (author/CSO) — D1–D12 adopted 11 Nov 2026, 07:45–07:52 Europe/London",
+  "approved_at": "2026-11-11",
   "entries": [
     {
-      "id": "w_stub",
-      "category": "stub",
-      "pattern": "stubwithheld",
+      "id": "w_curb65",
+      "category": "risk_score",
+      "pattern": "C(?:U)?RB-?65(?:\\s+score)?(?:\\s+of)?\\s*[:=]?\\s*\\d(?:/[45])?",
+      "number_slot": true,
+      "examples": [
+        "CURB-65 2",
+        "CURB-65 score 3",
+        "CURB65 score of 1",
+        "CRB-65 2",
+        "CURB-65 2/5",
+        "CURB-65: 2"
+      ]
+    },
+    {
+      "id": "w_wells",
+      "category": "risk_score",
+      "pattern": "(?:(?:DVT|PE)\\s+)?Wells(?:['’])?(?:\\s+score)?(?:\\s+of)?\\s*[:=]?\\s*\\d+(?:\\.\\d)?",
+      "number_slot": true,
+      "examples": [
+        "Wells score 4",
+        "Wells 2",
+        "PE Wells score of 6.5",
+        "DVT Wells score 1"
+      ]
+    },
+    {
+      "id": "w_grace",
+      "category": "risk_score",
+      "pattern": "GRACE(?:\\s+score)?(?:\\s+of)?\\s*[:=]?\\s*\\d+",
+      "number_slot": true,
+      "examples": [
+        "GRACE 142",
+        "GRACE score 98",
+        "GRACE score of 120"
+      ]
+    },
+    {
+      "id": "w_timi",
+      "category": "risk_score",
+      "pattern": "TIMI(?:\\s+score)?(?:\\s+of)?\\s*[:=]?\\s*\\d",
+      "number_slot": true,
+      "examples": [
+        "TIMI 3",
+        "TIMI score 2"
+      ]
+    },
+    {
+      "id": "w_heart",
+      "category": "risk_score",
+      "pattern": "HEART\\s+score(?:\\s+of)?\\s*[:=]?\\s*\\d+",
+      "number_slot": true,
+      "examples": [
+        "HEART score 5",
+        "HEART score of 3"
+      ]
+    },
+    {
+      "id": "w_chads",
+      "category": "risk_score",
+      "pattern": "CHA2DS2-?VASc(?:\\s+score)?(?:\\s+of)?\\s*[:=]?\\s*\\d",
+      "number_slot": true,
+      "examples": [
+        "CHA2DS2-VASc 4",
+        "CHA2DS2VASc score 3"
+      ]
+    },
+    {
+      "id": "w_hasbled",
+      "category": "risk_score",
+      "pattern": "HAS-?BLED(?:\\s+score)?(?:\\s+of)?\\s*[:=]?\\s*\\d",
+      "number_slot": true,
+      "examples": [
+        "HAS-BLED 2",
+        "HASBLED score 3"
+      ]
+    },
+    {
+      "id": "w_news",
+      "category": "risk_score",
+      "pattern": "NEWS\\s*2?(?:\\s+score)?(?:\\s+of)?\\s*[:=]?\\s*\\d+",
+      "number_slot": true,
+      "examples": [
+        "NEWS2 5",
+        "NEWS 7",
+        "NEWS2 score of 3",
+        "NEWS2 score 6"
+      ]
+    },
+    {
+      "id": "w_ews",
+      "category": "risk_score",
+      "pattern": "[MP]EWS(?:\\s+score)?(?:\\s+of)?\\s*[:=]?\\s*\\d+",
+      "number_slot": true,
+      "examples": [
+        "PEWS 4",
+        "MEWS score 3"
+      ]
+    },
+    {
+      "id": "w_sofa",
+      "category": "risk_score",
+      "pattern": "q?SOFA(?:\\s+score)?(?:\\s+of)?\\s*[:=]?\\s*\\d+",
+      "number_slot": true,
+      "examples": [
+        "qSOFA 2",
+        "SOFA score 6"
+      ]
+    },
+    {
+      "id": "w_blatchford",
+      "category": "risk_score",
+      "pattern": "(?:Glasgow[- ])?Blatchford(?:\\s+score)?(?:\\s+of)?\\s*[:=]?\\s*\\d+",
+      "number_slot": true,
+      "examples": [
+        "Glasgow-Blatchford score 6",
+        "Blatchford 3"
+      ]
+    },
+    {
+      "id": "w_rockall",
+      "category": "risk_score",
+      "pattern": "(?:pre-endoscopy\\s+)?Rockall(?:\\s+score)?(?:\\s+of)?\\s*[:=]?\\s*\\d+",
+      "number_slot": true,
+      "examples": [
+        "Rockall score 4",
+        "pre-endoscopy Rockall 3"
+      ]
+    },
+    {
+      "id": "w_abcd2",
+      "category": "risk_score",
+      "pattern": "ABCD2(?:\\s+score)?(?:\\s+of)?\\s*[:=]?\\s*\\d",
+      "number_slot": true,
+      "examples": [
+        "ABCD2 4",
+        "ABCD2 score 5"
+      ]
+    },
+    {
+      "id": "w_must",
+      "category": "risk_score",
+      "pattern": "MUST(?:\\s+score)?(?:\\s+of)?\\s*[:=]?\\s*\\d",
+      "number_slot": true,
+      "examples": [
+        "MUST score 2",
+        "MUST 1"
+      ]
+    },
+    {
+      "id": "w_waterlow",
+      "category": "risk_score",
+      "pattern": "Waterlow(?:\\s+score)?(?:\\s+of)?\\s*[:=]?\\s*\\d+",
+      "number_slot": true,
+      "examples": [
+        "Waterlow 15",
+        "Waterlow score of 12"
+      ]
+    },
+    {
+      "id": "w_braden",
+      "category": "risk_score",
+      "pattern": "Braden(?:\\s+score)?(?:\\s+of)?\\s*[:=]?\\s*\\d+",
+      "number_slot": true,
+      "examples": [
+        "Braden score 14"
+      ]
+    },
+    {
+      "id": "w_phq9",
+      "category": "risk_score",
+      "pattern": "PHQ-?9(?:\\s+score)?(?:\\s+of)?\\s*[:=]?\\s*\\d+",
+      "number_slot": true,
+      "examples": [
+        "PHQ-9 18",
+        "PHQ9 score 12"
+      ]
+    },
+    {
+      "id": "w_gad7",
+      "category": "risk_score",
+      "pattern": "GAD-?7(?:\\s+score)?(?:\\s+of)?\\s*[:=]?\\s*\\d+",
+      "number_slot": true,
+      "examples": [
+        "GAD-7 15",
+        "GAD7 score 9"
+      ]
+    },
+    {
+      "id": "w_risk_level",
+      "category": "risk_level",
+      "pattern": "(?:very\\s+)?(?:low|moderate|medium|intermediate|high)[\\s-]+risk",
       "number_slot": false,
       "examples": [
-        "stubwithheld"
+        "high risk",
+        "low-risk",
+        "very high risk",
+        "intermediate risk",
+        "moderate risk"
+      ]
+    },
+    {
+      "id": "w_risk_assessment",
+      "category": "risk_level",
+      "pattern": "(?:VTE|falls?)\\s+risk\\s+assessment(?:\\s+(?:completed|done|performed))?",
+      "number_slot": false,
+      "examples": [
+        "VTE risk assessment completed",
+        "falls risk assessment done",
+        "VTE risk assessment"
+      ]
+    },
+    {
+      "id": "w_police",
+      "category": "police",
+      "pattern": "(?:(?:brought\\s+in|accompanied)\\s+by\\s+(?:the\\s+)?)?police(?:\\s+(?:informed|involved|aware|present|attended|called|contacted|notified))?",
+      "number_slot": false,
+      "examples": [
+        "police informed",
+        "police",
+        "brought in by police",
+        "accompanied by the police",
+        "police involved"
+      ]
+    },
+    {
+      "id": "w_safeguarding",
+      "category": "safeguarding",
+      "pattern": "safeguarding(?:\\s+(?:concerns?|issues?|team|lead|nurse))?(?:\\s+(?:informed|involved|aware|raised|notified|contacted|discussed))?",
+      "number_slot": false,
+      "examples": [
+        "safeguarding concerns raised",
+        "safeguarding team informed",
+        "safeguarding concern",
+        "safeguarding",
+        "safeguarding lead aware"
+      ]
+    },
+    {
+      "id": "w_child_protection",
+      "category": "safeguarding",
+      "pattern": "child\\s+protection(?:\\s+(?:concerns?|plan|team|medical))?",
+      "number_slot": false,
+      "examples": [
+        "child protection concerns",
+        "child protection plan",
+        "child protection"
+      ]
+    },
+    {
+      "id": "w_nai",
+      "category": "safeguarding",
+      "pattern": "NAI|non-accidental\\s+injury",
+      "number_slot": false,
+      "examples": [
+        "NAI",
+        "non-accidental injury"
+      ]
+    },
+    {
+      "id": "w_ceiling",
+      "category": "ceiling_of_care",
+      "pattern": "(?:ward[- ]based\\s+)?ceiling\\s+of\\s+(?:care|treatment)(?:\\s*[:=-]?\\s*ward[- ]based(?:\\s+care)?)?",
+      "number_slot": false,
+      "examples": [
+        "ceiling of care",
+        "ward-based ceiling of care",
+        "ceiling of treatment",
+        "ceiling of care: ward-based",
+        "ceiling of care ward based care"
+      ]
+    },
+    {
+      "id": "w_tep",
+      "category": "ceiling_of_care",
+      "pattern": "(?:TEP|treatment\\s+escalation\\s+plan)(?:\\s+(?:completed|in\\s+place|discussed|agreed))?",
+      "number_slot": false,
+      "examples": [
+        "TEP completed",
+        "treatment escalation plan in place",
+        "TEP"
       ]
     }
   ]

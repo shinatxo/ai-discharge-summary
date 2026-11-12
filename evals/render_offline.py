@@ -11,6 +11,7 @@ Two commands, no model call, no network:
       the run (D3').
 
   python evals/render_offline.py render <batch> --out <dir> --inputs <inputs.json> --batch-id <id> [--dev]
+                                          [--freeze <FREEZE.json>]
       A DERIVED batch in the standard record layout, scored later by the unchanged
       score_batch.score_batch(<dir>, adjudications_dir=<fresh store>):
         <dir>/r<n>/<ID>.json  every source record (90 in, 90 out, same order — Codex 07:38:27 P2),
@@ -30,6 +31,15 @@ Two commands, no model call, no network:
       r<n>/<id>.json, resolves outside the source, or repeats; the inputs file not matching the batch
       (every record, every hash); tables not "approved" unless --dev; --dev on the measurement batch;
       any source file changed after the check (nothing is written).
+      THE FREEZE GUARD (step 4, decision D6 (a), Shina 11 Nov 2026): the 90 measurement records are
+      recognised by their sha256 (pinned in evals/r1/inputs.json, itself pinned here) as well as by
+      batch id and folder name, so a renamed or partial copy is still the measurement. A measurement
+      source is rendered only with --freeze <record> whose every pin matches the files on disk
+      (evals/r1_freeze.py), never with --dev; the record's sha256 is written into the batch
+      (manifest.derived_from.freeze_sha256, each record's render_provenance) and the evaluator
+      refuses a batch without it. If the pinned inputs file is missing or changed, every render is
+      refused. The guard turns an accident into a refusal; it cannot stop a direct call to
+      render_patient, and matching pins do not show the freeze was committed and pushed.
       The source is read ONCE: the inputs check, the rendering and the provenance all use those
       bytes (Codex 09:04:06 P2 x2).
 
@@ -55,13 +65,16 @@ from zoneinfo import ZoneInfo
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "src" / "generate"))
 
+sys.path.insert(0, str(ROOT / "evals"))
+
+import r1_freeze as FZ  # noqa: E402
 from pipeline import compose_patient as CP7  # noqa: E402
 from pipeline import render_patient as RP  # noqa: E402
 from pipeline.errors import StepError  # noqa: E402
 
-HARNESS_VERSION = 1
+HARNESS_VERSION = 2                        # 2 = step 4: the freeze guard
 INPUTS_VERSION = 1
-MEASUREMENT_BATCH = "w6-pipeline-e09-m01-c02-p04-x5"     # D3': the 90 saved p0.4 records
+MEASUREMENT_BATCH = FZ.MEASUREMENT_BATCH                 # D3': the 90 saved p0.4 records
 PATH = "steps-1-5b-5a-6-historical-7-renderer-R1"
 STEP7_KEYS = ("compose_patient", "verify_patient", "compose_patient_first", "verify_patient_2", "patient_held_back")
 UPSTREAM_FAILED = "upstream_failed"
@@ -167,6 +180,25 @@ def _source_unchanged(src: Path, mb: bytes, bb: bytes, rels: list[str], rbs: lis
     return [_sha(b) for b in now] == [_sha(b) for b in [mb, bb] + rbs]
 
 
+def measurement_record_hashes(path: Path | None = None, sha256: str | None = None) -> frozenset:
+    """The sha256 of each of the 90 measurement records, from the pinned inputs file. Fails closed:
+    a missing or changed file refuses every render."""
+    path = path if path is not None else ROOT / FZ.MEASUREMENT_INPUTS
+    sha256 = sha256 if sha256 is not None else FZ.MEASUREMENT_INPUTS_SHA256
+    try:
+        b = path.read_bytes()
+    except OSError:
+        raise HarnessError("the pinned measurement inputs file is missing — every render is refused") from None
+    if _sha(b) != sha256:
+        raise HarnessError("the pinned measurement inputs file has changed — every render is refused")
+    return frozenset(g["record_sha256"] for g in json.loads(b)["generations"])
+
+
+def is_measurement(manifest: dict, src: Path, rbs: list[bytes], pinned: frozenset) -> bool:
+    return (manifest.get("batch_id") == MEASUREMENT_BATCH or src.name == MEASUREMENT_BATCH
+            or any(_sha(rb) in pinned for rb in rbs))
+
+
 def _renderer_identity(tables: RP.Tables) -> dict:
     return {"renderer": RP.RENDERER_NAME, "version": RP.RENDERER_VERSION, "module_sha256": RP.module_sha256(),
             "tables": dict(sorted(tables.sha256.items())), "tables_status": tables.status}
@@ -178,7 +210,8 @@ def _pipeline_version() -> str:
 
 
 def render_batch(src: Path, out: Path, inputs_path: Path, batch_id: str, *, dev: bool = False,
-                 tables: RP.Tables | None = None, now=None) -> dict:
+                 tables: RP.Tables | None = None, now=None, freeze: Path | None = None,
+                 measurement_inputs: tuple[Path, str] | None = None) -> dict:
     src, out = src.resolve(), out.resolve()
     if not _BATCH_ID.fullmatch(batch_id or ""):
         raise HarnessError("batch id may contain only letters, digits, '.', '_' and '-'")
@@ -187,8 +220,22 @@ def render_batch(src: Path, out: Path, inputs_path: Path, batch_id: str, *, dev:
     if out == src or src in out.parents:
         raise HarnessError("output must not be the source batch or inside it")
     manifest, index, mb, bb, rels, rbs = _read_source(src)
-    if dev and (manifest.get("batch_id") == MEASUREMENT_BATCH or src.name == MEASUREMENT_BATCH):
+    measurement = is_measurement(manifest, src, rbs, measurement_record_hashes(*(measurement_inputs or ())))
+    if dev and measurement:
         raise HarnessError("--dev is refused on the measurement batch")
+    if measurement and freeze is None:
+        raise HarnessError("the measurement batch is rendered only with a freeze record (--freeze)")
+    if measurement and tables is not None:
+        raise HarnessError("the measurement batch is rendered only with the package's own tables")
+    freeze_sha = None
+    if freeze is not None:
+        try:
+            freeze_sha, frozen, problems = FZ.check(freeze)
+        except FZ.FreezeError as exc:
+            raise HarnessError(str(exc)) from None
+        if problems:
+            raise HarnessError(f"the freeze record does not match the files on disk "
+                               f"({len(problems)} problem(s), first: {problems[0]})")
     tables = tables if tables is not None else RP.load_tables()
     if tables.status != "approved" and not dev:
         raise HarnessError("tables are not approved (stub) — only --dev may use them")
@@ -200,6 +247,8 @@ def render_batch(src: Path, out: Path, inputs_path: Path, batch_id: str, *, dev:
     expected = _inputs_from(manifest, mb, bb, rels, rbs)           # from the bytes read once (P2, 09:04:06)
     if inputs != expected:
         raise HarnessError("the inputs file does not match this batch (records or hashes changed)")
+    if measurement and _sha(ib) != frozen["measurement"]["inputs_sha256"]:
+        raise HarnessError("the inputs file is not the one the freeze record pins")
 
     clock = now or (lambda: dt.datetime.now(LONDON))
     started = clock().isoformat(timespec="seconds")
@@ -252,7 +301,7 @@ def render_batch(src: Path, out: Path, inputs_path: Path, batch_id: str, *, dev:
         d["failed_step"] = first
         d["error"] = {"code": errors[first], "message": ""} if first else None
         d["render_provenance"] = {"from_record": rel, "from_record_sha256": _sha(rb),
-                                  "input_sha256": gi["input_sha256"]}
+                                  "input_sha256": gi["input_sha256"], "freeze_sha256": freeze_sha}
         records.append((rel, d))
         entries.append({"run": rec["run"], "scenario_id": rec["scenario_id"], "record": rel,
                         "failed_step": d["failed_step"], "error_code": (d["error"] or {}).get("code"),
@@ -268,7 +317,8 @@ def render_batch(src: Path, out: Path, inputs_path: Path, batch_id: str, *, dev:
     m["derived_from"] = {"kind": "offline_renderer", "harness_version": HARNESS_VERSION,
                          "from_batch": manifest["batch_id"], "manifest_sha256": _sha(mb), "batch_sha256": _sha(bb),
                          "inputs_sha256": _sha(ib), "renderer": ident, "pipeline_version": pv,
-                         "model_calls": 0, "dev": bool(dev)}
+                         "model_calls": 0, "dev": bool(dev), "measurement": measurement,
+                         "freeze_sha256": freeze_sha}
     summary = {"batch_id": batch_id, **counts}
 
     # Nothing is published if the source changed after the frozen-input check (Codex 09:04:06 P2).
@@ -302,6 +352,7 @@ def main(argv=None) -> int:
     pr.add_argument("--inputs", type=Path, required=True)
     pr.add_argument("--batch-id", required=True)
     pr.add_argument("--dev", action="store_true")
+    pr.add_argument("--freeze", type=Path, default=None)
     a = p.parse_args(argv)
     try:
         if a.cmd == "inputs":
@@ -313,7 +364,7 @@ def main(argv=None) -> int:
             missing = sum(1 for g in data["generations"] if g["input_sha256"] is None)
             print(f"inputs: {n} generations, {n - missing} with a step-7 input, {missing} without -> {a.out}")
             return 0
-        s = render_batch(a.batch, a.out, a.inputs, a.batch_id, dev=a.dev)
+        s = render_batch(a.batch, a.out, a.inputs, a.batch_id, dev=a.dev, freeze=a.freeze)
     except (HarnessError, RP.RenderRefusal, FileNotFoundError, KeyError) as exc:
         print(f"refused: {getattr(exc, 'code', None) or exc}", file=sys.stderr)
         return 2

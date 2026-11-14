@@ -36,10 +36,11 @@ already set up). Its ARN already matches the `role-to-assume` in the workflow.
 ### 2. Set the alert-email repo variable
 
 The deploy passes `AlertEmail` to the stack. Store it as an Actions **variable** (not a
-secret — it's just an address):
+secret — it's just an address), replacing `<alert-email>` with the real address when you run
+the command:
 
 ```bash
-gh variable set ALERT_EMAIL --repo shinatxo/ai-discharge-summary --body "shinaoguntoye@hotmail.co.uk"
+gh variable set ALERT_EMAIL --repo shinatxo/ai-discharge-summary --body "<alert-email>"
 ```
 
 (or GitHub → repo → Settings → Secrets and variables → Actions → Variables → New variable).

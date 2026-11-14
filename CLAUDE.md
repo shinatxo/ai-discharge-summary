@@ -110,11 +110,17 @@ CI and on Shina's machine. Never report a test as passed unless you ran it.
   `git ls-files` can print file names from them; exclude the three folders in git commands.
 - Do not change these without Shina's explicit approval in that session. They are the
   instrument of a running experiment (R1):
-  - the scorer, frozen at commit `76276c9` (`evals/score_patient.py`; if unsure whether a file
-    is part of it, ask)
+  - the scorer, frozen at commit `76276c9`. Six files: `evals/score_patient.py`,
+    `src/generate/pipeline/meaning.py`, `src/generate/pipeline/compose_patient.py`,
+    `tests/test_score_patient.py`, `tests/test_pipeline_meaning.py`,
+    `tests/test_pipeline_compose_patient.py`
   - the render tables, approved at commit `3cf3847` (`src/generate/pipeline/render_tables/`)
-  - the patient renderer (`src/generate/pipeline/render_patient.py`)
-  - `evals/r1_*.py` and `tests/test_r1_*.py`
+  - the patient renderer (`src/generate/pipeline/render_patient.py`) and its offline harness
+    (`evals/render_offline.py`)
+  - the R1 tooling: `evals/r1_*.py`, `evals/r1/`, `tests/test_r1_*.py`, `tests/r1_fixture.py`
+  - everything else in `src/generate/pipeline/`: `pipeline_version` is a hash of every `.py`
+    file in that package, and the R1 freeze records it. Until Shina says the R1 run is
+    finished, ask before changing any file there.
 - Do no R1 work until Shina gives the R1 handoff.
 - Never run the renderer or the scorer on saved batch records.
 

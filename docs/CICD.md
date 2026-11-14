@@ -1,6 +1,7 @@
 # CI/CD pipeline
 
-`.github/workflows/ci-cd.yml` runs on every push and pull request:
+`.github/workflows/ci-cd.yml` runs on every push to `main`, on every pull request into `main`
+or `feat/agentic-pipeline`, and on manual runs:
 
 - **`test` job** (always) — installs `pytest` + `boto3` + `cfn-lint`, runs the 68 unit
   tests (they mock AWS, so no credentials needed), checks the canary scenario bundle is
@@ -35,10 +36,11 @@ already set up). Its ARN already matches the `role-to-assume` in the workflow.
 ### 2. Set the alert-email repo variable
 
 The deploy passes `AlertEmail` to the stack. Store it as an Actions **variable** (not a
-secret — it's just an address):
+secret — it's just an address), replacing `<alert-email>` with the real address when you run
+the command:
 
 ```bash
-gh variable set ALERT_EMAIL --repo shinatxo/ai-discharge-summary --body "shinaoguntoye@hotmail.co.uk"
+gh variable set ALERT_EMAIL --repo shinatxo/ai-discharge-summary --body "<alert-email>"
 ```
 
 (or GitHub → repo → Settings → Secrets and variables → Actions → Variables → New variable).

@@ -19,7 +19,7 @@ Turn a doctor's messy ward-round notes into a structured discharge summary, a GP
 ## Results
 
 - **18** synthetic evaluation scenarios (neonatal → elderly, including adversarial: prompt-injection, contradictory notes, missing data).
-- **65** automated tests, gating every push via CI.
+- **65** automated tests, gating every push to `main` and every pull request into `main` or `feat/agentic-pipeline` via CI.
 - **Cold-eval:** 11/11 (expansion set) + 5/5 (v0.6 safety regression) — **no auto-fails**.
 - **Patient-version reading age:** Flesch–Kincaid 2.3–6.2 (target ≤ 8).
 - **~73 s** average end-to-end generation (asynchronous — not bound by API Gateway's 30 s cap).
@@ -111,7 +111,7 @@ Governance is treated as a first-class deliverable, not an afterthought:
 
 `Amazon Bedrock` (Claude Sonnet 4.6) · `Lambda` · `API Gateway (HTTP API)` · `Cognito` · `DynamoDB` (+ Streams) · `S3` (Object Lock / WORM, OAC) · `KMS` (CMK) · `CloudFront` · `Route 53` · `ACM` · `EventBridge Scheduler` · `CloudWatch` · `SNS` · `CloudFormation` (plain) · `GitHub Actions` (OIDC, no stored keys) · `Python 3.13` · `React + Vite + Amplify Auth`
 
-CI runs the 68 tests + `cfn-lint` on every push/PR; a push to `main` deploys via OIDC role-assumption. See [`docs/CICD.md`](docs/CICD.md).
+CI runs the 68 tests + `cfn-lint` on every push to `main` and every pull request into `main` or `feat/agentic-pipeline`; only a push to `main` deploys, via OIDC role-assumption. See [`docs/CICD.md`](docs/CICD.md).
 
 ## Repository layout
 

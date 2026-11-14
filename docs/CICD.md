@@ -1,6 +1,7 @@
 # CI/CD pipeline
 
-`.github/workflows/ci-cd.yml` runs on every push and pull request:
+`.github/workflows/ci-cd.yml` runs on every push to `main`, on every pull request into `main`
+or `feat/agentic-pipeline`, and on manual runs:
 
 - **`test` job** (always) — installs `pytest` + `boto3` + `cfn-lint`, runs the 68 unit
   tests (they mock AWS, so no credentials needed), checks the canary scenario bundle is

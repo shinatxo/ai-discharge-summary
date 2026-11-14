@@ -1,14 +1,15 @@
 name: CI / CD
 
-# Tests + cfn-lint gate every push and PR. A push to main that passes the gate
-# then deploys the discharge-audit stack via short-lived OIDC credentials
+# Tests + cfn-lint run on every push to main, on every pull request into main
+# or feat/agentic-pipeline, and on manual runs. Only a push to main that passes
+# the gate deploys the discharge-audit stack, via short-lived OIDC credentials
 # (no long-lived AWS keys in GitHub). See docs/CICD.md for the one-time role setup.
 
 on:
   push:
     branches: [main]
   pull_request:
-    branches: [main]
+    branches: [main, feat/agentic-pipeline]
   workflow_dispatch:
 
 permissions:

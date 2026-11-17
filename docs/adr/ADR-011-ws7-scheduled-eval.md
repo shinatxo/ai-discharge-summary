@@ -96,6 +96,12 @@ The canary remains the only test of the deployed service. Neither covers the oth
 | **Testing the deployed service** (the canary) | Broken sign-in, API, IAM, KMS or DynamoDB. A deploy that shipped different code. The orchestrator as wired: the deadline, steps 5a and 6 side by side, fail-closed, trace writes. Quota contention | Content quality. It sees three documents and holds no gold. The step outputs a scorer needs are in traces, which WS7 must not read |
 | **A version-matched artifact calling Bedrock** (WS7) | Model behaviour changing behind the same model ID (HAZ-10). Step-level quality against gold. Token, latency and cost drift | Anything about the live stack. Whether the artifact really is what is deployed, unless that is checked (D11) |
 
+**One deliberate difference from the deployed service: WS7 never retries a model call.** The
+worker does. The pipeline retries a throttled call up to twice
+(`src/generate/pipeline/converse.py:22`), and the v1 worker's client allows one hidden botocore
+retry (`src/generate/README.md`, "Known deferral"). A throttle in WS7 is therefore a failed run,
+not a quality signal (D7).
+
 **What neither approach covers:**
 
 - **Settings drift.** The harness sets the model ID and the caching setting itself. The stack takes
@@ -203,8 +209,16 @@ it finished without error, wrote only the files expected, and cost no more than 
 
 - The schedule's retry policy is zero.
 - The entrypoint hands each runner a wrapped Bedrock client through the runner's existing
-  `client_factory` argument. The wrapper sends each step call **once**. A repeat of the same
-  request is refused, so a throttle fails that generation and the run is reported as failed.
+  `client_factory` argument. Two layers of retry have to be stopped, and the wrapper stops both:
+  - **Retries inside one call.** botocore can retry within a single `converse` call, where the
+    wrapper cannot see it. So the wrapper builds the underlying client itself, with
+    `retries={"mode": "standard", "total_max_attempts": 1}` and the read timeout the runner asks
+    for. `evals/run_pipeline_eval.py`'s `live_client` already does this (`:175`).
+    `evals/run_cold_eval.py`'s default client (`:684`) does not, and it asks for no read timeout
+    either, so the value used for v1 is fixed in slice 2 and written to the manifest.
+  - **Retries by the code under test.** The wrapper allows **at most one call per model step per
+    generation**. A repeat is refused, and the refusal ends that generation with a fixed code.
+- So a throttle fails that generation, and the run is reported as failed.
 - This is tighter than the code under test, which may retry (Context, finding 8). No runner and
   no pipeline file is changed.
 - The reason is the ceiling below. With the two retries the code allows, the output part of the
@@ -609,6 +623,11 @@ quiet week is not read as proof of safety.
 | 8 | Metric filters on worker logs | W11 |
 | 9 | PART C metrics | Blocked until the author says |
 | 10 | The orchestrator-driven runner | After R1 |
+
+**Acceptance check for slice 2: one request per step, counted at the server.** A local HTTP stub
+stands in for Bedrock and counts the requests it receives. For **both runners**, it shows exactly
+one request per model step when the stub answers with a throttle, with a 500, and with a read
+timeout. No AWS and no spend.
 
 **Set-up acceptance checks for slice 3.** None of them needs a Bedrock call.
 

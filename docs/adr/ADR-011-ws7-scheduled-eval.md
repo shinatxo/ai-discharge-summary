@@ -5,7 +5,8 @@
 **Proposed** — 16 Nov 2026. Decisions by the author, 16 Nov 2026. Revised 17 Nov 2026 after
 review: the cost ceiling, duplicate deliveries, the heartbeat and the incident procedure.
 
-This is a design. Nothing in it is built, deployed or run. Every deploy, and every run that costs
+This is a design. Slice 1, the offline comparator, is built (`docs/WS7-COMPARATOR.md`); nothing is
+deployed or run. Every deploy, and every run that costs
 money, needs the author's explicit yes at the time. No number in a breach rule is set here: the
 author sets them before the first live run, and they change only by pull request.
 

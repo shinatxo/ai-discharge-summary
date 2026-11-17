@@ -2,7 +2,8 @@
 
 ## Status
 
-**Proposed** — 16 Nov 2026. Decisions by the author, 16 Nov 2026.
+**Proposed** — 16 Nov 2026. Decisions by the author, 16 Nov 2026. Revised 17 Nov 2026 after
+review: the cost ceiling, duplicate deliveries, the heartbeat and the incident procedure.
 
 This is a design. Nothing in it is built, deployed or run. Every deploy, and every run that costs
 money, needs the author's explicit yes at the time. No number in a breach rule is set here: the
@@ -30,9 +31,10 @@ WS7 evaluates **synthetic runs only**. It never reads production inputs, results
   `model_id` and `prompt_sha256`. They go live at the W11 cut-over. WS7 does not read them.
 - **The eval harness** (`evals/`). Two runners call Bedrock directly: `run_cold_eval.py` (v1) and
   `run_pipeline_eval.py` (the pipeline's steps 1 to 7). Scorers compare the output with 18 gold
-  records. Each record carries prompt, corpus and notes hashes, token counts and an estimated
-  cost. Both runners refuse to start inside a canary window, because the Bedrock quota (25
-  requests a minute) is shared across the account.
+  records. Each record carries prompt and notes hashes, token counts and an estimated cost. The
+  corpus hash is in the batch manifest, and each record links to its batch by `batch_id`. Both
+  runners refuse to start inside a canary window, because the Bedrock quota (25 requests a
+  minute) is shared across the account.
 - **A container image** (`Dockerfile`, commit `8c78790`). It has run the scorers and the test
   suite offline. It has never run a live eval.
 - **The Safety Incident Management Log** (`docs/WS4-SAFETY-INCIDENT-LOG.md`). Section 1 already
@@ -66,7 +68,12 @@ tags.
 6. **The CI deploy role cannot build this.** It has no ECS, ECR or EC2 permissions and may manage
    only roles named `discharge-audit-*` (`infra/cicd-oidc-role.yaml`).
 7. **A CloudWatch alarm can look back seven days at most** (period multiplied by evaluation
-   periods, for periods of an hour or more). A weekly job sits exactly on that limit.
+   periods, for periods of an hour or more). A weekly job sits exactly on that limit. With the
+   default sliding window, one datapoint a week leaves no slack at all (D9).
+8. **The code under test may retry.** The pipeline retries a throttled call up to twice
+   (`src/generate/pipeline/converse.py:22`), and so does the v1 runner
+   (`evals/run_cold_eval.py:124`). The v1 runner's default client (`evals/run_cold_eval.py:684`)
+   does not pin botocore's own retries either. This matters for a spend ceiling (D7).
 
 ### Constraints carried in
 
@@ -174,40 +181,103 @@ run only from `main`, publish their logs, and need a GitHub-to-AWS role that can
 - A small VPC owned by the eval stack, one public subnet, a public IP on the task.
 - A security group with **no inbound rules** and outbound 443 only.
 - The control is the task role, not the network. The role may: invoke the one pinned model; put
-  metrics in one namespace; read and write the eval bucket; read the expected-version parameters;
-  publish to the eval topic. It has **no permission on any `discharge-audit` resource**.
+  metrics in one namespace; get and put objects under the eval bucket's `ws7/` prefix (it cannot
+  delete); read the expected-version parameters; publish to the eval topic. It has **no
+  permission on any `discharge-audit` resource**.
 - A NAT gateway or interface endpoints would add a fixed monthly cost many times the cost of the
   runs themselves (see Costs).
 
 *AWS concept:* a public IP is not reachability. A security group with no inbound rules drops
 everything unsolicited.
 
-### D7. Schedule, pre-flight, cap and baseline
+### D7. Schedule, pre-flight, cost ceiling, duplicates and baseline
 
-- **Schedule:** weekly, all 18 scenarios once, Wednesday 04:00 Europe/London. That is clear of
-  both canary windows.
-- **Pre-flight:** before the 18, one scenario runs alone as its own batch. The run continues only
-  if it finished without error, wrote only the files expected, and cost no more than the bound.
-  (The orchestrator has a function called `_preflight`. That is a different thing.)
-- **No retries.** The schedule's retry policy is zero, the entrypoint has a wall-clock limit, and a
-  runner that refuses to start (a canary window, an existing batch folder) is a failed run.
-- **Cap, in three layers:**
-  1. By construction: a fixed number of generations, each bounded by `maxTokens`.
-  2. Before it starts, the job adds up the estimated cost in its own run manifests for the month.
-     If that plus this run's upper bound is above **£15**, it does not start, and says so.
-  3. An AWS Budgets email as a backstop. It lags by hours and warns; it does not stop anything.
-- **Baseline:** one batch of 18 scenarios three times, run **by hand**, at set-up and at each
-  version change. Each needs the author's approval and sits **outside** the scheduled cap. The
-  baseline is not built from weekly runs with the alarms off.
+**Schedule.** Weekly, all 18 scenarios once, Wednesday 04:00 Europe/London. That is clear of both
+canary windows.
+
+**Pre-flight.** Before the 18, one scenario runs alone as its own batch. The run continues only if
+it finished without error, wrote only the files expected, and cost no more than its reservation.
+(The orchestrator has a function called `_preflight`. That is a different thing.)
+
+**No retries.**
+
+- The schedule's retry policy is zero.
+- The entrypoint hands each runner a wrapped Bedrock client through the runner's existing
+  `client_factory` argument. The wrapper sends each step call **once**. A repeat of the same
+  request is refused, so a throttle fails that generation and the run is reported as failed.
+- This is tighter than the code under test, which may retry (Context, finding 8). No runner and
+  no pipeline file is changed.
+- The reason is the ceiling below. With the two retries the code allows, the output part of the
+  reservation alone would be £16.02, above the cap, and no run could ever start.
+- The entrypoint has a wall-clock limit that ends the run on Wednesday. A runner that refuses to
+  start (a canary window, an existing batch folder) is a failed run.
+
+**The cost ceiling: £15 of model spend a month, enforced before any Bedrock call.**
+
+1. **A worst-case reservation for each run.** For every model step: its enforced `maxTokens` as
+   output, for every attempt the client may make (one), plus an input allowance.
+
+   | Step | `maxTokens` | Set at | Sent at |
+   |---|---|---|---|
+   | 2 `extract_facts` | 8,192 | `src/generate/pipeline/extract.py:75` | `:121` |
+   | 5a `reconcile_medications` | 4,096 | `src/generate/pipeline/reconcile.py:58` | `:251` |
+   | 6 `compose_clinical` | 6,000 | `src/generate/pipeline/compose.py:85` | `:411` |
+   | 7 `compose_patient` | 3,000 | `src/generate/pipeline/compose_patient.py:103` | `:431` |
+   | v1 combined call | 4,096 | `evals/run_cold_eval.py:96` | `:333` |
+   | v1 patient second pass | 1,500 | `evals/run_cold_eval.py:98` | `:333` |
+
+   - **The output part is enforced.** Bedrock stops a response at `maxTokens`.
+   - **The input allowance is measured, not enforced.** It is the largest input per step seen in
+     the baseline, multiplied by a margin the author sets, and priced at the cache-write rate,
+     the highest input rate. Until a baseline exists the figure is provisional and comes from the
+     runners' planning estimates (`evals/run_pipeline_eval.py:79`, `evals/run_cold_eval.py:121`).
+   - The ceiling is therefore only as firm as that allowance. A run whose input goes above it
+     says so in its summary.
+2. **Reserve first.** The reservation is written to the monthly ledger before the first Bedrock
+   call. The run starts only if the month's total plus the reservation is **£15 or less**. The
+   pre-flight generation is inside the reservation.
+3. **Settle after.** When the run ends, the reservation is replaced by the actual cost, worked out
+   from the usage Bedrock returned. Any request that was sent and has no recorded usage stays at
+   its worst case: a step that raised after a response, a crash before the record was written,
+   an unfinished run.
+4. **A backstop.** An AWS Budgets email. It lags by hours and warns; it does not stop anything.
+
+**Duplicates and concurrency.** EventBridge Scheduler delivers at least once, so the same
+Wednesday can arrive twice.
+
+- **Claim the occurrence first.** The job writes `ws7/claims/<target>/<scheduled date>` with
+  `If-None-Match: *`. The date comes from the schedule's own scheduled time, not from the clock.
+  If the object already exists, the job exits as a duplicate: it spends nothing and publishes a
+  duplicate count, which has no alarm.
+- **One ledger object a month,** updated by compare-and-swap: read it, then write it back with
+  `If-Match` and the ETag that was read. On a conflict the job re-reads and tries again, a fixed
+  number of times. If it still cannot write, it does not start.
+- **One run at a time.** A reservation that is still open blocks any other run. One left open past
+  the wall-clock limit is treated as abandoned: it stays counted at its worst case and stops
+  blocking.
+- **Manual runs use the same claim and the same ledger.** A baseline batch or a confirming run is
+  written to the ledger labelled outside-cap. It does not count towards the £15, and it cannot
+  overlap a scheduled run.
+- **Permissions.** `If-None-Match` needs `s3:PutObject`. `If-Match` needs `s3:GetObject` and
+  `s3:PutObject`. The task role has both on the `ws7/` prefix and has no delete permission, so
+  it cannot remove a claim. Source: AWS, *How to prevent object overwrites with conditional
+  writes*, <https://docs.aws.amazon.com/AmazonS3/latest/userguide/conditional-writes.html>, read
+  17 Nov 2026.
+
+**Baseline.** One batch of 18 scenarios three times, run **by hand**, at set-up and at each version
+change. Each needs the author's approval and sits **outside** the scheduled cap. The baseline is
+not built from weekly runs with the alarms off.
 
 *AWS concept:* EventBridge Scheduler is cron with time zones and a retry policy. Bedrock has no
-spend cap of its own, so the cap has to be ours.
+spend cap of its own, so the ceiling has to be ours. An S3 conditional write succeeds only if the
+object is absent, or unchanged since it was read.
 
 ### D8. Run records go to an S3 bucket owned by the eval stack
 
 - The bucket is created by the eval stack. It does not wait for the private evidence store.
 - Encrypted with the eval stack's own key (D9). Block Public Access on.
-- Scheduled runs expire after **90 days**. Baseline batches are kept.
+- Scheduled runs expire after **90 days**. Baseline batches are kept. So are the claims, the
+  monthly ledgers and the success records (D7, D9): they are small and hold no generated text.
 - **A run that becomes an incident is copied to a retained prefix before the 90 days are up.** That
   copy is a step in triage (D10).
 - What is stored: the run manifest, the batch records (model output on synthetic notes), the
@@ -271,18 +341,77 @@ figures is a finding, not a baseline.**
 - **Anything outside the 18 scenarios,** and any rate for a subgroup (D12).
 - Everything in D1's "neither" list.
 
-**The heartbeat covers three failures.**
+**The heartbeat has two independent paths.** Both answer one question: did Wednesday's run
+succeed? A run succeeds when it has generated, scored, compared and stored its records. Its last
+two acts are to write a success record to S3 and then to publish `RunOk` = 1.
 
-| Failure | How it is seen |
+**Primary: a check run on Thursday.**
+
+- A second schedule, **Thursday 10:00 Europe/London**, starts the same task in a check mode. Check
+  mode makes no Bedrock call and no claim.
+- It looks for Wednesday's claim and success record, and sends an alert when the run never
+  started (no claim), started and did not finish (a claim and no success record), or finished as
+  failed.
+- **Warning time: 30 hours** after the scheduled start (Wednesday 04:00 to Thursday 10:00), plus
+  the minute or two the check takes.
+- It reads S3 and publishes to the topic. It does not depend on CloudWatch.
+
+**Backstop: an alarm on `RunOk`.** It covers the case where the check itself does not run.
+
+| Setting | Value |
 |---|---|
-| **Ran and failed** | An EventBridge rule on `ECS Task State Change` for the eval cluster: the task is `STOPPED` and a container's `exitCode` is not 0, or the `stopCode` is `TaskFailedToStart` |
-| **Never started** | Alarms on `TargetErrorCount` and `InvocationDroppedCount` in `AWS/Scheduler` for the eval schedule group. AWS delivers these metrics on a best-effort basis, which is why the next row exists |
-| **Silent absence** | An alarm on the job's own `RunOk` metric: seven one-day periods, missing data treated as breaching. **This sits exactly on CloudWatch's seven-day limit.** It fires about a day after a missed run, it cannot be widened, and it must be tested at set-up |
+| Metric | `RunOk`, namespace `DischargeAssistant/Eval`, dimension `Target` |
+| Published | Once, value 1, by the scheduled run as its last act. A run that fails in a way it can handle publishes 0. Manual runs, duplicates and the check never publish it |
+| Statistic | Maximum |
+| Period | 86,400 seconds (one day) |
+| Evaluation periods | 7 |
+| Datapoints to alarm | 7 |
+| Threshold | Less than 1 |
+| Missing data | Treated as breaching |
+| Window type | Wall clock (`EvaluationWindow` = `WallClockWindow`, time zone `Europe/London`) |
+
+- **What it means.** The alarm fires when none of the seven most recently completed London
+  calendar days holds a success.
+- **Why a wall clock window.** AWS supports it for a one-day period on a metric alarm. It looks at
+  exactly the aligned window and no further back, and it follows the local clock through the
+  clock changes. The default sliding window is not used: with one datapoint a week it has no
+  slack, so a late run, or the October week that is an hour longer, would raise a false alarm;
+  and a sliding window also reads further back than its evaluation periods, by an amount AWS
+  does not state.
+- **Real worst-case warning time.** After a missed Wednesday the window that matters is Thursday
+  to Wednesday. It completes at Thursday 00:00 London, and an alarm that spans more than a day is
+  evaluated once an hour. By AWS's documented rules the alarm changes state by about **Thursday
+  01:00, 21 hours after the scheduled start**. It can never fire sooner than Thursday 00:00,
+  however early on Wednesday the run failed. AWS gives no bound for metric or notification
+  delay. **None of this has been tested.**
+- **Still on the seven-day limit.** Seven one-day periods is the most CloudWatch allows. If the
+  API refuses that with a wall clock window, the fallback is a single one-week period, which
+  evaluates Monday to Monday. Its worst case is the following Monday at about 01:00: **4 days and
+  21 hours** after the scheduled start.
+- **Not checked:** whether CloudFormation's alarm resource exposes `EvaluationWindow`. If it does
+  not, the runbook creates this one alarm with the CLI.
+- Sources, read 17 Nov 2026: AWS, *Configuring how CloudWatch alarms treat missing data*,
+  <https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/alarms-and-missing-data.html>;
+  *Alarm evaluation*,
+  <https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/alarm-evaluation.html>;
+  *Alarm evaluation window*,
+  <https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/alarm-evaluation-window.html>.
+
+**Early signals, not relied on.** Two faster signals stay, because they cost almost nothing:
+
+- an EventBridge rule on `ECS Task State Change` for the eval cluster, for a task that is
+  `STOPPED` with a container `exitCode` other than 0 or a `stopCode` of `TaskFailedToStart`;
+- alarms on `TargetErrorCount` and `InvocationDroppedCount` in `AWS/Scheduler` for the eval
+  schedule group. AWS delivers these metrics on a best-effort basis.
 
 **The alert topic.** The eval stack has its own SNS topic, encrypted with a customer-managed key
-owned by the eval stack. The key policy lets `cloudwatch.amazonaws.com` and `events.amazonaws.com`
-use the key. It does not use `alias/aws/sns` (Context, finding 5). The same key encrypts the eval
-bucket, so the stack has one key, not two.
+owned by the eval stack. It does not use `alias/aws/sns` (Context, finding 5). The same key
+encrypts the eval bucket, so the stack has one key, not two. CloudWatch's and EventBridge's
+grants are separate statements in the key policy: CloudWatch's can carry a source condition
+(`aws:SourceAccount`, `aws:SourceArn`), and EventBridge's cannot, because AWS does not support
+those conditions for EventBridge publishing to an encrypted topic (AWS, *Managing Amazon SNS
+encryption keys and costs*, <https://docs.aws.amazon.com/sns/latest/dg/sns-key-management.html>,
+read 17 Nov 2026).
 
 **Worker error codes and `trace_write_error`.** These are a separate slice for W11. They are metric
 filters on the deployed worker's log group in `infra/template.yaml`. The line is this: **WS7 may
@@ -295,8 +424,11 @@ count log lines the deployed worker writes, which carry fixed codes and IDs only
 
 - CloudWatch sends the alarm by email. The job also sends its own short message built to map onto
   the log's fields. It carries no note text and no model output.
-- **An alarm is a candidate, not an incident.** The author triages it within **N working days of
-  the alarm** (the author sets N before the first live run).
+- **An alarm is a candidate, not an incident.** The author triages it.
+- **The clocks are the log's own, and they start at the alarm.** The alarm time is the report
+  time for the log's existing targets: acknowledge within 2 working days, clinical risk
+  assessment within 5 working days (`docs/WS4-SAFETY-INCIDENT-LOG.md:30`). Triage runs inside
+  those clocks and never restarts them.
 - **Triage ends in one of three outcomes:**
   1. **False alarm.** Noise, or a fault in the harness or its infrastructure. Recorded against the
      run. No log entry.
@@ -305,6 +437,8 @@ count log lines the deployed worker writes, which carry fixed codes and IDs only
   3. **Incident.** It has, or could have, a patient-safety effect. It gets an `INC-YYYY-NNN`
      entry under the log's section 2, and the run is copied to retained storage (D8).
 - The job never edits the log. It is a controlled document approved by the CSO.
+- **The log's wording comes first.** The log gains this route, with CSO approval, before the
+  schedule is switched on. Switching it on requires that approval (see the order of work).
 - No GitHub issue is opened automatically. That would need a stored token and would publish
   alarms nobody has assessed.
 
@@ -315,7 +449,7 @@ WS7 breach - target pipeline - run 2026-12-16T0400
 family safety-netting, kind 2 (per-scenario flip): 1 stable scenario now fails (S14)
 system release: pipeline_version 3f9c...e1 / model anthropic.claude-sonnet-4-6 / caching on
 baseline: b-2026-12-14  evidence: s3://<eval-bucket>/ws7/runs/2026-12-16T0400/
-triage due: <alarm date + N working days>
+report time (the alarm): 2026-12-16 04:41 London
 ```
 
 *AWS concept:* an SNS topic fans one message out to its subscribers.
@@ -332,7 +466,8 @@ W11. This ADR adds nothing there.
 - the git commit and the image digest;
 - `pipeline_version` (pipeline target) or the two v1 prompt file hashes (v1 target);
 - the model ID and the caching setting;
-- the corpus hash, the gold hashes and the scorer versions;
+- the corpus hash (taken from the batch manifest, which each record links to by `batch_id`), the
+  gold hashes and the scorer versions;
 - the baseline it was compared with, and how PART C was produced.
 
 **The match check** runs first and costs nothing. The job compares its own values with the expected
@@ -344,10 +479,13 @@ ones and does not generate if they differ.
 | v1 | Model ID, the sha256 of `src/generate/system_prompt.md` and `patient_system_prompt.md` at the commit deployed on `main`, second pass on, caching on. v1 has no `pipeline_version` |
 
 **Who writes the expected values, and when.** The author writes them to SSM Parameter Store by
-hand, as a step of each release to `main`, starting with W11. The values come from the release
-commit: `pipeline_version` computed from that commit, and `ModelId` and `PromptCaching` as
-`.github/workflows/ci-cd.yml` pins them at that commit. CI does not write them. The eval task can
-read them and cannot write them.
+hand. CI does not write them. The eval task can read them and cannot write them.
+
+- **v1 values: once, at eval-stack set-up.** v1 is already deployed, so they do not wait for a
+  release. They come from the commit deployed on `main` at that time.
+- **Pipeline values: at each release to `main`, starting with W11,** as a step of the release.
+  They come from the release commit: `pipeline_version` computed from that commit, and `ModelId`
+  and `PromptCaching` as `.github/workflows/ci-cd.yml` pins them at that commit.
 
 **The limit.** The check proves the image agrees with the release record. It does not prove the
 running Lambda does. The status endpoint does not return `pipeline_version`, so the canary cannot
@@ -395,26 +533,38 @@ says so.
 ## Costs
 
 Converted at £0.80 to $1, the rate `docs/COST.md` uses. Bedrock is priced as the runners price it:
-$3 and $15 per million input and output tokens, plus 10%.
+$3 and $15 per million input and output tokens, plus 10%. A worst-case reservation prices input
+at the cache-write rate ($3.75 per million, plus 10%).
 
-| Item | Per run | Per month | Price checked |
-|---|---|---|---|
-| Bedrock, pipeline, 18 + 1 pre-flight | £0.76–2.28 (bound £3.03) | £3.30–9.90 (bound £13.15) | Repository constants; not confirmed on AWS's page |
-| Bedrock, v1 until W11, 18 + 1 | up to £1.32 | up to £5.74 | As above |
-| Baseline batch, 18 x 3, by hand | £2.16–6.48 (bound £8.62) | Not monthly; outside the cap | As above |
-| Customer-managed KMS key | n/a | £0.80 | $1 per key, AWS price list for London, 8 Nov 2026 |
-| Fargate, ARM, 0.5 vCPU / 1 GB | under £0.01 | under £0.05 | AWS price list for London, 11 Nov 2026 |
-| Public IPv4 address | under £0.01 | about £0.01 | AWS price list for London, 5 Nov 2026 |
-| CloudWatch alarms, about 12 | n/a | up to £1.00 | $0.10 each beyond the first ten; London, 16 Nov 2026 |
-| Metrics, logs, S3, ECR | pennies | pennies | Metric, log and ECR rates checked; S3 not checked |
-| **Total as designed** | | **about £5–12 (bound about £15)** | |
-| *Not chosen:* NAT gateway | | about £26 fixed | US rate; London not checked |
-| *Not chosen:* five interface endpoints | | about £32 fixed | AWS price list for London, 5 Nov 2026 |
+| Item | Expected per run | Worst-case reservation per run | Per month | Price checked |
+|---|---|---|---|---|
+| Bedrock, pipeline, 18 + 1 pre-flight | £0.76–2.28 | £6.62 (£5.34 enforced output + £1.29 provisional input allowance, rounded) | expected £3.30–9.90 | Repository constants; not confirmed on AWS's page |
+| Bedrock, v1 until W11, 18 + 1 | up to £1.32 | £1.96 (£1.40 + £0.56) | up to £5.74 | As above |
+| Baseline batch, 18 x 3, by hand | £2.16–6.48 | £18.83 | Not monthly; outside the cap | As above |
+| Customer-managed KMS key | n/a | n/a | £0.80 | $1 per key, AWS price list for London, 8 Nov 2026 |
+| Fargate, ARM, 0.5 vCPU / 1 GB (the run and the Thursday check) | under £0.01 | n/a | under £0.05 | AWS price list for London, 11 Nov 2026 |
+| Public IPv4 address | under £0.01 | n/a | about £0.01 | AWS price list for London, 5 Nov 2026 |
+| CloudWatch alarms, about 12 | n/a | n/a | up to £1.00 | $0.10 each beyond the first ten; London, 16 Nov 2026 |
+| Metrics, logs, S3, ECR | pennies | n/a | pennies | Metric, log and ECR rates checked; S3 not checked |
+| **Total as designed** | | | **expected about £5–12; ceiling £15, enforced by the cap** | |
+| *Not chosen:* NAT gateway | | | about £26 fixed | US rate; London not checked |
+| *Not chosen:* five interface endpoints | | | about £32 fixed | AWS price list for London, 5 Nov 2026 |
 
-- The per-generation range ($0.05–0.15) is from earlier measured runs. The bound uses the runner's
-  own planning figure of about $0.20.
-- **In a month with five Wednesdays, at the bound, the fifth run would pass the £15 cap and would
-  not start.** That is the cap working, and the heartbeat reports it.
+- **Expected** figures use the range from earlier measured runs, $0.05–0.15 a generation.
+- **A worst-case reservation** assumes every step of every generation runs to its `maxTokens`,
+  with one attempt (D7). It is far above the expected cost because the limits are set generously:
+  a truncated step fails.
+- **The reservation figures are provisional.** The input allowance becomes a measured figure at
+  the baseline, with the author's margin.
+- **The ceiling governs model spend,** which is what the ledger records. The fixed items, about £2
+  a month, are not in the ledger.
+- **What the ceiling allows.** A run starts only while the month's ledger total is £8.38 or less.
+  Three runs at the top of the expected range total £6.84, so four Wednesdays start. **In a month
+  with five Wednesdays the fifth run starts only if the first four averaged £2.09 or less. At the
+  top of the expected range (£9.12) it does not start.** That is the ceiling working, and the
+  heartbeat reports it.
+- **A run whose usage is unknown stays at £6.62.** One more run can start that month, and a third
+  only if the second cost £1.76 or less.
 - If key rotation is on, each rotated key version adds its own monthly charge.
 
 ## Consequences
@@ -432,13 +582,17 @@ quiet week is not read as proof of safety.
 
 - CLAUDE.md section (b) says only two buckets exist. The eval bucket makes three. Section (c)
   gains ECS, ECR and Fargate.
-- `.dockerignore` must exclude `evals/calibration` and anything else the job does not run,
-  **before any image is pushed to a registry**.
+- `.dockerignore` must exclude `evals/calibration`, unless a script the job runs reads it,
+  **before any image is pushed to a registry**. A search of the source on 17 Nov 2026 found that
+  none of the scripts the job runs, nor anything they import, names that folder; the scripts that
+  do are the calibration and blind-sheet tools. The same pull request must confirm that the
+  image's test command still passes, or give the job its own build target.
 - The `Dockerfile` header says "No AWS calls". That stops being true.
 - `PYTHONHASHSEED=0` is set in the task definition. `evals/score_batch.py` is left as it is.
 - `docs/COST.md` gains the eval stack.
-- `docs/WS4-SAFETY-INCIDENT-LOG.md` gains the alarm route, the triage time and the three outcomes.
-  That is a controlled document and needs CSO approval.
+- `docs/WS4-SAFETY-INCIDENT-LOG.md` gains the alarm route, the rule that the alarm time is the
+  report time, and the three outcomes. That is a controlled document and needs CSO approval, and
+  the schedule is not switched on without it.
 - Linting the new template in CI means changing the workflow, which needs the author's approval.
 
 **The order of work.**
@@ -446,25 +600,43 @@ quiet week is not read as proof of safety.
 | # | Slice | Needs |
 |---|---|---|
 | 1 | Offline comparator: baseline against run, a breach per family | Nothing. No AWS, no spend, no frozen file |
-| 2 | Entrypoint and image changes, tested with the runners' dry-run mode | The author's say: it runs the frozen scorer, unchanged, on fresh batches |
-| 3 | `infra/eval-template.yaml` and a hand-deploy runbook | The author's yes to deploy |
-| 4 | Baseline batch, the rule numbers, the baseline pull request | The author's yes to spend |
-| 5 | Schedule switched on | The author's yes |
-| 6 | Incident-log wording | CSO approval |
+| 2 | Entrypoint (client wrapper, claim, ledger, check mode) and image changes, tested offline with the runners' dry-run mode | The author's say: it runs the frozen scorer, unchanged, on fresh batches |
+| 3 | `infra/eval-template.yaml`, a hand-deploy runbook, and the set-up acceptance checks below | The author's yes to deploy |
+| 4 | Baseline batch, the rule numbers, the input allowance and margin, the baseline pull request | The author's yes to spend |
+| 5 | Incident-log wording | CSO approval |
+| 6 | Schedule switched on | Slice 5's CSO approval, and the author's yes |
 | 7 | Subgroup tags | Nothing |
 | 8 | Metric filters on worker logs | W11 |
 | 9 | PART C metrics | Blocked until the author says |
 | 10 | The orchestrator-driven runner | After R1 |
 
+**Set-up acceptance checks for slice 3.** None of them needs a Bedrock call.
+
+- **First run after deploy.** The state of the `RunOk` alarm before any success exists is known
+  and expected. After the first success it returns to OK at the next London midnight.
+- **A skipped Wednesday.** With the schedule off for one Wednesday, the backstop alarm and the
+  Thursday check both alert. The actual times are recorded against the 21 and 30 hours above.
+- **A late-finishing run.** A run that ends at the wall-clock limit still counts for Wednesday. A
+  run that would pass midnight is stopped by the limit and reported as failed.
+- **A duplicate delivery.** A second start for the same Wednesday exits as a duplicate and spends
+  nothing.
+- **The clock changes.** Both schedules and the alarm window name `Europe/London`, not a fixed
+  offset. In the weeks of 28 March 2027 and 31 October 2027, the Wednesday run and the Thursday
+  check fire at 04:00 and 10:00 local time, and the alarm history shows no false alarm.
+
 **Open checks for the author.**
 
 - Whether the live `AlertsTopic` delivers alarm emails (Context, finding 5).
 - Whether Bedrock's price for this model in London matches the repository's constants.
+- Whether a wall clock alarm of seven one-day periods behaves as AWS documents it (D9). It is
+  untested.
 
 **Revisit this decision if:**
 
 - real patient data is ever in scope for evaluation (the network and storage choices assume
   synthetic data);
 - alarms prove noisy at 18 x 1 (move to 18 x 3 and re-cost);
+- throttled runs become common under the no-retry rule (decide retries and the ceiling together:
+  one retry needs a reservation of about £13.25 a run);
 - a rule requires that nothing holds a public IP (move to CodeBuild or to endpoints);
 - image builds move into CI (a separate ADR to widen the deploy role).

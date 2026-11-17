@@ -14,7 +14,7 @@
 | ADR-008 | The serverless substitution | [`docs/ADR-phase1.md`](../ADR-phase1.md) |
 | ADR-009 | The agentic pipeline: named steps, step traces, a review-gate seam, a branch-isolated build | [`docs/ADR-phase1.md`](../ADR-phase1.md) |
 | ADR-010 | The step 7v verifier | Not committed (see below) |
-| ADR-011 | Reserved for the WS7 design | Not written yet |
+| ADR-011 | WS7: scheduled re-evaluation and drift alarms (Proposed, 16 Nov 2026) | [`ADR-011-ws7-scheduled-eval.md`](ADR-011-ws7-scheduled-eval.md) |
 
 ADR-001 to ADR-009 stay where they are in `docs/ADR-phase1.md`. They are not moved or copied
 into this folder.
@@ -23,7 +23,8 @@ into this folder.
 and not adopted. Its text is a local draft at `docs/_local/ADR-010-DRAFT.md`. It is not
 committed, and `docs/_local/` cannot be read from a locked Claude or Codex session.
 
-**ADR-011 is reserved for the WS7 design** and for nothing else.
+**ADR-011 is the WS7 design** and nothing else. It is a design with Status: Proposed; nothing in
+it is built or deployed.
 
 ## Adding a new ADR
 

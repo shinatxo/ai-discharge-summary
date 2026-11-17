@@ -226,7 +226,9 @@ it finished without error, wrote only the files expected, and cost no more than 
 - The entrypoint has a wall-clock limit that ends the run on Wednesday. A runner that refuses to
   start (a canary window, an existing batch folder) is a failed run.
 
-**The cost ceiling: £15 of model spend a month, enforced before any Bedrock call.**
+**The cost ceiling: £15 a month of model spend.** Output is enforced by `maxTokens`; input is
+enforced by the running-spend guard to within one request (about £0.13); the ledger records
+actual cost.
 
 1. **A worst-case reservation for each run.** For every model step: its enforced `maxTokens` as
    output, for every attempt the client may make (one), plus an input allowance.
@@ -240,21 +242,42 @@ it finished without error, wrote only the files expected, and cost no more than 
    | v1 combined call | 4,096 | `evals/run_cold_eval.py:96` | `:333` |
    | v1 patient second pass | 1,500 | `evals/run_cold_eval.py:98` | `:333` |
 
-   - **The output part is enforced.** Bedrock stops a response at `maxTokens`.
-   - **The input allowance is measured, not enforced.** It is the largest input per step seen in
-     the baseline, multiplied by a margin the author sets, and priced at the cache-write rate,
-     the highest input rate. Until a baseline exists the figure is provisional and comes from the
-     runners' planning estimates (`evals/run_pipeline_eval.py:79`, `evals/run_cold_eval.py:121`).
-   - The ceiling is therefore only as firm as that allowance. A run whose input goes above it
-     says so in its summary.
+   - **The output part is enforced by `maxTokens`.** Bedrock stops a response there.
+   - **The input allowance is measured.** It is the largest input per step seen in the baseline,
+     multiplied by a margin the author sets, and priced at the cache-write rate, the highest
+     input rate. Until a baseline exists the figure is provisional and comes from the runners'
+     planning estimates (`evals/run_pipeline_eval.py:79`, `evals/run_cold_eval.py:121`).
+   - Nothing in the request can cap input the way `maxTokens` caps output. The guard in point 3
+     is what holds a run to its reservation.
 2. **Reserve first.** The reservation is written to the monthly ledger before the first Bedrock
    call. The run starts only if the month's total plus the reservation is **£15 or less**. The
    pre-flight generation is inside the reservation.
-3. **Settle after.** When the run ends, the reservation is replaced by the actual cost, worked out
+3. **Guard the spend while the run is going.** The client wrapper keeps a running total for the
+   run.
+   - **After every call** it adds that call's cost, from the usage Bedrock returned. A call that
+     returned no usage is counted at its worst case.
+   - **Before every call** it checks the total. Once the total has reached the run's reservation,
+     the wrapper refuses every further call, and the run ends as failed with a fixed code.
+   - **A run can therefore pass its reservation by at most one request,** and so can the month's
+     total pass £15.
+   - **Why that one request is bounded.** A step's input is its fixed prompt and the fixed
+     scenario notes, plus the outputs of earlier steps. The prompt and the notes are pinned by
+     hash in the baseline key and the match check (D9, D11). Each earlier output is capped by its
+     own `maxTokens`, and so is the step's own output.
+   - **How much.** By the runners' planning figures (`evals/run_pipeline_eval.py:75`), the
+     dearest single request is step 2: about 6,000 input tokens, all of them fixed, and 8,192
+     output tokens. That is about **£0.13**. The other steps come to about £0.07 to £0.11 with
+     their upstream input taken at its cap. A v1 request is about £0.07. These figures are
+     provisional until the baseline measures the inputs, and they do not count the fields the
+     code adds to the facts it passes on.
+   - **The guard tripping is itself a drift signal.** The inputs are pinned, so a run reaches its
+     reservation only if the model is writing far more than it did at baseline. Each trip is
+     published as a metric (D9).
+4. **Settle after.** When the run ends, the reservation is replaced by the actual cost, worked out
    from the usage Bedrock returned. Any request that was sent and has no recorded usage stays at
    its worst case: a step that raised after a response, a crash before the record was written,
    an unfinished run.
-4. **A backstop.** An AWS Budgets email. It lags by hours and warns; it does not stop anything.
+5. **A backstop.** An AWS Budgets email. It lags by hours and warns; it does not stop anything.
 
 **Duplicates and concurrency.** EventBridge Scheduler delivers at least once, so the same
 Wednesday can arrive twice.
@@ -309,7 +332,7 @@ Per-scenario detail goes to the run summary in S3, not into metric dimensions.
 
 | Family | Source | Examples |
 |---|---|---|
-| Run | the entrypoint | step failures by fixed code, p90 elapsed time, tokens, estimated cost |
+| Run | the entrypoint | step failures by fixed code, spend-guard trips, p90 elapsed time, tokens, estimated cost |
 | Safety-netting | `score_batch.py` | invented seek-help triggers, pinned line missing, gate failures, verdict per scenario |
 | Medications (D4 metric) | `score_batch.py` | invented doses, invented frequencies, verdict per scenario |
 | Step-2 advice | `score_batch.py` | route correct per scenario, gold items recalled |
@@ -560,7 +583,7 @@ at the cache-write rate ($3.75 per million, plus 10%).
 | Public IPv4 address | under £0.01 | n/a | about £0.01 | AWS price list for London, 5 Nov 2026 |
 | CloudWatch alarms, about 12 | n/a | n/a | up to £1.00 | $0.10 each beyond the first ten; London, 16 Nov 2026 |
 | Metrics, logs, S3, ECR | pennies | n/a | pennies | Metric, log and ECR rates checked; S3 not checked |
-| **Total as designed** | | | **expected about £5–12; ceiling £15, enforced by the cap** | |
+| **Total as designed** | | | **expected about £5–12; ceiling £15 a month of model spend, as worded below** | |
 | *Not chosen:* NAT gateway | | | about £26 fixed | US rate; London not checked |
 | *Not chosen:* five interface endpoints | | | about £32 fixed | AWS price list for London, 5 Nov 2026 |
 
@@ -570,8 +593,9 @@ at the cache-write rate ($3.75 per million, plus 10%).
   a truncated step fails.
 - **The reservation figures are provisional.** The input allowance becomes a measured figure at
   the baseline, with the author's margin.
-- **The ceiling governs model spend,** which is what the ledger records. The fixed items, about £2
-  a month, are not in the ledger.
+- **The ceiling is £15 a month of model spend.** Output is enforced by `maxTokens`; input is
+  enforced by the running-spend guard to within one request (about £0.13); the ledger records
+  actual cost. The fixed items, about £2 a month, are not in the ledger.
 - **What the ceiling allows.** A run starts only while the month's ledger total is £8.38 or less.
   Three runs at the top of the expected range total £6.84, so four Wednesdays start. **In a month
   with five Wednesdays the fifth run starts only if the first four averaged £2.09 or less. At the
@@ -591,6 +615,10 @@ traceable to a release.
 not see settings drift, the assembled bundle, value errors with no scorer, or real-input drift
 (D1). It does not see intermittent or sub-weekly change (D9). These limits are stated so that a
 quiet week is not read as proof of safety.
+
+**What the spend ceiling is.** £15 a month of model spend. Output is enforced by `maxTokens`;
+input is enforced by the running-spend guard to within one request (about £0.13); the ledger
+records actual cost. It is not an exact limit, and that figure is provisional until the baseline.
 
 **What has to change in implementation pull requests, not this one.**
 
@@ -627,7 +655,8 @@ quiet week is not read as proof of safety.
 **Acceptance check for slice 2: one request per step, counted at the server.** A local HTTP stub
 stands in for Bedrock and counts the requests it receives. For **both runners**, it shows exactly
 one request per model step when the stub answers with a throttle, with a 500, and with a read
-timeout. No AWS and no spend.
+timeout. A stub that reports inflated input usage shows the wrapper refusing calls once the
+reservation is reached. No AWS and no spend.
 
 **Set-up acceptance checks for slice 3.** None of them needs a Bedrock call.
 

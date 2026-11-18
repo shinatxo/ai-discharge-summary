@@ -30,7 +30,8 @@ What the wrapper does, in the order it checks:
    usable usage, a 5xx, a read timeout, any other error except the three in
    NOT_RUN - makes the run UNMETERED: every further call in the run is refused.
    Its worst case is an estimate, not a bound, because a step's input is not
-   capped, so nothing more is spent on top of it.
+   capped, so nothing more is spent on top of it. A throttle is NOT_RUN only when
+   it is an HTTP 429 with the code ThrottlingException (see NOT_RUN).
 
 A refusal raises Ws7Refused, a StepError with a fixed code. The pipeline's
 converse.py passes a StepError through unchanged (src/generate/pipeline/
@@ -85,11 +86,21 @@ RESPONSE, USAGE_UNKNOWN = "response", "response_usage_unknown"
 NO_RESPONSE = ("throttled", "server_error", "client_error", "read_timeout", "connect_error",
                "request_invalid", "other_error")
 REFUSED = "refused"
-# Failures in which the model did not run: a throttle (Bedrock rejects the request
-# before the model runs - an assumption, not checked against AWS's documentation), a
-# connection never made, and a request botocore refused before sending. Every other
-# failure, and a reply with no usable usage, makes the run unmetered.
+# Failures in which the model did not run: a throttle, a connection never made, and a
+# request botocore refused before sending. Every other failure, and a reply with no
+# usable usage, makes the run unmetered.
+#
+# A throttle is exactly an HTTP 429 whose error code is exactly ThrottlingException.
+# AWS, "Scaling and throughput best practices" (Amazon Bedrock User Guide), section
+# "Understanding HTTP error responses", read 18 Nov 2026:
+#   https://docs.aws.amazon.com/bedrock/latest/userguide/scaling-throughput-best-practices.html
+#   "A 429 response means that the request was not admitted. Inspect the API-specific
+#   error type rather than relying on the HTTP status alone."
+# The page also says some runtime operations use 429 for ModelNotReadyException, and it
+# says nothing about billing. So the carve-out needs both the status and the code; a 5xx
+# carrying ThrottlingException, or a 429 with any other code, is unmetered.
 NOT_RUN = ("throttled", "connect_error", "request_invalid")
+THROTTLING_STATUS, THROTTLING_CODE = 429, "ThrottlingException"
 
 # The live client's endpoint, written out rather than built from the region, and the
 # only other endpoint allowed: the tests' stub on loopback.
@@ -131,7 +142,7 @@ def _failure_label(exc: BaseException) -> str:
     if isinstance(exc, ClientError):
         error = exc.response.get("Error", {}).get("Code")
         status = exc.response.get("ResponseMetadata", {}).get("HTTPStatusCode")
-        if error == "ThrottlingException":
+        if error == THROTTLING_CODE and type(status) is int and status == THROTTLING_STATUS:
             return "throttled"
         return "server_error" if type(status) is int and status >= 500 else "client_error"
     if isinstance(exc, ReadTimeoutError):

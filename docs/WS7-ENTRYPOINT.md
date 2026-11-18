@@ -200,7 +200,8 @@ may have run, makes the run **unmetered**. Every further call in the run is refu
 | A reply with usable usage | No: its cost is known |
 | A reply with no usable usage (`response_usage_unknown`) | **Yes** |
 | A 5xx (`server_error`), a read timeout, any other 4xx (`client_error`, which includes Bedrock's `ModelTimeoutException` and `ModelErrorException`, raised after the model ran), anything else (`other_error`) | **Yes** |
-| A throttle (`throttled`) | No. Bedrock rejects a throttled request before the model runs. This is an assumption, not checked against AWS's documentation |
+| A throttle (`throttled`): **exactly** an HTTP 429 whose error code is **exactly** `ThrottlingException` | No. AWS: "A 429 response means that the request was not admitted. Inspect the API-specific error type rather than relying on the HTTP status alone." ([Scaling and throughput best practices](https://docs.aws.amazon.com/bedrock/latest/userguide/scaling-throughput-best-practices.html), "Understanding HTTP error responses", read 18 Nov 2026). The page says nothing about billing |
+| A 5xx carrying `ThrottlingException`, or a 429 with any other code (the same page names `ModelNotReadyException`) | **Yes**: `server_error` or `client_error` |
 | No connection made (`connect_error`), or refused by botocore before sending (`request_invalid`) | No: nothing reached Bedrock |
 
 Every failure, unmetered or not, stays counted at its worst case. Under ruling e2 any failure fails
@@ -215,9 +216,13 @@ case is above its true cost). So:
   allowance;
 - by the planning figures the dearest such call is about £0.13 (step 2); that is an estimate, not
   an enforced limit;
-- if the run is unmetered, its true cost is known only from AWS's own billing. The ledger entry
-  keeps the worst-case figure and is flagged unmetered (part 2), and the author reconciles it
-  against AWS Budgets, the backstop (ADR-011 D7, point 5), which lags by hours.
+- if the run is unmetered, its true cost is not known. Its ledger entry keeps the worst-case
+  figure and is **unresolved**: it blocks every later scheduled (inside-cap) run until the author
+  resolves it by recording a settled figure and its basis, for example Cost Explorer's day view,
+  or "worst case accepted" (ADR-011 D7, point 4). An outside-cap manual run is not blocked by it,
+  and still needs the author's yes;
+- **AWS Budgets is an alert only, never the reconciliation.** It cannot identify one run's charge:
+  the canary also calls Bedrock on this account, and Budgets is a delayed aggregate.
 
 A runner that sent requests in parallel could pass the reservation by one call per call in flight.
 The later orchestrator-driven runner (ADR-011 D2) must revisit this before it is used with this
@@ -258,9 +263,20 @@ only counts.
 
 ### Part 2: the ledger
 
+Part 2 implements the **unresolved** state, the block and their tests (ADR-011 D7, point 4;
+Codex review of PR #5):
+
 - A run whose report says `unmetered` is settled at its counted total, which includes the worst
-  case of the call that made it unmetered. Its ledger entry is flagged `unmetered`, so the author
-  knows to reconcile it against AWS Budgets.
+  case of the call that made it unmetered. Its ledger entry is marked **unresolved**.
+- An unresolved entry **blocks every later inside-cap (scheduled) run**, in that month or any
+  later one. A blocked run reserves nothing, spends nothing and fails with its own fixed code.
+  Part 2 must therefore find an unresolved entry from an earlier month, not only in the current
+  month's ledger.
+- Resolving records a settled figure and its basis (for example "Cost Explorer day view", or
+  "worst case accepted"), and the entry then counts at the settled figure.
+- An outside-cap manual run is not blocked by it, and still needs the author's yes.
+- Tests: an unresolved entry blocks the next scheduled run, with a partner where a resolved
+  entry does not; an entry from the month before still blocks; a manual run is not blocked.
 
 ### Part 5: the modes
 
@@ -272,6 +288,11 @@ only counts.
   normalisation, and compares `ws7_client.fingerprint()` of each: the hash the wrapper itself uses.
   This is not fixed in part 1.
 - A run whose report says `unmetered` is a failed run with the fixed code `ws7_unmetered`.
+- **The resolve command.** A manual mode, run by the author only, that records a settled figure
+  and its basis on an unresolved entry. It makes no Bedrock call. It is the only way an entry
+  leaves the unresolved state; AWS Budgets never resolves one.
+- **The check-mode report.** The Thursday check reports a run blocked by an unresolved entry by
+  that cause, naming the entry's run ID, so the alert says what the author must resolve.
 - Build one live client before the runner starts, so that a refused endpoint fails the run before
   any batch folder is written.
 
@@ -296,6 +317,10 @@ PYTHONDONTWRITEBYTECODE=1 python -m pytest -p no:cacheprovider -q tests/test_ws7
   - A stub reporting inflated input usage: after the first reply, no request reaches the server.
     With honest usage, every request does.
   - A reply with no usage block: no request after it reaches the server (the run is unmetered).
+  - Only a 429 with `ThrottlingException` is a throttle, for both runners. A 500 carrying
+    `ThrottlingException`, or a 429 carrying `ModelNotReadyException`, makes the run unmetered,
+    and nothing after it reaches the server. The partner, a genuine throttle, lets the next
+    scenario run.
   - A step whose `maxTokens` differs from the reserved figure sends nothing.
   - With `AWS_ENDPOINT_URL` and `AWS_ENDPOINT_URL_BEDROCK_RUNTIME` set, or an `endpoint_url` in
     the AWS config file, the explicit stub path still reaches the stub.

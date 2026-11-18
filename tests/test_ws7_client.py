@@ -267,6 +267,49 @@ def test_a_throttle_at_5a_sends_nothing_more_for_that_scenario_and_the_next_runs
     assert run.report["unmetered"] is False             # a throttle did not run the model
 
 
+@pytest.mark.parametrize("kind,label,unmetered", [
+    (THROTTLE, "throttled", False),                       # the partner: a genuine throttle
+    (stubs.THROTTLE_CODE_500, "server_error", True),      # the code, without the 429
+    (stubs.OTHER_CODE_429, "client_error", True),         # the 429, without the code
+])
+def test_pipeline_only_a_429_with_throttlingexception_is_a_throttle(pipeline_stub, tmp_path,
+                                                                   kind, label, unmetered):
+    """Codex P2 (PR #5, second review): a throttle - and so a call the model did not run -
+    needs HTTP 429 AND the code ThrottlingException, as botocore reports them."""
+    pipeline_stub.first("reconcile_medications", kind)
+    run = Run("pipeline", pipeline_stub, tmp_path, ["S1", "S2"])
+    assert ("reconcile_medications", label, None) in run.outcomes()
+    assert run.report["unmetered"] is unmetered
+    if unmetered:
+        # Nothing after S1's 5a reaches the server; S2 does not run.
+        assert pipeline_stub.counts() == {"extract_facts": 1, "reconcile_medications": 1}
+        assert run.record("S1")["step_errors"]["compose_clinical"] == wc.UNMETERED
+        assert run.record("S2")["step_errors"] == {"extract_facts": wc.UNMETERED}
+    else:
+        assert pipeline_stub.counts() == {"extract_facts": 2, "reconcile_medications": 2,
+                                          "compose_clinical": 1, "compose_patient": 1}
+        assert run.record("S2")["step_errors"] == {}
+
+
+@pytest.mark.parametrize("kind,label,unmetered", [
+    (THROTTLE, "throttled", False),
+    (stubs.THROTTLE_CODE_500, "server_error", True),
+    (stubs.OTHER_CODE_429, "client_error", True),
+])
+def test_v1_only_a_429_with_throttlingexception_is_a_throttle(v1_stub, tmp_path,
+                                                             kind, label, unmetered):
+    v1_stub.first("combined", kind)
+    run = Run("v1", v1_stub, tmp_path, ["S1", "S2"])
+    assert ("combined", label, None) in run.outcomes()
+    assert run.report["unmetered"] is unmetered
+    if unmetered:
+        assert v1_stub.counts() == {"combined": 1}
+        assert run.record("S2")["error"] == {"code": "Ws7Refused", "message": wc.UNMETERED}
+    else:
+        assert v1_stub.counts() == {"combined": 2, "patient_v2": 1}
+        assert run.record("S2")["error"] is None
+
+
 def test_without_a_refusal_step_6_follows_5a(pipeline_stub, tmp_path):
     """The partner: with no refusal, the same scenarios send every step."""
     run = Run("pipeline", pipeline_stub, tmp_path, ["S1", "S2"])
@@ -585,7 +628,14 @@ def test_known_usage_does_not_stop_the_next_call():
 
 
 @pytest.mark.parametrize("exc,label,stops", [
-    (_client_error("ThrottlingException", 429), "throttled", False),
+    (_client_error("ThrottlingException", 429), "throttled", False),       # the only throttle
+    (_client_error("ThrottlingException", 500), "server_error", True),     # the code, a 5xx
+    (_client_error("ThrottlingException", 503), "server_error", True),
+    (_client_error("ThrottlingException", 400), "client_error", True),     # the code, not 429
+    (ClientError({"Error": {"Code": "ThrottlingException"}}, "Converse"), "client_error", True),
+    (_client_error("ModelNotReadyException", 429), "client_error", True),  # a 429, another code
+    (_client_error("throttlingexception", 429), "client_error", True),     # the code, exactly
+    (_client_error("ThrottlingException ", 429), "client_error", True),
     (EndpointConnectionError(endpoint_url="http://127.0.0.1/"), "connect_error", False),
     (ConnectTimeoutError(endpoint_url="http://127.0.0.1/"), "connect_error", False),
     (ParamValidationError(report="invented"), "request_invalid", False),

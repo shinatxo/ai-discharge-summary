@@ -37,7 +37,9 @@ import run_pipeline_eval as rpe  # noqa: E402
 import ws7_reserve as reserve  # noqa: E402
 
 OK, THROTTLE, ERROR_500, STALL = "ok", "throttle", "error_500", "stall"
-FAILURES = (THROTTLE, ERROR_500, STALL)
+# Lookalikes of a throttle: the code without the status, and the status without the code.
+THROTTLE_CODE_500, OTHER_CODE_429 = "throttle_code_500", "other_code_429"
+FAILURES = (THROTTLE, ERROR_500, STALL, THROTTLE_CODE_500, OTHER_CODE_429)
 STALL_LIMIT_S = 30.0          # a stalled handler waits no longer than this for the test to end
 JOIN_LIMIT_S = 5.0
 HONEST_USAGE = {"inputTokens": 1000, "outputTokens": 200, "totalTokens": 1200}   # invented
@@ -65,6 +67,10 @@ class _Handler(BaseHTTPRequestHandler):
                 self._send(429, {"message": "stub: throttled"}, "ThrottlingException")
             elif kind == ERROR_500:
                 self._send(500, {"message": "stub: server error"}, "InternalServerException")
+            elif kind == THROTTLE_CODE_500:
+                self._send(500, {"message": "stub: server error"}, "ThrottlingException")
+            elif kind == OTHER_CODE_429:
+                self._send(429, {"message": "stub: model not ready"}, "ModelNotReadyException")
             elif kind == STALL:
                 # Say nothing. The client gives up at its read timeout; this thread
                 # ends when the test releases it, or fails the test if it never does.

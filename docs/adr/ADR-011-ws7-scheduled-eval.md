@@ -251,8 +251,10 @@ it finished without error, wrote only the files expected, and cost no more than 
 **The cost ceiling: £15 a month of model spend.** Output is enforced by `maxTokens`. Input is not
 capped by anything in a request: the running-spend guard stops a run within one call of its
 reservation, and that one call's input may exceed its allowance (about £0.13 by the planning
-figures, an estimate, not an enforced limit). The ledger records actual cost, or the worst case
-flagged unmetered where a cost is unknown, which is then reconciled against AWS Budgets.
+figures, an estimate, not an enforced limit). The ledger records actual cost. Where a run's cost is
+unknown, its entry holds the worst case and is **unresolved**: it blocks every later scheduled run
+until the author resolves it (point 4). AWS Budgets is an alert only, never the reconciliation
+(point 5).
 
 1. **A worst-case reservation for each run.** For every model step: its enforced `maxTokens` as
    output, for every attempt the client may make (one), plus an input allowance.
@@ -291,7 +293,14 @@ flagged unmetered where a cost is unknown, which is then reconciled against AWS 
      read timeout, any other error except a throttle or a request that never reached Bedrock),
      makes the run **unmetered**: the wrapper refuses every further call in the run, and the run
      ends as failed with the fixed code `ws7_unmetered`. Its ledger entry keeps the worst-case
-     figure and is flagged unmetered (Codex review of PR #5).
+     figure and is unresolved (point 4) (Codex review of PR #5).
+   - **A throttle is exactly an HTTP 429 with the error code `ThrottlingException`.** AWS: "A 429
+     response means that the request was not admitted. Inspect the API-specific error type
+     rather than relying on the HTTP status alone." (*Scaling and throughput best practices*,
+     <https://docs.aws.amazon.com/bedrock/latest/userguide/scaling-throughput-best-practices.html>,
+     read 18 Nov 2026.) The page says nothing about billing, and that some operations also use
+     429 for `ModelNotReadyException`. So a 5xx carrying that code, or a 429 with any other code,
+     is unmetered.
    - **Before every call** it checks the total. Once the total has reached the run's reservation,
      the wrapper refuses every further call, and the run ends as failed with a fixed code.
    - **A run can therefore pass its reservation by at most one call,** and so can the month's
@@ -318,11 +327,21 @@ flagged unmetered where a cost is unknown, which is then reconciled against AWS 
 4. **Settle after.** When the run ends, the reservation is replaced by the actual cost, worked out
    from the usage Bedrock returned. Any request that was sent and has no recorded usage stays at
    its worst case: a step that raised after a response, a crash before the record was written,
-   an unfinished run. A run that was unmetered is settled at that worst case and flagged
-   unmetered, because its true cost is not known.
-5. **A backstop.** An AWS Budgets email. It lags by hours and warns; it does not stop anything.
-   It is also where an unmetered run's true cost is found: the author reconciles each unmetered
-   ledger entry against it.
+   an unfinished run.
+   - **An unmetered run's entry is unresolved.** It is recorded at that worst case, because its
+     true cost is not known.
+   - It **blocks every later inside-cap (scheduled) run**, in that month or any later one, until
+     the author resolves it.
+   - The author resolves it by recording a settled figure **and its basis**: for example Cost
+     Explorer's day view, or "worst case accepted".
+   - An outside-cap manual run is not blocked by it, and still needs the author's yes, as every
+     manual run does.
+   - A scheduled run that it blocks spends nothing and fails with its own fixed code; the
+     Thursday check reports it (D9).
+5. **A backstop alert.** An AWS Budgets email. It lags by hours and warns; it does not stop
+   anything. **It is an alert only, never the reconciliation:** it cannot identify one run's
+   charge, because the canary also calls Bedrock on this account and Budgets is a delayed
+   aggregate (Codex review of PR #5).
 
 **Duplicates and concurrency.** EventBridge Scheduler delivers at least once, so the same
 Wednesday can arrive twice.
@@ -434,6 +453,9 @@ two acts are to write a success record to S3 and then to publish `RunOk` = 1.
 - It looks for Wednesday's claim and success record, and sends an alert when the run never
   started (no claim), started and did not finish (a claim and no success record), or finished as
   failed.
+- A run **blocked by an unresolved ledger entry** (D7, point 4) has a claim and a failed record
+  with its own fixed code. The check reports that cause by name, so the alert says what the
+  author must resolve.
 - **Warning time: 30 hours** after the scheduled start (Wednesday 04:00 to Thursday 10:00), plus
   the minute or two the check takes.
 - It reads S3 and publishes to the topic. It does not depend on CloudWatch.
@@ -642,15 +664,17 @@ at the cache-write rate ($3.75 per million, plus 10%).
 - **The ceiling is £15 a month of model spend.** Output is enforced by `maxTokens`. Input is not
   capped: the running-spend guard stops a run within one call of its reservation, and that
   call's input may exceed its allowance (about £0.13 by the planning figures, an estimate, not an
-  enforced limit). The ledger records actual cost, or the worst case flagged unmetered, which is
-  reconciled against AWS Budgets. The fixed items, about £2 a month, are not in the ledger.
+  enforced limit). The ledger records actual cost. Where a cost is unknown, it holds the worst case
+  in an unresolved entry, which blocks later scheduled runs until the author resolves it. AWS
+  Budgets is an alert only. The fixed items, about £2 a month, are not in the ledger.
 - **What the ceiling allows.** A run starts only while the month's ledger total is £8.38 or less.
   Three runs at the top of the expected range total £6.84, so four Wednesdays start. **In a month
   with five Wednesdays the fifth run starts only if the first four averaged £2.09 or less. At the
   top of the expected range (£9.12) it does not start.** That is the ceiling working, and the
   heartbeat reports it.
-- **A run whose usage is unknown stays at £6.62.** One more run can start that month, and a third
-  only if the second cost £1.76 or less.
+- **A run whose cost is unknown stays at £6.62, and is unresolved:** no later scheduled run starts
+  until the author resolves it. If it is resolved as "worst case accepted", one more run can start
+  that month, and a third only if the second cost £1.76 or less.
 - If key rotation is on, each rotated key version adds its own monthly charge.
 
 ## Consequences
@@ -667,9 +691,10 @@ quiet week is not read as proof of safety.
 **What the spend ceiling is.** £15 a month of model spend. Output is enforced by `maxTokens`.
 Input is not capped: the running-spend guard stops a run within one call of its reservation, and
 that call's input may exceed its allowance (about £0.13 by the planning figures, an estimate, not
-an enforced limit). The ledger records actual cost, or the worst case flagged unmetered, which is
-reconciled against AWS Budgets. It is not an exact limit, and the figures are provisional until
-the baseline.
+an enforced limit). The ledger records actual cost. Where a cost is unknown, it holds the worst
+case in an unresolved entry, which blocks later scheduled runs until the author resolves it with a
+settled figure and its basis. AWS Budgets is an alert only, never the reconciliation. It is not an
+exact limit, and the figures are provisional until the baseline.
 
 **What has to change in implementation pull requests, not this one.**
 

@@ -221,7 +221,9 @@ case is above its true cost). So:
   resolves it on one of two bases, `upper_bound` or `estimate_accepted` (below; ADR-011 D7,
   point 4). An outside-cap manual run is not blocked by it, and still needs the author's yes;
 - **AWS Budgets is an alert only, never the reconciliation.** It cannot identify one run's charge:
-  the canary also calls Bedrock on this account, and Budgets is a delayed aggregate.
+  the canary also calls Bedrock on this account, and Budgets is a delayed aggregate. Its filter
+  must not be Service = Amazon Bedrock alone, because that would miss the model's cost (below;
+  ADR-011 D7, point 5).
 
 **How far a month can pass £15.** A run starts only if the month's *recorded* total plus its
 reservation is £15 or less, so the recorded total passes £15 by at most the last run's one call.
@@ -234,17 +236,37 @@ An unmetered entry is resolved on one of two bases:
 
 | Basis | The settled figure | The month |
 |---|---|---|
-| `upper_bound` | A figure from AWS Cost Explorer, defined exactly below. It includes the canary's calls, so it is above the run's true cost | **Keeps** its monthly assurance |
+| `upper_bound` | A figure from AWS Cost Explorer, defined exactly below. It includes every service's usage on the account that day, the canary's calls among them, so it is above the run's true cost | **Keeps** its monthly assurance |
 | `estimate_accepted` | The worst-case estimate, accepted. It may be below the true cost, because the input was not capped | **Assurance waived**: the ledger marks the month, and every run summary and check report for that month shows it |
 
-**The `upper_bound` figure, exactly** (ADR-011 D7, point 4; Codex review of PR #5):
+**The `upper_bound` figure, exactly** (ADR-011 D7, point 4; Codex review of PR #5; the Service
+and Region filters removed by the author, 18 Nov 2026):
 
 - AWS Cost Explorer, **unblended** cost;
-- filtered to **Service** = Amazon Bedrock, **Region** = eu-west-2 and **Charge type** = Usage
-  **only**, so credits, refunds and other negative adjustments are excluded;
-- for the **whole account**, with no other filter;
+- **Charge type** = Usage **only**, so credits, refunds and other negative adjustments are
+  excluded;
+- for the **whole account**, with **no Service filter and no Region filter**;
 - for the run's **UTC date or dates** (a run that spans two UTC dates takes both), read once that
-  day's figure is complete.
+  day's figure is complete. Cost Explorer's days are UTC: "All times are in Universal Coordinated
+  Time (UTC)" (AWS, [*Modifying your chart*](https://docs.aws.amazon.com/cost-management/latest/userguide/ce-modify.html),
+  read 18 Nov 2026).
+
+Why no Service or Region filter:
+
+- Cost Explorer shows Anthropic models on Bedrock under a service name of their own for each
+  model, not under "Amazon Bedrock". So a Service = Amazon Bedrock filter returns none of the
+  model's cost.
+- AWS does not document these names, so the source is secondary: Classmethod DevelopersIO,
+  [*Tried aggregating by model using Amazon Bedrock product attributes in Cost Explorer*](https://dev.classmethod.jp/en/articles/bedrock-product-attributes-cost-explorer/)
+  (10 Oct 2026), read 18 Nov 2026. It says: "Anthropic and OpenAI models are displayed in Cost
+  Explorer under different service names for each model". Its example is "Claude Sonnet 5.5
+  (Amazon Bedrock Edition)".
+- The service name for our model is inferred from that pattern; it has not been seen. Part 5's
+  first-use check is where it is seen.
+- With no Service or Region filter, the figure cannot miss the model's rows, whatever service
+  name or region they carry.
+- The figure is looser: it includes every other service's usage on the account that day. That
+  only makes it larger, so it errs only towards blocking.
 
 Why Usage only: a net figure, reduced by credits or refunds, can fall below the run's usage, and
 would then not be an upper bound. Cost Explorer lists **Credit** ("Any AWS credits that are applied
@@ -252,7 +274,7 @@ to your account") and **Refund** ("Any refunds that you received") as charge typ
 **Usage** (AWS, [*Filtering the data that you want to view*](https://docs.aws.amazon.com/cost-management/latest/userguide/ce-filtering.html),
 read 18 Nov 2026).
 
-The definition assumes no reservation or Savings Plan applies to Bedrock on this account. The same
+The definition assumes no reservation or Savings Plan applies to the model's usage on this account. The same
 page defines Usage as "Usage that AWS didn't apply reservation discounts to", and puts Savings Plan
 covered usage under a charge type of its own, so Usage alone would then leave part of a run out. If
 either is ever bought, the definition is revisited.
@@ -352,7 +374,16 @@ Codex review of PR #5):
   **basis** (`upper_bound` or `estimate_accepted`) and the **settled figure** in micro-dollars,
   and records them on an unresolved entry. For `upper_bound` the figure is the Cost Explorer
   figure exactly as defined above; the command cannot check that, so its basis is recorded as the
-  author's statement. It makes no Bedrock call. It is the only way an entry
+  author's statement.
+- **Before the resolve command is first used**, the author confirms in the Cost Explorer console,
+  against real billing rows, that the model's rows carry Charge type = Usage. Pick a day the
+  canary ran, then:
+  1. group by **Service**, to find the model's own service name;
+  2. filter to that service, and group by **Charge type**.
+
+  The `upper_bound` definition rests on this. Until now it had been checked only against AWS's
+  documentation, never against real rows. (The console groups by one dimension at a time, hence
+  the two steps.) It makes no Bedrock call. It is the only way an entry
   leaves the unresolved state; AWS Budgets never resolves one. With `estimate_accepted` it sets the
   month's "assurance waived" flag (part 2).
 - **The check-mode report.**

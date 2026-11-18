@@ -347,26 +347,45 @@ which an entry was resolved as an accepted estimate has no such assurance, and i
      the author resolves it.
    - The author resolves it by recording a settled figure **and its basis**, which is one of two:
      - **`upper_bound`:** a figure from AWS Cost Explorer, defined exactly (Codex review of
-       PR #5):
+       PR #5; the Service and Region filters removed by the author, 18 Nov 2026):
        - **unblended** cost;
-       - filtered to **Service** = Amazon Bedrock, **Region** = eu-west-2 and **Charge type** =
-         Usage **only**, so credits, refunds and other negative adjustments are excluded;
-       - for the **whole account**, with no other filter;
+       - **Charge type** = Usage **only**, so credits, refunds and other negative adjustments are
+         excluded;
+       - for the **whole account**, with **no Service filter and no Region filter**;
        - for the run's **UTC date or dates** (a run that spans two UTC dates takes both), read
-         once that day's figure is complete.
+         once that day's figure is complete. Cost Explorer's days are UTC: "All times are in
+         Universal Coordinated Time (UTC)" (AWS, *Modifying your chart*,
+         <https://docs.aws.amazon.com/cost-management/latest/userguide/ce-modify.html>, read
+         18 Nov 2026).
+       - **Why no Service or Region filter:** Cost Explorer shows Anthropic models on Bedrock
+         under a service name of their own for each model, not under "Amazon Bedrock", so a
+         Service = Amazon Bedrock filter returns none of the model's cost.
+         - AWS does not document these names, so the source is secondary: Classmethod
+           DevelopersIO, *Tried aggregating by model using Amazon Bedrock product attributes in
+           Cost Explorer* (10 Oct 2026),
+           <https://dev.classmethod.jp/en/articles/bedrock-product-attributes-cost-explorer/>,
+           read 18 Nov 2026. It says: "Anthropic and OpenAI models are displayed in Cost Explorer
+           under different service names for each model". Its example is "Claude Sonnet 5.5
+           (Amazon Bedrock Edition)".
+         - The service name for our model, `anthropic.claude-sonnet-4-6`, is inferred from that
+           pattern; it has not been seen.
+         - With no Service or Region filter, the figure cannot miss the model's rows, whatever
+           service name or region they carry.
+       - **It is looser:** it includes every other service's usage on the account that day, the
+         canary's calls among them. That only makes the figure larger, so it errs only towards
+         blocking. The entry counts at that figure, and **the month keeps its assurance**.
        - **Why Usage only:** a net figure, reduced by credits or refunds, can fall below the run's
          usage, and would then not be an upper bound. Cost Explorer lists **Credit** ("Any AWS
          credits that are applied to your account") and **Refund** ("Any refunds that you
          received") as charge types apart from **Usage** (AWS, *Filtering the data that you want
          to view*, <https://docs.aws.amazon.com/cost-management/latest/userguide/ce-filtering.html>,
          read 18 Nov 2026).
-       - The figure includes the canary's calls and anything else on the account that day, so it
-         is above the run's true cost. The entry counts at that figure, and **the month keeps its
-         assurance**.
-       - It assumes no reservation or Savings Plan applies to Bedrock on this account. The same
-         page defines Usage as "Usage that AWS didn't apply reservation discounts to", and puts
-         Savings Plan covered usage under a charge type of its own, so Usage alone would then
-         leave part of a run out. If either is ever bought, this definition is revisited.
+       - It assumes no reservation or Savings Plan applies to the model's usage on this account.
+         The same page defines Usage as "Usage that AWS didn't apply reservation discounts to",
+         and puts Savings Plan covered usage under a charge type of its own, so Usage alone would
+         then leave part of a run out. If either is ever bought, this definition is revisited.
+       - Before its first use, the author checks against real billing rows that the model's rows
+         carry Charge type = Usage (slice 2 part 5, `docs/WS7-ENTRYPOINT.md`).
      - **`estimate_accepted`:** the worst-case estimate is accepted as the figure. It may be below
        the true cost, because the input was not capped. This **waives the monthly assurance for
        that month**: the ledger marks the month "assurance waived", and every run summary and
@@ -379,6 +398,16 @@ which an entry was resolved as an accepted estimate has no such assurance, and i
    anything. **It is an alert only, never the reconciliation:** it cannot identify one run's
    charge, because the canary also calls Bedrock on this account and Budgets is a delayed
    aggregate (Codex review of PR #5).
+   - **Its filter must not be Service = Amazon Bedrock alone**, for the reason in point 4:
+     Anthropic models are billed under a service name of their own for each model, so that
+     filter would miss our model's cost.
+   - Use no service filter, or Bedrock's **model provider** product attribute (Anthropic).
+   - AWS added Amazon Bedrock product attributes to Cost Explorer, Budgets and Dashboards on
+     8 Oct 2026: model, model provider, inference type and feature. "In Budgets, you can filter
+     budgets using the same product attributes." Source: AWS What's New,
+     <https://aws.amazon.com/jp/about-aws/whats-new/2026/10/aws-bedrock-attributes-in-cost-explorer/>,
+     read 18 Nov 2026. The page is in Japanese; the quote and the attribute names are
+     translations.
 
 **Duplicates and concurrency.** EventBridge Scheduler delivers at least once, so the same
 Wednesday can arrive twice.
@@ -717,8 +746,8 @@ at the cache-write rate ($3.75 per million, plus 10%).
 - **A run whose cost is unknown stays at £6.62, and is unresolved:** no later scheduled run starts
   until the author resolves it.
   - Resolved as `upper_bound`, it counts at the Cost Explorer figure as D7 point 4 defines it
-    (unblended; Service Amazon Bedrock, Region eu-west-2, Charge type Usage only; the whole
-    account; the run's UTC dates), and the month keeps its assurance.
+    (unblended; Charge type Usage only; the whole account, with no Service or Region filter; the
+    run's UTC dates), and the month keeps its assurance.
   - Resolved as `estimate_accepted`, it counts at £6.62. One more run can start that month, and a
     third only if the second cost £1.76 or less, and **the month's assurance is waived**: its
     spend may pass £15 by more than one call.

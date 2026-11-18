@@ -254,7 +254,10 @@ reservation, and that one call's input may exceed its allowance (about £0.13 by
 figures, an estimate, not an enforced limit). The ledger records actual cost. Where a run's cost is
 unknown, its entry holds the worst case and is **unresolved**: it blocks every later scheduled run
 until the author resolves it (point 4). AWS Budgets is an alert only, never the reconciliation
-(point 5).
+(point 5). **The month's spend passes £15 by at most one call only while every settled entry in
+the month is either its actual metered cost or a defensible upper bound** (point 3). A month in
+which an entry was resolved as an accepted estimate has no such assurance, and is marked so
+(point 4).
 
 1. **A worst-case reservation for each run.** For every model step: its enforced `maxTokens` as
    output, for every attempt the client may make (one), plus an input allowance.
@@ -303,12 +306,22 @@ until the author resolves it (point 4). AWS Budgets is an alert only, never the 
      is unmetered.
    - **Before every call** it checks the total. Once the total has reached the run's reservation,
      the wrapper refuses every further call, and the run ends as failed with a fixed code.
-   - **A run can therefore pass its reservation by at most one call,** and so can the month's
-     total pass £15. That call's output is capped by its `maxTokens`; its input is not, and may
-     exceed its allowance. This holds because both runners send one request at a time, and
-     because every earlier call was either metered or did not run the model. A runner that sent
-     requests in parallel could pass it by one call per call in flight; the later
-     orchestrator-driven runner (D2) must revisit this.
+   - **A run can therefore pass its reservation by at most one call.** That call's output is
+     capped by its `maxTokens`; its input is not, and may exceed its allowance. This holds because
+     both runners send one request at a time, and because every earlier call was either metered
+     or did not run the model. A runner that sent requests in parallel could pass it by one call
+     per call in flight; the later orchestrator-driven runner (D2) must revisit this.
+   - **The month's spend can pass £15 by at most one call, but only while every settled entry in
+     the month is either its actual metered cost or a defensible upper bound** (Codex review of
+     PR #5).
+     - Why: a run starts only if the month's *recorded* total plus its reservation is £15 or less
+       (point 2), so the recorded total passes £15 by at most the last run's one call.
+     - The *true* spend is no more than the recorded total only if no entry is below its true
+       cost.
+     - An entry resolved as `estimate_accepted` (point 4) may be below it, so it waives this
+       assurance for its month.
+     - "Actual metered cost" is priced at the repository's rates, which are not confirmed
+       against AWS's price page (Costs).
    - **Why that one call is limited in practice, though by nothing enforced.** A step's input is
      its fixed prompt and the fixed scenario notes, plus the outputs of earlier steps. The prompt
      and the notes are pinned by hash in the baseline key and the match check (D9, D11). Each
@@ -332,8 +345,16 @@ until the author resolves it (point 4). AWS Budgets is an alert only, never the 
      true cost is not known.
    - It **blocks every later inside-cap (scheduled) run**, in that month or any later one, until
      the author resolves it.
-   - The author resolves it by recording a settled figure **and its basis**: for example Cost
-     Explorer's day view, or "worst case accepted".
+   - The author resolves it by recording a settled figure **and its basis**, which is one of two:
+     - **`upper_bound`:** Cost Explorer's whole Amazon Bedrock charge in eu-west-2 for the day of
+       the run, read once that day's figure is complete. Cost Explorer's days are UTC; a run that
+       spans two takes both. The figure includes the canary's calls and anything else on the
+       account that day, so it is above the run's true cost. The entry counts at that figure, and
+       **the month keeps its assurance**.
+     - **`estimate_accepted`:** the worst-case estimate is accepted as the figure. It may be below
+       the true cost, because the input was not capped. This **waives the monthly assurance for
+       that month**: the ledger marks the month "assurance waived", and every run summary and
+       check report for that month shows it.
    - An outside-cap manual run is not blocked by it, and still needs the author's yes, as every
      manual run does.
    - A scheduled run that it blocks spends nothing and fails with its own fixed code; the
@@ -456,6 +477,8 @@ two acts are to write a success record to S3 and then to publish `RunOk` = 1.
 - A run **blocked by an unresolved ledger entry** (D7, point 4) has a claim and a failed record
   with its own fixed code. The check reports that cause by name, so the alert says what the
   author must resolve.
+- If the month's ledger is marked "assurance waived" (an entry resolved as
+  `estimate_accepted`, D7 point 4), the check's report says so, every week of that month.
 - **Warning time: 30 hours** after the scheduled start (Wednesday 04:00 to Thursday 10:00), plus
   the minute or two the check takes.
 - It reads S3 and publishes to the topic. It does not depend on CloudWatch.
@@ -666,15 +689,22 @@ at the cache-write rate ($3.75 per million, plus 10%).
   call's input may exceed its allowance (about £0.13 by the planning figures, an estimate, not an
   enforced limit). The ledger records actual cost. Where a cost is unknown, it holds the worst case
   in an unresolved entry, which blocks later scheduled runs until the author resolves it. AWS
-  Budgets is an alert only. The fixed items, about £2 a month, are not in the ledger.
+  Budgets is an alert only. The month's spend passes £15 by at most one call **only while every
+  settled entry in it is its actual metered cost or a defensible upper bound**; an entry resolved
+  as `estimate_accepted` waives that for its month (D7, points 3 and 4). The fixed items, about £2
+  a month, are not in the ledger.
 - **What the ceiling allows.** A run starts only while the month's ledger total is £8.38 or less.
   Three runs at the top of the expected range total £6.84, so four Wednesdays start. **In a month
   with five Wednesdays the fifth run starts only if the first four averaged £2.09 or less. At the
   top of the expected range (£9.12) it does not start.** That is the ceiling working, and the
   heartbeat reports it.
 - **A run whose cost is unknown stays at £6.62, and is unresolved:** no later scheduled run starts
-  until the author resolves it. If it is resolved as "worst case accepted", one more run can start
-  that month, and a third only if the second cost £1.76 or less.
+  until the author resolves it.
+  - Resolved as `upper_bound`, it counts at the Cost Explorer figure, and the month keeps its
+    assurance.
+  - Resolved as `estimate_accepted`, it counts at £6.62. One more run can start that month, and a
+    third only if the second cost £1.76 or less, and **the month's assurance is waived**: its
+    spend may pass £15 by more than one call.
 - If key rotation is on, each rotated key version adds its own monthly charge.
 
 ## Consequences
@@ -693,8 +723,11 @@ Input is not capped: the running-spend guard stops a run within one call of its 
 that call's input may exceed its allowance (about £0.13 by the planning figures, an estimate, not
 an enforced limit). The ledger records actual cost. Where a cost is unknown, it holds the worst
 case in an unresolved entry, which blocks later scheduled runs until the author resolves it with a
-settled figure and its basis. AWS Budgets is an alert only, never the reconciliation. It is not an
-exact limit, and the figures are provisional until the baseline.
+settled figure and its basis. AWS Budgets is an alert only, never the reconciliation. The month's
+spend passes £15 by at most one call **only while every settled entry in the month is its actual
+metered cost or a defensible upper bound**. A month with an entry resolved as `estimate_accepted`
+has no such assurance, and its ledger, run summaries and check reports say so. It is not an exact
+limit, and the figures are provisional until the baseline.
 
 **What has to change in implementation pull requests, not this one.**
 
@@ -754,6 +787,10 @@ reservation is reached. No AWS and no spend.
 - Whether Bedrock's price for this model in London matches the repository's constants.
 - Whether a wall clock alarm of seven one-day periods behaves as AWS documents it (D9). It is
   untested.
+- Whether an abandoned reservation (D7, "One run at a time"), or a run that crashed before its
+  record was written (D7, point 4), should be unresolved like an unmetered run. Each is counted at
+  its worst case, which is an estimate, not a bound, so a month that holds one is outside the
+  condition for the monthly bound (D7, point 3). To be ruled before slice 2 part 2.
 
 **Revisit this decision if:**
 

@@ -218,11 +218,28 @@ case is above its true cost). So:
   an enforced limit;
 - if the run is unmetered, its true cost is not known. Its ledger entry keeps the worst-case
   figure and is **unresolved**: it blocks every later scheduled (inside-cap) run until the author
-  resolves it by recording a settled figure and its basis, for example Cost Explorer's day view,
-  or "worst case accepted" (ADR-011 D7, point 4). An outside-cap manual run is not blocked by it,
-  and still needs the author's yes;
+  resolves it on one of two bases, `upper_bound` or `estimate_accepted` (below; ADR-011 D7,
+  point 4). An outside-cap manual run is not blocked by it, and still needs the author's yes;
 - **AWS Budgets is an alert only, never the reconciliation.** It cannot identify one run's charge:
   the canary also calls Bedrock on this account, and Budgets is a delayed aggregate.
+
+**How far a month can pass £15.** A run starts only if the month's *recorded* total plus its
+reservation is £15 or less, so the recorded total passes £15 by at most the last run's one call.
+The *true* spend is no more than the recorded total **only while every settled entry in the month is
+either its actual metered cost or a defensible upper bound.** So the monthly bound (the month's spend
+passes £15 by at most one call) holds only under that condition. "Actual metered cost" is priced at
+the repository's rates, which are not confirmed against AWS's price page (ADR-011, Costs).
+
+An unmetered entry is resolved on one of two bases:
+
+| Basis | The settled figure | The month |
+|---|---|---|
+| `upper_bound` | Cost Explorer's whole Amazon Bedrock charge in eu-west-2 for the day of the run, read once that day's figure is complete. Cost Explorer's days are UTC; a run that spans two takes both. It includes the canary's calls, so it is above the run's true cost | **Keeps** its monthly assurance |
+| `estimate_accepted` | The worst-case estimate, accepted. It may be below the true cost, because the input was not capped | **Assurance waived**: the ledger marks the month, and every run summary and check report for that month shows it |
+
+An abandoned reservation, or a run that crashed before its record was written, is also counted at
+its worst case, which is an estimate. Whether those become unresolved too is an open question in
+ADR-011 ("Open checks for the author"), to be ruled before part 2.
 
 A runner that sent requests in parallel could pass the reservation by one call per call in flight.
 The later orchestrator-driven runner (ADR-011 D2) must revisit this before it is used with this
@@ -272,11 +289,27 @@ Codex review of PR #5):
   later one. A blocked run reserves nothing, spends nothing and fails with its own fixed code.
   Part 2 must therefore find an unresolved entry from an earlier month, not only in the current
   month's ledger.
-- Resolving records a settled figure and its basis (for example "Cost Explorer day view", or
-  "worst case accepted"), and the entry then counts at the settled figure.
+- Resolving stores the settled figure **and the resolution basis**, which is exactly one of
+  `upper_bound` or `estimate_accepted` (any other value is refused). The entry then counts at the
+  settled figure.
+- An `estimate_accepted` resolution sets the month's **"assurance waived"** flag in that month's
+  ledger. Once set, the flag is never cleared. An `upper_bound` resolution does not set it.
 - An outside-cap manual run is not blocked by it, and still needs the author's yes.
-- Tests: an unresolved entry blocks the next scheduled run, with a partner where a resolved
-  entry does not; an entry from the month before still blocks; a manual run is not blocked.
+- Tests:
+  - an unresolved entry blocks the next scheduled run, with a partner where a resolved entry does
+    not;
+  - an entry from the month before still blocks;
+  - a manual run is not blocked;
+  - each basis is stored as given, and an unknown basis is refused;
+  - `estimate_accepted` sets the month's flag, with a partner where `upper_bound` does not;
+  - the flag stays set through later compare-and-swap writes to that month's ledger.
+
+### Part 4: the run summary
+
+- Every run summary written while its month is marked "assurance waived" shows it. The
+  comparator's `ws7-run/1` rejects an unknown top-level field, so the flag goes in as a count
+  metric, `month_assurance_waived` (0 or 1), in the Run family. An unruled metric is listed and
+  changes no verdict (`docs/WS7-COMPARATOR.md`), so no new schema version is needed.
 
 ### Part 5: the modes
 
@@ -288,11 +321,16 @@ Codex review of PR #5):
   normalisation, and compares `ws7_client.fingerprint()` of each: the hash the wrapper itself uses.
   This is not fixed in part 1.
 - A run whose report says `unmetered` is a failed run with the fixed code `ws7_unmetered`.
-- **The resolve command.** A manual mode, run by the author only, that records a settled figure
-  and its basis on an unresolved entry. It makes no Bedrock call. It is the only way an entry
-  leaves the unresolved state; AWS Budgets never resolves one.
-- **The check-mode report.** The Thursday check reports a run blocked by an unresolved entry by
-  that cause, naming the entry's run ID, so the alert says what the author must resolve.
+- **The resolve command.** A manual mode, run by the author only, that takes the run ID, the
+  **basis** (`upper_bound` or `estimate_accepted`) and the **settled figure** in micro-dollars,
+  and records them on an unresolved entry. It makes no Bedrock call. It is the only way an entry
+  leaves the unresolved state; AWS Budgets never resolves one. With `estimate_accepted` it sets the
+  month's "assurance waived" flag (part 2).
+- **The check-mode report.**
+  - The Thursday check reports a run blocked by an unresolved entry by that cause, naming the
+    entry's run ID, so the alert says what the author must resolve.
+  - It also reports a **waived month**: when the month's ledger is marked "assurance waived", the
+    report says so, every week of that month.
 - Build one live client before the runner starts, so that a refused endpoint fails the run before
   any batch folder is written.
 

@@ -346,11 +346,27 @@ which an entry was resolved as an accepted estimate has no such assurance, and i
    - It **blocks every later inside-cap (scheduled) run**, in that month or any later one, until
      the author resolves it.
    - The author resolves it by recording a settled figure **and its basis**, which is one of two:
-     - **`upper_bound`:** Cost Explorer's whole Amazon Bedrock charge in eu-west-2 for the day of
-       the run, read once that day's figure is complete. Cost Explorer's days are UTC; a run that
-       spans two takes both. The figure includes the canary's calls and anything else on the
-       account that day, so it is above the run's true cost. The entry counts at that figure, and
-       **the month keeps its assurance**.
+     - **`upper_bound`:** a figure from AWS Cost Explorer, defined exactly (Codex review of
+       PR #5):
+       - **unblended** cost;
+       - filtered to **Service** = Amazon Bedrock, **Region** = eu-west-2 and **Charge type** =
+         Usage **only**, so credits, refunds and other negative adjustments are excluded;
+       - for the **whole account**, with no other filter;
+       - for the run's **UTC date or dates** (a run that spans two UTC dates takes both), read
+         once that day's figure is complete.
+       - **Why Usage only:** a net figure, reduced by credits or refunds, can fall below the run's
+         usage, and would then not be an upper bound. Cost Explorer lists **Credit** ("Any AWS
+         credits that are applied to your account") and **Refund** ("Any refunds that you
+         received") as charge types apart from **Usage** (AWS, *Filtering the data that you want
+         to view*, <https://docs.aws.amazon.com/cost-management/latest/userguide/ce-filtering.html>,
+         read 18 Nov 2026).
+       - The figure includes the canary's calls and anything else on the account that day, so it
+         is above the run's true cost. The entry counts at that figure, and **the month keeps its
+         assurance**.
+       - It assumes no reservation or Savings Plan applies to Bedrock on this account. The same
+         page defines Usage as "Usage that AWS didn't apply reservation discounts to", and puts
+         Savings Plan covered usage under a charge type of its own, so Usage alone would then
+         leave part of a run out. If either is ever bought, this definition is revisited.
      - **`estimate_accepted`:** the worst-case estimate is accepted as the figure. It may be below
        the true cost, because the input was not capped. This **waives the monthly assurance for
        that month**: the ledger marks the month "assurance waived", and every run summary and
@@ -700,8 +716,9 @@ at the cache-write rate ($3.75 per million, plus 10%).
   heartbeat reports it.
 - **A run whose cost is unknown stays at £6.62, and is unresolved:** no later scheduled run starts
   until the author resolves it.
-  - Resolved as `upper_bound`, it counts at the Cost Explorer figure, and the month keeps its
-    assurance.
+  - Resolved as `upper_bound`, it counts at the Cost Explorer figure as D7 point 4 defines it
+    (unblended; Service Amazon Bedrock, Region eu-west-2, Charge type Usage only; the whole
+    account; the run's UTC dates), and the month keeps its assurance.
   - Resolved as `estimate_accepted`, it counts at £6.62. One more run can start that month, and a
     third only if the second cost £1.76 or less, and **the month's assurance is waived**: its
     spend may pass £15 by more than one call.

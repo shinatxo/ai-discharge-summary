@@ -234,8 +234,28 @@ An unmetered entry is resolved on one of two bases:
 
 | Basis | The settled figure | The month |
 |---|---|---|
-| `upper_bound` | Cost Explorer's whole Amazon Bedrock charge in eu-west-2 for the day of the run, read once that day's figure is complete. Cost Explorer's days are UTC; a run that spans two takes both. It includes the canary's calls, so it is above the run's true cost | **Keeps** its monthly assurance |
+| `upper_bound` | A figure from AWS Cost Explorer, defined exactly below. It includes the canary's calls, so it is above the run's true cost | **Keeps** its monthly assurance |
 | `estimate_accepted` | The worst-case estimate, accepted. It may be below the true cost, because the input was not capped | **Assurance waived**: the ledger marks the month, and every run summary and check report for that month shows it |
+
+**The `upper_bound` figure, exactly** (ADR-011 D7, point 4; Codex review of PR #5):
+
+- AWS Cost Explorer, **unblended** cost;
+- filtered to **Service** = Amazon Bedrock, **Region** = eu-west-2 and **Charge type** = Usage
+  **only**, so credits, refunds and other negative adjustments are excluded;
+- for the **whole account**, with no other filter;
+- for the run's **UTC date or dates** (a run that spans two UTC dates takes both), read once that
+  day's figure is complete.
+
+Why Usage only: a net figure, reduced by credits or refunds, can fall below the run's usage, and
+would then not be an upper bound. Cost Explorer lists **Credit** ("Any AWS credits that are applied
+to your account") and **Refund** ("Any refunds that you received") as charge types apart from
+**Usage** (AWS, [*Filtering the data that you want to view*](https://docs.aws.amazon.com/cost-management/latest/userguide/ce-filtering.html),
+read 18 Nov 2026).
+
+The definition assumes no reservation or Savings Plan applies to Bedrock on this account. The same
+page defines Usage as "Usage that AWS didn't apply reservation discounts to", and puts Savings Plan
+covered usage under a charge type of its own, so Usage alone would then leave part of a run out. If
+either is ever bought, the definition is revisited.
 
 An abandoned reservation, or a run that crashed before its record was written, is also counted at
 its worst case, which is an estimate. Whether those become unresolved too is an open question in
@@ -303,6 +323,13 @@ Codex review of PR #5):
   - each basis is stored as given, and an unknown basis is refused;
   - `estimate_accepted` sets the month's flag, with a partner where `upper_bound` does not;
   - the flag stays set through later compare-and-swap writes to that month's ledger.
+- **Restate the proof of the monthly bound** (Codex P3, PR #5).
+  - Today's argument, in ADR-011 D7 point 3 and "How far a month can pass £15" above, reasons from
+    the month's *recorded* total. Entries change after later runs are admitted: a reservation is
+    settled, and an unmetered entry is resolved.
+  - So part 2 restates the proof from three things: **what was booked at each run's admission**;
+    **the last run's reservation**; and **its final call**.
+  - It is written with the ledger code, and with its tests.
 
 ### Part 4: the run summary
 
@@ -323,7 +350,9 @@ Codex review of PR #5):
 - A run whose report says `unmetered` is a failed run with the fixed code `ws7_unmetered`.
 - **The resolve command.** A manual mode, run by the author only, that takes the run ID, the
   **basis** (`upper_bound` or `estimate_accepted`) and the **settled figure** in micro-dollars,
-  and records them on an unresolved entry. It makes no Bedrock call. It is the only way an entry
+  and records them on an unresolved entry. For `upper_bound` the figure is the Cost Explorer
+  figure exactly as defined above; the command cannot check that, so its basis is recorded as the
+  author's statement. It makes no Bedrock call. It is the only way an entry
   leaves the unresolved state; AWS Budgets never resolves one. With `estimate_accepted` it sets the
   month's "assurance waived" flag (part 2).
 - **The check-mode report.**

@@ -24,7 +24,8 @@ import time
 from pathlib import Path
 
 import pytest
-from botocore.exceptions import ClientError, ReadTimeoutError
+from botocore.exceptions import (ClientError, ConnectTimeoutError, EndpointConnectionError,
+                                 ParamValidationError, ReadTimeoutError)
 
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "evals"))
@@ -47,18 +48,21 @@ RUN_LIMIT_S = 60.0            # a run that takes longer than this has waited on 
 
 PIPELINE = ("extract_facts", "reconcile_medications", "compose_clinical", "compose_patient")
 V1 = ("combined", "patient_v2")
-# The steps that still receive a request when one step fails (the runner's own rules:
-# 5a and 6 each need only steps 1-3b; 7 needs 6; v1's second pass needs the combined call).
-PIPELINE_REACHED = {"extract_facts": {"extract_facts"},
-                    "reconcile_medications": set(PIPELINE),
-                    "compose_clinical": {"extract_facts", "reconcile_medications", "compose_clinical"},
-                    "compose_patient": set(PIPELINE)}
-V1_REACHED = {"combined": {"combined"}, "patient_v2": set(V1)}
+def reached(order: tuple, step: str) -> set:
+    """The steps that receive a request when `step` fails: those up to it, and none
+    after it in that generation. A throttle's retry is refused, which blocks the rest
+    of the generation; a 500 or a read timeout makes the run unmetered."""
+    return set(order[:order.index(step) + 1])
+
+
 # The code each failure leaves in the record. A throttle is retried by the code under
 # test; the wrapper refuses the repeat, and the refusal is what the record shows.
 PIPELINE_CODE = {THROTTLE: wc.REPEAT_REFUSED, ERROR_500: "bedrock_error", STALL: "read_timeout"}
 V1_CODE = {THROTTLE: "Ws7Refused", ERROR_500: "InternalServerException", STALL: "ReadTimeoutError"}
 LABEL = {THROTTLE: "throttled", ERROR_500: "server_error", STALL: "read_timeout"}
+# After a 5a failure the pipeline runner still asks for step 6 (it needs only steps
+# 1-3b). The wrapper refuses it, with this code.
+AFTER_5A = {THROTTLE: wc.GENERATION_BLOCKED, ERROR_500: wc.UNMETERED, STALL: wc.UNMETERED}
 
 
 def _never(_prompt):
@@ -160,20 +164,28 @@ def test_pipeline_a_failing_step_receives_exactly_one_request(pipeline_stub, tim
     run = Run("pipeline", pipeline_stub, tmp_path, ["S1"])
 
     assert pipeline_stub.count(step) == 1
-    assert pipeline_stub.counts() == {s: 1 for s in PIPELINE if s in PIPELINE_REACHED[step]}
-    assert run.record("S1")["step_errors"][step] == PIPELINE_CODE[kind]
+    assert pipeline_stub.counts() == {s: 1 for s in reached(PIPELINE, step)}
+    errors = run.record("S1")["step_errors"]
+    assert errors[step] == PIPELINE_CODE[kind]
     assert (step, LABEL[kind], None) in run.outcomes()
     assert run.report["no_response"] == 1
+    # A 500 or a read timeout may have run the model: the run is unmetered. A throttle did not.
+    assert run.report["unmetered"] is (kind != THROTTLE)
     # The failed call is counted at its worst case; the others at what they reported.
     assert run.report["worst_case_part_usd_nanos"] == worst("pipeline", step)
     assert run.report["total_usd_nanos"] == (worst("pipeline", step)
-                                            + (len(PIPELINE_REACHED[step]) - 1) * honest_cost())
+                                            + (len(reached(PIPELINE, step)) - 1) * honest_cost())
+    refused = {wc.REPEAT_REFUSED: 1} if kind == THROTTLE else {}
+    if step == "reconcile_medications":
+        refused[AFTER_5A[kind]] = 1
+        assert errors["compose_clinical"] == AFTER_5A[kind]
+        assert errors["compose_patient"] == rpe.UPSTREAM_FAILED
+    assert run.report["refused"] == refused
     if kind == THROTTLE:
         # The code under test asked to wait and then tried again; the repeat was refused.
-        assert run.report["refused"] == {wc.REPEAT_REFUSED: 1}
         assert len(run.sleeps) == 1 and 20.0 <= run.sleeps[0] <= 30.0
     else:
-        assert run.report["refused"] == {} and run.sleeps == []
+        assert run.sleeps == []
 
 
 def test_v1_a_clean_generation_is_one_request_per_step(v1_stub, tmp_path):
@@ -196,11 +208,12 @@ def test_v1_a_failing_step_receives_exactly_one_request(v1_stub, timeouts, tmp_p
     run = Run("v1", v1_stub, tmp_path, ["S1"])
 
     assert v1_stub.count(step) == 1
-    assert v1_stub.counts() == {s: 1 for s in V1 if s in V1_REACHED[step]}
+    assert v1_stub.counts() == {s: 1 for s in reached(V1, step)}
     error = run.record("S1")["error"]
     assert error["code"] == V1_CODE[kind]
     assert (step, LABEL[kind], None) in run.outcomes()
     assert run.report["no_response"] == 1
+    assert run.report["unmetered"] is (kind != THROTTLE)
     assert run.report["worst_case_part_usd_nanos"] == worst("v1", step)
     if kind == THROTTLE:
         assert error["message"] == wc.REPEAT_REFUSED
@@ -233,6 +246,61 @@ def test_v1_after_a_refused_repeat_the_next_generation_still_runs(v1_stub, tmp_p
     assert run.report["batches"]["b"]["started"] == 2
 
 
+def test_a_throttle_at_5a_sends_nothing_more_for_that_scenario_and_the_next_runs_whole(
+        pipeline_stub, tmp_path):
+    """Codex P2 (PR #5): once a call in a generation is refused, so is every later call
+    in it. 5a is throttled, its retry is refused, and step 6 - which the runner still
+    asks for - never reaches the server. Step 7 needs step 6. S2 then runs every step."""
+    pipeline_stub.first("reconcile_medications", THROTTLE)
+    run = Run("pipeline", pipeline_stub, tmp_path, ["S1", "S2"])
+    # S1: steps 2 and 5a. S2: all four. Nothing for S1's steps 6 or 7.
+    assert pipeline_stub.counts() == {"extract_facts": 2, "reconcile_medications": 2,
+                                      "compose_clinical": 1, "compose_patient": 1}
+    assert pipeline_stub.received == ["extract_facts", "reconcile_medications",
+                                      "extract_facts", "reconcile_medications",
+                                      "compose_clinical", "compose_patient"]
+    assert run.record("S1")["step_errors"] == {"reconcile_medications": wc.REPEAT_REFUSED,
+                                               "compose_clinical": wc.GENERATION_BLOCKED,
+                                               "compose_patient": rpe.UPSTREAM_FAILED}
+    assert run.record("S2")["step_errors"] == {}
+    assert run.report["refused"] == {wc.REPEAT_REFUSED: 1, wc.GENERATION_BLOCKED: 1}
+    assert run.report["unmetered"] is False             # a throttle did not run the model
+
+
+def test_without_a_refusal_step_6_follows_5a(pipeline_stub, tmp_path):
+    """The partner: with no refusal, the same scenarios send every step."""
+    run = Run("pipeline", pipeline_stub, tmp_path, ["S1", "S2"])
+    assert pipeline_stub.counts() == {step: 2 for step in PIPELINE}
+    assert run.report["refused"] == {}
+
+
+# ------------------------------------------- a reply with no usage stops the run
+
+def test_pipeline_a_reply_with_no_usage_stops_every_later_call(pipeline_stub, tmp_path):
+    """Codex P2 (PR #5): a reply whose cost is unknown makes the run unmetered."""
+    pipeline_stub.usage["extract_facts"] = None             # the reply has no usage block
+    run = Run("pipeline", pipeline_stub, tmp_path, ["S1", "S2"])
+    assert pipeline_stub.counts() == {"extract_facts": 1}
+    assert run.report["unmetered"] is True and run.report["unmetered_calls"] == 1
+    assert run.report["refused"] == {wc.UNMETERED: 3}        # S1's 5a and 6; S2's step 2
+    assert run.record("S1")["step_errors"] == {"reconcile_medications": wc.UNMETERED,
+                                               "compose_clinical": wc.UNMETERED,
+                                               "compose_patient": rpe.UPSTREAM_FAILED}
+    assert run.record("S2")["step_errors"] == {"extract_facts": wc.UNMETERED}
+    assert run.report["total_usd_nanos"] == worst("pipeline", "extract_facts")
+    assert run.report["tripped"] is False                   # not the reservation: the meter
+
+
+def test_v1_a_reply_with_no_usage_stops_every_later_call(v1_stub, tmp_path):
+    v1_stub.usage["combined"] = None
+    run = Run("v1", v1_stub, tmp_path, ["S1", "S2"])
+    assert v1_stub.counts() == {"combined": 1}
+    assert run.report["unmetered"] is True
+    assert run.report["refused"] == {wc.UNMETERED: 2}        # S1's second pass; S2's call
+    for scenario in ("S1", "S2"):
+        assert run.record(scenario)["error"] == {"code": "Ws7Refused", "message": wc.UNMETERED}
+
+
 # -------------------------------------------------------- the spend guard
 
 def _inflated_input(target: str, generations: int) -> dict:
@@ -261,6 +329,7 @@ def test_pipeline_honest_usage_does_not_trip_the_guard(pipeline_stub, tmp_path):
     run = Run("pipeline", pipeline_stub, tmp_path, ["S1", "S2", "S3"])
     assert pipeline_stub.counts() == {step: 3 for step in PIPELINE}
     assert run.report["tripped"] is False and run.report["refused"] == {}
+    assert run.report["unmetered"] is False and run.report["unmetered_calls"] == 0
     assert run.report["total_usd_nanos"] == 12 * honest_cost() < run.report["reservation_usd_nanos"]
 
 
@@ -278,6 +347,7 @@ def test_v1_honest_usage_does_not_trip_the_guard(v1_stub, tmp_path):
     run = Run("v1", v1_stub, tmp_path, ["S1", "S2", "S3"])
     assert v1_stub.counts() == {step: 3 for step in V1}
     assert run.report["tripped"] is False and run.report["refused"] == {}
+    assert run.report["unmetered"] is False
 
 
 # ----------------------------------------- a request that is not the plan's
@@ -446,6 +516,7 @@ def test_a_reply_with_no_usable_usage_is_counted_at_its_worst_case(bad):
     row = guard.report()["calls"][0]
     assert (row["outcome"], row["worst_case"]) == (wc.USAGE_UNKNOWN, True)
     assert guard.report()["usage_unknown"] == 1
+    assert guard.report()["unmetered"] is True
 
 
 def test_a_reply_with_usage_is_counted_at_what_it_reported():
@@ -490,6 +561,117 @@ def test_a_refused_call_costs_nothing():
     client, _inner, guard = wrapped("pipeline")
     assert refused(client, request("pipeline", "reconcile_medications")) == wc.OUT_OF_ORDER
     assert guard.total_nanos == 0 and guard.report()["calls_sent"] == 0
+
+
+# ---------------------------------------------------- the unmetered stop
+
+def test_unknown_usage_stops_the_next_call_in_the_run():
+    client, inner, guard = wrapped("pipeline", {"output": {}}, reply())
+    client.converse(**request("pipeline", "extract_facts", "scenario one"))
+    assert refused(client, request("pipeline", "reconcile_medications", "scenario one")) == wc.UNMETERED
+    # ...and the next generation too: the stop is for the run, not the generation.
+    assert refused(client, request("pipeline", "extract_facts", "scenario two")) == wc.UNMETERED
+    assert len(inner.requests) == 1
+    assert guard.report()["unmetered"] is True and guard.tripped is False
+    assert guard.total_nanos < guard.reservation_nanos     # the reservation is not what stopped it
+
+
+def test_known_usage_does_not_stop_the_next_call():
+    """The partner."""
+    client, inner, guard = wrapped("pipeline", reply(), reply())
+    client.converse(**request("pipeline", "extract_facts"))
+    client.converse(**request("pipeline", "reconcile_medications"))
+    assert len(inner.requests) == 2 and guard.report()["unmetered"] is False
+
+
+@pytest.mark.parametrize("exc,label,stops", [
+    (_client_error("ThrottlingException", 429), "throttled", False),
+    (EndpointConnectionError(endpoint_url="http://127.0.0.1/"), "connect_error", False),
+    (ConnectTimeoutError(endpoint_url="http://127.0.0.1/"), "connect_error", False),
+    (ParamValidationError(report="invented"), "request_invalid", False),
+    (_client_error("InternalServerException", 500), "server_error", True),
+    (_client_error("ModelTimeoutException", 408), "client_error", True),    # the model ran
+    (_client_error("ValidationException", 400), "client_error", True),
+    (ReadTimeoutError(endpoint_url="http://127.0.0.1/"), "read_timeout", True),
+    (RuntimeError("invented"), "other_error", True),
+])
+def test_a_failure_stops_the_run_unless_the_model_did_not_run(exc, label, stops):
+    client, inner, guard = wrapped("v1", exc, reply())
+    with pytest.raises(type(exc)):
+        client.converse(**request("v1", "combined"))
+    assert guard.report()["calls"][0]["outcome"] == label
+    assert guard.report()["unmetered"] is stops
+    # The next call - a later step, so the failed one is not repeated.
+    if stops:
+        assert refused(client, request("v1", "patient_v2")) == wc.UNMETERED
+        assert len(inner.requests) == 1
+    else:
+        client.converse(**request("v1", "patient_v2"))
+        assert len(inner.requests) == 2
+
+
+def test_the_unmetered_stop_comes_before_the_spend_guard():
+    client, _inner, guard = wrapped("pipeline", {"output": {}},
+                                    reservation_nanos=worst("pipeline", "extract_facts"))
+    client.converse(**request("pipeline", "extract_facts"))
+    assert guard.report()["reservation_reached"] is True
+    assert refused(client, request("pipeline", "reconcile_medications")) == wc.UNMETERED
+
+
+# ------------------------------------------- after a refusal, until a new generation
+
+@pytest.mark.parametrize("bad,code", [
+    (request("v1", "combined", "scenario one"), wc.REPEAT_REFUSED),
+    (request("v1", "patient_v2", modelId="anthropic.invented-model"), wc.MODEL_DIFFERS),
+    (request("v1", "combined", inferenceConfig={"maxTokens": 4097}), wc.UNKNOWN_REQUEST),
+])
+def test_after_a_refusal_every_call_is_refused_until_a_distinct_first_step(bad, code):
+    client, inner, guard = wrapped("v1", reply(), reply(), reply())
+    client.converse(**request("v1", "combined", "scenario one"))
+    assert refused(client, bad) == code
+    # The second pass of the same generation, which would otherwise be sent.
+    assert refused(client, request("v1", "patient_v2", "scenario one")) == wc.GENERATION_BLOCKED
+    # The same first-step request is the same generation: still refused.
+    assert refused(client, request("v1", "combined", "scenario one")) == wc.GENERATION_BLOCKED
+    # A distinct one starts the next generation, and lifts the block.
+    client.converse(**request("v1", "combined", "scenario two"))
+    client.converse(**request("v1", "patient_v2", "scenario two"))
+    assert len(inner.requests) == 3
+    assert [c["generation"] for c in guard.report()["calls"] if c["outcome"] != wc.REFUSED] == [1, 2, 2]
+
+
+def test_a_pipeline_refusal_blocks_the_later_steps_of_its_generation():
+    client, inner, _guard = wrapped("pipeline", reply(), reply(), reply())
+    client.converse(**request("pipeline", "extract_facts", "scenario one"))
+    bad = request("pipeline", "reconcile_medications", "scenario one")
+    bad["inferenceConfig"]["maxTokens"] += 1
+    assert refused(client, bad) == wc.MAX_TOKENS_DIFFERS
+    for step in ("compose_clinical", "compose_patient"):
+        assert refused(client, request("pipeline", step, "scenario one")) == wc.GENERATION_BLOCKED
+    client.converse(**request("pipeline", "extract_facts", "scenario two"))
+    client.converse(**request("pipeline", "reconcile_medications", "scenario two"))
+    assert len(inner.requests) == 3
+
+
+def test_a_refused_new_generation_blocks_the_open_one_too():
+    """plan_exceeded refuses a first-step request without starting a generation. The
+    open generation's unsent second pass is then refused as well."""
+    client, inner, _guard = wrapped("v1", reply(), generations=1)
+    client.converse(**request("v1", "combined", "scenario one"))
+    assert refused(client, request("v1", "combined", "scenario two")) == wc.PLAN_EXCEEDED
+    assert refused(client, request("v1", "patient_v2", "scenario one")) == wc.GENERATION_BLOCKED
+    assert len(inner.requests) == 1
+
+
+def test_a_failed_call_that_was_not_refused_does_not_block_its_generation():
+    """The partner: a throttle is a failure, not a refusal. A later step is still sent."""
+    client, inner, _guard = wrapped("pipeline", reply(), _client_error("ThrottlingException", 429),
+                                    reply())
+    client.converse(**request("pipeline", "extract_facts"))
+    with pytest.raises(ClientError):
+        client.converse(**request("pipeline", "reconcile_medications"))
+    client.converse(**request("pipeline", "compose_clinical"))
+    assert len(inner.requests) == 3
 
 
 # --------------------------------------------- one call per step per generation
@@ -702,6 +884,8 @@ def test_the_client_is_built_for_one_attempt_with_the_runners_timeout(offline_aw
                              endpoint_url="http://127.0.0.1:9")
     assert client.meta.config.retries == {"mode": "standard", "total_max_attempts": 1}
     assert (client.meta.config.read_timeout, client.meta.config.connect_timeout) == (90, 10)
+    # ignore_configured_endpoint_urls is not kept on meta.config (botocore reads it while
+    # resolving the endpoint), so it is proved by behaviour: the override tests below.
 
 
 def test_the_factory_gives_each_runner_its_own_timeouts(offline_aws):  # noqa: F811
@@ -726,3 +910,102 @@ def test_without_an_endpoint_the_client_is_the_regions_own_and_is_never_called(o
     client = wc.build_client(read_timeout_s=60, connect_timeout_s=60)
     assert client.meta.endpoint_url == "https://bedrock-runtime.eu-west-2.amazonaws.com"
     assert client.meta.region_name == rce.REGION == "eu-west-2"
+
+
+# ------------------------------------------------------- endpoint overrides
+
+LIVE_CONVERSE_URL = "https://bedrock-runtime.eu-west-2.amazonaws.com/model/anthropic.claude-sonnet-4-6/converse"
+# Reserved names (RFC 2606): none of them can resolve, and the fixture refuses to look them up.
+OVERRIDES = {"AWS_ENDPOINT_URL": "https://global-override.invalid",
+             "AWS_ENDPOINT_URL_BEDROCK_RUNTIME": "https://service-override.invalid"}
+CONFIG_OVERRIDE = "https://config-file-override.invalid"
+
+
+class _Stopped(Exception):
+    pass
+
+
+def request_url(client) -> str:
+    """The URL botocore would send a Converse request to, found without connecting:
+    a `before-send` handler records it and raises, so the request never leaves."""
+    seen: list = []
+
+    def stop(request, **_kwargs):
+        seen.append(request.url)
+        raise _Stopped()
+
+    client.meta.events.register("before-send", stop)
+    with pytest.raises(_Stopped):
+        client.converse(modelId=rce.MODEL_ID,
+                        messages=[{"role": "user", "content": [{"text": "invented"}]}])
+    assert len(seen) == 1
+    return seen[0]
+
+
+def _configure_overrides(monkeypatch, tmp_path, source: str) -> str:
+    """Set one kind of configured endpoint URL; return what an unprotected client would use."""
+    monkeypatch.setenv("AWS_IGNORE_CONFIGURED_ENDPOINT_URLS", "false")   # the Config value must win
+    if source == "config_file":
+        path = tmp_path / "aws-config-with-endpoint"
+        path.write_text(f"[default]\nendpoint_url = {CONFIG_OVERRIDE}\n", encoding="utf-8")
+        monkeypatch.setenv("AWS_CONFIG_FILE", str(path))
+        return CONFIG_OVERRIDE
+    if source == "both_variables":
+        for name, value in OVERRIDES.items():
+            monkeypatch.setenv(name, value)
+        return OVERRIDES["AWS_ENDPOINT_URL_BEDROCK_RUNTIME"]        # the service's own wins
+    monkeypatch.setenv(source, OVERRIDES[source])
+    return OVERRIDES[source]
+
+
+@pytest.mark.parametrize("source", ["AWS_ENDPOINT_URL", "AWS_ENDPOINT_URL_BEDROCK_RUNTIME",
+                                    "both_variables", "config_file"])
+def test_a_configured_endpoint_url_does_not_move_the_live_client(offline_aws, monkeypatch,  # noqa: F811
+                                                                 tmp_path, source):
+    """Codex P2 (PR #5). The positive control first: an ordinary client IS moved by
+    the override, so the environment in this test really would redirect a request."""
+    import boto3
+    override = _configure_overrides(monkeypatch, tmp_path, source)
+    plain = boto3.Session(region_name=rce.REGION).client("bedrock-runtime")
+    assert plain.meta.endpoint_url == override
+
+    live = wc.build_client(read_timeout_s=60, connect_timeout_s=60)
+    assert live.meta.endpoint_url == wc.LIVE_ENDPOINT
+    assert request_url(live) == LIVE_CONVERSE_URL
+
+
+@pytest.mark.parametrize("variable", ["AWS_USE_FIPS_ENDPOINT", "AWS_USE_DUALSTACK_ENDPOINT"])
+def test_the_live_client_is_refused_if_it_would_not_be_bedrock_runtime_in_eu_west_2(
+        offline_aws, monkeypatch, variable):  # noqa: F811
+    assert wc.build_client(read_timeout_s=60, connect_timeout_s=60)      # the partner: unset, built
+    monkeypatch.setenv(variable, "true")
+    with pytest.raises(wc.EndpointRefused) as exc:
+        wc.build_client(read_timeout_s=60, connect_timeout_s=60)
+    assert exc.value.code == wc.ENDPOINT_REFUSED
+
+
+def test_the_live_client_is_refused_in_another_region(offline_aws, monkeypatch):  # noqa: F811
+    monkeypatch.setattr(rce, "REGION", "us-east-1")
+    with pytest.raises(wc.EndpointRefused):
+        wc.build_client(read_timeout_s=60, connect_timeout_s=60)
+
+
+@pytest.mark.parametrize("endpoint", [
+    "https://bedrock-runtime.eu-west-2.amazonaws.com",      # the live path passes none
+    "http://localhost:9", "https://127.0.0.1:9", "http://127.0.0.1:9/path",
+    "http://127.0.0.1", "http://10.0.0.1:9", "", 9,
+])
+def test_an_explicit_endpoint_must_be_the_loopback_stub(offline_aws, endpoint):  # noqa: F811
+    assert wc.build_client(read_timeout_s=5, connect_timeout_s=5,
+                           endpoint_url="http://127.0.0.1:9")               # the partner
+    with pytest.raises(wc.EndpointRefused):
+        wc.build_client(read_timeout_s=5, connect_timeout_s=5, endpoint_url=endpoint)
+
+
+@pytest.mark.parametrize("source", ["both_variables", "config_file"])
+def test_with_overrides_configured_the_explicit_stub_path_still_reaches_the_stub(
+        v1_stub, tmp_path, monkeypatch, source):
+    _configure_overrides(monkeypatch, tmp_path, source)
+    run = Run("v1", v1_stub, tmp_path, ["S1"])
+    assert v1_stub.counts() == {step: 1 for step in V1}
+    assert run.record("S1")["error"] is None

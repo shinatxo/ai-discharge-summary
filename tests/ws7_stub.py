@@ -72,7 +72,10 @@ class _Handler(BaseHTTPRequestHandler):
                     stub.faults.append("stall_never_released")
             else:
                 reply = stub.ok_response(step, body)
-                reply["usage"] = dict(stub.usage.get(step, HONEST_USAGE))
+                usage = stub.usage.get(step, HONEST_USAGE)
+                reply.pop("usage", None)
+                if usage is not None:          # None: a reply with no usage block at all
+                    reply["usage"] = dict(usage)
                 self._send(200, reply, None)
         except Exception as exc:        # noqa: BLE001 - reported to the test, by type only
             stub.faults.append(type(exc).__name__)
@@ -97,7 +100,7 @@ class BedrockStub:
         self.model_id = model_id
         self.step_of = step_of
         self.ok_response = ok_response
-        self.usage: dict = {}             # step -> the usage an OK reply reports
+        self.usage: dict = {}             # step -> the usage an OK reply reports; None: none
         self.received: list = []          # one step name per request received, in order
         self.faults: list = []
         self.release = threading.Event()

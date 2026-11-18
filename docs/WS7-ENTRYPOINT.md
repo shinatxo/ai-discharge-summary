@@ -73,14 +73,17 @@ At the approved margin of 100:
 |---|---|---|---|---|
 | Pipeline, 18 + 1 pre-flight | 19 | 8,280,476 micro-USD, £6.62 | £5.34 | £1.29 |
 | v1, 18 + 1 pre-flight | 19 | 2,451,884 micro-USD, £1.96 | £1.40 | £0.56 |
-| Pipeline baseline, 18 x 3 + 1 pre-flight | 55 | 23,969,798 micro-USD, £19.18 | £15.46 | £3.72 |
+| Pipeline baseline, 18 x 3, **excluding** the pre-flight | 54 | 23,533,983 micro-USD, £18.83 | £15.17 | £3.65 |
+| Pipeline baseline, 18 x 3 + 1 pre-flight (**the figure used**) | 55 | 23,969,798 micro-USD, £19.18 | £15.46 | £3.72 |
 
-These match ADR-011's Costs table. The baseline figure is the one ruled on 18 Nov 2026: three
-batches of 18 and one pre-flight, outside the cap. Run `python evals/ws7_reserve.py` to print them.
+These match ADR-011's Costs table. ADR-011's original £18.83 is 54 generations and excludes the
+pre-flight. The baseline as ruled on 18 Nov 2026 (e8) is three batches of 18 with one pre-flight,
+55 generations, £19.18, outside the cap. Run `python evals/ws7_reserve.py` to print them.
 
-The dearest single request is step 2: 8,192 output tokens and 6,000 input tokens at their worst,
-159,918,000 nano-dollars, about £0.13. This is the most a run can pass its reservation by (see
-"One call at a time" below).
+The dearest single request by the planning figures is step 2: 8,192 output tokens and 6,000 input
+tokens, 159,918,000 nano-dollars, about £0.13. **That is an estimate, not an enforced limit.** The
+output is capped by `maxTokens`; the input is not capped by anything in the request, so a real
+call's input can exceed its allowance. See "How far a run can pass its reservation" below.
 
 ### The cost of one call
 
@@ -122,6 +125,21 @@ once. Its timeouts:
 | Pipeline, steps 5a and 7 | 60 s | 10 s | `evals/run_pipeline_eval.py:65` (`reconcile.py:60`), asked for at `:335` |
 | v1, both calls | 60 s | 60 s | Fixed in `evals/ws7_reserve.py`. These are botocore's defaults, which the v1 runner's default client (`evals/run_cold_eval.py:684`) runs on today |
 
+**The endpoint.** Only an explicit `endpoint_url` argument can change where the client sends its
+requests:
+
+- The client is built with botocore's `ignore_configured_endpoint_urls=True`. The option "disables
+  use of endpoint URLs provided via environment variables and the shared configuration file"
+  (botocore 1.43.110, `botocore/config.py:208-213`).
+- botocore applies it at `botocore/args.py:387-406`. An explicit `endpoint_url` argument still wins
+  (`:388-389`), and the Config value outranks `AWS_IGNORE_CONFIGURED_ENDPOINT_URLS` (`:398-402`), so
+  the environment cannot switch it back on.
+- **The live path** passes no `endpoint_url`. At construction, before any request, the client must
+  resolve to `https://bedrock-runtime.eu-west-2.amazonaws.com` in `eu-west-2`, or it is refused
+  with `EndpointRefused` (`ws7_endpoint_refused`). A FIPS or dual-stack variant, or another region,
+  is refused.
+- **An explicit `endpoint_url`** is for the tests' stub only, and must be `http://127.0.0.1:<port>`.
+
 **Before every call**, in this order. The first rule broken refuses the call, and a refused call
 is never sent:
 
@@ -129,12 +147,14 @@ is never sent:
 |---|---|
 | A batch is open | `ws7_no_batch` |
 | The wall-clock deadline has not passed | `ws7_deadline` |
+| The run is not unmetered (see "The unmetered stop") | `ws7_unmetered` |
 | The running total is below the reservation | `ws7_spend_guard` |
 | The request is one of the plan's steps: pipeline by the tool it forces, v1 by its `maxTokens`; a v1 request carries no tool | `ws7_unknown_request` |
 | A pipeline request's `maxTokens` is the figure reserved for its step | `ws7_max_tokens_differs` |
 | The model ID is the plan's | `ws7_model_differs` |
 | A later step comes after a first step | `ws7_out_of_order` |
 | A new generation does not exceed the batch's planned count | `ws7_plan_exceeded` |
+| No call has been refused since the current generation started | `ws7_generation_blocked` |
 | The step has not already been called in this generation | `ws7_repeat_refused` |
 
 **How a generation is recognised** (ruling e1, 18 Nov 2026). The wrapper sees requests, not
@@ -146,8 +166,8 @@ generations.
   throttle with the identical request (`src/generate/pipeline/converse.py:33`,
   `evals/run_cold_eval.py:329`).
 - Each batch allows only the number of generations it planned.
-- Before a run, the entrypoint checks that the scenarios' notes hashes are distinct (part 5), so
-  two scenarios can never send the same first-step request.
+- Before a run, the entrypoint checks that no two scenarios would send the same first-step request
+  (part 5, "Notes for later parts" below).
 - Every doubt is a refusal: a refusal costs nothing, and a refused run is a failed run.
 
 **What a refusal does.** The wrapper raises `Ws7Refused`, a `StepError` with the code above.
@@ -156,7 +176,12 @@ generations.
   the step's recorded error code is the refusal code.
 - The v1 runner records any exception as `{"code": <class name>, "message": str(exc)}`
   (`evals/run_cold_eval.py:395`), so a v1 record shows `Ws7Refused` and the refusal code.
-- A refused repeat ends that generation only. The next scenario starts a new generation and runs.
+- **A refusal blocks the rest of its generation.** Once any call is refused, every further call is
+  refused (`ws7_generation_blocked`) until a first-step request distinct from the current
+  generation's starts the next generation. So after a throttled 5a whose retry was refused, the
+  step 6 the runner still asks for is never sent, and step 7 needs step 6. A refused new
+  generation (`ws7_plan_exceeded`) blocks the open one too.
+- The next scenario starts a new generation and runs all its steps.
 
 **After every call**, the wrapper adds the call's cost to the running total and to its batch's:
 
@@ -165,10 +190,38 @@ generations.
 - an exception (a throttle, a 500, a read timeout, anything else): the call's worst case. The
   wrapper re-raises the same exception, so the code under test sees the real error.
 
-**One call at a time.** Both runners send one request at a time. So the total can pass the
-reservation by at most one request: the call that was in flight when it was reached. A runner that
-sent requests in parallel could pass it by one request per call in flight. The later
-orchestrator-driven runner (ADR-011 D2) must revisit this before it is used with this wrapper.
+**The unmetered stop.** A worst case is an estimate, not a bound: it counts the input at the step's
+allowance, and nothing caps a real call's input. So a call whose cost is unknown, and whose model
+may have run, makes the run **unmetered**. Every further call in the run is refused
+(`ws7_unmetered`), in every generation and batch.
+
+| The call | Unmetered? |
+|---|---|
+| A reply with usable usage | No: its cost is known |
+| A reply with no usable usage (`response_usage_unknown`) | **Yes** |
+| A 5xx (`server_error`), a read timeout, any other 4xx (`client_error`, which includes Bedrock's `ModelTimeoutException` and `ModelErrorException`, raised after the model ran), anything else (`other_error`) | **Yes** |
+| A throttle (`throttled`) | No. Bedrock rejects a throttled request before the model runs. This is an assumption, not checked against AWS's documentation |
+| No connection made (`connect_error`), or refused by botocore before sending (`request_invalid`) | No: nothing reached Bedrock |
+
+Every failure, unmetered or not, stays counted at its worst case. Under ruling e2 any failure fails
+the run anyway; the unmetered stop is about spending nothing more.
+
+**How far a run can pass its reservation.** Both runners send one request at a time, and every call
+before the last is either metered (its true cost is its usage) or did not run the model (its worst
+case is above its true cost). So:
+
+- the run's true spend is below its reservation plus **one call**;
+- that call's output is capped by its `maxTokens`, but its input is not, and may exceed its
+  allowance;
+- by the planning figures the dearest such call is about £0.13 (step 2); that is an estimate, not
+  an enforced limit;
+- if the run is unmetered, its true cost is known only from AWS's own billing. The ledger entry
+  keeps the worst-case figure and is flagged unmetered (part 2), and the author reconciles it
+  against AWS Budgets, the backstop (ADR-011 D7, point 5), which lags by hours.
+
+A runner that sent requests in parallel could pass the reservation by one call per call in flight.
+The later orchestrator-driven runner (ADR-011 D2) must revisit this before it is used with this
+wrapper.
 
 ### The guard's report
 
@@ -181,6 +234,7 @@ response. A request's body is hashed, in memory, only to tell a repeat from a ne
 | `worst_case_part_usd_nanos` | The part of the total counted at worst case |
 | `reservation_reached` | The total is at or past the reservation |
 | `tripped` | A call was refused because the reservation had been reached |
+| `unmetered`, `unmetered_calls` | The run is unmetered, and how many calls made it so (one: the next is refused) |
 | `calls_sent`, `responses`, `no_response`, `usage_unknown` | Counts of calls sent and of what came back |
 | `refused` | Refusals by code |
 | `batches` | Per batch: generations planned and started, and its total |
@@ -197,8 +251,29 @@ only counts.
 
 - It does not open the ledger or decide whether a run may start (part 2).
 - It does not settle the ledger; part 5 settles from `total_usd_nanos`.
-- It does not check that notes hashes are distinct, set the deadline or choose the sleep the
-  runners are given (part 5).
+- It does not check that the scenarios' first-step requests are distinct, set the deadline or
+  choose the sleep the runners are given (part 5).
+
+## Notes for later parts
+
+### Part 2: the ledger
+
+- A run whose report says `unmetered` is settled at its counted total, which includes the worst
+  case of the call that made it unmetered. Its ledger entry is flagged `unmetered`, so the author
+  knows to reconcile it against AWS Budgets.
+
+### Part 5: the modes
+
+- **The distinct-scenarios precheck must use a canonical first-request fingerprint, not the raw
+  notes hash** (Codex P3, PR #5). Two scenarios whose notes differ only in ways the pipeline
+  normalises away, such as line endings, would have different notes hashes but could send the same
+  first-step request. The wrapper would then refuse the second as a repeat. So the precheck builds
+  the first-step request each scenario would send, after the runner's and the pipeline's own
+  normalisation, and compares `ws7_client.fingerprint()` of each: the hash the wrapper itself uses.
+  This is not fixed in part 1.
+- A run whose report says `unmetered` is a failed run with the fixed code `ws7_unmetered`.
+- Build one live client before the runner starts, so that a refused endpoint fails the run before
+  any batch folder is written.
 
 ## Tests
 
@@ -213,13 +288,27 @@ PYTHONDONTWRITEBYTECODE=1 python -m pytest -p no:cacheprovider -q tests/test_ws7
   against a local stub (`tests/ws7_stub.py`) that counts the requests it receives by step. These
   tests are ADR-011's acceptance check for slice 2.
   - For **both runners** and **every model step**: a throttle, a 500 and a read timeout each give
-    exactly one request for that step at the server. Clean runs give one request per step.
+    exactly one request for that step at the server, and none for any later step of that
+    generation. Clean runs give one request per step.
+  - A throttle at step 5a, its retry refused: no request for steps 6 or 7, and the next scenario
+    sends all four. The partner, with no throttle, sends every step.
   - A refused repeat ends one generation, and the next one runs.
   - A stub reporting inflated input usage: after the first reply, no request reaches the server.
     With honest usage, every request does.
+  - A reply with no usage block: no request after it reaches the server (the run is unmetered).
   - A step whose `maxTokens` differs from the reserved figure sends nothing.
+  - With `AWS_ENDPOINT_URL` and `AWS_ENDPOINT_URL_BEDROCK_RUNTIME` set, or an `endpoint_url` in
+    the AWS config file, the explicit stub path still reaches the stub.
+- `tests/test_ws7_client.py`, the endpoint, without connecting: with each override configured,
+  an ordinary boto3 client is moved by it (the positive control), and the live client still
+  resolves to Bedrock runtime in eu-west-2. The URL a Converse request would go to is read in a
+  `before-send` handler, which stops the request before it leaves. FIPS, dual-stack and another
+  region are refused at construction.
 - `tests/test_ws7_client.py`, the rules: the guard against a strict in-process client, at each
-  boundary (a total equal to the reservation is refused; one nano-dollar below is sent).
+  boundary (a total equal to the reservation is refused; one nano-dollar below is sent). Unknown
+  usage stops the next call; known usage does not. Each kind of failure is checked against the
+  unmetered table above. A refusal blocks the rest of its generation; a failure that was not a
+  refusal does not.
 
 **Keeping the tests offline.** The `offline_aws` fixture:
 

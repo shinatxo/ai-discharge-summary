@@ -226,11 +226,20 @@ it finished without error, wrote only the files expected, and cost no more than 
     - The wrapper sees requests, not generations. A generation starts at a first-step request
       (step 2, or v1's combined call) whose body differs from the current generation's; an
       identical one is a repeat. Each batch allows only the generations it planned, and the
-      entrypoint first checks that the scenarios' notes hashes are distinct. Every doubt is a
+      entrypoint first checks that no two scenarios would send the same first-step request,
+      comparing a canonical fingerprint of the request, not the raw notes hash. Every doubt is a
       refusal (ruling e1, 18 Nov 2026).
+    - **Once any call is refused, every further call is refused** until a distinct first-step
+      request starts the next generation. So after a throttled step 5a whose retry was refused,
+      the step 6 the runner still asks for is never sent (Codex review of PR #5).
     - The wrapper also refuses a request that is not one of the plan's steps, a step whose
       `maxTokens` is not the figure reserved for it, and any other model ID. The reservation is a
       bound only if the steps send what it reserved.
+  - **Where the calls go.** The wrapper builds the client with botocore's
+    `ignore_configured_endpoint_urls=True`, so an endpoint URL set in the environment or the AWS
+    config file cannot move it; only an explicit argument can, and the live path passes none. At
+    construction the live client must be Bedrock runtime in eu-west-2, or it is refused before any
+    request (`docs/WS7-ENTRYPOINT.md`).
 - So a throttle fails that generation, and the run is reported as failed.
 - This is tighter than the code under test, which may retry (Context, finding 8). No runner and
   no pipeline file is changed.
@@ -239,9 +248,11 @@ it finished without error, wrote only the files expected, and cost no more than 
 - The entrypoint has a wall-clock limit that ends the run on Wednesday. A runner that refuses to
   start (a canary window, an existing batch folder) is a failed run.
 
-**The cost ceiling: £15 a month of model spend.** Output is enforced by `maxTokens`; input is
-enforced by the running-spend guard to within one request (about £0.13); the ledger records
-actual cost.
+**The cost ceiling: £15 a month of model spend.** Output is enforced by `maxTokens`. Input is not
+capped by anything in a request: the running-spend guard stops a run within one call of its
+reservation, and that one call's input may exceed its allowance (about £0.13 by the planning
+figures, an estimate, not an enforced limit). The ledger records actual cost, or the worst case
+flagged unmetered where a cost is unknown, which is then reconciled against AWS Budgets.
 
 1. **A worst-case reservation for each run.** For every model step: its enforced `maxTokens` as
    output, for every attempt the client may make (one), plus an input allowance.
@@ -274,30 +285,44 @@ actual cost.
    run.
    - **After every call** it adds that call's cost, from the usage Bedrock returned. A call that
      returned no usage is counted at its worst case.
+   - **A call whose cost is unknown stops the run.** A worst case is an estimate, not a bound: it
+     counts the input at the step's allowance, and nothing caps a real call's input. So a call
+     that returned no usable usage, and whose model may have run (a reply with no usage, a 5xx, a
+     read timeout, any other error except a throttle or a request that never reached Bedrock),
+     makes the run **unmetered**: the wrapper refuses every further call in the run, and the run
+     ends as failed with the fixed code `ws7_unmetered`. Its ledger entry keeps the worst-case
+     figure and is flagged unmetered (Codex review of PR #5).
    - **Before every call** it checks the total. Once the total has reached the run's reservation,
      the wrapper refuses every further call, and the run ends as failed with a fixed code.
-   - **A run can therefore pass its reservation by at most one request,** and so can the month's
-     total pass £15. This holds because both runners send one request at a time. A runner that
-     sent requests in parallel could pass it by one request per call in flight; the later
+   - **A run can therefore pass its reservation by at most one call,** and so can the month's
+     total pass £15. That call's output is capped by its `maxTokens`; its input is not, and may
+     exceed its allowance. This holds because both runners send one request at a time, and
+     because every earlier call was either metered or did not run the model. A runner that sent
+     requests in parallel could pass it by one call per call in flight; the later
      orchestrator-driven runner (D2) must revisit this.
-   - **Why that one request is bounded.** A step's input is its fixed prompt and the fixed
-     scenario notes, plus the outputs of earlier steps. The prompt and the notes are pinned by
-     hash in the baseline key and the match check (D9, D11). Each earlier output is capped by its
-     own `maxTokens`, and so is the step's own output.
-   - **How much.** By the runners' planning figures (`evals/run_pipeline_eval.py:75`), the
-     dearest single request is step 2: about 6,000 input tokens, all of them fixed, and 8,192
+   - **Why that one call is limited in practice, though by nothing enforced.** A step's input is
+     its fixed prompt and the fixed scenario notes, plus the outputs of earlier steps. The prompt
+     and the notes are pinned by hash in the baseline key and the match check (D9, D11). Each
+     earlier output is capped by its own `maxTokens`, and so is the step's own output. But the
+     code adds fields to the facts it passes on, so this is not a hard cap on input.
+   - **How much: an estimate.** By the runners' planning figures (`evals/run_pipeline_eval.py:75`),
+     the dearest single request is step 2: about 6,000 input tokens, all of them fixed, and 8,192
      output tokens. That is about **£0.13**. The other steps come to about £0.07 to £0.11 with
      their upstream input taken at its cap. A v1 request is about £0.07. These figures are
-     provisional until the baseline measures the inputs, and they do not count the fields the
-     code adds to the facts it passes on.
+     estimates from the planning figures, **not an enforced limit**. They are provisional until
+     the baseline measures the inputs, and they do not count the fields the code adds to the
+     facts it passes on.
    - **The guard tripping is itself a drift signal.** The inputs are pinned, so a run reaches its
      reservation only if the model is writing far more than it did at baseline. Each trip is
      published as a metric (D9).
 4. **Settle after.** When the run ends, the reservation is replaced by the actual cost, worked out
    from the usage Bedrock returned. Any request that was sent and has no recorded usage stays at
    its worst case: a step that raised after a response, a crash before the record was written,
-   an unfinished run.
+   an unfinished run. A run that was unmetered is settled at that worst case and flagged
+   unmetered, because its true cost is not known.
 5. **A backstop.** An AWS Budgets email. It lags by hours and warns; it does not stop anything.
+   It is also where an unmetered run's true cost is found: the author reconciles each unmetered
+   ledger entry against it.
 
 **Duplicates and concurrency.** EventBridge Scheduler delivers at least once, so the same
 Wednesday can arrive twice.
@@ -597,7 +622,8 @@ at the cache-write rate ($3.75 per million, plus 10%).
 |---|---|---|---|---|
 | Bedrock, pipeline, 18 + 1 pre-flight | £0.76–2.28 | £6.62 (£5.34 enforced output + £1.29 provisional input allowance, rounded) | expected £3.30–9.90 | Repository constants; not confirmed on AWS's page |
 | Bedrock, v1 until W11, 18 + 1 | up to £1.32 | £1.96 (£1.40 + £0.56) | up to £5.74 | As above |
-| Baseline batch, 18 x 3, by hand | £2.16–6.48 | £18.83 | Not monthly; outside the cap | As above |
+| Baseline, 18 x 3, by hand: 54 generations, **excluding** the pre-flight | £2.16–6.48 | £18.83 | Not monthly; outside the cap | As above |
+| Baseline with its pre-flight: 55 generations (ruling e8, 18 Nov 2026; **the figure used**) | £2.20–6.60 | £19.18 | Not monthly; outside the cap | As above |
 | Customer-managed KMS key | n/a | n/a | £0.80 | $1 per key, AWS price list for London, 8 Nov 2026 |
 | Fargate, ARM, 0.5 vCPU / 1 GB (the run and the Thursday check) | under £0.01 | n/a | under £0.05 | AWS price list for London, 11 Nov 2026 |
 | Public IPv4 address | under £0.01 | n/a | about £0.01 | AWS price list for London, 5 Nov 2026 |
@@ -613,9 +639,11 @@ at the cache-write rate ($3.75 per million, plus 10%).
   a truncated step fails.
 - **The reservation figures are provisional.** The input allowance becomes a measured figure at
   the baseline, with the author's margin.
-- **The ceiling is £15 a month of model spend.** Output is enforced by `maxTokens`; input is
-  enforced by the running-spend guard to within one request (about £0.13); the ledger records
-  actual cost. The fixed items, about £2 a month, are not in the ledger.
+- **The ceiling is £15 a month of model spend.** Output is enforced by `maxTokens`. Input is not
+  capped: the running-spend guard stops a run within one call of its reservation, and that
+  call's input may exceed its allowance (about £0.13 by the planning figures, an estimate, not an
+  enforced limit). The ledger records actual cost, or the worst case flagged unmetered, which is
+  reconciled against AWS Budgets. The fixed items, about £2 a month, are not in the ledger.
 - **What the ceiling allows.** A run starts only while the month's ledger total is £8.38 or less.
   Three runs at the top of the expected range total £6.84, so four Wednesdays start. **In a month
   with five Wednesdays the fifth run starts only if the first four averaged £2.09 or less. At the
@@ -636,9 +664,12 @@ not see settings drift, the assembled bundle, value errors with no scorer, or re
 (D1). It does not see intermittent or sub-weekly change (D9). These limits are stated so that a
 quiet week is not read as proof of safety.
 
-**What the spend ceiling is.** £15 a month of model spend. Output is enforced by `maxTokens`;
-input is enforced by the running-spend guard to within one request (about £0.13); the ledger
-records actual cost. It is not an exact limit, and that figure is provisional until the baseline.
+**What the spend ceiling is.** £15 a month of model spend. Output is enforced by `maxTokens`.
+Input is not capped: the running-spend guard stops a run within one call of its reservation, and
+that call's input may exceed its allowance (about £0.13 by the planning figures, an estimate, not
+an enforced limit). The ledger records actual cost, or the worst case flagged unmetered, which is
+reconciled against AWS Budgets. It is not an exact limit, and the figures are provisional until
+the baseline.
 
 **What has to change in implementation pull requests, not this one.**
 

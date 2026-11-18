@@ -1,0 +1,239 @@
+# WS7 entrypoint
+
+The WS7 entrypoint is the job the weekly Fargate task will run ([ADR-011](adr/ADR-011-ws7-scheduled-eval.md),
+slice 2). It is being built as six pull requests. This document grows with each one.
+
+| Part | What | Status |
+|---|---|---|
+| 1 | The client wrapper and the reservation | **Built** (this document) |
+| 2 | The claim, the ledger, the match check and the run manifest | Not built |
+| 3 | Comparator follow-ups from PR #4 | Not built |
+| 4 | The run summary and the candidate baseline | Not built |
+| 5 | The modes, the comparator call and publishing | Not built |
+| 6 | The image changes | Not built |
+
+Nothing here makes an AWS call or a model call, and nothing has been deployed or run live.
+Every reply, usage figure and request text in the tests is invented.
+
+## Part 1: the client wrapper and the reservation
+
+Two modules and one config file:
+
+- `evals/ws7_reserve.py`: the worst-case reservation, the cost of one call, and the config loader.
+- `evals/ws7_client.py`: the client wrapper the entrypoint hands each runner.
+- `evals/ws7_config.json`: the author's settings.
+
+No runner, no scorer and no file in `src/generate/pipeline/` is changed. The modules read the
+runners' and the steps' constants when they run; they never copy them.
+
+### Money units
+
+- Inside WS7, money is integer **nano-dollars** (one dollar is 1,000,000,000). Every rate is a
+  whole number of nano-dollars per token, so the arithmetic is exact.
+- The ledger and the metrics use **micro-dollars** (`cost_usd_micros`, `docs/WS7-COMPARATOR.md`).
+  A conversion from nano to micro rounds up, so a cost is never understated.
+- The monthly cap is 1,500 pence at 80 pence a dollar: **18,750,000 micro-dollars**, rounded down.
+
+| Rate | Nano-dollars per token | From |
+|---|---|---|
+| Input | 3,300 | `evals/run_cold_eval.py:115` ($3.00 per million), times `:116` (1.10) |
+| Output | 16,500 | the same ($15.00) |
+| Cache write | 4,125 | the same ($3.75) |
+| Cache read | 330 | the same ($0.30) |
+
+### The reservation
+
+For every model step of every generation, the reservation counts:
+
+- **output:** the step's `maxTokens`, one attempt, at the output rate;
+- **input:** the step's input allowance, times the margin, at the cache-write rate, the highest
+  input rate.
+
+| Step | `maxTokens` | Set at | Sent at | Input allowance (tokens) | From |
+|---|---|---|---|---|---|
+| 2 `extract_facts` | 8,192 | `src/generate/pipeline/extract.py:75` | `:121` | 6,000 | `evals/run_pipeline_eval.py:75` |
+| 5a `reconcile_medications` | 4,096 | `src/generate/pipeline/reconcile.py:58` | `:251` | 7,000 | `evals/run_pipeline_eval.py:76` |
+| 6 `compose_clinical` | 6,000 | `src/generate/pipeline/compose.py:85` | `:411` | 5,000 | `evals/run_pipeline_eval.py:76` |
+| 7 `compose_patient` | 3,000 | `src/generate/pipeline/compose_patient.py:103` | `:431` | 2,500 | `evals/run_pipeline_eval.py:78` |
+| v1 `combined` | 4,096 | `evals/run_cold_eval.py:96` | `:333` | 5,600 | `evals/run_cold_eval.py:121` |
+| v1 `patient_v2` | 1,500 | `evals/run_cold_eval.py:98` | `:333` | 3,300 | `:122` (8,900) less `:121` (5,600) |
+
+- **The input allowances are provisional.** They are the runners' planning figures, split by step
+  as the comment at `evals/run_pipeline_eval.py:75-78` splits them. The pipeline's four add up to
+  the runner's own `EST_TOKENS` (`:79`, 20,500). `plan()` refuses to build if they stop adding up.
+  The baseline replaces them with measured figures (ADR-011 slice 4).
+- **The margin is a multiplier written as a percentage.** The allowance is the base figure times
+  `input_allowance_margin_percent / 100`, rounded up to a whole token. **100 means the base figure
+  itself, not widened.** The config accepts 100 to 1,000.
+- `tests/test_ws7_reserve.py` checks that every cited line still says what this table says.
+
+At the approved margin of 100:
+
+| Run | Generations | Reservation | Output part | Input part |
+|---|---|---|---|---|
+| Pipeline, 18 + 1 pre-flight | 19 | 8,280,476 micro-USD, £6.62 | £5.34 | £1.29 |
+| v1, 18 + 1 pre-flight | 19 | 2,451,884 micro-USD, £1.96 | £1.40 | £0.56 |
+| Pipeline baseline, 18 x 3 + 1 pre-flight | 55 | 23,969,798 micro-USD, £19.18 | £15.46 | £3.72 |
+
+These match ADR-011's Costs table. The baseline figure is the one ruled on 18 Nov 2026: three
+batches of 18 and one pre-flight, outside the cap. Run `python evals/ws7_reserve.py` to print them.
+
+The dearest single request is step 2: 8,192 output tokens and 6,000 input tokens at their worst,
+159,918,000 nano-dollars, about £0.13. This is the most a run can pass its reservation by (see
+"One call at a time" below).
+
+### The cost of one call
+
+`read_usage()` prices the `usage` object Bedrock returns: `inputTokens`, `outputTokens`, and
+`cacheReadInputTokens` and `cacheWriteInputTokens` when present (absent means zero). A count that
+is missing, negative, a float, a string or a boolean makes the usage **unknown**, and the call is
+then counted at its worst case. The result agrees with the runners' own `cost_usd()` to the
+micro-dollar.
+
+### The config file (`ws7-config/1`)
+
+| Field | Value | Meaning |
+|---|---|---|
+| `monthly_cap_gbp_pence` | 1500 | The monthly ceiling of model spend (ADR-011 D7) |
+| `gbp_pence_per_usd` | 80 | The rate `docs/COST.md` uses |
+| `input_allowance_margin_percent` | 100 | See "The margin" above |
+| `preflight_scenario` | `S1` | The one scenario run alone before the 18 |
+| `wall_clock_limit_s` | `{"scheduled": 7200, "manual": 18000}` | When a run is ended |
+| `ledger_cas_attempts` | 4 | Tries at the ledger's compare-and-swap (part 2) |
+| `max_start_delay_s` | 3600 | The oldest scheduled time a run may still claim (part 2) |
+
+The values are the author's rulings of 18 Nov 2026, and they change only by pull request. The
+loader is strict: a missing or unknown field, a wrong type, a duplicate key or a value out of range
+is an error, never a default. The file's sha256 goes into the run manifest (part 2).
+
+### The client wrapper
+
+The entrypoint opens a **batch** on a `Guard` for each runner call (the pre-flight, then the 18),
+and passes the runner `client_factory(guard)` through the runner's existing `client_factory`
+argument. Every client the factory makes shares the one guard.
+
+**The client beneath.** The wrapper builds the Bedrock client itself, with
+`retries={"mode": "standard", "total_max_attempts": 1}`, so botocore sends each `converse` call
+once. Its timeouts:
+
+| Target | Read timeout | Connect timeout | From |
+|---|---|---|---|
+| Pipeline, steps 2 and 6 | 90 s | 10 s | `evals/run_pipeline_eval.py:64`, asked for at `:333`; connect as `live_client`, `:174` |
+| Pipeline, steps 5a and 7 | 60 s | 10 s | `evals/run_pipeline_eval.py:65` (`reconcile.py:60`), asked for at `:335` |
+| v1, both calls | 60 s | 60 s | Fixed in `evals/ws7_reserve.py`. These are botocore's defaults, which the v1 runner's default client (`evals/run_cold_eval.py:684`) runs on today |
+
+**Before every call**, in this order. The first rule broken refuses the call, and a refused call
+is never sent:
+
+| Check | Refusal code |
+|---|---|
+| A batch is open | `ws7_no_batch` |
+| The wall-clock deadline has not passed | `ws7_deadline` |
+| The running total is below the reservation | `ws7_spend_guard` |
+| The request is one of the plan's steps: pipeline by the tool it forces, v1 by its `maxTokens`; a v1 request carries no tool | `ws7_unknown_request` |
+| A pipeline request's `maxTokens` is the figure reserved for its step | `ws7_max_tokens_differs` |
+| The model ID is the plan's | `ws7_model_differs` |
+| A later step comes after a first step | `ws7_out_of_order` |
+| A new generation does not exceed the batch's planned count | `ws7_plan_exceeded` |
+| The step has not already been called in this generation | `ws7_repeat_refused` |
+
+**How a generation is recognised** (ruling e1, 18 Nov 2026). The wrapper sees requests, not
+generations.
+
+- A generation starts at a first-step request (step 2, or v1's `combined` call) whose body differs
+  from the current generation's first-step request.
+- An identical first-step request is a repeat, and is refused. The code under test retries a
+  throttle with the identical request (`src/generate/pipeline/converse.py:33`,
+  `evals/run_cold_eval.py:329`).
+- Each batch allows only the number of generations it planned.
+- Before a run, the entrypoint checks that the scenarios' notes hashes are distinct (part 5), so
+  two scenarios can never send the same first-step request.
+- Every doubt is a refusal: a refusal costs nothing, and a refused run is a failed run.
+
+**What a refusal does.** The wrapper raises `Ws7Refused`, a `StepError` with the code above.
+
+- The pipeline passes a `StepError` through unchanged (`src/generate/pipeline/converse.py:34`), so
+  the step's recorded error code is the refusal code.
+- The v1 runner records any exception as `{"code": <class name>, "message": str(exc)}`
+  (`evals/run_cold_eval.py:395`), so a v1 record shows `Ws7Refused` and the refusal code.
+- A refused repeat ends that generation only. The next scenario starts a new generation and runs.
+
+**After every call**, the wrapper adds the call's cost to the running total and to its batch's:
+
+- a reply with usable usage: the cost of that usage;
+- a reply with no usable usage: the call's worst case (outcome `response_usage_unknown`);
+- an exception (a throttle, a 500, a read timeout, anything else): the call's worst case. The
+  wrapper re-raises the same exception, so the code under test sees the real error.
+
+**One call at a time.** Both runners send one request at a time. So the total can pass the
+reservation by at most one request: the call that was in flight when it was reached. A runner that
+sent requests in parallel could pass it by one request per call in flight. The later
+orchestrator-driven runner (ADR-011 D2) must revisit this before it is used with this wrapper.
+
+### The guard's report
+
+`Guard.report()` holds IDs, fixed labels and numbers only. It never holds a request or a
+response. A request's body is hashed, in memory, only to tell a repeat from a new generation.
+
+| Field | Meaning |
+|---|---|
+| `reservation_usd_nanos`, `total_usd_nanos`, `total_usd_micros` | The reservation and the running total |
+| `worst_case_part_usd_nanos` | The part of the total counted at worst case |
+| `reservation_reached` | The total is at or past the reservation |
+| `tripped` | A call was refused because the reservation had been reached |
+| `calls_sent`, `responses`, `no_response`, `usage_unknown` | Counts of calls sent and of what came back |
+| `refused` | Refusals by code |
+| `batches` | Per batch: generations planned and started, and its total |
+| `calls` | One row per call: `seq`, `batch`, `generation`, `step`, `outcome`, `code`, the four token counts, `cost_usd_nanos`, `worst_case`, `latency_ms` |
+
+A call's `outcome` is one of: `response`, `response_usage_unknown`, `throttled`, `server_error`,
+`client_error`, `read_timeout`, `connect_error`, `request_invalid`, `other_error`, or `refused`.
+
+Under ruling e2 (18 Nov 2026), any call with an outcome other than `response` or
+`response_usage_unknown`, and any refusal, fails the run. Part 5 applies that rule; the wrapper
+only counts.
+
+### What part 1 does not do
+
+- It does not open the ledger or decide whether a run may start (part 2).
+- It does not settle the ledger; part 5 settles from `total_usd_nanos`.
+- It does not check that notes hashes are distinct, set the deadline or choose the sleep the
+  runners are given (part 5).
+
+## Tests
+
+```zsh
+PYTHONDONTWRITEBYTECODE=1 python -m pytest -p no:cacheprovider -q tests/test_ws7_reserve.py tests/test_ws7_client.py
+```
+
+- `tests/test_ws7_reserve.py`: the cited lines, the plan, the prices, the reservation against
+  ADR-011's figures, the cost of a call, and the config loader. Each refusal has a partner that
+  passes.
+- `tests/test_ws7_client.py`, at the server: the real runners and the real botocore client,
+  against a local stub (`tests/ws7_stub.py`) that counts the requests it receives by step. These
+  tests are ADR-011's acceptance check for slice 2.
+  - For **both runners** and **every model step**: a throttle, a 500 and a read timeout each give
+    exactly one request for that step at the server. Clean runs give one request per step.
+  - A refused repeat ends one generation, and the next one runs.
+  - A stub reporting inflated input usage: after the first reply, no request reaches the server.
+    With honest usage, every request does.
+  - A step whose `maxTokens` differs from the reserved figure sends nothing.
+- `tests/test_ws7_client.py`, the rules: the guard against a strict in-process client, at each
+  boundary (a total equal to the reservation is refused; one nano-dollar below is sent).
+
+**Keeping the tests offline.** The `offline_aws` fixture:
+
+- sets invented credentials and `AWS_EC2_METADATA_DISABLED=true`, and points the AWS config and
+  credentials files at paths that do not exist;
+- removes every proxy and endpoint variable;
+- lets a socket connect only to an address a test registered (the stub's host and port), and
+  resolves no name but the stub's.
+
+Anything else fails the test. Positive controls show the fixture refusing a routable address,
+another loopback port and an AWS hostname, and accepting the stub's own address.
+
+**What the stub cannot prove.** Real Bedrock's error shapes, usage fields and timings may differ
+from the stub's invented ones. The stub sends the error type that botocore reads
+(`x-amzn-ErrorType`) and a JSON body; it does not use the event-stream or any other format.
+Slice 3's set-up checks, and the first live run with the author's approval, are where real replies
+are first seen.

@@ -3,9 +3,11 @@
 ## Status
 
 **Proposed** — 16 Nov 2026. Decisions by the author, 16 Nov 2026. Revised 17 Nov 2026 after
-review: the cost ceiling, duplicate deliveries, the heartbeat and the incident procedure.
+review: the cost ceiling, duplicate deliveries, the heartbeat and the incident procedure. Updated
+18 Nov 2026 with the author's rulings on slice 2, in the part of slice 2 that builds each one.
 
-This is a design. Slice 1, the offline comparator, is built (`docs/WS7-COMPARATOR.md`); nothing is
+This is a design. Slice 1, the offline comparator, is built (`docs/WS7-COMPARATOR.md`). Of slice 2,
+the client wrapper and the reservation are built (`docs/WS7-ENTRYPOINT.md`). Nothing is
 deployed or run. Every deploy, and every run that costs
 money, needs the author's explicit yes at the time. No number in a breach rule is set here: the
 author sets them before the first live run, and they change only by pull request.
@@ -216,9 +218,19 @@ it finished without error, wrote only the files expected, and cost no more than 
     `retries={"mode": "standard", "total_max_attempts": 1}` and the read timeout the runner asks
     for. `evals/run_pipeline_eval.py`'s `live_client` already does this (`:175`).
     `evals/run_cold_eval.py`'s default client (`:684`) does not, and it asks for no read timeout
-    either, so the value used for v1 is fixed in slice 2 and written to the manifest.
+    either, so the value used for v1 is fixed in slice 2 and written to the manifest. **It is 60
+    seconds to read and 60 to connect** (`evals/ws7_reserve.py`): botocore's defaults, which the
+    v1 runner runs on today.
   - **Retries by the code under test.** The wrapper allows **at most one call per model step per
     generation**. A repeat is refused, and the refusal ends that generation with a fixed code.
+    - The wrapper sees requests, not generations. A generation starts at a first-step request
+      (step 2, or v1's combined call) whose body differs from the current generation's; an
+      identical one is a repeat. Each batch allows only the generations it planned, and the
+      entrypoint first checks that the scenarios' notes hashes are distinct. Every doubt is a
+      refusal (ruling e1, 18 Nov 2026).
+    - The wrapper also refuses a request that is not one of the plan's steps, a step whose
+      `maxTokens` is not the figure reserved for it, and any other model ID. The reservation is a
+      bound only if the steps send what it reserved.
 - So a throttle fails that generation, and the run is reported as failed.
 - This is tighter than the code under test, which may retry (Context, finding 8). No runner and
   no pipeline file is changed.
@@ -247,12 +259,17 @@ actual cost.
    - **The input allowance is measured.** It is the largest input per step seen in the baseline,
      multiplied by a margin the author sets, and priced at the cache-write rate, the highest
      input rate. Until a baseline exists the figure is provisional and comes from the runners'
-     planning estimates (`evals/run_pipeline_eval.py:79`, `evals/run_cold_eval.py:121`).
+     planning estimates, split by step: 6,000, 7,000, 5,000 and 2,500 tokens for steps 2, 5a, 6
+     and 7 (`evals/run_pipeline_eval.py:75-78`, which add up to `:79`), and 5,600 and 3,300 for
+     v1's two calls (`evals/run_cold_eval.py:121-122`).
+   - **The margin is a multiplier written as a percentage:** 100 means the figure itself, not
+     widened. It is set in `evals/ws7_config.json` (100, ruled 18 Nov 2026).
    - Nothing in the request can cap input the way `maxTokens` caps output. The guard in point 3
      is what holds a run to its reservation.
 2. **Reserve first.** The reservation is written to the monthly ledger before the first Bedrock
    call. The run starts only if the month's total plus the reservation is **£15 or less**. The
-   pre-flight generation is inside the reservation.
+   pre-flight generation is inside the reservation. In code the cap is 18,750,000 micro-dollars:
+   1,500 pence at 80 pence a dollar (`evals/ws7_config.json`), rounded down.
 3. **Guard the spend while the run is going.** The client wrapper keeps a running total for the
    run.
    - **After every call** it adds that call's cost, from the usage Bedrock returned. A call that
@@ -260,7 +277,9 @@ actual cost.
    - **Before every call** it checks the total. Once the total has reached the run's reservation,
      the wrapper refuses every further call, and the run ends as failed with a fixed code.
    - **A run can therefore pass its reservation by at most one request,** and so can the month's
-     total pass £15.
+     total pass £15. This holds because both runners send one request at a time. A runner that
+     sent requests in parallel could pass it by one request per call in flight; the later
+     orchestrator-driven runner (D2) must revisit this.
    - **Why that one request is bounded.** A step's input is its fixed prompt and the fixed
      scenario notes, plus the outputs of earlier steps. The prompt and the notes are pinned by
      hash in the baseline key and the match check (D9, D11). Each earlier output is capped by its

@@ -341,11 +341,17 @@ which an entry was resolved as an accepted estimate has no such assurance, and i
    from the usage Bedrock returned. Any request that was sent and has no recorded usage stays at
    its worst case: a step that raised after a response, a crash before the record was written,
    an unfinished run.
-   - **An unmetered run's entry is unresolved.** It is recorded at that worst case, because its
-     true cost is not known.
-   - It **blocks every later inside-cap (scheduled) run**, in that month or any later one, until
-     the author resolves it.
-   - The author resolves it by recording a settled figure **and its basis**, which is one of two:
+   - **Three kinds of entry are unresolved**, because each one's cost is only an estimate:
+     - an unmetered run's entry;
+     - an abandoned reservation ("One run at a time", below);
+     - the entry of a run that crashed before its record was written.
+
+     The last two were ruled by the author on 18 Nov 2026. Each is recorded at its worst case,
+     because its true cost is not known.
+   - An unresolved entry **blocks every later inside-cap (scheduled) run**, in that month or any
+     later one, until the author resolves it.
+   - The author resolves an unresolved entry, of any of the three kinds, by recording a settled
+     figure **and its basis**, which is one of two:
      - **`upper_bound`:** a figure from AWS Cost Explorer, defined exactly (Codex review of
        PR #5; the Service and Region filters removed by the author, 18 Nov 2026):
        - **unblended** cost;
@@ -390,10 +396,10 @@ which an entry was resolved as an accepted estimate has no such assurance, and i
        the true cost, because the input was not capped. This **waives the monthly assurance for
        that month**: the ledger marks the month "assurance waived", and every run summary and
        check report for that month shows it.
-   - An outside-cap manual run is not blocked by it, and still needs the author's yes, as every
-     manual run does.
-   - A scheduled run that it blocks spends nothing and fails with its own fixed code; the
-     Thursday check reports it (D9).
+   - An outside-cap manual run is not blocked by an unresolved entry, and still needs the author's
+     yes, as every manual run does.
+   - A scheduled run that an unresolved entry blocks spends nothing and fails with its own fixed
+     code; the Thursday check reports the blocked run (D9).
 5. **A backstop alert.** An AWS Budgets email. It lags by hours and warns; it does not stop
    anything. **It is an alert only, never the reconciliation:** it cannot identify one run's
    charge, because the canary also calls Bedrock on this account and Budgets is a delayed
@@ -420,8 +426,12 @@ Wednesday can arrive twice.
   `If-Match` and the ETag that was read. On a conflict the job re-reads and tries again, a fixed
   number of times. If it still cannot write, it does not start.
 - **One run at a time.** A reservation that is still open blocks any other run. One left open past
-  the wall-clock limit is treated as abandoned: it stays counted at its worst case and stops
-  blocking.
+  the wall-clock limit is treated as abandoned.
+  - It stops blocking as an open reservation, so it no longer holds back an outside-cap manual
+    run.
+  - It stays counted at its worst case, and becomes **unresolved** (point 4; the author's ruling,
+    18 Nov 2026): it blocks every later inside-cap (scheduled) run until the author resolves it
+    on a basis.
 - **Manual runs use the same claim and the same ledger.** A baseline batch or a confirming run is
   written to the ledger labelled outside-cap. It does not count towards the £15, and it cannot
   overlap a scheduled run.
@@ -743,8 +753,9 @@ at the cache-write rate ($3.75 per million, plus 10%).
   with five Wednesdays the fifth run starts only if the first four averaged £2.09 or less. At the
   top of the expected range (£9.12) it does not start.** That is the ceiling working, and the
   heartbeat reports it.
-- **A run whose cost is unknown stays at £6.62, and is unresolved:** no later scheduled run starts
-  until the author resolves it.
+- **A run whose cost is unknown stays at £6.62, and is unresolved** (an unmetered run, an
+  abandoned reservation, or a run that crashed before its record was written): no later
+  scheduled run starts until the author resolves it.
   - Resolved as `upper_bound`, it counts at the Cost Explorer figure as D7 point 4 defines it
     (unblended; Charge type Usage only; the whole account, with no Service or Region filter; the
     run's UTC dates), and the month keeps its assurance.
@@ -833,10 +844,6 @@ reservation is reached. No AWS and no spend.
 - Whether Bedrock's price for this model in London matches the repository's constants.
 - Whether a wall clock alarm of seven one-day periods behaves as AWS documents it (D9). It is
   untested.
-- Whether an abandoned reservation (D7, "One run at a time"), or a run that crashed before its
-  record was written (D7, point 4), should be unresolved like an unmetered run. Each is counted at
-  its worst case, which is an estimate, not a bound, so a month that holds one is outside the
-  condition for the monthly bound (D7, point 3). To be ruled before slice 2 part 2.
 
 **Revisit this decision if:**
 

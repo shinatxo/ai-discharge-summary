@@ -279,9 +279,10 @@ page defines Usage as "Usage that AWS didn't apply reservation discounts to", an
 covered usage under a charge type of its own, so Usage alone would then leave part of a run out. If
 either is ever bought, the definition is revisited.
 
-An abandoned reservation, or a run that crashed before its record was written, is also counted at
-its worst case, which is an estimate. Whether those become unresolved too is an open question in
-ADR-011 ("Open checks for the author"), to be ruled before part 2.
+**An abandoned reservation, or a run that crashed before its record was written, is unresolved too**
+(the author's ruling, 18 Nov 2026). Each is counted at its worst case, which is only an estimate,
+just as an unmetered run's is. So each blocks every later inside-cap (scheduled) run until the
+author resolves it on one of the two bases above (ADR-011 D7, point 4; part 2).
 
 A runner that sent requests in parallel could pass the reservation by one call per call in flight.
 The later orchestrator-driven runner (ADR-011 D2) must revisit this before it is used with this
@@ -327,6 +328,12 @@ Codex review of PR #5):
 
 - A run whose report says `unmetered` is settled at its counted total, which includes the worst
   case of the call that made it unmetered. Its ledger entry is marked **unresolved**.
+- **An abandoned reservation, and a run that crashed before its record was written, are marked
+  unresolved too** (the author's ruling, 18 Nov 2026). Each stays counted at its worst case, and
+  is resolved exactly as an unmetered entry is.
+  - The two cases can overlap: a run that dies before settling leaves its reservation open, and
+    past the wall-clock limit that reservation is abandoned.
+  - How each case is recognised is part 2's to design.
 - An unresolved entry **blocks every later inside-cap (scheduled) run**, in that month or any
   later one. A blocked run reserves nothing, spends nothing and fails with its own fixed code.
   Part 2 must therefore find an unresolved entry from an earlier month, not only in the current
@@ -340,6 +347,9 @@ Codex review of PR #5):
 - Tests:
   - an unresolved entry blocks the next scheduled run, with a partner where a resolved entry does
     not;
+  - **each case blocks**: an unmetered run, an abandoned reservation and a crashed run;
+  - **each case resolves on both bases**, `upper_bound` and `estimate_accepted`, and then stops
+    blocking;
   - an entry from the month before still blocks;
   - a manual run is not blocked;
   - each basis is stored as given, and an unknown basis is refused;
@@ -372,20 +382,22 @@ Codex review of PR #5):
 - A run whose report says `unmetered` is a failed run with the fixed code `ws7_unmetered`.
 - **The resolve command.** A manual mode, run by the author only, that takes the run ID, the
   **basis** (`upper_bound` or `estimate_accepted`) and the **settled figure** in micro-dollars,
-  and records them on an unresolved entry. For `upper_bound` the figure is the Cost Explorer
-  figure exactly as defined above; the command cannot check that, so its basis is recorded as the
-  author's statement.
+  and records them on an unresolved entry (unmetered, abandoned or crashed; part 2).
+  - For `upper_bound` the settled figure is the Cost Explorer figure exactly as defined above. The
+    command cannot check that figure, so the basis is recorded as the author's statement.
+  - The command makes no Bedrock call.
+  - The command is the only way an entry leaves the unresolved state; AWS Budgets never resolves
+    one.
+  - With `estimate_accepted`, the command also sets the month's "assurance waived" flag (part 2).
 - **Before the resolve command is first used**, the author confirms in the Cost Explorer console,
   against real billing rows, that the model's rows carry Charge type = Usage. Pick a day the
   canary ran, then:
   1. group by **Service**, to find the model's own service name;
   2. filter to that service, and group by **Charge type**.
 
-  The `upper_bound` definition rests on this. Until now it had been checked only against AWS's
-  documentation, never against real rows. (The console groups by one dimension at a time, hence
-  the two steps.) It makes no Bedrock call. It is the only way an entry
-  leaves the unresolved state; AWS Budgets never resolves one. With `estimate_accepted` it sets the
-  month's "assurance waived" flag (part 2).
+  The `upper_bound` definition rests on this check. Until now the definition had been checked
+  only against AWS's documentation, never against real rows. (The console groups by one dimension
+  at a time, hence the two steps.)
 - **The check-mode report.**
   - The Thursday check reports a run blocked by an unresolved entry by that cause, naming the
     entry's run ID, so the alert says what the author must resolve.

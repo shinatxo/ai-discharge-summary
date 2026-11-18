@@ -1,0 +1,10 @@
+{
+  "schema": "ws7-config/1",
+  "monthly_cap_gbp_pence": 1500,
+  "gbp_pence_per_usd": 80,
+  "input_allowance_margin_percent": 100,
+  "preflight_scenario": "S1",
+  "wall_clock_limit_s": {"scheduled": 7200, "manual": 18000},
+  "ledger_cas_attempts": 4,
+  "max_start_delay_s": 3600
+}

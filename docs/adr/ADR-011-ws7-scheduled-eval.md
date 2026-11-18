@@ -3,9 +3,11 @@
 ## Status
 
 **Proposed** — 16 Nov 2026. Decisions by the author, 16 Nov 2026. Revised 17 Nov 2026 after
-review: the cost ceiling, duplicate deliveries, the heartbeat and the incident procedure.
+review: the cost ceiling, duplicate deliveries, the heartbeat and the incident procedure. Updated
+18 Nov 2026 with the author's rulings on slice 2, in the part of slice 2 that builds each one.
 
-This is a design. Slice 1, the offline comparator, is built (`docs/WS7-COMPARATOR.md`); nothing is
+This is a design. Slice 1, the offline comparator, is built (`docs/WS7-COMPARATOR.md`). Of slice 2,
+the client wrapper and the reservation are built (`docs/WS7-ENTRYPOINT.md`). Nothing is
 deployed or run. Every deploy, and every run that costs
 money, needs the author's explicit yes at the time. No number in a breach rule is set here: the
 author sets them before the first live run, and they change only by pull request.
@@ -216,9 +218,28 @@ it finished without error, wrote only the files expected, and cost no more than 
     `retries={"mode": "standard", "total_max_attempts": 1}` and the read timeout the runner asks
     for. `evals/run_pipeline_eval.py`'s `live_client` already does this (`:175`).
     `evals/run_cold_eval.py`'s default client (`:684`) does not, and it asks for no read timeout
-    either, so the value used for v1 is fixed in slice 2 and written to the manifest.
+    either, so the value used for v1 is fixed in slice 2 and written to the manifest. **It is 60
+    seconds to read and 60 to connect** (`evals/ws7_reserve.py`): botocore's defaults, which the
+    v1 runner runs on today.
   - **Retries by the code under test.** The wrapper allows **at most one call per model step per
     generation**. A repeat is refused, and the refusal ends that generation with a fixed code.
+    - The wrapper sees requests, not generations. A generation starts at a first-step request
+      (step 2, or v1's combined call) whose body differs from the current generation's; an
+      identical one is a repeat. Each batch allows only the generations it planned, and the
+      entrypoint first checks that no two scenarios would send the same first-step request,
+      comparing a canonical fingerprint of the request, not the raw notes hash. Every doubt is a
+      refusal (ruling e1, 18 Nov 2026).
+    - **Once any call is refused, every further call is refused** until a distinct first-step
+      request starts the next generation. So after a throttled step 5a whose retry was refused,
+      the step 6 the runner still asks for is never sent (Codex review of PR #5).
+    - The wrapper also refuses a request that is not one of the plan's steps, a step whose
+      `maxTokens` is not the figure reserved for it, and any other model ID. The reservation is a
+      bound only if the steps send what it reserved.
+  - **Where the calls go.** The wrapper builds the client with botocore's
+    `ignore_configured_endpoint_urls=True`, so an endpoint URL set in the environment or the AWS
+    config file cannot move it; only an explicit argument can, and the live path passes none. At
+    construction the live client must be Bedrock runtime in eu-west-2, or it is refused before any
+    request (`docs/WS7-ENTRYPOINT.md`).
 - So a throttle fails that generation, and the run is reported as failed.
 - This is tighter than the code under test, which may retry (Context, finding 8). No runner and
   no pipeline file is changed.
@@ -227,9 +248,16 @@ it finished without error, wrote only the files expected, and cost no more than 
 - The entrypoint has a wall-clock limit that ends the run on Wednesday. A runner that refuses to
   start (a canary window, an existing batch folder) is a failed run.
 
-**The cost ceiling: £15 a month of model spend.** Output is enforced by `maxTokens`; input is
-enforced by the running-spend guard to within one request (about £0.13); the ledger records
-actual cost.
+**The cost ceiling: £15 a month of model spend.** Output is enforced by `maxTokens`. Input is not
+capped by anything in a request: the running-spend guard stops a run within one call of its
+reservation, and that one call's input may exceed its allowance (about £0.13 by the planning
+figures, an estimate, not an enforced limit). The ledger records actual cost. Where a run's cost is
+unknown, its entry holds the worst case and is **unresolved**: it blocks every later scheduled run
+until the author resolves it (point 4). AWS Budgets is an alert only, never the reconciliation
+(point 5). **The month's spend passes £15 by at most one call only while every settled entry in
+the month is either its actual metered cost or a defensible upper bound** (point 3). A month in
+which an entry was resolved as an accepted estimate has no such assurance, and is marked so
+(point 4).
 
 1. **A worst-case reservation for each run.** For every model step: its enforced `maxTokens` as
    output, for every attempt the client may make (one), plus an input allowance.
@@ -247,30 +275,65 @@ actual cost.
    - **The input allowance is measured.** It is the largest input per step seen in the baseline,
      multiplied by a margin the author sets, and priced at the cache-write rate, the highest
      input rate. Until a baseline exists the figure is provisional and comes from the runners'
-     planning estimates (`evals/run_pipeline_eval.py:79`, `evals/run_cold_eval.py:121`).
+     planning estimates, split by step: 6,000, 7,000, 5,000 and 2,500 tokens for steps 2, 5a, 6
+     and 7 (`evals/run_pipeline_eval.py:75-78`, which add up to `:79`), and 5,600 and 3,300 for
+     v1's two calls (`evals/run_cold_eval.py:121-122`).
+   - **The margin is a multiplier written as a percentage:** 100 means the figure itself, not
+     widened. It is set in `evals/ws7_config.json` (100, ruled 18 Nov 2026).
    - Nothing in the request can cap input the way `maxTokens` caps output. The guard in point 3
      is what holds a run to its reservation.
 2. **Reserve first.** The reservation is written to the monthly ledger before the first Bedrock
    call. The run starts only if the month's total plus the reservation is **£15 or less**. The
-   pre-flight generation is inside the reservation.
+   pre-flight generation is inside the reservation. In code the cap is 18,750,000 micro-dollars:
+   1,500 pence at 80 pence a dollar (`evals/ws7_config.json`), rounded down.
 3. **Guard the spend while the run is going.** The client wrapper keeps a running total for the
    run.
    - **After every call** it adds that call's cost, from the usage Bedrock returned. A call that
      returned no usage is counted at its worst case.
+   - **A call whose cost is unknown stops the run.** A worst case is an estimate, not a bound: it
+     counts the input at the step's allowance, and nothing caps a real call's input. So a call
+     that returned no usable usage, and whose model may have run (a reply with no usage, a 5xx, a
+     read timeout, any other error except a throttle or a request that never reached Bedrock),
+     makes the run **unmetered**: the wrapper refuses every further call in the run, and the run
+     ends as failed with the fixed code `ws7_unmetered`. Its ledger entry keeps the worst-case
+     figure and is unresolved (point 4) (Codex review of PR #5).
+   - **A throttle is exactly an HTTP 429 with the error code `ThrottlingException`.** AWS: "A 429
+     response means that the request was not admitted. Inspect the API-specific error type
+     rather than relying on the HTTP status alone." (*Scaling and throughput best practices*,
+     <https://docs.aws.amazon.com/bedrock/latest/userguide/scaling-throughput-best-practices.html>,
+     read 18 Nov 2026.) The page says nothing about billing, and that some operations also use
+     429 for `ModelNotReadyException`. So a 5xx carrying that code, or a 429 with any other code,
+     is unmetered.
    - **Before every call** it checks the total. Once the total has reached the run's reservation,
      the wrapper refuses every further call, and the run ends as failed with a fixed code.
-   - **A run can therefore pass its reservation by at most one request,** and so can the month's
-     total pass £15.
-   - **Why that one request is bounded.** A step's input is its fixed prompt and the fixed
-     scenario notes, plus the outputs of earlier steps. The prompt and the notes are pinned by
-     hash in the baseline key and the match check (D9, D11). Each earlier output is capped by its
-     own `maxTokens`, and so is the step's own output.
-   - **How much.** By the runners' planning figures (`evals/run_pipeline_eval.py:75`), the
-     dearest single request is step 2: about 6,000 input tokens, all of them fixed, and 8,192
+   - **A run can therefore pass its reservation by at most one call.** That call's output is
+     capped by its `maxTokens`; its input is not, and may exceed its allowance. This holds because
+     both runners send one request at a time, and because every earlier call was either metered
+     or did not run the model. A runner that sent requests in parallel could pass it by one call
+     per call in flight; the later orchestrator-driven runner (D2) must revisit this.
+   - **The month's spend can pass £15 by at most one call, but only while every settled entry in
+     the month is either its actual metered cost or a defensible upper bound** (Codex review of
+     PR #5).
+     - Why: a run starts only if the month's *recorded* total plus its reservation is £15 or less
+       (point 2), so the recorded total passes £15 by at most the last run's one call.
+     - The *true* spend is no more than the recorded total only if no entry is below its true
+       cost.
+     - An entry resolved as `estimate_accepted` (point 4) may be below it, so it waives this
+       assurance for its month.
+     - "Actual metered cost" is priced at the repository's rates, which are not confirmed
+       against AWS's price page (Costs).
+   - **Why that one call is limited in practice, though by nothing enforced.** A step's input is
+     its fixed prompt and the fixed scenario notes, plus the outputs of earlier steps. The prompt
+     and the notes are pinned by hash in the baseline key and the match check (D9, D11). Each
+     earlier output is capped by its own `maxTokens`, and so is the step's own output. But the
+     code adds fields to the facts it passes on, so this is not a hard cap on input.
+   - **How much: an estimate.** By the runners' planning figures (`evals/run_pipeline_eval.py:75`),
+     the dearest single request is step 2: about 6,000 input tokens, all of them fixed, and 8,192
      output tokens. That is about **£0.13**. The other steps come to about £0.07 to £0.11 with
      their upstream input taken at its cap. A v1 request is about £0.07. These figures are
-     provisional until the baseline measures the inputs, and they do not count the fields the
-     code adds to the facts it passes on.
+     estimates from the planning figures, **not an enforced limit**. They are provisional until
+     the baseline measures the inputs, and they do not count the fields the code adds to the
+     facts it passes on.
    - **The guard tripping is itself a drift signal.** The inputs are pinned, so a run reaches its
      reservation only if the model is writing far more than it did at baseline. Each trip is
      published as a metric (D9).
@@ -278,7 +341,79 @@ actual cost.
    from the usage Bedrock returned. Any request that was sent and has no recorded usage stays at
    its worst case: a step that raised after a response, a crash before the record was written,
    an unfinished run.
-5. **A backstop.** An AWS Budgets email. It lags by hours and warns; it does not stop anything.
+   - **Three kinds of entry are unresolved**, because each one's cost is only an estimate:
+     - an unmetered run's entry;
+     - an abandoned reservation ("One run at a time", below);
+     - the entry of a run that crashed before its record was written.
+
+     The last two were ruled by the author on 18 Nov 2026. Each is recorded at its worst case,
+     because its true cost is not known.
+   - An unresolved entry **blocks every later inside-cap (scheduled) run**, in that month or any
+     later one, until the author resolves it.
+   - The author resolves an unresolved entry, of any of the three kinds, by recording a settled
+     figure **and its basis**, which is one of two:
+     - **`upper_bound`:** a figure from AWS Cost Explorer, defined exactly (Codex review of
+       PR #5; the Service and Region filters removed by the author, 18 Nov 2026):
+       - **unblended** cost;
+       - **Charge type** = Usage **only**, so credits, refunds and other negative adjustments are
+         excluded;
+       - for the **whole account**, with **no Service filter and no Region filter**;
+       - for the run's **UTC date or dates** (a run that spans two UTC dates takes both), read
+         once that day's figure is complete. Cost Explorer's days are UTC: "All times are in
+         Universal Coordinated Time (UTC)" (AWS, *Modifying your chart*,
+         <https://docs.aws.amazon.com/cost-management/latest/userguide/ce-modify.html>, read
+         18 Nov 2026).
+       - **Why no Service or Region filter:** Cost Explorer shows Anthropic models on Bedrock
+         under a service name of their own for each model, not under "Amazon Bedrock", so a
+         Service = Amazon Bedrock filter returns none of the model's cost.
+         - AWS does not document these names, so the source is secondary: Classmethod
+           DevelopersIO, *Tried aggregating by model using Amazon Bedrock product attributes in
+           Cost Explorer* (10 Oct 2026),
+           <https://dev.classmethod.jp/en/articles/bedrock-product-attributes-cost-explorer/>,
+           read 18 Nov 2026. It says: "Anthropic and OpenAI models are displayed in Cost Explorer
+           under different service names for each model". Its example is "Claude Sonnet 5.5
+           (Amazon Bedrock Edition)".
+         - The service name for our model, `anthropic.claude-sonnet-4-6`, is inferred from that
+           pattern; it has not been seen.
+         - With no Service or Region filter, the figure cannot miss the model's rows, whatever
+           service name or region they carry.
+       - **It is looser:** it includes every other service's usage on the account that day, the
+         canary's calls among them. That only makes the figure larger, so it errs only towards
+         blocking. The entry counts at that figure, and **the month keeps its assurance**.
+       - **Why Usage only:** a net figure, reduced by credits or refunds, can fall below the run's
+         usage, and would then not be an upper bound. Cost Explorer lists **Credit** ("Any AWS
+         credits that are applied to your account") and **Refund** ("Any refunds that you
+         received") as charge types apart from **Usage** (AWS, *Filtering the data that you want
+         to view*, <https://docs.aws.amazon.com/cost-management/latest/userguide/ce-filtering.html>,
+         read 18 Nov 2026).
+       - It assumes no reservation or Savings Plan applies to the model's usage on this account.
+         The same page defines Usage as "Usage that AWS didn't apply reservation discounts to",
+         and puts Savings Plan covered usage under a charge type of its own, so Usage alone would
+         then leave part of a run out. If either is ever bought, this definition is revisited.
+       - Before its first use, the author checks against real billing rows that the model's rows
+         carry Charge type = Usage (slice 2 part 5, `docs/WS7-ENTRYPOINT.md`).
+     - **`estimate_accepted`:** the worst-case estimate is accepted as the figure. It may be below
+       the true cost, because the input was not capped. This **waives the monthly assurance for
+       that month**: the ledger marks the month "assurance waived", and every run summary and
+       check report for that month shows it.
+   - An outside-cap manual run is not blocked by an unresolved entry, and still needs the author's
+     yes, as every manual run does.
+   - A scheduled run that an unresolved entry blocks spends nothing and fails with its own fixed
+     code; the Thursday check reports the blocked run (D9).
+5. **A backstop alert.** An AWS Budgets email. It lags by hours and warns; it does not stop
+   anything. **It is an alert only, never the reconciliation:** it cannot identify one run's
+   charge, because the canary also calls Bedrock on this account and Budgets is a delayed
+   aggregate (Codex review of PR #5).
+   - **Its filter must not be Service = Amazon Bedrock alone**, for the reason in point 4:
+     Anthropic models are billed under a service name of their own for each model, so that
+     filter would miss our model's cost.
+   - Use no service filter, or Bedrock's **model provider** product attribute (Anthropic).
+   - AWS added Amazon Bedrock product attributes to Cost Explorer, Budgets and Dashboards on
+     8 Oct 2026: model, model provider, inference type and feature. "In Budgets, you can filter
+     budgets using the same product attributes." Source: AWS What's New,
+     <https://aws.amazon.com/jp/about-aws/whats-new/2026/10/aws-bedrock-attributes-in-cost-explorer/>,
+     read 18 Nov 2026. The page is in Japanese; the quote and the attribute names are
+     translations.
 
 **Duplicates and concurrency.** EventBridge Scheduler delivers at least once, so the same
 Wednesday can arrive twice.
@@ -291,8 +426,12 @@ Wednesday can arrive twice.
   `If-Match` and the ETag that was read. On a conflict the job re-reads and tries again, a fixed
   number of times. If it still cannot write, it does not start.
 - **One run at a time.** A reservation that is still open blocks any other run. One left open past
-  the wall-clock limit is treated as abandoned: it stays counted at its worst case and stops
-  blocking.
+  the wall-clock limit is treated as abandoned.
+  - It stops blocking as an open reservation, so it no longer holds back an outside-cap manual
+    run.
+  - It stays counted at its worst case, and becomes **unresolved** (point 4; the author's ruling,
+    18 Nov 2026): it blocks every later inside-cap (scheduled) run until the author resolves it
+    on a basis.
 - **Manual runs use the same claim and the same ledger.** A baseline batch or a confirming run is
   written to the ledger labelled outside-cap. It does not count towards the £15, and it cannot
   overlap a scheduled run.
@@ -390,6 +529,11 @@ two acts are to write a success record to S3 and then to publish `RunOk` = 1.
 - It looks for Wednesday's claim and success record, and sends an alert when the run never
   started (no claim), started and did not finish (a claim and no success record), or finished as
   failed.
+- A run **blocked by an unresolved ledger entry** (D7, point 4) has a claim and a failed record
+  with its own fixed code. The check reports that cause by name, so the alert says what the
+  author must resolve.
+- If the month's ledger is marked "assurance waived" (an entry resolved as
+  `estimate_accepted`, D7 point 4), the check's report says so, every week of that month.
 - **Warning time: 30 hours** after the scheduled start (Wednesday 04:00 to Thursday 10:00), plus
   the minute or two the check takes.
 - It reads S3 and publishes to the topic. It does not depend on CloudWatch.
@@ -578,7 +722,8 @@ at the cache-write rate ($3.75 per million, plus 10%).
 |---|---|---|---|---|
 | Bedrock, pipeline, 18 + 1 pre-flight | £0.76–2.28 | £6.62 (£5.34 enforced output + £1.29 provisional input allowance, rounded) | expected £3.30–9.90 | Repository constants; not confirmed on AWS's page |
 | Bedrock, v1 until W11, 18 + 1 | up to £1.32 | £1.96 (£1.40 + £0.56) | up to £5.74 | As above |
-| Baseline batch, 18 x 3, by hand | £2.16–6.48 | £18.83 | Not monthly; outside the cap | As above |
+| Baseline, 18 x 3, by hand: 54 generations, **excluding** the pre-flight | £2.16–6.48 | £18.83 | Not monthly; outside the cap | As above |
+| Baseline with its pre-flight: 55 generations (ruling e8, 18 Nov 2026; **the figure used**) | £2.20–6.60 | £19.18 | Not monthly; outside the cap | As above |
 | Customer-managed KMS key | n/a | n/a | £0.80 | $1 per key, AWS price list for London, 8 Nov 2026 |
 | Fargate, ARM, 0.5 vCPU / 1 GB (the run and the Thursday check) | under £0.01 | n/a | under £0.05 | AWS price list for London, 11 Nov 2026 |
 | Public IPv4 address | under £0.01 | n/a | about £0.01 | AWS price list for London, 5 Nov 2026 |
@@ -594,16 +739,29 @@ at the cache-write rate ($3.75 per million, plus 10%).
   a truncated step fails.
 - **The reservation figures are provisional.** The input allowance becomes a measured figure at
   the baseline, with the author's margin.
-- **The ceiling is £15 a month of model spend.** Output is enforced by `maxTokens`; input is
-  enforced by the running-spend guard to within one request (about £0.13); the ledger records
-  actual cost. The fixed items, about £2 a month, are not in the ledger.
+- **The ceiling is £15 a month of model spend.** Output is enforced by `maxTokens`. Input is not
+  capped: the running-spend guard stops a run within one call of its reservation, and that
+  call's input may exceed its allowance (about £0.13 by the planning figures, an estimate, not an
+  enforced limit). The ledger records actual cost. Where a cost is unknown, it holds the worst case
+  in an unresolved entry, which blocks later scheduled runs until the author resolves it. AWS
+  Budgets is an alert only. The month's spend passes £15 by at most one call **only while every
+  settled entry in it is its actual metered cost or a defensible upper bound**; an entry resolved
+  as `estimate_accepted` waives that for its month (D7, points 3 and 4). The fixed items, about £2
+  a month, are not in the ledger.
 - **What the ceiling allows.** A run starts only while the month's ledger total is £8.38 or less.
   Three runs at the top of the expected range total £6.84, so four Wednesdays start. **In a month
   with five Wednesdays the fifth run starts only if the first four averaged £2.09 or less. At the
   top of the expected range (£9.12) it does not start.** That is the ceiling working, and the
   heartbeat reports it.
-- **A run whose usage is unknown stays at £6.62.** One more run can start that month, and a third
-  only if the second cost £1.76 or less.
+- **A run whose cost is unknown stays at £6.62, and is unresolved** (an unmetered run, an
+  abandoned reservation, or a run that crashed before its record was written): no later
+  scheduled run starts until the author resolves it.
+  - Resolved as `upper_bound`, it counts at the Cost Explorer figure as D7 point 4 defines it
+    (unblended; Charge type Usage only; the whole account, with no Service or Region filter; the
+    run's UTC dates), and the month keeps its assurance.
+  - Resolved as `estimate_accepted`, it counts at £6.62. One more run can start that month, and a
+    third only if the second cost £1.76 or less, and **the month's assurance is waived**: its
+    spend may pass £15 by more than one call.
 - If key rotation is on, each rotated key version adds its own monthly charge.
 
 ## Consequences
@@ -617,9 +775,16 @@ not see settings drift, the assembled bundle, value errors with no scorer, or re
 (D1). It does not see intermittent or sub-weekly change (D9). These limits are stated so that a
 quiet week is not read as proof of safety.
 
-**What the spend ceiling is.** £15 a month of model spend. Output is enforced by `maxTokens`;
-input is enforced by the running-spend guard to within one request (about £0.13); the ledger
-records actual cost. It is not an exact limit, and that figure is provisional until the baseline.
+**What the spend ceiling is.** £15 a month of model spend. Output is enforced by `maxTokens`.
+Input is not capped: the running-spend guard stops a run within one call of its reservation, and
+that call's input may exceed its allowance (about £0.13 by the planning figures, an estimate, not
+an enforced limit). The ledger records actual cost. Where a cost is unknown, it holds the worst
+case in an unresolved entry, which blocks later scheduled runs until the author resolves it with a
+settled figure and its basis. AWS Budgets is an alert only, never the reconciliation. The month's
+spend passes £15 by at most one call **only while every settled entry in the month is its actual
+metered cost or a defensible upper bound**. A month with an entry resolved as `estimate_accepted`
+has no such assurance, and its ledger, run summaries and check reports say so. It is not an exact
+limit, and the figures are provisional until the baseline.
 
 **What has to change in implementation pull requests, not this one.**
 

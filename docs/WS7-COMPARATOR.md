@@ -47,7 +47,9 @@ ws7_compare: status=breach exit=1 rows=3 breaches=2 errors=0 key_mismatches=0 un
    is reported.
 2. **Keys.** The baseline's keys are compared with the run's. Any difference is `no_baseline`.
 3. **Rules against data.** The rules file's target must match. Every ruled metric must be in both
-   files, with the shape its kind needs. Any fault is an `error`.
+   files, with the shape its kind needs. **Coverage:** every ruled kind-2 metric must have a
+   verdict for exactly the scenarios in `keys.gold_sha256`, in the baseline and in the run. Any
+   fault is an `error`.
 4. **Compare.** One row per family and kind.
 
 An `error` or `no_baseline` result has no rows. There is never a partial comparison.
@@ -93,6 +95,8 @@ The baseline and the run summary each carry a `keys` object. It is the baseline 
 - Values are compared exactly. A scorer version of `2` does not match `"2"`.
 - A missing or extra key is an error, not a mismatch. A mismatch is two well-formed values that
   differ.
+- The check of a `keys` object is public, as `check_keys()`. The run manifest's `keys` are
+  checked with the same function (`evals/ws7_manifest.py`).
 
 ## The rules file (`ws7-rules/1`)
 
@@ -222,8 +226,21 @@ counts. Equal or lower is not a breach.
 - An unstable scenario is never a flip. It is listed with the number of baseline runs it passed
   (0, 1 or 2).
 - Every scenario with a run verdict of `"no_output"` is listed, stable or not.
-- The run must have a verdict for exactly the baseline's scenarios. A scenario missing from the
-  run, or one the baseline does not have, is an error.
+- **Coverage.** A ruled kind-2 metric must have a verdict for exactly the scenarios in
+  `keys.gold_sha256`, in the baseline and in the run. A scenario the gold has and a file leaves
+  out, or one a file has and the gold does not, is an error for that file
+  (`scenario_coverage_differs`).
+  - Why the gold: comparing the two files only with each other would let both leave out the same
+    scenario, and it would then never be looked at.
+  - The check runs after the keys match, so the baseline's gold and the run's are the same set. A
+    run whose gold differs is `no_baseline`, as before.
+  - A rule cannot name a subset of the scenarios. That would be a new field in the rules file,
+    and so a new schema version.
+  - A verdict metric the rules do not name is not checked for coverage (see "Metrics the rules do
+    not name").
+- The run must also have a verdict for exactly the baseline's scenarios
+  (`scenario_set_differs`). With the coverage check this is never the only error: two files that
+  both cover the gold agree with each other.
 
 **Kind 3, noisy counts.** A breach is a count below `min - margin` or above `max + margin`, where
 `min` and `max` are the lowest and highest baseline counts. A count exactly on either boundary is
@@ -240,7 +257,7 @@ A family and kind is a breach when any of its metrics is.
 | `status` | `"no_breach"`, `"breach"`, `"no_baseline"` or `"error"` | |
 | `exit_code` | `0`, `1` or `2` | The same as the process exit code |
 | `baseline_id`, `run_id` | ID string or null | Null when that file did not pass its checks |
-| `inputs` | object: `baseline_sha256`, `rules_sha256`, `run_sha256` | The sha256 of each file's bytes, or null if it could not be read. No file paths |
+| `inputs` | object: `baseline_sha256`, `rules_sha256`, `run_sha256` | The sha256 of each file's bytes. See "When an input's hash is null" below. No file paths |
 | `key_mismatch` | sorted list of key names | The top-level keys that differ. Empty unless `no_baseline` |
 | `errors` | list of `{code, file, field, metric}` | See below. Empty unless `error` |
 | `comparisons` | list of rows, sorted by family then kind | One row for each family and kind the rules name. Empty for `no_baseline` and `error` |
@@ -255,6 +272,16 @@ A family and kind is a breach when any of its metrics is.
 - The same three input files always give the same bytes: sorted keys, sorted lists, two-space
   indentation and one trailing newline, whatever `PYTHONHASHSEED` is.
 - Scenario IDs are sorted as strings, so `S10` comes before `S2`.
+
+**When an input's hash is null.** In exactly two cases:
+
+- that file could not be read at all: it is missing, or it is not a readable file. Its error is
+  `file_unreadable`, and the other two files keep their hashes;
+- the comparator met an unexpected exception (`internal_error`). All three are then null.
+
+A file that was read keeps its hash whatever it holds. That includes a file that is not valid
+JSON (`json_invalid`) and one that fails its shape check (`shape_invalid`), so the result always
+says which bytes were refused.
 
 The result of the three example files above (exit code 1). It is printed compactly here; the file
 itself has one value per line.
@@ -294,7 +321,8 @@ Reading it:
 
 A metric that is in the baseline or the run but not in the rules is listed in `unruled_metrics`.
 It does not change the status or the exit code, and it is never dropped silently. It must still
-be well-formed.
+be well-formed. An unruled verdict metric is not checked for coverage: it may have verdicts for
+some of the gold's scenarios only.
 
 A misspelt name in the rules file is caught the other way round: the ruled name is then missing
 from the run, which is an error.
@@ -314,6 +342,7 @@ already passed the ID pattern. Nothing else from an input file is copied.
 | `target_mismatch` | The rules file is for the other target |
 | `metric_missing` | A ruled metric is not in the baseline or not in the run |
 | `metric_kind_mismatch` | A ruled metric has the wrong shape for its kind: counts for kind 2, or verdicts for kind 1 or 3 |
+| `scenario_coverage_differs` | A ruled kind-2 metric's scenarios, in the file named, are not exactly the scenarios in `keys.gold_sha256` |
 | `scenario_set_differs` | A kind-2 metric's scenarios differ between the baseline and the run |
 | `internal_error` | An unexpected exception |
 
@@ -344,3 +373,11 @@ PYTHONDONTWRITEBYTECODE=1 python -m pytest -p no:cacheprovider -q tests/test_ws7
 `tests/test_ws7_compare.py` has invented fixtures only, written in the test file. Every breach
 test has a matching non-breach test at its boundary. Every result a test produces is also checked,
 field by field, to hold only IDs, counts and fixed labels.
+
+Added with slice 2 part 3 (the follow-ups from the review of PR #4):
+
+- a readable file that is not valid JSON keeps its hash, and an unreadable one has null while
+  the other two keep theirs;
+- every v1 key that differs gives `no_baseline` naming that key, as every pipeline key did;
+- a ruled kind-2 metric that does not cover the gold's scenarios is an error, with the case the
+  older check could not see: the baseline and the run leaving out the same scenario.

@@ -6,12 +6,14 @@
 review: the cost ceiling, duplicate deliveries, the heartbeat and the incident procedure. Updated
 18 Nov 2026 with the author's rulings on slice 2, in the part of slice 2 that builds each one.
 Updated 19 Nov 2026 with the rulings on part 2: a manual run's own claim key, the listing
-permission, the run prefixes, and what an unmetered entry counts at.
+permission, the run prefixes, and what an unmetered entry counts at. Updated 19 Nov 2026 with the
+ruling on part 3: a verdict metric that a rule names covers exactly the gold's scenarios, in the
+baseline and in the run.
 
 This is a design. Slice 1, the offline comparator, is built (`docs/WS7-COMPARATOR.md`). Of slice 2,
-parts 1 and 2 are built (`docs/WS7-ENTRYPOINT.md`): the client wrapper and the reservation, and
-the claim, the ledger, the match check and the run manifest. Nothing is
-deployed or run. Every deploy, and every run that costs
+parts 1 to 3 are built (`docs/WS7-ENTRYPOINT.md`): the client wrapper and the reservation; the
+claim, the ledger, the match check and the run manifest; and the follow-ups from the reviews of
+PR #4 and PR #6. Nothing is deployed or run. Every deploy, and every run that costs
 money, needs the author's explicit yes at the time. No number in a breach rule is set here: the
 author sets them before the first live run, and they change only by pull request.
 

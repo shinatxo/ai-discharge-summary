@@ -940,6 +940,25 @@ def test_a_report_that_is_not_this_runs_own_is_refused_and_the_entry_stays_open(
     assert world.ledger.settle(admitted.run_id, report())["state"] == wl.SETTLED   # the partner
 
 
+def test_a_report_whose_micro_dollar_total_is_a_boolean_is_refused(world):
+    """In Python True == 1, so a `total_usd_micros` of True compares equal to a
+    nano-dollar total that rounds up to one micro-dollar. A boolean is not a count:
+    the report is refused, and the entry stays open."""
+    admitted = start(world, W1)
+    before = world.fake.body(DEC)
+    one = report(total_nanos=1)                                           # rounds up to 1 micro-dollar
+    assert one["total_usd_micros"] == 1 and type(one["total_usd_micros"]) is int
+    as_true = dict(one, total_usd_micros=True)
+    assert as_true["total_usd_micros"] == reserve.to_micros(as_true["total_usd_nanos"])   # why it could slip by
+    stop = stopped(lambda: world.ledger.settle(admitted.run_id, as_true), wl.REPORT_INVALID)
+    assert stop.code == "ws7_report_invalid"
+    assert world.fake.body(DEC) == before and entry_of(world, admitted.run_id)["state"] == wl.OPEN
+
+    settled = world.ledger.settle(admitted.run_id, one)                   # the partner: the integer 1
+    assert (settled["state"], settled["basis"]) == (wl.SETTLED, wl.METERED)
+    assert settled["counted_usd_micros"] == 1 and type(settled["counted_usd_micros"]) is int
+
+
 def test_a_settled_entry_never_changes_again(world):
     admitted = start(world, W1)
     settled = world.ledger.settle(admitted.run_id, report())

@@ -5,8 +5,8 @@ slice 2). It is being built as six pull requests. This document grows with each 
 
 | Part | What | Status |
 |---|---|---|
-| 1 | The client wrapper and the reservation | **Built** (this document) |
-| 2 | The claim, the ledger, the match check and the run manifest | Not built |
+| 1 | The client wrapper and the reservation | **Built** |
+| 2 | The claim, the ledger, the match check and the run manifest | **Built** |
 | 3 | Comparator follow-ups from PR #4 | Not built |
 | 4 | The run summary and the candidate baseline | Not built |
 | 5 | The modes, the comparator call and publishing | Not built |
@@ -102,7 +102,7 @@ micro-dollar.
 | `input_allowance_margin_percent` | 100 | See "The margin" above |
 | `preflight_scenario` | `S1` | The one scenario run alone before the 18 |
 | `wall_clock_limit_s` | `{"scheduled": 7200, "manual": 18000}` | When a run is ended |
-| `ledger_cas_attempts` | 4 | Tries at the ledger's compare-and-swap (part 2) |
+| `ledger_cas_attempts` | 4 | Tries **in total** at a ledger write, and at a claim (part 2) |
 | `max_start_delay_s` | 3600 | The oldest scheduled time a run may still claim (part 2) |
 
 The values are the author's rulings of 18 Nov 2026, and they change only by pull request. The
@@ -216,8 +216,8 @@ case is above its true cost). So:
   allowance;
 - by the planning figures the dearest such call is about £0.13 (step 2); that is an estimate, not
   an enforced limit;
-- if the run is unmetered, its true cost is not known. Its ledger entry keeps the worst-case
-  figure and is **unresolved**: it blocks every later scheduled (inside-cap) run until the author
+- if the run is unmetered, its true cost is not known. Its ledger entry holds the guard's counted
+  total, which counts the unmetered call at its worst case, and is **unresolved**: it blocks every later scheduled (inside-cap) run until the author
   resolves it on one of two bases, `upper_bound` or `estimate_accepted` (below; ADR-011 D7,
   point 4). An outside-cap manual run is not blocked by it, and still needs the author's yes;
 - **AWS Budgets is an alert only, never the reconciliation.** It cannot identify one run's charge:
@@ -280,8 +280,8 @@ covered usage under a charge type of its own, so Usage alone would then leave pa
 either is ever bought, the definition is revisited.
 
 **An abandoned reservation, or a run that crashed before its record was written, is unresolved too**
-(the author's ruling, 18 Nov 2026). Each is counted at its worst case, which is only an estimate,
-just as an unmetered run's is. So each blocks every later inside-cap (scheduled) run until the
+(the author's ruling, 18 Nov 2026). Each is counted at its reservation, which is only an estimate,
+just as an unmetered run's counted total is. So each blocks every later inside-cap (scheduled) run until the
 author resolves it on one of the two bases above (ADR-011 D7, point 4; part 2).
 
 A runner that sent requests in parallel could pass the reservation by one call per call in flight.
@@ -315,53 +315,442 @@ only counts.
 ### What part 1 does not do
 
 - It does not open the ledger or decide whether a run may start (part 2).
-- It does not settle the ledger; part 5 settles from `total_usd_nanos`.
+- It does not settle the ledger. Part 2's `settle()` does, from the report's total; part 5
+  calls it.
 - It does not check that the scenarios' first-step requests are distinct, set the deadline or
   choose the sleep the runners are given (part 5).
 
+## Part 2: the claim, the ledger, the match check and the run manifest
+
+Three modules, and the strict fakes they are tested against:
+
+- `evals/ws7_store.py`: the S3 and SSM clients, S3's conditional writes, the key layout, and
+  `Stop`, the one way a WS7 refusal is raised.
+- `evals/ws7_ledger.py`: the claim and the monthly ledger.
+- `evals/ws7_manifest.py`: the match check and the run manifest.
+- `tests/ws7_fakes.py`: a strict S3 fake and a strict SSM fake, on loopback.
+
+Nothing in part 2 calls a model, and nothing has been run against AWS. No runner, no scorer, no
+comparator file and no file in `src/generate/pipeline/` is changed, and neither is
+`evals/ws7_config.json`. `ws7_manifest.py` calls `pipeline.orchestrate.pipeline_version()` and
+each runner's own `parse_args`; it changes neither.
+
+The approved slice 2 plan's part 2 section was not in the repository or on Notion, so the merged
+documents were the reference. The names below were approved by the author on 19 Nov 2026.
+
+### The order a run follows
+
+Part 2 supplies the pieces. Part 5 wires them, in this order:
+
+1. **The match check.** It costs nothing and writes nothing. A mismatch stops the run before any
+   claim.
+2. **The claim.** A duplicate stops here.
+3. **Admission.** The reservation is booked in the month's ledger, or the run is refused.
+4. **The run**, with the guard's deadline set from the admission (see "The run's own deadline").
+5. **Settling**, straight after the last runner returns and before any scoring. If the run has
+   no guard report to settle from, it calls `mark_crashed()` instead.
+6. **The manifest**, written once at the end, when the batch's hashes are known.
+
+### The S3 layout
+
+Every key is under `ws7/`, the task role's whole reach in the bucket (ADR-011 D6).
+
+| Key | Kept? | Written by |
+|---|---|---|
+| `ws7/claims/<target>/<YYYY-MM-DD>` | Kept | A scheduled run's claim. The date is the UTC date of the scheduled time |
+| `ws7/claims/<target>/manual/<run_id>` | Kept | A manual run's claim |
+| `ws7/ledger/<YYYY-MM>.json` | Kept | The monthly ledger: the UTC month of a run's scheduled time |
+| `ws7/runs/scheduled/<run_id>/…` | **Expires after 90 days** | A scheduled run's records. `manifest.json` here (part 2); the batch, scores and comparison (parts 4 and 5) |
+| `ws7/runs/manual/<run_id>/…` | Kept | A manual run's records: baseline batches and confirming runs |
+
+- ADR-011 D8 expires scheduled runs after 90 days and keeps baselines, claims, ledgers and success
+  records. An S3 lifecycle rule selects by prefix, so the rule is `ws7/runs/scheduled/` and
+  **nothing that is kept sits under it** (`tests/test_ws7_store.py` checks the keys part 2 makes).
+- Part 5's success records and D10's retained incident copies are kept, so they go under prefixes
+  of their own, outside `ws7/runs/scheduled/`. Part 5 names them.
+- **Run IDs.** A scheduled run is `<UTC date>T<HHMM>-<target>`, for example
+  `2026-12-16T0400-pipeline`. A manual run adds `-manual`: `2026-12-16T0130-pipeline-manual`. No
+  target is called `manual`, so the two cannot collide.
+
+### The store (`evals/ws7_store.py`)
+
+- **The clients.** `build_client("s3")` and `build_client("ssm")` follow the Bedrock client's
+  rules (part 1): one attempt per call, `eu-west-2` only, `ignore_configured_endpoint_urls=True`,
+  and a refusal at construction unless the client resolves to the service's own endpoint
+  (`https://s3.eu-west-2.amazonaws.com`, `https://ssm.eu-west-2.amazonaws.com`). An explicit
+  endpoint is for the tests' fakes and must be `http://127.0.0.1:<port>`. The S3 addressing style
+  and the accelerate option are set in code, so an `s3 =` section in a config file cannot change
+  them.
+- **There is no unconditional write and no delete.** The store has `list_keys`, `get`,
+  `put_if_absent` (`If-None-Match: *`) and `put_if_match` (`If-Match: <ETag>`), and `create`,
+  which is `put_if_absent` with the read-back below.
+- **How S3 answers** (AWS, read 19 Nov 2026):
+  [*Conditional write behavior*](https://docs.aws.amazon.com/AmazonS3/latest/userguide/conditional-writes.html)
+  and [PutObject](https://docs.aws.amazon.com/AmazonS3/latest/API/API_PutObject.html).
+
+| S3's answer | Meaning here |
+|---|---|
+| 200 | Written. The reply's ETag is the next `If-Match` |
+| 412 `PreconditionFailed` | `If-None-Match`: the key is taken. `If-Match`: the object is not the one that was read |
+| 409 `ConditionalRequestConflict` | A concurrent conditional write. AWS: "On a 409 failure you should retry the upload" (`If-Match`: "fetch the object's ETag and retry") |
+| 404 on `If-Match` | The object is gone. A failure: nothing in WS7 deletes |
+| Any other 4xx | Refused outright. It did not land. A failure |
+| A 5xx, a timeout, a dropped connection, a 200 with no ETag | **Ambiguous.** The write may have landed |
+
+- **An ambiguous write is never assumed either way.** The caller reads the object back and looks
+  for its own token: a claim's `claim_id`, a ledger's `write_id`, a manifest's bytes.
+- **Absence is decided from a listing, never from a GET error.**
+  - S3 answers a GET for a missing key with 404 only if the caller has `s3:ListBucket`, and with
+    403 otherwise ([GetObject](https://docs.aws.amazon.com/AmazonS3/latest/API/API_GetObject.html),
+    read 19 Nov 2026). AWS does not say which a grant limited by `s3:prefix` gives.
+  - So WS7 lists a prefix first, GETs only keys the listing returned, and creates a month's first
+    ledger with `If-None-Match: *`. Any GET error on a listed key is a failure
+    (`ws7_store_get_failed`).
+  - A truncated listing is refused (`ws7_store_list_truncated`): a key it left out would be read
+    as absent.
+- **An ETag is opaque.** The bucket is KMS-encrypted (ADR-011 D8, D9), so an ETag is not the
+  object's MD5. WS7 only hands back the ETag it was given.
+
+### The claim
+
+`claim()` creates one object with `If-None-Match: *`. Its key comes from the scheduled time the
+job is given as an argument, never from the clock.
+
+```json
+{"schema": "ws7-claim/1", "target": "pipeline", "mode": "scheduled",
+ "scheduled_time": "2026-12-16T04:00:00Z", "run_id": "2026-12-16T0400-pipeline",
+ "claim_id": "9c1e52aa07b34d1088f2a6c1d0e4b7a3", "claimed_at": "2026-12-16T04:00:37Z"}
+```
+
+- **The scheduled time** is ISO 8601 to the second with `Z` or an explicit offset. A time with no
+  zone is refused, not guessed.
+- **Before any write:** a scheduled time in the future is refused, and so is one older than
+  `max_start_delay_s`, for a scheduled and a manual run alike. Exactly at the limit is allowed.
+- **A duplicate.** If the key is taken the job raises `Duplicate` (`ws7_duplicate`). It reads no
+  ledger, reserves nothing and spends nothing, and it carries the metric name `Duplicate` with a
+  count of 1 (no alarm, ADR-011 D7).
+- **A scheduled claim is one per target per UTC date.** A second delivery that day is a duplicate
+  whatever time it carries.
+- **A manual run claims under its own key** (the author's ruling, 19 Nov 2026).
+  - Why: with one shared key, a manual run started on a Wednesday before 04:00 would take that
+    date's claim. The scheduled delivery would exit as a duplicate, with no alarm, and the
+    Thursday check would find a claim that was not the scheduled run's.
+  - "Manual runs use the same claim" (ADR-011 D7) means the same mechanism, not the same key.
+  - What stops a manual and a scheduled run overlapping is the ledger's open entry.
+- **A claim whose reply failed** is read back, listing first. It is this job's only if the object
+  carries this job's `claim_id`; if another job's is there, this job is a duplicate.
+- The claim is tried `ledger_cas_attempts` times in total (a 409, or a failed reply that did not
+  land, is tried again). After that the job stops with `ws7_claim_unavailable`.
+
+### The ledger
+
+One object a month. The month is the **UTC month of the run's scheduled time**, the same time that
+keys the claim. For every Wednesday 04:00 London run that is also the London month.
+
+```json
+{"schema": "ws7-ledger/1", "month": "2026-12", "rev": 5,
+ "write_id": "5f0c1b77e2a94c03b1d2e3f4a5b6c7d8",
+ "cap_usd_micros": 18750000, "assurance_waived": false,
+ "entries": [
+  {"run_id": "2026-12-02T0400-pipeline", "target": "pipeline", "mode": "scheduled",
+   "state": "settled", "kind": null, "basis": "metered",
+   "reserved_usd_micros": 8280476, "counted_usd_micros": 1903211, "estimate_usd_micros": null,
+   "opened_at": "2026-12-02T04:00:30Z", "expires_at": "2026-12-02T06:00:30Z",
+   "closed_at": "2026-12-02T04:38:10Z", "resolved_at": null},
+  {"run_id": "2026-12-09T0400-pipeline", "target": "pipeline", "mode": "scheduled",
+   "state": "unresolved", "kind": "abandoned", "basis": null,
+   "reserved_usd_micros": 8280476, "counted_usd_micros": 8280476, "estimate_usd_micros": 8280476,
+   "opened_at": "2026-12-09T04:00:30Z", "expires_at": "2026-12-09T06:00:30Z",
+   "closed_at": "2026-12-09T06:00:30Z", "resolved_at": null}]}
+```
+
+Both examples are invented. The loader is strict, as the config loader is: an unknown or missing
+field, a wrong type, a duplicate key, or a state that cannot be (an accepted estimate in a month
+that is not flagged, say) is `ws7_ledger_invalid`, and the run does not start. So is any other
+object under `ws7/ledger/`.
+
+**What an entry is, and what it counts at.**
+
+| State | `kind` / `basis` | Counts at |
+|---|---|---|
+| `open` | | Its reservation |
+| `settled` | `metered` | The guard's counted total, in micro-dollars, rounded up |
+| `settled` | `withdrawn` | 0: the run withdrew before any call (see "One run at a time") |
+| `unresolved` | `unmetered` | The guard's counted total (the author's ruling, 19 Nov 2026) |
+| `unresolved` | `abandoned`, `crashed` | Its reservation |
+| `resolved` | `upper_bound`, `estimate_accepted` | The settled figure. `estimate_usd_micros` keeps what it was resolved from |
+
+- The month's **recorded total** is what its scheduled entries count at. A manual run is outside
+  the cap: its entry is in the ledger and is never counted.
+- `settled` and `resolved` never change again. Every write is checked against the ledger it
+  replaces before it is sent (`_check_transition`): a write that would change one, drop or
+  reorder an entry, move an entry any way but open → settled, open → unresolved or
+  unresolved → resolved, or clear the month's flag is refused with `ws7_ledger_write_invalid`.
+
+**Admission** (`Ledger.admit`), in this order, decided again on every try:
+
+1. An open entry in **any** month that has not reached its `expires_at` refuses the run, in
+   either mode: `ws7_run_in_progress`.
+2. An open entry at or past `expires_at` is abandoned (below).
+3. A scheduled run is refused while any entry in any month is unresolved:
+   `ws7_blocked_unresolved`, with the blocking run IDs. A manual run is not blocked.
+4. A scheduled run is admitted only if the month's recorded total plus its reservation is **at
+   most the cap**: `ws7_over_cap` otherwise. Equal is admitted; one micro-dollar over is not. A
+   manual run is neither checked nor counted.
+5. The open entry is written.
+
+A refused run reserves nothing: no entry is written for it.
+
+**Every write is a compare-and-swap.**
+
+- The job lists `ws7/ledger/`, reads every ledger listed, and decides. A month's first ledger is
+  created with `If-None-Match: *`; every later write carries `If-Match` with the ETag that was
+  read.
+- On a 412 or a 409 the job reads everything again and decides again.
+- **`ledger_cas_attempts` counts tries in total, not retries.** With the configured 4: three
+  losses and then a win starts the run; four losses give `ws7_ledger_conflict`, and the run does
+  not start.
+- **A write whose reply failed** counts as a try. Its `write_id` is remembered. If the next read
+  shows it, the write landed and is this job's. If another writer has written since, the job
+  recognises its own entry by its run ID and does not book it twice.
+- A ledger that cannot be listed, read or written stops the run: `ws7_ledger_unavailable`, with
+  the store's own code.
+
+**One run at a time, across months.** One compare-and-swap covers one object, and two runs at a
+month's end could book in two months' objects at once. So after its entry is written, a run reads
+every month once more. If it finds another live open entry it withdraws its own at zero
+(`settled`, `withdrawn`) and stops with `ws7_run_in_progress`. Each run writes and then reads, so
+the later read always sees the earlier write: at least one of the two withdraws, and both may.
+If that second read itself fails, the run does not start and its entry is left open, to be
+abandoned and resolved.
+
+**Settling** (`Ledger.settle`).
+
+- It takes the guard's report (part 1) and replaces the reservation with `total_usd_micros`: the
+  usage Bedrock returned wherever a reply was seen, and the worst case only where none was.
+- A report that says `unmetered` is written as `unresolved`, `unmetered`, at that same total, in
+  the same write.
+- The report must be the run's own: its target and its reservation must be the entry's, and its
+  micro-dollar total must be its nano-dollar total rounded up. Otherwise `ws7_report_invalid`,
+  and the entry stays open.
+- Only an open entry can be settled: `ws7_entry_not_open` otherwise.
+
+**How each unresolved case is recognised.**
+
+| Case | Recognised by | When | Counts at |
+|---|---|---|---|
+| Unmetered | The run itself: `settle()` is given a report that says `unmetered` | At settling | The guard's counted total |
+| Crashed | The run itself: part 5's outermost handler calls `mark_crashed()` when it has no guard report to settle from | At once | Its reservation |
+| Abandoned | Whoever looks next: any call that changes the ledger, in any mode, and `expire()` | At or after `expires_at` | Its reservation |
+
+- `expires_at` is the time the entry was opened plus the wall-clock limit for its mode. It is
+  stored in the entry, so a later change to the config cannot move it.
+- **The overlap.** A run that dies outright cannot settle and cannot report, so nothing marks it
+  crashed. Its entry stays open and is found at `expires_at`: it **is** the abandoned case.
+- **An entry takes exactly one kind.** Only an open entry can become unresolved, so the first
+  label written stands: a run that reported `crashed` is not relabelled at its expiry.
+- The kind is a label. All three block the same way and are resolved the same way.
+- **At or past `expires_at` the entry is abandoned whoever asks, the run itself included.** A
+  late `settle()` or `mark_crashed()` is refused with `ws7_entry_not_open` and the entry stays
+  unresolved. Only `resolve()` moves it on.
+
+**The block.** An unresolved entry in any month blocks every later scheduled run, with
+`ws7_blocked_unresolved`. The job finds it by listing every ledger, so an entry two months back,
+with no ledger for the month between, still blocks. An unresolved **manual** entry blocks
+scheduled runs too: the rule is "an unresolved entry", read as written. A manual run is not
+blocked.
+
+**Resolving** (`Ledger.resolve(run_id, basis, settled_usd_micros)`; part 5 adds the command).
+
+- The basis is exactly `upper_bound` or `estimate_accepted`: `ws7_basis_unknown` otherwise.
+- The figure is a whole number of micro-dollars, zero or more.
+- `upper_bound`: the Cost Explorer figure defined in part 1. It cannot be checked here and is
+  recorded as the author's statement.
+- `estimate_accepted`: the figure must equal the entry's own estimate (`ws7_estimate_differs`
+  otherwise), so no other number can be accepted under that label.
+- The entry then counts at the settled figure, in its own month.
+- **`estimate_accepted` sets the month's `assurance_waived` flag, in the same write, in the
+  entry's own month.** `upper_bound` does not. The flag is carried by every later write and is
+  never cleared; the write check refuses a ledger that would clear it.
+- An entry past its expiry that nobody has marked yet can be resolved in one step.
+
+### The run's own deadline
+
+`admit()` returns an `Admission`. Its `deadline_at` is `expires_at` less `DEADLINE_MARGIN_S`
+(120 s).
+
+- **The rule part 5 must follow:** the guard's deadline (part 1) is set from `deadline_at`, so the
+  last call is sent at least 120 s before another task may mark the entry abandoned.
+- 120 s is v1's 60 s to connect plus 60 s to read, the longest of either target (the pipeline's is
+  10 s plus 90 s). A test reads both from the plans and the runner.
+- A read timeout bounds each wait for data, not a whole reply. So this is a margin, not a proof
+  that no call is in flight at `expires_at`.
+- A wall-clock limit of 120 s or less is refused (`ws7_wall_clock_limit_too_short`).
+- `expires_at` is compared with other tasks' clocks, so the ledger uses wall-clock UTC. Part 5
+  turns `deadline_at` into the guard's monotonic deadline with `Admission.seconds_to_deadline()`.
+
+### The monthly bound, restated
+
+Part 1's argument reasons from the month's *recorded* total. But entries change after later runs
+are admitted: a reservation is settled, an entry is resolved. So the proof is restated from what
+was booked (Codex P3, PR #5). It is also in `evals/ws7_ledger.py`, beside the code.
+
+Take one month, with cap C. Its scheduled runs are admitted one after another, because every
+admission is a compare-and-swap on the month's one object. Call the last one admitted *r*, with
+reservation R.
+
+1. **What was booked at r's admission.** Admission rule 4 held inside the write that booked *r*:
+   B + R ≤ C, where B is the sum of what every earlier scheduled entry counted at, at that moment.
+   - By rules 1 to 3, none of those entries was open or unresolved then. Each was settled or
+     resolved.
+   - A settled or resolved entry never changes (`_check_transition`).
+   - So B is fixed at *r*'s admission. Nothing later alters it: not *r* being settled, and not a
+     resolution in another month.
+2. **Each term of B is at least that run's true cost, provided the entry is `metered` or
+   `upper_bound`.**
+   - A metered total prices every reply at the usage Bedrock returned, and counts every call that
+     did not run the model at its worst case (part 1).
+   - An `upper_bound` figure is the author's statement that it is one.
+   - A `withdrawn` entry made no call.
+   - An `estimate_accepted` figure may be below the true cost.
+3. **The last run's reservation and its final call.** *r*'s true cost is below R plus one call:
+   the guard sends a call only while its running total is below R (part 1).
+
+So the month's true scheduled spend is at most B + R plus *r*'s final call, which is at most
+**C plus that one call**. The proof uses three things: what was booked at each earlier run's
+admission, the last run's reservation, and its final call.
+
+- **The one way step 2 fails** is an `estimate_accepted` resolution, and that is exactly what sets
+  the month's `assurance_waived` flag.
+- "True cost" is priced at the repository's rates, which are not confirmed against AWS's price
+  page (ADR-011, Costs).
+- The month is the UTC month of each run's scheduled time, not AWS's invoice month for each call.
+
+The tests that pin each step (`tests/test_ws7_ledger.py`):
+
+| Step | Test |
+|---|---|
+| Rule 4 at the boundary | `test_a_run_is_admitted_when_the_total_plus_its_reservation_equals_the_cap`, and `…is_one_micro_dollar_over` |
+| No admission past an open or unresolved entry | `test_an_open_reservation_refuses_any_other_run`, `test_each_unresolved_case_blocks_the_next_scheduled_run_which_reserves_nothing` |
+| B is fixed | `test_what_was_booked_before_a_run_is_fixed_once_that_run_is_admitted`, `test_a_write_the_rules_do_not_allow_is_refused_before_it_is_sent` |
+| The bound, with invented costs | `test_with_an_upper_bound_the_months_true_spend_passes_the_cap_by_at_most_one_call` |
+| The one way it fails, and the flag | `test_with_an_accepted_estimate_the_bound_can_fail_and_the_month_says_so` |
+| The flag is never cleared | `test_the_flag_stays_set_through_every_later_write_to_that_months_ledger` |
+
+### The match check
+
+It runs first and costs nothing (ADR-011 D11). The job works out its own values, reads the
+expected ones from SSM Parameter Store, and stops with `ws7_match_differs` if any differs. The
+refusal names the fields that differ, never their values.
+
+| Target | Parameter | Fields |
+|---|---|---|
+| Pipeline | `/discharge-eval/ws7/expected/pipeline` | `pipeline_version`, `model_id`, `prompt_caching` |
+| v1 | `/discharge-eval/ws7/expected/v1` | `model_id`, `v1_prompt_sha256` (`system_prompt` and `patient_system_prompt`), `patient_second_pass`, `prompt_caching` |
+
+- Each parameter is one **String** holding strict JSON, with `"schema": "ws7-expected/1"` and
+  `"target"`. A missing parameter or a failed read is `ws7_expected_unreadable`. Any other shape,
+  or a `SecureString`, is `ws7_expected_invalid`.
+- **v1 needs the second pass on and caching on.** An expected record with either off is refused
+  (`ws7_expected_invalid`), not followed.
+- An invented pipeline value:
+  `{"schema": "ws7-expected/1", "target": "pipeline", "pipeline_version": "3f9c…e1", "model_id": "anthropic.claude-sonnet-4-6", "prompt_caching": true}`.
+
+Where the job's own values come from, so that they are what the runner will really do:
+
+| Value | From |
+|---|---|
+| Model ID | The plan (`evals/ws7_reserve.py`), which is the runner's own constant |
+| `pipeline_version` | `pipeline.orchestrate.pipeline_version()`, called, not changed |
+| The two v1 prompt hashes | The sha256 of the bytes of the files the v1 runner will load, as its record's `file_sha256` is |
+| `prompt_caching`, `patient_second_pass` | The runner's own `parse_args`, on the argv the entrypoint will hand it |
+
+The limit is ADR-011's: the check proves the image agrees with the release record, not that the
+running Lambda does.
+
+### The run manifest (`ws7-manifest/1`)
+
+Written once, with `If-None-Match: *`, at `<the run's prefix>/manifest.json`. A manifest already
+there is never replaced (`ws7_manifest_exists`).
+
+| Field | Meaning |
+|---|---|
+| `run_id`, `target`, `mode`, `scheduled_time`, `month` | The claim's |
+| `git_commit`, `image_digest` | See below |
+| `config_sha256` | Of `evals/ws7_config.json` |
+| `client` | `total_max_attempts` (1), `connect_timeout_s`, and `read_timeout_s`: 60 for v1, fixed by WS7; `null` for the pipeline, whose runner names one for each client |
+| `keys` | The comparator's `keys` object (`docs/WS7-COMPARATOR.md`), checked by the comparator's own code. For v1 it holds the two prompt hashes, `patient_second_pass` and `prompt_caching` |
+| `reservation` | `generations`, `margin_percent`, `total_usd_micros` |
+| `month_assurance_waived` | The month's flag when the run ran |
+| `baseline_id` | The baseline it was compared with, or `null` |
+| `part_c` | How PART C was produced: `pipeline_step_7` or `v1_second_pass` |
+
+- The corpus hash, the gold hashes and the scorer versions come from the finished batch and its
+  scores, so parts 4 and 5 pass them in. Part 2 checks their shape.
+- A manifest holds IDs, hashes, numbers and flags only.
+
+**The commit and the image digest.** The image has no `.git`, and a container cannot hash its own
+image. Both are handed in as environment variables. `identity()` reads them only from the mapping
+it is given, and asks no metadata endpoint.
+
+| Variable | Value | Set by |
+|---|---|---|
+| `WS7_GIT_COMMIT` | The 40-character commit the image was built from | A build argument in the `Dockerfile` (part 6) |
+| `WS7_IMAGE_DIGEST` | `sha256:` and 64 hex characters | The ECS task definition, beside the image reference, which pins the image by the same digest (slice 3) |
+
+- A run with either missing or malformed is refused: `ws7_identity_missing`.
+- The digest is the deployer's statement. Slice 3's set-up check compares it with the task
+  definition's image reference.
+
+### Refusals
+
+Every refusal is a `Stop` with a fixed code. A `Stop` carries the code, IDs (run IDs, months,
+fixed field names) and whole-number counts under fixed names. Its constructor refuses anything
+else, so no note text, no model output and no AWS message can travel in one. `Stop.line()` is the
+one-line form for a log or an alert, for example:
+
+```
+ws7 stop code=ws7_blocked_unresolved ids=2026-12-09T0400-pipeline unresolved=1
+```
+
+Every `Stop` names a metric: `Duplicate` for a duplicate, `RunRefused` for the rest. Part 5
+publishes them.
+
+| Where | Codes |
+|---|---|
+| The claim | `ws7_duplicate`, `ws7_target_unknown`, `ws7_mode_unknown`, `ws7_scheduled_time_invalid`, `ws7_scheduled_time_future`, `ws7_start_too_late`, `ws7_claim_unavailable` |
+| Admission | `ws7_reservation_invalid`, `ws7_wall_clock_limit_too_short`, `ws7_run_in_progress`, `ws7_blocked_unresolved`, `ws7_over_cap`, `ws7_entry_exists` |
+| Any ledger write | `ws7_ledger_conflict`, `ws7_ledger_unavailable`, `ws7_ledger_invalid`, `ws7_ledger_write_invalid` |
+| Settling and resolving | `ws7_entry_unknown`, `ws7_entry_not_open`, `ws7_entry_not_unresolved`, `ws7_report_invalid`, `ws7_basis_unknown`, `ws7_settled_figure_invalid`, `ws7_estimate_differs` |
+| The match check and the manifest | `ws7_runner_argv_invalid`, `ws7_expected_unreadable`, `ws7_expected_invalid`, `ws7_match_differs`, `ws7_identity_missing`, `ws7_manifest_invalid`, `ws7_manifest_exists`, `ws7_manifest_unavailable` |
+| The store | `ws7_store_endpoint_refused`, `ws7_store_bucket_refused`, `ws7_store_key_refused`, `ws7_store_list_failed`, `ws7_store_list_truncated`, `ws7_store_get_failed`, `ws7_store_object_too_large`, `ws7_store_put_refused`, `ws7_store_object_missing`, `ws7_store_create_unsure` |
+
+### What the fakes cannot prove
+
+The S3 fake answers a conditional write as AWS documents it, handles one request at a time, and
+faults on anything it does not implement: an unconditional PUT, a PUT with both conditions, a
+delete, any other method or query parameter. It ignores request headers it does not know, because
+botocore adds some and a newer botocore may add more. Its ETags are deliberately not MD5s. It can
+answer a GET for a missing key with 404 or with 403, and a test shows WS7 behaves the same either
+way. The SSM fake implements `GetParameter` only.
+
+Slice 3's set-up checks must show, on the real bucket and with the task role:
+
+- that real S3 gives the 412, the 409 and the 404 as documented, on a KMS-encrypted bucket, with
+  the bucket's versioning as deployed;
+- that the role can do all of it: `s3:PutObject` for `If-None-Match`, `s3:GetObject` and
+  `s3:PutObject` for `If-Match`, `s3:ListBucket` limited to `ws7/`, and the KMS key;
+- **whether a missing key gives 404 or 403** under that limited grant. The code does not depend
+  on it; the check records it;
+- that a real ETag, as GET returns it, is accepted by `If-Match`;
+- two real tasks racing for one claim: exactly one holds it;
+- that the role cannot delete, and cannot write outside `ws7/`;
+- that the SSM parameters are plain Strings the task can read and cannot write;
+- the format of EventBridge Scheduler's scheduled time, and that a duplicate delivery carries the
+  same value;
+- that `WS7_IMAGE_DIGEST` in the task definition is the digest of the image it runs.
+
 ## Notes for later parts
-
-### Part 2: the ledger
-
-Part 2 implements the **unresolved** state, the block and their tests (ADR-011 D7, point 4;
-Codex review of PR #5):
-
-- A run whose report says `unmetered` is settled at its counted total, which includes the worst
-  case of the call that made it unmetered. Its ledger entry is marked **unresolved**.
-- **An abandoned reservation, and a run that crashed before its record was written, are marked
-  unresolved too** (the author's ruling, 18 Nov 2026). Each stays counted at its worst case, and
-  is resolved exactly as an unmetered entry is.
-  - The two cases can overlap: a run that dies before settling leaves its reservation open, and
-    past the wall-clock limit that reservation is abandoned.
-  - How each case is recognised is part 2's to design.
-- An unresolved entry **blocks every later inside-cap (scheduled) run**, in that month or any
-  later one. A blocked run reserves nothing, spends nothing and fails with its own fixed code.
-  Part 2 must therefore find an unresolved entry from an earlier month, not only in the current
-  month's ledger.
-- Resolving stores the settled figure **and the resolution basis**, which is exactly one of
-  `upper_bound` or `estimate_accepted` (any other value is refused). The entry then counts at the
-  settled figure.
-- An `estimate_accepted` resolution sets the month's **"assurance waived"** flag in that month's
-  ledger. Once set, the flag is never cleared. An `upper_bound` resolution does not set it.
-- An outside-cap manual run is not blocked by it, and still needs the author's yes.
-- Tests:
-  - an unresolved entry blocks the next scheduled run, with a partner where a resolved entry does
-    not;
-  - **each case blocks**: an unmetered run, an abandoned reservation and a crashed run;
-  - **each case resolves on both bases**, `upper_bound` and `estimate_accepted`, and then stops
-    blocking;
-  - an entry from the month before still blocks;
-  - a manual run is not blocked;
-  - each basis is stored as given, and an unknown basis is refused;
-  - `estimate_accepted` sets the month's flag, with a partner where `upper_bound` does not;
-  - the flag stays set through later compare-and-swap writes to that month's ledger.
-- **Restate the proof of the monthly bound** (Codex P3, PR #5).
-  - Today's argument, in ADR-011 D7 point 3 and "How far a month can pass £15" above, reasons from
-    the month's *recorded* total. Entries change after later runs are admitted: a reservation is
-    settled, and an unmetered entry is resolved.
-  - So part 2 restates the proof from three things: **what was booked at each run's admission**;
-    **the last run's reservation**; and **its final call**.
-  - It is written with the ledger code, and with its tests.
 
 ### Part 4: the run summary
 
@@ -405,11 +794,39 @@ Codex review of PR #5):
     report says so, every week of that month.
 - Build one live client before the runner starts, so that a refused endpoint fails the run before
   any batch folder is written.
+- **Wiring part 2** ("The order a run follows", above):
+  - the scheduled time comes from the schedule as an argument, and the bucket name from the task
+    definition; neither comes from the clock or from a default;
+  - the match check runs before the claim, and `identity(os.environ)` before any spend;
+  - the guard's deadline is set from `Admission.deadline_at`, never later;
+  - `settle()` is called straight after the last runner returns, before scoring, and
+    `mark_crashed()` from the outermost handler when there is no guard report;
+  - a `Duplicate` publishes the `Duplicate` count and exits; every other `Stop` after a claim
+    writes the failed record the Thursday check reads, with the stop's code;
+  - the check mode looks for the scheduled claim key only, calls `Ledger.expire()`, and reports
+    `Ledger.unresolved()` and `Ledger.assurance_waived(month)`;
+  - the resolve command calls `Ledger.resolve()`;
+  - success records and retained incident copies get prefixes of their own, outside
+    `ws7/runs/scheduled/`.
+
+### Part 6: the image
+
+- The `Dockerfile` takes the commit as a build argument and sets `WS7_GIT_COMMIT` from it
+  (part 2, "The run manifest").
+
+### Slice 3: the stack
+
+- The task role gains `s3:ListBucket` on the eval bucket, limited to the `ws7/` prefix (ADR-011
+  D6; the author's ruling, 19 Nov 2026).
+- The lifecycle rule that expires scheduled runs selects `ws7/runs/scheduled/` and nothing else.
+- The task definition sets the bucket name and `WS7_IMAGE_DIGEST`, and pins the image by that
+  digest.
+- The set-up checks in "What the fakes cannot prove" (part 2).
 
 ## Tests
 
 ```zsh
-PYTHONDONTWRITEBYTECODE=1 python -m pytest -p no:cacheprovider -q tests/test_ws7_reserve.py tests/test_ws7_client.py
+PYTHONDONTWRITEBYTECODE=1 python -m pytest -p no:cacheprovider -q tests/test_ws7_reserve.py tests/test_ws7_client.py tests/test_ws7_store.py tests/test_ws7_ledger.py tests/test_ws7_manifest.py
 ```
 
 - `tests/test_ws7_reserve.py`: the cited lines, the plan, the prices, the reservation against
@@ -445,7 +862,25 @@ PYTHONDONTWRITEBYTECODE=1 python -m pytest -p no:cacheprovider -q tests/test_ws7
   unmetered table above. A refusal blocks the rest of its generation; a failure that was not a
   refusal does not.
 
-**Keeping the tests offline.** The `offline_aws` fixture:
+- `tests/test_ws7_store.py`, at the server: each conditional write and S3's answer to it; an
+  ambiguous write, landed and not; `create` and its read-back; absence from the listing with a
+  missing key answering 404 and 403; the fake's own strictness (an unconditional PUT is a
+  fault). Without connecting: the S3 and SSM clients' endpoints with each override configured,
+  with an ordinary client as the positive control. The key layout, and `Stop`.
+- `tests/test_ws7_ledger.py`: the claim (a duplicate, a manual run on the scheduled date, two
+  deliveries at once, a write that landed but whose reply failed); the compare-and-swap at
+  `ledger_cas_attempts` and one below; admission at the cap and one micro-dollar over; the
+  expiry at `expires_at` and one second before, with an injected clock; every test in the Part 2
+  list for the unresolved state (each case blocks, each resolves on both bases, the month
+  before, two months back with a gap, a manual run not blocked, the basis stored and an unknown
+  one refused, the flag set, not set and kept); and the monthly bound with invented costs.
+- `tests/test_ws7_manifest.py`: the job's own values for both targets; each expected value
+  differing, with a matching partner; v1's second pass and caching; a missing parameter; the
+  commit and the digest from the mapping given; the manifest for both targets, checked by the
+  comparator's own key check; written once.
+
+**Keeping the tests offline.** Every test in the three part 2 files uses `offline_aws`, and every
+client they build points at a fake on `127.0.0.1` or is never called. The `offline_aws` fixture:
 
 - sets invented credentials and `AWS_EC2_METADATA_DISABLED=true`, and points the AWS config and
   credentials files at paths that do not exist;

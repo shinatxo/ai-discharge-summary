@@ -5,9 +5,12 @@
 **Proposed** — 16 Nov 2026. Decisions by the author, 16 Nov 2026. Revised 17 Nov 2026 after
 review: the cost ceiling, duplicate deliveries, the heartbeat and the incident procedure. Updated
 18 Nov 2026 with the author's rulings on slice 2, in the part of slice 2 that builds each one.
+Updated 19 Nov 2026 with the rulings on part 2: a manual run's own claim key, the listing
+permission, the run prefixes, and what an unmetered entry counts at.
 
 This is a design. Slice 1, the offline comparator, is built (`docs/WS7-COMPARATOR.md`). Of slice 2,
-the client wrapper and the reservation are built (`docs/WS7-ENTRYPOINT.md`). Nothing is
+parts 1 and 2 are built (`docs/WS7-ENTRYPOINT.md`): the client wrapper and the reservation, and
+the claim, the ledger, the match check and the run manifest. Nothing is
 deployed or run. Every deploy, and every run that costs
 money, needs the author's explicit yes at the time. No number in a breach rule is set here: the
 author sets them before the first live run, and they change only by pull request.
@@ -191,7 +194,9 @@ run only from `main`, publish their logs, and need a GitHub-to-AWS role that can
 - A security group with **no inbound rules** and outbound 443 only.
 - The control is the task role, not the network. The role may: invoke the one pinned model; put
   metrics in one namespace; get and put objects under the eval bucket's `ws7/` prefix (it cannot
-  delete); read the expected-version parameters; publish to the eval topic. It has **no
+  delete), and list that prefix (`s3:ListBucket` on the bucket, limited to `ws7/`; the author's
+  ruling, 19 Nov 2026; slice 3 grants it; D7, "Permissions", says why); read the
+  expected-version parameters; publish to the eval topic. It has **no
   permission on any `discharge-audit` resource**.
 - A NAT gateway or interface endpoints would add a fixed monthly cost many times the cost of the
   runs themselves (see Costs).
@@ -252,7 +257,7 @@ it finished without error, wrote only the files expected, and cost no more than 
 capped by anything in a request: the running-spend guard stops a run within one call of its
 reservation, and that one call's input may exceed its allowance (about £0.13 by the planning
 figures, an estimate, not an enforced limit). The ledger records actual cost. Where a run's cost is
-unknown, its entry holds the worst case and is **unresolved**: it blocks every later scheduled run
+unknown, its entry holds an estimate and is **unresolved**: it blocks every later scheduled run
 until the author resolves it (point 4). AWS Budgets is an alert only, never the reconciliation
 (point 5). **The month's spend passes £15 by at most one call only while every settled entry in
 the month is either its actual metered cost or a defensible upper bound** (point 3). A month in
@@ -295,8 +300,9 @@ which an entry was resolved as an accepted estimate has no such assurance, and i
      that returned no usable usage, and whose model may have run (a reply with no usage, a 5xx, a
      read timeout, any other error except a throttle or a request that never reached Bedrock),
      makes the run **unmetered**: the wrapper refuses every further call in the run, and the run
-     ends as failed with the fixed code `ws7_unmetered`. Its ledger entry keeps the worst-case
-     figure and is unresolved (point 4) (Codex review of PR #5).
+     ends as failed with the fixed code `ws7_unmetered`. Its ledger entry holds the wrapper's
+     counted total, which counts that call at its worst case, and is unresolved (point 4) (Codex
+     review of PR #5).
    - **A throttle is exactly an HTTP 429 with the error code `ThrottlingException`.** AWS: "A 429
      response means that the request was not admitted. Inspect the API-specific error type
      rather than relying on the HTTP status alone." (*Scaling and throughput best practices*,
@@ -322,6 +328,24 @@ which an entry was resolved as an accepted estimate has no such assurance, and i
        assurance for its month.
      - "Actual metered cost" is priced at the repository's rates, which are not confirmed
        against AWS's price page (Costs).
+   - **The same bound, restated from what was booked** (Codex P3, PR #5; built in slice 2
+     part 2). Entries change after later runs are admitted (a reservation is settled, an entry
+     is resolved), so the proof does not rest on the recorded total as it stands later. Take
+     the month's last admitted scheduled run, *r*, with reservation R.
+     - **What was booked at r's admission.** The rule in point 2 held inside the write that
+       booked *r*: B + R is £15 or less, where B is what every earlier scheduled entry counted
+       at, at that moment. No scheduled run is admitted while any entry is open or unresolved,
+       so each of those entries was settled or resolved, and a settled or resolved entry never
+       changes. B is fixed from then on.
+     - **Each term of B is at least that run's true cost**, provided the entry is its metered
+       cost or an `upper_bound`.
+     - **The last run's reservation and its final call.** *r*'s true cost is below R plus one
+       call.
+     - So the month's true spend is at most B + R plus that call: £15 plus one call. The one
+       way the second step fails is an `estimate_accepted` entry, and that is what sets the
+       month's "assurance waived" flag.
+     - The full text is in `docs/WS7-ENTRYPOINT.md` ("The monthly bound, restated") and in
+       `evals/ws7_ledger.py`, beside the code and the tests that pin each step.
    - **Why that one call is limited in practice, though by nothing enforced.** A step's input is
      its fixed prompt and the fixed scenario notes, plus the outputs of earlier steps. The prompt
      and the notes are pinned by hash in the baseline key and the match check (D9, D11). Each
@@ -346,8 +370,15 @@ which an entry was resolved as an accepted estimate has no such assurance, and i
      - an abandoned reservation ("One run at a time", below);
      - the entry of a run that crashed before its record was written.
 
-     The last two were ruled by the author on 18 Nov 2026. Each is recorded at its worst case,
-     because its true cost is not known.
+     The last two were ruled by the author on 18 Nov 2026. Each is recorded at an estimate,
+     because its true cost is not known (the author's ruling, 19 Nov 2026):
+     - an unmetered run at the wrapper's **counted total**: every reply at the usage Bedrock
+       returned, and the call that made it unmetered at its worst case;
+     - an abandoned reservation, and a crashed run, at the **reservation**.
+   - **How each is recognised** (`docs/WS7-ENTRYPOINT.md`): an unmetered run and a crashed run
+     report themselves. A run that dies outright reports nothing, so its entry stays open and
+     is found at its wall-clock limit: that is the abandoned case. An entry takes one kind, the
+     first one written.
    - An unresolved entry **blocks every later inside-cap (scheduled) run**, in that month or any
      later one, until the author resolves it.
    - The author resolves an unresolved entry, of any of the three kinds, by recording a settled
@@ -392,7 +423,8 @@ which an entry was resolved as an accepted estimate has no such assurance, and i
          then leave part of a run out. If either is ever bought, this definition is revisited.
        - Before its first use, the author checks against real billing rows that the model's rows
          carry Charge type = Usage (slice 2 part 5, `docs/WS7-ENTRYPOINT.md`).
-     - **`estimate_accepted`:** the worst-case estimate is accepted as the figure. It may be below
+     - **`estimate_accepted`:** the entry's own estimate is accepted as the figure, and no other
+       figure can be recorded under this basis. It may be below
        the true cost, because the input was not capped. This **waives the monthly assurance for
        that month**: the ledger marks the month "assurance waived", and every run summary and
        check report for that month shows it.
@@ -419,14 +451,27 @@ which an entry was resolved as an accepted estimate has no such assurance, and i
 Wednesday can arrive twice.
 
 - **Claim the occurrence first.** The job writes `ws7/claims/<target>/<scheduled date>` with
-  `If-None-Match: *`. The date comes from the schedule's own scheduled time, not from the clock.
+  `If-None-Match: *`. The date comes from the schedule's own scheduled time, not from the clock:
+  it is the **UTC date** of that time, which the job is given as an argument.
   If the object already exists, the job exits as a duplicate: it spends nothing and publishes a
   duplicate count, which has no alarm.
+  - A scheduled time in the future, or older than `max_start_delay_s`, is refused before any
+    write.
 - **One ledger object a month,** updated by compare-and-swap: read it, then write it back with
   `If-Match` and the ETag that was read. On a conflict the job re-reads and tries again, a fixed
   number of times. If it still cannot write, it does not start.
+  - The month is the UTC month of the run's scheduled time.
+  - The number is `ledger_cas_attempts`, and it counts **tries in total**, not retries.
+  - The month's first ledger is created with `If-None-Match: *`.
+  - **A write whose reply failed may have landed.** It is never assumed either way: the job
+    reads the object back and looks for its own `write_id` (a claim's `claim_id`).
 - **One run at a time.** A reservation that is still open blocks any other run. One left open past
   the wall-clock limit is treated as abandoned.
+  - The open reservation may be in another month's ledger, so the job reads every month. After
+    booking its own it reads them once more, and withdraws at zero if another run is open.
+  - **The run's own deadline ends before that limit**, by a margin that covers one call in
+    flight (120 seconds: v1's 60 to connect and 60 to read), so that no call should still be
+    running when another task may mark the entry abandoned.
   - It stops blocking as an open reservation, so it no longer holds back an outside-cap manual
     run.
   - It stays counted at its worst case, and becomes **unresolved** (point 4; the author's ruling,
@@ -435,11 +480,27 @@ Wednesday can arrive twice.
 - **Manual runs use the same claim and the same ledger.** A baseline batch or a confirming run is
   written to the ledger labelled outside-cap. It does not count towards the £15, and it cannot
   overlap a scheduled run.
+  - **The same claim mechanism, not the same key** (the author's ruling, 19 Nov 2026). A manual
+    run claims `ws7/claims/<target>/manual/<run_id>`, also with `If-None-Match: *`, and its
+    run ID cannot be a scheduled run's.
+  - Why: with one shared key, a manual run started on a Wednesday before 04:00 would take that
+    date's claim. The scheduled delivery would then exit as a duplicate, which has no alarm,
+    and the Thursday check would find a claim that was not the scheduled run's.
+  - What stops the two overlapping is the open reservation, as above.
 - **Permissions.** `If-None-Match` needs `s3:PutObject`. `If-Match` needs `s3:GetObject` and
   `s3:PutObject`. The task role has both on the `ws7/` prefix and has no delete permission, so
   it cannot remove a claim. Source: AWS, *How to prevent object overwrites with conditional
   writes*, <https://docs.aws.amazon.com/AmazonS3/latest/userguide/conditional-writes.html>, read
   17 Nov 2026.
+  - **The role may also list the `ws7/` prefix** (`s3:ListBucket`, limited by `s3:prefix`; the
+    author's ruling, 19 Nov 2026). An unresolved entry in an earlier month has to be found, and
+    so does a claim that is not there (the Thursday check, D9).
+  - **Absence is decided from a listing, never from a GET error.** S3 answers a GET for a
+    missing key with 404 only if the caller has `s3:ListBucket`, and with 403 otherwise (AWS,
+    *GetObject*, <https://docs.aws.amazon.com/AmazonS3/latest/API/API_GetObject.html>, read
+    19 Nov 2026). AWS does not say which a grant limited by prefix gives. So the job lists
+    first, reads only the keys the listing returned, and treats any error reading a listed key
+    as a failure.
 
 **Baseline.** One batch of 18 scenarios three times, run **by hand**, at set-up and at each version
 change. Each needs the author's approval and sits **outside** the scheduled cap. The baseline is
@@ -455,6 +516,10 @@ object is absent, or unchanged since it was read.
 - Encrypted with the eval stack's own key (D9). Block Public Access on.
 - Scheduled runs expire after **90 days**. Baseline batches are kept. So are the claims, the
   monthly ledgers and the success records (D7, D9): they are small and hold no generated text.
+- **The prefixes follow that rule** (the author's ruling, 19 Nov 2026). A lifecycle rule selects
+  by prefix, so a scheduled run's records go under `ws7/runs/scheduled/<run_id>/` and a manual
+  run's under `ws7/runs/manual/<run_id>/`. The rule expires `ws7/runs/scheduled/` only, and
+  nothing that is kept sits under it. The layout is in `docs/WS7-ENTRYPOINT.md`.
 - **A run that becomes an incident is copied to a retained prefix before the 90 days are up.** That
   copy is a step in triage (D10).
 - What is stored: the run manifest, the batch records (model output on synthetic notes), the
@@ -627,10 +692,10 @@ count log lines the deployed worker writes, which carry fixed codes and IDs only
 An invented example of the job's message:
 
 ```
-WS7 breach - target pipeline - run 2026-12-16T0400
+WS7 breach - target pipeline - run 2026-12-16T0400-pipeline
 family safety-netting, kind 2 (per-scenario flip): 1 stable scenario now fails (S14)
 system release: pipeline_version 3f9c...e1 / model anthropic.claude-sonnet-4-6 / caching on
-baseline: b-2026-12-14  evidence: s3://<eval-bucket>/ws7/runs/2026-12-16T0400/
+baseline: b-2026-12-14  evidence: s3://<eval-bucket>/ws7/runs/scheduled/2026-12-16T0400-pipeline/
 report time (the alarm): 2026-12-16 04:41 London
 ```
 
@@ -645,7 +710,10 @@ W11. This ADR adds nothing there.
 **Eval outputs** get a run manifest written by the entrypoint. No runner and no file in
 `src/generate/pipeline/` is changed. The manifest holds:
 
-- the git commit and the image digest;
+- the git commit and the image digest. The image has no `.git` and a container cannot hash its
+  own image, so both are handed in: the commit by a build argument (`WS7_GIT_COMMIT`), the
+  digest by the task definition (`WS7_IMAGE_DIGEST`), which pins the image by the same digest.
+  A run with either missing is refused;
 - `pipeline_version` (pipeline target) or the two v1 prompt file hashes (v1 target);
 - the model ID and the caching setting;
 - the corpus hash (taken from the batch manifest, which each record links to by `batch_id`), the
@@ -661,7 +729,9 @@ ones and does not generate if they differ.
 | v1 | Model ID, the sha256 of `src/generate/system_prompt.md` and `patient_system_prompt.md` at the commit deployed on `main`, second pass on, caching on. v1 has no `pipeline_version` |
 
 **Who writes the expected values, and when.** The author writes them to SSM Parameter Store by
-hand. CI does not write them. The eval task can read them and cannot write them.
+hand. CI does not write them. The eval task can read them and cannot write them. There is one
+String parameter for each target, `/discharge-eval/ws7/expected/pipeline` and
+`/discharge-eval/ws7/expected/v1`, each holding strict JSON (`docs/WS7-ENTRYPOINT.md`).
 
 - **v1 values: once, at eval-stack set-up.** v1 is already deployed, so they do not wait for a
   release. They come from the commit deployed on `main` at that time.
@@ -742,7 +812,7 @@ at the cache-write rate ($3.75 per million, plus 10%).
 - **The ceiling is £15 a month of model spend.** Output is enforced by `maxTokens`. Input is not
   capped: the running-spend guard stops a run within one call of its reservation, and that
   call's input may exceed its allowance (about £0.13 by the planning figures, an estimate, not an
-  enforced limit). The ledger records actual cost. Where a cost is unknown, it holds the worst case
+  enforced limit). The ledger records actual cost. Where a cost is unknown, it holds an estimate
   in an unresolved entry, which blocks later scheduled runs until the author resolves it. AWS
   Budgets is an alert only. The month's spend passes £15 by at most one call **only while every
   settled entry in it is its actual metered cost or a defensible upper bound**; an entry resolved
@@ -753,15 +823,24 @@ at the cache-write rate ($3.75 per million, plus 10%).
   with five Wednesdays the fifth run starts only if the first four averaged £2.09 or less. At the
   top of the expected range (£9.12) it does not start.** That is the ceiling working, and the
   heartbeat reports it.
-- **A run whose cost is unknown stays at £6.62, and is unresolved** (an unmetered run, an
-  abandoned reservation, or a run that crashed before its record was written): no later
-  scheduled run starts until the author resolves it.
+- **A run whose cost is unknown is unresolved** (an unmetered run, an abandoned reservation, or a
+  run that crashed before its record was written): no later scheduled run starts until the
+  author resolves it. Until then it counts at an estimate (D7 point 4; the author's ruling,
+  19 Nov 2026):
+  - an abandoned reservation, or a crashed run, stays at its reservation, **£6.62**;
+  - an unmetered run stays at the wrapper's **counted total**: what was metered before the
+    stop, plus the worst case of the call that made it unmetered. That is below £6.62 unless
+    the run had all but reached its reservation.
   - Resolved as `upper_bound`, it counts at the Cost Explorer figure as D7 point 4 defines it
     (unblended; Charge type Usage only; the whole account, with no Service or Region filter; the
     run's UTC dates), and the month keeps its assurance.
-  - Resolved as `estimate_accepted`, it counts at £6.62. One more run can start that month, and a
-    third only if the second cost £1.76 or less, and **the month's assurance is waived**: its
-    spend may pass £15 by more than one call.
+  - Resolved as `estimate_accepted`, it counts at that same estimate, and **the month's assurance
+    is waived**: its spend may pass £15 by more than one call.
+    - An abandoned or crashed run, accepted at £6.62: one more run can start that month, and a
+      third only if the second cost £1.76 or less.
+    - An unmetered run, accepted at a counted total of £2.00, say: one more run can start, and
+      a third only if the second cost £6.38 or less. A lower estimate leaves more room, and the
+      true cost may be further above it.
 - If key rotation is on, each rotated key version adds its own monthly charge.
 
 ## Consequences
@@ -778,8 +857,8 @@ quiet week is not read as proof of safety.
 **What the spend ceiling is.** £15 a month of model spend. Output is enforced by `maxTokens`.
 Input is not capped: the running-spend guard stops a run within one call of its reservation, and
 that call's input may exceed its allowance (about £0.13 by the planning figures, an estimate, not
-an enforced limit). The ledger records actual cost. Where a cost is unknown, it holds the worst
-case in an unresolved entry, which blocks later scheduled runs until the author resolves it with a
+an enforced limit). The ledger records actual cost. Where a cost is unknown, it holds an estimate
+in an unresolved entry, which blocks later scheduled runs until the author resolves it with a
 settled figure and its basis. AWS Budgets is an alert only, never the reconciliation. The month's
 spend passes £15 by at most one call **only while every settled entry in the month is its actual
 metered cost or a defensible upper bound**. A month with an entry resolved as `estimate_accepted`
@@ -834,6 +913,12 @@ reservation is reached. No AWS and no spend.
   run that would pass midnight is stopped by the limit and reported as failed.
 - **A duplicate delivery.** A second start for the same Wednesday exits as a duplicate and spends
   nothing.
+- **The bucket, with the task role** (slice 2 part 2 was tested against local fakes only; the
+  full list is in `docs/WS7-ENTRYPOINT.md`, "What the fakes cannot prove"). Real S3 answers a
+  conditional write as documented on the KMS-encrypted bucket; the role can list, get and put
+  under `ws7/` and can do nothing else; whether a missing key gives 404 or 403 is recorded; a
+  real ETag is accepted by `If-Match`; two tasks racing for one claim leave one holder; the
+  expected-version parameters can be read and not written.
 - **The clock changes.** Both schedules and the alarm window name `Europe/London`, not a fixed
   offset. In the weeks of 28 March 2027 and 31 October 2027, the Wednesday run and the Thursday
   check fire at 04:00 and 10:00 local time, and the alarm history shows no false alarm.

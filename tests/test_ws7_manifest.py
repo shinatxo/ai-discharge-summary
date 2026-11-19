@@ -40,7 +40,9 @@ from ws7_stub import offline_aws  # noqa: E402,F401  (a fixture)
 
 CFG = reserve.load_config()
 MARGIN = CFG.input_allowance_margin_percent
-ARGV = {"pipeline": ["--all", "--yes"], "v1": ["--all", "--deployed-path", "--yes"]}
+# The argv part 5 will hand each runner for the 18: the only form, with the pre-flight one.
+ARGV = {"pipeline": ["--all", "--batch", "b-main", "--yes"],
+        "v1": ["--all", "--deployed-path", "--batch", "b-main", "--yes"]}
 SENTINEL = "WS7-MANIFEST-SENTINEL text that must never be carried"
 COMMIT = "0123456789abcdef0123456789abcdef01234567"           # invented
 DIGEST = "sha256:" + "ab" * 32                                 # invented
@@ -71,12 +73,25 @@ def s3(_offline):
     fake.stop()
 
 
+def own(target: str) -> dict:
+    return wm.own_values(target, ARGV[target], CFG)
+
+
+def compared(target: str) -> dict:
+    """The job's own values that the match check compares with SSM."""
+    return wm._compared(own(target), target)
+
+
 def expect(ssm, target: str, **change) -> dict:
     """Write the expected record for `target`: the job's own values, changed."""
-    record = dict(wm.own_values(target, ARGV[target]), schema=wm.EXPECTED_SCHEMA)
+    record = dict(compared(target), schema=wm.EXPECTED_SCHEMA)
     record.update(change)
     ssm.put(wm.EXPECTED_PARAMETER[target], json.dumps(record))
     return record
+
+
+def check(ssm, target: str, argv: list | None = None) -> dict:
+    return wm.match_check(ssm.client, target, ARGV[target] if argv is None else argv, CFG)
 
 
 def stopped(call, expect_code: str) -> store.Stop:
@@ -94,7 +109,7 @@ def held(target: str = "pipeline", mode: str = "scheduled") -> wl.Claim:
 
 
 def manifest(target: str = "pipeline", mode: str = "scheduled", **change) -> dict:
-    kwargs = dict(held=held(target, mode), own=wm.own_values(target, ARGV[target]),
+    kwargs = dict(held=held(target, mode), own=own(target),
                   who=wm.identity(ENVIRON), cfg=CFG,
                   reservation=reserve.reservation(target, 19, MARGIN), baseline_id="b-2026-12-14",
                   month_assurance_waived=False, **BATCH)
@@ -105,42 +120,105 @@ def manifest(target: str = "pipeline", mode: str = "scheduled", **change) -> dic
 # ======================================================= the job's own values ==
 
 def test_the_pipelines_own_values_come_from_the_pipeline_and_the_runners_parser():
-    own = wm.own_values("pipeline", ARGV["pipeline"])
-    assert own == {"target": "pipeline", "model_id": "anthropic.claude-sonnet-4-6",
-                   "prompt_caching": True, "pipeline_version": orchestrate.pipeline_version()}
-    assert wm.own_values("pipeline", ["--all", "--no-prompt-caching"])["prompt_caching"] is False
+    assert own("pipeline") == {"target": "pipeline", "model_id": "anthropic.claude-sonnet-4-6",
+                               "prompt_caching": True,
+                               "pipeline_version": orchestrate.pipeline_version()}
 
 
-def test_v1s_own_values_include_the_second_pass_and_the_caching_setting():
-    own = wm.own_values("v1", ARGV["v1"])
-    assert own == {
+def test_v1s_own_values_include_the_second_pass_the_caching_setting_and_the_gate():
+    assert own("v1") == {
         "target": "v1", "model_id": "anthropic.claude-sonnet-4-6",
-        "prompt_caching": True, "patient_second_pass": True,
+        "prompt_caching": True, "patient_second_pass": True, "safety_net_gate": True,
         "v1_prompt_sha256": {
             "system_prompt": hashlib.sha256(rce.DEFAULT_PROMPT_PATH.read_bytes()).hexdigest(),
             "patient_system_prompt": hashlib.sha256(
                 rce.DEFAULT_PATIENT_PROMPT_PATH.read_bytes()).hexdigest()}}
-    # Read from the runner's own parser, so each flag follows what the runner would do.
-    plain = wm.own_values("v1", ["--all"])
-    assert (plain["patient_second_pass"], plain["prompt_caching"]) == (False, False)
-    second_only = wm.own_values("v1", ["--all", "--patient-second-pass"])
-    assert (second_only["patient_second_pass"], second_only["prompt_caching"]) == (True, False)
+    # The gate is a WS7 rule, not an SSM value: it is not among the compared fields.
+    assert "safety_net_gate" not in compared("v1") and "safety_net_gate" not in own("pipeline")
+    # Read from the runner's own parser: these are what the runner would do with this argv.
+    args = rce.parse_args(ARGV["v1"])
+    assert (args.patient_second_pass, args.prompt_caching, args.gate) == (True, True, True)
 
 
-def test_the_prompt_hashes_are_of_the_files_the_runner_would_load(tmp_path):
-    other = tmp_path / "other_prompt.md"
-    other.write_bytes(b"## SYSTEM PROMPT\ninvented prompt\n")
-    own = wm.own_values("v1", ["--all", "--deployed-path", "--prompt", str(other)])
-    assert own["v1_prompt_sha256"]["system_prompt"] == hashlib.sha256(other.read_bytes()).hexdigest()
-    stopped(lambda: wm.own_values("v1", ["--all", "--prompt", str(tmp_path / "missing.md")]),
-            wm.RUNNER_ARGV_INVALID)
+# ------------------------------------------------- the runner argv allow-list
+
+@pytest.mark.parametrize("target", ["pipeline", "v1"])
+def test_the_only_argv_accepted_is_the_one_part_5_will_pass(target):
+    """Ruling 5 (Codex P2). `runner_argv` builds the forms; `own_values` accepts those
+    and nothing else."""
+    extra = ["--deployed-path"] if target == "v1" else []
+    assert wm.runner_argv(target, CFG, preflight=False, batch="2026-12-16T0400.main") \
+        == ["--all", *extra, "--batch", "2026-12-16T0400.main", "--yes"]
+    assert wm.runner_argv(target, CFG, preflight=True, batch="b-pre") \
+        == [CFG.preflight_scenario, *extra, "--batch", "b-pre", "--yes"] and CFG.preflight_scenario == "S1"
+    for preflight in (True, False):
+        argv = wm.runner_argv(target, CFG, preflight=preflight, batch="b1")
+        assert wm.own_values(target, argv, CFG) == own(target)            # the batch and scenarios do not change them
+    for bad in ("has space", "", "x" * 65, f"b{SENTINEL}", None, "--yes", "-b", ".hidden"):
+        stopped(lambda: wm.runner_argv(target, CFG, preflight=False, batch=bad), wm.RUNNER_ARGV_INVALID)
+    stopped(lambda: wm.runner_argv("canary", CFG, preflight=False, batch="b1"), wm.RUNNER_ARGV_INVALID)
 
 
-@pytest.mark.parametrize("target,argv", [("pipeline", ["--no-such-flag"]), ("v1", ["--runs", "0"]),
-                                         ("canary", ["--all"])])
-def test_an_argv_the_runner_would_refuse_is_refused(capsys, target, argv):
-    stopped(lambda: wm.own_values(target, argv), wm.RUNNER_ARGV_INVALID)
-    capsys.readouterr()                                                   # argparse's usage text
+REFUSED_ARGV = [
+    ("v1", ["--all", "--deployed-path", "--no-gate", "--batch", "b1", "--yes"]),       # the gate off
+    ("pipeline", ["--all", "--verify", "--batch", "b1", "--yes"]),                      # step 7v
+    ("pipeline", ["--all", "--no-prompt-caching", "--batch", "b1", "--yes"]),
+    ("pipeline", ["--all", "--dry-run", "--batch", "b1", "--yes"]),
+    ("pipeline", ["--all", "--runs", "3", "--batch", "b1", "--yes"]),
+    ("pipeline", ["--all", "--corpus", "other.json", "--batch", "b1", "--yes"]),
+    ("pipeline", ["--all", "--deployed-path", "--batch", "b1", "--yes"]),               # v1's flag
+    ("pipeline", ["--all", "--batch", "b1"]),                                           # no --yes
+    ("pipeline", ["--all", "--yes"]),                                                   # no --batch
+    ("pipeline", ["--yes", "--batch", "b1", "--all"]),                                  # another order
+    ("pipeline", ["S2", "--batch", "b1", "--yes"]),                                     # not the pre-flight scenario
+    ("pipeline", ["S1", "S2", "--batch", "b1", "--yes"]),
+    ("pipeline", ["--all", "S1", "--batch", "b1", "--yes"]),
+    ("pipeline", ["--all", "--batch", "has space", "--yes"]),
+    ("pipeline", ["--all", "--batch", f"b {SENTINEL}", "--yes"]),
+    ("pipeline", ["--all", "--batch", "--yes", "--yes"]),
+    ("pipeline", ["--all", "--batch=b1", "--yes"]),
+    ("pipeline", ["--no-such-flag"]),
+    ("pipeline", []),
+    ("pipeline", "--all --batch b1 --yes"),
+    ("pipeline", ["--all", "--batch", 7, "--yes"]),
+    ("v1", ["--all", "--batch", "b1", "--yes"]),                                        # no --deployed-path
+    ("v1", ["--all", "--patient-second-pass", "--batch", "b1", "--yes"]),
+    ("v1", ["--all", "--prompt-caching", "--batch", "b1", "--yes"]),
+    ("v1", ["--all", "--deployed-path", "--prompt", "other.md", "--batch", "b1", "--yes"]),
+    ("v1", ["--all", "--deployed-path", "--patient-prompt", "other.md", "--batch", "b1", "--yes"]),
+    ("v1", ["--all", "--deployed-path", "--dry-run", "--batch", "b1", "--yes"]),
+    ("v1", ["--all", "--deployed-path", "--runs", "0", "--batch", "b1", "--yes"]),
+    ("canary", ["--all", "--batch", "b1", "--yes"]),
+]
+
+
+@pytest.mark.parametrize("target,argv", REFUSED_ARGV)
+def test_any_other_argv_is_refused_and_nothing_is_printed(capsys, monkeypatch, target, argv):
+    """The runner's parser never sees a refused argv, so argparse prints nothing."""
+    seen = []
+    for runner in (wm.reserve.rpe, wm.reserve.rce):
+        monkeypatch.setattr(runner, "parse_args", lambda a, real=runner.parse_args: (seen.append(a),
+                                                                                    real(a))[1])
+    stop = stopped(lambda: wm.own_values(target, argv, CFG), wm.RUNNER_ARGV_INVALID)
+    captured = capsys.readouterr()
+    assert (captured.out, captured.err) == ("", "") and SENTINEL not in stop.line()
+    assert seen == []                                                     # the parser was never called
+    assert wm.own_values("pipeline", ARGV["pipeline"], CFG) and len(seen) == 1   # the partner; the spy sees
+
+
+def test_what_the_parser_made_of_the_argv_is_checked_too(monkeypatch):
+    """If a runner's defaults changed under an allowed argv, the rule still holds:
+    for v1, a parsed gate that is off is refused."""
+    real = rce.parse_args
+
+    def gate_off(argv):
+        args = real(argv)
+        args.gate = False
+        return args
+
+    assert own("v1")["safety_net_gate"] is True                           # the partner
+    monkeypatch.setattr(rce, "parse_args", gate_off)
+    stopped(lambda: own("v1"), wm.RUNNER_ARGV_INVALID)
 
 
 # ============================================================ the match check ==
@@ -148,7 +226,7 @@ def test_an_argv_the_runner_would_refuse_is_refused(capsys, target, argv):
 @pytest.mark.parametrize("target", ["pipeline", "v1"])
 def test_the_match_check_passes_when_every_value_is_the_expected_one(ssm, target):
     expect(ssm, target)
-    assert wm.match_check(ssm.client, target, ARGV[target]) == wm.own_values(target, ARGV[target])
+    assert check(ssm, target) == own(target)
     assert ssm.requests == [f"/discharge-eval/ws7/expected/{target}"]     # one read, of that name
 
 
@@ -163,53 +241,55 @@ def test_the_match_check_passes_when_every_value_is_the_expected_one(ssm, target
 ])
 def test_one_value_that_differs_refuses_the_run_and_names_the_field_only(ssm, target, change, field):
     record = expect(ssm, target)                                          # the partner first
-    assert wm.match_check(ssm.client, target, ARGV[target])
+    assert check(ssm, target)
     for name, value in change.items():
         if isinstance(value, dict):
             value = dict(record[name], **value)
         record[name] = value
     ssm.put(wm.EXPECTED_PARAMETER[target], json.dumps(record))
-    stop = stopped(lambda: wm.match_check(ssm.client, target, ARGV[target]), wm.MATCH_DIFFERS)
+    stop = stopped(lambda: check(ssm, target), wm.MATCH_DIFFERS)
     assert stop.ids == (field,) and stop.counts == {"fields": 1}
     assert OTHER_HASH not in stop.line() and "invented" not in stop.line()   # names, never values
 
 
-@pytest.mark.parametrize("argv,fields", [
-    (["--all", "--patient-second-pass"], ("prompt_caching",)),            # second pass on, caching off
-    (["--all", "--prompt-caching"], ("patient_second_pass",)),            # caching on, second pass off
-    (["--all"], ("patient_second_pass", "prompt_caching")),
-])
-def test_v1_is_refused_unless_the_second_pass_and_caching_are_both_on(ssm, argv, fields):
+def test_v1_cannot_be_run_with_the_second_pass_or_caching_off(ssm):
+    """D11: second pass on, caching on. The argv that would turn either off is not on
+    the allow-list, so the run is refused before the comparison; and if the job's own
+    value were off all the same, the comparison names the field."""
     expect(ssm, "v1")
-    assert wm.match_check(ssm.client, "v1", ARGV["v1"])                   # the partner: --deployed-path
-    stop = stopped(lambda: wm.match_check(ssm.client, "v1", argv), wm.MATCH_DIFFERS)
-    assert stop.ids == fields
+    assert check(ssm, "v1")                                               # the partner: --deployed-path
+    for argv in (["--all", "--patient-second-pass", "--batch", "b1", "--yes"],
+                 ["--all", "--prompt-caching", "--batch", "b1", "--yes"],
+                 ["--all", "--batch", "b1", "--yes"]):
+        stopped(lambda: check(ssm, "v1", argv), wm.RUNNER_ARGV_INVALID)
+    expected = wm.read_expected(ssm.client, "v1")
+    assert wm.differing(dict(compared("v1"), patient_second_pass=False), expected) \
+        == ("patient_second_pass",)
+    assert wm.differing(dict(compared("v1"), prompt_caching=False), expected) == ("prompt_caching",)
 
 
 @pytest.mark.parametrize("change", [{"patient_second_pass": False}, {"prompt_caching": False}])
 def test_a_v1_expected_record_with_either_setting_off_is_refused_not_followed(ssm, change):
-    """D11: second pass on, caching on. An expected record that says otherwise is not a
-    record this job may match, even if its own argv would agree with it."""
+    """An expected record that says otherwise is not a record this job may match."""
     expect(ssm, "v1", **change)
-    stopped(lambda: wm.match_check(ssm.client, "v1", ARGV["v1"]), wm.EXPECTED_INVALID)
-    stopped(lambda: wm.match_check(ssm.client, "v1", ["--all"]), wm.EXPECTED_INVALID)
-    expect(ssm, "pipeline", prompt_caching=False)                         # the pipeline's may be off
-    assert wm.match_check(ssm.client, "pipeline", ["--all", "--no-prompt-caching"])
+    stopped(lambda: check(ssm, "v1"), wm.EXPECTED_INVALID)
+    expect(ssm, "pipeline", prompt_caching=False)         # the pipeline's record may say off...
+    stop = stopped(lambda: check(ssm, "pipeline"), wm.MATCH_DIFFERS)      # ...but this job runs with it on
+    assert stop.ids == ("prompt_caching",)
 
 
 def test_a_parameter_that_is_missing_or_cannot_be_read_refuses_the_run(ssm):
-    stop = stopped(lambda: wm.match_check(ssm.client, "pipeline", ARGV["pipeline"]),
-                   wm.EXPECTED_UNREADABLE)                                # never written
+    stop = stopped(lambda: check(ssm, "pipeline"), wm.EXPECTED_UNREADABLE)   # never written
     assert stop.ids == ("pipeline",)
     expect(ssm, "pipeline")
     ssm.script(500)
-    stopped(lambda: wm.match_check(ssm.client, "pipeline", ARGV["pipeline"]), wm.EXPECTED_UNREADABLE)
+    stopped(lambda: check(ssm, "pipeline"), wm.EXPECTED_UNREADABLE)
     assert len(ssm.requests) == 2                                         # one attempt each: no retry
-    assert wm.match_check(ssm.client, "pipeline", ARGV["pipeline"])       # the partner
+    assert check(ssm, "pipeline")                                         # the partner
 
 
 def _good(target: str = "pipeline") -> dict:
-    return dict(wm.own_values(target, ARGV[target]), schema=wm.EXPECTED_SCHEMA)
+    return dict(compared(target), schema=wm.EXPECTED_SCHEMA)
 
 
 @pytest.mark.parametrize("value", [
@@ -226,18 +306,17 @@ def _good(target: str = "pipeline") -> dict:
 ])
 def test_an_expected_record_that_is_not_exactly_the_shape_is_refused(ssm, value):
     ssm.put(wm.EXPECTED_PARAMETER["pipeline"], value)
-    stop = stopped(lambda: wm.match_check(ssm.client, "pipeline", ARGV["pipeline"]),
-                   wm.EXPECTED_INVALID)
+    stop = stopped(lambda: check(ssm, "pipeline"), wm.EXPECTED_INVALID)
     assert SENTINEL not in stop.line() and stop.ids == ("pipeline",)
     expect(ssm, "pipeline")
-    assert wm.match_check(ssm.client, "pipeline", ARGV["pipeline"])       # the partner
+    assert check(ssm, "pipeline")                                         # the partner
 
 
 def test_the_expected_values_must_be_a_plain_string_parameter(ssm):
     ssm.put(wm.EXPECTED_PARAMETER["pipeline"], json.dumps(_good()), "SecureString")
-    stopped(lambda: wm.match_check(ssm.client, "pipeline", ARGV["pipeline"]), wm.EXPECTED_INVALID)
+    stopped(lambda: check(ssm, "pipeline"), wm.EXPECTED_INVALID)
     ssm.put(wm.EXPECTED_PARAMETER["pipeline"], json.dumps(_good()), "String")
-    assert wm.match_check(ssm.client, "pipeline", ARGV["pipeline"])
+    assert check(ssm, "pipeline")
 
 
 def test_the_ssm_fake_faults_on_anything_but_get_parameter(ssm):
@@ -251,9 +330,9 @@ def test_the_ssm_fake_faults_on_anything_but_get_parameter(ssm):
 
 
 def test_differing_compares_types_as_well_as_values():
-    own = wm.own_values("pipeline", ARGV["pipeline"])
-    assert wm.differing(own, dict(own)) == ()
-    assert wm.differing(own, dict(own, prompt_caching=1)) == ("prompt_caching",)   # 1 is not True
+    mine = compared("pipeline")
+    assert wm.differing(mine, dict(mine)) == ()
+    assert wm.differing(mine, dict(mine, prompt_caching=1)) == ("prompt_caching",)   # 1 is not True
     assert wm.differing({"a": {"x": 1, "y": 2}}, {"a": {"x": 1}}) == ("a.y",)
 
 
@@ -302,6 +381,7 @@ def test_the_pipelines_manifest_holds_what_d11_lists():
                  "prompt_caching": True, "pipeline_version": orchestrate.pipeline_version(),
                  **BATCH},
         "reservation": {"generations": 19, "margin_percent": 100, "total_usd_micros": 8_280_476},
+        "safety_net_gate": None,                    # the pipeline runner has no such switch
         "month_assurance_waived": False, "baseline_id": "b-2026-12-14",
         "part_c": "pipeline_step_7"}
     assert "v1_prompt_sha256" not in built["keys"] and "patient_second_pass" not in built["keys"]
@@ -309,11 +389,11 @@ def test_the_pipelines_manifest_holds_what_d11_lists():
 
 def test_v1s_manifest_holds_the_prompt_hashes_the_second_pass_and_the_caching_setting():
     built = manifest("v1")
-    own = wm.own_values("v1", ARGV["v1"])
     assert built["keys"] == {"target": "v1", "model_id": "anthropic.claude-sonnet-4-6",
                              "prompt_caching": True, "patient_second_pass": True,
-                             "v1_prompt_sha256": own["v1_prompt_sha256"], **BATCH}
+                             "v1_prompt_sha256": own("v1")["v1_prompt_sha256"], **BATCH}
     assert "pipeline_version" not in built["keys"]
+    assert built["safety_net_gate"] is True and "safety_net_gate" not in built["keys"]   # a WS7 rule
     # v1's timeouts are fixed by WS7 and written here (ADR-011 D7).
     assert built["client"] == {"total_max_attempts": 1, "connect_timeout_s": 60, "read_timeout_s": 60}
     assert built["reservation"]["total_usd_micros"] == 2_451_884
@@ -348,7 +428,9 @@ def test_a_manifest_can_say_no_baseline_and_a_waived_month():
     {"reservation": {"target": "pipeline", "generations": 19}},
     {"reservation": None},
     {"own": {"target": "pipeline"}},
-    {"own": wm.own_values("v1", ARGV["v1"])},                             # another target's values
+    {"own": wm.own_values("v1", ARGV["v1"], CFG)},                        # another target's values
+    {"own": dict(wm.own_values("pipeline", ARGV["pipeline"], CFG), safety_net_gate=True)},
+    {"cfg": None},
     {"who": {"git_commit": COMMIT, "image_digest": DIGEST}},              # not checked by identity()
     {"held": "2026-12-16T0400-pipeline"},
 ])
@@ -358,9 +440,13 @@ def test_a_manifest_is_not_built_from_a_value_out_of_shape(change):
     assert SENTINEL not in stop.line()
 
 
-def test_a_v1_manifest_needs_the_second_pass():
-    own = wm.own_values("v1", ["--all", "--prompt-caching"])              # no second pass
-    stopped(lambda: manifest("v1", own=own), wm.MANIFEST_INVALID)
+@pytest.mark.parametrize("change", [{"patient_second_pass": False}, {"safety_net_gate": False},
+                                    {"safety_net_gate": None}])
+def test_a_v1_manifest_needs_the_second_pass_and_the_gate(change):
+    assert manifest("v1")                                                 # the partner
+    stopped(lambda: manifest("v1", own=dict(own("v1"), **change)), wm.MANIFEST_INVALID)
+    without_gate = {k: v for k, v in own("v1").items() if k != "safety_net_gate"}
+    stopped(lambda: manifest("v1", own=without_gate), wm.MANIFEST_INVALID)
 
 
 def test_a_manifest_holds_ids_hashes_numbers_and_flags_only():
@@ -417,6 +503,69 @@ def test_a_manifest_that_cannot_be_written_is_a_failure(s3):
     stopped(lambda: wm.write_manifest(s3.store, {"schema": wm.MANIFEST_SCHEMA}, attempts=1),
             wm.MANIFEST_INVALID)
     assert wm.write_manifest(s3.store, built, attempts=1) == key          # the partner
+
+
+MALFORMED = [
+    lambda m: m.pop("git_commit"),                                        # a field missing
+    lambda m: m.update(note=SENTINEL),                                    # a field too many
+    lambda m: m.update(schema="ws7-manifest/2"),
+    lambda m: m.update(run_id="2026-12-17T0400-pipeline"),                # not this scheduled time's run
+    lambda m: m.update(run_id="2026-12-16T0400-v1"),                      # another target's run
+    lambda m: m.update(mode="manual"),                                    # the run ID is a scheduled one
+    lambda m: m.update(target="canary"),
+    lambda m: m.update(scheduled_time="2026-12-16T04:00:00"),
+    lambda m: m.update(month="2026-11"),
+    lambda m: m.update(git_commit="unknown"),
+    lambda m: m.update(image_digest="latest"),
+    lambda m: m.update(config_sha256="short"),
+    lambda m: m["client"].update(total_max_attempts=3),
+    lambda m: m["client"].update(total_max_attempts=True),
+    lambda m: m["client"].update(connect_timeout_s=600),
+    lambda m: m["client"].update(retries=2),
+    lambda m: m["keys"].update(corpus_sha256=SENTINEL),
+    lambda m: m["keys"].update(target="v1"),
+    lambda m: m["keys"].pop("pipeline_version"),
+    lambda m: m.update(keys=None),
+    lambda m: m["reservation"].update(total_usd_micros=0),
+    lambda m: m["reservation"].update(total_usd_micros="8280476"),
+    lambda m: m["reservation"].update(target="pipeline"),
+    lambda m: m.update(safety_net_gate=True),                             # the pipeline has no gate switch
+    lambda m: m.update(month_assurance_waived="no"),
+    lambda m: m.update(baseline_id=f"b {SENTINEL}"),
+    lambda m: m.update(part_c="v1_second_pass"),                          # another target's label
+]
+
+
+@pytest.mark.parametrize("damage", MALFORMED)
+def test_a_malformed_manifest_sends_no_request(s3, damage):
+    """Ruling 6 (Codex P2). The whole payload is validated immediately before the
+    conditional PUT, so a manifest changed after it was built never reaches S3."""
+    bad = json.loads(json.dumps(manifest()))
+    damage(bad)
+    stop = stopped(lambda: wm.write_manifest(s3.store, bad, attempts=CFG.ledger_cas_attempts),
+                   wm.MANIFEST_INVALID)
+    assert SENTINEL not in stop.line()
+    assert s3.requests == [] and s3.keys() == []                          # nothing was sent
+    stopped(lambda: wm.validate_manifest(bad), wm.MANIFEST_INVALID)
+
+    key = wm.write_manifest(s3.store, manifest(), attempts=CFG.ledger_cas_attempts)   # the partner
+    assert s3.requests == [("PUT", key)]
+
+
+@pytest.mark.parametrize("damage", [
+    lambda m: m["keys"].update(patient_second_pass=False),                # PART C not the second pass's
+    lambda m: m.update(safety_net_gate=None),                             # v1 with no gate recorded
+    lambda m: m.update(safety_net_gate=False),
+    lambda m: m["client"].update(read_timeout_s=None),                    # v1's is fixed at 60
+    lambda m: m.update(part_c="pipeline_step_7"),
+])
+def test_a_malformed_v1_manifest_sends_no_request(s3, damage):
+    bad = json.loads(json.dumps(manifest("v1")))
+    damage(bad)
+    stopped(lambda: wm.write_manifest(s3.store, bad, attempts=CFG.ledger_cas_attempts),
+            wm.MANIFEST_INVALID)
+    assert s3.requests == []
+    assert wm.validate_manifest(json.loads(json.dumps(manifest("v1"))))   # the partner
 
 
 def test_every_refusal_has_a_fixed_code():

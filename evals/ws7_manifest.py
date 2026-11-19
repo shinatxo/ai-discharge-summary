@@ -25,6 +25,20 @@ really do and not a second copy:
 - the caching setting and the second pass: the runner's own `parse_args` on the
   argv the entrypoint will hand it.
 
+THE RUNNER'S ARGV IS AN ALLOW-LIST. Before a runner's parser sees an argv it must
+be exactly one of the forms `runner_argv()` builds, which are the forms the
+entrypoint passes (part 5):
+
+    pipeline   <--all | the pre-flight scenario> --batch <id> --yes
+    v1         <--all | the pre-flight scenario> --deployed-path --batch <id> --yes
+
+Anything else is `ws7_runner_argv_invalid`, and nothing is printed: v1's
+`--no-gate`, the pipeline's `--verify`, `--dry-run`, `--runs`, another prompt
+or corpus, another scenario, another order. So a setting the match check does
+not compare cannot be changed by the argv either. For v1 the safety-net gate
+is on as a WS7 rule: it is in the job's own values and in the manifest, and it
+is not an SSM value.
+
 The limit is ADR-011's: this proves the image agrees with the release record,
 not that the running Lambda does.
 
@@ -52,6 +66,8 @@ No AWS call is made by importing this module.
 
 from __future__ import annotations
 
+import contextlib
+import io
 import json
 import re
 import sys
@@ -95,10 +111,17 @@ _HEX64_RE = re.compile(r"[0-9a-f]{64}")
 _HEX40_RE = re.compile(r"[0-9a-f]{40}")
 _DIGEST_RE = re.compile(r"sha256:[0-9a-f]{64}")
 _MODEL_RE = re.compile(r"[A-Za-z0-9._:-]{1,128}")
+# A batch ID never starts with a dash, so it can never be read as an option.
+_BATCH_RE = re.compile(r"[A-Za-z0-9][A-Za-z0-9._-]{0,63}")
 _V1_PROMPTS = ("system_prompt", "patient_system_prompt")
+# What the match check compares with SSM, per target.
 _FIELDS = {"pipeline": ("target", "model_id", "prompt_caching", "pipeline_version"),
            "v1": ("target", "model_id", "prompt_caching", "v1_prompt_sha256",
                   "patient_second_pass")}
+GATE = "safety_net_gate"      # v1 only: a WS7 rule, in the job's own values, not in SSM
+_MANIFEST_FIELDS = ("schema", "run_id", "target", "mode", "scheduled_time", "month", "git_commit",
+                    "image_digest", "config_sha256", "client", "keys", "reservation", GATE,
+                    "month_assurance_waived", "baseline_id", "part_c")
 
 
 def _hex64(value: object) -> bool:
@@ -123,15 +146,42 @@ def _values_ok(values: object, target: str) -> bool:
 
 # -------------------------------------------------------- the job's own values
 
-def own_values(target: str, runner_argv: list) -> dict:
-    """What this image would run, read from the runner and the pipeline themselves."""
-    if target not in store.TARGETS:
+def runner_argv(target: str, cfg: reserve.Config, *, preflight: bool, batch: str) -> list:
+    """The argv the entrypoint hands a runner: the only forms `own_values` accepts.
+    `preflight` picks the one pre-flight scenario from the config; otherwise all 18."""
+    if target not in store.TARGETS or type(preflight) is not bool \
+            or type(batch) is not str or not _BATCH_RE.fullmatch(batch):
+        raise Stop(RUNNER_ARGV_INVALID)
+    scenarios = cfg.preflight_scenario if preflight else "--all"
+    return [scenarios, *(["--deployed-path"] if target == "v1" else []), "--batch", batch, "--yes"]
+
+
+def _allowed(target: str, argv: object, cfg: reserve.Config) -> bool:
+    """Is `argv` exactly a form `runner_argv` builds for this target?"""
+    if type(argv) is not list or not all(type(a) is str for a in argv) or len(argv) < 3:
+        return False
+    batch = argv[-2]
+    if not _BATCH_RE.fullmatch(batch):
+        return False
+    return any(argv == runner_argv(target, cfg, preflight=preflight, batch=batch)
+               for preflight in (True, False))
+
+
+def own_values(target: str, argv: list, cfg: reserve.Config) -> dict:
+    """What this image would run, read from the runner and the pipeline themselves.
+    `argv` is checked against the allow-list before the runner's parser sees it."""
+    if target not in store.TARGETS or not _allowed(target, argv, cfg):
         raise Stop(RUNNER_ARGV_INVALID)
     runner = reserve.rpe if target == "pipeline" else reserve.rce
     try:
-        args = runner.parse_args([str(a) for a in runner_argv])
+        with contextlib.redirect_stderr(io.StringIO()), contextlib.redirect_stdout(io.StringIO()):
+            args = runner.parse_args(list(argv))
     except SystemExit:                      # argparse's way of refusing an argv
         raise Stop(RUNNER_ARGV_INVALID) from None
+    # What the allow-list implies, checked on what the parser made of it.
+    if args.runs != 1 or args.dry_run or (target == "pipeline" and args.verify) \
+            or (target == "v1" and args.gate is not True):
+        raise Stop(RUNNER_ARGV_INVALID)
     values = {"target": target, "model_id": reserve.plan(target).model_id,
               "prompt_caching": args.prompt_caching}
     if target == "pipeline":
@@ -146,9 +196,23 @@ def own_values(target: str, runner_argv: list) -> dict:
         except OSError:
             raise Stop(RUNNER_ARGV_INVALID) from None
         values["patient_second_pass"] = args.patient_second_pass
-    if not _values_ok(values, target):
+        values[GATE] = args.gate
+    if not _own_ok(values, target):
         raise Stop(RUNNER_ARGV_INVALID)
     return values
+
+
+def _own_ok(values: object, target: str) -> bool:
+    """The job's own values: the compared fields, and for v1 the gate, on."""
+    if type(values) is not dict:
+        return False
+    compared = {k: v for k, v in values.items() if k != GATE}
+    gate_ok = (values.get(GATE) is True) if target == "v1" else GATE not in values
+    return gate_ok and _values_ok(compared, target)
+
+
+def _compared(own: dict, target: str) -> dict:
+    return {name: own[name] for name in _FIELDS[target]}
 
 
 # ---------------------------------------------------------- the expected values
@@ -210,11 +274,11 @@ def differing(own: dict, expected: dict) -> tuple:
                         or type(mine[name]) is not type(theirs[name]) or mine[name] != theirs[name]))
 
 
-def match_check(ssm, target: str, runner_argv: list) -> dict:
+def match_check(ssm, target: str, argv: list, cfg: reserve.Config) -> dict:
     """The job's own values, if they are the expected ones. Otherwise the run is
     refused, before any claim, reservation or model call."""
-    own = own_values(target, runner_argv)
-    fields = differing(own, read_expected(ssm, target))
+    own = own_values(target, argv, cfg)
+    fields = differing(_compared(own, target), read_expected(ssm, target))
     if fields:
         raise Stop(MATCH_DIFFERS, ids=fields, counts={"fields": len(fields)})
     return own
@@ -241,6 +305,56 @@ def identity(environ) -> Identity:
 
 # ----------------------------------------------------------------- manifest
 
+def validate_manifest(manifest: object) -> dict:
+    """The whole manifest, strictly: exactly the fields, each in shape, and each
+    consistent with the others. `build_manifest` ends with it, and `write_manifest`
+    runs it on the exact payload immediately before the conditional PUT."""
+    bad = Stop(MANIFEST_INVALID)
+    m = manifest
+    if type(m) is not dict or set(m) != set(_MANIFEST_FIELDS) or m["schema"] != MANIFEST_SCHEMA:
+        raise bad
+    target, mode = m["target"], m["mode"]
+    if type(target) is not str or target not in store.TARGETS \
+            or type(mode) is not str or mode not in store.MODES:
+        raise bad
+    scheduled = store.parse_utc(m["scheduled_time"])
+    if scheduled is None or m["run_id"] != store.run_id(target, mode, scheduled) \
+            or m["month"] != m["scheduled_time"][:7]:
+        raise bad
+    if type(m["git_commit"]) is not str or not _HEX40_RE.fullmatch(m["git_commit"]) \
+            or type(m["image_digest"]) is not str or not _DIGEST_RE.fullmatch(m["image_digest"]) \
+            or not _hex64(m["config_sha256"]):
+        raise bad
+    plan = reserve.plan(target)
+    client = m["client"]
+    if type(client) is not dict or set(client) != {"total_max_attempts", "connect_timeout_s",
+                                                    "read_timeout_s"} \
+            or type(client["total_max_attempts"]) is not int or client["total_max_attempts"] != 1 \
+            or client["connect_timeout_s"] != plan.connect_timeout_s \
+            or client["read_timeout_s"] != plan.read_timeout_s:
+        raise bad
+    keys = m["keys"]
+    try:
+        compare._check_keys(keys, "manifest")       # the comparator's own check of a `keys` object
+    except (compare.CompareError, TypeError):
+        raise bad from None
+    if keys["target"] != target or (target == "v1" and keys["patient_second_pass"] is not True):
+        raise bad                                   # v1's PART C must be the second pass's
+    booked = m["reservation"]
+    if type(booked) is not dict or set(booked) != {"generations", "margin_percent",
+                                                    "total_usd_micros"} \
+            or not all(type(v) is int and v > 0 for v in booked.values()):
+        raise bad
+    if m[GATE] is not (True if target == "v1" else None):
+        raise bad                                   # v1: the gate on; the pipeline has no such switch
+    if type(m["month_assurance_waived"]) is not bool or m["part_c"] != PART_C[target]:
+        raise bad
+    if m["baseline_id"] is not None and not (type(m["baseline_id"]) is str
+                                             and store.ID_RE.fullmatch(m["baseline_id"])):
+        raise bad
+    return m
+
+
 def build_manifest(*, held: Claim, own: dict, who: Identity, cfg: reserve.Config,
                    reservation: dict, corpus_sha256: str, gold_sha256: dict,
                    scorer_versions: dict, baseline_id: str | None,
@@ -251,32 +365,17 @@ def build_manifest(*, held: Claim, own: dict, who: Identity, cfg: reserve.Config
     compared."""
     bad = Stop(MANIFEST_INVALID)
     if not isinstance(held, Claim) or not isinstance(who, Identity) \
-            or held.target not in store.TARGETS or not _values_ok(own, held.target):
+            or not isinstance(cfg, reserve.Config) \
+            or held.target not in store.TARGETS or not _own_ok(own, held.target):
         raise bad
     target = held.target
-    if target == "v1" and not own["patient_second_pass"]:
-        raise bad                                   # PART C would not be the second pass's
-    if baseline_id is not None and not (type(baseline_id) is str
-                                        and store.ID_RE.fullmatch(baseline_id)):
+    if type(reservation) is not dict or reservation.get("target") != target:
         raise bad
-    if type(month_assurance_waived) is not bool or type(reservation) is not dict:
-        raise bad
-    booked = {name: reservation.get(name) for name in ("generations", "margin_percent",
-                                                       "total_usd_micros")}
-    if reservation.get("target") != target \
-            or not all(type(v) is int and v > 0 for v in booked.values()):
-        raise bad
-
-    keys = json.loads(json.dumps(own))              # a copy: the manifest never aliases `own`
+    keys = json.loads(json.dumps(_compared(own, target)))     # a copy: never aliases `own`
     keys.update(corpus_sha256=corpus_sha256, gold_sha256=gold_sha256,
                 scorer_versions=scorer_versions)
-    try:
-        compare._check_keys(keys, "manifest")       # the comparator's own check of a `keys` object
-    except compare.CompareError:
-        raise bad from None
-
     plan = reserve.plan(target)
-    return {
+    return validate_manifest({
         "schema": MANIFEST_SCHEMA,
         "run_id": held.run_id, "target": target, "mode": held.mode,
         "scheduled_time": held.scheduled_time, "month": held.month,
@@ -287,11 +386,13 @@ def build_manifest(*, held: Claim, own: dict, who: Identity, cfg: reserve.Config
         "client": {"total_max_attempts": 1, "connect_timeout_s": plan.connect_timeout_s,
                    "read_timeout_s": plan.read_timeout_s},
         "keys": keys,
-        "reservation": booked,
+        "reservation": {name: reservation.get(name) for name in ("generations", "margin_percent",
+                                                                 "total_usd_micros")},
+        GATE: own.get(GATE),
         "month_assurance_waived": month_assurance_waived,
         "baseline_id": baseline_id,
         "part_c": PART_C[target],
-    }
+    })
 
 
 def manifest_key(manifest: dict) -> str:
@@ -300,11 +401,10 @@ def manifest_key(manifest: dict) -> str:
 
 def write_manifest(st: store.Store, manifest: dict, *, attempts: int) -> str:
     """Write the manifest once. A manifest already there is never replaced."""
-    if type(manifest) is not dict or manifest.get("schema") != MANIFEST_SCHEMA:
-        raise Stop(MANIFEST_INVALID)
     try:
-        key = manifest_key(manifest)
         body = json.dumps(manifest, sort_keys=True, separators=(",", ":")).encode("utf-8")
+        # The exact payload, checked in full immediately before the conditional PUT.
+        key = manifest_key(validate_manifest(json.loads(body.decode("utf-8"))))
     except (KeyError, TypeError, ValueError):
         raise Stop(MANIFEST_INVALID) from None
     try:

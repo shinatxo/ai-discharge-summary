@@ -132,7 +132,9 @@ which a resolution can move either way.
 
 The one way (b) fails is an `estimate_accepted` resolution, and that is exactly
 what sets the month's `assurance_waived` flag. The flag is set in the same
-write as the resolution and is never cleared.
+write as the resolution and is never cleared. The loader refuses a month whose
+flag and entries disagree, either way: an accepted estimate with no flag, or a
+flag with no accepted estimate.
 
 "True cost" is priced at the repository's rates (ADR-011, Costs). A month is
 the UTC month of a run's scheduled time, not AWS's invoice month for each call.
@@ -380,9 +382,11 @@ def parse_ledger(raw: bytes, month: str) -> dict:
     if not all(_entry_ok(e) for e in entries) \
             or len({e["run_id"] for e in entries}) != len(entries):
         raise bad
-    # The flag and its cause travel together: an accepted estimate with no flag is a
-    # ledger someone has altered.
-    if any(e["basis"] == ESTIMATE_ACCEPTED for e in entries) and not doc["assurance_waived"]:
+    # The flag and its cause travel together, in both directions. An accepted estimate
+    # with no flag is a ledger someone has altered; so is a flag with no accepted
+    # estimate, which nothing here writes (only `resolve()` sets the flag, in the same
+    # write as the entry that causes it, and a resolved entry is never dropped).
+    if doc["assurance_waived"] != any(e["basis"] == ESTIMATE_ACCEPTED for e in entries):
         raise bad
     return doc
 

@@ -561,6 +561,10 @@ def _raw(doc: dict) -> bytes:
     lambda d: d["entries"].append(dict(d["entries"][0])),                 # one run twice
     lambda d: d["entries"][1].update(state=wl.RESOLVED, basis=wl.ESTIMATE_ACCEPTED,
                                      resolved_at="2026-12-10T09:00:00Z"),  # accepted, month not flagged
+    lambda d: d.update(assurance_waived=True),                            # flagged, nothing accepted
+    lambda d: (d.update(assurance_waived=True),                           # flagged for an upper bound
+               d["entries"][1].update(state=wl.RESOLVED, basis=wl.UPPER_BOUND,
+                                      resolved_at="2026-12-10T09:00:00Z")),
 ])
 def test_a_ledger_that_is_not_exactly_the_shape_is_refused(damage):
     assert wl.parse_ledger(_raw(_good()), "2026-12")                      # the partner
@@ -1253,6 +1257,46 @@ def test_estimate_accepted_sets_the_months_flag_and_upper_bound_does_not(world, 
     assert world.fake.json(DEC)["assurance_waived"] is True
     assert world.ledger.assurance_waived("2026-12") is True
     assert world.ledger.assurance_waived("2027-01") is False              # a month with no ledger
+
+
+def test_a_month_whose_flag_does_not_match_its_entries_is_refused_in_both_directions(world):
+    """Part 3, item 5 (follow-up a of PR #6). The flag is true exactly when the month
+    holds an accepted estimate. A ledger that says otherwise, either way, has been
+    altered, and no run starts on it."""
+    plain = an_entry("2026-12-02T0400-pipeline")
+    accepted = an_entry("2026-12-09T0400-pipeline", wl.RESOLVED, basis=wl.ESTIMATE_ACCEPTED,
+                        counted=R)
+    bounded = an_entry("2026-12-09T0400-pipeline", wl.RESOLVED, basis=wl.UPPER_BOUND, counted=5)
+
+    def parse(entries: list, waived: bool) -> dict:
+        return wl.parse_ledger(_raw(a_ledger("2026-12", entries, waived=waived)), "2026-12")
+
+    # The partners: the two states that agree.
+    assert parse([plain, accepted], True)["assurance_waived"] is True
+    assert parse([plain, bounded], False)["assurance_waived"] is False
+    assert parse([], False)["entries"] == []
+    # An accepted estimate with no flag (refused before part 3).
+    stopped(lambda: parse([plain, accepted], False), wl.LEDGER_INVALID)
+    # A flag with no accepted estimate (part 3).
+    for entries in ([plain], [plain, bounded], []):
+        stop = stopped(lambda: parse(entries, True), wl.LEDGER_INVALID)
+        assert stop.ids == ("2026-12",)
+
+    # At the server: a flagged month with nothing accepted stops the run, and nothing
+    # is written to any ledger.
+    world.clock.set("2026-12-16T04:00:30Z")
+    held = take(world)
+    seed(world, "2026-12", [plain], waived=True)
+    before = ledger_bodies(world)
+    stopped(lambda: world.ledger.admit(held, R), wl.LEDGER_INVALID)
+    stopped(lambda: world.ledger.assurance_waived("2026-12"), wl.LEDGER_INVALID)
+    assert ledger_puts(world) == [] and ledger_bodies(world) == before
+    # The partner, and the control for "nothing is written": the same month with the
+    # accepted estimate that explains its flag admits the run, with one ledger write.
+    seed(world, "2026-12", [plain, accepted], waived=True)
+    admitted = world.ledger.admit(held, R)
+    assert admitted.run_id == held.run_id and len(ledger_puts(world)) == 1
+    assert world.fake.json(DEC)["assurance_waived"] is True               # carried, not cleared
 
 
 def test_the_flag_is_set_in_the_entrys_own_month_not_the_month_it_was_resolved_in(world):

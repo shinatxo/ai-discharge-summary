@@ -1483,6 +1483,30 @@ def test_a_manual_run_that_becomes_unresolved_between_the_scan_and_the_re_read_w
     assert wl.month_total(world.fake.json(DEC)) == 0                      # nothing left reserved
 
 
+def test_a_manual_run_that_becomes_unresolved_before_the_scheduled_runs_put_lands_withdraws_it(world):
+    """Codex's exact timing (finding 1). The schedule, explicit and with no waiting:
+
+    1. the scheduled run scans every month: November has no ledger;
+    2. a manual run in NOVEMBER's ledger books and becomes unresolved;
+    3. the scheduled run's PUT to December's ledger lands (November's object is not
+       the one its compare-and-swap guards, so nothing stops it);
+    4. the scheduled run's final re-read finds the entry, and the run withdraws at zero.
+
+    Step 2 is run by the fake when the PUT of step 3 arrives, before it is judged."""
+    world.fake.before_put(DEC, lambda: seed(world, "2026-11", [_other_month_entry("unresolved")]))
+    world.clock.set("2026-12-02T04:00:30Z")
+    held = take(world, W1)
+    stop = stopped(lambda: world.ledger.admit(held, R), wl.BLOCKED_UNRESOLVED)
+    assert stop.ids == (LATE_NOV,)
+
+    log = world.fake.requests
+    booked = log.index(("PUT", DEC))
+    assert ("GET", NOV) not in log[:booked] and ("GET", NOV) in log[booked:]   # unseen by the scan
+    assert ledger_puts(world) == [(DEC, "if-none-match", 200), (DEC, "if-match", 200)]   # booked, withdrawn
+    mine = entry_of(world, held.run_id)
+    assert (mine["state"], mine["basis"], mine["counted_usd_micros"]) == (wl.SETTLED, wl.WITHDRAWN, 0)
+
+
 def test_with_no_such_entry_the_scheduled_run_is_admitted(world):
     """The partner: the same admission, and nothing appears in another month."""
     world.clock.set("2026-12-02T04:00:30Z")
@@ -1536,6 +1560,57 @@ def test_the_last_trys_write_did_not_land_and_the_run_does_not_start(world):
     stop = stopped(lambda: world.ledger.admit(held, R), wl.LEDGER_CONFLICT)
     assert stop.counts == {"attempts": ATTEMPTS}
     assert len(ledger_puts(world)) == ATTEMPTS and world.fake.body(DEC) == before
+
+
+def _on_the_last_put(world, action) -> None:
+    """Run `action` just before, or just after, the last allowed PUT of December's
+    ledger, and nothing around the earlier ones."""
+    for _ in range(ATTEMPTS - 1):
+        world.fake.before_put(DEC, lambda: None)
+    world.fake.before_put(DEC, action)
+
+
+def test_the_last_try_landed_and_another_writer_then_wrote_so_the_entry_is_credited(world):
+    """The last allowed PUT lands and its reply fails; before the final read, another
+    writer writes to the same month. The write_id on the ledger is no longer this
+    call's, so the final read reconciles as an earlier retry would: the run's own
+    entry is there, open, at its reservation, and nothing more is written."""
+    seed(world, "2026-12", [an_entry("2026-12-01T1000-v1-manual", mode="manual")])
+    world.fake.script_put(DEC, *[fakes.CONFLICT_409] * (ATTEMPTS - 1), fakes.LAND_THEN_500)
+    world.fake.after_put(DEC, lambda: rewrite(world, DEC, add_settled("2026-12-01T1100-v1-manual")))
+    admitted = start(world, W1)
+    assert len(ledger_puts(world)) == ATTEMPTS                            # no write beyond the count
+    runs = [e["run_id"] for e in world.fake.json(DEC)["entries"]]
+    assert runs.count(admitted.run_id) == 1 and "2026-12-01T1100-v1-manual" in runs
+    assert entry_of(world, admitted.run_id)["state"] == wl.OPEN
+    assert admitted.expires_at == store.parse_utc(entry_of(world, admitted.run_id)["expires_at"])
+
+
+def test_the_last_try_did_not_land_and_another_writer_wrote_so_it_is_a_conflict(world):
+    """The partner. The last PUT does not land. Another writer has written, so there
+    is no write_id to find, and the run's entry is not in the wanted state: it is
+    not there at all. Reconciling would need a write, and the tries are spent."""
+    seed(world, "2026-12", [an_entry("2026-12-01T1000-v1-manual", mode="manual")])
+    world.fake.script_put(DEC, *[fakes.CONFLICT_409] * (ATTEMPTS - 1), fakes.FAIL_500)
+    _on_the_last_put(world, lambda: rewrite(world, DEC, add_settled("2026-12-01T1100-v1-manual")))
+    world.clock.set("2026-12-02T04:00:30Z")
+    held = take(world, W1)
+    stop = stopped(lambda: world.ledger.admit(held, R), wl.LEDGER_CONFLICT)
+    assert stop.counts == {"attempts": ATTEMPTS}
+    assert len(ledger_puts(world)) == ATTEMPTS
+    assert held.run_id not in [e["run_id"] for e in world.fake.json(DEC)["entries"]]
+
+
+def test_a_settle_whose_last_try_landed_before_another_writer_is_credited(world):
+    """The same reconciliation for a settle: its entry is found settled at its figure."""
+    admitted = start(world, W1)
+    world.fake.script_put(DEC, *[fakes.CONFLICT_409] * (ATTEMPTS - 1), fakes.LAND_THEN_500)
+    world.fake.after_put(DEC, lambda: rewrite(world, DEC, add_settled("2026-12-02T0500-v1-manual")))
+    settled = world.ledger.settle(admitted, report(admitted))
+    assert (settled["state"], settled["basis"], settled["counted_usd_micros"]) \
+        == (wl.SETTLED, wl.METERED, 1_903_211)
+    assert entry_of(world, admitted.run_id) == settled
+    assert len(ledger_puts(world)) == 1 + ATTEMPTS                        # the booking, then the tries
 
 
 # ------------------------- 2(b): a different competing transition is not credited

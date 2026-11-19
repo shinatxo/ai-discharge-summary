@@ -622,11 +622,20 @@ class Ledger:
             if outcome == store.AMBIGUOUS:
                 pending[new["write_id"]] = result
         if pending:
-            # The last try's reply failed, so it was never read back. Read once more;
-            # write nothing.
-            for doc, _etag in self._scan().values():
+            # The last try's reply failed, so it was never read back. Read once more and
+            # reconcile exactly as an earlier retry would, but WRITE NOTHING: first the
+            # write_id, then the decision with `unsure`. If the decision has nothing to
+            # write (the entry is already in exactly the wanted state), that is this
+            # call's own write and its result stands. If it would write, the tries are
+            # spent: ws7_ledger_conflict. A refusal it raises is raised.
+            last = self._scan()
+            for doc, _etag in last.values():
                 if doc["write_id"] in pending:
                     return finish(pending[doc["write_id"]])
+            would_write, _entries_, _waive, reconciled = decide(
+                last, store.read_clock(self._clock), True)
+            if would_write is None:
+                return reconciled
         raise Stop(LEDGER_CONFLICT, counts={"attempts": self._cfg.ledger_cas_attempts})
 
     def expire(self) -> None:

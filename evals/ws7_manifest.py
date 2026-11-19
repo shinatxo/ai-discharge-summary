@@ -35,17 +35,20 @@ entrypoint passes (part 5):
 Anything else is `ws7_runner_argv_invalid`, and nothing is printed: v1's
 `--no-gate`, the pipeline's `--verify`, `--dry-run`, `--runs`, another prompt
 or corpus, another scenario, another order. So a setting the match check does
-not compare cannot be changed by the argv either. For v1 the safety-net gate
-is on as a WS7 rule: it is in the job's own values and in the manifest, and it
-is not an SSM value.
+not compare cannot be changed by the argv either. `runner_argv()` checks the
+config's pre-flight scenario again with the config loader's own pattern, so a
+Config built in code cannot put `--all` where one scenario goes. For v1 the
+safety-net gate is on as a WS7 rule: it is in the job's own values and in the
+manifest, and it is not an SSM value.
 
 The limit is ADR-011's: this proves the image agrees with the release record,
 not that the running Lambda does.
 
 THE RUN MANIFEST (`ws7-manifest/1`) is written once, with `If-None-Match: *`,
 under the run's own prefix. Its `keys` object is the comparator's, checked by
-the comparator's own code, so a manifest's keys can be compared with a
-baseline's as they stand.
+the comparator's own code (`ws7_compare.check_keys`), so a manifest's keys can
+be compared with a baseline's as they stand. A v1 manifest's
+`patient_second_pass` and `prompt_caching` must both be true.
 
 THE COMMIT AND THE IMAGE DIGEST. The image has no `.git`, and a container cannot
 hash its own image. Both are handed in as environment variables, and this
@@ -152,7 +155,13 @@ def runner_argv(target: str, cfg: reserve.Config, *, preflight: bool, batch: str
     if target not in store.TARGETS or type(preflight) is not bool \
             or type(batch) is not str or not _BATCH_RE.fullmatch(batch):
         raise Stop(RUNNER_ARGV_INVALID)
-    scenarios = cfg.preflight_scenario if preflight else "--all"
+    # The config loader's own rule, checked again here: a Config built in code never
+    # went through the loader, and a pre-flight "scenario" of --all would run all 18.
+    # Checked for both forms, so such a config builds no argv at all.
+    scenario = getattr(cfg, "preflight_scenario", None)
+    if type(scenario) is not str or not reserve._SCENARIO_RE.fullmatch(scenario):
+        raise Stop(RUNNER_ARGV_INVALID)
+    scenarios = scenario if preflight else "--all"
     return [scenarios, *(["--deployed-path"] if target == "v1" else []), "--batch", batch, "--yes"]
 
 
@@ -335,11 +344,14 @@ def validate_manifest(manifest: object) -> dict:
         raise bad
     keys = m["keys"]
     try:
-        compare._check_keys(keys, "manifest")       # the comparator's own check of a `keys` object
+        compare.check_keys(keys, "manifest")        # the comparator's own check of a `keys` object
     except (compare.CompareError, TypeError):
         raise bad from None
-    if keys["target"] != target or (target == "v1" and keys["patient_second_pass"] is not True):
-        raise bad                                   # v1's PART C must be the second pass's
+    if keys["target"] != target:
+        raise bad
+    if target == "v1" and not (keys["patient_second_pass"] is True
+                               and keys["prompt_caching"] is True):
+        raise bad                                   # v1 runs with the second pass and caching on (D11)
     booked = m["reservation"]
     if type(booked) is not dict or set(booked) != {"generations", "margin_percent",
                                                     "total_usd_micros"} \

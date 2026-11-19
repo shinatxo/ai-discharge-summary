@@ -85,11 +85,13 @@ HOW EACH UNRESOLVED CASE IS RECOGNISED
 
 WHOSE REPORT. `settle()` and `mark_crashed()` take the Admission that `admit()`
 returned, not a run ID, and the entry must be the one that Admission describes.
-`settle()` also refuses a report that is not this run's own: its target and
-its reservation must be the Admission's, and every batch label in it must
-start with `<run_id>.`. The entrypoint labels its batches `<run_id>.preflight`
-and `<run_id>.main` (part 5). A report with no batch at all is bound by its
-target and reservation only.
+`settle()` also refuses a report that is not this run's own. The report's
+`run_id` must be the Admission's: the guard is given the run's ID when it is
+made and puts it in its report (evals/ws7_client.py), so a report with none,
+or with another run's, is refused whatever else it holds, a fresh one with no
+batch and no cost included. Its target and its reservation must be the
+Admission's too, and every batch label in it must start with `<run_id>.`. The
+entrypoint labels its batches `<run_id>.preflight` and `<run_id>.main` (part 5).
 
 THE RUN'S OWN DEADLINE. `Admission.deadline_at` is `expires_at` less
 DEADLINE_MARGIN_S. The entrypoint must give the client wrapper's guard that
@@ -464,8 +466,8 @@ def _admission(month: str, entry: dict) -> Admission:
 def _read_report(report: object, admitted: Admission) -> tuple:
     """What `settle` needs from the guard's report (evals/ws7_client.py): the counted
     total in micro-dollars, and whether the run is unmetered. The report must be
-    this run's own: the Admission's target and reservation, and batch labels that
-    all start with `<run_id>.`."""
+    this run's own: the Admission's run ID, target and reservation, and batch labels
+    that all start with `<run_id>.`."""
     bad = Stop(REPORT_INVALID, ids=(admitted.run_id,))
     if type(report) is not dict:
         raise bad
@@ -476,6 +478,9 @@ def _read_report(report: object, admitted: Admission) -> tuple:
             or not _count(total) or not _count(reservation) or reservation == 0 \
             or micros != reserve.to_micros(total) or type(micros) is not int:
         raise bad
+    whose = report.get("run_id")
+    if type(whose) is not str or whose != admitted.run_id:
+        raise bad                                   # no run ID, or another run's
     if target != admitted.target \
             or reserve.to_micros(reservation) != admitted.reservation_usd_micros:
         raise bad

@@ -114,7 +114,8 @@ def report(admitted: wl.Admission, total_nanos: int = 1_903_211_000, *, unmetere
     """What Guard.report() gives settle() for this run, with invented totals: the
     run's target and reservation, and the two batches part 5 opens."""
     batch = {"planned": 1, "started": 1, "total_usd_nanos": 0}
-    out = {"target": admitted.target, "unmetered": unmetered, "total_usd_nanos": total_nanos,
+    out = {"target": admitted.target, "run_id": admitted.run_id, "unmetered": unmetered,
+           "total_usd_nanos": total_nanos,
            "total_usd_micros": reserve.to_micros(total_nanos),
            "reservation_usd_nanos": admitted.reservation_usd_micros * 1000,
            "batches": {f"{admitted.run_id}.preflight": dict(batch),
@@ -875,7 +876,7 @@ def _guard_report(admitted: wl.Admission, second_call) -> tuple:
     plan = reserve.plan("v1")
     booked = reserve.reservation("v1", 19, MARGIN)
     guard = wc.Guard(plan, reservation_nanos=booked["total_usd_nanos"], margin_percent=MARGIN,
-                     deadline=time.monotonic() + 60)
+                     deadline=time.monotonic() + 60, run_id=admitted.run_id)
     usage = {"inputTokens": 5000, "outputTokens": 900}                    # invented
     client = wc.GuardedClient(_Inner({"usage": usage}, second_call), guard)
     guard.begin_batch(f"{admitted.run_id}.main", 1)
@@ -951,6 +952,9 @@ def test_an_abandoned_and_a_crashed_entry_count_at_the_reservation(world):
     {"batches": {"2026-12-02T0400-pipeline.": {}}},
     {"batches": {"2026-12-02T0400-pipeline-manual.main": {}}},            # a run whose ID merely starts the same
     {"batches": {7: {}}},
+    {"run_id": None}, {"run_id": ""}, {"run_id": 7},                      # no run ID
+    {"run_id": "2026-12-09T0400-pipeline"},                               # another run's
+    {"run_id": "2026-12-02T0400-pipeline-manual"}, {"run_id": ["2026-12-02T0400-pipeline"]},
 ])
 def test_a_report_that_is_not_this_runs_own_is_refused_and_the_entry_stays_open(world, change):
     admitted = start(world, W1)
@@ -1661,10 +1665,69 @@ def test_another_runs_report_with_an_equal_reservation_is_refused(world):
     before = world.fake.body(DEC)
     stop = stopped(lambda: world.ledger.settle(second, first_report), wl.REPORT_INVALID)
     assert stop.ids == (second.run_id,)
+    # The batch-label rule alone: the first run's batches under the second run's ID.
+    relabelled = dict(first_report, run_id=second.run_id)
+    stopped(lambda: world.ledger.settle(second, relabelled), wl.REPORT_INVALID)
+    # The run-ID rule alone: the second run's batches under the first run's ID.
+    misnamed = dict(report(second), run_id=first.run_id)
+    stopped(lambda: world.ledger.settle(second, misnamed), wl.REPORT_INVALID)
     assert world.fake.body(DEC) == before and entry_of(world, second.run_id)["state"] == wl.OPEN
 
     settled = world.ledger.settle(second, report(second, total_nanos=3_000_000_000))    # the partner
     assert settled["counted_usd_micros"] == 3_000_000
+
+
+def _fresh_guard_report(admitted: wl.Admission, **guard_kw) -> dict:
+    """A real Guard that has opened no batch and sent no call: zero cost, no batches."""
+    booked = reserve.reservation(admitted.target, 19, MARGIN)
+    assert reserve.to_micros(booked["total_usd_nanos"]) == admitted.reservation_usd_micros
+    guard = wc.Guard(reserve.plan(admitted.target), reservation_nanos=booked["total_usd_nanos"],
+                     margin_percent=MARGIN, deadline=time.monotonic() + 60, **guard_kw)
+    return guard.report()
+
+
+def test_another_runs_fresh_empty_report_cannot_settle_a_run_at_zero(world):
+    """Ruling A (Codex re-check, finding 3). A fresh guard from ANOTHER run has the same
+    target and the same reservation, has spent nothing and has no batch, so the
+    batch-label rule has nothing to check. Its run ID is what refuses it: otherwise a
+    run that spent could be settled at zero."""
+    first = start(world, W1)
+    world.ledger.settle(first, report(first))
+    second = start(world, W2)                                             # this run spent, say
+    theirs = _fresh_guard_report(second, run_id=first.run_id)
+    assert (theirs["batches"], theirs["total_usd_micros"], theirs["target"]) == ({}, 0, second.target)
+    assert reserve.to_micros(theirs["reservation_usd_nanos"]) == second.reservation_usd_micros
+
+    before = world.fake.body(DEC)
+    stop = stopped(lambda: world.ledger.settle(second, theirs), wl.REPORT_INVALID)
+    assert stop.ids == (second.run_id,)
+    # A guard that was given no run ID at all is refused the same way.
+    unnamed = _fresh_guard_report(second)
+    assert unnamed["run_id"] is None
+    stopped(lambda: world.ledger.settle(second, unnamed), wl.REPORT_INVALID)
+    without = {k: v for k, v in theirs.items() if k != "run_id"}
+    stopped(lambda: world.ledger.settle(second, without), wl.REPORT_INVALID)
+    assert world.fake.body(DEC) == before and entry_of(world, second.run_id)["state"] == wl.OPEN
+
+
+def test_a_runs_own_empty_report_settles_at_zero(world):
+    """The partner: this run's own guard, which sent nothing, settles the run at zero."""
+    admitted = start(world, W1)
+    own = _fresh_guard_report(admitted, run_id=admitted.run_id)
+    assert (own["run_id"], own["batches"], own["total_usd_micros"]) == (admitted.run_id, {}, 0)
+    settled = world.ledger.settle(admitted, own)
+    assert (settled["state"], settled["basis"], settled["counted_usd_micros"]) \
+        == (wl.SETTLED, wl.METERED, 0)
+
+
+def test_a_guard_is_given_a_run_id_or_none_and_reports_it():
+    plan = reserve.plan("v1")
+    make = lambda **kw: wc.Guard(plan, reservation_nanos=1, margin_percent=MARGIN, deadline=1.0, **kw)  # noqa: E731
+    assert make().report()["run_id"] is None                              # part 1's callers: unchanged
+    assert make(run_id="2026-12-16T0400-v1").report()["run_id"] == "2026-12-16T0400-v1"
+    for bad in ("", "has space", "x" * 65, 7, True, ["2026-12-16T0400-v1"], f"r {SENTINEL}"):
+        with pytest.raises(ValueError):
+            make(run_id=bad)
 
 
 def test_settle_and_mark_crashed_take_the_admission_not_a_run_id(world):

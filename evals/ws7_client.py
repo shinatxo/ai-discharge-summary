@@ -63,6 +63,7 @@ for _p in (str(_EVALS.parent / "src" / "generate"), str(_EVALS)):
         sys.path.insert(0, _p)
 
 import ws7_reserve as reserve  # noqa: E402
+import ws7_store as store  # noqa: E402
 from pipeline import StepError  # noqa: E402
 
 RETRIES = {"mode": "standard", "total_max_attempts": 1}   # one attempt: no retry inside a call
@@ -156,12 +157,20 @@ def _failure_label(exc: BaseException) -> str:
 
 class Guard:
     """The state of one run: its reservation, its running total and its call
-    log. Every client the factory hands out shares one Guard."""
+    log. Every client the factory hands out shares one Guard.
+
+    `run_id` is the run this guard meters (the entrypoint passes its Admission's).
+    It goes into the report, and the ledger settles a run only from a report that
+    carries that run's own ID (evals/ws7_ledger.py): a report cannot be taken for
+    another run's, even a fresh one with no batch and no cost."""
 
     def __init__(self, plan: reserve.Plan, *, reservation_nanos: int, margin_percent: int,
-                 deadline: float, clock=time.monotonic):
+                 deadline: float, clock=time.monotonic, run_id: str | None = None):
         if type(reservation_nanos) is not int or reservation_nanos <= 0:
             raise ValueError("reservation_nanos must be a whole number above zero")
+        if run_id is not None and not (type(run_id) is str and store.ID_RE.fullmatch(run_id)):
+            raise ValueError("run_id must be a run ID")
+        self.run_id = run_id
         self.plan = plan
         self.reservation_nanos = reservation_nanos
         self._worst = {s.id: reserve.worst_case_nanos(s, margin_percent) for s in plan.steps}
@@ -318,6 +327,7 @@ class Guard:
                     refused[c["code"]] = refused.get(c["code"], 0) + 1
             return {
                 "target": self.plan.target,
+                "run_id": self.run_id,          # None unless the guard was given one
                 "reservation_usd_nanos": self.reservation_nanos,
                 "total_usd_nanos": self.total_nanos,
                 "total_usd_micros": reserve.to_micros(self.total_nanos),

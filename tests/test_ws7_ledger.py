@@ -1084,6 +1084,25 @@ def test_an_entry_from_the_month_before_still_blocks(world, kind):
     assert wl.month_total(world.fake.json(DEC)) == R                      # November's figure is November's
 
 
+def test_an_earlier_months_entry_blocks_when_the_runs_own_month_already_has_a_ledger(world):
+    """The block is found by reading every month, not the newest ledger or the run's
+    own. November's entry is unresolved; December already has a ledger, written by a
+    manual run that came and went."""
+    blocker = leave_unmetered(world, "2026-11-25T04:00:00Z")
+    manual = start(world, "2026-12-01T10:00:00Z", mode="manual")
+    world.ledger.settle(manual, report(manual))
+    assert sorted(world.ledger.snapshot()) == ["2026-11", "2026-12"]      # both months have a ledger
+    world.clock.set("2026-12-02T04:00:30Z")
+    held = take(world, W1)
+    before, puts = ledger_bodies(world), len(ledger_puts(world))
+    stop = stopped(lambda: world.ledger.admit(held, R), wl.BLOCKED_UNRESOLVED)
+    assert stop.ids == (blocker,)
+    assert ledger_bodies(world) == before and len(ledger_puts(world)) == puts   # nothing reserved
+
+    world.ledger.resolve(blocker, wl.UPPER_BOUND, 4_000_000)              # the partner: once resolved
+    assert world.ledger.admit(held, R).month == "2026-12"
+
+
 def test_an_entry_two_months_back_with_no_ledger_between_still_blocks(world):
     """Change 5. December's entry, no January ledger at all, a February run."""
     blocker = leave_abandoned(world, W5)

@@ -529,9 +529,12 @@ A refused run reserves nothing: no entry is written for it.
   not start.
 - **A write whose reply failed** counts as a try. Its `write_id` is remembered. If a later read
   shows it, the write landed and is this job's.
-  - **After the last try**, if a reply failed, the ledger is read once more and nothing more is
-    written: the `write_id` is there and the result stands, or the job stops with
-    `ws7_ledger_conflict` (Codex review of PR #6).
+  - **After the last try**, if a reply failed, the ledger is read once more and reconciled as
+    an earlier retry would be, but **nothing more is written** (Codex review of PR #6; the
+    author's rulings, 19 Nov 2026). First the `write_id`: if it is there, the result stands.
+    Then the same decision as a retry: if it has nothing to write, because the entry is already
+    in exactly the wanted state, that result stands. If it would write, the tries are spent
+    and the job stops with `ws7_ledger_conflict`.
   - If another writer has written since, the `write_id` is no longer on the ledger. The job then
     treats an entry that is already in **exactly** the state it wanted as done, and does not
     write it twice.
@@ -632,6 +635,9 @@ blocked.
   10 s plus 90 s). A test reads both from the plans and the runner.
 - A read timeout bounds each wait for data, not a whole reply. So this is a margin, not a proof
   that no call is in flight at `expires_at`.
+- **The 120 s margin does not bound a whole model reply plus settlement.** Settling between
+  `deadline_at` and `expires_at` is intended, and a write decided before `expires_at` may finish
+  after it; but a settle decided at or after `expires_at` is refused.
 - A wall-clock limit of 120 s or less is refused (`ws7_wall_clock_limit_too_short`).
 - If the clock has reached `deadline_at` by the end of `admit()`, the run withdraws at zero and
   is refused (`ws7_admitted_past_deadline`).
@@ -885,6 +891,9 @@ Slice 3's set-up checks must show, on the real bucket and with the task role:
   - **`settle()` is called as soon as the last runner returns, before scoring**, and
     `mark_crashed()` from the outermost handler when there is no guard report; both are given
     the `Admission`;
+  - **part 5 settles with time left for S3 I/O**: a settle is several S3 requests, and one
+    whose write is decided at or after `expires_at` is refused, so the last runner must return
+    with that time still in hand;
   - the runners' argv comes from `ws7_manifest.runner_argv()`, and the guard's batches are
     labelled `<run_id>.preflight` and `<run_id>.main`, which is what binds the report to the
     run;

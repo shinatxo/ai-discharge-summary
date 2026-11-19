@@ -362,7 +362,8 @@ which an entry was resolved as an accepted estimate has no such assurance, and i
      reservation only if the model is writing far more than it did at baseline. Each trip is
      published as a metric (D9).
 4. **Settle after.** When the run ends, the reservation is replaced by the actual cost, worked out
-   from the usage Bedrock returned. Any request that was sent and has no recorded usage stays at
+   from the usage Bedrock returned. The wrapper's report carries the run's ID, and a run is
+   settled only from its own report (Codex review of PR #6). Any request that was sent and has no recorded usage stays at
    its worst case: a step that raised after a response, a crash before the record was written,
    an unfinished run.
    - **Three kinds of entry are unresolved**, because each one's cost is only an estimate:

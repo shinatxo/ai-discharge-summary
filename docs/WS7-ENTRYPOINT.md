@@ -100,7 +100,7 @@ micro-dollar.
 | `monthly_cap_gbp_pence` | 1500 | The monthly ceiling of model spend (ADR-011 D7) |
 | `gbp_pence_per_usd` | 80 | The rate `docs/COST.md` uses |
 | `input_allowance_margin_percent` | 100 | See "The margin" above |
-| `preflight_scenario` | `S1` | The one scenario run alone before the 18 |
+| `preflight_scenario` | `S1` | The one scenario run alone before the 18. A scenario ID: 1 to 32 letters, digits, `_` or `-`, **not starting with a dash**, so it can never be read as an option such as `--all` (Codex re-check of PR #6) |
 | `wall_clock_limit_s` | `{"scheduled": 7200, "manual": 18000}` | When a run is ended |
 | `ledger_cas_attempts` | 4 | Tries **in total** at a ledger write, and at a claim (part 2) |
 | `max_start_delay_s` | 3600 | The oldest scheduled time a run may still claim (part 2) |
@@ -295,6 +295,7 @@ response. A request's body is hashed, in memory, only to tell a repeat from a ne
 
 | Field | Meaning |
 |---|---|
+| `run_id` | The run this guard meters, given when the guard is made (`Guard(..., run_id=...)`), or `null` if none was given. The ledger settles a run only from a report that carries that run's own ID (part 2) |
 | `reservation_usd_nanos`, `total_usd_nanos`, `total_usd_micros` | The reservation and the running total |
 | `worst_case_part_usd_nanos` | The part of the total counted at worst case |
 | `reservation_reached` | The total is at or past the reservation |
@@ -573,13 +574,19 @@ entry is left open, to be abandoned and resolved.
 - **`settle()` and `mark_crashed()` take the `Admission` that `admit()` returned, not a run ID**
   (Codex review of PR #6). The entry must be the one that `Admission` describes:
   `ws7_admission_invalid` otherwise.
-- **The report must be the run's own.** Its target and its reservation must be the
-  `Admission`'s, its micro-dollar total must be its nano-dollar total rounded up, and **every
-  batch label in it must start with `<run_id>.`**. Otherwise `ws7_report_invalid`, and the entry
-  stays open.
-  - Two runs of one target reserve the same amount, so only the labels tell their reports apart.
-  - **Part 5 labels its batches `<run_id>.preflight` and `<run_id>.main`.**
-  - A report with no batch at all is bound by its target and its reservation only.
+- **The report must be the run's own.** Otherwise `ws7_report_invalid`, and the entry stays
+  open.
+  - **Its `run_id` must be the `Admission`'s** (Codex re-check of PR #6; the author's ruling,
+    19 Nov 2026). The guard is given the run's ID when it is made and puts it in its report. A
+    report with no run ID, or with another run's, is refused whatever else it holds.
+  - Why: two runs of one target reserve the same amount. A fresh guard from another run has
+    spent nothing and has no batch, so nothing else tells it apart, and it would settle a run
+    that spent at zero.
+  - Its target and its reservation must be the `Admission`'s, and its micro-dollar total must be
+    its nano-dollar total rounded up.
+  - **Every batch label in it must start with `<run_id>.`** as well. **Part 5 labels its batches
+    `<run_id>.preflight` and `<run_id>.main`.**
+  - A run's own report with no batch and no cost settles the run at zero.
 - Only an open entry can be settled: `ws7_entry_not_open` otherwise.
 
 **How each unresolved case is recognised.**
@@ -641,6 +648,12 @@ blocked.
 - A wall-clock limit of 120 s or less is refused (`ws7_wall_clock_limit_too_short`).
 - If the clock has reached `deadline_at` by the end of `admit()`, the run withdraws at zero and
   is refused (`ws7_admitted_past_deadline`).
+- **Withdrawal at zero happens only before `expires_at`.** If admission's own clean-up reaches
+  `expires_at` (the write that would withdraw the entry is decided at or after it), the entry is
+  not withdrawn: it becomes **abandoned at its full reservation**, although the run made no
+  call, and it blocks later scheduled runs until the author resolves it. The same holds for a
+  withdrawal after the re-read finds another run. (Stated here; not separately tested in this
+  PR.)
 - `expires_at` is compared with other tasks' clocks, so the ledger uses wall-clock UTC. Part 5
   turns `deadline_at` into the guard's monotonic deadline with `Admission.seconds_to_deadline()`.
 
@@ -894,9 +907,9 @@ Slice 3's set-up checks must show, on the real bucket and with the task role:
   - **part 5 settles with time left for S3 I/O**: a settle is several S3 requests, and one
     whose write is decided at or after `expires_at` is refused, so the last runner must return
     with that time still in hand;
-  - the runners' argv comes from `ws7_manifest.runner_argv()`, and the guard's batches are
-    labelled `<run_id>.preflight` and `<run_id>.main`, which is what binds the report to the
-    run;
+  - the runners' argv comes from `ws7_manifest.runner_argv()`; the guard is made with
+    `run_id=admission.run_id`, and its batches are labelled `<run_id>.preflight` and
+    `<run_id>.main`: together these bind the report to the run;
   - a `Duplicate` publishes the `Duplicate` count and exits; every other `Stop` after a claim
     writes the failed record the Thursday check reads, with the stop's code;
   - the check mode looks for the scheduled claim key only, calls `Ledger.expire()`, and reports
@@ -976,7 +989,8 @@ PYTHONDONTWRITEBYTECODE=1 python -m pytest -p no:cacheprovider -q tests/test_ws7
   one refused, the flag set, not set and kept); the monthly bound with invented costs; and
   the Codex review's cases (an entry that appears in another month between the scan and the
   re-read, the last try's reply failing, a report swapped between two runs, an entry that
-  expires during the call, an admission that ends at its own deadline).
+  expires during the call, an admission that ends at its own deadline, another run's fresh
+  empty report).
 - `tests/test_ws7_manifest.py`: the job's own values for both targets; the argv allow-list, with
   the parser shown never to be called for a refused argv; a malformed manifest sending no
   request; each expected value

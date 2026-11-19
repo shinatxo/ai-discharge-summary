@@ -39,6 +39,10 @@ ETags are deliberately not the MD5 of the body. The real bucket is encrypted
 with a KMS key, where an ETag is opaque, so code that computed one would pass
 against MD5 ETags and fail in production.
 
+`script_any` answers the next request, of any kind, with a given error instead
+of handling it: how a test makes S3 point at another region. The region each
+request was signed for is recorded (`signed_regions`).
+
 A GET for a missing key answers 404 or 403 (`missing_status`): real S3 gives
 either, depending on a permission (see evals/ws7_store.py). WS7 must behave
 the same both ways.
@@ -181,10 +185,17 @@ class _Fake:
 
 # ------------------------------------------------------------------------ S3
 
-def _s3_error(code: str) -> bytes:
+def _s3_error(code: str, extra: str = "") -> bytes:
     return (f'<?xml version="1.0" encoding="UTF-8"?>\n<Error><Code>{code}</Code>'
-            f"<Message>fake</Message><RequestId>fake</RequestId><HostId>fake</HostId></Error>"
+            f"<Message>fake</Message>{extra}<RequestId>fake</RequestId><HostId>fake</HostId></Error>"
             ).encode("utf-8")
+
+
+# S3's two ways of saying "this bucket is in another region" (invented region).
+PERMANENT_REDIRECT = (301, "PermanentRedirect", {"x-amz-bucket-region": "eu-west-1"},
+                      "<Endpoint>s3.eu-west-1.amazonaws.com</Endpoint>")
+WRONG_SIGNING_REGION = (400, "AuthorizationHeaderMalformed", {}, "<Region>eu-west-1</Region>")
+SERVER_ERROR = (500, "InternalError", {}, "")
 
 
 class S3Fake(_Fake):
@@ -198,6 +209,8 @@ class S3Fake(_Fake):
         self.requests: list = []         # (method, key or "?list") per request received, in order
         self.puts: list = []             # (key, "if-none-match" | "if-match", status) per PUT
         self.missing_gets = 0            # GETs for a key that was not there
+        self.signed_regions: list = []   # the region each request was signed for, in order
+        self._any_script: list = []      # [(status, code, headers, extra xml), ...], one per request
         self._objects: dict = {}         # key -> (body, etag)
         self._seq = 0
         self._put_script: dict = {}      # key -> [script, ...], one consumed per PUT
@@ -249,6 +262,10 @@ class S3Fake(_Fake):
     def script_list(self, *statuses: int) -> None:
         self._list_script.extend(statuses)
 
+    def script_any(self, *answers: tuple) -> None:
+        """Answer the next requests, whatever they are, with these errors."""
+        self._any_script.extend(answers)
+
     def before_put(self, key: str, action) -> None:
         """Run `action()` once, just before the next PUT of `key` is judged: a
         competing writer that got in between the caller's read and its write."""
@@ -267,6 +284,13 @@ class S3Fake(_Fake):
             bucket, _, key = path.lstrip("/").partition("/")
             if bucket != self.bucket:
                 return self._fault("another_bucket")
+            # "AWS4-HMAC-SHA256 Credential=<id>/<date>/<region>/s3/aws4_request, ..."
+            scope = headers.get("Authorization", "").partition("Credential=")[2].split("/")
+            self.signed_regions.append(scope[2] if len(scope) > 2 else None)
+            if self._any_script and method in ("GET", "PUT"):
+                status, code, extra_headers, extra = self._any_script.pop(0)
+                self.requests.append((method, key or "?list"))
+                return status, {"Content-Type": "application/xml", **extra_headers}, _s3_error(code, extra)
             if method == "GET" and not key:
                 return self._list(query)
             if method == "GET" and key:

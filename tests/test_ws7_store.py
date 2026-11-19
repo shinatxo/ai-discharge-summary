@@ -523,3 +523,86 @@ def test_times_are_whole_utc_seconds_and_a_clock_without_a_zone_is_refused():
         assert store.parse_utc(bad) is None
     with pytest.raises(ValueError):
         store.read_clock(lambda: datetime(2026, 12, 16, 4, 0, 30))
+
+
+# ============================================ never redirected, sent once ==
+
+def _plain_s3(url: str):
+    """An ordinary S3 client with one attempt: what WS7's would be without its two
+    extra handlers. Used only as the control."""
+    import boto3
+    from botocore.config import Config
+    return boto3.Session(region_name="eu-west-2").client(
+        "s3", endpoint_url=url, config=Config(retries=dict(store.RETRIES),
+                                              s3={"addressing_style": "path"}))
+
+
+OPERATIONS = {
+    "list": lambda st, etag: st.list_keys(store.LEDGER_PREFIX),
+    "get": lambda st, etag: st.get(KEY),
+    "put_if_absent": lambda st, etag: st.put_if_absent("ws7/ledger/2026-11.json", MINE),
+    "put_if_match": lambda st, etag: st.put_if_match(KEY, MINE, etag),
+}
+ELSEWHERE = pytest.mark.parametrize("answer", [fakes.PERMANENT_REDIRECT, fakes.WRONG_SIGNING_REGION],
+                                    ids=["PermanentRedirect", "AuthorizationHeaderMalformed"])
+
+
+@ELSEWHERE
+def test_the_control_an_ordinary_s3_client_does_send_the_request_again(s3, answer):
+    """Why the next test matters: with one attempt configured, botocore still follows
+    S3's pointer to another region, signs for it, and remembers it."""
+    s3.seed(KEY, OTHER)
+    plain = _plain_s3(s3.url)
+    s3.script_any(answer)
+    assert plain.get_object(Bucket=fakes.BUCKET, Key=KEY)["Body"].read() == OTHER
+    assert s3.requests == [("GET", KEY), ("GET", KEY)]                    # sent twice
+    assert s3.signed_regions == ["eu-west-2", "eu-west-1"]                # the second for another region
+    plain.get_object(Bucket=fakes.BUCKET, Key=KEY)
+    assert s3.signed_regions[-1] == "eu-west-1"                           # and it stays moved
+
+
+@ELSEWHERE
+@pytest.mark.parametrize("operation", list(OPERATIONS))
+def test_a_ws7_s3_client_never_follows_a_redirect(s3, st, answer, operation):
+    """Ruling 7. S3 points at another region: the fake sees exactly one request, the
+    store raises a fixed code, and nothing is remembered for the next call."""
+    etag = s3.seed(KEY, OTHER)
+    assert OPERATIONS["get"](st, etag)[0] == OTHER                        # the partner: a normal reply
+    seen = len(s3.requests)
+
+    s3.script_any(answer)
+    assert code_of(lambda: OPERATIONS[operation](st, etag)) == store.WRONG_REGION
+    assert len(s3.requests) == seen + 1                                   # exactly one request
+    assert s3.body(KEY) == OTHER and s3.keys() == [KEY]                   # a write did not land
+
+    assert st.get(KEY)[0] == OTHER                                        # the next call is ordinary
+    assert set(s3.signed_regions) == {"eu-west-2"}                        # never signed for another region
+
+
+def _ask_again_after_a_500(client) -> None:
+    """What botocore's redirector does, done by a test: tell the endpoint to send again."""
+    def again(response, **_kwargs):
+        return 0 if response is not None and response[0].status_code == 500 else None
+    client.meta.events.register("needs-retry.s3", again)
+
+
+def test_a_ws7_s3_client_never_sends_one_call_twice_whatever_asks_for_it(s3):
+    """The second safeguard, alone. Something other than the redirector asks for the
+    request to be sent again; the second send is stopped before it leaves."""
+    s3.seed(KEY, OTHER)
+    plain = _plain_s3(s3.url)
+    _ask_again_after_a_500(plain)
+    s3.script_any(fakes.SERVER_ERROR)
+    assert plain.get_object(Bucket=fakes.BUCKET, Key=KEY)["Body"].read() == OTHER
+    assert s3.requests == [("GET", KEY), ("GET", KEY)]                    # the control: sent twice
+
+    client = store.build_client("s3", endpoint_url=s3.url)
+    _ask_again_after_a_500(client)
+    ours = store.Store(client, fakes.BUCKET)
+    for call in (lambda: ours.get(KEY), lambda: ours.list_keys(store.LEDGER_PREFIX),
+                 lambda: ours.put_if_absent("ws7/ledger/2026-11.json", MINE)):
+        seen = len(s3.requests)
+        s3.script_any(fakes.SERVER_ERROR)
+        assert code_of(call) == store.RESEND_REFUSED
+        assert len(s3.requests) == seen + 1                               # exactly one request
+    assert ours.get(KEY)[0] == OTHER                                      # the partner: a normal reply

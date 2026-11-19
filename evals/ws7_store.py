@@ -47,6 +47,25 @@ A write whose reply failed (a 5xx, a timeout, a dropped connection) may have
 landed. It is AMBIGUOUS, never assumed either way: the caller reads the object
 back and looks for its own token.
 
+A WS7 S3 client never follows a redirect and never sends one call twice.
+botocore registers a region redirector on every S3 client
+(`S3RegionRedirectorv2`, botocore 1.43.110 `client.py:404`, `utils.py:1758`). On
+a 301, 302 or 307, a `PermanentRedirect`, an `AuthorizationHeaderMalformed` that
+names a Region, or an `IllegalLocationConstraintException`, it re-signs the
+request for the region S3 named, remembers that region for the bucket, and
+returns 0 from `needs-retry`; `endpoint.py` (`_needs_retry`, `:352`) then sends
+the request again, whatever `total_max_attempts` says. Two things stop that
+here, each tested alone:
+
+- `_never_redirect`: before every call, the request is marked as already
+  redirected, which is the redirector's own reason to do nothing
+  (`utils.py:1778`). It then neither re-sends nor remembers another region.
+- `_SendOnce`: a second send within one call is refused before it leaves,
+  whatever asked for it.
+
+Such an answer is a failure with a fixed code (`ws7_store_wrong_region`), and
+for a write it is not ambiguous: a redirect did not land.
+
 An ETag is opaque here. The eval bucket is encrypted with a KMS key (D8, D9), so
 an ETag is not the MD5 of the object; WS7 only hands back the one it was given.
 
@@ -56,6 +75,7 @@ No AWS call is made by importing this module.
 from __future__ import annotations
 
 import re
+import threading
 from datetime import datetime, timezone
 
 from botocore.exceptions import BotoCoreError, ClientError, ParamValidationError
@@ -106,8 +126,17 @@ OBJECT_TOO_LARGE = "ws7_store_object_too_large"
 PUT_REFUSED = "ws7_store_put_refused"
 OBJECT_MISSING = "ws7_store_object_missing"
 CREATE_UNSURE = "ws7_store_create_unsure"
+WRONG_REGION = "ws7_store_wrong_region"
+RESEND_REFUSED = "ws7_store_resend_refused"
 CODES = (ENDPOINT_REFUSED, BUCKET_REFUSED, KEY_REFUSED, LIST_FAILED, LIST_TRUNCATED, GET_FAILED,
-         OBJECT_TOO_LARGE, PUT_REFUSED, OBJECT_MISSING, CREATE_UNSURE)
+         OBJECT_TOO_LARGE, PUT_REFUSED, OBJECT_MISSING, CREATE_UNSURE, WRONG_REGION,
+         RESEND_REFUSED)
+
+# What S3 answers when it wants the request sent somewhere else, or signed for
+# another region: the answers botocore's redirector acts on.
+_REDIRECT_STATUSES = (301, 302, 307)
+_REDIRECT_CODES = ("PermanentRedirect", "TemporaryRedirect", "AuthorizationHeaderMalformed",
+                   "IllegalLocationConstraintException")
 
 REFUSED_METRIC = "RunRefused"
 
@@ -232,6 +261,32 @@ def _check_target_mode(target: str, mode: str) -> None:
 
 # ----------------------------------------------------------------- clients
 
+class ResendRefused(Exception):
+    """A second send within one S3 call was stopped before it left."""
+
+
+def _never_redirect(context, **_kwargs) -> None:
+    """`before-call.s3`: mark the request as already redirected, so botocore's
+    region redirector does nothing with whatever S3 answers."""
+    context.setdefault("s3_redirect", {})["redirected"] = True
+
+
+class _SendOnce:
+    """One send per S3 call. `new_call` runs at `before-call.s3`, `before_send` at
+    `before-send.s3`; the count is per thread, as a call is."""
+
+    def __init__(self):
+        self._local = threading.local()
+
+    def new_call(self, **_kwargs) -> None:
+        self._local.sends = 0
+
+    def before_send(self, **_kwargs) -> None:
+        self._local.sends = getattr(self._local, "sends", 0) + 1
+        if self._local.sends > 1:
+            raise ResendRefused()
+
+
 def build_client(service: str, *, endpoint_url: str | None = None):
     """The one place WS7 creates an S3 or SSM client.
 
@@ -260,6 +315,12 @@ def build_client(service: str, *, endpoint_url: str | None = None):
     expected = LIVE_ENDPOINTS[service] if endpoint_url is None else endpoint_url
     if client.meta.endpoint_url != expected or client.meta.region_name != LIVE_REGION:
         raise StoreError(ENDPOINT_REFUSED)
+    if service == "s3":
+        # Never follow a redirect, and never send one call twice (module docstring).
+        once = _SendOnce()
+        client.meta.events.register("before-call.s3", _never_redirect)
+        client.meta.events.register("before-call.s3", once.new_call)
+        client.meta.events.register("before-send.s3", once.before_send)
     return client
 
 
@@ -268,6 +329,18 @@ def build_client(service: str, *, endpoint_url: str | None = None):
 def _status_and_code(exc: ClientError) -> tuple:
     status = exc.response.get("ResponseMetadata", {}).get("HTTPStatusCode")
     return (status if type(status) is int else None), exc.response.get("Error", {}).get("Code")
+
+
+def _never_followed(exc: BaseException) -> str | None:
+    """The fixed code for an answer WS7 will not act on, or None: S3 pointing at
+    another region or endpoint, or a second send that was stopped."""
+    if isinstance(exc, ResendRefused):
+        return RESEND_REFUSED
+    if isinstance(exc, ClientError):
+        status, code = _status_and_code(exc)
+        if status in _REDIRECT_STATUSES or code in _REDIRECT_CODES:
+            return WRONG_REGION
+    return None
 
 
 class Store:
@@ -290,8 +363,8 @@ class Store:
         self._check_key(prefix)
         try:
             page = self._s3.list_objects_v2(Bucket=self.bucket, Prefix=prefix)
-        except (ClientError, BotoCoreError):
-            raise StoreError(LIST_FAILED) from None
+        except (ClientError, BotoCoreError, ResendRefused) as exc:
+            raise StoreError(_never_followed(exc) or LIST_FAILED) from None
         if page.get("IsTruncated") is not False:
             raise StoreError(LIST_TRUNCATED)
         keys = [item.get("Key") for item in page.get("Contents", [])]
@@ -306,8 +379,8 @@ class Store:
         try:
             reply = self._s3.get_object(Bucket=self.bucket, Key=key)
             body = reply["Body"].read(MAX_OBJECT_BYTES + 1)
-        except (ClientError, BotoCoreError):
-            raise StoreError(GET_FAILED) from None
+        except (ClientError, BotoCoreError, ResendRefused) as exc:
+            raise StoreError(_never_followed(exc) or GET_FAILED) from None
         etag = reply.get("ETag")
         if type(etag) is not str or not etag or type(body) is not bytes:
             raise StoreError(GET_FAILED)
@@ -333,8 +406,12 @@ class Store:
         try:
             reply = self._s3.put_object(Bucket=self.bucket, Key=key, Body=body,
                                         ContentType="application/json", **condition)
+        except ResendRefused:
+            raise StoreError(RESEND_REFUSED) from None
         except ClientError as exc:
             status, code = _status_and_code(exc)
+            if _never_followed(exc):
+                raise StoreError(WRONG_REGION) from None        # a redirect did not land
             if status == 412 and code == "PreconditionFailed":
                 return failed_condition, None
             if status == 409 and code == "ConditionalRequestConflict":

@@ -66,7 +66,9 @@ V1_STEPS = ("combined", "patient_v2")     # the v1 runner's own call names
 CONFIG_SCHEMA = "ws7-config/1"
 CONFIG_PATH = _EVALS / "ws7_config.json"
 MARGIN_PERCENT_RANGE = (100, 1000)    # under 100 would reserve less than the planning figure
-_SCENARIO_RE = re.compile(r"[A-Za-z0-9_-]{1,32}")
+# A scenario ID never starts with a dash: the pre-flight scenario is handed to a runner
+# as an argument, where "--all" would select the whole corpus, not one scenario.
+_SCENARIO_RE = re.compile(r"[A-Za-z0-9_][A-Za-z0-9_-]{0,31}")
 
 
 class ReserveError(Exception):

@@ -159,6 +159,33 @@ def test_the_only_argv_accepted_is_the_one_part_5_will_pass(target):
     stopped(lambda: wm.runner_argv("canary", CFG, preflight=False, batch="b1"), wm.RUNNER_ARGV_INVALID)
 
 
+def _config_with(tmp_path, **change) -> Path:
+    """The repository's config with one field changed, written to a temporary file."""
+    data = json.loads(reserve.CONFIG_PATH.read_text("utf-8"))
+    data.update(change)
+    path = tmp_path / "ws7_config.json"
+    path.write_text(json.dumps(data), encoding="utf-8")
+    return path
+
+
+@pytest.mark.parametrize("scenario", ["--all", "-x", "-", "--yes", "-S1"])
+def test_the_config_loader_refuses_a_pre_flight_scenario_that_starts_with_a_dash(tmp_path, scenario):
+    """Ruling B (Codex re-check). A pre-flight "scenario" of --all would make the
+    pre-flight run the whole corpus: `runner_argv` puts it where a scenario ID goes."""
+    with pytest.raises(reserve.ReserveError) as exc:
+        reserve.load_config(_config_with(tmp_path, preflight_scenario=scenario))
+    assert exc.value.code == "config_shape_invalid"
+
+
+@pytest.mark.parametrize("scenario", ["S1", "S18", "s_1", "S-1", "1"])
+def test_the_config_loader_accepts_an_ordinary_scenario_id(tmp_path, scenario):
+    """The partner. A dash inside an ID is still allowed; only a leading one is not."""
+    cfg = reserve.load_config(_config_with(tmp_path, preflight_scenario=scenario))
+    assert cfg.preflight_scenario == scenario
+    argv = wm.runner_argv("pipeline", cfg, preflight=True, batch="b1")
+    assert argv == [scenario, "--batch", "b1", "--yes"] and argv[0] != "--all"   # one scenario, never all
+
+
 REFUSED_ARGV = [
     ("v1", ["--all", "--deployed-path", "--no-gate", "--batch", "b1", "--yes"]),       # the gate off
     ("pipeline", ["--all", "--verify", "--batch", "b1", "--yes"]),                      # step 7v

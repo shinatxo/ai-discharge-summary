@@ -347,8 +347,9 @@ Part 2 supplies the pieces. Part 5 wires them, in this order:
 2. **The claim.** A duplicate stops here.
 3. **Admission.** The reservation is booked in the month's ledger, or the run is refused.
 4. **The run**, with the guard's deadline set from the admission (see "The run's own deadline").
-5. **Settling**, straight after the last runner returns and before any scoring. If the run has
-   no guard report to settle from, it calls `mark_crashed()` instead.
+5. **Settling**, straight after the last runner returns and before any scoring. `settle()` takes
+   the `Admission` that `admit()` returned. If the run has no guard report to settle from, it
+   calls `mark_crashed()` with that `Admission` instead.
 6. **The manifest**, written once at the end, when the batch's hashes are known.
 
 ### The S3 layout
@@ -408,6 +409,22 @@ Every key is under `ws7/`, the task role's whole reach in the bucket (ADR-011 D6
     (`ws7_store_get_failed`).
   - A truncated listing is refused (`ws7_store_list_truncated`): a key it left out would be read
     as absent.
+- **A WS7 S3 client never follows a redirect, and never sends one call twice** (Codex review of
+  PR #6).
+  - botocore registers a region redirector on every S3 client (`S3RegionRedirectorv2`, botocore
+    1.43.110, `client.py:404`). On a 301, 302 or 307, a `PermanentRedirect`, an
+    `AuthorizationHeaderMalformed` that names a Region, or an
+    `IllegalLocationConstraintException`, it re-signs the request for the region S3 named,
+    remembers that region for the bucket, and tells the endpoint to send again. `endpoint.py`
+    (`_needs_retry`, `:352`) then does, whatever `total_max_attempts` says.
+  - `build_client("s3")` registers two handlers. The first marks every request as already
+    redirected, which is the redirector's own reason to do nothing (`utils.py:1778`): it neither
+    re-sends nor remembers another region. The second counts sends and stops a second one within
+    one call before it leaves, whatever asked for it.
+  - S3 pointing elsewhere is a failure, `ws7_store_wrong_region`. For a write it is not
+    ambiguous: a redirect did not land. A stopped second send is `ws7_store_resend_refused`.
+  - Each handler is tested alone, with an ordinary one-attempt client as the control: that client
+    does send twice, signs the second request for the other region, and stays moved.
 - **An ETag is opaque.** The bucket is KMS-encrypted (ADR-011 D8, D9), so an ETag is not the
   object's MD5. WS7 only hands back the ETag it was given.
 
@@ -510,19 +527,39 @@ A refused run reserves nothing: no entry is written for it.
 - **`ledger_cas_attempts` counts tries in total, not retries.** With the configured 4: three
   losses and then a win starts the run; four losses give `ws7_ledger_conflict`, and the run does
   not start.
-- **A write whose reply failed** counts as a try. Its `write_id` is remembered. If the next read
-  shows it, the write landed and is this job's. If another writer has written since, the job
-  recognises its own entry by its run ID and does not book it twice.
+- **A write whose reply failed** counts as a try. Its `write_id` is remembered. If a later read
+  shows it, the write landed and is this job's.
+  - **After the last try**, if a reply failed, the ledger is read once more and nothing more is
+    written: the `write_id` is there and the result stands, or the job stops with
+    `ws7_ledger_conflict` (Codex review of PR #6).
+  - If another writer has written since, the `write_id` is no longer on the ledger. The job then
+    treats an entry that is already in **exactly** the state it wanted as done, and does not
+    write it twice.
+  - That needs no operation ID, because no other writer can make the same change to this entry.
+    Booking, settling, withdrawing and the crash mark are made only by the run's own process,
+    which holds the run's exclusive claim. The one change another reader makes to someone
+    else's entry is abandonment, which differs by kind. A resolution is made only by the
+    author's command. So the end state is the one intended either way.
+  - A **different** state is not credited. If another reader abandoned the entry while this
+    run's settle reply failed, the settle is refused.
 - A ledger that cannot be listed, read or written stops the run: `ws7_ledger_unavailable`, with
   the store's own code.
 
-**One run at a time, across months.** One compare-and-swap covers one object, and two runs at a
-month's end could book in two months' objects at once. So after its entry is written, a run reads
-every month once more. If it finds another live open entry it withdraws its own at zero
-(`settled`, `withdrawn`) and stops with `ws7_run_in_progress`. Each run writes and then reads, so
-the later read always sees the earlier write: at least one of the two withdraws, and both may.
-If that second read itself fails, the run does not start and its entry is left open, to be
-abandoned and resolved.
+**One run at a time, across months.** One compare-and-swap covers one object, and an entry in
+another month's object can be written after this run's scan. So after its entry is written, a
+run reads every month once more and **meets admission rules 1 to 3 again, leaving itself out**
+(Codex review of PR #6; the author's ruling, 19 Nov 2026):
+
+- a scheduled run withdraws if any other entry, in any month, is live (`ws7_run_in_progress`),
+  or is open past its `expires_at` or unresolved (`ws7_blocked_unresolved`);
+- a manual run withdraws only for a live entry;
+- either withdraws if the clock has reached its own `deadline_at`
+  (`ws7_admitted_past_deadline`): admission took so long that no call may be sent.
+
+It withdraws its own entry at zero (`settled`, `withdrawn`) and does not start. Each run writes
+and then reads, so the later read always sees the earlier write: of two runs that race, at least
+one withdraws, and both may. If that second read itself fails, the run does not start and its
+entry is left open, to be abandoned and resolved.
 
 **Settling** (`Ledger.settle`).
 
@@ -530,9 +567,16 @@ abandoned and resolved.
   usage Bedrock returned wherever a reply was seen, and the worst case only where none was.
 - A report that says `unmetered` is written as `unresolved`, `unmetered`, at that same total, in
   the same write.
-- The report must be the run's own: its target and its reservation must be the entry's, and its
-  micro-dollar total must be its nano-dollar total rounded up. Otherwise `ws7_report_invalid`,
-  and the entry stays open.
+- **`settle()` and `mark_crashed()` take the `Admission` that `admit()` returned, not a run ID**
+  (Codex review of PR #6). The entry must be the one that `Admission` describes:
+  `ws7_admission_invalid` otherwise.
+- **The report must be the run's own.** Its target and its reservation must be the
+  `Admission`'s, its micro-dollar total must be its nano-dollar total rounded up, and **every
+  batch label in it must start with `<run_id>.`**. Otherwise `ws7_report_invalid`, and the entry
+  stays open.
+  - Two runs of one target reserve the same amount, so only the labels tell their reports apart.
+  - **Part 5 labels its batches `<run_id>.preflight` and `<run_id>.main`.**
+  - A report with no batch at all is bound by its target and its reservation only.
 - Only an open entry can be settled: `ws7_entry_not_open` otherwise.
 
 **How each unresolved case is recognised.**
@@ -553,6 +597,9 @@ abandoned and resolved.
 - **At or past `expires_at` the entry is abandoned whoever asks, the run itself included.** A
   late `settle()` or `mark_crashed()` is refused with `ws7_entry_not_open` and the entry stays
   unresolved. Only `resolve()` moves it on.
+- **The clock is read again inside the write.** If the entry expired while the call was reading
+  S3, that same write records the abandonment, and the call is then refused (Codex review of
+  PR #6).
 
 **The block.** An unresolved entry in any month blocks every later scheduled run, with
 `ws7_blocked_unresolved`. The job finds it by listing every ledger, so an entry two months back,
@@ -586,6 +633,8 @@ blocked.
 - A read timeout bounds each wait for data, not a whole reply. So this is a margin, not a proof
   that no call is in flight at `expires_at`.
 - A wall-clock limit of 120 s or less is refused (`ws7_wall_clock_limit_too_short`).
+- If the clock has reached `deadline_at` by the end of `admit()`, the run withdraws at zero and
+  is refused (`ws7_admitted_past_deadline`).
 - `expires_at` is compared with other tasks' clocks, so the ledger uses wall-clock UTC. Part 5
   turns `deadline_at` into the guard's monotonic deadline with `Admission.seconds_to_deadline()`.
 
@@ -664,6 +713,25 @@ Where the job's own values come from, so that they are what the runner will real
 | `pipeline_version` | `pipeline.orchestrate.pipeline_version()`, called, not changed |
 | The two v1 prompt hashes | The sha256 of the bytes of the files the v1 runner will load, as its record's `file_sha256` is |
 | `prompt_caching`, `patient_second_pass` | The runner's own `parse_args`, on the argv the entrypoint will hand it |
+| `safety_net_gate` (v1 only) | The same parser. Always on: a WS7 rule, not compared with SSM |
+
+**The runner's argv is an allow-list** (Codex review of PR #6). Before a runner's parser sees an
+argv, it must be exactly one of the forms `runner_argv()` builds, which are the forms part 5
+passes:
+
+| Target | The only forms |
+|---|---|
+| Pipeline | `<--all or the pre-flight scenario> --batch <id> --yes` |
+| v1 | `<--all or the pre-flight scenario> --deployed-path --batch <id> --yes` |
+
+- The pre-flight scenario is the config's (`S1`). A batch ID is 1 to 64 letters, digits, `.`,
+  `_` or `-`, and does not start with a dash.
+- Anything else is `ws7_runner_argv_invalid`, and nothing is printed, because the parser is
+  never called: v1's `--no-gate`, the pipeline's `--verify`, `--dry-run`, `--runs`,
+  `--no-prompt-caching`, another prompt or corpus, another scenario, another order.
+- So a setting the match check does not compare cannot be changed by the argv either.
+- What the parser made of the argv is checked as well: one run, no dry run, no step 7v, and for
+  v1 the gate on.
 
 The limit is ADR-011's: the check proves the image agrees with the release record, not that the
 running Lambda does.
@@ -681,6 +749,7 @@ there is never replaced (`ws7_manifest_exists`).
 | `client` | `total_max_attempts` (1), `connect_timeout_s`, and `read_timeout_s`: 60 for v1, fixed by WS7; `null` for the pipeline, whose runner names one for each client |
 | `keys` | The comparator's `keys` object (`docs/WS7-COMPARATOR.md`), checked by the comparator's own code. For v1 it holds the two prompt hashes, `patient_second_pass` and `prompt_caching` |
 | `reservation` | `generations`, `margin_percent`, `total_usd_micros` |
+| `safety_net_gate` | `true` for v1 (a WS7 rule); `null` for the pipeline, whose runner has no such switch |
 | `month_assurance_waived` | The month's flag when the run ran |
 | `baseline_id` | The baseline it was compared with, or `null` |
 | `part_c` | How PART C was produced: `pipeline_step_7` or `v1_second_pass` |
@@ -688,6 +757,11 @@ there is never replaced (`ws7_manifest_exists`).
 - The corpus hash, the gold hashes and the scorer versions come from the finished batch and its
   scores, so parts 4 and 5 pass them in. Part 2 checks their shape.
 - A manifest holds IDs, hashes, numbers and flags only.
+- **The whole manifest is validated twice** (`validate_manifest`): when it is built, and again on
+  the exact payload immediately before the conditional PUT (Codex review of PR #6). The check
+  covers every field and how they fit together: the run ID is the one its target, mode and
+  scheduled time give, the month is that time's, the client settings are the plan's, and the
+  PART C label and the gate are the target's. A malformed manifest sends no request.
 
 **The commit and the image digest.** The image has no `.git`, and a container cannot hash its own
 image. Both are handed in as environment variables. `identity()` reads them only from the mapping
@@ -719,11 +793,11 @@ publishes them.
 | Where | Codes |
 |---|---|
 | The claim | `ws7_duplicate`, `ws7_target_unknown`, `ws7_mode_unknown`, `ws7_scheduled_time_invalid`, `ws7_scheduled_time_future`, `ws7_start_too_late`, `ws7_claim_unavailable` |
-| Admission | `ws7_reservation_invalid`, `ws7_wall_clock_limit_too_short`, `ws7_run_in_progress`, `ws7_blocked_unresolved`, `ws7_over_cap`, `ws7_entry_exists` |
+| Admission | `ws7_reservation_invalid`, `ws7_wall_clock_limit_too_short`, `ws7_run_in_progress`, `ws7_blocked_unresolved`, `ws7_over_cap`, `ws7_entry_exists`, `ws7_admitted_past_deadline` |
 | Any ledger write | `ws7_ledger_conflict`, `ws7_ledger_unavailable`, `ws7_ledger_invalid`, `ws7_ledger_write_invalid` |
-| Settling and resolving | `ws7_entry_unknown`, `ws7_entry_not_open`, `ws7_entry_not_unresolved`, `ws7_report_invalid`, `ws7_basis_unknown`, `ws7_settled_figure_invalid`, `ws7_estimate_differs` |
+| Settling and resolving | `ws7_admission_invalid`, `ws7_entry_unknown`, `ws7_entry_not_open`, `ws7_entry_not_unresolved`, `ws7_report_invalid`, `ws7_basis_unknown`, `ws7_settled_figure_invalid`, `ws7_estimate_differs` |
 | The match check and the manifest | `ws7_runner_argv_invalid`, `ws7_expected_unreadable`, `ws7_expected_invalid`, `ws7_match_differs`, `ws7_identity_missing`, `ws7_manifest_invalid`, `ws7_manifest_exists`, `ws7_manifest_unavailable` |
-| The store | `ws7_store_endpoint_refused`, `ws7_store_bucket_refused`, `ws7_store_key_refused`, `ws7_store_list_failed`, `ws7_store_list_truncated`, `ws7_store_get_failed`, `ws7_store_object_too_large`, `ws7_store_put_refused`, `ws7_store_object_missing`, `ws7_store_create_unsure` |
+| The store | `ws7_store_endpoint_refused`, `ws7_store_bucket_refused`, `ws7_store_key_refused`, `ws7_store_list_failed`, `ws7_store_list_truncated`, `ws7_store_get_failed`, `ws7_store_object_too_large`, `ws7_store_put_refused`, `ws7_store_object_missing`, `ws7_store_create_unsure`, `ws7_store_wrong_region`, `ws7_store_resend_refused` |
 
 ### What the fakes cannot prove
 
@@ -732,7 +806,8 @@ faults on anything it does not implement: an unconditional PUT, a PUT with both 
 delete, any other method or query parameter. It ignores request headers it does not know, because
 botocore adds some and a newer botocore may add more. Its ETags are deliberately not MD5s. It can
 answer a GET for a missing key with 404 or with 403, and a test shows WS7 behaves the same either
-way. The SSM fake implements `GetParameter` only.
+way. It can answer any request as S3 does when a bucket is in another region, and it records the
+region each request was signed for. The SSM fake implements `GetParameter` only.
 
 Slice 3's set-up checks must show, on the real bucket and with the task role:
 
@@ -745,12 +820,19 @@ Slice 3's set-up checks must show, on the real bucket and with the task role:
 - that a real ETag, as GET returns it, is accepted by `If-Match`;
 - two real tasks racing for one claim: exactly one holds it;
 - that the role cannot delete, and cannot write outside `ws7/`;
+- what real S3 answers for a bucket in another region, and that the job stops on it;
 - that the SSM parameters are plain Strings the task can read and cannot write;
 - the format of EventBridge Scheduler's scheduled time, and that a duplicate delivery carries the
   same value;
 - that `WS7_IMAGE_DIGEST` in the task definition is the digest of the image it runs.
 
 ## Notes for later parts
+
+### Part 3: the comparator
+
+- Make the comparator's `_check_keys` public as `check_keys`, and keep the manifest
+  compatibility tests for both targets (`tests/test_ws7_manifest.py`). Part 2 calls the private
+  name, because the comparator was not to be changed in that PR.
 
 ### Part 4: the run summary
 
@@ -798,9 +880,14 @@ Slice 3's set-up checks must show, on the real bucket and with the task role:
   - the scheduled time comes from the schedule as an argument, and the bucket name from the task
     definition; neither comes from the clock or from a default;
   - the match check runs before the claim, and `identity(os.environ)` before any spend;
-  - the guard's deadline is set from `Admission.deadline_at`, never later;
-  - `settle()` is called straight after the last runner returns, before scoring, and
-    `mark_crashed()` from the outermost handler when there is no guard report;
+  - the guard's deadline is set from `Admission.deadline_at`, never later, and **dispatch stops
+    at `deadline_at`**: no runner is started, and no generation is begun, at or after it;
+  - **`settle()` is called as soon as the last runner returns, before scoring**, and
+    `mark_crashed()` from the outermost handler when there is no guard report; both are given
+    the `Admission`;
+  - the runners' argv comes from `ws7_manifest.runner_argv()`, and the guard's batches are
+    labelled `<run_id>.preflight` and `<run_id>.main`, which is what binds the report to the
+    run;
   - a `Duplicate` publishes the `Duplicate` count and exits; every other `Stop` after a claim
     writes the failed record the Thursday check reads, with the stop's code;
   - the check mode looks for the scheduled claim key only, calls `Ledger.expire()`, and reports
@@ -822,6 +909,8 @@ Slice 3's set-up checks must show, on the real bucket and with the task role:
 - The task definition sets the bucket name and `WS7_IMAGE_DIGEST`, and pins the image by that
   digest.
 - The set-up checks in "What the fakes cannot prove" (part 2).
+- **Pass `ExpectedBucketOwner` on every S3 call.** The task definition supplies the account ID,
+  so a mistyped bucket name can never write into another account's bucket.
 
 ## Tests
 
@@ -866,15 +955,22 @@ PYTHONDONTWRITEBYTECODE=1 python -m pytest -p no:cacheprovider -q tests/test_ws7
   ambiguous write, landed and not; `create` and its read-back; absence from the listing with a
   missing key answering 404 and 403; the fake's own strictness (an unconditional PUT is a
   fault). Without connecting: the S3 and SSM clients' endpoints with each override configured,
-  with an ordinary client as the positive control. The key layout, and `Stop`.
+  with an ordinary client as the positive control. S3 pointing at another region: one request at
+  the server and a fixed code, with an ordinary client that does send twice as the control. The
+  key layout, and `Stop`.
 - `tests/test_ws7_ledger.py`: the claim (a duplicate, a manual run on the scheduled date, two
   deliveries at once, a write that landed but whose reply failed); the compare-and-swap at
   `ledger_cas_attempts` and one below; admission at the cap and one micro-dollar over; the
   expiry at `expires_at` and one second before, with an injected clock; every test in the Part 2
   list for the unresolved state (each case blocks, each resolves on both bases, the month
   before, two months back with a gap, a manual run not blocked, the basis stored and an unknown
-  one refused, the flag set, not set and kept); and the monthly bound with invented costs.
-- `tests/test_ws7_manifest.py`: the job's own values for both targets; each expected value
+  one refused, the flag set, not set and kept); the monthly bound with invented costs; and
+  the Codex review's cases (an entry that appears in another month between the scan and the
+  re-read, the last try's reply failing, a report swapped between two runs, an entry that
+  expires during the call, an admission that ends at its own deadline).
+- `tests/test_ws7_manifest.py`: the job's own values for both targets; the argv allow-list, with
+  the parser shown never to be called for a refused argv; a malformed manifest sending no
+  request; each expected value
   differing, with a matching partner; v1's second pass and caching; a missing parameter; the
   commit and the digest from the mapping given; the manifest for both targets, checked by the
   comparator's own key check; written once.

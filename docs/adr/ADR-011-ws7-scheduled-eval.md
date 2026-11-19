@@ -464,11 +464,17 @@ Wednesday can arrive twice.
   - The number is `ledger_cas_attempts`, and it counts **tries in total**, not retries.
   - The month's first ledger is created with `If-None-Match: *`.
   - **A write whose reply failed may have landed.** It is never assumed either way: the job
-    reads the object back and looks for its own `write_id` (a claim's `claim_id`).
+    reads the object back and looks for its own `write_id` (a claim's `claim_id`), after the
+    last try as well.
+  - **The S3 client never follows a redirect**, and never sends one call twice. botocore would
+    otherwise re-send a request to the region S3 names, whatever the attempt limit says
+    (`docs/WS7-ENTRYPOINT.md`, "The store").
 - **One run at a time.** A reservation that is still open blocks any other run. One left open past
   the wall-clock limit is treated as abandoned.
   - The open reservation may be in another month's ledger, so the job reads every month. After
-    booking its own it reads them once more, and withdraws at zero if another run is open.
+    booking its own it reads them once more and meets the same rules again, leaving itself
+    out: a scheduled run withdraws at zero if any other entry is open or unresolved, and a
+    manual run if another run is still live (Codex review of PR #6).
   - **The run's own deadline ends before that limit**, by a margin that covers one call in
     flight (120 seconds: v1's 60 to connect and 60 to read), so that no call should still be
     running when another task may mark the entry abandoned.
@@ -726,7 +732,15 @@ ones and does not generate if they differ.
 | Target | What must match |
 |---|---|
 | Pipeline | `pipeline_version`, model ID, caching setting |
-| v1 | Model ID, the sha256 of `src/generate/system_prompt.md` and `patient_system_prompt.md` at the commit deployed on `main`, second pass on, caching on. v1 has no `pipeline_version` |
+| v1 | Model ID, the sha256 of `src/generate/system_prompt.md` and `patient_system_prompt.md` at the commit deployed on `main`, second pass on, caching on. v1 has no `pipeline_version`. **Safety-net gate on**: a WS7 rule, not an SSM value (below) |
+
+**The runner's arguments are an allow-list** (Codex review of PR #6; the author's ruling,
+19 Nov 2026). The check compares a few values, so the rest must not be movable. The job hands a
+runner only the forms it builds itself: all 18 scenarios or the one pre-flight scenario, a batch
+ID, `--yes`, and for v1 `--deployed-path`. Any other argument refuses the run before the
+runner's parser sees it. So the v1 safety-net gate cannot be switched off (`--no-gate`), and the
+pipeline's step 7v cannot be switched on (`--verify`). The gate is recorded in the job's own
+values and in the manifest.
 
 **Who writes the expected values, and when.** The author writes them to SSM Parameter Store by
 hand. CI does not write them. The eval task can read them and cannot write them. There is one

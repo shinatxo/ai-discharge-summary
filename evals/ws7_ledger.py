@@ -49,9 +49,17 @@ ADMISSION, in this order, decided again on every try:
    run is outside the cap: it is neither counted nor checked.
 5. The open entry is written.
 
-After its entry is written the run reads every month once more. If it finds
-another live open entry (a run in a different month's object, which no single
-compare-and-swap could see), it withdraws its own at zero and does not start.
+After its entry is written the run reads every month once more and meets rules
+1 to 3 again, leaving itself out: an entry in another month's object, written
+after this run's scan, is something no single compare-and-swap could see.
+
+- A scheduled run withdraws if any other entry, in any month, is live, is
+  open past its `expires_at`, or is unresolved.
+- A manual run withdraws only for a live entry.
+- Either withdraws if the clock has reached its own `deadline_at`: its
+  admission took so long that no call may be sent.
+
+It withdraws its own entry at zero (`settled`, `withdrawn`) and does not start.
 Two runs that race across two objects each write, then each read: the later
 read always sees the earlier write, so at least one withdraws.
 
@@ -71,7 +79,17 @@ HOW EACH UNRESOLVED CASE IS RECOGNISED
   same way and are resolved the same way.
 - At or past `expires_at` the entry is abandoned whoever asks, the run itself
   included: a late `settle()` or `mark_crashed()` is refused
-  (`ws7_entry_not_open`), and only `resolve()` moves the entry on.
+  (`ws7_entry_not_open`), and only `resolve()` moves the entry on. The clock is
+  read again inside the write: if the entry expired while the call was reading
+  S3, that write records the abandonment, and the call is then refused.
+
+WHOSE REPORT. `settle()` and `mark_crashed()` take the Admission that `admit()`
+returned, not a run ID, and the entry must be the one that Admission describes.
+`settle()` also refuses a report that is not this run's own: its target and
+its reservation must be the Admission's, and every batch label in it must
+start with `<run_id>.`. The entrypoint labels its batches `<run_id>.preflight`
+and `<run_id>.main` (part 5). A report with no batch at all is bound by its
+target and reservation only.
 
 THE RUN'S OWN DEADLINE. `Admission.deadline_at` is `expires_at` less
 DEADLINE_MARGIN_S. The entrypoint must give the client wrapper's guard that
@@ -161,6 +179,8 @@ CLAIM_UNAVAILABLE = "ws7_claim_unavailable"
 RESERVATION_INVALID = "ws7_reservation_invalid"
 WALL_CLOCK_LIMIT_TOO_SHORT = "ws7_wall_clock_limit_too_short"
 RUN_IN_PROGRESS = "ws7_run_in_progress"
+ADMITTED_PAST_DEADLINE = "ws7_admitted_past_deadline"
+ADMISSION_INVALID = "ws7_admission_invalid"
 BLOCKED_UNRESOLVED = "ws7_blocked_unresolved"
 OVER_CAP = "ws7_over_cap"
 LEDGER_CONFLICT = "ws7_ledger_conflict"
@@ -177,7 +197,7 @@ SETTLED_FIGURE_INVALID = "ws7_settled_figure_invalid"
 ESTIMATE_DIFFERS = "ws7_estimate_differs"
 CODES = (DUPLICATE, TARGET_UNKNOWN, MODE_UNKNOWN, SCHEDULED_TIME_INVALID, SCHEDULED_TIME_FUTURE,
          START_TOO_LATE, CLAIM_UNAVAILABLE, RESERVATION_INVALID, WALL_CLOCK_LIMIT_TOO_SHORT,
-         RUN_IN_PROGRESS, BLOCKED_UNRESOLVED, OVER_CAP, LEDGER_CONFLICT, LEDGER_UNAVAILABLE,
+         RUN_IN_PROGRESS, ADMITTED_PAST_DEADLINE, ADMISSION_INVALID, BLOCKED_UNRESOLVED, OVER_CAP, LEDGER_CONFLICT, LEDGER_UNAVAILABLE,
          LEDGER_INVALID, LEDGER_WRITE_INVALID, ENTRY_EXISTS, ENTRY_UNKNOWN, ENTRY_NOT_OPEN,
          ENTRY_NOT_UNRESOLVED, REPORT_INVALID, BASIS_UNKNOWN, SETTLED_FIGURE_INVALID,
          ESTIMATE_DIFFERS)
@@ -441,21 +461,48 @@ def _admission(month: str, entry: dict) -> Admission:
                      expires - timedelta(seconds=DEADLINE_MARGIN_S))
 
 
-def _read_report(report: object) -> tuple:
-    """What `settle` needs from the guard's report (evals/ws7_client.py): the target,
-    the counted total in micro-dollars, the reservation and whether the run is
-    unmetered."""
-    bad = Stop(REPORT_INVALID)
+def _read_report(report: object, admitted: Admission) -> tuple:
+    """What `settle` needs from the guard's report (evals/ws7_client.py): the counted
+    total in micro-dollars, and whether the run is unmetered. The report must be
+    this run's own: the Admission's target and reservation, and batch labels that
+    all start with `<run_id>.`."""
+    bad = Stop(REPORT_INVALID, ids=(admitted.run_id,))
     if type(report) is not dict:
         raise bad
     target, unmetered = report.get("target"), report.get("unmetered")
     total, micros = report.get("total_usd_nanos"), report.get("total_usd_micros")
-    reservation = report.get("reservation_usd_nanos")
+    reservation, batches = report.get("reservation_usd_nanos"), report.get("batches")
     if type(target) is not str or target not in TARGETS or type(unmetered) is not bool \
             or not _count(total) or not _count(reservation) or reservation == 0 \
             or micros != reserve.to_micros(total) or type(micros) is not int:
         raise bad
-    return target, micros, reserve.to_micros(reservation), unmetered
+    if target != admitted.target \
+            or reserve.to_micros(reservation) != admitted.reservation_usd_micros:
+        raise bad
+    mine = admitted.run_id + "."
+    if type(batches) is not dict or not all(
+            type(label) is str and label.startswith(mine) and len(label) > len(mine)
+            for label in batches):
+        raise bad
+    return micros, unmetered
+
+
+def _blocked(snap: dict, now: datetime, mode: str, *, exclude: str | None = None) -> Stop | None:
+    """Admission rules 1 to 3, over every month's entries but the run's own: the stop
+    a run meets, or None. Used when a run is booked and again after it is.
+
+    Every run: any live open entry. A scheduled run as well: any unresolved entry,
+    and any entry open past its `expires_at`, which is abandoned in all but the
+    write that says so."""
+    others = [e for _, e in _entries(snap) if e["run_id"] != exclude]
+    live = tuple(e["run_id"] for e in others if _is_live(e, now))
+    if live:
+        return Stop(RUN_IN_PROGRESS, ids=live)
+    if mode == SCHEDULED:
+        blockers = tuple(e["run_id"] for e in others if e["state"] in (OPEN, UNRESOLVED))
+        if blockers:
+            return Stop(BLOCKED_UNRESOLVED, ids=blockers, counts={"unresolved": len(blockers)})
+    return None
 
 
 class Ledger:
@@ -510,20 +557,46 @@ class Ledger:
 
         `decide(snap, now, unsure)` is called afresh on every try with everything
         just read. It returns `(month, entries, waive, result)`, or a `month` of
-        None when there is nothing to write; it raises Stop to refuse.
+        None when there is nothing to write; it raises Stop to refuse. A `result`
+        that is a Stop is raised once its write has landed: the write records
+        something, and the call is still refused.
 
         `ledger_cas_attempts` counts tries IN TOTAL. A try that lost (412, or a
-        409) is followed by a new read and a new decision. A try whose reply
-        failed may have landed: its `write_id` is remembered, and if the next
-        read shows it, that write is this call's and `result` is returned. If
-        another writer has written since, `decide` is told `unsure`, and treats
-        an entry already in the state it wanted as done."""
+        409) is followed by a new read and a new decision.
+
+        A try whose reply failed may have landed. Its `write_id` is remembered,
+        and if a later read shows it, that write is this call's and its result
+        stands. After the LAST try, if any reply failed, the ledger is read once
+        more, and nothing more is written: the write is there, or the call ends
+        with ws7_ledger_conflict.
+
+        If another writer has written since, the `write_id` is no longer on the
+        ledger, and `decide` is told `unsure`. It then treats an entry that is
+        already in exactly the state it wanted as done. That needs no operation
+        ID, because no other writer can make the same change to this entry:
+
+        - booking, settling, withdrawing and the crash mark are made only by the
+          run's own process, which holds the run's claim, and the claim is
+          exclusive;
+        - the one change another reader makes to someone else's entry is
+          abandonment, which differs by kind (`abandoned`), so it is never taken
+          for this call's settle, withdrawal or crash mark;
+        - a resolution is made only by the author's command.
+
+        So an entry found in exactly the wanted state was put there by an earlier
+        try of this call, and the end state is the one intended either way. A
+        DIFFERENT state is not credited: the call is refused."""
+        def finish(result):
+            if isinstance(result, Stop):
+                raise result
+            return result
+
         pending: dict = {}
         for _ in range(self._cfg.ledger_cas_attempts):
             snap = self._scan()
             for doc, _etag in snap.values():
                 if doc["write_id"] in pending:
-                    return pending[doc["write_id"]]
+                    return finish(pending[doc["write_id"]])
             now = store.read_clock(self._clock)
             month, entries, waive, result = decide(snap, now, bool(pending))
             if month is None:
@@ -545,9 +618,15 @@ class Ledger:
             except store.StoreError as exc:
                 raise Stop(LEDGER_UNAVAILABLE, ids=(exc.code,)) from None
             if outcome == store.WRITTEN:
-                return result
+                return finish(result)
             if outcome == store.AMBIGUOUS:
                 pending[new["write_id"]] = result
+        if pending:
+            # The last try's reply failed, so it was never read back. Read once more;
+            # write nothing.
+            for doc, _etag in self._scan().values():
+                if doc["write_id"] in pending:
+                    return finish(pending[doc["write_id"]])
         raise Stop(LEDGER_CONFLICT, counts={"attempts": self._cfg.ledger_cas_attempts})
 
     def expire(self) -> None:
@@ -595,20 +674,14 @@ class Ledger:
                         and mine[1]["reserved_usd_micros"] == reservation_usd_micros:
                     return None, None, False, _admission(month, mine[1])    # an earlier try landed
                 raise Stop(ENTRY_EXISTS, ids=(run,))
-            live = tuple(e["run_id"] for _, e in _entries(snap) if _is_live(e, now))
-            if live:
-                raise Stop(RUN_IN_PROGRESS, ids=live)
+            stop = _blocked(snap, now, held.mode)       # rules 1 to 3
+            if stop is not None:
+                raise stop
             entries = [dict(e) for e in snap[month][0]["entries"]] if month in snap else []
             for entry in entries:
                 if entry["state"] == OPEN:              # open and not live: at or past expires_at
                     _abandon(entry, now)
             if held.mode == SCHEDULED:
-                # Any entry still open in another month is past its expires_at, so it
-                # is abandoned in all but the write that says so.
-                blockers = tuple(e["run_id"] for _, e in _entries(snap)
-                                 if e["state"] in (OPEN, UNRESOLVED))
-                if blockers:
-                    raise Stop(BLOCKED_UNRESOLVED, ids=blockers, counts={"unresolved": len(blockers)})
                 total = sum(e["counted_usd_micros"] for e in entries if e["mode"] == SCHEDULED)
                 if total + reservation_usd_micros > cap:
                     raise Stop(OVER_CAP, ids=(month,), counts={
@@ -625,63 +698,76 @@ class Ledger:
         self.expire()
         admission = self._cas(book)
 
-        # Read every month once more: a run booked in another month's object at the
-        # same moment is invisible to this month's compare-and-swap.
+        # Booked. Read every month once more and meet rules 1 to 3 again, leaving this
+        # run out: an entry written to another month's object since this run's scan is
+        # invisible to this month's compare-and-swap. And if all of that took until the
+        # run's own deadline, no call may be sent.
+        snap = self._scan()
         now = store.read_clock(self._clock)
-        others = tuple(e["run_id"] for _, e in _entries(self._scan())
-                       if _is_live(e, now) and e["run_id"] != run)
-        if others:
-            self._close(run, state=SETTLED, basis=WITHDRAWN, counted=0)
-            raise Stop(RUN_IN_PROGRESS, ids=others)
+        stop = _blocked(snap, now, held.mode, exclude=run)
+        if stop is None and now >= admission.deadline_at:
+            stop = Stop(ADMITTED_PAST_DEADLINE, ids=(run,))
+        if stop is not None:
+            self._close(admission, state=SETTLED, basis=WITHDRAWN, counted=0)
+            raise stop
         return admission
 
-    def _close(self, run: str, *, state: str, counted: int | None, basis: str | None = None,
-               kind: str | None = None, target: str | None = None,
-               reserved: int | None = None) -> dict:
-        """Move an open entry to settled or unresolved. `counted` None keeps the
-        reservation."""
+    def _close(self, admitted: Admission, *, state: str, counted: int | None,
+               basis: str | None = None, kind: str | None = None) -> dict:
+        """Move the run's open entry to settled or unresolved. `counted` None keeps
+        the reservation. The entry must be the one `admitted` describes."""
+        if not isinstance(admitted, Admission):
+            raise TypeError("this needs the Admission that admit() returned")
+        run = admitted.run_id
+
         def decide(snap: dict, now: datetime, unsure: bool) -> tuple:
             found = _find(snap, run)
             if found is None:
                 raise Stop(ENTRY_UNKNOWN, ids=(run,))
             month, entry = found
+            if _admission(month, entry) != admitted:
+                raise Stop(ADMISSION_INVALID, ids=(run,))
             figure = entry["reserved_usd_micros"] if counted is None else counted
             if entry["state"] != OPEN:
                 if unsure and (entry["state"], entry["basis"], entry["kind"],
                                entry["counted_usd_micros"]) == (state, basis, kind, figure):
                     return None, None, False, dict(entry)       # an earlier try landed
                 raise Stop(ENTRY_NOT_OPEN, ids=(run,))
-            if not _is_live(entry, now):
-                raise Stop(ENTRY_NOT_OPEN, ids=(run,))          # abandoned, whoever writes it
-            if (target is not None and entry["target"] != target) \
-                    or (reserved is not None and entry["reserved_usd_micros"] != reserved):
-                raise Stop(REPORT_INVALID, ids=(run,))
             entries = [dict(e) for e in snap[month][0]["entries"]]
             mine = next(e for e in entries if e["run_id"] == run)
+            if not _is_live(entry, now):
+                # It expired, perhaps while this call was reading S3. It is abandoned
+                # whoever writes it: record that in this write, then refuse.
+                _abandon(mine, now)
+                return month, entries, False, Stop(ENTRY_NOT_OPEN, ids=(run,))
             mine.update(state=state, basis=basis, kind=kind, counted_usd_micros=figure,
                         estimate_usd_micros=figure if state == UNRESOLVED else None,
                         closed_at=store.utc_text(now))
             return month, entries, False, dict(mine)
         return self._cas(decide)
 
-    def settle(self, run: str, report: dict) -> dict:
+    def settle(self, admitted: Admission, report: dict) -> dict:
         """Replace the run's reservation with what it cost: the guard's counted
         total, which is the usage Bedrock returned wherever a reply was seen and
         the worst case only where none was. An unmetered run is written as
-        unresolved at that total. Returns the entry as written."""
-        target, micros, reserved, unmetered = _read_report(report)
+        unresolved at that total. `admitted` is what `admit()` returned, and the
+        report must be that run's own (WHOSE REPORT, module docstring). Returns
+        the entry as written."""
+        if not isinstance(admitted, Admission):
+            raise TypeError("settle() needs the Admission that admit() returned")
+        micros, unmetered = _read_report(report, admitted)
         self.expire()
         if unmetered:
-            return self._close(run, state=UNRESOLVED, kind=UNMETERED, counted=micros,
-                               target=target, reserved=reserved)
-        return self._close(run, state=SETTLED, basis=METERED, counted=micros,
-                           target=target, reserved=reserved)
+            return self._close(admitted, state=UNRESOLVED, kind=UNMETERED, counted=micros)
+        return self._close(admitted, state=SETTLED, basis=METERED, counted=micros)
 
-    def mark_crashed(self, run: str) -> dict:
+    def mark_crashed(self, admitted: Admission) -> dict:
         """The run ended with no guard report to settle from. Its entry becomes
         unresolved at its reservation, at once."""
+        if not isinstance(admitted, Admission):
+            raise TypeError("mark_crashed() needs the Admission that admit() returned")
         self.expire()
-        return self._close(run, state=UNRESOLVED, kind=CRASHED, counted=None)
+        return self._close(admitted, state=UNRESOLVED, kind=CRASHED, counted=None)
 
     def resolve(self, run: str, basis: str, settled_usd_micros: int) -> dict:
         """The author's resolution of an unresolved entry: a settled figure and its

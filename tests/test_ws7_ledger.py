@@ -60,12 +60,20 @@ class Clock:
 
     def __init__(self, at: str):
         self.t = store.parse_utc(at)
+        self._script: list = []
 
     def __call__(self) -> datetime:
+        if self._script:                        # a scripted reading, then it stays there
+            self.t = self._script.pop(0)
         return self.t
 
     def set(self, at) -> None:
         self.t = store.parse_utc(at) if isinstance(at, str) else at
+
+    def script(self, *times) -> None:
+        """The next readings, one per read of the clock: how a test makes time pass
+        while a call is in the middle of its S3 requests."""
+        self._script = list(times)
 
 
 @pytest.fixture(autouse=True)
@@ -101,12 +109,16 @@ def start(world, when: str = W3, target: str = "pipeline", mode: str = "schedule
     return world.ledger.admit(held, RES[target] if reservation is None else reservation)
 
 
-def report(target: str = "pipeline", total_nanos: int = 1_903_211_000, *, unmetered: bool = False,
+def report(admitted: wl.Admission, total_nanos: int = 1_903_211_000, *, unmetered: bool = False,
            **extra) -> dict:
-    """What Guard.report() gives settle(), with invented totals."""
-    out = {"target": target, "unmetered": unmetered, "total_usd_nanos": total_nanos,
+    """What Guard.report() gives settle() for this run, with invented totals: the
+    run's target and reservation, and the two batches part 5 opens."""
+    batch = {"planned": 1, "started": 1, "total_usd_nanos": 0}
+    out = {"target": admitted.target, "unmetered": unmetered, "total_usd_nanos": total_nanos,
            "total_usd_micros": reserve.to_micros(total_nanos),
-           "reservation_usd_nanos": reserve.reservation(target, 19, MARGIN)["total_usd_nanos"]}
+           "reservation_usd_nanos": admitted.reservation_usd_micros * 1000,
+           "batches": {f"{admitted.run_id}.preflight": dict(batch),
+                       f"{admitted.run_id}.main": dict(batch)}}
     out.update(extra)
     return out
 
@@ -357,7 +369,7 @@ def test_a_months_first_ledger_is_created_with_if_none_match_and_then_written_wi
     first = start(world, W1)
     assert ledger_puts(world) == [(DEC, "if-none-match", 200)]
     created = world.fake.etag(DEC)
-    world.ledger.settle(first.run_id, report())
+    world.ledger.settle(first, report(first))
     start(world, W2)
     assert ledger_puts(world) == [(DEC, "if-none-match", 200), (DEC, "if-match", 200),
                                   (DEC, "if-match", 200)]
@@ -370,7 +382,7 @@ def test_a_write_that_lost_the_race_is_decided_again_from_a_fresh_read(world):
     """Another writer lands between this job's read and its write. S3 answers 412;
     the job reads again and writes on top, so neither change is lost."""
     first = start(world, W1)
-    world.ledger.settle(first.run_id, report())
+    world.ledger.settle(first, report(first))
     world.fake.before_put(DEC, lambda: rewrite(world, DEC, add_settled("2026-12-05T1000-v1-manual")))
     second = start(world, W2)
     assert ledger_puts(world)[-2:] == [(DEC, "if-match", 412), (DEC, "if-match", 200)]
@@ -406,7 +418,7 @@ def test_ledger_cas_attempts_counts_tries_in_total(world, how):
     won = start(world, W1)
     assert len(ledger_puts(world)) == ATTEMPTS                            # the last try won
     assert entry_of(world, won.run_id)["state"] == wl.OPEN
-    world.ledger.settle(won.run_id, report())
+    world.ledger.settle(won, report(won))
 
     puts = len(ledger_puts(world))
     _lose(world, ATTEMPTS, how)
@@ -482,7 +494,7 @@ def _flow(net, missing_status: int) -> tuple:
             held = wl.claim(w.store, CFG, target="pipeline", mode="scheduled", scheduled_time=when,
                             clock=w.clock, token=lambda: next(tokens))
             admitted = w.ledger.admit(held, R)
-            w.ledger.settle(admitted.run_id, report())
+            w.ledger.settle(admitted, report(admitted))
         return (list(w.fake.requests), {k: w.fake.body(k) for k in w.fake.keys()},
                 w.fake.missing_gets)
     finally:
@@ -664,7 +676,7 @@ def test_the_cap_is_per_month_and_an_open_reservation_counts_in_full(world):
     seed(world, "2026-11", [an_entry("2026-11-25T0400-pipeline", counted=CAP)])
     first = start(world, W1)                                              # November is full; December is not
     assert wl.month_total(world.fake.json(DEC)) == R                      # open: counted at its reservation
-    world.ledger.settle(first.run_id, report(total_nanos=1_903_210_001))
+    world.ledger.settle(first, report(first, total_nanos=1_903_210_001))
     assert wl.month_total(world.fake.json(DEC)) == 1_903_211              # settled: rounded up
 
 
@@ -675,8 +687,7 @@ def test_a_manual_run_is_outside_the_cap_neither_checked_nor_counted(world):
     manual = start(world, "2026-12-05T10:00:00Z", mode="manual", reservation=baseline)
     assert entry_of(world, manual.run_id)["reserved_usd_micros"] == baseline
     assert wl.month_total(world.fake.json(DEC)) == CAP - R                # not counted while open
-    world.ledger.settle(manual.run_id, dict(report(total_nanos=9_000_000_000), **{
-        "reservation_usd_nanos": reserve.reservation("pipeline", 55, MARGIN)["total_usd_nanos"]}))
+    world.ledger.settle(manual, report(manual, total_nanos=9_000_000_000))
     assert wl.month_total(world.fake.json(DEC)) == CAP - R                # nor once settled
     assert start(world, W2).run_id == "2026-12-09T0400-pipeline"          # still exactly fits
     assert wl.month_total(world.fake.json(DEC)) == CAP
@@ -691,7 +702,7 @@ def test_an_open_reservation_refuses_any_other_run(world, second_mode):
     stop = stopped(lambda: world.ledger.admit(held, RES["v1"]), wl.RUN_IN_PROGRESS)
     assert stop.ids == (first.run_id,)
     assert world.fake.body(DEC) == before
-    world.ledger.settle(first.run_id, report())                           # the partner: it has ended
+    world.ledger.settle(first, report(first))                           # the partner: it has ended
     assert world.ledger.admit(held, RES["v1"]).run_id == held.run_id
 
 
@@ -745,7 +756,7 @@ def test_admission_returns_the_runs_deadline_ahead_of_expires_at(world):
     assert scheduled.expires_at - scheduled.deadline_at == timedelta(seconds=wl.DEADLINE_MARGIN_S)
     assert scheduled.seconds_to_deadline(world.clock()) \
         == CFG.wall_clock_limit_scheduled_s - wl.DEADLINE_MARGIN_S
-    world.ledger.settle(scheduled.run_id, report())
+    world.ledger.settle(scheduled, report(scheduled))
 
     manual = start(world, "2026-12-05T10:00:00Z", mode="manual")
     assert manual.expires_at - manual.opened_at == timedelta(seconds=CFG.wall_clock_limit_manual_s)
@@ -815,10 +826,10 @@ def test_a_late_settle_on_an_abandoned_entry_is_refused_and_the_entry_stays_unre
     assert marked["kind"] == wl.ABANDONED
 
     world.clock.set(first.expires_at + timedelta(seconds=5))
-    stop = stopped(lambda: world.ledger.settle(first.run_id, report()), wl.ENTRY_NOT_OPEN)
+    stop = stopped(lambda: world.ledger.settle(first, report(first)), wl.ENTRY_NOT_OPEN)
     assert stop.ids == (first.run_id,)
     assert entry_of(world, first.run_id) == marked                        # unchanged, still unresolved
-    stopped(lambda: world.ledger.mark_crashed(first.run_id), wl.ENTRY_NOT_OPEN)
+    stopped(lambda: world.ledger.mark_crashed(first), wl.ENTRY_NOT_OPEN)
     assert entry_of(world, first.run_id) == marked
 
 
@@ -826,7 +837,7 @@ def test_a_settle_on_an_open_entry_succeeds_up_to_one_second_before_expires_at(w
     """The partner of the late settle."""
     first = start(world, W2)
     world.clock.set(first.expires_at - timedelta(seconds=1))
-    settled = world.ledger.settle(first.run_id, report())
+    settled = world.ledger.settle(first, report(first))
     assert (settled["state"], settled["basis"], settled["counted_usd_micros"]) \
         == (wl.SETTLED, wl.METERED, 1_903_211)
     assert settled["closed_at"] == "2026-12-09T06:00:29Z"
@@ -837,7 +848,7 @@ def test_a_settle_that_arrives_at_expires_at_is_refused_and_marks_the_entry_aban
     """Nobody else has looked yet: the late settle itself finds the entry expired."""
     first = start(world, W2)
     world.clock.set(first.expires_at)
-    stopped(lambda: world.ledger.settle(first.run_id, report()), wl.ENTRY_NOT_OPEN)
+    stopped(lambda: world.ledger.settle(first, report(first)), wl.ENTRY_NOT_OPEN)
     assert entry_of(world, first.run_id)["kind"] == wl.ABANDONED
 
 
@@ -857,16 +868,17 @@ class _Inner:
         return reply
 
 
-def _guard_report(second_call) -> tuple:
-    """A real Guard, one v1 generation: the first call answers with invented usage,
-    the second does `second_call`. Returns the report and the two costs."""
+def _guard_report(admitted: wl.Admission, second_call) -> tuple:
+    """A real Guard, one v1 generation in a batch labelled as part 5 will label it:
+    the first call answers with invented usage, the second does `second_call`.
+    Returns the report and the two costs."""
     plan = reserve.plan("v1")
     booked = reserve.reservation("v1", 19, MARGIN)
     guard = wc.Guard(plan, reservation_nanos=booked["total_usd_nanos"], margin_percent=MARGIN,
                      deadline=time.monotonic() + 60)
     usage = {"inputTokens": 5000, "outputTokens": 900}                    # invented
     client = wc.GuardedClient(_Inner({"usage": usage}, second_call), guard)
-    guard.begin_batch("b", 1)
+    guard.begin_batch(f"{admitted.run_id}.main", 1)
     for step in plan.steps:
         request = {"modelId": plan.model_id, "inferenceConfig": {"maxTokens": step.max_tokens},
                    "messages": [{"role": "user", "content": [{"text": SENTINEL}]}]}
@@ -887,10 +899,11 @@ def _error(code: str, status: int) -> ClientError:
 def test_settling_uses_the_guards_total_usage_where_a_reply_was_seen_worst_case_where_not(world):
     """The first call replied (its usage is its cost). The second was throttled: no
     reply, the model did not run, so it is counted at its worst case. Metered."""
-    guard_report, seen, worst = _guard_report(_error("ThrottlingException", 429))
-    assert guard_report["total_usd_nanos"] == seen + worst and not guard_report["unmetered"]
     admitted = start(world, W1, target="v1")
-    settled = world.ledger.settle(admitted.run_id, guard_report)
+    guard_report, seen, worst = _guard_report(admitted, _error("ThrottlingException", 429))
+    assert guard_report["total_usd_nanos"] == seen + worst and not guard_report["unmetered"]
+    assert list(guard_report["batches"]) == ["2026-12-02T0400-v1.main"]
+    settled = world.ledger.settle(admitted, guard_report)
     assert (settled["state"], settled["basis"], settled["kind"]) == (wl.SETTLED, wl.METERED, None)
     assert settled["counted_usd_micros"] == reserve.to_micros(seen + worst) < RES["v1"]
     assert settled["estimate_usd_micros"] is None and settled["closed_at"] == "2026-12-02T04:00:30Z"
@@ -899,10 +912,10 @@ def test_settling_uses_the_guards_total_usage_where_a_reply_was_seen_worst_case_
 
 def test_an_unmetered_run_is_settled_at_its_counted_total_and_is_unresolved(world):
     """Ruling on reading 4: the guard's counted total, not the reservation."""
-    guard_report, seen, worst = _guard_report(_error("InternalServerException", 500))
-    assert guard_report["unmetered"] is True
     admitted = start(world, W1, target="v1")
-    entry = world.ledger.settle(admitted.run_id, guard_report)
+    guard_report, seen, worst = _guard_report(admitted, _error("InternalServerException", 500))
+    assert guard_report["unmetered"] is True
+    entry = world.ledger.settle(admitted, guard_report)
     assert (entry["state"], entry["kind"], entry["basis"]) == (wl.UNRESOLVED, wl.UNMETERED, None)
     assert entry["counted_usd_micros"] == entry["estimate_usd_micros"] \
         == reserve.to_micros(seen + worst)
@@ -912,7 +925,7 @@ def test_an_unmetered_run_is_settled_at_its_counted_total_and_is_unresolved(worl
 
 def test_an_abandoned_and_a_crashed_entry_count_at_the_reservation(world):
     crashed = start(world, W1)
-    entry = world.ledger.mark_crashed(crashed.run_id)
+    entry = world.ledger.mark_crashed(crashed)
     assert (entry["state"], entry["kind"]) == (wl.UNRESOLVED, wl.CRASHED)
     assert entry["counted_usd_micros"] == entry["estimate_usd_micros"] == R
     abandoned = start(world, "2026-12-05T10:00:00Z", mode="manual")
@@ -930,14 +943,24 @@ def test_an_abandoned_and_a_crashed_entry_count_at_the_reservation(world):
     {"total_usd_nanos": -1}, {"total_usd_nanos": 1.5}, {"total_usd_nanos": True},
     {"unmetered": "no"}, {"unmetered": None}, {"target": "canary"}, {"target": None},
     {"reservation_usd_nanos": 0},
+    {"batches": None}, {"batches": ["2026-12-02T0400-pipeline.main"]},
+    {"batches": {"b": {}}},                                               # not labelled for any run
+    {"batches": {"2026-12-09T0400-pipeline.main": {}}},                   # another run's batch
+    {"batches": {"2026-12-02T0400-pipeline.main": {}, "2026-12-09T0400-pipeline.main": {}}},
+    {"batches": {"2026-12-02T0400-pipeline": {}}},                        # the run ID with no ".<name>"
+    {"batches": {"2026-12-02T0400-pipeline.": {}}},
+    {"batches": {"2026-12-02T0400-pipeline-manual.main": {}}},            # a run whose ID merely starts the same
+    {"batches": {7: {}}},
 ])
 def test_a_report_that_is_not_this_runs_own_is_refused_and_the_entry_stays_open(world, change):
     admitted = start(world, W1)
     before = world.fake.body(DEC)
-    stopped(lambda: world.ledger.settle(admitted.run_id, dict(report(), **change)), wl.REPORT_INVALID)
-    stopped(lambda: world.ledger.settle(admitted.run_id, "a string"), wl.REPORT_INVALID)
-    assert world.fake.body(DEC) == before
-    assert world.ledger.settle(admitted.run_id, report())["state"] == wl.SETTLED   # the partner
+    stop = stopped(lambda: world.ledger.settle(admitted, dict(report(admitted), **change)),
+                   wl.REPORT_INVALID)
+    assert stop.ids == (admitted.run_id,)
+    stopped(lambda: world.ledger.settle(admitted, "a string"), wl.REPORT_INVALID)
+    assert world.fake.body(DEC) == before and len(ledger_puts(world)) == 1   # refused before any write
+    assert world.ledger.settle(admitted, report(admitted))["state"] == wl.SETTLED   # the partner
 
 
 def test_a_report_whose_micro_dollar_total_is_a_boolean_is_refused(world):
@@ -946,35 +969,36 @@ def test_a_report_whose_micro_dollar_total_is_a_boolean_is_refused(world):
     the report is refused, and the entry stays open."""
     admitted = start(world, W1)
     before = world.fake.body(DEC)
-    one = report(total_nanos=1)                                           # rounds up to 1 micro-dollar
+    one = report(admitted, total_nanos=1)                                 # rounds up to 1 micro-dollar
     assert one["total_usd_micros"] == 1 and type(one["total_usd_micros"]) is int
     as_true = dict(one, total_usd_micros=True)
     assert as_true["total_usd_micros"] == reserve.to_micros(as_true["total_usd_nanos"])   # why it could slip by
-    stop = stopped(lambda: world.ledger.settle(admitted.run_id, as_true), wl.REPORT_INVALID)
+    stop = stopped(lambda: world.ledger.settle(admitted, as_true), wl.REPORT_INVALID)
     assert stop.code == "ws7_report_invalid"
     assert world.fake.body(DEC) == before and entry_of(world, admitted.run_id)["state"] == wl.OPEN
 
-    settled = world.ledger.settle(admitted.run_id, one)                   # the partner: the integer 1
+    settled = world.ledger.settle(admitted, one)                          # the partner: the integer 1
     assert (settled["state"], settled["basis"]) == (wl.SETTLED, wl.METERED)
     assert settled["counted_usd_micros"] == 1 and type(settled["counted_usd_micros"]) is int
 
 
 def test_a_settled_entry_never_changes_again(world):
     admitted = start(world, W1)
-    settled = world.ledger.settle(admitted.run_id, report())
-    stopped(lambda: world.ledger.settle(admitted.run_id, report(total_nanos=1)), wl.ENTRY_NOT_OPEN)
-    stopped(lambda: world.ledger.mark_crashed(admitted.run_id), wl.ENTRY_NOT_OPEN)
+    settled = world.ledger.settle(admitted, report(admitted))
+    stopped(lambda: world.ledger.settle(admitted, report(admitted, total_nanos=1)), wl.ENTRY_NOT_OPEN)
+    stopped(lambda: world.ledger.mark_crashed(admitted), wl.ENTRY_NOT_OPEN)
     stopped(lambda: world.ledger.resolve(admitted.run_id, wl.UPPER_BOUND, 1), wl.ENTRY_NOT_UNRESOLVED)
     assert entry_of(world, admitted.run_id) == settled
-    stopped(lambda: world.ledger.settle("2026-12-30T0400-pipeline", report()), wl.ENTRY_UNKNOWN)
-    stopped(lambda: world.ledger.mark_crashed("2026-12-30T0400-pipeline"), wl.ENTRY_UNKNOWN)
+    stranger = dataclasses.replace(admitted, run_id="2026-12-30T0400-pipeline")
+    stopped(lambda: world.ledger.settle(stranger, report(stranger)), wl.ENTRY_UNKNOWN)
+    stopped(lambda: world.ledger.mark_crashed(stranger), wl.ENTRY_UNKNOWN)
 
 
 def test_a_settle_whose_reply_failed_is_not_applied_twice(world):
     admitted = start(world, W1)
     world.fake.script_put(DEC, fakes.LAND_THEN_500)
     world.fake.after_put(DEC, lambda: rewrite(world, DEC, add_settled("2026-12-05T1000-v1-manual")))
-    settled = world.ledger.settle(admitted.run_id, report())
+    settled = world.ledger.settle(admitted, report(admitted))
     assert settled["state"] == wl.SETTLED and entry_of(world, admitted.run_id) == settled
     assert len(ledger_puts(world)) == 2                                   # the booking, and one settle
 
@@ -983,7 +1007,7 @@ def test_a_settle_whose_reply_failed_is_not_applied_twice(world):
 
 def leave_unmetered(world, when: str, mode: str = "scheduled") -> str:
     admitted = start(world, when, mode=mode)
-    world.ledger.settle(admitted.run_id, report(total_nanos=2_000_000_000, unmetered=True))
+    world.ledger.settle(admitted, report(admitted, total_nanos=2_000_000_000, unmetered=True))
     return admitted.run_id
 
 
@@ -997,7 +1021,7 @@ def leave_abandoned(world, when: str, mode: str = "scheduled") -> str:
 
 def leave_crashed(world, when: str, mode: str = "scheduled") -> str:
     admitted = start(world, when, mode=mode)
-    world.ledger.mark_crashed(admitted.run_id)
+    world.ledger.mark_crashed(admitted)
     return admitted.run_id
 
 
@@ -1081,7 +1105,7 @@ def test_a_manual_run_is_not_blocked_by_an_unresolved_entry(world, kind):
     manual = start(world, "2026-12-05T10:00:00Z", mode="manual")
     assert manual.run_id == "2026-12-05T1000-pipeline-manual"
     assert entry_of(world, blocker)["state"] == wl.UNRESOLVED             # still unresolved
-    world.ledger.settle(manual.run_id, report())
+    world.ledger.settle(manual, report(manual))
     world.clock.set("2026-12-09T04:00:30Z")                               # the partner: scheduled is blocked
     held = take(world, W2)
     stopped(lambda: world.ledger.admit(held, R), wl.BLOCKED_UNRESOLVED)
@@ -1158,7 +1182,7 @@ def test_an_entry_past_its_expiry_can_be_resolved_in_one_step(world):
 def test_a_crashed_run_blocks_at_once_without_waiting_for_its_expiry(world):
     crashed = start(world, W1)
     world.clock.set("2026-12-02T04:10:00Z")                               # long before expires_at
-    world.ledger.mark_crashed(crashed.run_id)
+    world.ledger.mark_crashed(crashed)
     held = take(world, "2026-12-02T04:05:00Z", target="v1")
     stop = stopped(lambda: world.ledger.admit(held, RES["v1"]), wl.BLOCKED_UNRESOLVED)
     assert stop.ids == (crashed.run_id,)
@@ -1178,7 +1202,7 @@ def test_the_overlap_a_run_that_dies_before_settling_is_found_at_expiry_and_take
     world.ledger.resolve(silent.run_id, wl.UPPER_BOUND, 1)
 
     reported = start(world, W2)                                           # dies, but reports first
-    world.ledger.mark_crashed(reported.run_id)
+    world.ledger.mark_crashed(reported)
     world.clock.set(reported.expires_at + timedelta(hours=1))
     world.ledger.expire()
     assert entry_of(world, reported.run_id)["kind"] == wl.CRASHED         # the first label stands
@@ -1188,7 +1212,7 @@ def test_the_overlap_a_run_that_dies_before_settling_is_found_at_expiry_and_take
 def test_a_crash_report_that_arrives_after_expiry_is_refused_and_the_entry_is_abandoned(world):
     admitted = start(world, W1)
     world.clock.set(admitted.expires_at)
-    stopped(lambda: world.ledger.mark_crashed(admitted.run_id), wl.ENTRY_NOT_OPEN)
+    stopped(lambda: world.ledger.mark_crashed(admitted), wl.ENTRY_NOT_OPEN)
     assert entry_of(world, admitted.run_id)["kind"] == wl.ABANDONED
 
 
@@ -1211,7 +1235,7 @@ def test_estimate_accepted_sets_the_months_flag_and_upper_bound_does_not(world, 
 def test_the_flag_is_set_in_the_entrys_own_month_not_the_month_it_was_resolved_in(world):
     blocker = leave_unmetered(world, "2026-11-25T04:00:00Z")
     first = start(world, "2026-12-01T10:00:00Z", mode="manual")           # December has a ledger
-    world.ledger.settle(first.run_id, report())
+    world.ledger.settle(first, report(first))
     world.clock.set("2026-12-04T09:00:00Z")
     world.ledger.resolve(blocker, wl.ESTIMATE_ACCEPTED, 2_000_000)
     assert world.fake.json(NOV)["assurance_waived"] is True
@@ -1232,11 +1256,11 @@ def test_the_flag_stays_set_through_every_later_write_to_that_months_ledger(worl
 
     manual = start(world, "2026-12-05T10:00:00Z", mode="manual")
     still_set("a manual admission")
-    world.ledger.settle(manual.run_id, report())
+    world.ledger.settle(manual, report(manual))
     still_set("a settle")
     crashed = start(world, W2)
     still_set("a scheduled admission")
-    world.ledger.mark_crashed(crashed.run_id)
+    world.ledger.mark_crashed(crashed)
     still_set("a crash mark")
     world.ledger.resolve(crashed.run_id, wl.UPPER_BOUND, 4_000_000)       # a resolution that does not waive
     still_set("an upper_bound resolution")
@@ -1290,17 +1314,17 @@ def _month(world, second_basis: str, second_figure: int, second_true_cost: int) 
         return admitted
 
     first = admit(W1)
-    world.ledger.settle(first.run_id, report(total_nanos=1_900_000_000))
+    world.ledger.settle(first, report(first, total_nanos=1_900_000_000))
     true_cost.append(1_900_000)
     second = admit(W2)
-    world.ledger.settle(second.run_id, report(total_nanos=2_000_000_000, unmetered=True))
+    world.ledger.settle(second, report(second, total_nanos=2_000_000_000, unmetered=True))
     true_cost.append(second_true_cost)
     world.ledger.resolve(second.run_id, second_basis, second_figure)
     third = admit(W3)
-    world.ledger.settle(third.run_id, report(total_nanos=3_550_000_000))
+    world.ledger.settle(third, report(third, total_nanos=3_550_000_000))
     true_cost.append(3_550_000)
     last = admit(W4)
-    world.ledger.settle(last.run_id, report(total_nanos=(R - 1 + ONE_CALL) * 1000))
+    world.ledger.settle(last, report(last, total_nanos=(R - 1 + ONE_CALL) * 1000))
     true_cost.append(R - 1 + ONE_CALL)
     return booked, sum(true_cost), world.fake.json(DEC)["assurance_waived"]
 
@@ -1333,11 +1357,11 @@ def test_what_was_booked_before_a_run_is_fixed_once_that_run_is_admitted(world):
     """Step (a) of the proof: no earlier entry is open or unresolved at an admission,
     and none can change afterwards."""
     first = start(world, W1)
-    world.ledger.settle(first.run_id, report())
+    world.ledger.settle(first, report(first))
     second = start(world, W2)
     earlier = [e for e in world.fake.json(DEC)["entries"] if e["run_id"] != second.run_id]
     assert all(e["state"] in (wl.SETTLED, wl.RESOLVED) for e in earlier)
-    world.ledger.settle(second.run_id, report(total_nanos=4_000_000_000, unmetered=True))
+    world.ledger.settle(second, report(second, total_nanos=4_000_000_000, unmetered=True))
     world.ledger.resolve(second.run_id, wl.UPPER_BOUND, 5_000_000)
     assert [e for e in world.fake.json(DEC)["entries"] if e["run_id"] != second.run_id] == earlier
 
@@ -1351,10 +1375,12 @@ def test_no_stop_and_no_stored_object_carries_text(world):
     world.clock.set("2026-12-02T04:00:30Z")
     stops.append(stopped(lambda: take(world, f"{W1} {SENTINEL}")))
     admitted = start(world, W1)
-    noisy = report(note=SENTINEL, calls=[{"step": "combined", "text": SENTINEL}])
+    noisy = report(admitted, note=SENTINEL, calls=[{"step": "combined", "text": SENTINEL}])
     assert SENTINEL in json.dumps(noisy)                                  # the control: it was there
-    stops.append(stopped(lambda: world.ledger.settle(admitted.run_id, dict(noisy, target=SENTINEL))))
-    world.ledger.settle(admitted.run_id, noisy)                           # accepted: only numbers are read
+    stops.append(stopped(lambda: world.ledger.settle(admitted, dict(noisy, target=SENTINEL))))
+    stops.append(stopped(lambda: world.ledger.settle(admitted, dict(
+        noisy, batches={f"{admitted.run_id}.main": {}, SENTINEL: {}}))))
+    world.ledger.settle(admitted, noisy)                                  # accepted: only numbers are read
     blocker = leave_crashed(world, W2)
     stops.append(stopped(lambda: world.ledger.resolve(blocker, SENTINEL, R)))
     world.clock.set("2026-12-16T04:00:30Z")
@@ -1368,9 +1394,9 @@ def test_no_stop_and_no_stored_object_carries_text(world):
         assert SENTINEL not in stop.line() and SENTINEL not in str(stop)
         assert all(store.ID_RE.fullmatch(i) for i in stop.ids)
         assert all(type(v) is int for v in stop.counts.values())
-    assert [s.code for s in stops] == [wl.SCHEDULED_TIME_INVALID, wl.REPORT_INVALID, wl.BASIS_UNKNOWN,
-                                       wl.BLOCKED_UNRESOLVED, wl.DUPLICATE]
-    assert [s.metric for s in stops] == ["RunRefused"] * 4 + ["Duplicate"]
+    assert [s.code for s in stops] == [wl.SCHEDULED_TIME_INVALID, wl.REPORT_INVALID, wl.REPORT_INVALID,
+                                       wl.BASIS_UNKNOWN, wl.BLOCKED_UNRESOLVED, wl.DUPLICATE]
+    assert [s.metric for s in stops] == ["RunRefused"] * 5 + ["Duplicate"]
 
     bad = a_ledger("2026-12", [])
     bad["note"] = SENTINEL
@@ -1379,7 +1405,7 @@ def test_no_stop_and_no_stored_object_carries_text(world):
 
 
 def test_every_refusal_has_a_fixed_code():
-    assert len(set(wl.CODES)) == len(wl.CODES) == 24
+    assert len(set(wl.CODES)) == len(wl.CODES) == 26
     assert all(code.startswith("ws7_") and store._LABEL_RE.fullmatch(code) for code in wl.CODES)
     assert not set(wl.CODES) & set(store.CODES) and not set(wl.CODES) & set(wc.CODES)
 
@@ -1391,3 +1417,238 @@ def test_reading_the_ledger_changes_nothing(world):
     assert world.ledger.unresolved() == [("2026-12", blocker, wl.UNMETERED)]
     assert world.ledger.assurance_waived("2026-12") is False
     assert ledger_bodies(world) == before and len(world.fake.puts) == puts
+
+
+# ====================================== Codex review of PR #6, rulings 1 to 4 ==
+
+# ---------------------------- 1: the re-read after booking meets the rules again
+
+LATE_NOV = "2026-11-30T2330-pipeline-manual"       # an invented manual run, booked in November
+
+
+def _other_month_entry(what: str) -> dict:
+    """An entry in November's ledger, as another run left it at the moment named."""
+    if what == "unresolved":                        # booked, ran, and came back unmetered
+        return an_entry(LATE_NOV, wl.UNRESOLVED, mode="manual", kind=wl.UNMETERED,
+                        counted=2_000_000, estimate=2_000_000,
+                        opened="2026-11-30T23:30:10Z", expires="2026-12-01T04:30:10Z")
+    if what == "open_past_expiry":                  # booked, and died without a word
+        return an_entry(LATE_NOV, wl.OPEN, mode="manual",
+                        opened="2026-11-30T23:30:10Z", expires="2026-12-01T04:30:10Z")
+    return an_entry(LATE_NOV, wl.OPEN, mode="manual",       # "live": booked, still running
+                    opened="2026-12-02T04:00:29Z", expires="2026-12-02T09:00:29Z")
+
+
+def test_a_manual_run_that_becomes_unresolved_between_the_scan_and_the_re_read_withdraws_the_scheduled_run(world):
+    """Ruling 1 (Codex P1). The schedule, explicit and with no waiting:
+
+    1. the scheduled run scans every month: November has no ledger;
+    2. it books in December's ledger (its compare-and-swap lands);
+    3. a manual run in NOVEMBER's ledger books and becomes unresolved;
+    4. the scheduled run's final re-read finds it, and the run withdraws at zero.
+
+    Step 3 is run by the fake at the instant step 2's write lands."""
+    world.fake.after_put(DEC, lambda: seed(world, "2026-11", [_other_month_entry("unresolved")]))
+    world.clock.set("2026-12-02T04:00:30Z")
+    held = take(world, W1)
+    stop = stopped(lambda: world.ledger.admit(held, R), wl.BLOCKED_UNRESOLVED)
+    assert stop.ids == (LATE_NOV,) and stop.counts == {"unresolved": 1}
+
+    # The schedule happened in that order: no read of November before December's write.
+    log = world.fake.requests
+    booked = log.index(("PUT", DEC))
+    assert ("GET", NOV) not in log[:booked] and ("GET", NOV) in log[booked:]
+    assert ledger_puts(world) == [(DEC, "if-none-match", 200), (DEC, "if-match", 200)]   # booked, withdrawn
+    mine = entry_of(world, held.run_id)
+    assert (mine["state"], mine["basis"], mine["counted_usd_micros"]) == (wl.SETTLED, wl.WITHDRAWN, 0)
+    assert wl.month_total(world.fake.json(DEC)) == 0                      # nothing left reserved
+
+
+def test_with_no_such_entry_the_scheduled_run_is_admitted(world):
+    """The partner: the same admission, and nothing appears in another month."""
+    world.clock.set("2026-12-02T04:00:30Z")
+    held = take(world, W1)
+    admitted = world.ledger.admit(held, R)
+    assert entry_of(world, admitted.run_id)["state"] == wl.OPEN
+    assert ledger_puts(world) == [(DEC, "if-none-match", 200)]            # booked; no withdrawal
+
+
+@pytest.mark.parametrize("mode,what,code", [
+    ("scheduled", "unresolved", wl.BLOCKED_UNRESOLVED),
+    ("scheduled", "open_past_expiry", wl.BLOCKED_UNRESOLVED),
+    ("scheduled", "live", wl.RUN_IN_PROGRESS),
+    ("manual", "live", wl.RUN_IN_PROGRESS),
+    ("manual", "unresolved", None),                 # a manual run is not blocked by these
+    ("manual", "open_past_expiry", None),
+])
+def test_the_re_read_applies_admissions_own_rules_leaving_this_run_out(world, mode, what, code):
+    world.fake.after_put(DEC, lambda: seed(world, "2026-11", [_other_month_entry(what)]))
+    world.clock.set("2026-12-02T04:00:30Z")
+    held = take(world, W1, mode=mode)
+    if code is None:
+        assert world.ledger.admit(held, R).run_id == held.run_id          # its own open entry never blocks it
+        assert entry_of(world, held.run_id)["state"] == wl.OPEN
+    else:
+        stop = stopped(lambda: world.ledger.admit(held, R), code)
+        assert stop.ids == (LATE_NOV,)
+        mine = entry_of(world, held.run_id)
+        assert (mine["state"], mine["basis"], mine["counted_usd_micros"]) == (wl.SETTLED, wl.WITHDRAWN, 0)
+
+
+# ------------------------------------- 2(a): the last try, when its reply failed
+
+def test_the_last_trys_write_landed_though_its_reply_failed_and_the_run_starts(world):
+    """Ruling 2(a). Every earlier try lost; the last one landed and its reply failed.
+    There is no next try to read it back, so the ledger is read once more."""
+    seed(world, "2026-12", [an_entry("2026-12-01T1000-v1-manual", mode="manual")])
+    world.fake.script_put(DEC, *[fakes.CONFLICT_409] * (ATTEMPTS - 1), fakes.LAND_THEN_500)
+    admitted = start(world, W1)
+    assert len(ledger_puts(world)) == ATTEMPTS                            # no write beyond the count
+    assert [e["run_id"] for e in world.fake.json(DEC)["entries"]].count(admitted.run_id) == 1
+    assert entry_of(world, admitted.run_id)["state"] == wl.OPEN
+
+
+def test_the_last_trys_write_did_not_land_and_the_run_does_not_start(world):
+    seed(world, "2026-12", [an_entry("2026-12-01T1000-v1-manual", mode="manual")])
+    world.fake.script_put(DEC, *[fakes.CONFLICT_409] * (ATTEMPTS - 1), fakes.FAIL_500)
+    world.clock.set("2026-12-02T04:00:30Z")
+    held = take(world, W1)
+    before = world.fake.body(DEC)
+    stop = stopped(lambda: world.ledger.admit(held, R), wl.LEDGER_CONFLICT)
+    assert stop.counts == {"attempts": ATTEMPTS}
+    assert len(ledger_puts(world)) == ATTEMPTS and world.fake.body(DEC) == before
+
+
+# ------------------------- 2(b): a different competing transition is not credited
+
+@pytest.mark.parametrize("unmetered", [False, True])
+def test_an_entry_abandoned_by_another_reader_is_not_taken_for_this_runs_settle(world, unmetered):
+    """This run's settle fails to land and its reply fails. Meanwhile another reader
+    marks the entry abandoned. On the next read the entry is not open, and it is not
+    in the state the settle wanted (an abandonment differs by kind), so nothing is
+    credited: the settle is refused and the entry stays abandoned."""
+    admitted = start(world, W1)
+
+    def abandoned_by_another_reader():
+        def change(doc):
+            wl._abandon(doc["entries"][-1], store.parse_utc("2026-12-02T04:20:00Z"))
+        rewrite(world, DEC, change)
+
+    world.fake.before_put(DEC, abandoned_by_another_reader)
+    world.fake.script_put(DEC, fakes.FAIL_500)
+    world.clock.set("2026-12-02T04:20:00Z")
+    stop = stopped(lambda: world.ledger.settle(admitted, report(admitted, unmetered=unmetered)),
+                   wl.ENTRY_NOT_OPEN)
+    assert stop.ids == (admitted.run_id,)
+    entry = entry_of(world, admitted.run_id)
+    assert (entry["state"], entry["kind"], entry["counted_usd_micros"]) == (wl.UNRESOLVED,
+                                                                            wl.ABANDONED, R)
+
+
+def test_the_same_failed_reply_with_no_competitor_is_settled_on_the_next_try(world):
+    """The partner: the settle's first reply fails, nothing else happens, it settles."""
+    admitted = start(world, W1)
+    world.fake.script_put(DEC, fakes.FAIL_500)
+    assert world.ledger.settle(admitted, report(admitted))["state"] == wl.SETTLED
+
+
+# --------------------------------------------- 3: a report bound to its own run
+
+def test_another_runs_report_with_an_equal_reservation_is_refused(world):
+    """Ruling 3 (Codex P2). Two runs of one target reserve the same amount, so the
+    target and the reservation cannot tell their reports apart. The batch labels do."""
+    first = start(world, W1)
+    first_report = report(first, total_nanos=1_000_000_000)
+    world.ledger.settle(first, first_report)
+    second = start(world, W2)
+    assert second.reservation_usd_micros == first.reservation_usd_micros
+    assert first_report["target"] == second.target                        # all that used to be checked
+
+    before = world.fake.body(DEC)
+    stop = stopped(lambda: world.ledger.settle(second, first_report), wl.REPORT_INVALID)
+    assert stop.ids == (second.run_id,)
+    assert world.fake.body(DEC) == before and entry_of(world, second.run_id)["state"] == wl.OPEN
+
+    settled = world.ledger.settle(second, report(second, total_nanos=3_000_000_000))    # the partner
+    assert settled["counted_usd_micros"] == 3_000_000
+
+
+def test_settle_and_mark_crashed_take_the_admission_not_a_run_id(world):
+    admitted = start(world, W1)
+    for call in (lambda: world.ledger.settle(admitted.run_id, report(admitted)),
+                 lambda: world.ledger.mark_crashed(admitted.run_id),
+                 lambda: world.ledger.mark_crashed(None)):
+        with pytest.raises(TypeError):
+            call()
+    # An Admission that is not the one admit() returned for this entry is refused too.
+    for change in ({"reservation_usd_micros": R - 1}, {"target": "v1"},
+                   {"expires_at": admitted.expires_at + timedelta(hours=1)}, {"month": "2026-11"}):
+        forged = dataclasses.replace(admitted, **change)
+        stopped(lambda: world.ledger.mark_crashed(forged), wl.ADMISSION_INVALID)
+    assert entry_of(world, admitted.run_id)["state"] == wl.OPEN
+    assert world.ledger.mark_crashed(admitted)["kind"] == wl.CRASHED      # the partner
+
+
+# -------------------------------------------- 4: expiry while a call is in flight
+
+@pytest.mark.parametrize("call", ["settle", "mark_crashed"])
+def test_an_entry_that_expires_during_the_call_is_recorded_abandoned_and_the_call_refused(world, call):
+    """Ruling 4 (Codex P2). The clock is one second short of expires_at when the call
+    starts, and at expires_at by the time its write is decided. That write records
+    the abandonment, and the call is refused."""
+    admitted = start(world, W2)
+    close = {"settle": lambda: world.ledger.settle(admitted, report(admitted)),
+             "mark_crashed": lambda: world.ledger.mark_crashed(admitted)}[call]
+    puts = len(ledger_puts(world))
+    world.clock.script(admitted.expires_at - timedelta(seconds=1), admitted.expires_at)
+    stop = stopped(close, wl.ENTRY_NOT_OPEN)
+    assert stop.ids == (admitted.run_id,)
+    entry = entry_of(world, admitted.run_id)
+    assert (entry["state"], entry["kind"], entry["counted_usd_micros"]) == (wl.UNRESOLVED,
+                                                                            wl.ABANDONED, R)
+    assert entry["closed_at"] == store.utc_text(admitted.expires_at)
+    assert len(ledger_puts(world)) == puts + 1                            # recorded by this call's own write
+
+
+@pytest.mark.parametrize("call,state", [("settle", wl.SETTLED), ("mark_crashed", wl.UNRESOLVED)])
+def test_an_entry_still_live_when_the_write_is_decided_is_closed_as_asked(world, call, state):
+    """The partner: one second earlier at each reading, the call does what it was asked."""
+    admitted = start(world, W2)
+    close = {"settle": lambda: world.ledger.settle(admitted, report(admitted)),
+             "mark_crashed": lambda: world.ledger.mark_crashed(admitted)}[call]
+    world.clock.script(admitted.expires_at - timedelta(seconds=2),
+                       admitted.expires_at - timedelta(seconds=1))
+    entry = close()
+    assert entry["state"] == state and entry["kind"] in (None, wl.CRASHED)
+
+
+def _admit_with_the_clock_at(world, final_reading_after_opening: int):
+    """Admit W1's run with the clock at 04:00:30 for the scan and the booking, and
+    `final_reading_after_opening` seconds later at the final re-read."""
+    opened = store.parse_utc("2026-12-02T04:00:30Z")
+    world.clock.set(opened)
+    held = take(world, W1)
+    world.clock.script(opened, opened, opened + timedelta(seconds=final_reading_after_opening))
+    return held, opened
+
+
+def test_an_admission_that_ends_at_its_own_deadline_withdraws_and_is_refused(world):
+    """Ruling 4. Booking took so long that, by the final re-read, the run's deadline
+    has come: no call may be sent, so the run withdraws at zero."""
+    to_deadline = CFG.wall_clock_limit_scheduled_s - wl.DEADLINE_MARGIN_S
+    held, opened = _admit_with_the_clock_at(world, to_deadline)
+    stop = stopped(lambda: world.ledger.admit(held, R), wl.ADMITTED_PAST_DEADLINE)
+    assert stop.ids == (held.run_id,)
+    mine = entry_of(world, held.run_id)
+    assert (mine["state"], mine["basis"], mine["counted_usd_micros"]) == (wl.SETTLED, wl.WITHDRAWN, 0)
+    assert mine["closed_at"] == store.utc_text(opened + timedelta(seconds=to_deadline))
+
+
+def test_an_admission_that_ends_one_second_before_its_deadline_starts(world):
+    """The partner."""
+    to_deadline = CFG.wall_clock_limit_scheduled_s - wl.DEADLINE_MARGIN_S
+    held, opened = _admit_with_the_clock_at(world, to_deadline - 1)
+    admitted = world.ledger.admit(held, R)
+    assert admitted.deadline_at == opened + timedelta(seconds=to_deadline)
+    assert admitted.seconds_to_deadline(world.clock()) == 1
+    assert entry_of(world, held.run_id)["state"] == wl.OPEN

@@ -367,6 +367,28 @@ def validate_manifest(manifest: object) -> dict:
     return m
 
 
+def build_keys(own: object, *, corpus_sha256: object, gold_sha256: object,
+               scorer_versions: object) -> dict:
+    """A run's `keys` object (the baseline key of ADR-011 D9): the job's own compared
+    values, with the corpus hash, the gold hashes and the scorer versions.
+
+    One function for the run manifest and the run summary (evals/ws7_summary.py), so
+    the two cannot be built differently. The result is a copy: it never aliases an
+    argument. It has passed the comparator's own check (`ws7_compare.check_keys`).
+    Anything out of shape is `ws7_manifest_invalid`."""
+    bad = Stop(MANIFEST_INVALID)
+    target = own.get("target") if type(own) is dict else None
+    if type(target) is not str or target not in store.TARGETS or not _own_ok(own, target):
+        raise bad
+    try:
+        keys = json.loads(json.dumps(dict(
+            _compared(own, target), corpus_sha256=corpus_sha256, gold_sha256=gold_sha256,
+            scorer_versions=scorer_versions)))
+        return compare.check_keys(keys, "manifest")
+    except (compare.CompareError, TypeError, ValueError):
+        raise bad from None
+
+
 def build_manifest(*, held: Claim, own: dict, who: Identity, cfg: reserve.Config,
                    reservation: dict, corpus_sha256: str, gold_sha256: dict,
                    scorer_versions: dict, baseline_id: str | None,
@@ -383,9 +405,8 @@ def build_manifest(*, held: Claim, own: dict, who: Identity, cfg: reserve.Config
     target = held.target
     if type(reservation) is not dict or reservation.get("target") != target:
         raise bad
-    keys = json.loads(json.dumps(_compared(own, target)))     # a copy: never aliases `own`
-    keys.update(corpus_sha256=corpus_sha256, gold_sha256=gold_sha256,
-                scorer_versions=scorer_versions)
+    keys = build_keys(own, corpus_sha256=corpus_sha256, gold_sha256=gold_sha256,
+                      scorer_versions=scorer_versions)
     plan = reserve.plan(target)
     return validate_manifest({
         "schema": MANIFEST_SCHEMA,

@@ -216,7 +216,10 @@ def _check_metric_ids(metrics: object, file: str) -> dict:
     return metrics
 
 
-def _check_baseline(data: object) -> dict:
+def check_baseline(data: object) -> dict:
+    """A baseline file's parsed JSON (`ws7-baseline/1`), strictly. Public, because the
+    candidate baseline is checked with it before it is returned
+    (evals/ws7_summary.py). Raises CompareError."""
     file = "baseline"
     base = _object(data, ("schema", "baseline_id", "keys", "metrics"), file, "top")
     if base["schema"] != BASELINE_SCHEMA:
@@ -257,7 +260,10 @@ def _check_baseline(data: object) -> dict:
     return base
 
 
-def _check_run(data: object) -> dict:
+def check_run(data: object) -> dict:
+    """A run summary's parsed JSON (`ws7-run/1`), strictly. Public, because the run
+    summary is checked with it when it is built (evals/ws7_summary.py). Raises
+    CompareError."""
     file = "run"
     run = _object(data, ("schema", "run_id", "keys", "metrics"), file, "top")
     if run["schema"] != RUN_SCHEMA:
@@ -334,23 +340,26 @@ def _compare(rules: dict, base: dict, run: dict) -> tuple[list, list]:
     for entry in rules["metrics"]:
         metric, kind = entry["metric"], entry["kind"]
         wanted = ("verdicts", "verdicts") if kind == 2 else ("counts", "count")
-        present = True
+        usable = []         # the files in which the metric is present, in the right shape
         for file, metrics, field in (("baseline", base_metrics, wanted[0]),
                                      ("run", run_metrics, wanted[1])):
             if metric not in metrics:
                 errors.append(CompareError("metric_missing", file, None, metric))
-                present = False
             elif field not in metrics[metric]:
                 errors.append(CompareError("metric_kind_mismatch", file, None, metric))
-                present = False
-        if present and kind == 2:
+            else:
+                usable.append((file, metrics))
+        if kind == 2:
             # A ruled verdict metric covers exactly the gold's scenarios, in each file.
             # Comparing the two files with each other is not enough: both could leave
-            # out the same scenario, and it would then never be looked at.
-            for file, metrics in (("baseline", base_metrics), ("run", run_metrics)):
+            # out the same scenario, and it would then never be looked at. Each file is
+            # checked wherever the metric is usable there, whatever the other file
+            # holds, so a metric missing from one file does not hide the other's gap.
+            for file, metrics in usable:
                 if set(metrics[metric]["verdicts"]) != gold:
                     errors.append(CompareError("scenario_coverage_differs", file, None, metric))
-            if set(base_metrics[metric]["verdicts"]) != set(run_metrics[metric]["verdicts"]):
+            if len(usable) == 2 and \
+                    set(base_metrics[metric]["verdicts"]) != set(run_metrics[metric]["verdicts"]):
                 errors.append(CompareError("scenario_set_differs", "run", None, metric))
     if errors:
         return [], errors
@@ -398,9 +407,9 @@ def compare_files(baseline_path: Path, rules_path: Path, run_path: Path) -> dict
     inputs = {"baseline_sha256": None, "rules_sha256": None, "run_sha256": None}
     loaded: dict = {}
     errors: list = []
-    for file, path, check in (("baseline", baseline_path, _check_baseline),
+    for file, path, check in (("baseline", baseline_path, check_baseline),
                               ("rules", rules_path, _check_rules),
-                              ("run", run_path, _check_run)):
+                              ("run", run_path, check_run)):
         try:
             # The hash is recorded before the bytes are parsed: a file that was read
             # but is not valid JSON keeps its hash. Only an unreadable file has none.

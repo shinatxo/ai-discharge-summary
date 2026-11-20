@@ -500,14 +500,108 @@ def test_kind2_one_file_short_of_the_gold_is_an_error_for_that_file(tmp_path, sh
 
 def test_kind2_coverage_is_checked_only_after_the_keys_match(tmp_path):
     """Stage 3, not stage 1: a run whose gold differs from the baseline's is "no
-    baseline", whatever its verdicts cover."""
+    baseline", whatever its verdicts cover.
+
+    Strengthened in part 4 (Codex P3, PR #7). The run's gold keeps S2 and its verdicts
+    do not have it, so the run does not cover even its own gold. A coverage check
+    moved before the key check would report that as an error; the result must still
+    be "no baseline", with no errors."""
     base = baseline({"safety_net_verdict": verdict_metric(THREE_STABLE)},
                     keys_for(["S1", "S2", "S3"]))
-    run = run_summary({"safety_net_verdict": {"verdicts": {"S1": P, "S2": P}}},
+    run = run_summary({"safety_net_verdict": {"verdicts": {"S1": P}}},
                       keys_for(["S1", "S2"]))
-    outcome = run_case(tmp_path, base, rules(k2()), run)
+    assert "S2" in run["keys"]["gold_sha256"] and "S2" not in run["metrics"]["safety_net_verdict"]["verdicts"]
+    outcome = run_case(tmp_path / "a", base, rules(k2()), run)
     assert (outcome.result["status"], outcome.code) == ("no_baseline", 2)
     assert outcome.result["key_mismatch"] == ["gold_sha256"] and outcome.result["errors"] == []
+    assert outcome.result["comparisons"] == []
+
+    # The control: with the baseline's own gold, the same verdicts are a coverage error.
+    same_gold = run_summary({"safety_net_verdict": {"verdicts": {"S1": P}}},
+                            keys_for(["S1", "S2", "S3"]))
+    covered = run_case(tmp_path / "b", base, rules(k2()), same_gold)
+    assert ("scenario_coverage_differs", "run", "safety_net_verdict") in _codes(covered)
+
+
+# Part 4, carried item A (Codex P3, PR #7): a ruled kind-2 metric missing from one file,
+# or of the wrong shape there, does not hide the other file's coverage gap.
+
+@pytest.mark.parametrize("absent,short", [("run", "baseline"), ("baseline", "run")])
+def test_kind2_a_metric_missing_from_one_file_does_not_hide_the_other_files_gap(tmp_path, absent,
+                                                                              short):
+    def files(covered: bool) -> tuple:
+        base = baseline({"safety_net_verdict": verdict_metric(
+            THREE_STABLE if covered or short != "baseline" else TWO_STABLE)},
+            keys_for(["S1", "S2", "S3"]))
+        run = run_summary({"safety_net_verdict": {"verdicts": (
+            {"S1": P, "S2": P, "S3": P} if covered or short != "run" else {"S1": P, "S2": P})}},
+            keys_for(["S1", "S2", "S3"]))
+        del (run if absent == "run" else base)["metrics"]["safety_net_verdict"]
+        return base, run
+
+    base, run = files(covered=False)
+    outcome = run_case(tmp_path / "a", base, rules(k2()), run)
+    assert _codes(outcome) == sorted([
+        ("metric_missing", absent, "safety_net_verdict"),
+        ("scenario_coverage_differs", short, "safety_net_verdict")])     # both defects are named
+    assert outcome.code == 2 and outcome.result["comparisons"] == []
+
+    # The partner: the same metric missing from the same file, and the other file
+    # covering the gold, is the one error.
+    base, run = files(covered=True)
+    partner = run_case(tmp_path / "b", base, rules(k2()), run)
+    assert _codes(partner) == [("metric_missing", absent, "safety_net_verdict")]
+
+
+@pytest.mark.parametrize("wrong,short", [("run", "baseline"), ("baseline", "run")])
+def test_kind2_a_metric_of_the_wrong_shape_in_one_file_does_not_hide_the_other_files_gap(
+        tmp_path, wrong, short):
+    def files(covered: bool) -> tuple:
+        base = baseline({"safety_net_verdict": verdict_metric(
+            THREE_STABLE if covered or short != "baseline" else TWO_STABLE)},
+            keys_for(["S1", "S2", "S3"]))
+        run = run_summary({"safety_net_verdict": {"verdicts": (
+            {"S1": P, "S2": P, "S3": P} if covered or short != "run" else {"S1": P, "S2": P})}},
+            keys_for(["S1", "S2", "S3"]))
+        if wrong == "run":
+            run["metrics"]["safety_net_verdict"] = {"count": 1}
+        else:
+            base["metrics"]["safety_net_verdict"] = {"counts": [1, 1, 1]}
+        return base, run
+
+    base, run = files(covered=False)
+    outcome = run_case(tmp_path / "a", base, rules(k2()), run)
+    assert _codes(outcome) == sorted([
+        ("metric_kind_mismatch", wrong, "safety_net_verdict"),
+        ("scenario_coverage_differs", short, "safety_net_verdict")])
+
+    base, run = files(covered=True)
+    partner = run_case(tmp_path / "b", base, rules(k2()), run)
+    assert _codes(partner) == [("metric_kind_mismatch", wrong, "safety_net_verdict")]
+
+
+def test_kind2_a_metric_missing_from_both_files_is_two_errors_and_no_coverage_error(tmp_path):
+    base = baseline({"invented_doses": {"counts": [0, 0, 0]}}, keys_for(["S1", "S2", "S3"]))
+    run = run_summary({"invented_doses": {"count": 0}}, keys_for(["S1", "S2", "S3"]))
+    outcome = run_case(tmp_path, base, rules(k2()), run)
+    assert _codes(outcome) == [("metric_missing", "baseline", "safety_net_verdict"),
+                               ("metric_missing", "run", "safety_net_verdict")]
+
+
+def test_the_checks_of_a_run_and_of_a_baseline_are_public(tmp_path):
+    """Part 4: `check_run` and `check_baseline`, as `check_keys` was made public in
+    part 3. The run summary and the candidate baseline are checked with them
+    (evals/ws7_summary.py)."""
+    base, _, run = valid_triple()
+    assert W.check_run(json.loads(json.dumps(run))) == run
+    assert W.check_baseline(json.loads(json.dumps(base))) == base
+    assert not hasattr(W, "_check_run") and not hasattr(W, "_check_baseline")
+    for check, good, file in ((W.check_run, run, "run"), (W.check_baseline, base, "baseline")):
+        with pytest.raises(W.CompareError) as exc:
+            check(dict(good, note=SENTINEL))                     # an unknown field
+        assert (exc.value.code, exc.value.file) == ("shape_invalid", file)
+    with pytest.raises(W.CompareError):
+        W.check_run(base)                                        # a baseline is not a run
 
 
 def test_kind2_coverage_is_for_ruled_metrics_an_unruled_one_is_listed_and_changes_nothing(

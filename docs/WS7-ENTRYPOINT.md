@@ -8,7 +8,7 @@ slice 2). It is being built as six pull requests. This document grows with each 
 | 1 | The client wrapper and the reservation | **Built** |
 | 2 | The claim, the ledger, the match check and the run manifest | **Built** |
 | 3 | The follow-ups from PR #4 (the comparator) and PR #6 (the claim and ledger) | **Built** |
-| 4 | The run summary and the candidate baseline | Not built |
+| 4 | The run summary and the candidate baseline | **Built** |
 | 5 | The modes, the comparator call and publishing | Not built |
 | 6 | The image changes | Not built |
 
@@ -886,6 +886,330 @@ Now each file must cover the gold's scenarios exactly, for every verdict metric 
 Part 4 writes the run summary, so part 4 must write a verdict (`pass`, `fail` or `no_output`)
 for every gold scenario in every verdict metric that will be ruled.
 
+## Part 4: the run summary and the candidate baseline
+
+One new module, `evals/ws7_summary.py`, with three functions. Part 5 wires them into the modes.
+
+- `write_haz03(batch_dir)` writes `scores/haz03.json` for a pipeline batch.
+- `build_summary(batch_dir, own=..., report=..., batch_label=..., month_assurance_waived=...)`
+  returns the run summary (`ws7-run/1`, `docs/WS7-COMPARATOR.md`).
+- `build_candidate([s1, s2, s3], baseline_id=...)` returns a candidate baseline.
+
+Nothing in part 4 makes an AWS call or a model call. No runner and no scorer is changed, and
+neither is `evals/ws7_client.py` or `evals/ws7_reserve.py`. Two merged modules change:
+
+- `evals/ws7_manifest.py` gains `build_keys()`, and `build_manifest()` calls it.
+- `evals/ws7_compare.py`: two checks become public, and one carried fix
+  (`docs/WS7-COMPARATOR.md`, "The order of checks").
+
+The approved slice plan's metric list was not in the repository, so the list below was derived
+from the merged documents and the scorers' code. The author ruled on it on 20 Nov 2026.
+
+### What a summary is built from
+
+One finished batch of 18, its score outputs, and the guard's report (part 1).
+
+| File | Read for |
+|---|---|
+| `manifest.json`, `batch.json` | The batch's ID, target, model ID, caching setting, corpus hash, scenarios, and whether each generation has an error |
+| `r1/<scenario>.json` (the records) | **Named fields only:** `scenario_id`, `run`, `batch_id`, `elapsed_s`, and the step names in `step_errors` |
+| `scores/safety_net.json`, `scores/meds.json` | Both targets |
+| `scores/step2_advice.json`, `scores/compose_clinical.json`, `scores/assemble/assemble.json`, `scores/haz03.json` | The pipeline only |
+
+- **No `.md` report and no review file is opened.** They quote model output. A test records every
+  file opened and shows it.
+- **A string reaches the summary only through a fixed set of labels.** A record holds model
+  output, so nothing is copied from one. A step name must be one of the runner's nine
+  (`evals/run_pipeline_eval.py:80-82`); a failure label, an outcome or a gate status must be one
+  the scorer can emit. A field holding anything else builds no summary. Error codes are compared
+  with a literal or not read at all.
+- **One whole batch, once.** A batch with `runs` other than 1, a batch that stopped early, or a
+  batch whose generations or gold map do not name exactly the manifest's scenarios builds no
+  summary (`ws7_summary_batch_incomplete`). The manifest's scenarios are whatever the runner was
+  asked for, so a pre-flight batch of one scenario can be summarised. It can never become a
+  baseline ("The candidate baseline", below).
+  - Why: `score_batch` builds its gold map from the scenarios that were generated
+    (`evals/score_batch.py:90`). A scenario that was never generated would be missing from
+    `keys.gold_sha256`, not written `no_output`.
+- **The batch label is one name in three places:** the runner's batch ID (`--batch`), the batch's
+  label in the guard's report, and the summary's `run_id`. It starts with `<run_id>.`. A baseline
+  is one run with three batches (ruling e8), so its three summaries have three different IDs.
+
+### HAZ-03
+
+ADR-011 D9 names `evals/haz03_check.py` as a source, but no scorer runs it on a batch.
+`write_haz03()` calls `check_record()`, unchanged, on each record and writes the rows it returns.
+The gold it reads must be the gold `score_batch` scored against: each file's sha256 must be the
+one in `score_batch`'s gold map. The check does not cover v1 (`evals/haz03_check.py:33`).
+
+**A row holds IDs, values from fixed sets and fixed labels only** (Codex review of PR #8).
+
+- The checker promises that (`evals/haz03_check.py:35`), but it copies the facts' `age_group`
+  into its row as it finds it (`:88`), and a record holds model output.
+- So before a row is written, each field is held to its own allowlist. A value outside it is
+  written as the fixed label `not_in_enum`, never as given.
+- **The allowlist comes first, for every field and every type** (Codex re-check of PR #8). A
+  value is written only if it is exactly one its field may hold, of the right type. A number, a
+  boolean or nothing is not written as given: a first version let those through, so `42` or
+  `true` in a record's `age_group` reached the file.
+- **The verdict and the failures are written exactly as the checker gave them.** What the checker
+  gives is always inside their sets. The checker is not changed.
+
+| Field | What it may hold | From |
+|---|---|---|
+| `facts_age_group` | One of the facts schema's five age groups | `src/generate/pipeline/schemas.py:151` |
+| `gold_age_group` | One of the gold's age groups | `evals/gold.py:33` |
+| `expected_audience` | `paediatric` or `adult` | `evals/haz03_check.py:50` |
+| `verdict` | `pass`, `fail` or `not_scored` | `evals/haz03_check.py:91`, `:104` |
+| `failures` | A list in which every item is one of the checker's seven labels | `evals/haz03_check.py:69-82` |
+| `check_version` | The integer `CHECK_VERSION`, and no other number | `evals/haz03_check.py:48` |
+| `scenario_id` | The scenario the row is for | The batch manifest |
+| `check`, `reason` | `HAZ-03`; `no_step_5b` | `evals/haz03_check.py:85`, `:104` |
+| Any other field | Nothing: whatever it holds is written `not_in_enum` | |
+
+### The keys
+
+`ws7_manifest.build_keys(own, corpus_sha256=..., gold_sha256=..., scorer_versions=...)` builds
+the `keys` object for the run manifest and for the run summary. `ws7_summary.key_parts(batch_dir)`
+returns the last three, and part 5 passes the same ones to `build_manifest()`. A test builds both
+from one batch and compares them.
+
+| Key | From |
+|---|---|
+| `target`, `model_id`, `prompt_caching`, and `pipeline_version` or the two v1 prompt hashes and `patient_second_pass` | The job's own values, as `match_check` returned them (part 2). The batch manifest must agree where it holds the same value (`ws7_summary_own_invalid` otherwise) |
+| `corpus_sha256` | The batch manifest (`evals/run_pipeline_eval.py:348`, `evals/run_cold_eval.py:675`) |
+| `gold_sha256` | `score_batch`'s gold map (`evals/score_batch.py:101-102`) |
+| `scorer_versions` | The scorers' own constants (below) |
+
+| Scorer | Version | Target |
+|---|---|---|
+| `score_batch` | `SCORER_VERSION` (`evals/score_batch.py:34`) | both |
+| `score_step2_advice` | `METRIC_VERSION` (`evals/score_step2_advice.py:45`) | pipeline |
+| `score_compose` | `METRIC_VERSION` (`evals/score_compose.py:53`) | pipeline |
+| `haz03_check` | `CHECK_VERSION` (`evals/haz03_check.py:48`) | pipeline |
+| `score_assemble` | **The sha256 of the file's bytes**, as an ID string. The scorer has no version constant, and it is not changed here (the author's ruling, 20 Nov 2026) | pipeline |
+
+- Each score file's own stamped version must equal the constant (`ws7_summary_scores_invalid`
+  otherwise).
+- `score_patient` is not in the keys: none of its metrics is published.
+- Any edit to `evals/score_assemble.py`, a comment included, changes the key, and the next run
+  is "no baseline" until a new baseline is frozen.
+
+### The metrics
+
+The set is fixed for each target, and every metric is always present, 0 when nothing was
+counted. **Which kind each metric has, and every number, is set in the rules file by the author,
+not here.** A v1 summary has the Run, Safety-netting and Medications families only.
+
+**Run**
+
+| Metric | From |
+|---|---|
+| `cost_usd_micros` | **The batch's own total** in the guard's report (`batches[label].total_usd_nanos`), rounded up to micro-dollars. Not the report's total, which includes the pre-flight and, for a baseline, the other two batches (the author's ruling, 20 Nov 2026). **It is an estimate, not the billed amount:** the usage Bedrock returned, priced at the runner's configured rates (`PRICE_PER_MTOK` times `REGIONAL_PREMIUM`, `evals/run_cold_eval.py:115-116`). **The batch's total is the priced usage of every reply plus the worst-case charge of every call that got no reply** (a throttle, for example), as the guard and the ledger count it (part 1, "After every call"). The v1 throttle test shows it: 34 replies at their usage and one throttled call at its worst case (`test_a_throttled_scenario_is_written_no_output_in_every_verdict_metric`) |
+| `tokens_in_total`, `tokens_out_total`, `tokens_cache_read_total`, `tokens_cache_write_total` | The batch's calls in the report that got a reply with usage |
+| `input_tokens_max_<step>` | The largest input side of one call (input, cache read and cache write) for each model step: four for the pipeline, two for v1. For the measured input allowance (ADR-011 D7, point 1; slice 4) |
+| `elapsed_p90_ms` | The records' `elapsed_s`, every record in the batch |
+| `generations_failed` | Generations whose `batch.json` row has an error code |
+| `step_failures_<step>` (pipeline; the nine step names) | The step names in each record's `step_errors`. `step_failures_compose_patient` is here: it comes from the runner's record, not from PART C scoring |
+| `calls_not_response`, `calls_refused`, `spend_guard_trips` | The batch's calls in the report, by outcome and refusal code |
+| `gold_draft_records` | Gold records whose status is not `approved`. The candidate baseline refuses on it |
+| `month_assurance_waived` | 0 or 1: the month's flag in the ledger when the run ran |
+
+**Safety-netting** (`scores/safety_net.json`; rows from `evals/score_safety_net.py:261-278`)
+
+| Metric | From |
+|---|---|
+| `safety_net_verdict` (a verdict) | `verdict` |
+| `sn_invented_triggers` | The sum of `seek_help.n_invented` |
+| `sn_pinned_line_missing` | Rows with that failure label |
+| `sn_route_incorrect` | Rows where `route.correct` is false |
+| `sn_review` | Rows whose verdict is `review` |
+| `sn_gate_failures` (v1 only) | Rows where the current gate, re-run on the stored output, is not passed (`evals/score_batch.py:167-170`) |
+
+**Medications** (`scores/meds.json`; rows from `evals/score_meds.py:538-549`)
+
+| Metric | From |
+|---|---|
+| `meds_verdict` (a verdict) | `verdict` |
+| `meds_invented_doses`, `meds_invented_frequencies` | The sums of those two fields |
+| `meds_partial`, `meds_review` | Rows with that verdict |
+
+**Step-2 advice** (pipeline; `scores/step2_advice.json`; `evals/score_step2_advice.py:90-98`)
+
+| Metric | From |
+|---|---|
+| `step2_route_verdict` (a verdict) | `route_correct` |
+| `step2_gold_items_recalled` | The sum of `verified.n_gold_matched` |
+| `step2_not_extracted`, `step2_lost_at_verification`, `step2_non_advice_as_advice` | Rows with that `route_error` |
+| `step2_right_route_wrong_item` | Rows where it is true |
+
+**Composition** (pipeline; `scores/compose_clinical.json`, the `summary` of
+`evals/score_compose.py:259-288`). Counts only: the scorer gives no verdict for a record.
+
+| Metric | From |
+|---|---|
+| `compose_not_reached` | `n_records` less `n_scored` |
+| `compose_year_added` | `year_added_step6.findings` |
+| `compose_boxes_incorrect` | `n_scored` less `boxes_correct` |
+| `compose_unknown_fact_ids`, `compose_excluded_fact_ids`, `compose_field_omitted`, `compose_gp_action_missing_in_b` | The fields of those names |
+| `compose_contradictions_missing` | `contradictions.given` less `contradictions.in_a` |
+| `compose_flagged_advice`, `compose_flagged_resus`, `compose_flagged_medication` | `review.<kind>.flagged`: sentences code flagged for a CSO ruling |
+| `compose_checks_total` | Every check count in every row |
+
+**HAZ-03** (pipeline; `scores/haz03.json`)
+
+| Metric | From |
+|---|---|
+| `haz03_verdict` (a verdict) | `verdict` |
+| `haz03_failures` | Every failure label in every row |
+| `haz03_<kind>`, for the seven kinds (`evals/haz03_check.py:11-23`) | Rows with that label |
+
+The two kinds that name PART C (`expected_line_missing_part_c`, `other_line_in_part_c`) are
+published (the author's ruling, 20 Nov 2026). They read step 5b's `part_c` field, the line that
+code inserts, not step 7's text, and they use no frozen file.
+
+**Assembly** (pipeline; `scores/assemble/assemble.json`)
+
+| Metric | From |
+|---|---|
+| `assembly_not_bundled` | Rows whose outcome is not `bundle` |
+| `assembly_rejected_08a`, `assembly_rejected_08b` | Rejections, by step |
+| `assembly_upstream_missing` | Rows with that outcome |
+| `assembly_gate_failed` | Rows rejected at 8b with `safety_net_gate_failed` |
+| `assembly_gate_clean`, `assembly_gate_documented_advice` | The gate status of each bundle. 8b rejects any other status (`src/generate/pipeline/assemble.py:606`) |
+| `assembly_placeholders_left` | `summary.placeholders_left` |
+
+- **Rejections and step failures are published by step, not by code** (the author's ruling,
+  20 Nov 2026). A metric named after a code would be in some runs and not in others, and a
+  baseline needs the same metrics in all three. The codes stay in the stored records.
+- **PART C is not published** (ADR-011 D13). `score_batch`'s patient block and its
+  `scores/patient_version.json` are never read. Nor is any warning in `assemble.json`:
+  `warnings`, `warnings_c`, `warnings_located`, `c_meaning_vs_step7`, `a5` and `branches`. A test
+  changes all of them and shows the summary's bytes do not change.
+- Subgroup tags (D12) are not in the summary. Adding them is a new schema version (slice 7).
+
+### Units
+
+- **Cost** is integer micro-dollars. The guard counts in nano-dollars, and the conversion rounds
+  up, so a cost is never understated ("Money units", part 1).
+- **Elapsed time.** The runners record seconds to three decimal places. The value is read as a
+  decimal from its JSON text, multiplied by 1,000 and rounded half-even to whole milliseconds.
+  No binary float is involved, so the result is exact.
+- **p90 is by nearest rank, with no interpolation.** Sort the values and take item
+  `ceil(0.9 x n)`, counting from 1. For 18 records that is the 17th. The result is always one of
+  the values. It is not `score_compose`'s quantile (`evals/score_compose.py:235`), which rounds
+  differently.
+
+### The verdict mapping
+
+"pass" in a run summary is the scorer's own "pass", exactly.
+
+| Scorer | The scorer says | Written |
+|---|---|---|
+| Safety-net (`evals/score_safety_net.py:257`) | `pass` | `pass` |
+| | `review`, `fail` | `fail` |
+| Medications (`evals/score_meds.py:527-535`) | `pass` | `pass` |
+| | `partial`, `review`, `fail` | `fail` |
+| Step-2 advice (`evals/score_step2_advice.py:95`, `:106`) | `route_correct` true / false | `pass` / `fail` |
+| | `not_scored` | `no_output` |
+| HAZ-03 (`evals/haz03_check.py:91`, `:104`) | `pass` / `fail` | `pass` / `fail` |
+| | `not_scored` | `no_output` |
+| Any of the four | No row for the scenario: a skipped record or a failed generation | `no_output` |
+
+- `review` (waiting for a CSO ruling) and `partial` are not a pass. Writing either as "pass" would
+  make WS7's verdict looser than the scorer's. How many there were is published
+  (`sn_review`, `meds_partial`, `meds_review`), so the reason for the fail stays visible.
+- Every verdict metric has a verdict for exactly the scenarios in `keys.gold_sha256` (part 3, "The
+  rule about coverage"). Nothing is left out.
+- A value that is not in the table, a row for a scenario the gold does not have, or two rows for
+  one scenario builds no summary. Nothing is guessed.
+
+### Refusals
+
+`build_summary()` checks its result with the comparator's own `check_run()` before returning it.
+
+| Code | When |
+|---|---|
+| `ws7_unmetered` | The report says a call's usage is unknown. That run's cost is an estimate. The code is the wrapper's own (part 1), and part 5 fails the run with it |
+| `ws7_summary_own_invalid` | The job's own values are out of shape, or the batch manifest disagrees with them |
+| `ws7_summary_batch_invalid` | The manifest, `batch.json` or a record is missing or malformed, or a read field holds something outside its fixed set |
+| `ws7_summary_batch_incomplete` | Not exactly one run of the manifest's scenarios (above) |
+| `ws7_summary_scores_invalid` | A score file is missing, malformed, another batch's or another scorer version's, or holds a value outside its fixed set |
+| `ws7_summary_report_invalid` | The guard's report is not this batch's: no run ID, another target, no such batch, a label that does not start with the run's ID, or rows that do not add up to the batch's total |
+| `ws7_summary_invalid` | The built summary fails `check_run()`, or the month's flag is not a boolean |
+
+### The candidate baseline
+
+`build_candidate()` takes the three run summaries of a manual baseline (ADR-011 D7: 18 x 3) and
+a `baseline_id`. The ID is given by the author. It has no default and never comes from the clock.
+
+```json
+{"schema": "ws7-baseline-candidate/1",
+ "run_ids": ["2026-12-14T0130-pipeline-manual.b1", "2026-12-14T0130-pipeline-manual.b2",
+             "2026-12-14T0130-pipeline-manual.b3"],
+ "baseline": {"schema": "ws7-baseline/1", "baseline_id": "b-2026-12-14", "keys": {"…": "…"},
+              "metrics": {"…": "…"}}}
+```
+
+The IDs are invented. Each count becomes a list of three, in the order the summaries were given.
+Each verdict becomes a list of three, and the `unstable` list is worked out from the verdicts.
+The `baseline` member is checked with the comparator's own `check_baseline()` before anything is
+returned.
+
+| Code | When |
+|---|---|
+| `ws7_candidate_not_three_runs` | Not exactly three summaries |
+| `ws7_candidate_id_invalid` | The `baseline_id` is not an ID |
+| `ws7_candidate_summary_invalid` | A summary fails `check_run()`, a verdict metric does not cover the gold, or a summary has no `gold_draft_records` count |
+| `ws7_candidate_not_whole_corpus` | A summary's `keys.gold_sha256` does not name exactly the scenarios in the corpus file, or the corpus file cannot be read |
+| `ws7_candidate_runs_not_distinct` | Two summaries have the same `run_id`: the same batch given twice |
+| `ws7_candidate_keys_differ` | The three `keys` are not equal. The refusal names the keys, never the values |
+| `ws7_candidate_metrics_differ` | A metric is in some runs and not in others, or is a count in one and a verdict in another |
+| `ws7_candidate_draft_gold` | `gold_draft_records` is above 0 in any run. Scores against draft gold are not the baseline (`evals/score_batch.py:225-226`) |
+| `ws7_candidate_no_output` | Any verdict is `no_output`. `ws7-baseline/1` has no such verdict |
+
+**A baseline is three whole runs of the corpus** (Codex review of PR #8).
+
+- Three summaries of a pre-flight batch, with three labels, are three valid and distinct run
+  summaries with equal keys. A baseline frozen from them would give "no baseline" for every
+  real run, because a real run's gold names all 18 scenarios.
+- So each summary must name every scenario in the corpus, and no other. The scenarios are read
+  from the corpus file itself (`run_cold_eval.load_corpus` on `src/canary/scenarios.json`), not
+  from a number written in the code.
+- `build_summary()` is unchanged: it does not refuse a batch of fewer scenarios.
+
+**A candidate is never a frozen baseline.**
+
+- The comparator refuses the envelope: its schema is not `ws7-baseline/1`. A test runs the real
+  comparator on one and gets exit code 2.
+- **Code never freezes a baseline.** The author copies the `baseline` member into the repository
+  by pull request, after comparing it with `evals/EVAL_RESULTS.md` (ADR-011 D9, "Freezing a
+  baseline"; slice 4).
+- `build_candidate()` writes no file.
+
+### What part 4 found
+
+- **The assembly replay stops on any failed pipeline generation.** `evals/score_assemble.py`
+  raises a `KeyError` in `summary()` (line 202) when a record has an upstream step missing: such a
+  record has no `branches` entry (`:148-150`). ADR-011 D2 said this only of a record in which
+  step 1 failed. So today a pipeline batch with any failed generation has no `assemble.json`, and
+  `build_summary()` refuses it (`ws7_summary_scores_invalid`). ADR-011 D2 already treats a replay
+  that stops as a failed run. The scorer is not changed here; a test pins the behaviour.
+- **So a pipeline summary cannot yet show `no_output` from a failed generation.** The mapping is
+  tested on the scorers' own `not_scored` rows and on rows removed from a real score file. End to
+  end it is tested on v1, with a throttled scenario at the stub.
+- **The adjudication files are in no key** ("Notes for later parts", slice 4).
+
+### What the tests cannot prove
+
+- Real token counts, costs and elapsed times. The stub reports the same invented usage for every
+  reply.
+- A `review` or `partial` verdict from real model output. The stub's replies are the runners' own
+  dry-run replies, so those verdicts are written into a copy of a real score file by the test.
+- That real output keeps every label inside its fixed set. If a scorer gains a label, a summary
+  is refused until this module names it.
+- Anything in S3. Part 5 writes the summary and the candidate.
+
 ## Notes for later parts
 
 ### The next PR that may change `evals/ws7_reserve.py`
@@ -896,16 +1220,43 @@ for every gold scenario in every verdict metric that will be ruled.
 
 ### Part 4: the run summary
 
-- Every run summary written while its month is marked "assurance waived" shows it. The
-  comparator's `ws7-run/1` rejects an unknown top-level field, so the flag goes in as a count
-  metric, `month_assurance_waived` (0 or 1), in the Run family. An unruled metric is listed and
-  changes no verdict (`docs/WS7-COMPARATOR.md`), so no new schema version is needed.
-- Every verdict metric that a rule will name has a verdict for every scenario in
-  `keys.gold_sha256`, and for no other (part 3, "The rule about coverage"). A scenario whose
-  generation produced nothing is written as `no_output`, never left out.
+Both notes are closed by part 4:
+
+- the month's "assurance waived" flag is the count metric `month_assurance_waived` (0 or 1), in
+  the Run family;
+- every verdict metric has a verdict for every scenario in `keys.gold_sha256`, and for no other.
+
+### The next PR that may change `evals/score_assemble.py` (it needs the author's yes)
+
+- `summary()` stops with a `KeyError` on a record with an upstream step missing (part 4, "What
+  part 4 found"). Until it is fixed, a pipeline batch with a failed generation has no summary.
+- The scorer has no version constant. Part 4 keys it by the sha256 of its bytes.
 
 ### Part 5: the modes
 
+- **Wiring part 4.** After the last runner returns and the ledger is settled:
+  1. run `score_batch`, then (pipeline) `score_assemble`, then `ws7_summary.write_haz03()`, on
+     the main batch;
+  2. take `ws7_summary.key_parts(batch_dir)`, and pass the same parts to `build_manifest()`;
+  3. call `build_summary()` with the `own` that `match_check` returned, the guard's report, the
+     batch's label, and `Ledger.assurance_waived(month)`.
+- **A batch's label is the runner's batch ID.** Part 5 hands each runner `--batch <label>`, with
+  the label it opened on the guard: `<run_id>.preflight`, `<run_id>.main`, and for a baseline
+  three labels of its own that start `<run_id>.`. The summary's `run_id` is that label.
+- **Part 5 summarises the main batch.** A pre-flight batch can be summarised as well, but it is
+  never compared and never part of a baseline: `build_candidate()` refuses a summary that does
+  not name the whole corpus.
+- **A scorer that stops is a failed run** (ADR-011 D2). Today that includes the assembly replay on
+  any pipeline batch with a failed generation.
+- **A refusal from `build_summary()` is a failed run**, with the refusal's code. `ws7_unmetered`
+  is one of them.
+- **Where a frozen baseline is read from: the repository, and so the image.**
+  `evals/ws7_baseline_<target>.json`, with the rules at `evals/ws7_rules_<target>.json`. Neither
+  file exists until slice 4. A missing file is "no baseline". A baseline is never read from S3:
+  the task role can write there, and a baseline changes only by pull request.
+- **Where a candidate goes.** The manual baseline mode writes the envelope under the run's own
+  prefix, `ws7/runs/manual/<run_id>/`. Part 5 names the object. It is never written to a path a
+  baseline is read from.
 - **The distinct-scenarios precheck must use a canonical first-request fingerprint, not the raw
   notes hash** (Codex P3, PR #5). Two scenarios whose notes differ only in ways the pipeline
   normalises away, such as line endings, would have different notes hashes but could send the same
@@ -967,6 +1318,20 @@ for every gold scenario in every verdict metric that will be ruled.
 - The `Dockerfile` takes the commit as a build argument and sets `WS7_GIT_COMMIT` from it
   (part 2, "The run manifest").
 
+### Slice 4: the baseline
+
+- **No baseline is frozen until the author has decided how adjudications are keyed** (the
+  author's ruling, 20 Nov 2026). It is decided before slice 4's baseline pull request.
+  - The gap: `score_batch` reads the CSO's rulings from `evals/gold/adjudications/<ID>.json`
+    (`evals/score_batch.py:97-100`), and they change verdicts. But `keys.gold_sha256` holds the
+    hash of `evals/gold/<ID>.json` only (`:102`).
+  - So a new ruling can move a verdict while every key stays the same, and the comparator would
+    compare the run with a baseline scored under other rulings.
+  - Part 4 does not fix it.
+- The measured input allowance (ADR-011 D7, point 1) can be read from the candidate's
+  `input_tokens_max_<step>` counts.
+- The rules file names every metric it rules by the names in part 4, "The metrics".
+
 ### Slice 3: the stack
 
 - The task role gains `s3:ListBucket` on the eval bucket, limited to the `ws7/` prefix (ADR-011
@@ -981,7 +1346,7 @@ for every gold scenario in every verdict metric that will be ruled.
 ## Tests
 
 ```zsh
-PYTHONDONTWRITEBYTECODE=1 python -m pytest -p no:cacheprovider -q tests/test_ws7_compare.py tests/test_ws7_reserve.py tests/test_ws7_client.py tests/test_ws7_store.py tests/test_ws7_ledger.py tests/test_ws7_manifest.py
+PYTHONDONTWRITEBYTECODE=1 python -m pytest -p no:cacheprovider -q tests/test_ws7_compare.py tests/test_ws7_reserve.py tests/test_ws7_client.py tests/test_ws7_store.py tests/test_ws7_ledger.py tests/test_ws7_manifest.py tests/test_ws7_summary.py
 ```
 
 - `tests/test_ws7_compare.py`: the comparator (`docs/WS7-COMPARATOR.md`, "Tests").
@@ -1049,7 +1414,47 @@ PYTHONDONTWRITEBYTECODE=1 python -m pytest -p no:cacheprovider -q tests/test_ws7
   built in code whose pre-flight scenario is not a scenario ID builds no argv, with the
   runner's parser shown never to be called.
 
-**Keeping the tests offline.** Every test in the three part 2 files uses `offline_aws`, and every
+- `tests/test_ws7_summary.py` (part 4). Every batch is invented: the real runners, given the
+  argv `runner_argv()` builds, run against the stub with `runs_dir` in a temporary folder, and
+  the real scorers, unchanged, score that fresh batch.
+  - **The acceptance check.** Three stub batches give three summaries and a candidate. The test
+    copies the `baseline` member to a file, as the author would. The real comparator
+    (`ws7_compare.main`, a fresh output path, the exit code checked before the result is read)
+    then compares a fourth summary with it, under an invented rules file:
+    - exit 0 for an unchanged run;
+    - exit 1 for a quality change: the stub's step-2 reply reports one line of the notes as
+      documented advice, for one scenario that passed safety-netting three times. The scenario
+      is taken from the candidate's stable list when the test runs. The scorer's own verdict
+      becomes `fail`, and no call fails;
+    - exit 2 for a run with another `pipeline_version`.
+  - A throttled scenario at the stub (v1): `no_output` in every verdict metric, and no
+    candidate from three such summaries. A 500 at the stub: `ws7_unmetered`, and no summary.
+  - The rules, each on a copy of one scored stub batch: every verdict value in "The verdict
+    mapping"; every count metric against its source; the cost as the batch's own part of a
+    two-batch report; the percentile and the millisecond conversion at their boundaries; every
+    refusal with a partner that is not refused; a read field holding anything outside its label
+    set, with a label inside the set as the positive control.
+  - PART C: every patient score and every assembly warning is changed, and the summary's bytes
+    are not; the control changes a published field of the same file. A recorder on file opens
+    shows that only the named JSON files are opened; the control opens a report.
+  - The same bytes under four `PYTHONHASHSEED` values, each in a child process that scores its
+    own copy of the batch. The control: `score_batch`'s own output order did differ. Each child
+    has a time limit that fails the test.
+  - The summary's keys equal the manifest's, for both targets.
+  - The candidate: counts and verdicts as three-item lists, the unstable list, every refusal at
+    each of the three positions, and the comparator refusing the envelope and accepting its
+    `baseline` member.
+  - HAZ-03: a value of every JSON type (a string, an integer, a float, a boolean, null, a list,
+    an object) written into a record's `age_group`, with step 5b present, never reaches
+    `scores/haz03.json`; the control is the checker's own row, which carries the raw value. For
+    every field of a row, a value of each of those types outside its set is written
+    `not_in_enum`. The partner: every value inside its set is written exactly as given, with the
+    same verdict.
+  - Three scored pre-flight batches, made at the stub for both targets, make no candidate; the
+    partner is three full batches. The corpus is shown to be read from its file: with one
+    scenario more or fewer in the file, the same three full summaries are refused.
+
+**Keeping the tests offline.** Every test in the three part 2 files and in the part 4 file uses `offline_aws`, and every
 client they build points at a fake on `127.0.0.1` or is never called. The `offline_aws` fixture:
 
 - sets invented credentials and `AWS_EC2_METADATA_DISABLED=true`, and points the AWS config and

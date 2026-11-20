@@ -192,7 +192,7 @@ class Deps:
 def no_wait(_seconds: float) -> None:
     """THE SLEEP THE RUNNERS GET (part 1 left this to part 5). Both runners call
     their sleep in one place only: before they retry a throttled call
-    (src/generate/pipeline/converse.py:44, evals/run_cold_eval.py:340). WS7 never
+    (src/generate/pipeline/converse.py:43, evals/run_cold_eval.py:340). WS7 never
     lets a retry through: a throttle fails the run, and every later call is refused.
     Waiting 20 to 30 seconds for a retry that will be refused would only use up the
     run's wall clock, so this sleep returns at once."""

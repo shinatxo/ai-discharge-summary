@@ -12,7 +12,6 @@ publish them, that an alarm sees them, and that the encrypted topic delivers.
 from __future__ import annotations
 
 import http.client
-import json
 import sys
 from datetime import datetime, timezone
 from pathlib import Path

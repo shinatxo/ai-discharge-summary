@@ -1219,15 +1219,95 @@ def test_only_json_files_are_opened_never_a_report_or_a_review_file(scored, open
 
 # ----------------------------------------------------------------- HAZ-03
 
+def checkers_row(case: Case, scenario: str, gold_dir: Path = G.GOLD_DIR) -> dict:
+    """What evals/haz03_check.py itself returns for one record of the batch."""
+    record = json.loads(case.path("r1", f"{scenario}.json").read_text("utf-8"))
+    return H3.check_record(record, G.load(scenario, gold_dir))
+
+
 def test_write_haz03_runs_the_check_unchanged_on_every_record(scored):
+    """Values inside their sets are written exactly as the checker gave them, with
+    the same verdict: the partner of the test below."""
     case = scored("pipeline")
     case.path(*HAZ03).unlink()
     out = ws.write_haz03(case.dir)
     data = json.loads(out.read_text("utf-8"))
     assert out == case.path(*HAZ03) and data["check_version"] == H3.CHECK_VERSION
     assert [r["scenario_id"] for r in data["results"]] == SCENARIOS
-    record = json.loads(case.path("r1", "S4.json").read_text("utf-8"))
-    assert case.row(HAZ03, "S4") == H3.check_record(record, G.load("S4"))   # the check's own row
+    for row in data["results"]:
+        assert row == checkers_row(case, row["scenario_id"])              # the check's own row
+    assert b"not_in_enum" not in out.read_bytes()
+    # Another value inside the set is also written as given.
+    with case.edit("r1", "S4.json") as record:
+        record["steps"]["validate_facts"]["facts"]["age_group"] = "child"
+    ws.write_haz03(case.dir)
+    assert case.row(HAZ03, "S4") == checkers_row(case, "S4")
+    assert case.row(HAZ03, "S4")["facts_age_group"] == "child"
+
+
+@pytest.mark.parametrize("outside", [SENTINEL, "Adult", "", ["adult"], {"value": "adult"}, 1.5])
+def test_a_value_outside_its_enum_in_a_record_never_reaches_haz03_json(scored, outside):
+    """Codex P2, PR #8. With step 5b present the checker copies the facts' `age_group`
+    into its row as it finds it (haz03_check.py:88). A record holds model output, so
+    `write_haz03` writes the fixed label `not_in_enum` in its place, and keeps the
+    checker's verdict and failures exactly."""
+    case = scored("pipeline")
+    with case.edit("r1", "S4.json") as record:
+        assert "select_safety_net" in record["steps"]                     # step 5b is there
+        record["steps"]["validate_facts"]["facts"]["age_group"] = outside
+    given = checkers_row(case, "S4")
+    # The positive control: the checker's own row does carry the value, as given.
+    assert given["facts_age_group"] == outside
+    if outside == SENTINEL:
+        assert SENTINEL in json.dumps(given)
+
+    out = ws.write_haz03(case.dir)
+    assert SENTINEL.encode() not in out.read_bytes()
+    row = case.row(HAZ03, "S4")
+    assert row["facts_age_group"] == "not_in_enum"
+    assert (row["verdict"], row["failures"]) == (given["verdict"], given["failures"])
+    assert row == dict(given, facts_age_group="not_in_enum")              # nothing else changed
+    assert case.row(HAZ03, "S3") == checkers_row(case, "S3")              # nor any other row
+    # The summary reads the file as before: the verdict is still the checker's.
+    assert verdicts(case.build(), "haz03_verdict")["S4"] == given["verdict"] == F
+
+
+def test_a_gold_value_outside_its_enum_never_reaches_haz03_json(scored, tmp_path):
+    case = scored("pipeline")
+    gold_dir = tmp_path / "gold"
+    shutil.copytree(G.GOLD_DIR, gold_dir, ignore=shutil.ignore_patterns("adjudications"))
+    gold = json.loads((gold_dir / "S4.json").read_text("utf-8"))
+    gold["age_group"]["value"] = SENTINEL
+    (gold_dir / "S4.json").write_text(json.dumps(gold), encoding="utf-8")
+    with case.edit(*SN) as data:          # ...and the gold map says that is the gold scored against
+        data["gold"]["S4"]["sha256"] = hashlib.sha256((gold_dir / "S4.json").read_bytes()).hexdigest()
+    given = checkers_row(case, "S4", gold_dir)
+    assert given["gold_age_group"] == SENTINEL                            # the control
+    out = ws.write_haz03(case.dir, gold_dir)
+    assert SENTINEL.encode() not in out.read_bytes()
+    assert case.row(HAZ03, "S4") == dict(given, gold_age_group="not_in_enum")
+
+
+def test_a_haz03_row_holds_ids_values_from_fixed_sets_numbers_or_nothing():
+    not_scored = H3.check_record({"steps": {}}, {"scenario_id": "S2"})
+    assert ws.haz03_row(not_scored, "S2") == not_scored                   # `reason` is a fixed label
+    scored_row = {"check": "HAZ-03", "check_version": 2, "scenario_id": "S2",
+                  "gold_age_group": "infant", "facts_age_group": None,
+                  "expected_audience": "paediatric", "failures": ["age_group_mismatch"],
+                  "verdict": "fail"}
+    assert ws.haz03_row(scored_row, "S2") == scored_row                   # the partner: unchanged
+    changed = dict(scored_row, check=SENTINEL, scenario_id="S3", expected_audience="everyone",
+                   reason=SENTINEL, a_new_field=SENTINEL, another=[SENTINEL])
+    assert ws.haz03_row(changed, "S2") == dict(
+        scored_row, check="not_in_enum", scenario_id="not_in_enum",
+        expected_audience="not_in_enum", reason="not_in_enum", a_new_field="not_in_enum",
+        another="not_in_enum")
+    # Each fixed set is the checker's own, or the schema's it reads: nothing is copied here.
+    assert ws.HAZ03_FIELD_SETS["gold_age_group"] == G.AGE_GROUPS
+    assert set(ws.HAZ03_FIELD_SETS["facts_age_group"]) == set(G.AGE_GROUPS) \
+        >= set(H3.PAEDIATRIC_GROUPS) | {"adult"}
+    assert set(ws.HAZ03_FIELD_SETS["expected_audience"]) == set(H3.LINES) \
+        == {H3.expected_audience(g) for g in G.AGE_GROUPS}
 
 
 def test_haz03_is_scored_against_the_gold_score_batch_scored_against(scored, tmp_path):

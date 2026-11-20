@@ -8,7 +8,9 @@ batch of 18, its score outputs and the guard's report:
 
     write_haz03(batch_dir)      runs evals/haz03_check.py, unchanged, on each record
                                 and writes scores/haz03.json (pipeline only; nothing
-                                else produces HAZ-03 output for a batch)
+                                else produces HAZ-03 output for a batch). A value
+                                outside its field's fixed set is written as the
+                                label `not_in_enum`, never as given
     key_parts(batch_dir)        the corpus hash, the gold hashes and the scorer
                                 versions, for the manifest and the summary alike
     build_summary(batch_dir, own=..., report=..., batch_label=...,
@@ -76,6 +78,7 @@ import ws7_client as wc  # noqa: E402
 import ws7_compare as compare  # noqa: E402
 import ws7_manifest as manifest  # noqa: E402
 import ws7_reserve as reserve  # noqa: E402
+from pipeline import schemas as facts_schema  # noqa: E402
 from ws7_store import Stop  # noqa: E402
 
 CANDIDATE_SCHEMA = "ws7-baseline-candidate/1"
@@ -120,6 +123,17 @@ HAZ03_KINDS = ("age_group_mismatch", "wrong_audience_label", "wrong_pinned_line"
                "expected_line_missing_part_c", "expected_line_missing_part_ab",
                "other_line_in_part_ab", "other_line_in_part_c")        # haz03_check.py:69-82
 GOLD_STATUSES = G.STATUSES                                             # ("draft", "approved")
+# What each field of a HAZ-03 row may hold, when it holds a string. The row's `verdict`
+# and `failures` are the checker's own literals and are written exactly as given.
+NOT_IN_ENUM = "not_in_enum"
+HAZ03_KEPT = ("verdict", "failures")
+HAZ03_FIELD_SETS = {
+    "check": ("HAZ-03",),                                              # haz03_check.py:85
+    "gold_age_group": G.AGE_GROUPS,                                    # the gold's own validator
+    "facts_age_group": tuple(facts_schema.AGE_GROUP["enum"]),          # the facts schema, step 3
+    "expected_audience": tuple(H3.LINES),                              # haz03_check.py:50, :54
+    "reason": ("no_step_5b",),                                         # haz03_check.py:104
+}
 ASSEMBLY_OUTCOMES = ("bundle", "rejected", "upstream_missing")         # score_assemble.py:148-163
 ASSEMBLY_STEPS = ("08a", "08b")                                        # score_assemble.py:156, :163
 # 8b raises `safety_net_gate_failed` on any other status (pipeline/assemble.py:606), so a
@@ -339,9 +353,11 @@ def _check_own(batch: _Batch, own: dict) -> None:
 
 def write_haz03(batch_dir: Path, gold_dir: Path = G.GOLD_DIR) -> Path:
     """Run the HAZ-03 check, unchanged, on every record of a pipeline batch, and
-    write `scores/haz03.json`. The rows are the check's own: IDs, enum values and
-    fixed labels (haz03_check.py:35). The gold is the gold score_batch scored
-    against: each file's sha256 must be the one in score_batch's gold map."""
+    write `scores/haz03.json`. The rows are the check's own, and they hold IDs, enum
+    values and fixed labels only (haz03_check.py:35): the check copies the facts'
+    `age_group` as it finds it, so each row goes through `haz03_row` first. The gold
+    is the gold score_batch scored against: each file's sha256 must be the one in
+    score_batch's gold map."""
     batch = _Batch(batch_dir)
     if batch.target != "pipeline":
         raise Stop(BATCH_INVALID)          # the check does not cover v1 (haz03_check.py:33)
@@ -359,10 +375,27 @@ def write_haz03(batch_dir: Path, gold_dir: Path = G.GOLD_DIR) -> Path:
         if type(gold) is not dict or gold.get("scenario_id") != sid or type(record) is not dict \
                 or record.get("scenario_id") != sid:
             raise Stop(SCORES_INVALID)
-        results.append(H3.check_record(record, gold))
+        results.append(haz03_row(H3.check_record(record, gold), sid))
     out = batch.dir / "scores" / HAZ03_NAME
     out.write_bytes(compare.render({"check": "HAZ-03", "check_version": H3.CHECK_VERSION,
                                     "batch_id": batch.batch_id, "results": results}))
+    return out
+
+
+def haz03_row(row: dict, scenario: str) -> dict:
+    """One HAZ-03 row as it is written: every field holds an ID, a value from its
+    fixed set, a whole number or nothing. Anything else becomes the fixed label
+    `not_in_enum`, so text from a record cannot reach the file. The verdict and the
+    failures are the checker's, exactly as it gave them."""
+    allowed = dict(HAZ03_FIELD_SETS, scenario_id=(scenario,))
+    out = {}
+    for field, value in row.items():
+        if field in HAZ03_KEPT or value is None or type(value) in (int, bool):
+            out[field] = value
+        elif type(value) is str and value in allowed.get(field, ()):
+            out[field] = value
+        else:
+            out[field] = NOT_IN_ENUM
     return out
 
 

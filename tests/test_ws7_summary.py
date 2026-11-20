@@ -1245,26 +1245,36 @@ def test_write_haz03_runs_the_check_unchanged_on_every_record(scored):
     assert case.row(HAZ03, "S4")["facts_age_group"] == "child"
 
 
-@pytest.mark.parametrize("outside", [SENTINEL, "Adult", "", ["adult"], {"value": "adult"}, 1.5])
+# A value of every JSON type that is outside every HAZ-03 field's set.
+OUTSIDE = {"string": SENTINEL, "integer": 42, "float": 1.5, "boolean": True, "null": None,
+           "list": [SENTINEL], "object": {"value": SENTINEL}}
+# ... and values that look like one inside a set, and are not: the wrong case, the
+# wrong type, a label wrapped in a list, the other boolean, zero.
+NEAR_MISSES = ["Adult", "", ["adult"], {"value": "adult"}, False, 0, 2, 2.0]
+
+
+@pytest.mark.parametrize("outside", list(OUTSIDE.values()) + NEAR_MISSES,
+                         ids=list(OUTSIDE) + [f"near{n}" for n in range(len(NEAR_MISSES))])
 def test_a_value_outside_its_enum_in_a_record_never_reaches_haz03_json(scored, outside):
-    """Codex P2, PR #8. With step 5b present the checker copies the facts' `age_group`
-    into its row as it finds it (haz03_check.py:88). A record holds model output, so
-    `write_haz03` writes the fixed label `not_in_enum` in its place, and keeps the
-    checker's verdict and failures exactly."""
+    """Codex P2, PR #8, and its re-check. With step 5b present the checker copies the
+    facts' `age_group` into its row as it finds it (haz03_check.py:88), whatever its
+    type. A record holds model output, so `write_haz03` writes the fixed label
+    `not_in_enum` in its place, and keeps the checker's verdict and failures exactly.
+    A number or a boolean is not written as given either."""
     case = scored("pipeline")
     with case.edit("r1", "S4.json") as record:
         assert "select_safety_net" in record["steps"]                     # step 5b is there
         record["steps"]["validate_facts"]["facts"]["age_group"] = outside
     given = checkers_row(case, "S4")
-    # The positive control: the checker's own row does carry the value, as given.
-    assert given["facts_age_group"] == outside
+    # The positive control: the checker's own row does carry the raw value, as given.
+    assert given["facts_age_group"] == outside and type(given["facts_age_group"]) is type(outside)
     if outside == SENTINEL:
         assert SENTINEL in json.dumps(given)
 
     out = ws.write_haz03(case.dir)
     assert SENTINEL.encode() not in out.read_bytes()
     row = case.row(HAZ03, "S4")
-    assert row["facts_age_group"] == "not_in_enum"
+    assert row["facts_age_group"] == "not_in_enum" and type(row["facts_age_group"]) is str
     assert (row["verdict"], row["failures"]) == (given["verdict"], given["failures"])
     assert row == dict(given, facts_age_group="not_in_enum")              # nothing else changed
     assert case.row(HAZ03, "S3") == checkers_row(case, "S3")              # nor any other row
@@ -1288,26 +1298,92 @@ def test_a_gold_value_outside_its_enum_never_reaches_haz03_json(scored, tmp_path
     assert case.row(HAZ03, "S4") == dict(given, gold_age_group="not_in_enum")
 
 
-def test_a_haz03_row_holds_ids_values_from_fixed_sets_numbers_or_nothing():
-    not_scored = H3.check_record({"steps": {}}, {"scenario_id": "S2"})
-    assert ws.haz03_row(not_scored, "S2") == not_scored                   # `reason` is a fixed label
-    scored_row = {"check": "HAZ-03", "check_version": 2, "scenario_id": "S2",
-                  "gold_age_group": "infant", "facts_age_group": None,
-                  "expected_audience": "paediatric", "failures": ["age_group_mismatch"],
-                  "verdict": "fail"}
-    assert ws.haz03_row(scored_row, "S2") == scored_row                   # the partner: unchanged
-    changed = dict(scored_row, check=SENTINEL, scenario_id="S3", expected_audience="everyone",
-                   reason=SENTINEL, a_new_field=SENTINEL, another=[SENTINEL])
-    assert ws.haz03_row(changed, "S2") == dict(
-        scored_row, check="not_in_enum", scenario_id="not_in_enum",
-        expected_audience="not_in_enum", reason="not_in_enum", a_new_field="not_in_enum",
-        another="not_in_enum")
+# The two rows the checker can return, with invented values inside every set.
+HAZ03_SCORED_ROW = {"check": "HAZ-03", "check_version": H3.CHECK_VERSION, "scenario_id": "S2",
+                    "gold_age_group": "infant", "facts_age_group": "child",
+                    "expected_audience": "paediatric",
+                    "failures": ["age_group_mismatch", "other_line_in_part_c"], "verdict": "fail"}
+HAZ03_NOT_SCORED_ROW = H3.check_record({"steps": {}}, {"scenario_id": "S2"})
+HAZ03_FIELDS = sorted(set(HAZ03_SCORED_ROW) | set(HAZ03_NOT_SCORED_ROW))
+
+
+def test_the_two_rows_above_are_the_checkers_own_shapes():
+    """So the test below does cover every field `write_haz03` writes."""
+    gold = {"scenario_id": "S2", "age_group": {"value": "infant"}}
+    real = H3.check(gold, "child", {"audience": "paediatric", "pinned_line": "x"})
+    assert set(real) == set(HAZ03_SCORED_ROW)
+    assert set(HAZ03_NOT_SCORED_ROW) == {"check", "check_version", "scenario_id", "failures",
+                                         "verdict", "reason"}
+    assert HAZ03_FIELDS == sorted(["check", "check_version", "scenario_id", "gold_age_group",
+                                   "facts_age_group", "expected_audience", "failures", "verdict",
+                                   "reason"])
+
+
+@pytest.mark.parametrize("field", HAZ03_FIELDS)
+@pytest.mark.parametrize("json_type", list(OUTSIDE))
+def test_every_haz03_field_holding_a_value_of_any_type_outside_its_set_is_written_not_in_enum(
+        field, json_type):
+    """Codex's re-check of PR #8. The allowlist comes first, for every field and every
+    JSON type: there is no type that is written as given."""
+    outside = OUTSIDE[json_type]
+    base = HAZ03_SCORED_ROW if field in HAZ03_SCORED_ROW else HAZ03_NOT_SCORED_ROW
+    given = dict(copy.deepcopy(base), **{field: outside})
+    assert given[field] == outside and type(given[field]) is type(outside)   # the control: raw
+    written = ws.haz03_row(given, "S2")
+    assert written[field] == "not_in_enum" and type(written[field]) is str
+    assert {k: v for k, v in written.items() if k != field} \
+        == {k: v for k, v in base.items() if k != field}                  # nothing else changed
+    assert SENTINEL not in json.dumps(written)
+    # The whole file: the same row through the renderer write_haz03 uses.
+    assert SENTINEL.encode() not in ws.render({"results": [written]})
+
+
+@pytest.mark.parametrize("field,near_miss", [
+    ("check_version", True), ("check_version", float(H3.CHECK_VERSION)),
+    ("check_version", str(H3.CHECK_VERSION)), ("check_version", H3.CHECK_VERSION + 1),
+    ("check_version", 0),
+    ("facts_age_group", ["adult"]), ("facts_age_group", "Adult"), ("facts_age_group", False),
+    ("gold_age_group", 0), ("expected_audience", "everyone"), ("expected_audience", ["adult"]),
+    ("verdict", ["pass"]), ("verdict", "review"), ("verdict", True),
+    ("failures", "age_group_mismatch"),                       # the right label, not in a list
+    ("failures", ["age_group_mismatch", SENTINEL]),           # one label that is not the checker's
+    ("failures", [["age_group_mismatch"]]), ("failures", [1]), ("failures", [None]),
+    ("scenario_id", "S3"), ("scenario_id", ["S2"]),
+    ("check", "haz-03"), ("reason", "no_step_5a"),
+])
+def test_a_haz03_value_that_only_looks_like_one_in_its_set_is_written_not_in_enum(field, near_miss):
+    base = HAZ03_SCORED_ROW if field in HAZ03_SCORED_ROW else HAZ03_NOT_SCORED_ROW
+    written = ws.haz03_row(dict(copy.deepcopy(base), **{field: near_miss}), "S2")
+    assert written[field] == "not_in_enum"
+
+
+def test_a_haz03_field_with_no_allowlist_may_hold_nothing():
+    for value in (SENTINEL, 7, 1.5, True, None, [], {}):
+        written = ws.haz03_row(dict(HAZ03_SCORED_ROW, a_new_field=value), "S2")
+        assert written == dict(HAZ03_SCORED_ROW, a_new_field="not_in_enum")
+
+
+def test_haz03_values_inside_their_sets_are_written_unchanged_with_the_same_verdict():
+    """The partner. Every value a field may hold is written exactly as given."""
+    assert ws.haz03_row(HAZ03_SCORED_ROW, "S2") == HAZ03_SCORED_ROW
+    assert ws.haz03_row(HAZ03_NOT_SCORED_ROW, "S2") == HAZ03_NOT_SCORED_ROW   # `reason` included
+    for field, allowed in ws.HAZ03_FIELD_SETS.items():
+        base = HAZ03_SCORED_ROW if field in HAZ03_SCORED_ROW else HAZ03_NOT_SCORED_ROW
+        for value in allowed:
+            row = dict(base, **{field: value})
+            assert ws.haz03_row(row, "S2") == row, (field, value)
+    for failures in ([], list(HAZ03_KINDS), ["wrong_pinned_line"]):
+        row = dict(HAZ03_SCORED_ROW, failures=failures, verdict="fail" if failures else "pass")
+        written = ws.haz03_row(row, "S2")
+        assert written == row and written["failures"] is failures       # exactly as given
     # Each fixed set is the checker's own, or the schema's it reads: nothing is copied here.
     assert ws.HAZ03_FIELD_SETS["gold_age_group"] == G.AGE_GROUPS
     assert set(ws.HAZ03_FIELD_SETS["facts_age_group"]) == set(G.AGE_GROUPS) \
         >= set(H3.PAEDIATRIC_GROUPS) | {"adult"}
     assert set(ws.HAZ03_FIELD_SETS["expected_audience"]) == set(H3.LINES) \
         == {H3.expected_audience(g) for g in G.AGE_GROUPS}
+    assert set(ws.HAZ03_FIELD_SETS["verdict"]) == {"pass", "fail", "not_scored"}
+    assert set(HAZ03_FIELDS) == set(ws.HAZ03_FIELD_SETS) | {"check_version", "scenario_id", "failures"}
 
 
 def test_haz03_is_scored_against_the_gold_score_batch_scored_against(scored, tmp_path):

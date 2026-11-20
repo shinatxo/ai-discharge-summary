@@ -946,19 +946,26 @@ one in `score_batch`'s gold map. The check does not cover v1 (`evals/haz03_check
 
 - The checker promises that (`evals/haz03_check.py:35`), but it copies the facts' `age_group`
   into its row as it finds it (`:88`), and a record holds model output.
-- So before a row is written, each field is held to its own fixed set. A value outside its set
-  is written as the fixed label `not_in_enum`, never as given.
-- **The verdict and the failures are written exactly as the checker gave them.** The checker is
-  not changed.
+- So before a row is written, each field is held to its own allowlist. A value outside it is
+  written as the fixed label `not_in_enum`, never as given.
+- **The allowlist comes first, for every field and every type** (Codex re-check of PR #8). A
+  value is written only if it is exactly one its field may hold, of the right type. A number, a
+  boolean or nothing is not written as given: a first version let those through, so `42` or
+  `true` in a record's `age_group` reached the file.
+- **The verdict and the failures are written exactly as the checker gave them.** What the checker
+  gives is always inside their sets. The checker is not changed.
 
-| Field | Its fixed set | From |
+| Field | What it may hold | From |
 |---|---|---|
-| `facts_age_group` | The five age groups of the facts schema, or nothing | `src/generate/pipeline/schemas.py:151` |
-| `gold_age_group` | The gold's age groups | `evals/gold.py:33` |
-| `expected_audience` | `paediatric`, `adult` | `evals/haz03_check.py:50` |
+| `facts_age_group` | One of the facts schema's five age groups | `src/generate/pipeline/schemas.py:151` |
+| `gold_age_group` | One of the gold's age groups | `evals/gold.py:33` |
+| `expected_audience` | `paediatric` or `adult` | `evals/haz03_check.py:50` |
+| `verdict` | `pass`, `fail` or `not_scored` | `evals/haz03_check.py:91`, `:104` |
+| `failures` | A list in which every item is one of the checker's seven labels | `evals/haz03_check.py:69-82` |
+| `check_version` | The integer `CHECK_VERSION`, and no other number | `evals/haz03_check.py:48` |
 | `scenario_id` | The scenario the row is for | The batch manifest |
 | `check`, `reason` | `HAZ-03`; `no_step_5b` | `evals/haz03_check.py:85`, `:104` |
-| Any other field | A whole number or nothing | |
+| Any other field | Nothing: whatever it holds is written `not_in_enum` | |
 
 ### The keys
 
@@ -1437,9 +1444,12 @@ PYTHONDONTWRITEBYTECODE=1 python -m pytest -p no:cacheprovider -q tests/test_ws7
   - The candidate: counts and verdicts as three-item lists, the unstable list, every refusal at
     each of the three positions, and the comparator refusing the envelope and accepting its
     `baseline` member.
-  - HAZ-03: an invented marker written into a record's `age_group`, with step 5b present,
-    never reaches `scores/haz03.json`; the control is the checker's own row, which carries it.
-    The partner: every value inside its set is written exactly as the checker gave it.
+  - HAZ-03: a value of every JSON type (a string, an integer, a float, a boolean, null, a list,
+    an object) written into a record's `age_group`, with step 5b present, never reaches
+    `scores/haz03.json`; the control is the checker's own row, which carries the raw value. For
+    every field of a row, a value of each of those types outside its set is written
+    `not_in_enum`. The partner: every value inside its set is written exactly as given, with the
+    same verdict.
   - Three scored pre-flight batches, made at the stub for both targets, make no candidate; the
     partner is three full batches. The corpus is shown to be read from its file: with one
     scenario more or fewer in the file, the same three full summaries are refused.

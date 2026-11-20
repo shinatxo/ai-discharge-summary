@@ -9,8 +9,8 @@ batch of 18, its score outputs and the guard's report:
     write_haz03(batch_dir)      runs evals/haz03_check.py, unchanged, on each record
                                 and writes scores/haz03.json (pipeline only; nothing
                                 else produces HAZ-03 output for a batch). A value
-                                outside its field's fixed set is written as the
-                                label `not_in_enum`, never as given
+                                outside its field's fixed set, of any type, is
+                                written as the label `not_in_enum`, never as given
     key_parts(batch_dir)        the corpus hash, the gold hashes and the scorer
                                 versions, for the manifest and the summary alike
     build_summary(batch_dir, own=..., report=..., batch_label=...,
@@ -123,15 +123,17 @@ HAZ03_KINDS = ("age_group_mismatch", "wrong_audience_label", "wrong_pinned_line"
                "expected_line_missing_part_c", "expected_line_missing_part_ab",
                "other_line_in_part_ab", "other_line_in_part_c")        # haz03_check.py:69-82
 GOLD_STATUSES = G.STATUSES                                             # ("draft", "approved")
-# What each field of a HAZ-03 row may hold, when it holds a string. The row's `verdict`
-# and `failures` are the checker's own literals and are written exactly as given.
+# What each field of a HAZ-03 row may hold: a string from its own fixed set, and
+# nothing else. Three fields are not a string from a set, and have a rule of their own
+# in `haz03_row`: `check_version`, `scenario_id` and `failures`. A field that is not
+# named there or here may hold nothing at all.
 NOT_IN_ENUM = "not_in_enum"
-HAZ03_KEPT = ("verdict", "failures")
 HAZ03_FIELD_SETS = {
     "check": ("HAZ-03",),                                              # haz03_check.py:85
     "gold_age_group": G.AGE_GROUPS,                                    # the gold's own validator
     "facts_age_group": tuple(facts_schema.AGE_GROUP["enum"]),          # the facts schema, step 3
     "expected_audience": tuple(H3.LINES),                              # haz03_check.py:50, :54
+    "verdict": tuple(HAZ03_VERDICT),                                   # haz03_check.py:91, :104
     "reason": ("no_step_5b",),                                         # haz03_check.py:104
 }
 ASSEMBLY_OUTCOMES = ("bundle", "rejected", "upstream_missing")         # score_assemble.py:148-163
@@ -382,21 +384,31 @@ def write_haz03(batch_dir: Path, gold_dir: Path = G.GOLD_DIR) -> Path:
     return out
 
 
+def _one_of(value: object, allowed: tuple) -> bool:
+    """A string that is one of a fixed set. The type is checked first: 1 is not True,
+    and a list holding a label is not that label."""
+    return type(value) is str and value in allowed
+
+
 def haz03_row(row: dict, scenario: str) -> dict:
-    """One HAZ-03 row as it is written: every field holds an ID, a value from its
-    fixed set, a whole number or nothing. Anything else becomes the fixed label
-    `not_in_enum`, so text from a record cannot reach the file. The verdict and the
-    failures are the checker's, exactly as it gave them."""
-    allowed = dict(HAZ03_FIELD_SETS, scenario_id=(scenario,))
-    out = {}
-    for field, value in row.items():
-        if field in HAZ03_KEPT or value is None or type(value) in (int, bool):
-            out[field] = value
-        elif type(value) is str and value in allowed.get(field, ()):
-            out[field] = value
-        else:
-            out[field] = NOT_IN_ENUM
-    return out
+    """One HAZ-03 row as it is written. Each field is held to its own allowlist, and
+    the allowlist comes first: a value is written only if it is exactly one its field
+    may hold, of the right type. Anything else, of any type (a string, a number, a
+    boolean, nothing, a list or an object), becomes the fixed label `not_in_enum`,
+    so nothing from a record can reach the file as given. A field with no allowlist
+    may hold nothing.
+
+    The verdict and the failures the checker gives are always inside their sets, so
+    they are written exactly as it gave them."""
+    allowed = {field: (lambda value, values=values: _one_of(value, values))
+               for field, values in HAZ03_FIELD_SETS.items()}
+    allowed.update(
+        check_version=lambda value: type(value) is int and value == H3.CHECK_VERSION,
+        scenario_id=lambda value: type(value) is str and value == scenario,
+        failures=lambda value: type(value) is list and all(_one_of(kind, HAZ03_KINDS)
+                                                           for kind in value))
+    return {field: value if field in allowed and allowed[field](value) else NOT_IN_ENUM
+            for field, value in row.items()}
 
 
 # ---------------------------------------------------------- the families

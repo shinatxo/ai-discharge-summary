@@ -12,6 +12,7 @@ repository's own files.
 
 from __future__ import annotations
 
+import dataclasses
 import hashlib
 import json
 import os
@@ -430,8 +431,12 @@ def test_v1s_manifest_holds_the_prompt_hashes_the_second_pass_and_the_caching_se
 @pytest.mark.parametrize("target", ["pipeline", "v1"])
 def test_a_manifests_keys_are_keys_the_comparator_accepts(target):
     keys = manifest(target)["keys"]
-    assert compare._check_keys(json.loads(json.dumps(keys)), "run") == keys
+    assert compare.check_keys(json.loads(json.dumps(keys)), "run") == keys   # the public name (part 3)
     assert set(keys) == set(compare._TARGET_KEYS[target])
+    # The control: the same check refuses the other target's keys under this target's name.
+    other = manifest("v1" if target == "pipeline" else "pipeline")["keys"]
+    with pytest.raises(compare.CompareError):
+        compare.check_keys(dict(json.loads(json.dumps(other)), target=target), "run")
 
 
 def test_a_manifest_can_say_no_baseline_and_a_waived_month():
@@ -593,6 +598,62 @@ def test_a_malformed_v1_manifest_sends_no_request(s3, damage):
             wm.MANIFEST_INVALID)
     assert s3.requests == []
     assert wm.validate_manifest(json.loads(json.dumps(manifest("v1"))))   # the partner
+
+
+def test_a_v1_manifest_with_caching_off_is_refused_and_sends_no_request(s3):
+    """Part 3, item 6 (follow-up b of PR #6). v1 runs with caching on (D11); the
+    validator already required the second pass."""
+    # It is not built: the job's own values, with caching off.
+    stopped(lambda: manifest("v1", own=dict(own("v1"), prompt_caching=False)), wm.MANIFEST_INVALID)
+    # And one changed after it was built is not written.
+    bad = json.loads(json.dumps(manifest("v1")))
+    bad["keys"]["prompt_caching"] = False
+    assert compare.check_keys(json.loads(json.dumps(bad["keys"])), "run")  # well-formed keys: the rule is WS7's
+    stopped(lambda: wm.validate_manifest(bad), wm.MANIFEST_INVALID)
+    stopped(lambda: wm.write_manifest(s3.store, bad, attempts=CFG.ledger_cas_attempts),
+            wm.MANIFEST_INVALID)
+    assert s3.requests == [] and s3.keys() == []                          # nothing was sent
+
+    # The partner, and the control for "nothing was sent": caching on is written.
+    good = manifest("v1")
+    assert good["keys"]["prompt_caching"] is True and good["keys"]["patient_second_pass"] is True
+    key = wm.write_manifest(s3.store, good, attempts=CFG.ledger_cas_attempts)
+    assert s3.requests == [("PUT", key)]
+
+
+NOT_A_SCENARIO = ["--all", "-x", "-", "--yes", "-S1", "", "has space", "S" * 33, None, 7]
+
+
+@pytest.mark.parametrize("scenario", NOT_A_SCENARIO, ids=repr)
+@pytest.mark.parametrize("target", ["pipeline", "v1"])
+def test_runner_argv_refuses_a_config_built_in_code_whose_pre_flight_scenario_is_not_one(
+        monkeypatch, target, scenario):
+    """Part 3, item 7 (follow-up c of PR #6). The loader refuses these, but a Config
+    built in code never went through the loader: with "--all" the pre-flight would
+    run all 18."""
+    built_in_code = dataclasses.replace(CFG, preflight_scenario=scenario)
+    for preflight in (True, False):
+        stopped(lambda: wm.runner_argv(target, built_in_code, preflight=preflight, batch="b1"),
+                wm.RUNNER_ARGV_INVALID)
+    # So no argv is accepted under such a config, and the runner's parser sees none.
+    seen = []
+    for runner in (wm.reserve.rpe, wm.reserve.rce):
+        monkeypatch.setattr(runner, "parse_args", lambda a, real=runner.parse_args: (seen.append(a),
+                                                                                    real(a))[1])
+    stopped(lambda: wm.own_values(target, ARGV[target], built_in_code), wm.RUNNER_ARGV_INVALID)
+    assert seen == []
+    assert wm.own_values(target, ARGV[target], CFG) and len(seen) == 1    # the partner; the spy sees
+
+
+@pytest.mark.parametrize("scenario", ["S1", "S18", "s_1", "S-1", "1"])
+def test_runner_argv_accepts_a_config_built_in_code_with_an_ordinary_scenario_id(scenario):
+    """The partner. The rule is the loader's own pattern, read from the loader."""
+    built_in_code = dataclasses.replace(CFG, preflight_scenario=scenario)
+    assert wm.runner_argv("pipeline", built_in_code, preflight=True, batch="b1") \
+        == [scenario, "--batch", "b1", "--yes"]
+    assert wm.runner_argv("v1", built_in_code, preflight=False, batch="b1") \
+        == ["--all", "--deployed-path", "--batch", "b1", "--yes"]
+    assert reserve._SCENARIO_RE.fullmatch(scenario)
 
 
 def test_every_refusal_has_a_fixed_code():

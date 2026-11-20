@@ -7,7 +7,7 @@ slice 2). It is being built as six pull requests. This document grows with each 
 |---|---|---|
 | 1 | The client wrapper and the reservation | **Built** |
 | 2 | The claim, the ledger, the match check and the run manifest | **Built** |
-| 3 | Comparator follow-ups from PR #4 | Not built |
+| 3 | The follow-ups from PR #4 (the comparator) and PR #6 (the claim and ledger) | **Built** |
 | 4 | The run summary and the candidate baseline | Not built |
 | 5 | The modes, the comparator call and publishing | Not built |
 | 6 | The image changes | Not built |
@@ -483,9 +483,16 @@ keys the claim. For every Wednesday 04:00 London run that is also the London mon
 ```
 
 Both examples are invented. The loader is strict, as the config loader is: an unknown or missing
-field, a wrong type, a duplicate key, or a state that cannot be (an accepted estimate in a month
-that is not flagged, say) is `ws7_ledger_invalid`, and the run does not start. So is any other
-object under `ws7/ledger/`.
+field, a wrong type, a duplicate key, or a state that cannot be is `ws7_ledger_invalid`, and the
+run does not start. So is any other object under `ws7/ledger/`.
+
+**The month's flag must match its entries, in both directions** (part 3). `assurance_waived` is
+true exactly when the month holds an `estimate_accepted` entry. The loader refuses:
+
+- an `estimate_accepted` entry in a month that is not flagged;
+- a flagged month with no `estimate_accepted` entry. Nothing in WS7 writes one: only `resolve()`
+  sets the flag, in the same write as the entry that causes it, and a resolved entry is never
+  dropped.
 
 **What an entry is, and what it counts at.**
 
@@ -745,6 +752,10 @@ passes:
 
 - The pre-flight scenario is the config's (`S1`). A batch ID is 1 to 64 letters, digits, `.`,
   `_` or `-`, and does not start with a dash.
+- **`runner_argv()` checks the pre-flight scenario again** (part 3), with the config loader's own
+  pattern, read from `evals/ws7_reserve.py`. The loader already refuses a scenario that starts
+  with a dash, but a `Config` built in code never went through the loader. Such a config builds
+  no argv, in either form, and `own_values()` accepts none: `ws7_runner_argv_invalid`.
 - Anything else is `ws7_runner_argv_invalid`, and nothing is printed, because the parser is
   never called: v1's `--no-gate`, the pipeline's `--verify`, `--dry-run`, `--runs`,
   `--no-prompt-caching`, another prompt or corpus, another scenario, another order.
@@ -766,7 +777,7 @@ there is never replaced (`ws7_manifest_exists`).
 | `git_commit`, `image_digest` | See below |
 | `config_sha256` | Of `evals/ws7_config.json` |
 | `client` | `total_max_attempts` (1), `connect_timeout_s`, and `read_timeout_s`: 60 for v1, fixed by WS7; `null` for the pipeline, whose runner names one for each client |
-| `keys` | The comparator's `keys` object (`docs/WS7-COMPARATOR.md`), checked by the comparator's own code. For v1 it holds the two prompt hashes, `patient_second_pass` and `prompt_caching` |
+| `keys` | The comparator's `keys` object (`docs/WS7-COMPARATOR.md`), checked by the comparator's own code (`ws7_compare.check_keys`). For v1 it holds the two prompt hashes, `patient_second_pass` and `prompt_caching`, and **both must be true** (part 3) |
 | `reservation` | `generations`, `margin_percent`, `total_usd_micros` |
 | `safety_net_gate` | `true` for v1 (a WS7 rule); `null` for the pipeline, whose runner has no such switch |
 | `month_assurance_waived` | The month's flag when the run ran |
@@ -781,6 +792,9 @@ there is never replaced (`ws7_manifest_exists`).
   covers every field and how they fit together: the run ID is the one its target, mode and
   scheduled time give, the month is that time's, the client settings are the plan's, and the
   PART C label and the gate are the target's. A malformed manifest sends no request.
+- **A v1 manifest with `prompt_caching` or `patient_second_pass` off is malformed** (part 3). The
+  match check already refuses an expected record with either off; the validator now refuses the
+  manifest too, so one cannot be written whatever built it.
 
 **The commit and the image digest.** The image has no `.git`, and a container cannot hash its own
 image. Both are handed in as environment variables. `identity()` reads them only from the mapping
@@ -845,13 +859,40 @@ Slice 3's set-up checks must show, on the real bucket and with the task role:
   same value;
 - that `WS7_IMAGE_DIGEST` in the task definition is the digest of the image it runs.
 
+## Part 3: the follow-ups from PR #4 and PR #6
+
+Small fixes from the two reviews. No new module, no new refusal code in the entrypoint's
+modules, and one new error code in the comparator. No runner, no scorer, and neither
+`evals/ws7_client.py` nor `evals/ws7_reserve.py` is changed.
+
+| From | What changed | Where it is described |
+|---|---|---|
+| PR #4 | A readable input that is not valid JSON keeps its sha256 in the result | `docs/WS7-COMPARATOR.md`, "When an input's hash is null" |
+| PR #4 | Tests: every v1 key that differs gives `no_baseline` naming that key | `tests/test_ws7_compare.py` |
+| PR #4 | A ruled kind-2 metric must cover exactly the scenarios in `keys.gold_sha256` (`scenario_coverage_differs`) | `docs/WS7-COMPARATOR.md`, "The order of checks" and "The three kinds of rule" |
+| PR #4 | The comparator's key check is public, as `check_keys`; the manifest calls that name | "The run manifest" above |
+| PR #6 (a) | The ledger loader refuses a month whose flag does not match its entries, in both directions | "The ledger" above |
+| PR #6 (b) | A v1 manifest's `prompt_caching` and `patient_second_pass` must be true | "The run manifest" above |
+| PR #6 (c) | `runner_argv()` checks the pre-flight scenario again with the loader's pattern | "The match check" above |
+
+**The notes this part closes:** the note under "Notes for later parts" that asked for a public
+`check_keys` (part 2 called the comparator's private name, because the comparator was not to be
+changed in that PR), and the three follow-ups (a) to (c) from the review of PR #6.
+
+**The rule about coverage, in one place.** The baseline and the run each carry
+`keys.gold_sha256`, the scenarios the gold covers. Before part 3 the comparator checked only
+that the two files had verdicts for the same scenarios, so both could leave out the same one.
+Now each file must cover the gold's scenarios exactly, for every verdict metric a rule names.
+Part 4 writes the run summary, so part 4 must write a verdict (`pass`, `fail` or `no_output`)
+for every gold scenario in every verdict metric that will be ruled.
+
 ## Notes for later parts
 
-### Part 3: the comparator
+### The next PR that may change `evals/ws7_reserve.py`
 
-- Make the comparator's `_check_keys` public as `check_keys`, and keep the manifest
-  compatibility tests for both targets (`tests/test_ws7_manifest.py`). Part 2 calls the private
-  name, because the comparator was not to be changed in that PR.
+- Make the config loader's scenario pattern public. `runner_argv()` (part 3) reads the private
+  name `reserve._SCENARIO_RE`, so that the rule lives in one place; `evals/ws7_reserve.py` was
+  not to be changed in that PR.
 
 ### Part 4: the run summary
 
@@ -859,6 +900,9 @@ Slice 3's set-up checks must show, on the real bucket and with the task role:
   comparator's `ws7-run/1` rejects an unknown top-level field, so the flag goes in as a count
   metric, `month_assurance_waived` (0 or 1), in the Run family. An unruled metric is listed and
   changes no verdict (`docs/WS7-COMPARATOR.md`), so no new schema version is needed.
+- Every verdict metric that a rule will name has a verdict for every scenario in
+  `keys.gold_sha256`, and for no other (part 3, "The rule about coverage"). A scenario whose
+  generation produced nothing is written as `no_output`, never left out.
 
 ### Part 5: the modes
 
@@ -937,8 +981,10 @@ Slice 3's set-up checks must show, on the real bucket and with the task role:
 ## Tests
 
 ```zsh
-PYTHONDONTWRITEBYTECODE=1 python -m pytest -p no:cacheprovider -q tests/test_ws7_reserve.py tests/test_ws7_client.py tests/test_ws7_store.py tests/test_ws7_ledger.py tests/test_ws7_manifest.py
+PYTHONDONTWRITEBYTECODE=1 python -m pytest -p no:cacheprovider -q tests/test_ws7_compare.py tests/test_ws7_reserve.py tests/test_ws7_client.py tests/test_ws7_store.py tests/test_ws7_ledger.py tests/test_ws7_manifest.py
 ```
+
+- `tests/test_ws7_compare.py`: the comparator (`docs/WS7-COMPARATOR.md`, "Tests").
 
 - `tests/test_ws7_reserve.py`: the cited lines, the plan, the prices, the reservation against
   ADR-011's figures, the cost of a call, and the config loader. Each refusal has a partner that
@@ -990,13 +1036,18 @@ PYTHONDONTWRITEBYTECODE=1 python -m pytest -p no:cacheprovider -q tests/test_ws7
   the Codex review's cases (an entry that appears in another month between the scan and the
   re-read, the last try's reply failing, a report swapped between two runs, an entry that
   expires during the call, an admission that ends at its own deadline, another run's fresh
-  empty report).
+  empty report). Part 3: a month whose flag does not match its entries is refused in both
+  directions; at the server, a flagged month with no accepted estimate stops the run with no
+  ledger write, and its partner, with the accepted estimate, admits it.
 - `tests/test_ws7_manifest.py`: the job's own values for both targets; the argv allow-list, with
   the parser shown never to be called for a refused argv; a malformed manifest sending no
   request; each expected value
   differing, with a matching partner; v1's second pass and caching; a missing parameter; the
   commit and the digest from the mapping given; the manifest for both targets, checked by the
-  comparator's own key check; written once.
+  comparator's own key check; written once. Part 3: a v1 manifest with caching off is not
+  built and sends no request, with a v1 manifest that is written as the control; and a `Config`
+  built in code whose pre-flight scenario is not a scenario ID builds no argv, with the
+  runner's parser shown never to be called.
 
 **Keeping the tests offline.** Every test in the three part 2 files uses `offline_aws`, and every
 client they build points at a fake on `127.0.0.1` or is never called. The `offline_aws` fixture:

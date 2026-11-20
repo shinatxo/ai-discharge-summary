@@ -97,19 +97,23 @@ def _no_constants(_name: str):
     raise ValueError("NaN or Infinity")
 
 
-def _read(path: Path, file: str) -> tuple[object, str]:
-    """The parsed JSON and the sha256 of the file's bytes."""
+def _read_bytes(path: Path, file: str) -> tuple[bytes, str]:
+    """The file's bytes and their sha256. The hash is known as soon as the file
+    has been read, whatever the bytes turn out to hold."""
     try:
         raw = path.read_bytes()
     except OSError:
         raise CompareError("file_unreadable", file) from None
-    sha = hashlib.sha256(raw).hexdigest()
+    return raw, hashlib.sha256(raw).hexdigest()
+
+
+def _parse(raw: bytes, file: str) -> object:
+    """The parsed JSON: strict UTF-8, no duplicate key, no NaN or Infinity."""
     try:
-        data = json.loads(raw.decode("utf-8"), object_pairs_hook=_no_duplicate_keys,
+        return json.loads(raw.decode("utf-8"), object_pairs_hook=_no_duplicate_keys,
                           parse_constant=_no_constants)
     except (ValueError, RecursionError):  # JSONDecodeError and UnicodeDecodeError are ValueErrors
         raise CompareError("json_invalid", file) from None
-    return data, sha
 
 
 # ------------------------------------------------------------- validating
@@ -134,7 +138,10 @@ def _object(value: object, fields: tuple, file: str, field: str,
     return value
 
 
-def _check_keys(keys: object, file: str) -> dict:
+def check_keys(keys: object, file: str) -> dict:
+    """A `keys` object, strictly: the baseline key of ADR-011 D9. Public, because the
+    run manifest's `keys` are checked with it too (evals/ws7_manifest.py). `file` is
+    the fixed label an error carries. Raises CompareError (`shape_invalid`)."""
     if type(keys) is not dict or keys.get("target") not in TARGETS:
         raise _bad(file, "keys.target")
     target = keys["target"]
@@ -216,7 +223,7 @@ def _check_baseline(data: object) -> dict:
         raise _bad(file, "schema")
     if not _is_id(base["baseline_id"], _ID_RE):
         raise _bad(file, "baseline_id")
-    _check_keys(base["keys"], file)
+    check_keys(base["keys"], file)
 
     for metric, value in _check_metric_ids(base["metrics"], file).items():
         if type(value) is not dict:
@@ -257,7 +264,7 @@ def _check_run(data: object) -> dict:
         raise _bad(file, "schema")
     if not _is_id(run["run_id"], _ID_RE):
         raise _bad(file, "run_id")
-    _check_keys(run["keys"], file)
+    check_keys(run["keys"], file)
 
     for metric, value in _check_metric_ids(run["metrics"], file).items():
         if type(value) is not dict:
@@ -321,6 +328,9 @@ def _compare(rules: dict, base: dict, run: dict) -> tuple[list, list]:
         return [], [CompareError("target_mismatch", "rules", "target")]
 
     base_metrics, run_metrics = base["metrics"], run["metrics"]
+    # The scenarios the gold covers. The keys already match, so the baseline's and
+    # the run's `gold_sha256` name the same ones.
+    gold = set(run["keys"]["gold_sha256"])
     for entry in rules["metrics"]:
         metric, kind = entry["metric"], entry["kind"]
         wanted = ("verdicts", "verdicts") if kind == 2 else ("counts", "count")
@@ -333,9 +343,15 @@ def _compare(rules: dict, base: dict, run: dict) -> tuple[list, list]:
             elif field not in metrics[metric]:
                 errors.append(CompareError("metric_kind_mismatch", file, None, metric))
                 present = False
-        if present and kind == 2 and \
-                set(base_metrics[metric]["verdicts"]) != set(run_metrics[metric]["verdicts"]):
-            errors.append(CompareError("scenario_set_differs", "run", None, metric))
+        if present and kind == 2:
+            # A ruled verdict metric covers exactly the gold's scenarios, in each file.
+            # Comparing the two files with each other is not enough: both could leave
+            # out the same scenario, and it would then never be looked at.
+            for file, metrics in (("baseline", base_metrics), ("run", run_metrics)):
+                if set(metrics[metric]["verdicts"]) != gold:
+                    errors.append(CompareError("scenario_coverage_differs", file, None, metric))
+            if set(base_metrics[metric]["verdicts"]) != set(run_metrics[metric]["verdicts"]):
+                errors.append(CompareError("scenario_set_differs", "run", None, metric))
     if errors:
         return [], errors
 
@@ -386,8 +402,10 @@ def compare_files(baseline_path: Path, rules_path: Path, run_path: Path) -> dict
                               ("rules", rules_path, _check_rules),
                               ("run", run_path, _check_run)):
         try:
-            data, inputs[f"{file}_sha256"] = _read(Path(path), file)
-            loaded[file] = check(data)
+            # The hash is recorded before the bytes are parsed: a file that was read
+            # but is not valid JSON keeps its hash. Only an unreadable file has none.
+            raw, inputs[f"{file}_sha256"] = _read_bytes(Path(path), file)
+            loaded[file] = check(_parse(raw, file))
         except CompareError as exc:
             errors.append(exc)
 

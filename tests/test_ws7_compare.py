@@ -12,6 +12,7 @@ from __future__ import annotations
 
 import ast
 import copy
+import hashlib
 import json
 import os
 import re
@@ -54,6 +55,14 @@ def keys(target: str = "pipeline") -> dict:
     else:
         k["v1_prompt_sha256"] = {"system_prompt": hx("c"), "patient_system_prompt": hx("d")}
         k["patient_second_pass"] = True
+    return k
+
+
+def keys_for(scenarios, target: str = "pipeline") -> dict:
+    """Keys whose gold covers exactly `scenarios` (IDs of the form S<number>). For
+    S1, S2 and S3 this is `keys()` itself."""
+    k = keys(target)
+    k["gold_sha256"] = {s: hx(format(int(s[1:]) % 16, "x")) for s in sorted(scenarios)}
     return k
 
 
@@ -146,10 +155,14 @@ def count_case(folder: Path, entry: dict, counts: list, now: int) -> Outcome:
                     run_summary({name: {"count": now}}))
 
 
-def verdict_case(folder: Path, entry: dict, at_baseline: dict, now: dict) -> Outcome:
+def verdict_case(folder: Path, entry: dict, at_baseline: dict, now: dict,
+                 gold=None) -> Outcome:
+    """One ruled verdict metric. The gold covers the baseline's scenarios unless
+    `gold` names others: a ruled verdict metric must cover exactly the gold's."""
     name = entry["metric"]
-    return run_case(folder, baseline({name: verdict_metric(at_baseline)}), rules(entry),
-                    run_summary({name: {"verdicts": now}}))
+    k = keys_for(at_baseline if gold is None else gold)
+    return run_case(folder, baseline({name: verdict_metric(at_baseline)}, k), rules(entry),
+                    run_summary({name: {"verdicts": now}}, copy.deepcopy(k)))
 
 
 def detail(outcome: Outcome, metric: str) -> dict:
@@ -204,7 +217,7 @@ KEY_NAMES = {"target", "pipeline_version", "v1_prompt_sha256", "patient_second_p
              "model_id", "prompt_caching", "corpus_sha256", "gold_sha256", "scorer_versions"}
 ERROR_CODES = {"file_unreadable", "json_invalid", "shape_invalid", "unstable_list_inconsistent",
                "target_mismatch", "metric_missing", "metric_kind_mismatch",
-               "scenario_set_differs", "internal_error"}
+               "scenario_coverage_differs", "scenario_set_differs", "internal_error"}
 ERROR_FIELDS = {
     None, "top", "schema", "target", "baseline_id", "run_id", "keys", "keys.target",
     "keys.pipeline_version", "keys.v1_prompt_sha256", "keys.patient_second_pass",
@@ -432,6 +445,98 @@ def test_kind2_scenario_missing_from_or_added_to_the_run_is_an_error(tmp_path, n
     assert_error(outcome, "scenario_set_differs", "run", metric="safety_net_verdict")
 
 
+# ---------------- kind 2: a ruled verdict metric covers exactly the gold's scenarios
+# Part 3, item 3 (Codex's question on PR #4). The gold here covers S1, S2 and S3.
+
+def _codes(outcome: Outcome) -> list:
+    return [(e["code"], e["file"], e["metric"]) for e in outcome.result["errors"]]
+
+
+TWO_STABLE = {"S1": [P, P, P], "S2": [P, P, P]}
+THREE_STABLE = {"S1": [P, P, P], "S2": [P, P, P], "S3": [P, P, P]}
+THREE_AND_ONE_MORE = dict(THREE_STABLE, S9=[P, P, P])
+
+
+def test_kind2_baseline_and_run_leaving_out_the_same_scenario_is_an_error(tmp_path):
+    """The gap: the two files agree with each other, so `scenario_set_differs` alone
+    says nothing, and S3 would never be looked at."""
+    outcome = verdict_case(tmp_path / "a", k2(), TWO_STABLE, {"S1": P, "S2": P},
+                           gold=["S1", "S2", "S3"])
+    assert_error(outcome, "scenario_coverage_differs", "baseline", metric="safety_net_verdict")
+    assert_error(outcome, "scenario_coverage_differs", "run", metric="safety_net_verdict")
+    assert _codes(outcome) == [
+        ("scenario_coverage_differs", "baseline", "safety_net_verdict"),
+        ("scenario_coverage_differs", "run", "safety_net_verdict")]    # and not scenario_set_differs
+
+    # The partner: the same gold, with S3 in both files, is compared.
+    full = verdict_case(tmp_path / "b", k2(), THREE_STABLE, {"S1": P, "S2": P, "S3": P},
+                        gold=["S1", "S2", "S3"])
+    assert_no_breach(full)
+    assert detail(full, "safety_net_verdict")["stable"] == 3
+
+
+def test_kind2_baseline_and_run_adding_the_same_scenario_the_gold_lacks_is_an_error(tmp_path):
+    now = {"S1": P, "S2": P, "S3": P, "S9": P}
+    outcome = verdict_case(tmp_path / "a", k2(), THREE_AND_ONE_MORE, now, gold=["S1", "S2", "S3"])
+    assert _codes(outcome) == [
+        ("scenario_coverage_differs", "baseline", "safety_net_verdict"),
+        ("scenario_coverage_differs", "run", "safety_net_verdict")]
+    assert outcome.code == 2 and outcome.result["comparisons"] == []
+
+    # The partner: with S9 in the gold as well, the same two files are compared.
+    assert_no_breach(verdict_case(tmp_path / "b", k2(), THREE_AND_ONE_MORE, now,
+                                  gold=["S1", "S2", "S3", "S9"]))
+
+
+@pytest.mark.parametrize("short", ["baseline", "run"])
+def test_kind2_one_file_short_of_the_gold_is_an_error_for_that_file(tmp_path, short):
+    at_baseline = TWO_STABLE if short == "baseline" else THREE_STABLE
+    now = {"S1": P, "S2": P} if short == "run" else {"S1": P, "S2": P, "S3": P}
+    outcome = verdict_case(tmp_path, k2(), at_baseline, now, gold=["S1", "S2", "S3"])
+    assert _codes(outcome) == [
+        ("scenario_coverage_differs", short, "safety_net_verdict"),
+        ("scenario_set_differs", "run", "safety_net_verdict")]     # the files disagree as well
+
+
+def test_kind2_coverage_is_checked_only_after_the_keys_match(tmp_path):
+    """Stage 3, not stage 1: a run whose gold differs from the baseline's is "no
+    baseline", whatever its verdicts cover."""
+    base = baseline({"safety_net_verdict": verdict_metric(THREE_STABLE)},
+                    keys_for(["S1", "S2", "S3"]))
+    run = run_summary({"safety_net_verdict": {"verdicts": {"S1": P, "S2": P}}},
+                      keys_for(["S1", "S2"]))
+    outcome = run_case(tmp_path, base, rules(k2()), run)
+    assert (outcome.result["status"], outcome.code) == ("no_baseline", 2)
+    assert outcome.result["key_mismatch"] == ["gold_sha256"] and outcome.result["errors"] == []
+
+
+def test_kind2_coverage_is_for_ruled_metrics_an_unruled_one_is_listed_and_changes_nothing(
+        tmp_path):
+    base, rules_, run = valid_triple()
+    base["metrics"]["haz03_verdict"] = verdict_metric({"S1": [P, P, P]})   # one scenario of three
+    run["metrics"]["haz03_verdict"] = {"verdicts": {"S1": P}}
+
+    unruled = run_case(tmp_path / "a", base, rules_, run)
+    assert_no_breach(unruled)
+    assert unruled.result["unruled_metrics"] == [
+        {"metric": "haz03_verdict", "in_baseline": True, "in_run": True}]
+
+    # The partner: the same two files, with a rule that names the metric.
+    rules_["metrics"].append(k2("haz03_verdict", "haz03"))
+    ruled = run_case(tmp_path / "b", base, rules_, run)
+    assert _codes(ruled) == [("scenario_coverage_differs", "baseline", "haz03_verdict"),
+                             ("scenario_coverage_differs", "run", "haz03_verdict")]
+
+
+def test_count_metrics_are_not_checked_for_coverage(tmp_path):
+    """Kinds 1 and 3 hold one count for the whole run, not a verdict per scenario."""
+    base, _, run = valid_triple()
+    del base["metrics"]["safety_net_verdict"], run["metrics"]["safety_net_verdict"]
+    outcome = run_case(tmp_path, base, rules(k1(), k3()), run)
+    assert_no_breach(outcome)
+    assert len(outcome.result["comparisons"]) == 2 and outcome.result["unruled_metrics"] == []
+
+
 # --------------------------------------- criterion 3: kind 3, noisy counts
 # Baseline [5, 4, 7] with margin 2: the range is 4 to 7, widened to 2 to 9.
 
@@ -505,6 +610,16 @@ V1_KEY_CHANGES = [
     ("v1_prompt_sha256", _set(("v1_prompt_sha256", "patient_system_prompt"), hx("f"))),
     ("patient_second_pass", _set(("patient_second_pass",), False)),
     ("model_id", _set(("model_id",), "invented.model-v2:0")),
+    # Part 3, item 2 (Codex review of PR #4): the keys v1 shares with the pipeline.
+    ("prompt_caching", _set(("prompt_caching",), False)),
+    ("corpus_sha256", _set(("corpus_sha256",), hx("f"))),
+    ("gold_sha256", _set(("gold_sha256", "S2"), hx("f"))),
+    ("gold_sha256", _set(("gold_sha256", "S4"), hx("4"))),
+    ("gold_sha256", _drop(("gold_sha256", "S3"))),
+    ("scorer_versions", _set(("scorer_versions", "score_batch"), 3)),
+    ("scorer_versions", _set(("scorer_versions", "score_batch"), "2")),
+    ("scorer_versions", _set(("scorer_versions", "score_meds"), 1)),
+    ("scorer_versions", _drop(("scorer_versions", "haz03_check"))),
 ]
 ALL_KEY_CHANGES = ([("pipeline", n, c) for n, c in PIPELINE_KEY_CHANGES]
                    + [("v1", n, c) for n, c in V1_KEY_CHANGES])
@@ -632,6 +747,56 @@ def test_a_missing_file_is_an_error(tmp_path, which):
     file = ("baseline", "rules", "run")[which]
     assert_error(outcome, "file_unreadable", file)
     assert outcome.result["inputs"][f"{file}_sha256"] is None
+
+
+# Part 3, item 1 (Codex review of PR #4): a file's hash is known once it has been read.
+
+def _sha(path: Path) -> str:
+    return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+NOT_JSON = [b"{not json", b'{"schema": "ws7-run/1", "run_id": ', b"", b"\xff\xfe{}",
+            b'{"a": 1, "a": 2}', b'{"a": NaN}']
+
+
+@pytest.mark.parametrize("which", [0, 1, 2], ids=["baseline", "rules", "run"])
+@pytest.mark.parametrize("content", NOT_JSON, ids=range(len(NOT_JSON)))
+def test_a_readable_file_that_is_not_valid_json_keeps_its_sha256(tmp_path, which, content):
+    triple = list(valid_triple())
+    triple[which] = content
+    outcome = run_case(tmp_path, *triple)
+    file = ("baseline", "rules", "run")[which]
+    assert_error(outcome, "json_invalid", file)
+    assert outcome.result["inputs"][f"{file}_sha256"] == hashlib.sha256(content).hexdigest()
+    # The other two were read and parsed, and keep theirs as before.
+    assert outcome.result["inputs"] == {f"{name}_sha256": _sha(tmp_path / f"{name}.json")
+                                        for name in ("baseline", "rules", "run")}
+
+
+@pytest.mark.parametrize("which", [0, 1, 2], ids=["baseline", "rules", "run"])
+@pytest.mark.parametrize("how", ["missing", "a_directory"])
+def test_an_unreadable_file_has_a_null_sha256_and_the_others_keep_theirs(tmp_path, which, how):
+    triple = list(valid_triple())
+    triple[which] = MISSING
+    paths = write_inputs(tmp_path, *triple)
+    file = ("baseline", "rules", "run")[which]
+    if how == "a_directory":
+        paths[file].mkdir()                       # it exists, and it cannot be read as a file
+    assert W.main(argv(paths)) == 2
+    result = json.loads(paths["out"].read_bytes())
+    assert_ids_counts_labels_only(result)
+    assert [(e["code"], e["file"]) for e in result["errors"]] == [("file_unreadable", file)]
+    assert result["inputs"][f"{file}_sha256"] is None
+    # The control: the null is this file's alone. The two that were read have a hash.
+    others = [name for name in ("baseline", "rules", "run") if name != file]
+    assert all(result["inputs"][f"{name}_sha256"] == _sha(paths[name]) for name in others)
+
+
+def test_a_file_that_parses_but_fails_its_shape_check_keeps_its_sha256(tmp_path):
+    base, rules_, _ = valid_triple()
+    outcome = run_case(tmp_path, base, rules_, "[]")
+    assert_error(outcome, "shape_invalid", "run")
+    assert outcome.result["inputs"]["run_sha256"] == hashlib.sha256(b"[]").hexdigest()
 
 
 def test_a_duplicate_json_key_is_an_error_not_last_one_wins(tmp_path):
@@ -861,13 +1026,13 @@ def test_one_row_per_family_and_kind_named_by_the_rules(tmp_path):
         "invented_frequencies": {"counts": [0, 0, 0]},
         "meds_verdict": verdict_metric({"S1": [P, P, P]}),
         "gate_failures": {"counts": [0, 0, 0]},
-    })
+    }, keys_for(["S1"]))
     run = run_summary({
         "invented_doses": {"count": 0},
         "invented_frequencies": {"count": 1},
         "meds_verdict": {"verdicts": {"S1": P}},
         "gate_failures": {"count": 0},
-    })
+    }, keys_for(["S1"]))
     rules_ = rules(k1("invented_frequencies"), k1("gate_failures", "safety_netting"),
                    k2("meds_verdict", "medications"), k1("invented_doses"))
     outcome = run_case(tmp_path, base, rules_, run)

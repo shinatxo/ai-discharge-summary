@@ -8,12 +8,15 @@ review: the cost ceiling, duplicate deliveries, the heartbeat and the incident p
 Updated 19 Nov 2026 with the rulings on part 2: a manual run's own claim key, the listing
 permission, the run prefixes, and what an unmetered entry counts at. Updated 19 Nov 2026 with the
 ruling on part 3: a verdict metric that a rule names covers exactly the gold's scenarios, in the
-baseline and in the run.
+baseline and in the run. Updated 20 Nov 2026 with the rulings on part 4: step failures and
+assembly rejections are published by step, with the codes kept in the stored records; the cost
+metric is the batch's own total; and code builds only a candidate baseline, in an envelope the
+comparator refuses.
 
 This is a design. Slice 1, the offline comparator, is built (`docs/WS7-COMPARATOR.md`). Of slice 2,
-parts 1 to 3 are built (`docs/WS7-ENTRYPOINT.md`): the client wrapper and the reservation; the
-claim, the ledger, the match check and the run manifest; and the follow-ups from the reviews of
-PR #4 and PR #6. Nothing is deployed or run. Every deploy, and every run that costs
+parts 1 to 4 are built (`docs/WS7-ENTRYPOINT.md`): the client wrapper and the reservation; the
+claim, the ledger, the match check and the run manifest; the follow-ups from the reviews of
+PR #4 and PR #6; and the run summary and the candidate baseline. Nothing is deployed or run. Every deploy, and every run that costs
 money, needs the author's explicit yes at the time. No number in a breach rule is set here: the
 author sets them before the first live run, and they change only by pull request.
 
@@ -145,11 +148,21 @@ those batches. This was established by reading the code, not by running it. Thre
    without a guard, so it would stop with an error and not account for the record. Step 1 is code
    on fixed notes, so this should show at baseline, not later. The entrypoint treats a replay
    that stops as a failed run.
+   - **Found in slice 2 part 4, by running it on an invented batch:** the replay also stops on a
+     record with any upstream step missing (step 5a, 6 or 7, or a generation that failed before
+     them). Its report step raises a `KeyError` (`evals/score_assemble.py:202`), because such a
+     record has no `branches` entry (`:148-150`). So today any failed pipeline generation is a
+     replay that stops, and so a failed run. The scorer is not changed by that part
+     (`docs/WS7-ENTRYPOINT.md`, "What part 4 found").
 2. It runs the assembly steps directly. It is not the worker's orchestrator. That gap belongs to
    the later runner described below.
 3. It also reports meaning warnings on PART C. Those numbers are held back with the PART C slice
-   (D13). The first build publishes only the outcomes, the rejections by step and code, the gate
-   status and the count of placeholders left.
+   (D13). The first build publishes only the outcomes, the rejections by step, the gate status
+   and the count of placeholders left.
+   - **Rejections are published by step, and the codes are kept in the stored records** (slice 2
+     part 4; the author's ruling, 20 Nov 2026). A gate failure at 8b has a count of its own. A
+     metric named after a code would be in some runs and not in others, and a baseline needs the
+     same metrics in all three runs.
 
 The replay does not apply to the v1 target, which has no steps.
 
@@ -546,13 +559,13 @@ Per-scenario detail goes to the run summary in S3, not into metric dimensions.
 
 | Family | Source | Examples |
 |---|---|---|
-| Run | the entrypoint | step failures by fixed code, spend-guard trips, p90 elapsed time, tokens, estimated cost |
+| Run | the entrypoint | step failures by step (the fixed codes stay in the stored records: slice 2 part 4, ruling 20 Nov 2026), spend-guard trips, p90 elapsed time, tokens, cost (the batch's own total in the client wrapper's report) |
 | Safety-netting | `score_batch.py` | invented seek-help triggers, pinned line missing, gate failures, verdict per scenario |
 | Medications (D4 metric) | `score_batch.py` | invented doses, invented frequencies, verdict per scenario |
 | Step-2 advice | `score_batch.py` | route correct per scenario, gold items recalled |
 | Composition (step 6) | `score_batch.py` | check counts |
 | HAZ-03 | `haz03_check.py` | failures, verdict per scenario |
-| Assembly | `score_assemble.py` | 8a and 8b rejections by code, gate status, placeholders left |
+| Assembly | `score_assemble.py` | 8a and 8b rejections by step (the codes stay in the stored records), gate status, placeholders left |
 | PART C | blocked, see D13 | meaning-flag counts by kind |
 
 **The breach rule has three kinds.** The ADR fixes their form. The author fixes their numbers.

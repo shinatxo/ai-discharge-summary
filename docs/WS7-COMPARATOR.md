@@ -49,7 +49,8 @@ ws7_compare: status=breach exit=1 rows=3 breaches=2 errors=0 key_mismatches=0 un
 3. **Rules against data.** The rules file's target must match. Every ruled metric must be in both
    files, with the shape its kind needs. **Coverage:** every ruled kind-2 metric must have a
    verdict for exactly the scenarios in `keys.gold_sha256`, in the baseline and in the run. Any
-   fault is an `error`.
+   fault is an `error`, and every fault is reported: a metric that is missing from one file, or
+   has the wrong shape there, does not stop the other file's coverage being checked.
 4. **Compare.** One row per family and kind.
 
 An `error` or `no_baseline` result has no rows. There is never a partial comparison.
@@ -98,6 +99,20 @@ The baseline and the run summary each carry a `keys` object. It is the baseline 
 - The check of a `keys` object is public, as `check_keys()`. The run manifest's `keys` are
   checked with the same function (`evals/ws7_manifest.py`).
 
+## The public checks
+
+Three checks are public, so that the code that writes a file checks it with the code that will
+read it. Each takes parsed JSON and raises `CompareError` with a fixed code.
+
+| Function | Checks | Used by |
+|---|---|---|
+| `check_keys(keys, file)` | A `keys` object | `ws7_manifest.build_keys()`, for the run manifest and the run summary (part 3) |
+| `check_run(data)` | A whole run summary (`ws7-run/1`) | `ws7_summary.build_summary()`, on its result; `build_candidate()`, on each summary it is given (part 4) |
+| `check_baseline(data)` | A whole baseline (`ws7-baseline/1`), the `unstable` list included | `ws7_summary.build_candidate()`, on its `baseline` member, before it returns anything (part 4) |
+
+`check_run` and `check_baseline` were private until part 4. They were renamed only; what they
+check did not change. The comparator itself imports nothing from the modules that call them.
+
 ## The rules file (`ws7-rules/1`)
 
 | Field | Type | Note |
@@ -139,6 +154,11 @@ It holds counts and verdicts from the three baseline runs, never text.
 | `unstable` | list of scenario IDs | Every scenario that did not pass all three runs. The comparator works the list out again from the verdicts, and a disagreement is an error |
 
 Hashes are shortened in the examples. A real one has 64 characters.
+
+A baseline is frozen by the author, by pull request. Code only builds a **candidate**: an
+envelope with the schema `ws7-baseline-candidate/1` and the baseline as its `baseline` member
+(`docs/WS7-ENTRYPOINT.md`, part 4). The comparator refuses the envelope as a baseline
+(`shape_invalid`, exit code 2), so a candidate is never compared against by accident.
 
 ```json
 {
@@ -196,6 +216,10 @@ For the v1 target the keys are:
 
 `"no_output"` means the generation produced nothing that could be scored.
 
+`evals/ws7_summary.py` builds this file (`docs/WS7-ENTRYPOINT.md`, part 4). That document lists
+the real metric names, where each comes from, and how a scorer's verdict becomes `"pass"`,
+`"fail"` or `"no_output"`. The names in the example below are invented.
+
 ```json
 {
   "schema": "ws7-run/1",
@@ -233,14 +257,20 @@ counts. Equal or lower is not a breach.
   - Why the gold: comparing the two files only with each other would let both leave out the same
     scenario, and it would then never be looked at.
   - The check runs after the keys match, so the baseline's gold and the run's are the same set. A
-    run whose gold differs is `no_baseline`, as before.
+    run whose gold differs is `no_baseline`, as before, even if its verdicts do not cover its
+    own gold.
+  - **Each file is checked wherever the metric is there in the right shape, whatever the other
+    file holds** (part 4; Codex P3, PR #7). If the metric is missing from the run and the
+    baseline leaves out a scenario, the result names both: `metric_missing` for the run and
+    `scenario_coverage_differs` for the baseline. Before part 4 it named only the first.
   - A rule cannot name a subset of the scenarios. That would be a new field in the rules file,
     and so a new schema version.
   - A verdict metric the rules do not name is not checked for coverage (see "Metrics the rules do
     not name").
 - The run must also have a verdict for exactly the baseline's scenarios
   (`scenario_set_differs`). With the coverage check this is never the only error: two files that
-  both cover the gold agree with each other.
+  both cover the gold agree with each other. It is checked only when the metric is usable in
+  both files.
 
 **Kind 3, noisy counts.** A breach is a count below `min - margin` or above `max + margin`, where
 `min` and `max` are the lowest and highest baseline counts. A count exactly on either boundary is
@@ -361,6 +391,8 @@ A float in any metric is an error today.
 - It does not decide which baseline a run should use. It is given one of each file.
 - It does not publish a metric, send an alert or read S3. The entrypoint does that (slice 2).
 - It does not score anything, and it never reads a batch record.
+- It does not build a run summary or a baseline. `evals/ws7_summary.py` builds the summary and a
+  candidate baseline; the author freezes a baseline by pull request.
 - Subgroup tags (ADR-011 D12) are not in the run summary yet. Adding them will be a new schema
   version.
 
@@ -381,3 +413,17 @@ Added with slice 2 part 3 (the follow-ups from the review of PR #4):
 - every v1 key that differs gives `no_baseline` naming that key, as every pipeline key did;
 - a ruled kind-2 metric that does not cover the gold's scenarios is an error, with the case the
   older check could not see: the baseline and the run leaving out the same scenario.
+
+Added with slice 2 part 4 (the two P3s from the review of PR #7):
+
+- a ruled kind-2 metric that is missing from one file, or has the wrong shape there, and a
+  coverage gap in the other file: both errors are named. Each case has a partner in which the
+  other file covers the gold, and the result is the one error;
+- the test that coverage is checked only after the keys match is stronger: the run's gold keeps
+  a scenario that its verdicts leave out, and the result is still `no_baseline` with no errors. A
+  mutation that moves the coverage check before the key check passed the older test and fails
+  this one;
+- `check_run` and `check_baseline` are public, and each refuses an unknown field.
+
+`tests/test_ws7_summary.py` runs the real comparator on files that `evals/ws7_summary.py` built
+(`docs/WS7-ENTRYPOINT.md`, "Tests").

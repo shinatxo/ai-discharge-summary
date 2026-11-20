@@ -24,9 +24,10 @@ and not adopted. Its text is a local draft at `docs/_local/ADR-010-DRAFT.md`. It
 committed, and `docs/_local/` cannot be read from a locked Claude or Codex session.
 
 **ADR-011 is the WS7 design** and nothing else. It is a design with Status: Proposed. Slice 1, the
-offline comparator, is built, and so are parts 1 to 3 of slice 2 (the client wrapper and the
+offline comparator, is built, and so are parts 1 to 4 of slice 2 (the client wrapper and the
 reservation; the claim, the ledger, the match check and the run manifest; the follow-ups from the
-reviews of PR #4 and PR #6); nothing is deployed or run.
+reviews of PR #4 and PR #6; the run summary and the candidate baseline); nothing is deployed or
+run.
 
 ## Adding a new ADR
 

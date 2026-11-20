@@ -45,7 +45,9 @@ THE CANDIDATE BASELINE is built from the three run summaries of a manual baselin
 It returns an envelope, `ws7-baseline-candidate/1`, whose `baseline` member is a
 `ws7-baseline/1` object. The comparator refuses the envelope, so a candidate is
 never read as a frozen baseline by accident. Code never freezes a baseline: the
-author copies the `baseline` member into the repository by pull request.
+author copies the `baseline` member into the repository by pull request. Each of
+the three summaries must name every scenario in the corpus file: a batch of fewer
+(a pre-flight, say) can be summarised, and can never become a baseline.
 
 Every refusal is a `Stop` with a fixed code (CODES).
 """
@@ -65,6 +67,7 @@ for _p in (str(_EVALS.parent / "src" / "generate"), str(_EVALS)):
 
 import gold as G  # noqa: E402
 import haz03_check as H3  # noqa: E402
+import run_cold_eval as rce  # noqa: E402
 import run_pipeline_eval as rpe  # noqa: E402
 import score_batch as SB  # noqa: E402
 import score_compose as CP  # noqa: E402
@@ -89,6 +92,7 @@ SUMMARY_INVALID = "ws7_summary_invalid"
 NOT_THREE_RUNS = "ws7_candidate_not_three_runs"
 CANDIDATE_ID_INVALID = "ws7_candidate_id_invalid"
 CANDIDATE_SUMMARY_INVALID = "ws7_candidate_summary_invalid"
+NOT_WHOLE_CORPUS = "ws7_candidate_not_whole_corpus"
 RUNS_NOT_DISTINCT = "ws7_candidate_runs_not_distinct"
 KEYS_DIFFER = "ws7_candidate_keys_differ"
 METRICS_DIFFER = "ws7_candidate_metrics_differ"
@@ -96,7 +100,8 @@ DRAFT_GOLD = "ws7_candidate_draft_gold"
 CANDIDATE_NO_OUTPUT = "ws7_candidate_no_output"
 CODES = (UNMETERED, OWN_INVALID, BATCH_INVALID, BATCH_INCOMPLETE, SCORES_INVALID, REPORT_INVALID,
          SUMMARY_INVALID, NOT_THREE_RUNS, CANDIDATE_ID_INVALID, CANDIDATE_SUMMARY_INVALID,
-         RUNS_NOT_DISTINCT, KEYS_DIFFER, METRICS_DIFFER, DRAFT_GOLD, CANDIDATE_NO_OUTPUT)
+         NOT_WHOLE_CORPUS, RUNS_NOT_DISTINCT, KEYS_DIFFER, METRICS_DIFFER, DRAFT_GOLD,
+         CANDIDATE_NO_OUTPUT)
 
 PASS, FAIL, NO_OUTPUT = compare.PASS, compare.FAIL, compare.NO_OUTPUT
 
@@ -672,18 +677,34 @@ def _differing_keys(summaries: list) -> tuple:
                         if any(s["keys"].get(name) != first.get(name) for s in summaries[1:])))
 
 
-def build_candidate(summaries: object, *, baseline_id: object) -> dict:
+def _corpus_scenarios(corpus_path: Path) -> set:
+    """The scenario IDs in the corpus file itself, never a number written here."""
+    try:
+        return {scenario.id for scenario in rce.load_corpus(Path(corpus_path))[0]}
+    except (OSError, ValueError, KeyError, TypeError):
+        raise Stop(NOT_WHOLE_CORPUS) from None
+
+
+def build_candidate(summaries: object, *, baseline_id: object,
+                    corpus_path: Path = rce.DEFAULT_CORPUS_PATH) -> dict:
     """A candidate baseline from the three run summaries of a manual baseline (D7).
 
     Returns `{"schema": "ws7-baseline-candidate/1", "run_ids": [...], "baseline": {...}}`.
     The `baseline` member is a `ws7-baseline/1` object that has passed the
     comparator's own check (`ws7_compare.check_baseline`). `baseline_id` is given by
     the author; it has no default and never comes from the clock. Nothing here
-    writes a file, and nothing here freezes a baseline."""
+    writes a file, and nothing here freezes a baseline.
+
+    Each summary's `keys.gold_sha256` must name exactly the scenarios in the corpus
+    file (`corpus_path`): a baseline is three whole runs of the corpus. A summary of
+    fewer scenarios is a valid `ws7-run/1` file (a pre-flight batch may be
+    summarised), and a baseline frozen from three of them would give "no baseline"
+    for every real run."""
     if type(summaries) not in (list, tuple) or len(summaries) != compare.BASELINE_RUNS:
         raise Stop(NOT_THREE_RUNS)
     if not _is_id(baseline_id, compare._ID_RE):
         raise Stop(CANDIDATE_ID_INVALID)
+    corpus = _corpus_scenarios(corpus_path)
     runs = []
     for summary in summaries:
         try:
@@ -695,6 +716,8 @@ def build_candidate(summaries: object, *, baseline_id: object) -> dict:
                 set(m["verdicts"]) != set(run["keys"]["gold_sha256"])
                 for m in run["metrics"].values() if "verdicts" in m):
             raise Stop(CANDIDATE_SUMMARY_INVALID)
+        if set(run["keys"]["gold_sha256"]) != corpus:
+            raise Stop(NOT_WHOLE_CORPUS)          # not a whole run of the corpus
         runs.append(run)
     run_ids = [run["run_id"] for run in runs]
     if len(set(run_ids)) != len(run_ids):

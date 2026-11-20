@@ -923,9 +923,11 @@ One finished batch of 18, its score outputs, and the guard's report (part 1).
   (`evals/run_pipeline_eval.py:80-82`); a failure label, an outcome or a gate status must be one
   the scorer can emit. A field holding anything else builds no summary. Error codes are compared
   with a literal or not read at all.
-- **One batch of 18, once.** A batch with `runs` other than 1, a batch that stopped early, or a
+- **One whole batch, once.** A batch with `runs` other than 1, a batch that stopped early, or a
   batch whose generations or gold map do not name exactly the manifest's scenarios builds no
-  summary (`ws7_summary_batch_incomplete`).
+  summary (`ws7_summary_batch_incomplete`). The manifest's scenarios are whatever the runner was
+  asked for, so a pre-flight batch of one scenario can be summarised. It can never become a
+  baseline ("The candidate baseline", below).
   - Why: `score_batch` builds its gold map from the scenarios that were generated
     (`evals/score_batch.py:90`). A scenario that was never generated would be missing from
     `keys.gold_sha256`, not written `no_output`.
@@ -1135,11 +1137,22 @@ returned.
 | `ws7_candidate_not_three_runs` | Not exactly three summaries |
 | `ws7_candidate_id_invalid` | The `baseline_id` is not an ID |
 | `ws7_candidate_summary_invalid` | A summary fails `check_run()`, a verdict metric does not cover the gold, or a summary has no `gold_draft_records` count |
+| `ws7_candidate_not_whole_corpus` | A summary's `keys.gold_sha256` does not name exactly the scenarios in the corpus file, or the corpus file cannot be read |
 | `ws7_candidate_runs_not_distinct` | Two summaries have the same `run_id`: the same batch given twice |
 | `ws7_candidate_keys_differ` | The three `keys` are not equal. The refusal names the keys, never the values |
 | `ws7_candidate_metrics_differ` | A metric is in some runs and not in others, or is a count in one and a verdict in another |
 | `ws7_candidate_draft_gold` | `gold_draft_records` is above 0 in any run. Scores against draft gold are not the baseline (`evals/score_batch.py:225-226`) |
 | `ws7_candidate_no_output` | Any verdict is `no_output`. `ws7-baseline/1` has no such verdict |
+
+**A baseline is three whole runs of the corpus** (Codex review of PR #8).
+
+- Three summaries of a pre-flight batch, with three labels, are three valid and distinct run
+  summaries with equal keys. A baseline frozen from them would give "no baseline" for every
+  real run, because a real run's gold names all 18 scenarios.
+- So each summary must name every scenario in the corpus, and no other. The scenarios are read
+  from the corpus file itself (`run_cold_eval.load_corpus` on `src/canary/scenarios.json`), not
+  from a number written in the code.
+- `build_summary()` is unchanged: it does not refuse a batch of fewer scenarios.
 
 **A candidate is never a frozen baseline.**
 
@@ -1206,7 +1219,9 @@ Both notes are closed by part 4:
 - **A batch's label is the runner's batch ID.** Part 5 hands each runner `--batch <label>`, with
   the label it opened on the guard: `<run_id>.preflight`, `<run_id>.main`, and for a baseline
   three labels of its own that start `<run_id>.`. The summary's `run_id` is that label.
-- **Only a batch of 18 has a summary.** The pre-flight batch has none.
+- **Part 5 summarises the main batch.** A pre-flight batch can be summarised as well, but it is
+  never compared and never part of a baseline: `build_candidate()` refuses a summary that does
+  not name the whole corpus.
 - **A scorer that stops is a failed run** (ADR-011 D2). Today that includes the assembly replay on
   any pipeline batch with a failed generation.
 - **A refusal from `build_summary()` is a failed run**, with the refusal's code. `ws7_unmetered`
@@ -1405,6 +1420,9 @@ PYTHONDONTWRITEBYTECODE=1 python -m pytest -p no:cacheprovider -q tests/test_ws7
   - The candidate: counts and verdicts as three-item lists, the unstable list, every refusal at
     each of the three positions, and the comparator refusing the envelope and accepting its
     `baseline` member.
+  - Three scored pre-flight batches, made at the stub for both targets, make no candidate; the
+    partner is three full batches. The corpus is shown to be read from its file: with one
+    scenario more or fewer in the file, the same three full summaries are refused.
 
 **Keeping the tests offline.** Every test in the three part 2 files and in the part 4 file uses `offline_aws`, and every
 client they build points at a fake on `127.0.0.1` or is never called. The `offline_aws` fixture:

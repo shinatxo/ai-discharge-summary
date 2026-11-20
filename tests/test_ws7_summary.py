@@ -1478,6 +1478,66 @@ def test_a_metric_in_some_runs_and_not_in_others_makes_no_candidate(scored, chan
     assert candidate(runs)
 
 
+@pytest.mark.parametrize("target", TARGETS)
+def test_three_summaries_of_a_one_scenario_batch_make_no_candidate(_offline, tmp_path, target):
+    """Codex P2, PR #8. A pre-flight batch may be summarised, and three such summaries
+    with three labels are three valid, distinct run summaries with equal keys. A
+    baseline frozen from them would give "no baseline" for every real run."""
+    preflight = CFG.preflight_scenario
+    stub = stubs.started(default_stub(target), _offline)
+    guard = make_guard(target, BASELINE_RUN[target], generations=57)
+    try:
+        def summary_of(label: str, scenario: str | None) -> dict:
+            batch_dir = run_batch(target, stub, tmp_path, guard, label, scenario=scenario)
+            score(batch_dir, target)
+            return Case(target, batch_dir, guard.report(), label).build()
+
+        small = [summary_of(f"{BASELINE_RUN[target]}.p{n}", preflight) for n in (1, 2, 3)]
+        whole = [summary_of(f"{BASELINE_RUN[target]}.b{n}", None) for n in (1, 2, 3)]
+    finally:
+        stub.stop()
+    for summary in small:               # nothing else is wrong with them
+        assert compare.check_run(json.loads(ws.render(summary)))
+        assert list(summary["keys"]["gold_sha256"]) == [preflight]
+    assert len({s["run_id"] for s in small}) == 3 and small[0]["keys"] == small[1]["keys"] == small[2]["keys"]
+    assert N not in json.dumps(small) and all(count(s, "gold_draft_records") == 0 for s in small)
+
+    stopped(lambda: candidate(small), ws.NOT_WHOLE_CORPUS)
+    stopped(lambda: candidate([whole[0], whole[1], small[2]]), ws.NOT_WHOLE_CORPUS)    # even one
+    # The partner: three full batches of the corpus are accepted.
+    built = candidate(whole)
+    assert sorted(built["baseline"]["keys"]["gold_sha256"]) == SCENARIOS
+
+
+def test_the_whole_corpus_is_read_from_the_corpus_file_not_from_a_number(scored, tmp_path):
+    """The scenarios come from the corpus file itself (`run_cold_eval.load_corpus`)."""
+    runs = three(scored("v1"))
+    assert candidate(runs)                                                # the real corpus: 18
+    corpus = json.loads(rce.DEFAULT_CORPUS_PATH.read_text("utf-8"))
+    assert sorted(item["id"] for item in corpus["scenarios"]) == SCENARIOS
+
+    def corpus_file(name: str, scenarios: list) -> Path:
+        path = tmp_path / name
+        path.write_text(json.dumps({"scenarios": scenarios}), encoding="utf-8")
+        return path
+
+    invented = {"id": "S99", "title": "Invented", "notes": "Invented notes for an invented scenario."}
+    one_more = corpus_file("one-more.json", corpus["scenarios"] + [invented])
+    stopped(lambda: ws.build_candidate(runs, baseline_id="b-1", corpus_path=one_more),
+            ws.NOT_WHOLE_CORPUS)                           # 18 of 19 is not the whole corpus
+    one_fewer = corpus_file("one-fewer.json", corpus["scenarios"][:-1])
+    stopped(lambda: ws.build_candidate(runs, baseline_id="b-1", corpus_path=one_fewer),
+            ws.NOT_WHOLE_CORPUS)                           # nor is a scenario the corpus lacks
+    same = corpus_file("same.json", list(reversed(corpus["scenarios"])))
+    assert ws.build_candidate(runs, baseline_id="b-1", corpus_path=same)  # the partner
+    # A corpus that cannot be read shows nothing, so nothing is built.
+    stopped(lambda: ws.build_candidate(runs, baseline_id="b-1", corpus_path=tmp_path / "none.json"),
+            ws.NOT_WHOLE_CORPUS)
+    (tmp_path / "bad.json").write_text("{not json", encoding="utf-8")
+    stopped(lambda: ws.build_candidate(runs, baseline_id="b-1", corpus_path=tmp_path / "bad.json"),
+            ws.NOT_WHOLE_CORPUS)
+
+
 def test_the_same_summary_given_twice_makes_no_candidate(scored):
     """Ruling R6: a summary's run_id is its batch label, so three summaries of one
     batch cannot pass as three runs, with every scenario looking stable."""
@@ -1548,7 +1608,7 @@ def test_building_a_candidate_changes_none_of_its_summaries_and_writes_nothing(s
 
 
 def test_every_refusal_has_a_fixed_code():
-    assert len(set(ws.CODES)) == len(ws.CODES) == 15
+    assert len(set(ws.CODES)) == len(ws.CODES) == 16
     assert all(code.startswith("ws7_") for code in ws.CODES)
     others = set(wm.CODES) | set(wl.CODES) | set(store.CODES)
     assert not set(ws.CODES) & others

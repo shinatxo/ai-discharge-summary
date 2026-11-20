@@ -406,8 +406,10 @@ def test_an_explicit_endpoint_must_be_the_loopback_fake(endpoint):
     assert code_of(lambda: store.build_client("s3", endpoint_url=endpoint)) == store.ENDPOINT_REFUSED
 
 
-def test_only_s3_and_ssm_clients_are_built():
-    for service in ("dynamodb", "bedrock-runtime", "sts", ""):
+def test_only_s3_ssm_cloudwatch_and_sns_clients_are_built():
+    """Part 5 adds CloudWatch and SNS, under the same rules (tests/test_ws7_publish.py)."""
+    assert sorted(store.LIVE_ENDPOINTS) == ["cloudwatch", "s3", "sns", "ssm"]
+    for service in ("dynamodb", "bedrock-runtime", "sts", "logs", "monitoring", ""):
         assert code_of(lambda: store.build_client(service)) == store.ENDPOINT_REFUSED
 
 
@@ -494,6 +496,70 @@ def test_nothing_that_is_kept_sits_under_the_prefix_that_expires():
     assert kept[3] == "ws7/runs/manual/2026-12-16T0400-pipeline-manual/"
     assert not any(key.startswith(expiring) or expiring.startswith(key) for key in kept)
     assert all(key.startswith(store.PREFIX) for key in kept)
+
+
+RUN = "2026-12-16T0400-pipeline"
+
+
+def test_success_and_failed_records_are_kept_so_they_are_outside_the_prefix_that_expires():
+    """Part 5 (D8, D9). The Thursday check reads both, and neither may expire with the
+    run's own records."""
+    expiring = store.run_prefix("scheduled", RUN)
+    assert expiring == f"ws7/runs/scheduled/{RUN}/"                       # the control
+    assert store.success_key(RUN) == f"ws7/success/{RUN}.json"
+    assert store.failed_key(RUN) == f"ws7/failed/{RUN}.json"
+    for key in (store.success_key(RUN), store.failed_key(RUN)):
+        assert key.startswith(store.PREFIX) and not key.startswith("ws7/runs/")
+        store.Store._check_key(key)                                       # a key the store takes
+    for bad in ("", "a/b", "run id", None, 7, "r" * 65):
+        for make in (store.success_key, store.failed_key, store.retained_prefix):
+            with pytest.raises(ValueError):
+                make(bad)
+
+
+def test_the_retained_prefix_is_outside_ws7_and_the_store_refuses_every_key_under_it(s3, st):
+    """The author's ruling 9 (20 Nov 2026). An incident copy is made by hand, outside
+    the task role's reach, so the job can never overwrite one and the lifecycle rule
+    never touches it. The partner: the same file name under the run's own prefix."""
+    retained = store.retained_prefix(RUN)
+    assert retained == f"retained/{RUN}/"
+    assert not retained.startswith(store.PREFIX) and not store.PREFIX.startswith(retained)
+    for key in (retained + "manifest.json", retained, "retained/x.json"):
+        assert code_of(lambda: st.put_if_absent(key, MINE)) == store.KEY_REFUSED
+        assert code_of(lambda: st.get(key)) == store.KEY_REFUSED
+        assert code_of(lambda: st.list_keys(key)) == store.KEY_REFUSED
+    assert s3.requests == []                                              # refused before any request
+    assert st.create(store.evidence_key("scheduled", RUN, "manifest.json"), MINE, attempts=1) \
+        == store.CREATED
+
+
+def test_an_evidence_key_is_made_of_plain_names_under_the_runs_own_prefix():
+    assert store.evidence_key("scheduled", RUN, "batches", f"{RUN}.main", "r1", "S1.json") \
+        == f"ws7/runs/scheduled/{RUN}/batches/{RUN}.main/r1/S1.json"
+    assert store.evidence_key("manual", f"{RUN}-manual", "summary.json") \
+        == f"ws7/runs/manual/{RUN}-manual/summary.json"
+    for parts in ((), ("..",), (".",), ("a/b",), ("a", ".."), ("",), ("a b",), ("a\\b",), (7,),
+                  ("x" * 81,)):
+        with pytest.raises(ValueError):
+            store.evidence_key("scheduled", RUN, *parts)
+
+
+def test_a_stored_file_is_json_or_markdown_and_nothing_else(s3, st):
+    """The author's ruling 7: `.json` and `.md`. Any other content type is refused
+    before a request is made."""
+    assert store.content_type("S1.json") == store.JSON_TYPE == "application/json"
+    assert store.content_type("SAFETY_NET.md") == store.MARKDOWN_TYPE
+    for name in ("notes.txt", "S1.json.bak", "json", "md", "report.MD", "image.png", ""):
+        assert store.content_type(name) is None
+    key = store.evidence_key("scheduled", RUN, "scores", "MEDS.md")
+    assert st.create(key, b"# invented\n", attempts=1, kind=store.MARKDOWN_TYPE) == store.CREATED
+    assert s3.content_types[key] == store.MARKDOWN_TYPE
+    assert st.put_if_absent(KEY, MINE) == (store.WRITTEN, s3.etag(KEY))   # the default: JSON
+    assert s3.content_types[KEY] == store.JSON_TYPE
+    before = list(s3.requests)
+    for kind in ("text/plain", "text/html", "application/octet-stream", "", None, 7):
+        assert code_of(lambda: st.put_if_absent(KEY + ".x", MINE, kind=kind)) == store.PUT_REFUSED
+    assert s3.requests == before                                          # none of them was sent
 
 
 def test_a_ledger_key_names_its_month_and_nothing_else_is_a_ledger():

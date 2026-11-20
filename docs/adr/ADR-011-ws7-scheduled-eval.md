@@ -559,7 +559,7 @@ Per-scenario detail goes to the run summary in S3, not into metric dimensions.
 
 | Family | Source | Examples |
 |---|---|---|
-| Run | the entrypoint | step failures by step (the fixed codes stay in the stored records: slice 2 part 4, ruling 20 Nov 2026), spend-guard trips, p90 elapsed time, tokens, cost (the batch's own total in the client wrapper's report) |
+| Run | the entrypoint | step failures by step (the fixed codes stay in the stored records: slice 2 part 4, ruling 20 Nov 2026), spend-guard trips, p90 elapsed time, tokens, estimated cost (the batch's own total in the client wrapper's report) |
 | Safety-netting | `score_batch.py` | invented seek-help triggers, pinned line missing, gate failures, verdict per scenario |
 | Medications (D4 metric) | `score_batch.py` | invented doses, invented frequencies, verdict per scenario |
 | Step-2 advice | `score_batch.py` | route correct per scenario, gold items recalled |

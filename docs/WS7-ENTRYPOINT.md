@@ -979,7 +979,7 @@ not here.** A v1 summary has the Run, Safety-netting and Medications families on
 
 | Metric | From |
 |---|---|
-| `cost_usd_micros` | **The batch's own total** in the guard's report (`batches[label].total_usd_nanos`), rounded up to micro-dollars. Not the report's total, which includes the pre-flight and, for a baseline, the other two batches (the author's ruling, 20 Nov 2026) |
+| `cost_usd_micros` | **The batch's own total** in the guard's report (`batches[label].total_usd_nanos`), rounded up to micro-dollars. Not the report's total, which includes the pre-flight and, for a baseline, the other two batches (the author's ruling, 20 Nov 2026). **It is an estimate, not the billed amount:** the usage Bedrock returned, priced at the runner's configured rates (`PRICE_PER_MTOK` times `REGIONAL_PREMIUM`, `evals/run_cold_eval.py:115-116`) |
 | `tokens_in_total`, `tokens_out_total`, `tokens_cache_read_total`, `tokens_cache_write_total` | The batch's calls in the report that got a reply with usage |
 | `input_tokens_max_<step>` | The largest input side of one call (input, cache read and cache write) for each model step: four for the pipeline, two for v1. For the measured input allowance (ADR-011 D7, point 1; slice 4) |
 | `elapsed_p90_ms` | The records' `elapsed_s`, every record in the batch |

@@ -723,10 +723,14 @@ def _differing_keys(summaries: list) -> tuple:
 
 
 def _corpus_scenarios(corpus_path: Path) -> set:
-    """The scenario IDs in the corpus file itself, never a number written here."""
+    """The scenario IDs in the corpus file itself, never a number written here.
+
+    The loader is the runner's own, and it is not changed. Whatever it raises on a
+    file it cannot use is translated here: a file that is valid JSON with a numeric
+    `notes` value makes it raise AttributeError (Codex P3, PR #8 re-check)."""
     try:
         return {scenario.id for scenario in rce.load_corpus(Path(corpus_path))[0]}
-    except (OSError, ValueError, KeyError, TypeError):
+    except (OSError, ValueError, KeyError, TypeError, AttributeError):
         raise Stop(NOT_WHOLE_CORPUS) from None
 
 
@@ -753,6 +757,9 @@ def build_candidate(summaries: object, *, baseline_id: object,
     runs = []
     for summary in summaries:
         try:
+            # As given first, and only then the copy: a JSON round trip would turn an
+            # integer scenario key 1 into "1", and the copy would pass (Codex P3, PR #8).
+            compare.check_run(summary)
             run = compare.check_run(json.loads(json.dumps(summary)))      # a copy
         except (compare.CompareError, TypeError, ValueError):
             raise Stop(CANDIDATE_SUMMARY_INVALID) from None

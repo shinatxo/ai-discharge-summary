@@ -472,6 +472,22 @@ def test_a_manifest_is_not_built_from_a_value_out_of_shape(change):
     assert SENTINEL not in stop.line()
 
 
+@pytest.mark.parametrize("target", ["pipeline", "v1"])
+@pytest.mark.parametrize("part, given", [
+    ("gold_sha256", {1: "b" * 64}), ("gold_sha256", {True: "b" * 64}),
+    ("gold_sha256", {"S1": "b" * 64, 2: "c" * 64}), ("scorer_versions", {1: 2}),
+    ("scorer_versions", {None: 2})], ids=repr)
+def test_a_manifest_is_not_built_from_keys_that_pass_only_after_a_json_round_trip(target, part,
+                                                                               given):
+    """Codex P3, PR #8 (part 5, carried item C). `build_keys()` copies its inputs with
+    a JSON round trip, which turns an integer key 1 into "1". It now checks what it was
+    given before it copies it. The partner: the same keys as strings build a manifest."""
+    as_strings = json.loads(json.dumps(given))
+    assert all(type(key) is str for key in as_strings) and as_strings != given
+    assert manifest(target, **{part: as_strings})["keys"][part] == as_strings
+    stopped(lambda: manifest(target, **{part: given}), wm.MANIFEST_INVALID)
+
+
 @pytest.mark.parametrize("change", [{"patient_second_pass": False}, {"safety_net_gate": False},
                                     {"safety_net_gate": None}])
 def test_a_v1_manifest_needs_the_second_pass_and_the_gate(change):

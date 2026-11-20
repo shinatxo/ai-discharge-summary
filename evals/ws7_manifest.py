@@ -375,16 +375,21 @@ def build_keys(own: object, *, corpus_sha256: object, gold_sha256: object,
     One function for the run manifest and the run summary (evals/ws7_summary.py), so
     the two cannot be built differently. The result is a copy: it never aliases an
     argument. It has passed the comparator's own check (`ws7_compare.check_keys`).
-    Anything out of shape is `ws7_manifest_invalid`."""
+    Anything out of shape is `ws7_manifest_invalid`.
+
+    THE ORIGINAL OBJECTS ARE CHECKED BEFORE THEY ARE COPIED (Codex P3, PR #8). The copy
+    is a JSON round trip, and JSON has only string keys: an integer scenario key `1`
+    would come back as `"1"` and pass. So the check runs on what was given, and the
+    copy is made only of what passed."""
     bad = Stop(MANIFEST_INVALID)
     target = own.get("target") if type(own) is dict else None
     if type(target) is not str or target not in store.TARGETS or not _own_ok(own, target):
         raise bad
     try:
-        keys = json.loads(json.dumps(dict(
-            _compared(own, target), corpus_sha256=corpus_sha256, gold_sha256=gold_sha256,
-            scorer_versions=scorer_versions)))
-        return compare.check_keys(keys, "manifest")
+        given = dict(_compared(own, target), corpus_sha256=corpus_sha256, gold_sha256=gold_sha256,
+                     scorer_versions=scorer_versions)
+        compare.check_keys(given, "manifest")               # as given: before any copy
+        return compare.check_keys(json.loads(json.dumps(given)), "manifest")
     except (compare.CompareError, TypeError, ValueError):
         raise bad from None
 

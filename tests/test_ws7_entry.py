@@ -3161,6 +3161,195 @@ def test_the_claims_run_id_is_reported_as_the_claim_wrote_it_at_whatever_hour(th
     assert check_lines(world)[1].startswith("run 2026-12-16T0300-v1 started")
 
 
+# ---------------------------------- every JSON object the job reads is decoded strictly
+
+def _with_member(valid: dict, name: str, value_json: str, *, first: bool) -> bytes:
+    """`valid` as JSON text with ONE MORE member called `name`, so that the name is
+    there twice: the extra one first (Python's loader would keep the valid one, and
+    say nothing) or last (it would keep the extra one)."""
+    text = compare.render(valid).decode("utf-8").strip()
+    assert text.startswith("{") and text.endswith("}")
+    extra = f'"{name}":{value_json}'
+    return (("{" + extra + "," + text[1:]) if first else (text[:-1] + "," + extra + "}")).encode()
+
+
+def _valid(which: str) -> dict:
+    target, run = "v1", RUN_ID["v1"]
+    return {"claim": _claim(target), "success": json.loads(_success_record(run, target)),
+            "failed": json.loads(_failed_record(run, target, entry.CALL_FAILED, ["throttled"]))}[which]
+
+
+WRONG_JSON = {"schema": '"ws7-other/1"', "run_id": '"2026-12-09T0400-v1"', "target": '"pipeline"',
+              "mode": '"manual"', "scheduled_time": '"2026-12-15T04:00:00Z"'}
+
+
+@pytest.mark.parametrize("first", [True, False], ids=["the bad value first", "the bad value last"])
+@pytest.mark.parametrize("which", list(OUTSIDE))
+def test_a_duplicate_member_in_an_object_the_check_reads_is_reported_invalid(thursday, which,
+                                                                            first):
+    """THE CLASS (Codex P2, PR #9, second re-check): every JSON object the job reads is
+    decoded strictly, as the comparator does: a duplicate member, NaN or Infinity is
+    refused.
+
+    Every field of each object the check reads, twice in the object: once wrong and
+    once right. With the bad value FIRST, Python's own loader keeps the right one and
+    the object would pass its validator; with it last, it keeps the wrong one. Both
+    are reported `not_json`. The control shows what a lenient loader would have made
+    of each; the partner is the object with each name once."""
+    world = thursday
+    assert _checked(world, which) == _line(VALID_LINE[which])
+    valid = _valid(which)
+    for field in FIELDS[which]:
+        body = _with_member(valid, field, WRONG_JSON.get(field, "null"), first=first)
+        lenient = json.loads(body)                  # the control: Python accepts it, silently
+        assert (lenient == valid) == first, field   # ... and, bad value first, as the valid object
+        assert entry.strict_json(body) is entry.NOT_JSON
+        assert _checked(world, which, body=body) == _line(INVALID_LINE[which], "not_json"), field
+    # a member twice with the SAME valid value is refused too
+    same = _with_member(valid, "schema", json.dumps(valid["schema"]), first=True)
+    assert json.loads(same) == valid
+    assert _checked(world, which, body=same) == _line(INVALID_LINE[which], "not_json")
+    assert _checked(world, which) == _line(VALID_LINE[which])
+
+
+@pytest.mark.parametrize("constant", ["NaN", "Infinity", "-Infinity"])
+@pytest.mark.parametrize("which", list(OUTSIDE))
+def test_nan_or_infinity_in_an_object_the_check_reads_is_reported_invalid(thursday, which,
+                                                                         constant):
+    """`NaN`, `Infinity` and `-Infinity` are not JSON. In place of each field's value in
+    turn, and as an extra member: the object is `not_json`. The control: Python's own
+    loader reads each. The partner: the object without it."""
+    world = thursday
+    valid = _valid(which)
+    for field in FIELDS[which]:
+        marked = compare.render({**valid, field: "@@HERE@@"}).decode("utf-8")
+        assert marked.count('"@@HERE@@"') == 1
+        body = marked.replace('"@@HERE@@"', constant).encode()
+        assert type(json.loads(body)[field]) is float                   # the control: Python reads it
+        assert entry.strict_json(body) is entry.NOT_JSON
+        assert _checked(world, which, body=body) == _line(INVALID_LINE[which], "not_json"), field
+    assert _checked(world, which) == _line(VALID_LINE[which])
+
+
+@pytest.mark.parametrize("raw, wanted", [
+    (b'{"a":1}', {"a": 1}), (b'[1,2]', [1, 2]), (b'"x"', "x"), (b'null', None), (b'1.5', 1.5),
+    (b'{"a":{"b":1},"c":[{"b":2}]}', {"a": {"b": 1}, "c": [{"b": 2}]}),      # one name in two objects
+    (b'{"a":1,"a":1}', None), (b'{"a":1,"a":2}', None),
+    (b'{"a":{"b":1,"b":2}}', None), (b'[{"b":1,"b":2}]', None),              # a duplicate, nested
+    (b'{"a":NaN}', None), (b'[Infinity]', None), (b'-Infinity', None),
+    (b'{"a":1', None), (b'', None), (b'\xff\xfe', None), (b'{"a":1}x', None),
+    (b'1' + b'0' * 5000, None),                                              # a number too long to be one
+    ("a string, not bytes", None), (None, None), (7, None)], ids=repr)
+def test_the_one_strict_loader_reads_json_and_nothing_else(raw, wanted):
+    read = entry.strict_json(raw)
+    if wanted is None and raw != b'null':
+        assert read is entry.NOT_JSON
+    else:
+        assert read == wanted and read is not entry.NOT_JSON
+
+
+def test_the_entrypoint_has_one_json_loader_and_every_read_goes_through_it():
+    """`json.loads` appears once in evals/ws7_entry.py, inside `strict_json`, and
+    `json.load` not at all; evals/ws7_publish.py reads no JSON."""
+    source = (ROOT / "evals" / "ws7_entry.py").read_text("utf-8")
+    assert source.count("json.loads(") == 1 and "json.load(" not in source
+    body = source[source.index("def strict_json("):source.index("def _read_json(")]
+    assert "json.loads(" in body
+    assert "json.load" not in (ROOT / "evals" / "ws7_publish.py").read_text("utf-8")
+    assert source.count("strict_json(") == 4        # its definition and the three reads
+
+
+def _rewrite_pre_flight_index(monkeypatch, world, target: str, rewrite) -> None:
+    """Let the real pre-flight run and return; then replace its index's bytes."""
+    runner = rpe if target == "pipeline" else rce
+    real, calls = runner.main, []
+
+    def main(*args, **kwargs):
+        code = real(*args, **kwargs)
+        calls.append(code)
+        if len(calls) == 1:
+            path = world.runs_dir / PRE[target] / "batch.json"
+            path.write_bytes(rewrite(path.read_bytes()))
+        return code
+    monkeypatch.setattr(runner, "main", main)
+
+
+INDEX_REWRITES = {
+    "nothing": lambda raw: raw,
+    "a failed generation, then the same member null": lambda raw: raw.replace(
+        b'"error_code": null', b'"error_code": "invented", "error_code": null', 1),
+    "the same member null, then a failed generation": lambda raw: raw.replace(
+        b'"error_code": null', b'"error_code": null, "error_code": "invented"', 1),
+    "stopped_early twice": lambda raw: raw.replace(
+        b'"stopped_early": false', b'"stopped_early": true, "stopped_early": false', 1),
+    "generations twice": lambda raw: raw[:raw.rindex(b"}")] + b', "generations": []}',
+    "NaN": lambda raw: raw.replace(b'"error_code": null', b'"error_code": null, "invented": NaN', 1),
+    "Infinity": lambda raw: raw.replace(b'"stopped_early": false', b'"stopped_early": false, "x": Infinity', 1),
+}
+
+
+@pytest.mark.parametrize("what", list(INDEX_REWRITES))
+@pytest.mark.parametrize("target", TARGETS)
+def test_a_batch_index_with_a_duplicate_member_nan_or_infinity_is_not_read(ready, world,
+                                                                          monkeypatch, target, what):
+    """The same loader reads a batch's own index. The pre-flight's index is rewritten
+    after the real runner returned 0. With `"error_code": "invented"` and then
+    `"error_code": null`, Python's own loader would read a clean generation, and the
+    run would go on. Each rewrite is `ws7_runner_refused`; the partner rewrites
+    nothing and the run succeeds."""
+    ready(target)
+    rewrite = INDEX_REWRITES[what]
+    seen = []
+    _rewrite_pre_flight_index(monkeypatch, world, target,
+                              lambda raw: (seen.append(rewrite(raw)), seen[-1])[1])
+    code = world.run(target)
+    if what == "nothing":
+        assert code == 0 and world.metric("RunOk") == [1]
+        return
+    assert code == 1
+    assert entry.strict_json(seen[0]) is entry.NOT_JSON and json.loads(seen[0])  # Python reads it
+    record = world.failed(RUN_ID[target])
+    assert (record["code"], record["ids"], record["counts"]) == (
+        entry.RUNNER_REFUSED, [PRE[target]], {"exit_code": 0})
+    assert not (world.runs_dir / MAIN[target]).exists()
+
+
+RESULT_REWRITES = {
+    "a breach, then the same members as no breach": lambda raw: raw.replace(
+        b"{", b'{"status":"breach","exit_code":1,', 1),
+    "no breach, then the same members as a breach": lambda raw: raw[:raw.rindex(b"}")]
+    + b',"status":"breach","exit_code":1}',
+    "run_id twice": lambda raw: raw.replace(b"{", b'{"run_id":"2026-12-09T0400-v1.main",', 1),
+    "NaN": lambda raw: raw.replace(b"{", b'{"invented":NaN,', 1),
+    "Infinity": lambda raw: raw.replace(b"{", b'{"invented":-Infinity,', 1),
+}
+
+
+@pytest.mark.parametrize("what", list(RESULT_REWRITES))
+def test_a_comparison_result_with_a_duplicate_member_nan_or_infinity_is_not_read(
+        ready, world, monkeypatch, what):
+    """And it reads the comparator's result. The real comparator's "no breach" result
+    for this run is rewritten before the entrypoint reads it; the exit code is still
+    0. Each is `ws7_compare_error`, never a pass. The partner is every successful run."""
+    target = "v1"
+    ready(target)
+    seen = []
+
+    def act(out: Path, code: int):
+        raw = out.read_bytes()
+        seen.append(RESULT_REWRITES[what](raw))
+        out.write_bytes(seen[-1])
+        return code
+    _comparator(monkeypatch, act)
+    assert world.run(target) == 1
+    assert json.loads(seen[0]) and entry.strict_json(seen[0]) is entry.NOT_JSON
+    record = world.failed(RUN_ID[target])
+    assert (record["code"], record["ids"], record["counts"]) == (
+        entry.COMPARE_ERROR, ["result_unreadable"], {"exit_code": 0})
+    assert world.published()["RunOk"] == [0] and no_success(world, target)
+    assert "NoBaseline" not in world.published()
+
+
 # ---------------------------- one validator, run by the writer before the PUT too
 
 def _spy_on(monkeypatch, world, module, name: str) -> list:

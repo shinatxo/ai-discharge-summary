@@ -517,11 +517,39 @@ def files_in(batch_dir: Path) -> tuple:
     return sorted(files), other
 
 
-def _read_json(path: Path) -> object:
+NOT_JSON = object()           # what `strict_json` gives for bytes it will not read
+
+
+def strict_json(raw: object) -> object:
+    """THE ONE LOADER FOR EVERY JSON OBJECT THE ENTRYPOINT READS (Codex P2, PR #9,
+    second re-check). Strict, as the comparator is (`ws7_compare._parse`, whose two
+    hooks are used here): UTF-8 only, NO DUPLICATE MEMBER in any object, and no NaN or
+    Infinity. Anything else is `NOT_JSON`, never a value.
+
+    Why duplicates: Python's own loader keeps the LAST of two members with one name
+    and says nothing. A file that holds `"error_code": "x"` and then
+    `"error_code": null` would be read as a clean generation, and a record that holds
+    a wrong run ID and then the right one would pass its validator.
+
+    The three reads: a batch's own index (`batch.json`), the comparator's result, and
+    each object the Thursday check reads (the claim, the success record, the failed
+    record)."""
     try:
-        return json.loads(path.read_bytes().decode("utf-8"))
-    except (OSError, ValueError, RecursionError):
+        return json.loads(raw.decode("utf-8"), object_pairs_hook=compare._no_duplicate_keys,
+                          parse_constant=compare._no_constants)
+    except (AttributeError, ValueError, RecursionError):
+        # not bytes; not UTF-8; not JSON; a duplicate member; NaN or Infinity; a number
+        # too long to be one
+        return NOT_JSON
+
+
+def _read_json(path: Path) -> object:
+    """A file's JSON, strictly, or None."""
+    try:
+        value = strict_json(path.read_bytes())
+    except OSError:
         return None
+    return None if value is NOT_JSON else value
 
 
 def _sha256(data: bytes) -> str:
@@ -943,13 +971,14 @@ class _Scheduled:
         # The exit code is the authority, and it is judged first.
         if type(exit_code) is not int or exit_code not in (0, 1, 2):
             raise Stop(COMPARE_ERROR, ids=("exit_code_unknown",))
-        raw = None
         try:
             raw = out.read_bytes()
-            result = json.loads(raw.decode("utf-8"))
-        except (OSError, ValueError, RecursionError):
+        except OSError:
+            raw = None
+        result = strict_json(raw)                   # None is not bytes: NOT_JSON
+        if result is NOT_JSON:
             raise Stop(COMPARE_ERROR, ids=("result_unreadable",),
-                       counts={"exit_code": exit_code}) from None
+                       counts={"exit_code": exit_code})
         self.documents["comparison.json"] = raw
         if type(result) is not dict or result.get("schema") != compare.RESULT_SCHEMA \
                 or type(result.get("exit_code")) is not int or result["exit_code"] != exit_code:
@@ -1249,15 +1278,9 @@ def _listed(st: store.Store, key: str) -> bool:
     return key in st.list_keys(key)
 
 
-_NOT_JSON = object()
-
-
 def _read_object(st: store.Store, key: str) -> object:
-    """The object at `key`, parsed, or `_NOT_JSON`."""
-    try:
-        return json.loads(st.get(key)[0].decode("utf-8"))
-    except (ValueError, RecursionError):
-        return _NOT_JSON
+    """The object at `key`, read strictly (`strict_json`), or `NOT_JSON`."""
+    return strict_json(st.get(key)[0])
 
 
 # ONE VALIDATOR FOR EACH RECORD, SHARED BY THE CODE THAT WRITES IT AND THE CHECK THAT
@@ -1419,7 +1442,7 @@ def _failed_line(st: store.Store, claim: dict) -> str:
     record that fails its check is reported as invalid; the run is still a failed run."""
     run = claim["run_id"]
     record = _read_object(st, store.failed_key(run))
-    fault = "not_json" if record is _NOT_JSON else failed_fault(record, claim=claim)
+    fault = "not_json" if record is NOT_JSON else failed_fault(record, claim=claim)
     if fault is not None:
         return f"failed run {run}: failed record invalid ({fault})"
     code, ids = record["code"], record["ids"]
@@ -1441,7 +1464,7 @@ def _occurrence(st: store.Store, key: str, target: str, cfg: reserve.Config) -> 
     if not _listed(st, key):
         return publish.NO_CLAIM_LINE
     claim = _read_object(st, key)
-    fault = "not_json" if claim is _NOT_JSON else wl.claim_fault(
+    fault = "not_json" if claim is NOT_JSON else wl.claim_fault(
         claim, key=key, target=target, mode=SCHEDULED, max_start_delay_s=cfg.max_start_delay_s)
     if fault is not None:
         return f"claim object invalid ({fault}): it is not read as a scheduled claim"
@@ -1452,7 +1475,7 @@ def _occurrence(st: store.Store, key: str, target: str, cfg: reserve.Config) -> 
     if not _listed(st, store.success_key(run)):
         return f"run {run} started and did not finish: no success record"
     record = _read_object(st, store.success_key(run))
-    fault = "not_json" if record is _NOT_JSON else success_fault(record, claim=claim)
+    fault = "not_json" if record is NOT_JSON else success_fault(record, claim=claim)
     if fault is not None:
         return f"run {run}: success record invalid ({fault}); it is not counted as a success"
     return None

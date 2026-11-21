@@ -1782,6 +1782,13 @@ one, is refused.**
 
 - An object that fails is reported as **invalid, with a fixed label**: the name of the first
   field that fails, or `not_json`, `not_an_object`, or `fields` (an unknown or a missing field).
+- **Every JSON object the entrypoint reads is decoded strictly** (Codex P2, PR #9, second
+  re-check), by one loader, `strict_json()`, as the comparator does: UTF-8 only, **no duplicate
+  member** in any object, and no `NaN` or `Infinity`. Python's own loader keeps the last of two
+  members with one name and says nothing, so a record with a wrong run ID and then the right one
+  would pass its validator. The entrypoint has three reads, and all three use it: a batch's own
+  index (`batch.json`; otherwise `ws7_runner_refused`), the comparator's result (otherwise
+  `ws7_compare_error`), and each object the check reads (otherwise `not_json`).
 - **An invalid record never counts as a success**, and an invalid claim names no run, so no
   record is read on its word.
 - **A record its validator refuses is not written.** For the success record the run then fails.

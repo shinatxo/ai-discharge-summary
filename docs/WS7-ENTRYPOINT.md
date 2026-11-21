@@ -593,6 +593,24 @@ entry is left open, to be abandoned and resolved.
 - **`settle()` and `mark_crashed()` take the `Admission` that `admit()` returned, not a run ID**
   (Codex review of PR #6). The entry must be the one that `Admission` describes:
   `ws7_admission_invalid` otherwise.
+- **The report must be complete and consistent** (part 5a; Codex P1, PR #9, second re-check).
+  `report_fault()` checks it before any write, and `settle()` refuses a report that fails:
+
+  | Rule | Otherwise |
+  |---|---|
+  | Complete: every call has a final outcome. No row is left `sent` | `ws7_report_incomplete` |
+  | The run's total is the sum of its rows' costs, and each batch's total is the sum of that batch's rows | `ws7_report_inconsistent` |
+  | A refused call cost nothing, and every other call is in a batch the report names | `ws7_report_inconsistent` |
+  | The `unmetered` flag is set exactly when a row is unmetered | `ws7_report_inconsistent` |
+  | The rows, the batches and those totals are there, in their types | `ws7_report_invalid` |
+
+  - Why: the guard writes a call's row as `sent`, and only when the call ends does it give the
+    row its outcome and cost, then add the cost to the run's total, then to the batch's, then
+    mark the run unmetered if it is (`evals/ws7_client.py`, not changed). Anything that ends the
+    work between two of those steps leaves a report whose total is not the run's cost. Since
+    the failure path catches an interrupt and carries on, it must not trust that total.
+  - A report that fails means the run's cost is unknown. **Unknown cost is unresolved, never
+    metered**: the entry stays open, and the entrypoint then calls `mark_crashed()` (below).
 - **The report must be the run's own.** Otherwise `ws7_report_invalid`, and the entry stays
   open.
   - **Its `run_id` must be the `Admission`'s** (Codex re-check of PR #6; the author's ruling,
@@ -613,7 +631,7 @@ entry is left open, to be abandoned and resolved.
 | Case | Recognised by | When | Counts at |
 |---|---|---|---|
 | Unmetered | The run itself: `settle()` is given a report that says `unmetered` | At settling | The guard's counted total |
-| Crashed | The run itself: part 5's outermost handler calls `mark_crashed()` when it has no guard report to settle from | At once | Its reservation |
+| Crashed | The run itself: part 5 calls `mark_crashed()` when it has no guard report to settle from, **or when the report cannot be settled from**: it is incomplete, inconsistent or cannot be read (the author's ruling, 21 Nov 2026) | At once | Its reservation |
 | Abandoned | Whoever looks next: any call that changes the ledger, in any mode, and `expire()` | At or after `expires_at` | Its reservation |
 
 - `expires_at` is the time the entry was opened plus the wall-clock limit for its mode. It is
@@ -840,7 +858,7 @@ publishes them.
 | The claim | `ws7_duplicate`, `ws7_target_unknown`, `ws7_mode_unknown`, `ws7_scheduled_time_invalid`, `ws7_scheduled_time_future`, `ws7_start_too_late`, `ws7_claim_unavailable`, `ws7_claim_invalid` (part 5a: the object failed the validator the Thursday check uses, and was not written) |
 | Admission | `ws7_reservation_invalid`, `ws7_wall_clock_limit_too_short`, `ws7_run_in_progress`, `ws7_blocked_unresolved`, `ws7_over_cap`, `ws7_entry_exists`, `ws7_admitted_past_deadline` |
 | Any ledger write | `ws7_ledger_conflict`, `ws7_ledger_unavailable`, `ws7_ledger_invalid`, `ws7_ledger_write_invalid` |
-| Settling and resolving | `ws7_admission_invalid`, `ws7_entry_unknown`, `ws7_entry_not_open`, `ws7_entry_not_unresolved`, `ws7_report_invalid`, `ws7_basis_unknown`, `ws7_settled_figure_invalid`, `ws7_estimate_differs` |
+| Settling and resolving | `ws7_admission_invalid`, `ws7_entry_unknown`, `ws7_entry_not_open`, `ws7_entry_not_unresolved`, `ws7_report_invalid`, `ws7_report_incomplete`, `ws7_report_inconsistent`, `ws7_basis_unknown`, `ws7_settled_figure_invalid`, `ws7_estimate_differs` |
 | The match check and the manifest | `ws7_runner_argv_invalid`, `ws7_expected_unreadable`, `ws7_expected_invalid`, `ws7_match_differs`, `ws7_identity_missing`, `ws7_manifest_invalid`, `ws7_manifest_exists`, `ws7_manifest_unavailable` |
 | The store | `ws7_store_endpoint_refused`, `ws7_store_bucket_refused`, `ws7_store_key_refused`, `ws7_store_list_failed`, `ws7_store_list_truncated`, `ws7_store_get_failed`, `ws7_store_object_too_large`, `ws7_store_put_refused`, `ws7_store_object_missing`, `ws7_store_create_unsure`, `ws7_store_wrong_region`, `ws7_store_resend_refused` |
 
@@ -1342,6 +1360,13 @@ and the wrapper itself refuses the rest only when a call is unmetered.
 
 - The refusals made here are not in the guard's report. The failed record counts them
   (`calls_stopped`).
+- **A call whose accounting did not finish stops the run too** (Codex P1, PR #9, second
+  re-check). The wrapper looks at the guard's report only between calls: before one is sent,
+  and after one has returned or raised. At those moments every call should have its outcome
+  and the totals should be the sum of the rows. A row still `sent`, a report
+  `ws7_ledger.report_fault()` refuses, or a report that cannot be read means the accounting of
+  a call did not finish: the run's cost is unknown, and it sends no further call. The run
+  fails with `ws7_report_incomplete` or `ws7_report_inconsistent`.
 - A generation that fails with no call failing (a reply the pipeline cannot use, for example)
   does not trip this: the other scenarios are still generated.
 
@@ -1447,7 +1472,21 @@ type** (Codex P2, PR #9, re-check). `index_counts()` reads the index:
   before anything is scored. A test reads the batch folder at the moment the settling write
   lands: the records are there and no score file is.
 - A failure anywhere after admission settles first. It settles from the guard's report when
-  there is a guard, and calls `mark_crashed()` only when there is none.
+  there is a guard, and calls `mark_crashed()` when there is none.
+- **It also calls `mark_crashed()` when the report cannot be settled from** (the author's
+  ruling, 21 Nov 2026, widening change A). After catching anything, the job trusts only what
+  it can check. If the ledger refuses the report (`ws7_report_incomplete`,
+  `ws7_report_inconsistent`, `ws7_report_invalid`), or the report cannot be read:
+  - the entry becomes **unresolved, as a crashed run, at its reservation**. It is never
+    settled as metered from a total that may be short;
+  - it **blocks every later scheduled run** (`ws7_blocked_unresolved`) until the author
+    resolves it;
+  - the ledger's refusal is still raised once the mark has landed, so the run fails by it; if
+    the run had already failed, the code is recorded beside the first one (`also`).
+- Tests stop one call's accounting at each of five points (after the request is sent; after
+  the reply and before usage is recorded; after usage and before the run's total; between the
+  run's total and the batch's; after the totals and before the run is marked unmetered), by an
+  interrupt and by an exception, in the pre-flight and in the main batch, for both targets.
 - A settle is tried once. If it is refused and the run had already failed, the first failure's
   code stays the run's code and the settle's code is recorded beside it.
 
@@ -1613,7 +1652,7 @@ stops or raises is logged, and the next is still tried.
 
 | Step | What it does |
 |---|---|
-| 1. The ledger | Settle from the guard's report; `mark_crashed()` only when there is no guard |
+| 1. The ledger | Settle from the guard's report; `mark_crashed()` when there is no guard, or when the report cannot be settled from |
 | 2. The records | Store what records exist: the guard's report first, then every allowed file. A file that may not be stored is left out and counted |
 | 3. The failed record | Build it, the clock read included, and write it. Only for a run that holds its claim |
 | 4. The markers | `RunRefused` = 1 and, from the claim's holder, `RunOk` = 0 (and `NoBaseline` = 1) |
@@ -2060,6 +2099,11 @@ PYTHONDONTWRITEBYTECODE=1 python -m pytest -p no:cacheprovider -q tests/test_ws7
   - The order of a successful run; nothing sent before the match check, and no model call before
     the claim and the reservation; the settle landing before any score file exists; `RunOk` = 1
     as the last request any server received.
+  - A report that cannot be settled from: one call's accounting stopped at each of five points,
+    by an interrupt and by an exception, in each batch, for both targets. Each time no further
+    call is sent, the entry is unresolved at its reservation, and next week's run is refused
+    with `ws7_blocked_unresolved` and sends nothing. The partner: a clean run settles as
+    metered and next week's run is admitted.
   - A throttle on the main batch's second scenario: no request for any later scenario reaches the
     stub; the partner sends all 18. A 500: unmetered and unresolved. A failed pre-flight: the
     main batch never starts.

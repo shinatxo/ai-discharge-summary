@@ -284,16 +284,24 @@ def _quiet():
         yield
 
 
+SENT = "sent"        # the guard's word for a call that has no final outcome yet
+
+
 def first_failure(report: dict) -> Stop | None:
     """Ruling e2 (18 Nov 2026): the first call in the guard's report whose outcome is
     not `response`, as the stop that fails the run. A refusal keeps its own code. A
     call that makes the run unmetered is `ws7_unmetered`. A call that did not run the
     model (a throttle, no connection, a request botocore refused) is
-    `ws7_call_failed`, naming the outcome."""
+    `ws7_call_failed`, naming the outcome. A call still `sent` is
+    `ws7_report_incomplete`."""
     for row in report["calls"]:
         outcome = row["outcome"]
         if outcome == wc.RESPONSE:
             continue
+        if outcome == SENT:
+            # Sent, and never given an outcome: the accounting of that call did not
+            # finish. The run's cost is unknown; the ledger will not settle from this.
+            return Stop(wl.REPORT_INCOMPLETE, counts={"call": row["seq"]})
         if outcome == wc.REFUSED:
             code = row["code"] if row["code"] in wc.CODES else CALL_FAILED
             return Stop(code, counts={"call": row["seq"]})
@@ -305,7 +313,15 @@ def first_failure(report: dict) -> Stop | None:
 
 
 class _Tripwire:
-    """Whether the run has failed, read from the guard's own report."""
+    """Whether the run has failed, read from the guard's own report.
+
+    It is looked at only between calls: before one is sent, and after one has returned
+    or raised (both runners send one call at a time). So at every look each call
+    should have its final outcome and the totals should be the sum of the rows. A row
+    still `sent`, or a report the ledger would not settle from, means the accounting
+    of a call did not finish. The run's cost is then unknown, and it sends no further
+    call (Codex P1, PR #9, second re-check). A report that cannot be read at all is
+    treated the same way: only what can be checked is trusted."""
 
     def __init__(self, guard: wc.Guard):
         self._guard = guard
@@ -314,9 +330,12 @@ class _Tripwire:
 
     def look(self) -> bool:
         if not self.tripped:
-            # "sent" is a call in flight; both runners send one call at a time.
-            self.tripped = any(row["outcome"] not in (wc.RESPONSE, "sent")
-                               for row in self._guard.report()["calls"])
+            try:
+                report = self._guard.report()
+                self.tripped = any(row["outcome"] != wc.RESPONSE for row in report["calls"]) \
+                    or wl.report_fault(report) is not None
+            except BaseException:               # noqa: BLE001 - a report that cannot be read
+                self.tripped = True
         return self.tripped
 
 
@@ -699,10 +718,16 @@ class _Scheduled:
     def _judge(self, kind: str, exit_code: object, raised: bool) -> dict:
         """What a runner's return means. Returns the batch's index (`batch.json`)."""
         label = self.labels[kind]
-        failure = first_failure(self.guard.report())
+        report = self.guard.report()
+        failure = first_failure(report)
         if failure is not None:                     # ruling e2: the first failure's code
             raise Stop(failure.code, ids=failure.ids + (label,),
                        counts=dict(failure.counts, calls_stopped=self.wire.refused))
+        fault = wl.report_fault(report)
+        if fault is not None:
+            # Every call has an outcome, and the totals are not the sum of the rows: the
+            # accounting of a call did not finish. The run's cost is unknown.
+            raise Stop(fault, ids=(label,), counts={"calls_stopped": self.wire.refused})
         if raised:
             raise Stop(RUNNER_CRASHED, ids=(label,))
         index = _read_json(self.batches[label]["dir"] / "batch.json")
@@ -767,21 +792,43 @@ class _Scheduled:
         self.say("generated", generations=len(self.scenarios))
 
     def _settle(self) -> None:
-        """Settle from the guard's report, or mark the run crashed when there is no
-        guard. Tried once: whatever comes of it, it is not tried again."""
+        """Settle from the guard's report, or mark the run crashed. Tried once:
+        whatever comes of it, it is not tried again.
+
+        THE RUN IS MARKED CRASHED WHEN THERE IS NO GUARD REPORT, OR WHEN THE REPORT
+        CANNOT BE SETTLED FROM (the author's ruling, 21 Nov 2026, widening change A).
+        The ledger refuses a report that is incomplete or inconsistent
+        (`ws7_ledger.report_fault`), or that cannot be read: the run's cost is then
+        unknown, so its entry becomes unresolved at its reservation and blocks every
+        later scheduled run until the author resolves it. The ledger's refusal is
+        still raised, after the mark has landed, so the run fails by it."""
         if self.admission is None or self.settled is not None:
             return
         self.settled = "failed"
+        refused = None
         try:
             if self.guard is None:
                 entry = self.ledger.mark_crashed(self.admission)
             else:
-                entry = self.ledger.settle(self.admission, self.guard.report())
+                try:
+                    report = self.guard.report()
+                except BaseException:               # noqa: BLE001 - a guard left half-written
+                    report = None                   # the ledger refuses it: ws7_report_invalid
+                try:
+                    entry = self.ledger.settle(self.admission, report)
+                except Stop as stop:
+                    if stop.code not in wl.REPORT_CODES:
+                        raise
+                    refused = stop
+                    entry = self.ledger.mark_crashed(self.admission)
         except Stop as stop:
             self.settled, self.settle_stop = stop.code, stop
             raise
         self.settled = entry["state"] if entry["kind"] is None else entry["kind"]
         self.say("settled", state=self.settled, counted_usd_micros=entry["counted_usd_micros"])
+        if refused is not None:
+            self.settle_stop = refused
+            raise refused
 
     def _score_and_compare(self) -> tuple:
         label = self.labels[MAIN]

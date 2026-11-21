@@ -430,6 +430,12 @@ which an entry was resolved as an accepted estimate has no such assurance, and i
      report themselves. A run that dies outright reports nothing, so its entry stays open and
      is found at its wall-clock limit: that is the abandoned case. An entry takes one kind, the
      first one written.
+     - **A run is settled as metered only from a report that is complete and consistent** (the
+       author's ruling, 21 Nov 2026): every call has a final outcome, and the totals equal the
+       sum of the calls, for each batch and for the run. A run whose report is not (its
+       accounting was interrupted part-way, for example), or that has no report, reports itself
+       as **crashed**: its cost is unknown, so its entry is unresolved at its reservation,
+       never metered.
    - An unresolved entry **blocks every later inside-cap (scheduled) run**, in that month or any
      later one, until the author resolves it.
    - The author resolves an unresolved entry, of any of the three kinds, by recording a settled

@@ -513,6 +513,166 @@ def test_the_first_failure_names_the_run_whatever_follows_it():
         assert (stop.code, stop.ids, stop.counts) == (code, ids, {"call": 2}), failing
 
 
+# ============ A LEDGER ENTRY IS SETTLED ONLY FROM A COMPLETE, CONSISTENT REPORT ==
+
+ACCOUNTING_POINTS = ("after the request is sent", "after the reply and before usage is recorded",
+                     "after usage and before the run's total", "between the run's total and the batch's",
+                     "after the totals and before the run is marked unmetered")
+ACCOUNTING_ENDS = {"an interrupt": KeyboardInterrupt, "an exception": lambda: RuntimeError(SENTINEL)}
+
+
+def _guard_that_stops_at(point: str, nth: int, make):
+    """A Guard (evals/ws7_client.py, unchanged) whose accounting of its `nth` call ends
+    at `point`, once, by raising `make()`. Everything else is the real guard."""
+    armed = [True]
+
+    def stop_here(guard, wanted: str) -> None:
+        if armed[0] and wanted == point and len(getattr(guard, "calls", ())) == nth:
+            armed[0] = False
+            raise make()
+
+    class Batch(dict):
+        guard = None
+
+        def __setitem__(self, key, value):
+            if key == "total_nanos":
+                stop_here(self.guard, ACCOUNTING_POINTS[3])
+            super().__setitem__(key, value)
+
+    class Stopped(wc.Guard):
+        def elapsed_ms(self, since):
+            stop_here(self, ACCOUNTING_POINTS[0])
+            return super().elapsed_ms(since)
+
+        def settle_response(self, row, response, latency_ms):
+            stop_here(self, ACCOUNTING_POINTS[1])
+            return super().settle_response(row, response, latency_ms)
+
+        def begin_batch(self, label, generations):
+            super().begin_batch(label, generations)
+            batch = Batch(self._batch)
+            batch.guard = self
+            self._batch = self._batches[label] = batch
+
+        @property
+        def total_nanos(self):
+            return self.__dict__["_total"]
+
+        @total_nanos.setter
+        def total_nanos(self, value):
+            stop_here(self, ACCOUNTING_POINTS[2])
+            self.__dict__["_total"] = value
+
+        @property
+        def unmetered(self):
+            return self.__dict__["_unmetered"]
+
+        @unmetered.setter
+        def unmetered(self, value):
+            if value:
+                stop_here(self, ACCOUNTING_POINTS[4])
+            self.__dict__["_unmetered"] = value
+    return Stopped
+
+
+@pytest.mark.parametrize("ends", list(ACCOUNTING_ENDS))
+@pytest.mark.parametrize("point", ACCOUNTING_POINTS)
+@pytest.mark.parametrize("batch", ["the pre-flight", "the main batch"])
+@pytest.mark.parametrize("target", TARGETS)
+def test_accounting_that_did_not_finish_leaves_the_entry_unresolved_at_its_reservation(
+        ready, world, monkeypatch, target, batch, point, ends):
+    """THE CLASS (Codex P1, PR #9, second re-check): a ledger entry is settled as
+    metered only from a report that is complete and consistent: every call has a final
+    outcome (no row left `sent`), and the totals equal the sum of the rows, for each
+    batch and for the run. Anything else means the run's cost is unknown, and unknown
+    cost is unresolved, never metered.
+
+    An interrupt, and an ordinary exception, at each point in one call's accounting,
+    in the pre-flight and in the main batch. Each time: no further call is sent; the
+    entry is unresolved, as a crashed run, at its reservation; and the next scheduled
+    run is refused with `ws7_blocked_unresolved` and sends nothing. The partner is
+    the test after this one."""
+    stub = W.default_stub(target)
+    nth = 1 if batch == "the pre-flight" else N_STEPS[target] + 1    # that batch's first call
+    if point == ACCOUNTING_POINTS[4]:
+        # a call the run cannot meter: its accounting ends before the run is marked so
+        W.fail_nth(stub, FIRST_STEP[target], 1 if nth == 1 else 2, ERROR_500)
+    ready(target, stub=stub)                        # the invented baseline is made first
+    monkeypatch.setattr(wc, "Guard", _guard_that_stops_at(point, nth, ACCOUNTING_ENDS[ends]))
+    assert world.run(target) == 1
+    run = RUN_ID[target]
+
+    assert world.bedrock_requests() == nth          # the call was sent, and nothing after it
+    report = world.s3.json(PREFIX[target] + "guard_report.json")
+    assert wl.report_fault(report) in (wl.REPORT_INCOMPLETE, wl.REPORT_INCONSISTENT)
+    assert (wl.report_fault(report) == wl.REPORT_INCOMPLETE) == (point in ACCOUNTING_POINTS[:2])
+    # ---- unresolved, as a crashed run, at its reservation: never metered
+    booked = world.entry_of(run)
+    assert (booked["state"], booked["kind"], booked["basis"]) == ("unresolved", "crashed", None)
+    assert booked["counted_usd_micros"] == booked["reserved_usd_micros"] \
+        == RESERVED[target]["total_usd_micros"]
+    record = world.failed(run)
+    assert record["ledger"] == "crashed"
+    assert set([record["code"], *record["also"]]) & set(wl.REPORT_CODES)
+    assert world.published()["RunOk"] == [0] and no_success(world, target)
+    assert not any(SENTINEL in line for line in world.lines)
+
+    # ---- and it blocks the next scheduled run, which sends nothing
+    world.clock.advance(7 * 86400)
+    before = len(world.log.all())
+    assert world.run(target, "2026-12-23T04:00:00Z") == 1
+    later = world.failed(f"2026-12-23T0400-{target}")
+    assert (later["code"], later["ids"]) == (wl.BLOCKED_UNRESOLVED, [run])
+    assert world.bedrock_requests() == nth
+    assert not any(server == "bedrock" for server, _what in world.log.all()[before:])
+
+
+@pytest.mark.parametrize("target", TARGETS)
+def test_a_clean_run_settles_metered_and_the_next_scheduled_run_is_admitted(ready, world,
+                                                                            monkeypatch, target):
+    """The partner: the same guard class with nothing stopped. The report is complete
+    and consistent, the entry is settled as metered at what was counted, and next
+    week's run is admitted and succeeds."""
+    ready(target)
+    monkeypatch.setattr(wc, "Guard", _guard_that_stops_at("nowhere", 1, KeyboardInterrupt))
+    assert world.run(target) == 0
+    report = world.s3.json(PREFIX[target] + "guard_report.json")
+    assert wl.report_fault(report) is None
+    booked = world.entry_of(RUN_ID[target])
+    assert (booked["state"], booked["basis"]) == ("settled", "metered")
+    assert booked["counted_usd_micros"] == report["total_usd_micros"] > 0
+    world.clock.advance(7 * 86400)
+    assert world.run(target, "2026-12-23T04:00:00Z") == 0
+    assert world.metric("RunOk") == [1, 1]
+
+
+def test_a_guard_whose_report_cannot_be_read_is_a_crashed_run_too(ready, world, monkeypatch):
+    """Only what can be checked is trusted. Here the guard's report raises once the
+    main batch has run: the ledger is given nothing to settle from, refuses, and the
+    run is marked crashed."""
+    target = "v1"
+    ready(target)
+    real, runner = wc.Guard.report, rce
+    done = []
+    main = runner.main
+
+    def after_the_main_batch(*args, **kwargs):
+        code = main(*args, **kwargs)
+        done.append(code)
+        return code
+    monkeypatch.setattr(runner, "main", after_the_main_batch)
+
+    def report(self):
+        if len(done) == 2:
+            raise KeyboardInterrupt
+        return real(self)
+    monkeypatch.setattr(wc.Guard, "report", report)
+    assert world.run(target) == 1
+    booked = world.entry_of(RUN_ID[target])
+    assert (booked["state"], booked["kind"]) == ("unresolved", "crashed")
+    assert booked["counted_usd_micros"] == RESERVED[target]["total_usd_micros"]
+
+
 # =================================================================== THE DEADLINE ==
 
 def _advance_once_booked(world, seconds: float) -> None:

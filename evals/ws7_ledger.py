@@ -197,6 +197,10 @@ ENTRY_UNKNOWN = "ws7_entry_unknown"
 ENTRY_NOT_OPEN = "ws7_entry_not_open"
 ENTRY_NOT_UNRESOLVED = "ws7_entry_not_unresolved"
 REPORT_INVALID = "ws7_report_invalid"
+REPORT_INCOMPLETE = "ws7_report_incomplete"
+REPORT_INCONSISTENT = "ws7_report_inconsistent"
+# A report the ledger will not settle from, for any of three reasons.
+REPORT_CODES = (REPORT_INVALID, REPORT_INCOMPLETE, REPORT_INCONSISTENT)
 BASIS_UNKNOWN = "ws7_basis_unknown"
 SETTLED_FIGURE_INVALID = "ws7_settled_figure_invalid"
 ESTIMATE_DIFFERS = "ws7_estimate_differs"
@@ -205,8 +209,8 @@ CODES = (DUPLICATE, TARGET_UNKNOWN, MODE_UNKNOWN, SCHEDULED_TIME_INVALID, SCHEDU
          WALL_CLOCK_LIMIT_TOO_SHORT,
          RUN_IN_PROGRESS, ADMITTED_PAST_DEADLINE, ADMISSION_INVALID, BLOCKED_UNRESOLVED, OVER_CAP, LEDGER_CONFLICT, LEDGER_UNAVAILABLE,
          LEDGER_INVALID, LEDGER_WRITE_INVALID, ENTRY_EXISTS, ENTRY_UNKNOWN, ENTRY_NOT_OPEN,
-         ENTRY_NOT_UNRESOLVED, REPORT_INVALID, BASIS_UNKNOWN, SETTLED_FIGURE_INVALID,
-         ESTIMATE_DIFFERS)
+         ENTRY_NOT_UNRESOLVED, REPORT_INVALID, REPORT_INCOMPLETE, REPORT_INCONSISTENT,
+         BASIS_UNKNOWN, SETTLED_FIGURE_INVALID, ESTIMATE_DIFFERS)
 
 DUPLICATE_METRIC = "Duplicate"
 
@@ -551,6 +555,69 @@ def _read_report(report: object, admitted: Admission) -> tuple:
     return micros, unmetered
 
 
+# The guard's words (evals/ws7_client.py) for a call that has been sent and has no
+# final outcome yet, and for a call it refused before sending.
+_SENT, _REFUSED = "sent", "refused"
+
+
+def report_fault(report: object) -> str | None:
+    """Why a guard's report cannot be settled from: one of REPORT_CODES, or None.
+
+    A LEDGER ENTRY IS SETTLED AS METERED ONLY FROM A REPORT THAT IS COMPLETE AND
+    CONSISTENT (Codex P1, PR #9, second re-check). The guard writes a call's row as
+    `sent`, and only when the call ends does it give the row its outcome and cost,
+    then add the cost to the run's total, then to the batch's, then mark the run
+    unmetered if it is. Anything that ends the process's work between two of those
+    steps (an interrupt the failure path then catches, an exception) leaves a report
+    whose total is not the run's cost. So before any write:
+
+    - COMPLETE: every call has a final outcome. No row is left `sent`
+      (`ws7_report_incomplete`).
+    - CONSISTENT (`ws7_report_inconsistent`):
+      - the run's total is the sum of its rows' costs, and each batch's total is the
+        sum of that batch's rows;
+      - a refused call cost nothing, and every other call belongs to a batch the
+        report names;
+      - the `unmetered` flag is set exactly when a row is unmetered.
+    - A report without those fields, in those types, is `ws7_report_invalid`.
+
+    A report that fails means the run's cost is unknown. Unknown cost is unresolved
+    (ADR-011 D7, point 4), never metered: the entrypoint marks the run crashed."""
+    if type(report) is not dict:
+        return REPORT_INVALID
+    calls, batches = report.get("calls"), report.get("batches")
+    if type(calls) is not list or type(batches) is not dict \
+            or type(report.get("unmetered")) is not bool \
+            or not _count(report.get("total_usd_nanos")) \
+            or not _count(report.get("unmetered_calls")) \
+            or not all(type(b) is dict and _count(b.get("total_usd_nanos"))
+                       for b in batches.values()):
+        return REPORT_INVALID
+    incomplete, consistent, total = False, True, 0
+    by_batch = dict.fromkeys(batches, 0)
+    for row in calls:
+        if type(row) is not dict or type(row.get("outcome")) is not str \
+                or not _count(row.get("cost_usd_nanos")):
+            return REPORT_INVALID
+        outcome, cost, label = row["outcome"], row["cost_usd_nanos"], row.get("batch")
+        if outcome == _SENT:
+            incomplete = True                       # sent, and never given an outcome
+        elif outcome == _REFUSED:
+            consistent = consistent and cost == 0
+        elif type(label) is str and label in by_batch:
+            total += cost
+            by_batch[label] += cost
+        else:
+            consistent = False                      # a call in no batch the report names
+    if incomplete:
+        return REPORT_INCOMPLETE
+    if not consistent or total != report["total_usd_nanos"] \
+            or any(by_batch[label] != b["total_usd_nanos"] for label, b in batches.items()) \
+            or report["unmetered"] != (report["unmetered_calls"] > 0):
+        return REPORT_INCONSISTENT
+    return None
+
+
 def _blocked(snap: dict, now: datetime, mode: str, *, exclude: str | None = None) -> Stop | None:
     """Admission rules 1 to 3, over every month's entries but the run's own: the stop
     a run meets, or None. Used when a run is booked and again after it is.
@@ -825,10 +892,20 @@ class Ledger:
         the worst case only where none was. An unmetered run is written as
         unresolved at that total. `admitted` is what `admit()` returned, and the
         report must be that run's own (WHOSE REPORT, module docstring). Returns
-        the entry as written."""
+        the entry as written.
+
+        The report must also be complete and consistent (`report_fault`). One that is
+        not is refused before any write, with `ws7_report_incomplete` or
+        `ws7_report_inconsistent`: the run's cost is then unknown, and the caller
+        marks the run crashed, so the entry is unresolved at its reservation."""
         if not isinstance(admitted, Admission):
             raise TypeError("settle() needs the Admission that admit() returned")
         micros, unmetered = _read_report(report, admitted)
+        # Before any write: a report that is incomplete or inconsistent is not the
+        # run's cost, so nothing is settled from it.
+        fault = report_fault(report)
+        if fault is not None:
+            raise Stop(fault, ids=(admitted.run_id,))
         self.expire()
         if unmetered:
             return self._close(admitted, state=UNRESOLVED, kind=UNMETERED, counted=micros)

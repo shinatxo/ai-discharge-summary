@@ -1848,6 +1848,20 @@ starts; the failed record; the prefixes of success records and retained copies.
   failure path then stores that folder's allowed files as this run's records, though this run
   wrote none of them. The entrypoint must refuse a batch path that exists before it registers
   it, with a fixed code, in the scheduled and the manual modes.
+- **A closed stdout pipe in a real subprocess can change the exit code** (Codex P3, PR #9
+  re-check, carried by the author, 21 Nov 2026; `evals/ws7_entry.py`, `_say`). `best_effort`
+  stops a log line that fails from raising inside the job. It does not cover what Python does
+  as the process ends: with stdout a closed pipe, the interpreter's own flush at exit can fail,
+  and the process then exits with a code that is not the job's. 5b decides how the real
+  process ends (for example, flushing and closing stdout itself before `sys.exit`, and
+  treating a failure there as best effort), and tests it in a child process whose stdout is a
+  closed pipe: the exit code is the job's, for a successful run, a failed run and a usage error.
+- **ADR-011 D9 and D10 still say a failed run publishes no breach metric and sends no message**,
+  while also describing a run that delivered them and then failed (Codex P3, PR #9 re-check,
+  carried by the author, 21 Nov 2026). Qualify both: a run that fails **before its comparison**
+  publishes no breach value and sends no message; a run that fails after it leaves what
+  CloudWatch **acknowledged** and what SNS accepted. Use "acknowledged" where the text now says
+  "delivered" or "published".
 - **Where a candidate goes.** The manual baseline mode writes the envelope under the run's own
   prefix, `ws7/runs/manual/<run_id>/`. 5b names the object. It is never written to a path a
   baseline is read from.

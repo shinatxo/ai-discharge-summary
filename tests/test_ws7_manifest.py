@@ -139,8 +139,14 @@ def test_whatever_the_runners_code_raises_in_own_values_is_one_fixed_refusal(
     def broken(*_args, **_kwargs):
         raise raised
     monkeypatch.setattr(module, name, broken)
-    stop = stopped(lambda: own(target), wm.RUNNER_ARGV_INVALID)
-    assert stop.ids == () and stop.counts == {}
+    try:
+        own(target)
+    except store.Stop as stop:
+        assert (stop.code, stop.ids, stop.counts) == (wm.RUNNER_ARGV_INVALID, (), {})
+    except BaseException as exc:        # noqa: BLE001 - an interrupt must fail this test, not end the session
+        pytest.fail(f"own_values let a {type(exc).__name__} out")
+    else:
+        pytest.fail("own_values returned")
 
 
 def test_the_pipelines_own_values_come_from_the_pipeline_and_the_runners_parser():

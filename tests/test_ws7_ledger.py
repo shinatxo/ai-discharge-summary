@@ -1117,6 +1117,18 @@ INCONSISTENT = {
         dict(c, batch=c["batch"] + "x") if c["seq"] == 2 else c for c in r["calls"]]),
     "a row is in no batch": lambda r: dict(r, calls=[
         dict(c, batch=None) if c["seq"] == 2 else c for c in r["calls"]]),
+    # The run's total counts one more call, and no batch does: every batch's total is
+    # still the sum of its own rows, and the run's total is the sum of all the rows.
+    "one more call, in a batch the report does not name, counted in the run's total":
+        lambda r: dict(
+            r, total_usd_nanos=r["total_usd_nanos"] + 1000,
+            total_usd_micros=reserve.to_micros(r["total_usd_nanos"] + 1000),
+            calls=r["calls"] + [dict(r["calls"][0], seq=9, batch=r["calls"][0]["batch"] + "x",
+                                     cost_usd_nanos=1000)]),
+    "one more call, in no batch, counted in the run's total": lambda r: dict(
+        r, total_usd_nanos=r["total_usd_nanos"] + 1000,
+        total_usd_micros=reserve.to_micros(r["total_usd_nanos"] + 1000),
+        calls=r["calls"] + [dict(r["calls"][0], seq=9, batch=None, cost_usd_nanos=1000)]),
     "a refused call has a cost": lambda r: dict(r, calls=r["calls"] + [
         {"seq": 9, "batch": None, "outcome": "refused", "code": "ws7_no_batch", "cost_usd_nanos": 5}]),
     "a row is unmetered and the run is not marked so": lambda r: dict(r, unmetered_calls=1),

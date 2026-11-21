@@ -1302,10 +1302,15 @@ def test_whatever_the_haz03_check_raises_is_a_scorer_that_stopped_never_a_stop(s
     def check(*_args, **_kwargs):
         raise raised
     monkeypatch.setattr(H3, "check_record", check)
-    with pytest.raises(ws.ScorerStopped) as stopped_scorer:
+    try:
         ws.write_haz03(case.dir)
-    assert not isinstance(stopped_scorer.value, store.Stop)
-    assert stopped_scorer.value.args == () and stopped_scorer.value.__cause__ is None
+    except ws.ScorerStopped as stopped_scorer:
+        assert not isinstance(stopped_scorer, store.Stop)
+        assert stopped_scorer.args == () and stopped_scorer.__cause__ is None
+    except BaseException as exc:        # noqa: BLE001 - an interrupt must fail this test, not end the session
+        pytest.fail(f"write_haz03 let a {type(exc).__name__} out")
+    else:
+        pytest.fail("write_haz03 returned")
     assert not case.path(*HAZ03).exists()
 
 

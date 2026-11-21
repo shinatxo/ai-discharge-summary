@@ -180,6 +180,7 @@ SCHEDULED_TIME_INVALID = "ws7_scheduled_time_invalid"
 SCHEDULED_TIME_FUTURE = "ws7_scheduled_time_future"
 START_TOO_LATE = "ws7_start_too_late"
 CLAIM_UNAVAILABLE = "ws7_claim_unavailable"
+CLAIM_INVALID = "ws7_claim_invalid"
 RESERVATION_INVALID = "ws7_reservation_invalid"
 WALL_CLOCK_LIMIT_TOO_SHORT = "ws7_wall_clock_limit_too_short"
 RUN_IN_PROGRESS = "ws7_run_in_progress"
@@ -196,15 +197,20 @@ ENTRY_UNKNOWN = "ws7_entry_unknown"
 ENTRY_NOT_OPEN = "ws7_entry_not_open"
 ENTRY_NOT_UNRESOLVED = "ws7_entry_not_unresolved"
 REPORT_INVALID = "ws7_report_invalid"
+REPORT_INCOMPLETE = "ws7_report_incomplete"
+REPORT_INCONSISTENT = "ws7_report_inconsistent"
+# A report the ledger will not settle from, for any of three reasons.
+REPORT_CODES = (REPORT_INVALID, REPORT_INCOMPLETE, REPORT_INCONSISTENT)
 BASIS_UNKNOWN = "ws7_basis_unknown"
 SETTLED_FIGURE_INVALID = "ws7_settled_figure_invalid"
 ESTIMATE_DIFFERS = "ws7_estimate_differs"
 CODES = (DUPLICATE, TARGET_UNKNOWN, MODE_UNKNOWN, SCHEDULED_TIME_INVALID, SCHEDULED_TIME_FUTURE,
-         START_TOO_LATE, CLAIM_UNAVAILABLE, RESERVATION_INVALID, WALL_CLOCK_LIMIT_TOO_SHORT,
+         START_TOO_LATE, CLAIM_UNAVAILABLE, CLAIM_INVALID, RESERVATION_INVALID,
+         WALL_CLOCK_LIMIT_TOO_SHORT,
          RUN_IN_PROGRESS, ADMITTED_PAST_DEADLINE, ADMISSION_INVALID, BLOCKED_UNRESOLVED, OVER_CAP, LEDGER_CONFLICT, LEDGER_UNAVAILABLE,
          LEDGER_INVALID, LEDGER_WRITE_INVALID, ENTRY_EXISTS, ENTRY_UNKNOWN, ENTRY_NOT_OPEN,
-         ENTRY_NOT_UNRESOLVED, REPORT_INVALID, BASIS_UNKNOWN, SETTLED_FIGURE_INVALID,
-         ESTIMATE_DIFFERS)
+         ENTRY_NOT_UNRESOLVED, REPORT_INVALID, REPORT_INCOMPLETE, REPORT_INCONSISTENT,
+         BASIS_UNKNOWN, SETTLED_FIGURE_INVALID, ESTIMATE_DIFFERS)
 
 DUPLICATE_METRIC = "Duplicate"
 
@@ -247,6 +253,51 @@ class Claim:
         return self.scheduled_time[:7]
 
 
+CLAIM_FIELDS = ("schema", "target", "mode", "scheduled_time", "run_id", "claim_id", "claimed_at")
+
+
+def claim_fault(claim: object, *, key: str, target: str, mode: str,
+                max_start_delay_s: int) -> str | None:
+    """Why `claim` is not the claim object of `target` and `mode` that belongs at `key`:
+    a fixed label naming the first field that fails, or None when it is that claim.
+
+    ONE VALIDATOR, SHARED BY THE WRITER AND THE READER. `claim()` calls it on the
+    object it is about to PUT, and the Thursday check (evals/ws7_entry.py) calls it on
+    the object it has just read, so the job can never write a claim its own check
+    would reject. EVERY FIELD IS CHECKED: its type, its pattern or range, and its
+    agreement with the occurrence (the key, the target, the mode). An unknown or
+    missing field is refused.
+
+    - the object: a JSON object with exactly the seven fields (`fields` otherwise);
+    - `schema`: the string `ws7-claim/1`;
+    - `target`, `mode`: the strings this occurrence has;
+    - `scheduled_time`: a UTC time, `YYYY-MM-DDTHH:MM:SSZ`, whose claim key is `key`;
+    - `run_id`: the ID that target, mode and scheduled time give;
+    - `claim_id`: 32 hex characters;
+    - `claimed_at`: a UTC time, from the scheduled time to `max_start_delay_s` after it."""
+    if type(claim) is not dict:
+        return "not_an_object"
+    if set(claim) != set(CLAIM_FIELDS):
+        return "fields"
+    if type(claim["schema"]) is not str or claim["schema"] != CLAIM_SCHEMA:
+        return "schema"
+    if type(claim["target"]) is not str or claim["target"] != target or target not in TARGETS:
+        return "target"
+    if type(claim["mode"]) is not str or claim["mode"] != mode or mode not in MODES:
+        return "mode"
+    when = store.parse_utc(claim["scheduled_time"])
+    if when is None or store.claim_key(target, mode, when) != key:
+        return "scheduled_time"                     # not a time, or not this occurrence's
+    if type(claim["run_id"]) is not str or claim["run_id"] != store.run_id(target, mode, when):
+        return "run_id"
+    if type(claim["claim_id"]) is not str or not _TOKEN_RE.fullmatch(claim["claim_id"]):
+        return "claim_id"
+    claimed = store.parse_utc(claim["claimed_at"])
+    if claimed is None or not 0 <= (claimed - when).total_seconds() <= max_start_delay_s:
+        return "claimed_at"
+    return None
+
+
 def parse_scheduled_time(text: object) -> datetime:
     """The schedule's own scheduled time: ISO 8601 to the second, with `Z` or an
     explicit offset. A time with no zone is refused, not guessed."""
@@ -267,7 +318,9 @@ def claim(st: store.Store, cfg: reserve.Config, *, target: str, mode: str, sched
     no older than `max_start_delay_s` (scheduled and manual alike). Then one
     object is created with `If-None-Match: *`. If the key is taken the job
     raises Duplicate. A write whose reply failed is read back: the claim is
-    this job's only if the object carries this job's `claim_id`."""
+    this job's only if the object carries this job's `claim_id`.
+
+    The object is checked by `claim_fault` before it is sent (`ws7_claim_invalid`)."""
     if target not in TARGETS:
         raise Stop(TARGET_UNKNOWN)
     if mode not in MODES:
@@ -284,11 +337,17 @@ def claim(st: store.Store, cfg: reserve.Config, *, target: str, mode: str, sched
         raise ValueError("a claim ID is 32 hex characters")
     held = Claim(target, mode, store.utc_text(scheduled), store.run_id(target, mode, scheduled),
                  claim_id, store.utc_text(now), store.claim_key(target, mode, scheduled))
-    body = _dump({"schema": CLAIM_SCHEMA, "target": held.target, "mode": held.mode,
-                  "scheduled_time": held.scheduled_time, "run_id": held.run_id,
-                  "claim_id": held.claim_id, "claimed_at": held.claimed_at})
+    written = {"schema": CLAIM_SCHEMA, "target": held.target, "mode": held.mode,
+               "scheduled_time": held.scheduled_time, "run_id": held.run_id,
+               "claim_id": held.claim_id, "claimed_at": held.claimed_at}
+    # Before the PUT: the validator the Thursday check runs on what it reads. A claim
+    # the check would reject is never written.
+    fault = claim_fault(written, key=held.key, target=target, mode=mode,
+                        max_start_delay_s=cfg.max_start_delay_s)
+    if fault is not None:
+        raise Stop(CLAIM_INVALID, ids=(fault,))
     try:
-        outcome = st.create(held.key, body, attempts=cfg.ledger_cas_attempts)
+        outcome = st.create(held.key, _dump(written), attempts=cfg.ledger_cas_attempts)
     except store.StoreError as exc:
         raise Stop(CLAIM_UNAVAILABLE, ids=(held.run_id, exc.code)) from None
     if outcome != store.CREATED:
@@ -494,6 +553,69 @@ def _read_report(report: object, admitted: Admission) -> tuple:
             for label in batches):
         raise bad
     return micros, unmetered
+
+
+# The guard's words (evals/ws7_client.py) for a call that has been sent and has no
+# final outcome yet, and for a call it refused before sending.
+_SENT, _REFUSED = "sent", "refused"
+
+
+def report_fault(report: object) -> str | None:
+    """Why a guard's report cannot be settled from: one of REPORT_CODES, or None.
+
+    A LEDGER ENTRY IS SETTLED AS METERED ONLY FROM A REPORT THAT IS COMPLETE AND
+    CONSISTENT (Codex P1, PR #9, second re-check). The guard writes a call's row as
+    `sent`, and only when the call ends does it give the row its outcome and cost,
+    then add the cost to the run's total, then to the batch's, then mark the run
+    unmetered if it is. Anything that ends the process's work between two of those
+    steps (an interrupt the failure path then catches, an exception) leaves a report
+    whose total is not the run's cost. So before any write:
+
+    - COMPLETE: every call has a final outcome. No row is left `sent`
+      (`ws7_report_incomplete`).
+    - CONSISTENT (`ws7_report_inconsistent`):
+      - the run's total is the sum of its rows' costs, and each batch's total is the
+        sum of that batch's rows;
+      - a refused call cost nothing, and every other call belongs to a batch the
+        report names;
+      - the `unmetered` flag is set exactly when a row is unmetered.
+    - A report without those fields, in those types, is `ws7_report_invalid`.
+
+    A report that fails means the run's cost is unknown. Unknown cost is unresolved
+    (ADR-011 D7, point 4), never metered: the entrypoint marks the run crashed."""
+    if type(report) is not dict:
+        return REPORT_INVALID
+    calls, batches = report.get("calls"), report.get("batches")
+    if type(calls) is not list or type(batches) is not dict \
+            or type(report.get("unmetered")) is not bool \
+            or not _count(report.get("total_usd_nanos")) \
+            or not _count(report.get("unmetered_calls")) \
+            or not all(type(b) is dict and _count(b.get("total_usd_nanos"))
+                       for b in batches.values()):
+        return REPORT_INVALID
+    incomplete, consistent, total = False, True, 0
+    by_batch = dict.fromkeys(batches, 0)
+    for row in calls:
+        if type(row) is not dict or type(row.get("outcome")) is not str \
+                or not _count(row.get("cost_usd_nanos")):
+            return REPORT_INVALID
+        outcome, cost, label = row["outcome"], row["cost_usd_nanos"], row.get("batch")
+        if outcome == _SENT:
+            incomplete = True                       # sent, and never given an outcome
+        elif outcome == _REFUSED:
+            consistent = consistent and cost == 0
+        elif type(label) is str and label in by_batch:
+            total += cost
+            by_batch[label] += cost
+        else:
+            consistent = False                      # a call in no batch the report names
+    if incomplete:
+        return REPORT_INCOMPLETE
+    if not consistent or total != report["total_usd_nanos"] \
+            or any(by_batch[label] != b["total_usd_nanos"] for label, b in batches.items()) \
+            or report["unmetered"] != (report["unmetered_calls"] > 0):
+        return REPORT_INCONSISTENT
+    return None
 
 
 def _blocked(snap: dict, now: datetime, mode: str, *, exclude: str | None = None) -> Stop | None:
@@ -770,10 +892,20 @@ class Ledger:
         the worst case only where none was. An unmetered run is written as
         unresolved at that total. `admitted` is what `admit()` returned, and the
         report must be that run's own (WHOSE REPORT, module docstring). Returns
-        the entry as written."""
+        the entry as written.
+
+        The report must also be complete and consistent (`report_fault`). One that is
+        not is refused before any write, with `ws7_report_incomplete` or
+        `ws7_report_inconsistent`: the run's cost is then unknown, and the caller
+        marks the run crashed, so the entry is unresolved at its reservation."""
         if not isinstance(admitted, Admission):
             raise TypeError("settle() needs the Admission that admit() returned")
         micros, unmetered = _read_report(report, admitted)
+        # Before any write: a report that is incomplete or inconsistent is not the
+        # run's cost, so nothing is settled from it.
+        fault = report_fault(report)
+        if fault is not None:
+            raise Stop(fault, ids=(admitted.run_id,))
         self.expire()
         if unmetered:
             return self._close(admitted, state=UNRESOLVED, kind=UNMETERED, counted=micros)

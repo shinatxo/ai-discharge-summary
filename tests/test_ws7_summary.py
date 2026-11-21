@@ -355,6 +355,49 @@ def test_build_keys_returns_a_copy_and_refuses_values_out_of_shape():
         wm.build_keys({"target": "pipeline"}, **parts)
 
 
+@pytest.mark.parametrize("target", TARGETS)
+@pytest.mark.parametrize("part, given, after_a_round_trip", [
+    ("gold_sha256", {1: "b" * 64}, {"1": "b" * 64}),            # an integer scenario key
+    ("gold_sha256", {True: "b" * 64}, {"true": "b" * 64}),      # a boolean one
+    ("gold_sha256", {"S1": "b" * 64, 2: "c" * 64}, {"S1": "b" * 64, "2": "c" * 64}),
+    ("scorer_versions", {1: 2}, {"1": 2}),                      # an integer scorer name
+    ("scorer_versions", {None: 2}, {"null": 2})], ids=repr)
+def test_build_keys_checks_what_it_was_given_before_it_copies_it(target, part, given,
+                                                                 after_a_round_trip):
+    """Codex P3, PR #8 (carried item C). The copy is a JSON round trip, and JSON has
+    only string keys, so a key of 1 comes back as "1" and the copy passes. The check
+    therefore runs on the objects as given. The partner: the same keys as strings."""
+    parts = {"corpus_sha256": "a" * 64, "gold_sha256": {"S1": "b" * 64},
+             "scorer_versions": {"score_batch": 2}}
+    assert json.loads(json.dumps(given)) == after_a_round_trip      # what hid it
+    with pytest.raises(store.Stop) as exc:
+        wm.build_keys(own(target), **dict(parts, **{part: given}))
+    assert exc.value.code == wm.MANIFEST_INVALID
+    keys = wm.build_keys(own(target), **dict(parts, **{part: after_a_round_trip}))
+    assert keys[part] == after_a_round_trip
+    # the comparator's own check says the same of each
+    with pytest.raises(compare.CompareError):
+        compare.check_keys(dict(keys, **{part: given}), "run")
+    assert compare.check_keys(dict(keys), "run")
+
+
+def test_a_summary_is_not_built_from_a_gold_map_with_an_integer_scenario_key(scored, monkeypatch):
+    """`build_summary` copies nothing itself: its keys come from `build_keys`, so the
+    same rule holds for it. The partner: the same batch, as scored, is built."""
+    case = scored("v1")
+    assert case.build()
+    real = ws._key_parts
+
+    def with_an_integer_key(batch):
+        parts = real(batch)
+        first = sorted(parts["gold_sha256"])[0]
+        parts["gold_sha256"] = {(1 if sid == first else sid): digest
+                                for sid, digest in parts["gold_sha256"].items()}
+        return parts
+    monkeypatch.setattr(ws, "_key_parts", with_an_integer_key)
+    stopped(case.build, ws.OWN_INVALID)
+
+
 @pytest.mark.parametrize("change", [
     {"model_id": "another.model-1"},
     {"prompt_caching": False},
@@ -1245,6 +1288,32 @@ def test_write_haz03_runs_the_check_unchanged_on_every_record(scored):
     assert case.row(HAZ03, "S4")["facts_age_group"] == "child"
 
 
+@pytest.mark.parametrize("raised", [
+    RuntimeError(SENTINEL), KeyboardInterrupt(), SystemExit(0), SystemExit(SENTINEL),
+    store.Stop(ws.SCORES_INVALID), store.Stop("ws7_no_baseline")], ids=repr)
+def test_whatever_the_haz03_check_raises_is_a_scorer_that_stopped_never_a_stop(scored, monkeypatch,
+                                                                              raised):
+    """The check is not the job's code. Whatever it raises, one of WS7's own `Stop`s
+    included, is `ScorerStopped`, which is not a `Stop` and carries nothing. The
+    partner: `write_haz03`'s own refusal, below, is a `Stop`."""
+    case = scored("pipeline")
+    case.path(*HAZ03).unlink()
+
+    def check(*_args, **_kwargs):
+        raise raised
+    monkeypatch.setattr(H3, "check_record", check)
+    try:
+        ws.write_haz03(case.dir)
+    except ws.ScorerStopped as stopped_scorer:
+        assert not isinstance(stopped_scorer, store.Stop)
+        assert stopped_scorer.args == () and stopped_scorer.__cause__ is None
+    except BaseException as exc:        # noqa: BLE001 - an interrupt must fail this test, not end the session
+        pytest.fail(f"write_haz03 let a {type(exc).__name__} out")
+    else:
+        pytest.fail("write_haz03 returned")
+    assert not case.path(*HAZ03).exists()
+
+
 # A value of every JSON type that is outside every HAZ-03 field's set.
 OUTSIDE = {"string": SENTINEL, "integer": 42, "float": 1.5, "boolean": True, "null": None,
            "list": [SENTINEL], "object": {"value": SENTINEL}}
@@ -1691,6 +1760,73 @@ def test_the_whole_corpus_is_read_from_the_corpus_file_not_from_a_number(scored,
             ws.NOT_WHOLE_CORPUS)
     (tmp_path / "bad.json").write_text("{not json", encoding="utf-8")
     stopped(lambda: ws.build_candidate(runs, baseline_id="b-1", corpus_path=tmp_path / "bad.json"),
+            ws.NOT_WHOLE_CORPUS)
+
+
+def _renamed(summary: dict, old: str, new: object) -> dict:
+    """The same summary with one scenario's key replaced, in its gold map and in every
+    verdict metric."""
+    out = copy.deepcopy(summary)
+
+    def swap(mapping: dict) -> dict:
+        return {(new if sid == old else sid): value for sid, value in mapping.items()}
+    out["keys"]["gold_sha256"] = swap(out["keys"]["gold_sha256"])
+    for metric in out["metrics"].values():
+        if "verdicts" in metric:
+            metric["verdicts"] = swap(metric["verdicts"])
+    return out
+
+
+@pytest.mark.parametrize("which", [0, 1, 2])
+def test_a_candidate_checks_each_summary_as_given_before_it_copies_it(scored, tmp_path, which):
+    """Codex P3, PR #8 (carried item C). A summary whose scenario key is the integer 1
+    is refused; before, the copy turned it into "1" and it was accepted. The partner:
+    the same three summaries with the key "1", against a corpus that has a scenario
+    of that name, make a candidate."""
+    corpus = json.loads(rce.DEFAULT_CORPUS_PATH.read_text("utf-8"))
+    corpus["scenarios"][0]["id"] = "1"
+    path = tmp_path / "corpus.json"
+    path.write_text(json.dumps(corpus), encoding="utf-8")
+    renamed = [_renamed(summary, SCENARIOS[0] if SCENARIOS[0] == "S1" else "S1", "1")
+               for summary in three(scored("v1"))]
+    built = ws.build_candidate(renamed, baseline_id="b-1", corpus_path=path)
+    assert "1" in built["baseline"]["keys"]["gold_sha256"]
+    with pytest.raises(compare.CompareError):
+        compare.check_run(_renamed(renamed[which], "1", 1))     # `check_run` already refuses it
+    given = list(renamed)
+    given[which] = _renamed(renamed[which], "1", 1)
+    assert json.loads(json.dumps(given[which])) == renamed[which]       # what hid it
+    stopped(lambda: ws.build_candidate(given, baseline_id="b-1", corpus_path=path),
+            ws.CANDIDATE_SUMMARY_INVALID)
+
+
+@pytest.mark.parametrize("notes", [7, 1.5, True, ["a line"], {"text": "a line"}], ids=repr)
+def test_a_corpus_file_with_notes_that_are_not_text_makes_no_candidate(scored, tmp_path, notes):
+    """Codex P3, PR #8 re-check (carried item F). The file is valid JSON, and the
+    runner's loader, unchanged, raises AttributeError on a `notes` value that is not
+    a string. That is translated to the fixed code, as malformed JSON is in the test
+    above. The partner: the same file with every `notes` a string."""
+    runs = three(scored("v1"))
+    corpus = json.loads(rce.DEFAULT_CORPUS_PATH.read_text("utf-8"))
+    good = tmp_path / "good.json"
+    good.write_text(json.dumps(corpus), encoding="utf-8")
+    assert ws.build_candidate(runs, baseline_id="b-1", corpus_path=good)
+    corpus["scenarios"][3]["notes"] = notes
+    bad = tmp_path / "bad.json"
+    bad.write_text(json.dumps(corpus), encoding="utf-8")
+    with pytest.raises(AttributeError):
+        rce.load_corpus(bad)                        # the loader's own error, as it is today
+    stopped(lambda: ws.build_candidate(runs, baseline_id="b-1", corpus_path=bad),
+            ws.NOT_WHOLE_CORPUS)
+
+
+@pytest.mark.parametrize("scenarios", [7, "S1", [7], [{"title": "no id"}], [{"id": "S1", "notes": 0}],
+                                       [{"id": "S1", "notes": None}], None], ids=repr)
+def test_a_corpus_file_of_any_other_wrong_shape_makes_no_candidate(scored, tmp_path, scenarios):
+    runs = three(scored("v1"))
+    path = tmp_path / "shape.json"
+    path.write_text(json.dumps({"scenarios": scenarios}), encoding="utf-8")
+    stopped(lambda: ws.build_candidate(runs, baseline_id="b-1", corpus_path=path),
             ws.NOT_WHOLE_CORPUS)
 
 

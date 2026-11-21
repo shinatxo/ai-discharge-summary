@@ -1,7 +1,8 @@
 # WS7 entrypoint
 
 The WS7 entrypoint is the job the weekly Fargate task will run ([ADR-011](adr/ADR-011-ws7-scheduled-eval.md),
-slice 2). It is being built as six pull requests. This document grows with each one.
+slice 2). It is being built as seven pull requests: part 5 is two. This document grows with
+each one.
 
 | Part | What | Status |
 |---|---|---|
@@ -9,7 +10,8 @@ slice 2). It is being built as six pull requests. This document grows with each 
 | 2 | The claim, the ledger, the match check and the run manifest | **Built** |
 | 3 | The follow-ups from PR #4 (the comparator) and PR #6 (the claim and ledger) | **Built** |
 | 4 | The run summary and the candidate baseline | **Built** |
-| 5 | The modes, the comparator call and publishing | Not built |
+| 5a | The scheduled run, the Thursday check, the comparator call and publishing | **Built** |
+| 5b | The manual baseline, the manual confirm and the resolve command | Not built |
 | 6 | The image changes | Not built |
 
 Nothing here makes an AWS call or a model call, and nothing has been deployed or run live.
@@ -167,7 +169,7 @@ generations.
   `evals/run_cold_eval.py:329`).
 - Each batch allows only the number of generations it planned.
 - Before a run, the entrypoint checks that no two scenarios would send the same first-step request
-  (part 5, "Notes for later parts" below).
+  (part 5a, "The distinct-scenarios precheck").
 - Every doubt is a refusal: a refusal costs nothing, and a refused run is a failed run.
 
 **What a refusal does.** The wrapper raises `Ws7Refused`, a `StepError` with the code above.
@@ -316,10 +318,10 @@ only counts.
 ### What part 1 does not do
 
 - It does not open the ledger or decide whether a run may start (part 2).
-- It does not settle the ledger. Part 2's `settle()` does, from the report's total; part 5
+- It does not settle the ledger. Part 2's `settle()` does, from the report's total; part 5a
   calls it.
 - It does not check that the scenarios' first-step requests are distinct, set the deadline or
-  choose the sleep the runners are given (part 5).
+  choose the sleep the runners are given. Part 5a does all three.
 
 ## Part 2: the claim, the ledger, the match check and the run manifest
 
@@ -355,7 +357,7 @@ Part 2 supplies the pieces. Part 5 wires them, in this order:
 
 ### The S3 layout
 
-Every key is under `ws7/`, the task role's whole reach in the bucket (ADR-011 D6).
+Every key WS7 writes is under `ws7/`, the task role's whole reach in the bucket (ADR-011 D6).
 
 | Key | Kept? | Written by |
 |---|---|---|
@@ -364,19 +366,27 @@ Every key is under `ws7/`, the task role's whole reach in the bucket (ADR-011 D6
 | `ws7/ledger/<YYYY-MM>.json` | Kept | The monthly ledger: the UTC month of a run's scheduled time |
 | `ws7/runs/scheduled/<run_id>/…` | **Expires after 90 days** | A scheduled run's records. `manifest.json` here (part 2); the batch, scores and comparison (parts 4 and 5) |
 | `ws7/runs/manual/<run_id>/…` | Kept | A manual run's records: baseline batches and confirming runs |
+| `ws7/success/<run_id>.json` | Kept | A scheduled run's success record (part 5a) |
+| `ws7/failed/<run_id>.json` | Kept | The failed record of a scheduled run that held its claim (part 5a) |
+| `retained/<run_id>/…` | Kept | **Outside `ws7/`.** An incident copy, made by the author by hand. Nothing in WS7 writes it |
 
 - ADR-011 D8 expires scheduled runs after 90 days and keeps baselines, claims, ledgers and success
   records. An S3 lifecycle rule selects by prefix, so the rule is `ws7/runs/scheduled/` and
   **nothing that is kept sits under it** (`tests/test_ws7_store.py` checks the keys part 2 makes).
-- Part 5's success records and D10's retained incident copies are kept, so they go under prefixes
-  of their own, outside `ws7/runs/scheduled/`. Part 5 names them.
+- Success records and failed records are kept, so they have prefixes of their own, outside
+  `ws7/runs/scheduled/` (part 5a).
+- **D10's retained incident copies go under `retained/<run_id>/`, outside `ws7/` altogether** (the
+  author's ruling, 20 Nov 2026). The task role cannot reach it, the store refuses every key under
+  it, and the lifecycle rule does not touch it. The author copies by hand (slice 3's runbook).
 - **Run IDs.** A scheduled run is `<UTC date>T<HHMM>-<target>`, for example
   `2026-12-16T0400-pipeline`. A manual run adds `-manual`: `2026-12-16T0130-pipeline-manual`. No
   target is called `manual`, so the two cannot collide.
 
 ### The store (`evals/ws7_store.py`)
 
-- **The clients.** `build_client("s3")` and `build_client("ssm")` follow the Bedrock client's
+- **The clients.** `build_client("s3")` and `build_client("ssm")`, and from part 5a
+  `build_client("cloudwatch")` (`https://monitoring.eu-west-2.amazonaws.com`) and
+  `build_client("sns")` (`https://sns.eu-west-2.amazonaws.com`), follow the Bedrock client's
   rules (part 1): one attempt per call, `eu-west-2` only, `ignore_configured_endpoint_urls=True`,
   and a refusal at construction unless the client resolves to the service's own endpoint
   (`https://s3.eu-west-2.amazonaws.com`, `https://ssm.eu-west-2.amazonaws.com`). An explicit
@@ -386,6 +396,8 @@ Every key is under `ws7/`, the task role's whole reach in the bucket (ADR-011 D6
 - **There is no unconditional write and no delete.** The store has `list_keys`, `get`,
   `put_if_absent` (`If-None-Match: *`) and `put_if_match` (`If-Match: <ETag>`), and `create`,
   which is `put_if_absent` with the read-back below.
+- **An object is stored as JSON, or as Markdown for a report** (part 5a). Any other content type
+  is refused before a request is made.
 - **How S3 answers** (AWS, read 19 Nov 2026):
   [*Conditional write behavior*](https://docs.aws.amazon.com/AmazonS3/latest/userguide/conditional-writes.html)
   and [PutObject](https://docs.aws.amazon.com/AmazonS3/latest/API/API_PutObject.html).
@@ -581,6 +593,24 @@ entry is left open, to be abandoned and resolved.
 - **`settle()` and `mark_crashed()` take the `Admission` that `admit()` returned, not a run ID**
   (Codex review of PR #6). The entry must be the one that `Admission` describes:
   `ws7_admission_invalid` otherwise.
+- **The report must be complete and consistent** (part 5a; Codex P1, PR #9, second re-check).
+  `report_fault()` checks it before any write, and `settle()` refuses a report that fails:
+
+  | Rule | Otherwise |
+  |---|---|
+  | Complete: every call has a final outcome. No row is left `sent` | `ws7_report_incomplete` |
+  | The run's total is the sum of its rows' costs, and each batch's total is the sum of that batch's rows | `ws7_report_inconsistent` |
+  | A refused call cost nothing, and every other call is in a batch the report names | `ws7_report_inconsistent` |
+  | The `unmetered` flag is set exactly when a row is unmetered | `ws7_report_inconsistent` |
+  | The rows, the batches and those totals are there, in their types | `ws7_report_invalid` |
+
+  - Why: the guard writes a call's row as `sent`, and only when the call ends does it give the
+    row its outcome and cost, then add the cost to the run's total, then to the batch's, then
+    mark the run unmetered if it is (`evals/ws7_client.py`, not changed). Anything that ends the
+    work between two of those steps leaves a report whose total is not the run's cost. Since
+    the failure path catches an interrupt and carries on, it must not trust that total.
+  - A report that fails means the run's cost is unknown. **Unknown cost is unresolved, never
+    metered**: the entry stays open, and the entrypoint then calls `mark_crashed()` (below).
 - **The report must be the run's own.** Otherwise `ws7_report_invalid`, and the entry stays
   open.
   - **Its `run_id` must be the `Admission`'s** (Codex re-check of PR #6; the author's ruling,
@@ -601,7 +631,7 @@ entry is left open, to be abandoned and resolved.
 | Case | Recognised by | When | Counts at |
 |---|---|---|---|
 | Unmetered | The run itself: `settle()` is given a report that says `unmetered` | At settling | The guard's counted total |
-| Crashed | The run itself: part 5's outermost handler calls `mark_crashed()` when it has no guard report to settle from | At once | Its reservation |
+| Crashed | The run itself: part 5 calls `mark_crashed()` when it has no guard report to settle from, **or when the report cannot be settled from**: it is incomplete, inconsistent or cannot be read (the author's ruling, 21 Nov 2026) | At once | Its reservation |
 | Abandoned | Whoever looks next: any call that changes the ledger, in any mode, and `expire()` | At or after `expires_at` | Its reservation |
 
 - `expires_at` is the time the entry was opened plus the wall-clock limit for its mode. It is
@@ -624,7 +654,7 @@ with no ledger for the month between, still blocks. An unresolved **manual** ent
 scheduled runs too: the rule is "an unresolved entry", read as written. A manual run is not
 blocked.
 
-**Resolving** (`Ledger.resolve(run_id, basis, settled_usd_micros)`; part 5 adds the command).
+**Resolving** (`Ledger.resolve(run_id, basis, settled_usd_micros)`; part 5b adds the command).
 
 - The basis is exactly `upper_bound` or `estimate_accepted`: `ws7_basis_unknown` otherwise.
 - The figure is a whole number of micro-dollars, zero or more.
@@ -825,10 +855,10 @@ publishes them.
 
 | Where | Codes |
 |---|---|
-| The claim | `ws7_duplicate`, `ws7_target_unknown`, `ws7_mode_unknown`, `ws7_scheduled_time_invalid`, `ws7_scheduled_time_future`, `ws7_start_too_late`, `ws7_claim_unavailable` |
+| The claim | `ws7_duplicate`, `ws7_target_unknown`, `ws7_mode_unknown`, `ws7_scheduled_time_invalid`, `ws7_scheduled_time_future`, `ws7_start_too_late`, `ws7_claim_unavailable`, `ws7_claim_invalid` (part 5a: the object failed the validator the Thursday check uses, and was not written) |
 | Admission | `ws7_reservation_invalid`, `ws7_wall_clock_limit_too_short`, `ws7_run_in_progress`, `ws7_blocked_unresolved`, `ws7_over_cap`, `ws7_entry_exists`, `ws7_admitted_past_deadline` |
 | Any ledger write | `ws7_ledger_conflict`, `ws7_ledger_unavailable`, `ws7_ledger_invalid`, `ws7_ledger_write_invalid` |
-| Settling and resolving | `ws7_admission_invalid`, `ws7_entry_unknown`, `ws7_entry_not_open`, `ws7_entry_not_unresolved`, `ws7_report_invalid`, `ws7_basis_unknown`, `ws7_settled_figure_invalid`, `ws7_estimate_differs` |
+| Settling and resolving | `ws7_admission_invalid`, `ws7_entry_unknown`, `ws7_entry_not_open`, `ws7_entry_not_unresolved`, `ws7_report_invalid`, `ws7_report_incomplete`, `ws7_report_inconsistent`, `ws7_basis_unknown`, `ws7_settled_figure_invalid`, `ws7_estimate_differs` |
 | The match check and the manifest | `ws7_runner_argv_invalid`, `ws7_expected_unreadable`, `ws7_expected_invalid`, `ws7_match_differs`, `ws7_identity_missing`, `ws7_manifest_invalid`, `ws7_manifest_exists`, `ws7_manifest_unavailable` |
 | The store | `ws7_store_endpoint_refused`, `ws7_store_bucket_refused`, `ws7_store_key_refused`, `ws7_store_list_failed`, `ws7_store_list_truncated`, `ws7_store_get_failed`, `ws7_store_object_too_large`, `ws7_store_put_refused`, `ws7_store_object_missing`, `ws7_store_create_unsure`, `ws7_store_wrong_region`, `ws7_store_resend_refused` |
 
@@ -1210,6 +1240,654 @@ returned.
   is refused until this module names it.
 - Anything in S3. Part 5 writes the summary and the candidate.
 
+## Part 5a: the scheduled run, the Thursday check, the comparator call and publishing
+
+Part 5 is two pull requests (the author's ruling, 20 Nov 2026). 5a is this section. 5b adds the
+manual baseline, the manual confirm and the resolve command; in 5a no manual mode exists.
+
+Two new modules, and changes to three merged ones:
+
+- `evals/ws7_entry.py`: the entrypoint. Two modes, `scheduled` and `check`.
+- `evals/ws7_publish.py`: the metric names and values, and the job's two SNS messages.
+- `evals/ws7_store.py`: CloudWatch and SNS clients; the keys of success records, failed records
+  and a run's stored files; the retained prefix; a content type for a stored report.
+- `evals/ws7_manifest.py` and `evals/ws7_summary.py`: carried items C and F (below).
+- `tests/ws7_fakes.py`: strict CloudWatch and SNS fakes and one sequence log.
+  `tests/ws7_world.py`: the five local servers an entrypoint test runs against.
+
+Nothing has been deployed or run against AWS. No runner, no scorer, no file in
+`src/generate/pipeline/`, and none of `evals/ws7_client.py`, `evals/ws7_reserve.py`,
+`evals/ws7_compare.py` or `evals/ws7_ledger.py` is changed.
+
+### Running it
+
+```zsh
+python evals/ws7_entry.py scheduled --target v1 --scheduled-time 2026-12-16T04:00:00Z
+python evals/ws7_entry.py check     --target v1 --scheduled-time 2026-12-17T10:00:00Z
+```
+
+| From | What |
+|---|---|
+| The schedule, as arguments | The mode (the subcommand), `--target`, `--scheduled-time` |
+| The task definition, as environment variables | `WS7_BUCKET`, `WS7_ALERT_TOPIC_ARN`, `WS7_GIT_COMMIT`, `WS7_IMAGE_DIGEST` |
+
+- There is no argument for an endpoint, a bucket, a baseline, rules, config or corpus path, a
+  clock or a mode. Any other command line is a usage error: exit code 2, and nothing is built or
+  sent.
+- **A usage error prints one fixed line on stderr and nothing else** (Codex P2, PR #9):
+
+  ```
+  usage: ws7_entry.py {scheduled,check} --target {pipeline,v1} --scheduled-time <ISO 8601 with a zone>
+  ```
+
+  argparse's own messages quote the argument they refuse (`invalid choice: '…'`,
+  `unrecognized arguments: …`), so none of them is ever printed, to stdout or to stderr. That
+  holds for an unknown argument, a bad value and a missing one. There is no `--help`: it is a
+  usage error like any other.
+- `--scheduled-time` takes any string, so a bad one is refused by the job, not by argparse: a
+  failed run with `ws7_scheduled_time_invalid`. The value is never printed.
+- The alert topic must be an SNS topic ARN in `eu-west-2` (`ws7_topic_refused`).
+- **Exit codes:** 0 for a successful run (a breach included), a duplicate, or a check that
+  completed; 1 for a failed run or a failed check; 2 for a usage error.
+
+### The order of a scheduled run
+
+Everything before the claim costs nothing and writes nothing to S3.
+
+1. The config, the clients, the commit and the image digest. One live Bedrock client is built
+   here, so a refused endpoint stops the run before any claim or batch folder.
+2. The distinct-scenarios precheck (below).
+3. The match check (part 2).
+4. The claim. A duplicate stops here.
+5. Admission: the reservation is booked in the month's ledger.
+6. The guard, made with `run_id=admission.run_id`.
+7. The pre-flight batch, then the main batch.
+8. **Settle**, as soon as the last runner returns and before anything is scored.
+9. The scorers, the run summary, the comparator.
+10. The run's records, then the manifest, to S3.
+11. The metrics. On a breach, the job's SNS message.
+12. The success record.
+13. `RunOk` = 1, last of all.
+
+### The distinct-scenarios precheck
+
+`first_requests()` works out, for every scenario, the fingerprint of the first model request it
+would send (`ws7_client.fingerprint`, the hash the wrapper itself uses), and stops the run with
+`ws7_scenarios_not_distinct` if two are the same (Codex P3, PR #5).
+
+- The request is built by the runner's own code: `run_pipeline` with no context for steps 5a, 6
+  and 7, so only step 1 and step 2's request run; `run_generation` for v1.
+- In place of a client there is a plain Python object that records the fingerprint and refuses
+  the request. It builds no boto client and opens no socket. Its refusal is not a
+  `ThrottlingException`, so neither runner retries or sleeps. Nothing is written.
+- What "the same" means depends on the runner. The pipeline splits the notes into lines, so two
+  scenarios that differ only in line endings send the same step-2 request. v1 sends the notes as
+  they are apart from outer whitespace, so for v1 line endings alone do make two requests.
+- A corpus the loader cannot read is `ws7_corpus_unreadable`. A scenario whose first request
+  cannot be captured is `ws7_precheck_failed`. A corpus without the pre-flight scenario is
+  `ws7_preflight_scenario_unknown`.
+
+### What the runners are given
+
+- **The argv** from `runner_argv()` (part 2), and the batch label as the batch ID:
+  `<run_id>.preflight` and `<run_id>.main`.
+- **`runs_dir`**: the task's scratch disk. A new temporary folder unless a test gives one.
+- **The sleep** (part 1 left this to part 5): `no_wait`, which returns at once. Both runners
+  call their sleep in one place only, before they retry a throttled call
+  (`src/generate/pipeline/converse.py:43`, `evals/run_cold_eval.py:340`). WS7 refuses every
+  retry, so waiting 20 to 30 seconds for one would only use up the run's wall clock.
+- **The client**: the guard's client (part 1), behind one more wrapper, described next.
+- The runners' own output is discarded. So is the scorers' and the comparator's.
+
+### Once a run has failed, it spends nothing more
+
+The author's change A (20 Nov 2026). Under ruling e2 any call whose outcome is not `response`,
+and any refusal, fails the run. The runner does not know that and goes on to the next scenario,
+and the wrapper itself refuses the rest only when a call is unmetered.
+
+- Every client a runner gets is wrapped once more in `ws7_entry.py`. `evals/ws7_client.py` is
+  not changed.
+- Once the guard's report shows a call that is not a `response`, every further call in the run
+  is refused with `ws7_run_failed`, in the pre-flight and the main batch. The refusal is a
+  `Ws7Refused`, so it ends the generation exactly as the wrapper's own refusals do.
+- **The run fails with the first failure's code**, and settles from the guard's report:
+
+| The first call that is not a response | The run's code |
+|---|---|
+| A refusal by the wrapper | The refusal's own code, for example `ws7_spend_guard` or `ws7_deadline` |
+| A throttle, no connection, or a request botocore refused | `ws7_call_failed`, naming the outcome |
+| Anything that makes the run unmetered | `ws7_unmetered`, naming the outcome |
+
+- The refusals made here are not in the guard's report. The failed record counts them
+  (`calls_stopped`).
+- **A call whose accounting did not finish stops the run too** (Codex P1, PR #9, second
+  re-check). The wrapper looks at the guard's report only between calls: before one is sent,
+  and after one has returned or raised. At those moments every call should have its outcome
+  and the totals should be the sum of the rows. A row still `sent`, a report
+  `ws7_ledger.report_fault()` refuses, or a report that cannot be read means the accounting of
+  a call did not finish: the run's cost is unknown, and it sends no further call. The run
+  fails with `ws7_report_incomplete` or `ws7_report_inconsistent`.
+- A generation that fails with no call failing (a reply the pipeline cannot use, for example)
+  does not trip this: the other scenarios are still generated.
+
+### The deadline
+
+- The guard's deadline is `Admission.deadline_at` less **`SETTLE_MARGIN_S`, 300 seconds**, a
+  named constant in `evals/ws7_entry.py`. So the last runner returns with time in hand to settle:
+  a settle is several S3 requests, and one decided at or after `expires_at` is refused.
+- **Dispatch stops at that deadline.** No runner is started at or after it
+  (`ws7_deadline`), and the wrapper refuses every call at or after it.
+- A test stands the clock exactly on the deadline (no runner starts, no batch folder, no
+  request) and one second before it (the run goes through).
+- It is a margin, not a proof. If a settle is still decided at or after `expires_at`, it is
+  refused, the entry is abandoned, and the failed record names both codes.
+- It is a constant, not a config field, because the config loader is strict and
+  `evals/ws7_reserve.py` was not to be changed in this pull request.
+
+### The pre-flight
+
+One scenario, alone, as its own batch (ADR-011 D7). **The go/no-go is D7's, and it is three
+things:** no failed generation, only the expected files, and a cost within its reservation.
+
+| Check | Otherwise |
+|---|---|
+| No call failed (above), and the runner's return is one the batch explains (below) | The first failure's code, or `ws7_runner_refused` |
+| Its one generation has no error | `ws7_preflight_failed` |
+| The folder holds only files a runner writes, and the three it must | `ws7_preflight_files_unexpected` |
+| It cost no more than one generation's worst case. Exactly that much is allowed | `ws7_preflight_over_reservation` |
+
+**A v1 safety-net gate failure on the pre-flight scenario is not a no-go** (the author's ruling,
+21 Nov 2026). The v1 runner returns 1 for it and records it in `batch.json` (`gate_ok` false).
+
+- It is quality evidence, not a fault in the run. The main batch runs, and the comparator judges
+  the gate's result there, against the baseline, like any other quality metric.
+- Stopping at the pre-flight would turn a safety-netting regression into "pre-flight failed":
+  a failed run, with no comparison, no breach value and no breach alarm. The regression WS7
+  exists to report would be reported as a broken harness.
+- A test moves the pre-flight to a scenario the stub's v1 text fails the gate on: the pre-flight
+  returns 1, the main batch runs, and the run is compared and succeeds.
+
+### What a runner's return means
+
+| The runner | Meaning |
+|---|---|
+| Exit code 0, with a `batch.json` that records no failed generation and no gate failure | It ran, clean |
+| Exit code 1, with a `batch.json` that records a failed generation or, for v1, a gate failure | It ran. Both are counted, not refused |
+| Exit code 0 or 1 that the `batch.json` does not explain | `ws7_runner_refused`, with the exit code and both counts |
+| A `batch.json` whose entries are not in the shape that target's runner writes | `ws7_runner_refused`, with the exit code |
+| Any other exit code from 0 to 255, or no `batch.json` | `ws7_runner_refused`, with the code: a canary window, an existing batch folder, a corpus it could not read |
+| A return value that is not an integer from 0 to 255 | `ws7_runner_refused`, with the fixed label `exit_code_not_a_code`; the value is never printed ("The log", below) |
+| It raised anything: an exception, an interrupt, or a `SystemExit` with any code | `ws7_runner_crashed` |
+| `stopped_early`, or fewer generations than scenarios | `ws7_runner_stopped_early` |
+
+**A runner ends only by returning** (Codex P2, PR #9, re-check). A `SystemExit` a runner
+raises, with any code (0, 1, 2, None or a string), is a crash of that runner. It is never read
+as an exit code: before this fix a `SystemExit(0)` raised after a clean index was read as a
+clean return, and the run went on to `RunOk` = 1. The runner's argv is an allow-list, so a
+parser exit already means something is wrong.
+
+The same rule holds for every other piece of code the job calls and does not own, and for the
+outermost handlers. Each handler is for `BaseException`:
+
+| Where | What a raise becomes |
+|---|---|
+| A runner, in the pre-flight or the main batch (`_dispatch`) | `ws7_runner_crashed` |
+| A scorer: `score_batch`, `score_assemble`, the HAZ-03 check | `ws7_scorer_stopped`, naming the scorer |
+| The comparator (`ws7_compare.main`) | `ws7_compare_error`; its result is not read |
+| The runners' loaders and request builders, in the precheck | `ws7_corpus_unreadable` or `ws7_precheck_failed`, before the claim |
+| Anything else inside a run (the outermost handler) | `ws7_crashed`; the failure path runs |
+| A duplicate's one publish call | Exit code 1; nothing else is published |
+| Anything inside the check (its outermost handler) | Exit code 1; the check says on the topic that it failed |
+| The command line's parser | The fixed usage line, exit code 2 |
+
+The scorers and the comparator already treated a `SystemExit` as a failure; they and the two
+outermost handlers did not catch a `KeyboardInterrupt`. The runner was the one place where a
+raise was read as a return.
+
+**That includes WS7's own exception types** (Codex P2, PR #9, second re-check). A `Stop` or a
+`Duplicate` raised by code the job does not own is a crash of that code, like any other raise.
+Only the job's own code may raise a `Stop` the run acts on.
+
+| The call into code the job does not own | What any raise becomes, a `Stop` or `Duplicate` included |
+|---|---|
+| A runner (`_dispatch`) | `ws7_runner_crashed` |
+| `score_batch` and `write_reports`; `score_assemble`'s `replay` and `write` | `ws7_scorer_stopped`, naming the scorer |
+| The HAZ-03 check, which the job's own `write_haz03()` calls | `ScorerStopped` in `evals/ws7_summary.py`, which is not a `Stop`; the entrypoint makes it `ws7_scorer_stopped` |
+| The comparator | `ws7_compare_error` |
+| The precheck: the runner's parser, corpus loader, prompt loader and request builders | `ws7_corpus_unreadable` or `ws7_precheck_failed` |
+| The match check (`ws7_manifest.own_values()`): the runner's parser, the pipeline's version, the runner's hash function | `ws7_runner_argv_invalid` |
+
+- **A `Duplicate` is acted on only when the claim itself raises it.** `run()` catches it around
+  the claim and nowhere else. Raised by anything else, it is `ws7_crashed`: a run that holds
+  its claim can never end as a duplicate, with exit code 0.
+- `write_haz03()` is the job's own code. A `Stop` it raises itself (`ws7_scores_invalid`, for
+  example) is still the run's code.
+
+**An exit code of 1 is accepted only when the batch explains it** (Codex P2, PR #9; the author's
+ruling, 21 Nov 2026). Both runners return 1 for a failed generation, and also for other things
+(a confirmation that was not given, `evals/run_cold_eval.py:663` and
+`evals/run_pipeline_eval.py:331`). So a 1, from the pre-flight or the main batch, is accepted
+only beside an index that records a failed generation or a gate failure. The rule is held in
+both directions: a 0 beside an index that records either is refused too.
+
+**An exit code is explained only by the fields that target's runner writes, each read by exact
+type** (Codex P2, PR #9, re-check). `index_counts()` reads the index:
+
+| Field | Written by | Read as |
+|---|---|---|
+| `error_code` | Both runners, for every generation (`evals/run_pipeline_eval.py:431`, `evals/run_cold_eval.py:568`) | null: no failure. A non-empty string: a failed generation. Anything else: not an index the runner wrote |
+| `gate_ok` | The v1 runner only (`evals/run_cold_eval.py:567`) | For v1: `true` or null: no gate failure. Exactly `false`: a gate failure. Anything else: not an index the runner wrote. **For the pipeline it is not read at all** |
+| `failed_step`, `gate_status`, any other field | | Never read: they explain nothing |
+
+- **The pipeline has no safety-net gate.** So for the pipeline only a failed generation explains
+  an exit code 1. A pipeline index with `gate_ok` false and an exit code 1 is refused.
+- "By exact type" means `0`, `""`, `"false"`, `[]` and `{}` are not `false` or null. An index
+  that holds one where a runner writes a boolean, a string or null is refused; it is never read
+  as "failed" and never as "clean".
+- The exit code itself is the integer 0 or 1. `True`, `"1"` and `1.0` are not.
+
+### Settling
+
+- `settle()` is called as soon as the main runner returns, before its return is judged and
+  before anything is scored. A test reads the batch folder at the moment the settling write
+  lands: the records are there and no score file is.
+- A failure anywhere after admission settles first. It settles from the guard's report when
+  there is a guard, and calls `mark_crashed()` when there is none.
+- **It also calls `mark_crashed()` when the report cannot be settled from** (the author's
+  ruling, 21 Nov 2026, widening change A). After catching anything, the job trusts only what
+  it can check. If the ledger refuses the report (`ws7_report_incomplete`,
+  `ws7_report_inconsistent`, `ws7_report_invalid`), or the report cannot be read:
+  - the entry becomes **unresolved, as a crashed run, at its reservation**. It is never
+    settled as metered from a total that may be short;
+  - it **blocks every later scheduled run** (`ws7_blocked_unresolved`) until the author
+    resolves it;
+  - the ledger's refusal is still raised once the mark has landed, so the run fails by it; if
+    the run had already failed, the code is recorded beside the first one (`also`).
+- Tests stop one call's accounting at each of five points (after the request is sent; after
+  the reply and before usage is recorded; after usage and before the run's total; between the
+  run's total and the batch's; after the totals and before the run is marked unmetered), by an
+  interrupt and by an exception, in the pre-flight and in the main batch, for both targets.
+- A settle is tried once. If it is refused and the run had already failed, the first failure's
+  code stays the run's code and the settle's code is recorded beside it.
+
+### Scoring and the summary
+
+`score_batch`, then for the pipeline `score_assemble` and `write_haz03()`, on the main batch;
+then `key_parts()` and `build_summary()` (part 4).
+
+- **A failed pipeline generation is a failed run: `ws7_generation_failed`** (carried item E).
+  The assembly replay stops on any failed pipeline generation
+  (`evals/score_assemble.py:202`), so that batch can have no summary. The run is stopped from
+  `batch.json`, before any scorer is called. The scorer is not changed.
+- A failed v1 generation with no call failing is not a failed run: it is `no_output` in the
+  summary, and the run is compared.
+- A scorer that raises is `ws7_scorer_stopped`, naming the scorer. A refusal from
+  `build_summary()` is a failed run with the refusal's code.
+
+### The comparator call
+
+- The baseline is `evals/ws7_baseline_<target>.json` and the rules `evals/ws7_rules_<target>.json`.
+  Neither exists until slice 4. **A missing file is `ws7_no_baseline`**, decided here; the
+  comparator is then not called.
+- The comparator is called through `ws7_compare.main`, with an output path that is new for the
+  call. **If anything is already at that path the run fails (`ws7_compare_output_exists`) and
+  the file is never read** (the author's change D).
+- **The exit code is judged before the result is read.** Anything but 0, 1 or 2, or a comparator
+  that raises, is `ws7_compare_error`, and the result file is not opened.
+- **Exit 2 is never a pass.** The result is read only to tell `no_baseline`
+  (`ws7_no_baseline`, naming the keys that differ) from `error` (`ws7_compare_error`).
+- For exit 0 or 1 the result must agree with the exit code, name this run's batch and this
+  summary's bytes, and have at least one row. Otherwise `ws7_compare_error`.
+- **A row for the family `part_c` fails the run (`ws7_part_c_ruled`).** PART C is not published
+  (ADR-011 D13), and there is no metric name for it.
+
+### What is stored
+
+Under the run's own prefix, `ws7/runs/scheduled/<run_id>/`:
+
+| Object | Holds |
+|---|---|
+| `batches/<run_id>.preflight/…`, `batches/<run_id>.main/…` | Each batch folder as the runner and the scorers left it: records, scores, the assembly report |
+| `guard_report.json` | The guard's report (part 1). Not in D8's list; added so a cost can be reconciled |
+| `summary.json`, `comparison.json` | The run summary and the comparison result |
+| `manifest.json` | The run manifest (part 2), with the baseline it was compared with |
+
+Kept, so outside that prefix:
+
+| Key | Written |
+|---|---|
+| `ws7/success/<run_id>.json` | By a successful run, as its last act but one |
+| `ws7/failed/<run_id>.json` | By a run that failed while it held its claim |
+
+- **The file list comes from what the real runners and scorers write** (`expected_files`), and a
+  test pins it against a batch they really made, in both directions. **A file that is not on the
+  list, is not `.json` or `.md`, or is not a plain file stops the run
+  (`ws7_evidence_unstorable`). It is never skipped** (the author's ruling 7). Every file is
+  decided before any is sent.
+- **The known score files are allowed as soon as scoring begins** (Codex P2, PR #9). A scorer
+  that stops after `score_batch` wrote its reports does not make those reports unknown files:
+  they are stored, and the run fails with the scorer's own code.
+- **On the failure path one refused file does not stop the rest** (the author's ruling,
+  21 Nov 2026). The run has already failed, and its records are evidence:
+  - the guard's report is stored first, then the run's other documents, then every file on the
+    list;
+  - a file that is not on the list (or is not `.json` or `.md`, is not a plain file, cannot be
+    read, or is larger than one object may be) is **never uploaded**;
+  - the failed record counts them in `files_refused`.
+
+  On the success path ruling 7 is unchanged: the run stops, nothing has been sent, and its
+  failure path then stores what is allowed. Both paths send the guard's report first.
+- Sending stops at the first object S3 will not take, on either path. If S3 is refusing writes,
+  trying the rest would only delay the failed record and `RunOk` = 0.
+- A `.md` report is stored as `text/markdown; charset=utf-8`, everything else as
+  `application/json`. The store refuses any other content type.
+- The list includes `scores/patient_version.json`, `scores/PATIENT_VERSION.md` and
+  `scores/review_patient.md`, because `score_batch` writes them. They are stored with the rest
+  of the scores. No PART C metric is published.
+- **The retained prefix is `retained/<run_id>/`, outside `ws7/`** (the author's ruling 9). The
+  task role's whole reach is `ws7/`, so the job can never overwrite an incident copy and the
+  lifecycle rule does not touch it. The author copies by hand (slice 3's runbook). Nothing in
+  WS7 writes it, and the store refuses every key under it.
+- A run that fails before scoring has no manifest: its keys need the scores. Its failed record
+  carries the commit and the digest.
+
+### What is published
+
+Namespace `DischargeAssistant/Eval`, one dimension, `Target`. Every value is a whole number.
+
+| Metric | Value | When |
+|---|---|---|
+| `RunOk` | 1 | The last act of a successful scheduled run, after its success record |
+| `RunOk` | 0 | A scheduled run that failed while it held its claim |
+| `RunRefused` | 1 | A scheduled run that stopped, for any reason but a duplicate |
+| `Duplicate` | 1 | A duplicate delivery |
+| `NoBaseline` | 1, or 0 | No baseline; or compared |
+| `Breach<Family>Kind<n>`, for example `BreachMedicationsKind1` | 0 or 1 | One for each family and kind in the comparison. 21 names; none for PART C |
+| The Run family's counts, for example `CostUsdMicros`, `ElapsedP90Ms`, `StepFailuresExtractFacts` | The summary's count | A run that reached a summary. 25 for the pipeline, 14 for v1 |
+| `SpendGuardTrips`, `CallsRefused`, `CallsNotResponse` | From the guard's report, over the whole run | A run that failed after admission and has no summary |
+
+- A Run metric's name is its summary name in capitals with no underscores:
+  `cost_usd_micros` is `CostUsdMicros`.
+- **`RunOk` comes only from the process that holds the scheduled claim** (the author's ruling 3).
+  Before the claim a process cannot know it is not a duplicate. So a stop before the claim
+  publishes `RunRefused` alone. A duplicate and the check never publish `RunOk`.
+- **A breach is a successful run** (the author's ruling 5): it generated, scored, compared and
+  stored. It publishes `RunOk` = 1 and exits 0.
+- The metrics are published before the success record. If they cannot be, the run fails
+  (`ws7_publish_failed`): a breach value that was not published is never followed by `RunOk` = 1.
+- **If CloudWatch does not acknowledge `RunOk` = 1, the run fails like any other run that holds
+  its claim**, with `ws7_runok_publish_failed` (Codex P2, PR #9, accepted by the author). The
+  success record stands. The failed record is written beside it, so the Thursday check reports a
+  failed run (the two-record rule below), and `RunOk` = 0 and `RunRefused` = 1 are tried. The
+  job exits 1. Its counters are not sent again.
+- D7 says each spend-guard trip is published. Under e2 a tripped run has no summary, so the
+  three guard counters are published from the report on the failure path.
+- Until `evals/score_assemble.py` is fixed, `StepFailures…` and `GenerationsFailed` can only be 0
+  in a published pipeline run. The failed record carries the count.
+- A name outside the set above, or a value that is not a whole number, sends nothing
+  (`ws7_publish_invalid`).
+- **Each metric is published at most once per run** (Codex P2, PR #9). The publisher keeps the
+  names CloudWatch acknowledged, and refuses a list that holds one of them again
+  (`ws7_publish_repeated`).
+- **What was delivered before a later step failed stands.** A run publishes its counters and
+  breach values, then sends its breach message, writes its success record and publishes
+  `RunOk` = 1. If one of the later steps fails, the run fails, and:
+
+  | Already delivered | What happens to it |
+  |---|---|
+  | The run's counters and `NoBaseline` = 0 | They stand. The failure path sends them again only if CloudWatch did not acknowledge them |
+  | The breach values | They stand, so a breach alarm can fire for a run that then failed |
+  | The breach message, if it was sent | It stands. No second message is sent |
+
+  The failure path then sends `RunOk` = 0 and `RunRefused` = 1, and nothing else. So an alarm on
+  a breach metric and the `RunOk` alarm can both report the same run; each is true.
+- A call whose reply failed is not acknowledged. CloudWatch may or may not have taken it, and
+  the job cannot tell which, so the failure path's second try can leave two samples of a counter
+  for that one run. That case is a failed run, and the failed record names the code.
+
+**The breach message.** Sent only on a breach, after the metrics and before the success record.
+If it cannot be sent, the run fails (`ws7_alert_failed`). A failed scheduled run sends no message
+of its own (the author's ruling 4): the Thursday check and the alarms report it. An invented
+example:
+
+```
+WS7 breach - target v1 - run 2026-12-16T0400-v1
+family medications, kind 1 (zero-tolerance counter): meds_invented_doses 3, baseline max 1
+system release: v1 prompts 5d0c...9a / 77e1...42 / model anthropic.claude-sonnet-4-6 / caching on
+baseline: b-2026-12-14  evidence: s3://<eval-bucket>/ws7/runs/scheduled/2026-12-16T0400-v1/
+report time (the alarm): 2026-12-16 04:41 London
+```
+
+A message is built from the comparison result, run IDs, hashes and words written in
+`evals/ws7_publish.py`. Every piece is held to a pattern before it is used, and the finished
+text is checked once more against the characters a message may hold. A test puts a sentinel in
+every stub reply: it is in the stored record, and in no CloudWatch request, no SNS request and
+no line the job printed.
+
+### A failed run
+
+Every handled failure is a `Stop` with a fixed code. **The failure path never fails open**
+(Codex P2, PR #9). It is five steps, in this order, and each is tried on its own: a step that
+stops or raises is logged, and the next is still tried.
+
+| Step | What it does |
+|---|---|
+| 1. The ledger | Settle from the guard's report; `mark_crashed()` when there is no guard, or when the report cannot be settled from |
+| 2. The records | Store what records exist: the guard's report first, then every allowed file. A file that may not be stored is left out and counted |
+| 3. The failed record | Build it, the clock read included, and write it. Only for a run that holds its claim |
+| 4. The markers | `RunRefused` = 1 and, from the claim's holder, `RunOk` = 0 (and `NoBaseline` = 1) |
+| 5. The counters | The run's counts, from its summary or else from the guard's report |
+
+- The markers and the counters are two calls. A counter that cannot be built or sent never
+  holds back `RunOk` = 0.
+- **Nothing a step raises ends the path early, whatever its type** (Codex P2, PR #9, re-check).
+  `SystemExit` and `KeyboardInterrupt` derive from `BaseException`, not `Exception`, so a handler
+  for `Exception` lets them through. Every handler on the failure path is for `BaseException`:
+  the loop over the five steps, the settle, the store, and the log (`best_effort`). A log sink,
+  the clock, a store call or a publish call that raises any of them costs that one step and no
+  other.
+- Anything raised inside a run that no other handler names is handled as a crash:
+  `ws7_crashed`, and the failure path runs. That includes a `SystemExit` and a
+  `KeyboardInterrupt` ("What a runner's return means", above).
+- A test breaks one thing in each case: the log stream, the settling write, the first stored
+  record, the clock, the building of the failed record, its write, and each publish. Every later
+  step still reaches its server, with the ledger write first.
+
+| Stage | Codes | Failed record | `RunOk` = 0 |
+|---|---|---|---|
+| A usage error | Exit code 2 | No | No |
+| Before the claim | `ws7_config_invalid`, `ws7_topic_refused`, `ws7_store_bucket_refused`, `ws7_identity_missing`, the endpoint refusals, `ws7_corpus_unreadable`, `ws7_precheck_failed`, `ws7_preflight_scenario_unknown`, `ws7_scenarios_not_distinct`, the match check's codes, the claim's own refusals | No | No (`RunRefused` only) |
+| A duplicate | `ws7_duplicate` | No | No |
+| Admission | The ledger's codes | Yes | Yes |
+| Dispatch | `ws7_deadline`, `ws7_runner_refused`, `ws7_runner_crashed`, `ws7_runner_stopped_early` | Yes | Yes |
+| Calls | `ws7_call_failed`, `ws7_unmetered`, a refusal's own code | Yes | Yes |
+| The pre-flight | `ws7_preflight_failed`, `ws7_preflight_files_unexpected`, `ws7_preflight_over_reservation` | Yes | Yes |
+| Scoring and the summary | `ws7_generation_failed`, `ws7_scorer_stopped`, `build_summary()`'s codes | Yes | Yes |
+| The comparator | `ws7_no_baseline`, `ws7_compare_error`, `ws7_compare_output_exists`, `ws7_part_c_ruled` | Yes | Yes |
+| Storing and publishing | `ws7_evidence_unstorable`, `ws7_evidence_unavailable`, the manifest's codes, `ws7_publish_failed`, `ws7_alert_failed`, `ws7_success_record_unavailable`, `ws7_success_record_invalid` | Yes | Yes |
+| Any other exception | `ws7_crashed` | If the claim is held | If the claim is held |
+| `RunOk` = 1 was not acknowledged | `ws7_runok_publish_failed` | Yes, beside the success record | Yes |
+
+The failed record (`ws7-failed/1`) holds the run's ID, target, mode and scheduled time, the code,
+the IDs and counts the stop carried, any further codes (`also`), what became of the ledger entry
+(`ledger`), whether the records were stored (`evidence`), how many files were left out of the
+store (`files_refused`), the commit, the digest and the time. Every field has a rule ("The
+Thursday check", below), and the record is held to it before it is written.
+
+### The Thursday check
+
+`check` makes no Bedrock call, no claim, no SSM read and no CloudWatch call. It reads S3 and
+publishes to the topic.
+
+1. `Ledger.expire()`, **before** `Ledger.unresolved()` (the author's change E). So a run that
+   died on Wednesday is marked abandoned and reported that Thursday.
+2. The claim of the UTC day **`CHECK_LOOKBACK_DAYS`, 1,** before the check's own scheduled time.
+   A named constant in `evals/ws7_entry.py`, tested at 0, 1 and 2 days.
+3. **The run's ID is read from the claim object. The check never builds one** (the author's
+   change B). In British Summer Time the 04:00 London run is 03:00 UTC, and its ID is
+   `<date>T0300-<target>`. Tests cover a winter week and a summer week.
+4. That run's failed record and success record.
+5. **Nothing it reads is trusted as read** (Codex P2, PR #9). The claim, the failed record and
+   the success record are each checked before they are used.
+
+**One validator for each object, shared by its writer and the check** (Codex P2, PR #9,
+re-check; the author's ruling, 21 Nov 2026), as the comparator's public checks are shared:
+
+| Object | Validator | Run by the writer, before the PUT | Run by the check, after the GET |
+|---|---|---|---|
+| The claim | `ws7_ledger.claim_fault()` | `ws7_ledger.claim()` (`ws7_claim_invalid`) | `_occurrence()` |
+| The success record | `ws7_entry.success_fault()` | `_succeed()` (`ws7_success_record_invalid`) | `_occurrence()` |
+| The failed record | `ws7_entry.failed_fault()` | `_fail_record()` (`ws7_failed_record_invalid`) | `_failed_line()` |
+
+So the job can never write a record its own check would reject. **Every field of all three is
+checked**: its type, exactly (`true` is not an integer, `1` is not a string); its pattern or
+range; and its agreement with the claim and the occurrence. **An unknown field, or a missing
+one, is refused.**
+
+| The claim (`ws7-claim/1`), 7 fields | Rule |
+|---|---|
+| `schema` | The string `ws7-claim/1` |
+| `target`, `mode` | The strings of this occurrence: the check's target, and `scheduled` |
+| `scheduled_time` | A UTC time, `YYYY-MM-DDTHH:MM:SSZ`, whose claim key is the key the object is at |
+| `run_id` | The ID that target, mode and scheduled time give |
+| `claim_id` | 32 hex characters |
+| `claimed_at` | A UTC time, from the scheduled time to `max_start_delay_s` after it |
+
+| Both records, the first 5 fields | Rule |
+|---|---|
+| `schema` | `ws7-success/1` or `ws7-failed/1` |
+| `run_id`, `target`, `mode`, `scheduled_time` | Strings, equal to the claim's |
+
+| The success record, 9 more fields | Rule |
+|---|---|
+| `status` | `no_breach` or `breach` |
+| `breaches` | A whole number from 0 to 21 (one for each family and kind there is a metric for), above 0 exactly when the status is `breach` |
+| `baseline_id` | An ID |
+| `summary_sha256`, `comparison_sha256` | 64 hex characters |
+| `evidence` | The run's own prefix, `ws7/runs/scheduled/<run_id>/` |
+| `git_commit`, `image_digest` | 40 hex characters; `sha256:` and 64 hex characters |
+| `finished_at` | A UTC time, not before the scheduled time |
+
+| The failed record, 10 more fields | Rule |
+|---|---|
+| `code` | A `ws7_` code |
+| `ids` | A list of IDs |
+| `counts` | An object of fixed labels to integers |
+| `also` | A list of `ws7_` codes |
+| `ledger` | `not_admitted`, `failed`, a ledger state or kind, or a `ws7_` code |
+| `evidence` | `none`, `not_finished`, `stored`, or a `ws7_` code |
+| `files_refused` | A whole number |
+| `git_commit`, `image_digest` | As above |
+| `failed_at` | A UTC time, not before the scheduled time |
+
+- An object that fails is reported as **invalid, with a fixed label**: the name of the first
+  field that fails, or `not_json`, `not_an_object`, or `fields` (an unknown or a missing field).
+- **Every JSON object the entrypoint reads is decoded strictly** (Codex P2, PR #9, second
+  re-check), by one loader, `strict_json()`, as the comparator does: UTF-8 only, **no duplicate
+  member** in any object, and no `NaN` or `Infinity`. Python's own loader keeps the last of two
+  members with one name and says nothing, so a record with a wrong run ID and then the right one
+  would pass its validator. The entrypoint has three reads, and all three use it: a batch's own
+  index (`batch.json`; otherwise `ws7_runner_refused`), the comparator's result (otherwise
+  `ws7_compare_error`), and each object the check reads (otherwise `not_json`).
+- **An invalid record never counts as a success**, and an invalid claim names no run, so no
+  record is read on its word.
+- **A record its validator refuses is not written.** For the success record the run then fails.
+  For the failed record that step of the failure path stops, and the steps after it still run:
+  `RunOk` = 0 is still published, and the check reports "started and did not finish".
+- Every test that runs the entrypoint holds what the job wrote to these validators when it ends
+  (`tests/ws7_world.py`, `check_written`).
+
+| What it finds | The line it reports |
+|---|---|
+| No claim | `no claim: the run did not start, or stopped before its claim; see the task log` |
+| A claim and a failed record | `failed run <run_id> code <code>`, with the IDs the stop carried. **If a success record is there too, it is still a failed run** |
+| A run blocked by an unresolved entry | `failed run <run_id> code ws7_blocked_unresolved: blocked by unresolved <entry's run_id>` |
+| A claim and neither record | `run <run_id> started and did not finish: no success record` |
+| A claim and a success record only | Nothing |
+| A claim that fails its check | `claim object invalid (<label>): it is not read as a scheduled claim` |
+| A success record that fails its check, and no failed record | `run <run_id>: success record invalid (<label>); it is not counted as a success` |
+| A failed record that fails its check | `failed run <run_id>: failed record invalid (<label>)`. It is still a failed run |
+| Any unresolved entry, in any month | `unresolved entry <run_id> (<kind>, month <month>): it blocks every scheduled run until it is resolved` |
+| The occurrence's month is waived | `month <YYYY-MM>: assurance waived`, every week of that month |
+
+- **The "no claim" line does not say the run never started** (the author's change C). A stop
+  before the claim, at the match check for example, also leaves no claim.
+- One message is sent when there is anything to report. With nothing to report the check is
+  silent and exits 0.
+- A check that fails says so on the topic if it can still reach it, and exits 1.
+
+### The log
+
+One fixed line for each stage: labels, IDs and counts. A stop is printed as `Stop.line()`. No
+traceback is printed.
+
+**Building a diagnostic never raises and never carries text** (Codex P2, PR #9, second
+re-check). Every value in a stop, a log line or a record is a fixed label, a bounded count, or
+a string that matched an ID pattern. The job never formats an object it did not create.
+
+- **An exception is logged by a fixed label for where it happened, never by its class name or
+  its message.** A class from outside the job can be named anything, and looking up its name
+  can itself raise. The line is `stage=crashed during=<where>`:
+
+  | `during=` | Where |
+  |---|---|
+  | `run` | Anywhere in a scheduled run that no other handler names |
+  | `settle`, `store`, `failed_record`, `markers`, `counters` | That step of the failure path |
+  | `duplicate` | A duplicate's one publish call |
+  | `check`, `alert` | The Thursday check, and its own failure report |
+
+- **A runner's return code is used only once it is an integer from 0 to 255.** Anything else
+  (None, a string, `True`, a negative number, a number of 5,001 digits, which Python will not
+  print) is the fixed label `exit_code_not_a_code`, and is never copied into a stop, a line or
+  a record. The comparator's code is used only once it is 0, 1 or 2. The scorers' return values
+  are passed back to the scorers and never used in a diagnostic.
+- **A count in the failed record is a whole number within ±(2^63 - 1).** A record with a count
+  beyond that is refused by its validator.
+- **Every line is built inside the best-effort boundary.** `best_effort` is given the function
+  that builds the line, and calls it inside its `try`: a line that cannot be built costs that
+  one line.
+
+**Logging is best effort everywhere and never raises** (Codex P2, PR #9). `best_effort` catches
+`BaseException`, so that holds whatever the stream raises. A log stream that
+fails (a closed pipe, a full disk) changes nothing a run, a duplicate or the check does: with a
+stream that raises on every line, a good run still ends with `RunOk` = 1 and a failed run still
+settles, writes its failed record and publishes `RunOk` = 0.
+
+### Carried items closed
+
+| Item | What changed |
+|---|---|
+| A | The PR #6 wiring: the guard's run ID, dispatch stopping at the deadline, settling before scoring with time in hand, `mark_crashed()` from the outermost handler when there is no guard |
+| B | The distinct-scenarios precheck, on the first request's fingerprint |
+| C | `build_keys()` and `build_candidate()` check what they were given before they copy it. The copy is a JSON round trip, which turns an integer scenario key `1` into `"1"`. (`build_summary()` copies nothing itself: its keys come from `build_keys()`) |
+| D | A v1 acceptance check through the entrypoint (Tests, below) |
+| E | A failed pipeline generation is `ws7_generation_failed` |
+| F | A corpus file whose `notes` is not a string makes the runner's loader raise `AttributeError`. `build_candidate()` translates it to `ws7_candidate_not_whole_corpus` |
+
+### What 5a does not do
+
+- The manual baseline, the manual confirm and the resolve command (5b).
+- It writes nothing under `retained/`.
+- It does not pass `ExpectedBucketOwner` (slice 3).
+- It does not end a process that hangs. The guard's deadline ends the model calls; scoring and
+  storing after it are bounded only by the clients' timeouts.
+
+### What the new fakes cannot prove
+
+The CloudWatch fake implements `PutMetricData` only and the SNS fake `Publish` only. Each speaks
+one wire protocol, the one botocore 1.43.110 uses for that service: `json` for CloudWatch and
+`query` for SNS. **A request in any other protocol is a fault that names the protocol**, so a
+botocore that prefers another format fails the tests by name. Slice 3's set-up checks must show,
+with the task role:
+
+- that real CloudWatch accepts these metric names, the `Target` dimension, the unit and the
+  values, and that the role's `cloudwatch:PutMetricData` is limited to the namespace;
+- that each alarm sees its datapoints, with the statistic, the period and the window as designed;
+- that the KMS-encrypted topic accepts the role's `Publish`, and that the message is delivered
+  and readable as an email;
+- real error shapes, throttling and size limits for both services;
+- that a `.md` object is stored and served as Markdown on the real bucket.
+
 ## Notes for later parts
 
 ### The next PR that may change `evals/ws7_reserve.py`
@@ -1217,6 +1895,9 @@ returned.
 - Make the config loader's scenario pattern public. `runner_argv()` (part 3) reads the private
   name `reserve._SCENARIO_RE`, so that the rule lives in one place; `evals/ws7_reserve.py` was
   not to be changed in that PR.
+- The author may then move `SETTLE_MARGIN_S` and `CHECK_LOOKBACK_DAYS` (part 5a) into
+  `evals/ws7_config.json`. They are constants in `evals/ws7_entry.py` only because the loader
+  refuses an unknown field.
 
 ### Part 4: the run summary
 
@@ -1230,47 +1911,67 @@ Both notes are closed by part 4:
 
 - `summary()` stops with a `KeyError` on a record with an upstream step missing (part 4, "What
   part 4 found"). Until it is fixed, a pipeline batch with a failed generation has no summary.
+  Part 5a stops such a run before the scorers, with `ws7_generation_failed`. When the scorer is
+  fixed, that stop is removed in the same pull request, and `StepFailures…` and
+  `GenerationsFailed` can then be above 0 in a published pipeline run.
 - The scorer has no version constant. Part 4 keys it by the sha256 of its bytes.
 
 ### Part 5: the modes
 
-- **Wiring part 4.** After the last runner returns and the ledger is settled:
-  1. run `score_batch`, then (pipeline) `score_assemble`, then `ws7_summary.write_haz03()`, on
-     the main batch;
-  2. take `ws7_summary.key_parts(batch_dir)`, and pass the same parts to `build_manifest()`;
-  3. call `build_summary()` with the `own` that `match_check` returned, the guard's report, the
-     batch's label, and `Ledger.assurance_waived(month)`.
-- **A batch's label is the runner's batch ID.** Part 5 hands each runner `--batch <label>`, with
-  the label it opened on the guard: `<run_id>.preflight`, `<run_id>.main`, and for a baseline
-  three labels of its own that start `<run_id>.`. The summary's `run_id` is that label.
-- **Part 5 summarises the main batch.** A pre-flight batch can be summarised as well, but it is
-  never compared and never part of a baseline: `build_candidate()` refuses a summary that does
-  not name the whole corpus.
-- **A scorer that stops is a failed run** (ADR-011 D2). Today that includes the assembly replay on
-  any pipeline batch with a failed generation.
-- **A refusal from `build_summary()` is a failed run**, with the refusal's code. `ws7_unmetered`
-  is one of them.
-- **Where a frozen baseline is read from: the repository, and so the image.**
-  `evals/ws7_baseline_<target>.json`, with the rules at `evals/ws7_rules_<target>.json`. Neither
-  file exists until slice 4. A missing file is "no baseline". A baseline is never read from S3:
-  the task role can write there, and a baseline changes only by pull request.
+**Closed by part 5a:** wiring part 4 and part 2 (the order, the batch labels, the guard's run ID
+and deadline, settling before scoring, `mark_crashed()`); a scorer that stops and a refused
+summary as failed runs; where a frozen baseline is read from; the distinct-scenarios precheck;
+`ws7_unmetered` as a failed run's code; the check-mode report; one live client before the runner
+starts; the failed record; the prefixes of success records and retained copies.
+
+### Part 5b: the manual modes and the resolve command
+
+- **The yes** (the author's ruling, 20 Nov 2026; the details are for 5b's plan). A manual mode
+  needs, in the invocation itself, the run ID the job derives and the reservation it computes.
+  **A manual command without its yes stops with `ws7_manual_not_approved` and prints the run ID
+  and the reservation it derived**, so the author copies them and does not work them out.
+- **Manual runs publish no CloudWatch metric.**
+- 5b uses 5a's run: the precheck, the match check, the guard's deadline, the wrapper that stops
+  every call once the run has failed, and settling before scoring.
+- **Reject an existing batch path before it is registered as evidence** (Codex P3, PR #9,
+  carried by the author, 21 Nov 2026). `_dispatch()` records a batch folder as the run's own
+  (`evals/ws7_entry.py`, `self.batches[label] = …`) before the runner has refused a folder that
+  is already there. The runner does refuse it (`ws7_runner_refused`, exit code 2), but the
+  failure path then stores that folder's allowed files as this run's records, though this run
+  wrote none of them. The entrypoint must refuse a batch path that exists before it registers
+  it, with a fixed code, in the scheduled and the manual modes.
+- **A closed stdout pipe in a real subprocess can change the exit code** (Codex P3, PR #9
+  re-check, carried by the author, 21 Nov 2026; `evals/ws7_entry.py`, `_say`). `best_effort`
+  stops a log line that fails from raising inside the job. It does not cover what Python does
+  as the process ends: with stdout a closed pipe, the interpreter's own flush at exit can fail,
+  and the process then exits with a code that is not the job's. 5b decides how the real
+  process ends (for example, flushing and closing stdout itself before `sys.exit`, and
+  treating a failure there as best effort), and tests it in a child process whose stdout is a
+  closed pipe: the exit code is the job's, for a successful run, a failed run and a usage error.
+- **The guide's wording on the pipeline's gate** (Codex P3, PR #9 second re-check, carried by
+  the author, 21 Nov 2026). This guide ("What a runner's return means"), ADR-011 D7 and the
+  docstring of `evals/ws7_entry.py` say "the pipeline has no safety-net gate". What is meant is
+  narrower, and the sentences should say it: **the pipeline's runner records no gate result in
+  its index** (`batch.json`), so a gate cannot explain a pipeline runner's exit code. The
+  pipeline's safety-netting is still checked: at assembly (`score_assemble`, the gate status in
+  ADR-011 D9's Assembly family) and by `score_batch`, and the comparator judges both.
+- **ADR-011 D9 and D10 still say a failed run publishes no breach metric and sends no message**,
+  while also describing a run that delivered them and then failed (Codex P3, PR #9 re-check,
+  carried by the author, 21 Nov 2026). Qualify both: a run that fails **before its comparison**
+  publishes no breach value and sends no message; a run that fails after it leaves what
+  CloudWatch **acknowledged** and what SNS accepted. Use "acknowledged" where the text now says
+  "delivered" or "published".
 - **Where a candidate goes.** The manual baseline mode writes the envelope under the run's own
-  prefix, `ws7/runs/manual/<run_id>/`. Part 5 names the object. It is never written to a path a
+  prefix, `ws7/runs/manual/<run_id>/`. 5b names the object. It is never written to a path a
   baseline is read from.
-- **The distinct-scenarios precheck must use a canonical first-request fingerprint, not the raw
-  notes hash** (Codex P3, PR #5). Two scenarios whose notes differ only in ways the pipeline
-  normalises away, such as line endings, would have different notes hashes but could send the same
-  first-step request. The wrapper would then refuse the second as a repeat. So the precheck builds
-  the first-step request each scenario would send, after the runner's and the pipeline's own
-  normalisation, and compares `ws7_client.fingerprint()` of each: the hash the wrapper itself uses.
-  This is not fixed in part 1.
-- A run whose report says `unmetered` is a failed run with the fixed code `ws7_unmetered`.
+- **Part 5b summarises three batches.** Their labels start `<run_id>.`; a summary's `run_id` is
+  its batch label.
 - **The resolve command.** A manual mode, run by the author only, that takes the run ID, the
   **basis** (`upper_bound` or `estimate_accepted`) and the **settled figure** in micro-dollars,
   and records them on an unresolved entry (unmetered, abandoned or crashed; part 2).
   - For `upper_bound` the settled figure is the Cost Explorer figure exactly as defined above. The
     command cannot check that figure, so the basis is recorded as the author's statement.
-  - The command makes no Bedrock call.
+  - The command makes no Bedrock call and calls `Ledger.resolve()`.
   - The command is the only way an entry leaves the unresolved state; AWS Budgets never resolves
     one.
   - With `estimate_accepted`, the command also sets the month's "assurance waived" flag (part 2).
@@ -1283,35 +1984,6 @@ Both notes are closed by part 4:
   The `upper_bound` definition rests on this check. Until now the definition had been checked
   only against AWS's documentation, never against real rows. (The console groups by one dimension
   at a time, hence the two steps.)
-- **The check-mode report.**
-  - The Thursday check reports a run blocked by an unresolved entry by that cause, naming the
-    entry's run ID, so the alert says what the author must resolve.
-  - It also reports a **waived month**: when the month's ledger is marked "assurance waived", the
-    report says so, every week of that month.
-- Build one live client before the runner starts, so that a refused endpoint fails the run before
-  any batch folder is written.
-- **Wiring part 2** ("The order a run follows", above):
-  - the scheduled time comes from the schedule as an argument, and the bucket name from the task
-    definition; neither comes from the clock or from a default;
-  - the match check runs before the claim, and `identity(os.environ)` before any spend;
-  - the guard's deadline is set from `Admission.deadline_at`, never later, and **dispatch stops
-    at `deadline_at`**: no runner is started, and no generation is begun, at or after it;
-  - **`settle()` is called as soon as the last runner returns, before scoring**, and
-    `mark_crashed()` from the outermost handler when there is no guard report; both are given
-    the `Admission`;
-  - **part 5 settles with time left for S3 I/O**: a settle is several S3 requests, and one
-    whose write is decided at or after `expires_at` is refused, so the last runner must return
-    with that time still in hand;
-  - the runners' argv comes from `ws7_manifest.runner_argv()`; the guard is made with
-    `run_id=admission.run_id`, and its batches are labelled `<run_id>.preflight` and
-    `<run_id>.main`: together these bind the report to the run;
-  - a `Duplicate` publishes the `Duplicate` count and exits; every other `Stop` after a claim
-    writes the failed record the Thursday check reads, with the stop's code;
-  - the check mode looks for the scheduled claim key only, calls `Ledger.expire()`, and reports
-    `Ledger.unresolved()` and `Ledger.assurance_waived(month)`;
-  - the resolve command calls `Ledger.resolve()`;
-  - success records and retained incident copies get prefixes of their own, outside
-    `ws7/runs/scheduled/`.
 
 ### Part 6: the image
 
@@ -1339,14 +2011,25 @@ Both notes are closed by part 4:
 - The lifecycle rule that expires scheduled runs selects `ws7/runs/scheduled/` and nothing else.
 - The task definition sets the bucket name and `WS7_IMAGE_DIGEST`, and pins the image by that
   digest.
-- The set-up checks in "What the fakes cannot prove" (part 2).
+- The set-up checks in "What the fakes cannot prove" (part 2) and "What the new fakes cannot
+  prove" (part 5a).
+- The task definition also sets `WS7_BUCKET` and `WS7_ALERT_TOPIC_ARN` (part 5a). The topic must
+  be in `eu-west-2`.
+- The task role may `cloudwatch:PutMetricData` in the namespace `DischargeAssistant/Eval` and
+  `sns:Publish` to the eval topic.
+- The check's schedule is one UTC day after the run's (`CHECK_LOOKBACK_DAYS`, part 5a). Each
+  schedule passes its own scheduled time and its subcommand: `scheduled` or `check`.
+- An alarm on a breach metric must not treat missing data as a breach: a failed run publishes
+  no breach value. `RunOk` and `NoBaseline` are what report a run that did not compare.
+- The runbook's triage step copies an incident's run to `retained/<run_id>/` by hand, with the
+  author's own credentials.
 - **Pass `ExpectedBucketOwner` on every S3 call.** The task definition supplies the account ID,
   so a mistyped bucket name can never write into another account's bucket.
 
 ## Tests
 
 ```zsh
-PYTHONDONTWRITEBYTECODE=1 python -m pytest -p no:cacheprovider -q tests/test_ws7_compare.py tests/test_ws7_reserve.py tests/test_ws7_client.py tests/test_ws7_store.py tests/test_ws7_ledger.py tests/test_ws7_manifest.py tests/test_ws7_summary.py
+PYTHONDONTWRITEBYTECODE=1 python -m pytest -p no:cacheprovider -q tests/test_ws7_compare.py tests/test_ws7_reserve.py tests/test_ws7_client.py tests/test_ws7_store.py tests/test_ws7_ledger.py tests/test_ws7_manifest.py tests/test_ws7_summary.py tests/test_ws7_publish.py tests/test_ws7_entry.py
 ```
 
 - `tests/test_ws7_compare.py`: the comparator (`docs/WS7-COMPARATOR.md`, "Tests").
@@ -1454,7 +2137,112 @@ PYTHONDONTWRITEBYTECODE=1 python -m pytest -p no:cacheprovider -q tests/test_ws7
     partner is three full batches. The corpus is shown to be read from its file: with one
     scenario more or fewer in the file, the same three full summaries are refused.
 
-**Keeping the tests offline.** Every test in the three part 2 files and in the part 4 file uses `offline_aws`, and every
+- `tests/test_ws7_publish.py` (part 5a): the metric names (the Run list pinned against a real
+  summary's metrics; 21 breach names and none for PART C); every list that is not all known
+  names and whole numbers sending nothing; the two messages line by line; a message built from
+  anything but an ID, a count or a fixed label refused; the final check of a message's
+  characters; one try per call. The two new clients' endpoints with each override configured,
+  with an ordinary client as the positive control. The fakes' own strictness: a request in
+  another wire protocol is a fault that names it.
+- `tests/test_ws7_entry.py` (part 5a). The real entrypoint, in-process, against five local
+  servers (`tests/ws7_world.py`): the Bedrock stub and the S3, SSM, CloudWatch and SNS fakes.
+  - **Order is proved from one locked sequence log** that all five servers append to as each
+    request arrives, never from timestamps. Time is one injected clock that moves only when a
+    test moves it.
+  - **The acceptance check, for both targets, through the entrypoint.** Three scheduled runs
+    against one frozen invented baseline: exit 0; a breach, which is a success with its message;
+    and a baseline for another `pipeline_version` or another v1 prompt hash, which is "no
+    baseline" and a failed run. The pipeline's breach is part 4's step-2 flip. v1's is a count:
+    one stub reply lists a gold drug that has no documented dose, with a dose, and
+    `meds_invented_doses` passes the baseline's highest count. The scenario is chosen when the
+    test runs.
+  - The order of a successful run; nothing sent before the match check, and no model call before
+    the claim and the reservation; the settle landing before any score file exists; `RunOk` = 1
+    as the last request any server received.
+  - A report that cannot be settled from: one call's accounting stopped at each of five points,
+    by an interrupt and by an exception, in each batch, for both targets. Each time no further
+    call is sent, the entry is unresolved at its reservation, and next week's run is refused
+    with `ws7_blocked_unresolved` and sends nothing. The partner: a clean run settles as
+    metered and next week's run is admitted.
+  - A throttle on the main batch's second scenario: no request for any later scenario reaches the
+    stub; the partner sends all 18. A 500: unmetered and unresolved. A failed pre-flight: the
+    main batch never starts.
+  - The deadline at its boundary and one second before; a deadline that passes mid-run; a
+    settle decided after `expires_at`.
+  - The pre-flight's three checks, the cost one at exactly the reservation and one cache-read
+    token over. A gate failure on the pre-flight scenario: the main batch runs and is compared.
+  - A runner that raises after writing a clean index, in the pre-flight and in the main batch,
+    for both targets: an exception, an interrupt, and `SystemExit` with 0, 1, 2, None and a
+    string. Each is `ws7_runner_crashed`: `RunOk` = 1 is never sent, the ledger is settled and
+    the failed record is written. The same seven endings for each scorer, the comparator, the
+    precheck's runner code, the run's and the check's outermost handlers, a duplicate's publish
+    and the parser.
+  - The same call sites raising WS7's own `Stop` (a "no baseline" one) and `Duplicate`: the
+    five calls into the scorers, the comparator, each runner in each batch, seven places in the
+    precheck, and the match check. Each is that call's own code: a failed run, a failed record,
+    the ledger settled, never exit code 0, no duplicate counted and no `NoBaseline` published.
+    A `Duplicate` raised by the job's own code after the claim, at four places: `ws7_crashed`.
+  - A runner's exit code 1 with nothing in the index to explain it, from each batch:
+    `ws7_runner_refused`. Its partners: a 1 a recorded gate failure explains, and a 1 a failed
+    generation explains. An exit code 0 beside a failed generation: refused too.
+  - What explains an exit code, as a table: for each target, each of `error_code`, `gate_ok`,
+    `gate_status` and `failed_step`, with thirteen values covering every JSON type. Once on
+    `index_counts()` and `exit_code_explained()`, for exit codes 0 and 1, and once through the
+    entrypoint with the pre-flight's index forged. Only a non-empty string `error_code` (either
+    target) and `gate_ok` exactly false (v1 only) explain a 1.
+  - The comparator: a missing file; an exit code that is not 0, 1 or 2, with the result shown
+    never to be read; ten results that disagree with their exit code; a file already at the
+    output path; a rule for PART C.
+  - Storing: the file list equal, in both directions, to what the real runners and scorers
+    wrote; an extra file, or a link, stopping a run that would have succeeded, and never
+    uploaded. `score_batch` writing its reports and the assembly replay then raising: the
+    reports and the guard's report stored, and the run failed by the scorer's code. Unknown
+    files on the failure path: not uploaded, counted, and the rest stored, the guard's report
+    first.
+  - The precheck: its fingerprint equal to the wrapper's for every scenario; two scenarios with
+    one first request stopping the run with no request at any server; the sleep shown never to
+    be called, with a control in which a throttling client does make the runner sleep.
+  - The check: a winter week and a summer week; each line of the table above; the look-back at
+    0, 1 and 2 days; a run that died on Wednesday reported as abandoned that Thursday.
+  - What the check reads, as a table: every field of the claim (7), the success record (14) and
+    the failed record (15), each with a value of each JSON type (string, integer, float, boolean,
+    null, list, object) outside its rule, each reported invalid by the check under the field's
+    own name, each with the valid object as its partner. Then each field missing, unknown fields,
+    objects that are not JSON objects, and values of the right type outside the pattern, the
+    range or the claim, with the value at each boundary as the partner. A perfect success record
+    beside an invalid claim does not count.
+  - What the writers write: each writer is shown to give its object to the validator before the
+    PUT, and to store that object; a record its validator refuses is never sent; a clock that
+    steps back makes both records invalid and neither is written. Every entrypoint test also
+    holds each claim and record the job created to its validator as the test ends.
+  - The failure path: one thing broken in each case (the log stream, the settling write, the
+    first stored record, the clock, the building of the failed record, its write, each publish),
+    and every later step still tried, the ledger first. A log stream that raises on every line,
+    under a good run, a duplicate and a check.
+  - The same by exception type: the log sink, the settle, the first store call, the clock, the
+    building of the failed record, its write and each publish call, each raising an
+    `Exception`, `SystemExit(0)`, `SystemExit(1)` and `KeyboardInterrupt` inside the process.
+    Every later step still reaches its server, the ledger is settled first, and the job
+    returns 1. A stderr that raises while the usage line is printed: still exit code 2.
+  - At most once: a breach run whose message, or whose success record, fails after the counters
+    were accepted leaves exactly one sample of every counter at the fake, and the failure path
+    makes one request. The control: counters that were not acknowledged are sent by the failure
+    path.
+  - `RunOk` = 1 rejected after the success record: a failed record beside it, `RunOk` = 0, and
+    the check reporting a failed run. The partner: `RunOk` = 1 accepted, and no failed record.
+  - Diagnostics: a runner returning a number of 5,001 digits (and eight other things that are
+    not codes) from each batch, with every step of the failure path still running; an
+    exception whose class-name lookup raises, and one whose class is named with a sentinel,
+    raised at every place the seven other endings are. Every test holds that sentinel out of
+    every log line, CloudWatch and SNS request, stored object, stdout and stderr.
+  - Every other command line, `--help` included: exit code 2, the one fixed usage line, nothing
+    built and nothing sent. An invented sentinel in the rejected argument, for each kind of
+    argument error, is in neither stream; the positive control gives the same command line to
+    the same parser built on plain argparse, which prints it. The two layers are each tested
+    alone: the parser raises and prints nothing with the streams open, and `main` shows nothing
+    even of a parser that prints.
+
+**Keeping the tests offline.** Every test in the three part 2 files, the part 4 file and the two part 5a files uses `offline_aws`, and every
 client they build points at a fake on `127.0.0.1` or is never called. The `offline_aws` fixture:
 
 - sets invented credentials and `AWS_EC2_METADATA_DISABLED=true`, and points the AWS config and

@@ -842,6 +842,18 @@ def test_a_report_read_that_failed_once_fails_the_run_though_a_later_read_succee
     assert world.bedrock_requests() == last
 
 
+def _refused_with(call) -> str:
+    """The code of the stop `call` raises. Anything else that gets out fails the test by
+    name: an interrupt that escaped would otherwise end the whole test session."""
+    try:
+        call()
+    except store.Stop as stop:
+        return stop.code
+    except BaseException as exc:        # noqa: BLE001
+        pytest.fail(f"it let a {type(exc).__name__} out")
+    pytest.fail("it returned")
+
+
 def test_the_tripwire_keeps_its_first_reason_and_never_clears_it():
     """The mechanism on its own: the first reason is kept; `report()` then refuses for
     good, with that code, though the guard can be read again; `evidence()` still reads."""
@@ -861,14 +873,10 @@ def test_the_tripwire_keeps_its_first_reason_and_never_clears_it():
         wire.watch(guard)
         assert wire.report()["calls"] == [] and wire.reason is None and not wire.look()
         guard.raises = [first]
-        with pytest.raises(store.Stop) as stop:
-            wire.report()
-        assert stop.value.code == wire.reason == code and wire.tripped
+        assert _refused_with(wire.report) == wire.reason == code and wire.tripped
         for _ in range(3):                          # the guard reads perfectly well again
             assert guard.report()["calls"] == []
-            with pytest.raises(store.Stop) as again:
-                wire.report()
-            assert again.value.code == code and wire.look() is True
+            assert _refused_with(wire.report) == code and wire.look() is True
         wire.fail(entry.REPORT_UNREADABLE)          # a second reason does not replace the first
         wire.caught(KeyboardInterrupt())
         assert wire.reason == code

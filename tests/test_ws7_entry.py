@@ -116,11 +116,29 @@ ENDINGS = {"Exception": lambda: RuntimeError(SENTINEL), "KeyboardInterrupt": Key
            "SystemExit(text)": lambda: SystemExit(SENTINEL)}
 
 
+# WS7's own exception types, raised by code that is not the job's. Each is one the run
+# would ACT on if it were trusted: a "no baseline" stop publishes NoBaseline = 1, and a
+# duplicate ends the run with exit code 0.
+WS7_ENDINGS = {
+    "a Stop": lambda: store.Stop(entry.NO_BASELINE, ids=("invented",), counts={"keys": 1}),
+    "a Duplicate": lambda: wl.Duplicate(wl.DUPLICATE, ids=("2026-12-16T0400-v1",),
+                                        counts={"duplicates": 1})}
+# Every way code the job does not own can end without returning.
+EXTERNAL = {**ENDINGS, **WS7_ENDINGS}
+
+
 def _ends(ending: str):
     """A function that ends as `ending` says, whatever it is called with."""
     def ended(*_args, **_kwargs):
-        raise ENDINGS[ending]()
+        raise EXTERNAL[ending]()
     return ended
+
+
+def not_acted_on(world) -> bool:
+    """Nothing a `Stop` or a `Duplicate` from outside the job would have caused: no
+    duplicate was counted, and "no baseline" was not published."""
+    out = world.published()
+    return "Duplicate" not in out and out.get("NoBaseline", [0]) != [1]
 
 
 # ============================================================ A SUCCESSFUL RUN ==
@@ -989,25 +1007,33 @@ def test_a_failed_v1_generation_is_counted_and_the_run_is_still_compared(ready, 
     assert out["GenerationsFailed"] == [1] and out["RunOk"] == [1]
 
 
-@pytest.mark.parametrize("ending", list(ENDINGS))
+@pytest.mark.parametrize("ending", list(EXTERNAL))
 @pytest.mark.parametrize("module, name, scorer", [
-    (SB, "score_batch", "score_batch"), (SA, "replay", "score_assemble"),
+    (SB, "score_batch", "score_batch"), (SB, "write_reports", "score_batch"),
+    (SA, "replay", "score_assemble"), (SA, "write", "score_assemble"),
     (ws.H3, "check_record", "haz03_check")])
 def test_a_scorer_that_stops_is_a_failed_run(ready, world, monkeypatch, module, name, scorer,
                                              ending):
     """ADR-011 D2. A scorer ends only by returning. Whatever it raised (an exception,
     an interrupt, a SystemExit with any code, 0 included), the run fails with one
-    fixed code, RunOk = 1 is never sent, and nothing of the exception is logged. The
-    partner is every successful run, in which each scorer returns."""
+    fixed code, RunOk = 1 is never sent, and nothing of the exception is logged.
+
+    THE CLASS (Codex P2, PR #9, second re-check): anything raised by code the job does
+    not own, INCLUDING WS7's OWN `Stop` AND `Duplicate`, is a crash of that code. A
+    scorer that raises a `Duplicate` does not end the run as a duplicate (exit 0), and
+    one that raises a "no baseline" `Stop` does not publish NoBaseline. Each of the
+    five calls into the scorers; the partner is every successful run."""
     target = "pipeline"
     ready(target)
     monkeypatch.setattr(module, name, _ends(ending))
-    assert world.run(target) == 1
+    assert world.run(target) == 1                   # never exit 0
     record = world.failed(RUN_ID[target])
     assert (record["code"], record["ids"], record["ledger"]) == (
         entry.SCORER_STOPPED, [scorer], "settled")
+    assert world.entry_of(RUN_ID[target])["basis"] == "metered"
     assert not any(SENTINEL in line for line in world.lines)
     assert world.published()["RunOk"] == [0] and no_success(world, target)
+    assert not_acted_on(world)
 
 
 def test_a_summary_that_is_refused_is_a_failed_run_with_the_refusals_code(ready, world,
@@ -1228,7 +1254,7 @@ def test_on_a_good_run_the_result_is_read_after_the_exit_code(ready, world, monk
     assert _result_path(world, target) in read
 
 
-@pytest.mark.parametrize("ending", list(ENDINGS))
+@pytest.mark.parametrize("ending", list(EXTERNAL))
 def test_a_comparator_that_raises_is_a_failed_run(ready, world, monkeypatch, ending):
     """The comparator ends only by returning. It has written a perfect "no breach"
     result and then raises: whatever it raised, a SystemExit(0) included, the run
@@ -1243,6 +1269,7 @@ def test_a_comparator_that_raises_is_a_failed_run(ready, world, monkeypatch, end
     assert _result_path(world, target).is_file() and _result_path(world, target) not in read
     assert not any(SENTINEL in line for line in world.lines)
     assert world.published()["RunOk"] == [0] and no_success(world, target)
+    assert record["ledger"] == "settled" and not_acted_on(world)
 
 
 def _rewrite(out: Path, **changes) -> None:
@@ -1805,13 +1832,13 @@ def _end_runner_after(monkeypatch, target: str, nth: int, ending: str) -> list:
     def main(*args, **kwargs):
         codes.append(real(*args, **kwargs))
         if len(codes) == nth:
-            raise ENDINGS[ending]()
+            raise EXTERNAL[ending]()
         return codes[-1]
     monkeypatch.setattr(runner, "main", main)
     return codes
 
 
-@pytest.mark.parametrize("ending", list(ENDINGS))
+@pytest.mark.parametrize("ending", list(EXTERNAL))
 @pytest.mark.parametrize("nth, kind", [(1, PRE), (2, MAIN)])
 @pytest.mark.parametrize("target", TARGETS)
 def test_a_runner_that_raises_after_writing_a_clean_index_is_a_crashed_runner_never_a_return(
@@ -1840,6 +1867,7 @@ def test_a_runner_that_raises_after_writing_a_clean_index_is_a_crashed_runner_ne
     out = world.published()
     assert out["RunOk"] == [0] and out["RunRefused"] == [1]     # never RunOk = 1
     assert no_success(world, target) and world.sns.messages == []
+    assert not_acted_on(world)                                  # a Stop or Duplicate of the runner's
     if nth == 1:
         assert not (world.runs_dir / MAIN[target]).exists()     # the main batch never started
     assert not any(SENTINEL in line for line in world.lines)
@@ -1882,8 +1910,10 @@ def test_anything_raised_inside_the_check_is_a_failed_check_that_says_so(thursda
     assert not any(SENTINEL in line for line in world.lines)
 
 
-@pytest.mark.parametrize("ending", list(ENDINGS))
+@pytest.mark.parametrize("ending", list(EXTERNAL))
 @pytest.mark.parametrize("target, module, name, code", [
+    ("v1", rce, "parse_args", entry.CORPUS_UNREADABLE),
+    ("pipeline", rpe, "parse_args", entry.CORPUS_UNREADABLE),
     ("v1", rce, "load_corpus", entry.CORPUS_UNREADABLE),
     ("pipeline", rce, "select_scenarios", entry.CORPUS_UNREADABLE),
     ("v1", rce, "load_system_prompt", entry.PRECHECK_FAILED),
@@ -1901,6 +1931,67 @@ def test_runner_code_that_raises_in_the_precheck_stops_the_run_before_the_claim(
     assert world.s3.requests == [] and world.bedrock_requests() == 0
     assert world.published() == {"RunRefused": [1]}
     assert not any(SENTINEL in line for line in world.lines)
+
+
+@pytest.mark.parametrize("ending", list(EXTERNAL))
+def test_pipeline_code_that_raises_in_the_match_check_stops_the_run_before_the_claim(
+        ready, world, monkeypatch, ending):
+    """The match check reads the pipeline's own version (`orchestrate.pipeline_version`).
+    Whatever that raises, a Stop or a Duplicate included, is values that could not be
+    read: one fixed code, before the claim. (The v1 side, the runner's hash function,
+    is also used by the precheck, which runs first; `tests/test_ws7_manifest.py` breaks
+    it inside `own_values` itself.)"""
+    from pipeline import orchestrate
+    target = "pipeline"
+    ready(target)
+    monkeypatch.setattr(orchestrate, "pipeline_version", _ends(ending))
+    assert world.run(target) == 1
+    assert stopped_with(world, wm.RUNNER_ARGV_INVALID)
+    assert world.s3.requests == [] and world.bedrock_requests() == 0
+    assert world.published() == {"RunRefused": [1]}
+
+
+@pytest.mark.parametrize("where", ["build_summary", "key_parts", "the store", "the publisher"])
+def test_a_duplicate_raised_by_anything_but_the_claim_never_ends_a_run_as_a_duplicate(
+        ready, world, monkeypatch, where):
+    """A `Duplicate` is acted on only when the claim itself raises it. Here the job's
+    own code raises one after the claim is held, at four places: the run fails
+    (`ws7_crashed`), settles and writes its failed record, and no duplicate is counted.
+    The partner is `test_a_second_delivery_is_a_duplicate_...`: the claim's own."""
+    target = "v1"
+    ready(target)
+    stray = _ends("a Duplicate")
+    if where in ("build_summary", "key_parts"):
+        monkeypatch.setattr(ws, where, stray)
+    elif where == "the store":
+        monkeypatch.setattr(entry._Scheduled, "_plan", stray)
+    else:
+        real = publish.Publisher.put
+
+        def put(self, values):
+            if values[0][0] == publish.NO_BASELINE:
+                stray()
+            return real(self, values)
+        monkeypatch.setattr(publish.Publisher, "put", put)
+    assert world.run(target) == 1
+    record = world.failed(RUN_ID[target])
+    assert (record["code"], record["ids"], record["ledger"]) == (
+        entry.CRASHED, ["duplicate_not_from_the_claim"], "settled")
+    assert world.published()["RunOk"] == [0] and not_acted_on(world)
+    assert no_success(world, target)
+
+
+def test_a_stop_from_the_jobs_own_scoring_code_is_still_the_runs_code(ready, world, monkeypatch):
+    """The other side of the rule: `write_haz03` is the job's own code, and a `Stop` it
+    raises itself is acted on, by its own code."""
+    target = "pipeline"
+    ready(target)
+
+    def own(*_args, **_kwargs):
+        raise store.Stop(ws.SCORES_INVALID)
+    monkeypatch.setattr(ws, "write_haz03", own)
+    assert world.run(target) == 1
+    assert code_in(world, target) == ws.SCORES_INVALID
 
 
 # ================================== EACH METRIC IS PUBLISHED AT MOST ONCE PER RUN ==

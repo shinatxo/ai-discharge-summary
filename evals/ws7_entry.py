@@ -38,7 +38,11 @@ CODE THE JOB DOES NOT OWN ENDS ONLY BY RETURNING (Codex P2, PR #9, re-check). Th
 runners, the scorers and the comparator are called in this process. Whatever one
 of them RAISES is a crash of that code, with a fixed code: any exception, a
 `KeyboardInterrupt`, and a `SystemExit` with any code (0, 1, 2, None, a string). A
-raise is never read as an exit code and never as a pass. The same holds at the
+raise is never read as an exit code and never as a pass. THAT INCLUDES WS7's OWN
+EXCEPTION TYPES: a `Stop` or a `Duplicate` raised by a runner, a scorer or the
+comparator is that call's fixed code, like any other raise. Only the job's own
+code may raise a `Stop` the run acts on, and a `Duplicate` is acted on only when
+the claim itself raises it. The same holds at the
 outermost handler of a run, of a duplicate and of the check: each is for
 `BaseException`, so nothing leaves the job without the failure path having run.
 
@@ -604,13 +608,21 @@ class _Scheduled:
     def run(self) -> int:
         try:
             self._before_the_claim()
-            self._claim_and_admit()
+            # A DUPLICATE IS ACTED ON ONLY WHEN THE CLAIM ITSELF RAISES IT. Raised by
+            # anything else, at any time, it is not a duplicate delivery: it must never
+            # end a run that holds its claim with exit code 0.
+            try:
+                self._claim()
+            except wl.Duplicate as stop:
+                return self._duplicate(stop)
+            self._admit()
             self._generate()
             result, exit_code = self._score_and_compare()
             self._store(strict=True)
             return self._succeed(result, exit_code)
-        except wl.Duplicate as stop:
-            return self._duplicate(stop)
+        except wl.Duplicate:
+            self.say("crashed", during="run")
+            return self._fail(Stop(CRASHED, ids=("duplicate_not_from_the_claim",)))
         except Stop as stop:
             return self._fail(stop)
         except BaseException as exc:                # noqa: BLE001 - the outermost handler
@@ -662,7 +674,7 @@ class _Scheduled:
             raise Stop(wm.RUNNER_ARGV_INVALID)      # the two batches would not run alike
         self.say("match")
 
-    def _claim_and_admit(self) -> None:
+    def _claim(self) -> None:
         cfg, deps = self.cfg, self.deps
         held = wl.claim(self.st, cfg, target=self.target, mode=SCHEDULED,
                         scheduled_time=self.scheduled_time, clock=deps.wall)
@@ -670,6 +682,9 @@ class _Scheduled:
             raise Stop(wl.SCHEDULED_TIME_INVALID)
         self.held = held
         self.say("claim", run=held.run_id)
+
+    def _admit(self) -> None:
+        cfg, deps, held = self.cfg, self.deps, self.held
         self.margin = cfg.input_allowance_margin_percent
         self.reservation = reserve.reservation(self.target, len(self.scenarios) + 1, self.margin)
         self.ledger = wl.Ledger(self.st, cfg, clock=deps.wall)
@@ -839,22 +854,29 @@ class _Scheduled:
             # (evals/score_assemble.py:202), so that batch can have no summary. Decided
             # here, from batch.json, before any scorer runs. The scorer is not changed.
             raise Stop(GENERATION_FAILED, ids=(label,), counts={"generations_failed": failed})
-        steps = [("score_batch", lambda: SB.write_reports(batch_dir, SB.score_batch(batch_dir)))]
+        # (name, the call, whether the call is the job's own code). The scorers are not
+        # the job's code. `write_haz03` is (evals/ws7_summary.py), and it turns whatever
+        # the scorer it calls raises into `ScorerStopped`.
+        steps = [("score_batch", lambda: SB.write_reports(batch_dir, SB.score_batch(batch_dir)),
+                  False)]
         if self.target == "pipeline":
             steps += [("score_assemble", lambda: SA.write(batch_dir / "scores" / "assemble",
-                                                          SA.replay(batch_dir, False, None))),
-                      ("haz03_check", lambda: ws.write_haz03(batch_dir))]
+                                                          SA.replay(batch_dir, False, None)),
+                       False),
+                      ("haz03_check", lambda: ws.write_haz03(batch_dir), True)]
         # Scoring begins: from here the known score files may be in the folder. A scorer
         # that stops after it wrote its reports must not make them unknown files.
         self.batches[label]["scored"] = True
-        for name, step in steps:
+        for name, step, own in steps:
             try:
                 with _quiet():
                     step()
-            except Stop:
-                raise
-            except BaseException:                   # noqa: BLE001 - a scorer that stops, however
-                # it stops, is a failed run (D2): any exception, a SystemExit with any code
+            except BaseException as exc:            # noqa: BLE001 - a scorer that stops, however
+                # it stops, is a failed run (D2): any exception, a SystemExit with any code,
+                # AND A STOP OR A DUPLICATE. Only the job's own code may raise a Stop the
+                # run acts on, and no code but the claim a Duplicate.
+                if own and isinstance(exc, Stop) and not isinstance(exc, wl.Duplicate):
+                    raise
                 raise Stop(SCORER_STOPPED, ids=(name,)) from None
         self.key_parts = ws.key_parts(batch_dir)
         self.waived = self.ledger.assurance_waived(self.held.month)

@@ -1288,6 +1288,27 @@ def test_write_haz03_runs_the_check_unchanged_on_every_record(scored):
     assert case.row(HAZ03, "S4")["facts_age_group"] == "child"
 
 
+@pytest.mark.parametrize("raised", [
+    RuntimeError(SENTINEL), KeyboardInterrupt(), SystemExit(0), SystemExit(SENTINEL),
+    store.Stop(ws.SCORES_INVALID), store.Stop("ws7_no_baseline")], ids=repr)
+def test_whatever_the_haz03_check_raises_is_a_scorer_that_stopped_never_a_stop(scored, monkeypatch,
+                                                                              raised):
+    """The check is not the job's code. Whatever it raises, one of WS7's own `Stop`s
+    included, is `ScorerStopped`, which is not a `Stop` and carries nothing. The
+    partner: `write_haz03`'s own refusal, below, is a `Stop`."""
+    case = scored("pipeline")
+    case.path(*HAZ03).unlink()
+
+    def check(*_args, **_kwargs):
+        raise raised
+    monkeypatch.setattr(H3, "check_record", check)
+    with pytest.raises(ws.ScorerStopped) as stopped_scorer:
+        ws.write_haz03(case.dir)
+    assert not isinstance(stopped_scorer.value, store.Stop)
+    assert stopped_scorer.value.args == () and stopped_scorer.value.__cause__ is None
+    assert not case.path(*HAZ03).exists()
+
+
 # A value of every JSON type that is outside every HAZ-03 field's set.
 OUTSIDE = {"string": SENTINEL, "integer": 42, "float": 1.5, "boolean": True, "null": None,
            "list": [SENTINEL], "object": {"value": SENTINEL}}

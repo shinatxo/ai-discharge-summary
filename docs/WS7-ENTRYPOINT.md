@@ -1443,6 +1443,25 @@ The scorers and the comparator already treated a `SystemExit` as a failure; they
 outermost handlers did not catch a `KeyboardInterrupt`. The runner was the one place where a
 raise was read as a return.
 
+**That includes WS7's own exception types** (Codex P2, PR #9, second re-check). A `Stop` or a
+`Duplicate` raised by code the job does not own is a crash of that code, like any other raise.
+Only the job's own code may raise a `Stop` the run acts on.
+
+| The call into code the job does not own | What any raise becomes, a `Stop` or `Duplicate` included |
+|---|---|
+| A runner (`_dispatch`) | `ws7_runner_crashed` |
+| `score_batch` and `write_reports`; `score_assemble`'s `replay` and `write` | `ws7_scorer_stopped`, naming the scorer |
+| The HAZ-03 check, which the job's own `write_haz03()` calls | `ScorerStopped` in `evals/ws7_summary.py`, which is not a `Stop`; the entrypoint makes it `ws7_scorer_stopped` |
+| The comparator | `ws7_compare_error` |
+| The precheck: the runner's parser, corpus loader, prompt loader and request builders | `ws7_corpus_unreadable` or `ws7_precheck_failed` |
+| The match check (`ws7_manifest.own_values()`): the runner's parser, the pipeline's version, the runner's hash function | `ws7_runner_argv_invalid` |
+
+- **A `Duplicate` is acted on only when the claim itself raises it.** `run()` catches it around
+  the claim and nowhere else. Raised by anything else, it is `ws7_crashed`: a run that holds
+  its claim can never end as a duplicate, with exit code 0.
+- `write_haz03()` is the job's own code. A `Stop` it raises itself (`ws7_scores_invalid`, for
+  example) is still the run's code.
+
 **An exit code of 1 is accepted only when the batch explains it** (Codex P2, PR #9; the author's
 ruling, 21 Nov 2026). Both runners return 1 for a failed generation, and also for other things
 (a confirmation that was not given, `evals/run_cold_eval.py:663` and
@@ -2117,6 +2136,11 @@ PYTHONDONTWRITEBYTECODE=1 python -m pytest -p no:cacheprovider -q tests/test_ws7
     the failed record is written. The same seven endings for each scorer, the comparator, the
     precheck's runner code, the run's and the check's outermost handlers, a duplicate's publish
     and the parser.
+  - The same call sites raising WS7's own `Stop` (a "no baseline" one) and `Duplicate`: the
+    five calls into the scorers, the comparator, each runner in each batch, seven places in the
+    precheck, and the match check. Each is that call's own code: a failed run, a failed record,
+    the ledger settled, never exit code 0, no duplicate counted and no `NoBaseline` published.
+    A `Duplicate` raised by the job's own code after the claim, at four places: `ws7_crashed`.
   - A runner's exit code 1 with nothing in the index to explain it, from each batch:
     `ws7_runner_refused`. Its partners: a 1 a recorded gate failure explains, and a 1 a failed
     generation explains. An exit code 0 beside a failed generation: refused too.

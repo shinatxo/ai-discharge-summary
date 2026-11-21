@@ -120,6 +120,29 @@ def manifest(target: str = "pipeline", mode: str = "scheduled", **change) -> dic
 
 # ======================================================= the job's own values ==
 
+@pytest.mark.parametrize("raised", [
+    RuntimeError("invented"), KeyboardInterrupt(), SystemExit(0), SystemExit(2),
+    store.Stop("ws7_no_baseline"), store.Stop(wm.MATCH_DIFFERS)], ids=repr)
+@pytest.mark.parametrize("target, where, name", [
+    ("pipeline", "runner", "parse_args"), ("v1", "runner", "parse_args"),
+    ("pipeline", "orchestrate", "pipeline_version"), ("v1", "runner", "sha256_bytes")])
+def test_whatever_the_runners_code_raises_in_own_values_is_one_fixed_refusal(
+        monkeypatch, target, where, name, raised):
+    """`own_values` calls the runner's parser, the pipeline's version and the runner's
+    hash function. None is the job's code: whatever one raises, a `Stop` of WS7's own
+    included, is `ws7_runner_argv_invalid`. The partner is `own(target)`, unbroken."""
+    from pipeline import orchestrate
+    assert own(target)
+    module = orchestrate if where == "orchestrate" else (
+        reserve.rpe if target == "pipeline" and name == "parse_args" else reserve.rce)
+
+    def broken(*_args, **_kwargs):
+        raise raised
+    monkeypatch.setattr(module, name, broken)
+    stop = stopped(lambda: own(target), wm.RUNNER_ARGV_INVALID)
+    assert stop.ids == () and stop.counts == {}
+
+
 def test_the_pipelines_own_values_come_from_the_pipeline_and_the_runners_parser():
     assert own("pipeline") == {"target": "pipeline", "model_id": "anthropic.claude-sonnet-4-6",
                                "prompt_caching": True,

@@ -353,13 +353,22 @@ def _check_own(batch: _Batch, own: dict) -> None:
 
 # ----------------------------------------------------------------- HAZ-03
 
+class ScorerStopped(Exception):
+    """A scorer this module calls raised. The scorer is not the job's code, so whatever
+    it raised (any exception, an interrupt, a `SystemExit`, even one of WS7's own `Stop`
+    or `Duplicate`) is a scorer that stopped, and nothing of it is kept. It is not a
+    `Stop`: only the job's own code may raise a `Stop` that a run acts on."""
+
+
 def write_haz03(batch_dir: Path, gold_dir: Path = G.GOLD_DIR) -> Path:
     """Run the HAZ-03 check, unchanged, on every record of a pipeline batch, and
     write `scores/haz03.json`. The rows are the check's own, and they hold IDs, enum
     values and fixed labels only (haz03_check.py:35): the check copies the facts'
     `age_group` as it finds it, so each row goes through `haz03_row` first. The gold
     is the gold score_batch scored against: each file's sha256 must be the one in
-    score_batch's gold map."""
+    score_batch's gold map.
+
+    Anything the check itself raises is `ScorerStopped`, never a `Stop`."""
     batch = _Batch(batch_dir)
     if batch.target != "pipeline":
         raise Stop(BATCH_INVALID)          # the check does not cover v1 (haz03_check.py:33)
@@ -377,7 +386,11 @@ def write_haz03(batch_dir: Path, gold_dir: Path = G.GOLD_DIR) -> Path:
         if type(gold) is not dict or gold.get("scenario_id") != sid or type(record) is not dict \
                 or record.get("scenario_id") != sid:
             raise Stop(SCORES_INVALID)
-        results.append(haz03_row(H3.check_record(record, gold), sid))
+        try:
+            checked = H3.check_record(record, gold)
+        except BaseException:               # noqa: BLE001 - the scorer's raise, whatever it is
+            raise ScorerStopped() from None
+        results.append(haz03_row(checked, sid))
     out = batch.dir / "scores" / HAZ03_NAME
     out.write_bytes(compare.render({"check": "HAZ-03", "check_version": H3.CHECK_VERSION,
                                     "batch_id": batch.batch_id, "results": results}))

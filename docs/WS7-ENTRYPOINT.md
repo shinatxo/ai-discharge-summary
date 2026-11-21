@@ -837,7 +837,7 @@ publishes them.
 
 | Where | Codes |
 |---|---|
-| The claim | `ws7_duplicate`, `ws7_target_unknown`, `ws7_mode_unknown`, `ws7_scheduled_time_invalid`, `ws7_scheduled_time_future`, `ws7_start_too_late`, `ws7_claim_unavailable` |
+| The claim | `ws7_duplicate`, `ws7_target_unknown`, `ws7_mode_unknown`, `ws7_scheduled_time_invalid`, `ws7_scheduled_time_future`, `ws7_start_too_late`, `ws7_claim_unavailable`, `ws7_claim_invalid` (part 5a: the object failed the validator the Thursday check uses, and was not written) |
 | Admission | `ws7_reservation_invalid`, `ws7_wall_clock_limit_too_short`, `ws7_run_in_progress`, `ws7_blocked_unresolved`, `ws7_over_cap`, `ws7_entry_exists`, `ws7_admitted_past_deadline` |
 | Any ledger write | `ws7_ledger_conflict`, `ws7_ledger_unavailable`, `ws7_ledger_invalid`, `ws7_ledger_write_invalid` |
 | Settling and resolving | `ws7_admission_invalid`, `ws7_entry_unknown`, `ws7_entry_not_open`, `ws7_entry_not_unresolved`, `ws7_report_invalid`, `ws7_basis_unknown`, `ws7_settled_figure_invalid`, `ws7_estimate_differs` |
@@ -1645,14 +1645,15 @@ stops or raises is logged, and the next is still tried.
 | The pre-flight | `ws7_preflight_failed`, `ws7_preflight_files_unexpected`, `ws7_preflight_over_reservation` | Yes | Yes |
 | Scoring and the summary | `ws7_generation_failed`, `ws7_scorer_stopped`, `build_summary()`'s codes | Yes | Yes |
 | The comparator | `ws7_no_baseline`, `ws7_compare_error`, `ws7_compare_output_exists`, `ws7_part_c_ruled` | Yes | Yes |
-| Storing and publishing | `ws7_evidence_unstorable`, `ws7_evidence_unavailable`, the manifest's codes, `ws7_publish_failed`, `ws7_alert_failed`, `ws7_success_record_unavailable` | Yes | Yes |
+| Storing and publishing | `ws7_evidence_unstorable`, `ws7_evidence_unavailable`, the manifest's codes, `ws7_publish_failed`, `ws7_alert_failed`, `ws7_success_record_unavailable`, `ws7_success_record_invalid` | Yes | Yes |
 | Any other exception | `ws7_crashed` | If the claim is held | If the claim is held |
 | `RunOk` = 1 was not acknowledged | `ws7_runok_publish_failed` | Yes, beside the success record | Yes |
 
 The failed record (`ws7-failed/1`) holds the run's ID, target, mode and scheduled time, the code,
 the IDs and counts the stop carried, any further codes (`also`), what became of the ledger entry
 (`ledger`), whether the records were stored (`evidence`), how many files were left out of the
-store (`files_refused`), the commit, the digest and the time.
+store (`files_refused`), the commit, the digest and the time. Every field has a rule ("The
+Thursday check", below), and the record is held to it before it is written.
 
 ### The Thursday check
 
@@ -1668,18 +1669,67 @@ publishes to the topic.
    `<date>T0300-<target>`. Tests cover a winter week and a summer week.
 4. That run's failed record and success record.
 5. **Nothing it reads is trusted as read** (Codex P2, PR #9). The claim, the failed record and
-   the success record are each checked before they are used:
+   the success record are each checked before they are used.
 
-   | Object | Checked |
-   |---|---|
-   | The claim | It is a JSON object; `schema` is `ws7-claim/1`; `target` is the check's target; `mode` is `scheduled`; `scheduled_time` is a UTC time on the occurrence's day; `run_id` is the ID that time gives |
-   | The success record | It is a JSON object; `schema` is `ws7-success/1`; `run_id`, `target` and `scheduled_time` are the claim's; `mode` is `scheduled` |
-   | The failed record | The same, with `ws7-failed/1`; and `code` is a fixed label and `ids` a list of IDs |
+**One validator for each object, shared by its writer and the check** (Codex P2, PR #9,
+re-check; the author's ruling, 21 Nov 2026), as the comparator's public checks are shared:
 
-   An object that fails is reported as **invalid, with a fixed label** that names the first
-   check it failed: `not_json`, `not_an_object`, `schema`, `target`, `mode`, `scheduled_time`,
-   `run_id`, `code` or `ids`. **An invalid record never counts as a success**, and an invalid
-   claim names no run, so no record is read on its word. Both records now carry `mode`.
+| Object | Validator | Run by the writer, before the PUT | Run by the check, after the GET |
+|---|---|---|---|
+| The claim | `ws7_ledger.claim_fault()` | `ws7_ledger.claim()` (`ws7_claim_invalid`) | `_occurrence()` |
+| The success record | `ws7_entry.success_fault()` | `_succeed()` (`ws7_success_record_invalid`) | `_occurrence()` |
+| The failed record | `ws7_entry.failed_fault()` | `_fail_record()` (`ws7_failed_record_invalid`) | `_failed_line()` |
+
+So the job can never write a record its own check would reject. **Every field of all three is
+checked**: its type, exactly (`true` is not an integer, `1` is not a string); its pattern or
+range; and its agreement with the claim and the occurrence. **An unknown field, or a missing
+one, is refused.**
+
+| The claim (`ws7-claim/1`), 7 fields | Rule |
+|---|---|
+| `schema` | The string `ws7-claim/1` |
+| `target`, `mode` | The strings of this occurrence: the check's target, and `scheduled` |
+| `scheduled_time` | A UTC time, `YYYY-MM-DDTHH:MM:SSZ`, whose claim key is the key the object is at |
+| `run_id` | The ID that target, mode and scheduled time give |
+| `claim_id` | 32 hex characters |
+| `claimed_at` | A UTC time, from the scheduled time to `max_start_delay_s` after it |
+
+| Both records, the first 5 fields | Rule |
+|---|---|
+| `schema` | `ws7-success/1` or `ws7-failed/1` |
+| `run_id`, `target`, `mode`, `scheduled_time` | Strings, equal to the claim's |
+
+| The success record, 9 more fields | Rule |
+|---|---|
+| `status` | `no_breach` or `breach` |
+| `breaches` | A whole number from 0 to 21 (one for each family and kind there is a metric for), above 0 exactly when the status is `breach` |
+| `baseline_id` | An ID |
+| `summary_sha256`, `comparison_sha256` | 64 hex characters |
+| `evidence` | The run's own prefix, `ws7/runs/scheduled/<run_id>/` |
+| `git_commit`, `image_digest` | 40 hex characters; `sha256:` and 64 hex characters |
+| `finished_at` | A UTC time, not before the scheduled time |
+
+| The failed record, 10 more fields | Rule |
+|---|---|
+| `code` | A `ws7_` code |
+| `ids` | A list of IDs |
+| `counts` | An object of fixed labels to integers |
+| `also` | A list of `ws7_` codes |
+| `ledger` | `not_admitted`, `failed`, a ledger state or kind, or a `ws7_` code |
+| `evidence` | `none`, `not_finished`, `stored`, or a `ws7_` code |
+| `files_refused` | A whole number |
+| `git_commit`, `image_digest` | As above |
+| `failed_at` | A UTC time, not before the scheduled time |
+
+- An object that fails is reported as **invalid, with a fixed label**: the name of the first
+  field that fails, or `not_json`, `not_an_object`, or `fields` (an unknown or a missing field).
+- **An invalid record never counts as a success**, and an invalid claim names no run, so no
+  record is read on its word.
+- **A record its validator refuses is not written.** For the success record the run then fails.
+  For the failed record that step of the failure path stops, and the steps after it still run:
+  `RunOk` = 0 is still published, and the check reports "started and did not finish".
+- Every test that runs the entrypoint holds what the job wrote to these validators when it ends
+  (`tests/ws7_world.py`, `check_written`).
 
 | What it finds | The line it reports |
 |---|---|
@@ -2031,10 +2081,17 @@ PYTHONDONTWRITEBYTECODE=1 python -m pytest -p no:cacheprovider -q tests/test_ws7
     be called, with a control in which a throttling client does make the runner sleep.
   - The check: a winter week and a summer week; each line of the table above; the look-back at
     0, 1 and 2 days; a run that died on Wednesday reported as abandoned that Thursday.
-  - What the check reads: each field wrong in turn, for the claim, the success record and the
-    failed record, each reported by its label, each with a valid partner. A perfect success
-    record beside an invalid claim does not count. The check's rules are also held against the
-    claim and the records a real run writes.
+  - What the check reads, as a table: every field of the claim (7), the success record (14) and
+    the failed record (15), each with a value of each JSON type (string, integer, float, boolean,
+    null, list, object) outside its rule, each reported invalid by the check under the field's
+    own name, each with the valid object as its partner. Then each field missing, unknown fields,
+    objects that are not JSON objects, and values of the right type outside the pattern, the
+    range or the claim, with the value at each boundary as the partner. A perfect success record
+    beside an invalid claim does not count.
+  - What the writers write: each writer is shown to give its object to the validator before the
+    PUT, and to store that object; a record its validator refuses is never sent; a clock that
+    steps back makes both records invalid and neither is written. Every entrypoint test also
+    holds each claim and record the job created to its validator as the test ends.
   - The failure path: one thing broken in each case (the log stream, the settling write, the
     first stored record, the clock, the building of the failed record, its write, each publish),
     and every later step still tried, the ledger first. A log stream that raises on every line,

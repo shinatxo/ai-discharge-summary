@@ -212,6 +212,57 @@ def test_a_claim_is_one_object_written_with_if_none_match(world):
     assert world.fake.requests == [("PUT", key)]                          # no ledger was read
 
 
+def test_a_claim_is_given_to_the_checks_own_validator_before_it_is_put(world, monkeypatch):
+    """One validator, shared: `claim()` runs `claim_fault` on the object it is about to
+    PUT, and the Thursday check runs it on what it reads. What is stored is the object
+    that was checked."""
+    world.clock.set("2026-12-16T04:00:37Z")
+    real, seen = wl.claim_fault, []
+
+    def spied(claim, **kwargs):
+        seen.append((dict(claim), kwargs, list(world.fake.requests)))
+        return real(claim, **kwargs)
+    monkeypatch.setattr(wl, "claim_fault", spied)
+    held = take(world)
+    assert len(seen) == 1
+    given, kwargs, sent_before = seen[0]
+    assert sent_before == []                                    # checked before anything was sent
+    assert given == world.fake.json(held.key)
+    assert kwargs == {"key": held.key, "target": "pipeline", "mode": "scheduled",
+                      "max_start_delay_s": world.cfg.max_start_delay_s}
+    assert real(given, **kwargs) is None
+
+
+@pytest.mark.parametrize("fault", ["run_id", "claimed_at", "fields"])
+def test_a_claim_its_validator_refuses_is_never_written(world, monkeypatch, fault):
+    """The writer's side. The partner is every claim in this file, which is written."""
+    world.clock.set("2026-12-16T04:00:37Z")
+    monkeypatch.setattr(wl, "claim_fault", lambda _claim, **_kwargs: fault)
+    stop = stopped(lambda: take(world), wl.CLAIM_INVALID)
+    assert stop.ids == (fault,)
+    assert world.fake.requests == [] and world.fake.keys() == []
+
+
+@pytest.mark.parametrize("mode", ["scheduled", "manual"])
+def test_the_claim_validator_holds_a_claim_to_its_own_key_target_and_mode(world, mode):
+    """A claim of either mode passes at its own key, and at no other: not as the other
+    mode's claim, not as the other target's, and not a second past its start window."""
+    world.clock.set("2026-12-16T04:00:37Z")
+    held = take(world, mode=mode)
+    claim = world.fake.json(held.key)
+    rules = {"key": held.key, "target": "pipeline", "mode": mode,
+             "max_start_delay_s": world.cfg.max_start_delay_s}
+    assert wl.claim_fault(claim, **rules) is None
+    other = "manual" if mode == "scheduled" else "scheduled"
+    assert wl.claim_fault(claim, **{**rules, "mode": other}) == "mode"
+    assert wl.claim_fault(claim, **{**rules, "target": "v1"}) == "target"
+    assert wl.claim_fault(claim, **{**rules, "key": held.key + "x"}) == "scheduled_time"
+    assert wl.claim_fault(claim, **{**rules, "max_start_delay_s": 36}) == "claimed_at"
+    assert wl.claim_fault(claim, **{**rules, "max_start_delay_s": 37}) is None
+    assert wl.claim_fault({**claim, "note": 1}, **rules) == "fields"
+    assert wl.claim_fault(None, **rules) == "not_an_object"
+
+
 def test_a_second_delivery_is_a_duplicate_that_reads_no_ledger_and_writes_nothing(world):
     world.clock.set("2026-12-16T04:00:37Z")
     first = take(world)
@@ -1472,7 +1523,7 @@ def test_no_stop_and_no_stored_object_carries_text(world):
 
 
 def test_every_refusal_has_a_fixed_code():
-    assert len(set(wl.CODES)) == len(wl.CODES) == 26
+    assert len(set(wl.CODES)) == len(wl.CODES) == 27
     assert all(code.startswith("ws7_") and store._LABEL_RE.fullmatch(code) for code in wl.CODES)
     assert not set(wl.CODES) & set(store.CODES) and not set(wl.CODES) & set(wc.CODES)
 

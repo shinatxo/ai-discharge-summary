@@ -690,9 +690,11 @@ two acts are to write a success record to S3 and then to publish `RunOk` = 1.
     British Summer Time.
   - If a success record and a failed record both exist, it is reported as a failed run.
   - **The check trusts none of the three objects as read** (as built, 21 Nov 2026). The claim,
-    the success record and the failed record are each checked (schema, run ID, target, mode,
-    scheduled time) against the occurrence and the claim. One that fails is reported as invalid,
-    with a fixed label, and never counts as a success.
+    the success record and the failed record each have one validator, which the code that writes
+    the object runs before the PUT and the check runs after the GET, so the job never writes a
+    record its own check would reject. Every field is checked: its type, its pattern or range,
+    and its agreement with the claim and the occurrence; an unknown field is refused. An object
+    that fails is reported as invalid, with a fixed label, and never counts as a success.
   - The check first marks any reservation left open past its limit as abandoned, so a run that
     died on Wednesday is reported as abandoned that Thursday.
 - A run **blocked by an unresolved ledger entry** (D7, point 4) has a claim and a failed record

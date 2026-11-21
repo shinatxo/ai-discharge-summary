@@ -2415,7 +2415,8 @@ def _failed_record(run: str, target: str, code: str, ids: list, when: str = WHEN
         "scheduled_time": when, "code": code, "ids": ids, "counts": {}, "also": [],
         "ledger": "not_admitted", "evidence": "none", "files_refused": 0,
         "git_commit": W.COMMIT, "image_digest": W.DIGEST,
-        "failed_at": "2026-12-16T04:00:40Z"}, **(change or {})})
+        "failed_at": store.utc_text(store.parse_utc(when) + timedelta(seconds=40))},
+        **(change or {})})
 
 
 def _success_record(run: str, target: str, when: str = WHEN,
@@ -2426,7 +2427,9 @@ def _success_record(run: str, target: str, when: str = WHEN,
         "scheduled_time": when, "status": "no_breach", "breaches": 0,
         "baseline_id": W.BASELINE_ID, "summary_sha256": "1" * 64, "comparison_sha256": "2" * 64,
         "evidence": f"ws7/runs/scheduled/{run}/", "git_commit": W.COMMIT,
-        "image_digest": W.DIGEST, "finished_at": "2026-12-16T04:40:00Z"}, **(change or {})})
+        "image_digest": W.DIGEST,
+        "finished_at": store.utc_text(store.parse_utc(when) + timedelta(minutes=40))},
+        **(change or {})})
 
 
 def test_a_success_record_and_a_failed_record_together_are_a_failed_run(thursday):
@@ -2544,55 +2547,222 @@ def test_a_waived_month_is_reported_every_week_of_that_month_and_not_the_next(th
     assert world.sns.messages == []
 
 
-# ---------------------------------------- the check trusts nothing as read (Codex P2, PR #9)
+# ------------------- the check trusts nothing as read: every field of all three objects
 
-def _claim(target: str, when: datetime = WEDNESDAY, change: dict | None = None) -> bytes:
+def _claim(target: str, when: datetime = WEDNESDAY, change: dict | None = None) -> dict:
     """A scheduled claim, as `claim()` writes one (invented), with `change` applied."""
-    return wl._dump({**{
+    return {**{
         "schema": wl.CLAIM_SCHEMA, "target": target, "mode": "scheduled",
         "scheduled_time": store.utc_text(when), "run_id": store.run_id(target, "scheduled", when),
         "claim_id": "c" * 32, "claimed_at": store.utc_text(when + timedelta(seconds=37))},
-        **(change or {})})
+        **(change or {})}
 
 
-OTHER = {"v1": "pipeline", "pipeline": "v1"}
-# (what is wrong with the object, the label the check reports it by). None: nothing is wrong.
-WRONG_CLAIMS = [
-    (None, None),
-    (b"not json", "not_json"), (b"\xff\xfe", "not_json"),
-    (b"[]", "not_an_object"), (b"null", "not_an_object"), (b'"ws7-claim/1"', "not_an_object"),
-    ({"schema": "ws7-claim/2"}, "schema"), ({"schema": None}, "schema"),
-    ({"target": "pipeline"}, "target"), ({"target": 7}, "target"),
-    ({"mode": "manual"}, "mode"), ({"mode": None}, "mode"),
-    ({"scheduled_time": "2026-12-16T04:00:00"}, "scheduled_time"),      # no zone
-    ({"scheduled_time": "2026-12-15T04:00:00Z"}, "scheduled_time"),     # another day's occurrence
-    ({"scheduled_time": 7}, "scheduled_time"),
-    ({"run_id": "2026-12-16T0300-v1"}, "run_id"),                       # not its own time's ID
-    ({"run_id": "2026-12-16T0400-pipeline"}, "run_id"),                 # another target's run
-    ({"run_id": "2026-12-16T0400-v1-manual"}, "run_id"),
-    ({"run_id": None}, "run_id")]
+JSON_TYPES = ("a string", "an integer", "a float", "a boolean", "null", "a list", "an object")
+_ANY = {"an integer": 7, "a float": 1.5, "a boolean": True, "null": None, "a list": [],
+        "an object": {}}
 
 
-@pytest.mark.parametrize("wrong, label", WRONG_CLAIMS, ids=lambda v: str(v)[:40])
-def test_a_claim_object_that_fails_its_check_is_reported_invalid_and_never_trusted(
-        thursday, wrong, label):
-    """Each field wrong in turn. The run the claim would name has a perfect success
-    record, and it still does not count: an invalid claim names no run. The partner
-    (nothing wrong) is silent, because that success record is then read and trusted."""
-    world, target = thursday, "v1"
-    body = wrong if isinstance(wrong, bytes) else _claim(target, change=wrong)
-    world.s3.seed(CLAIM_KEY[target], body)
-    for run in {RUN_ID[target], "2026-12-16T0300-v1", "2026-12-16T0400-pipeline"}:
-        world.s3.seed(store.success_key(run), _success_record(run, target))
+def _outside(string: str, **special) -> dict:
+    """One value of each JSON type, each outside a field's rule. `string` is a string
+    the rule refuses; `special` replaces the usual value of a type the field takes
+    (an integer field's integer, a list field's list, an object field's object)."""
+    return {"a string": string, **_ANY, **{name.replace("_", " "): value
+                                           for name, value in special.items()}}
+
+
+_HEAD_OUTSIDE = {"run_id": _outside("2026-12-09T0400-v1"), "target": _outside("pipeline"),
+                 "mode": _outside("manual"), "scheduled_time": _outside("2026-12-16T03:00:00Z")}
+_IDENTITY_OUTSIDE = {"git_commit": _outside("c0ffee"),
+                     "image_digest": _outside("sha256:" + "d1" * 31)}
+# For every field of each object: a value of each JSON type that is outside its rule.
+OUTSIDE = {
+    "claim": {
+        "schema": _outside("ws7-claim/2"), "target": _outside("pipeline"),
+        "mode": _outside("manual"), "scheduled_time": _outside("2026-12-15T04:00:00Z"),
+        "run_id": _outside("2026-12-16T0300-v1"), "claim_id": _outside("c" * 31),
+        "claimed_at": _outside("2026-12-16T03:59:59Z")},
+    "success": {
+        "schema": _outside("ws7-failed/1"), **_HEAD_OUTSIDE,
+        "status": _outside("error"), "breaches": _outside("0", an_integer=-1),
+        "baseline_id": _outside("not an id"), "summary_sha256": _outside("0" * 63),
+        "comparison_sha256": _outside("G" * 64),
+        "evidence": _outside("ws7/runs/scheduled/2026-12-09T0400-v1/"), **_IDENTITY_OUTSIDE,
+        "finished_at": _outside("2026-12-16T03:59:59Z")},
+    "failed": {
+        "schema": _outside("ws7-success/1"), **_HEAD_OUTSIDE,
+        "code": _outside("Not A Code"), "ids": _outside("throttled", a_list=["not an id"]),
+        "counts": _outside("call", an_object={"call": "3"}),
+        "also": _outside("ws7_crashed", a_list=["Not A Code"]),
+        "ledger": _outside("Settled"), "evidence": _outside("Stored"),
+        "files_refused": _outside("0", an_integer=-1), **_IDENTITY_OUTSIDE,
+        "failed_at": _outside("2026-12-16T03:59:59Z")},
+}
+FIELDS = {"claim": wl.CLAIM_FIELDS, "success": entry.SUCCESS_FIELDS, "failed": entry.FAILED_FIELDS}
+INVALID_LINE = {
+    "claim": "claim object invalid ({label}): it is not read as a scheduled claim",
+    "success": "run {run}: success record invalid ({label}); it is not counted as a success",
+    "failed": "failed run {run}: failed record invalid ({label})"}
+VALID_LINE = {"claim": None, "success": None,
+              "failed": "failed run {run} code ws7_call_failed ids throttled"}
+
+
+def _bytes(value: object) -> bytes:
+    return value if isinstance(value, bytes) else compare.render(value)
+
+
+def _checked(world, which: str, change: dict | None = None, *, drop: str | None = None,
+             body: bytes | None = None) -> str | None:
+    """Seed the claim, a success record and (for `failed`) a failed record of one
+    occurrence, all valid but for what is done to the object `which`: `change` applied,
+    the field `drop` removed, or `body` in its place. Run the check. Returns the line
+    it reported, or None when it stayed silent.
+
+    When it is the claim that is wrong, the runs it could be read as naming all have
+    a perfect success record, so a claim that was trusted would be reported as silence."""
+    target, run = "v1", RUN_ID["v1"]
+
+    def made(name: str, valid: dict) -> bytes:
+        if name != which:
+            return _bytes(valid)
+        if body is not None:
+            return body
+        wrong = {**valid, **(change or {})}
+        wrong.pop(drop, None)
+        return _bytes(wrong)
+    world.s3.seed(CLAIM_KEY[target], made("claim", _claim(target)))
+    success = json.loads(_success_record(run, target))
+    world.s3.seed(store.success_key(run), made("success", success))
+    if which == "claim":
+        for other in ("2026-12-16T0300-v1", "2026-12-09T0400-v1", "2026-12-16T0400-pipeline"):
+            world.s3.seed(store.success_key(other), _success_record(other, target))
+    if which == "failed":
+        failed = json.loads(_failed_record(run, target, entry.CALL_FAILED, ["throttled"]))
+        world.s3.seed(store.failed_key(run), made("failed", failed))
+    world.sns.messages.clear()
     assert world.check(target) == 0
-    if label is None:
-        assert world.sns.messages == []
-        return
-    assert check_lines(world)[1] == (f"claim object invalid ({label}): "
-                                     f"it is not read as a scheduled claim")
-    # nothing was read on the word of an invalid claim
+    return check_lines(world)[1] if world.sns.messages else None
+
+
+def _line(text: str | None, label: str = "") -> str | None:
+    return None if text is None else text.format(run=RUN_ID["v1"], label=label)
+
+
+def test_the_table_of_wrong_values_covers_every_field_of_each_object_and_every_json_type():
+    for which, fields in FIELDS.items():
+        assert set(OUTSIDE[which]) == set(fields), which
+        assert all(tuple(values) == JSON_TYPES for values in OUTSIDE[which].values()), which
+    assert (len(wl.CLAIM_FIELDS), len(entry.SUCCESS_FIELDS), len(entry.FAILED_FIELDS)) == (7, 14, 15)
+
+
+@pytest.mark.parametrize("which, field", [(which, field) for which in OUTSIDE
+                                          for field in OUTSIDE[which]])
+def test_every_field_of_each_object_is_checked_whatever_json_type_it_is_given(thursday, which,
+                                                                              field):
+    """THE CLASS (Codex P2, PR #9, re-check): every field of all three objects (the
+    claim, the success record, the failed record) is checked for its type, its range
+    or pattern, and its agreement with the claim and the occurrence.
+
+    One field, with a value of each JSON type (string, integer, float, boolean, null,
+    list, object) outside its rule. Each is reported invalid by the check, by the
+    field's own name, and never counts as a success. The partner, first: the same
+    objects with nothing wrong."""
+    world = thursday
+    assert _checked(world, which) == _line(VALID_LINE[which])
+    for kind, value in OUTSIDE[which][field].items():
+        assert _checked(world, which, {field: value}) == _line(INVALID_LINE[which], field), kind
+    assert _checked(world, which) == _line(VALID_LINE[which])       # and valid again
+
+
+@pytest.mark.parametrize("which", list(OUTSIDE))
+def test_a_missing_field_or_an_unknown_one_is_refused(thursday, which):
+    """Unknown fields are refused, and so is an object with one of its own missing:
+    each field in turn. The partner is the whole object."""
+    world = thursday
+    assert _checked(world, which) == _line(VALID_LINE[which])
+    for field in FIELDS[which]:
+        assert _checked(world, which, drop=field) == _line(INVALID_LINE[which], "fields"), field
+    for extra in ({"note": "invented"}, {"": 0}, {"schema ": "x"}, {"RunOk": 1}):
+        assert _checked(world, which, extra) == _line(INVALID_LINE[which], "fields"), extra
+
+
+@pytest.mark.parametrize("which", list(OUTSIDE))
+@pytest.mark.parametrize("body, label", [
+    (b"not json", "not_json"), (b"\xff\xfe", "not_json"), (b"", "not_json"),
+    (b"[]", "not_an_object"), (b"null", "not_an_object"), (b'"ws7-claim/1"', "not_an_object"),
+    (b"7", "not_an_object"), (b"true", "not_an_object"), (b"{}", "fields")])
+def test_an_object_that_is_not_a_json_object_with_its_fields_is_reported_invalid(thursday, which,
+                                                                                body, label):
+    assert _checked(thursday, which, body=body) == _line(INVALID_LINE[which], label)
+
+
+AFTER = store.utc_text(WEDNESDAY + timedelta(seconds=CFG.max_start_delay_s))
+TOO_LATE = store.utc_text(WEDNESDAY + timedelta(seconds=CFG.max_start_delay_s + 1))
+# (the object, what is changed, the label it is reported by; None: it is valid)
+INSIDE_THE_TYPE = [
+    # ---- the claim: the right type, outside the pattern, the range or the occurrence
+    ("claim", {"target": "v2"}, "target"),
+    ("claim", {"scheduled_time": "2026-12-16T04:00:00"}, "scheduled_time"),         # no zone
+    ("claim", {"scheduled_time": "2026-12-16T04:00:00+00:00"}, "scheduled_time"),
+    ("claim", {"scheduled_time": "2026-12-17T04:00:00Z"}, "scheduled_time"),        # another day
+    ("claim", {"run_id": "2026-12-16T0400-pipeline"}, "run_id"),
+    ("claim", {"run_id": "2026-12-16T0400-v1-manual"}, "run_id"),
+    ("claim", {"claim_id": "C" * 32}, "claim_id"), ("claim", {"claim_id": "c" * 33}, "claim_id"),
+    ("claim", {"claimed_at": "2026-12-16 04:00:37"}, "claimed_at"),
+    ("claim", {"claimed_at": TOO_LATE}, "claimed_at"),
+    ("claim", {"claimed_at": AFTER}, None),                                          # the boundary
+    ("claim", {"claimed_at": "2026-12-16T04:00:00Z"}, None),
+    # ---- the success record
+    ("success", {"status": "no_baseline"}, "status"),
+    ("success", {"breaches": 1}, "breaches"),                        # with the status no_breach
+    ("success", {"status": "breach"}, "breaches"),                   # a breach that counts none
+    ("success", {"status": "breach", "breaches": entry.MAX_BREACHES + 1}, "breaches"),
+    ("success", {"status": "breach", "breaches": entry.MAX_BREACHES}, None),
+    ("success", {"status": "breach", "breaches": 1}, None),
+    ("success", {"summary_sha256": "A" * 64}, "summary_sha256"),
+    ("success", {"evidence": "ws7/runs/manual/2026-12-16T0400-v1/"}, "evidence"),
+    ("success", {"evidence": "ws7/runs/scheduled/2026-12-16T0400-v1"}, "evidence"),
+    ("success", {"git_commit": "C0FFEE" + "0" * 34}, "git_commit"),
+    ("success", {"image_digest": "d1" * 32}, "image_digest"),
+    ("success", {"finished_at": "2026-12-16T04:00:00Z"}, None),                      # the boundary
+    # ---- the failed record
+    ("failed", {"code": "crashed"}, "code"), ("failed", {"code": "ws7_"}, "code"),
+    ("failed", {"ids": [7]}, "ids"), ("failed", {"ids": ["throttled", None]}, "ids"),
+    ("failed", {"ids": []}, None),
+    ("failed", {"counts": {"call": True}}, "counts"), ("failed", {"counts": {"call": 1.5}}, "counts"),
+    ("failed", {"counts": {"Not A Label": 1}}, "counts"),
+    ("failed", {"counts": {"call": 3, "exit_code": -1}}, None),
+    ("failed", {"also": ["ws7_crashed", "crashed"]}, "also"),
+    ("failed", {"also": ["ws7_entry_not_open"]}, None),
+    ("failed", {"ledger": "paid"}, "ledger"), ("failed", {"ledger": "unmetered"}, None),
+    ("failed", {"ledger": "ws7_entry_not_open"}, None),
+    ("failed", {"evidence": "partly"}, "evidence"),
+    ("failed", {"evidence": "ws7_evidence_unavailable"}, None), ("failed", {"evidence": "stored"}, None),
+    ("failed", {"files_refused": 3}, None),
+    ("failed", {"failed_at": "2026-12-16T04:00:00Z"}, None),
+]
+
+
+@pytest.mark.parametrize("which, change, label", INSIDE_THE_TYPE, ids=lambda v: str(v)[:44])
+def test_a_value_of_the_right_type_is_still_held_to_its_range_pattern_and_the_claim(
+        thursday, which, change, label):
+    """Type is not enough: each field's pattern, its range (with the value at the
+    boundary as the valid partner) and its agreement with the claim and the occurrence."""
+    wanted = _line(VALID_LINE[which]) if label is None else _line(INVALID_LINE[which], label)
+    if label is None and which == "failed" and "ids" in change:
+        wanted = f"failed run {RUN_ID['v1']} code ws7_call_failed"
+    assert _checked(thursday, which, change) == wanted
+
+
+def test_an_invalid_claim_names_no_run_so_no_record_is_read_on_its_word(thursday):
+    world = thursday
+    assert _checked(world, "claim", {"run_id": "2026-12-16T0300-v1"}) == _line(
+        INVALID_LINE["claim"], "run_id")
     assert not any(key.startswith(("ws7/success/", "ws7/failed/"))
                    for method, key in world.s3.requests if method == "GET")
+    # the partner: on the word of a valid claim, its success record is read
+    assert _checked(world, "claim") is None
+    assert ("GET", store.success_key(RUN_ID["v1"])) in world.s3.requests
 
 
 def test_the_claims_run_id_is_reported_as_the_claim_wrote_it_at_whatever_hour(thursday):
@@ -2604,83 +2774,117 @@ def test_the_claims_run_id_is_reported_as_the_claim_wrote_it_at_whatever_hour(th
     assert check_lines(world)[1].startswith("run 2026-12-16T0300-v1 started")
 
 
-WRONG_RECORDS = [
-    (None, None),
-    (b"not json", "not_json"), (b"[]", "not_an_object"), (b"{}", "schema"),
-    ({"schema": "ws7-other/1"}, "schema"), ({"schema": None}, "schema"),
-    ({"run_id": "2026-12-09T0400-v1"}, "run_id"), ({"run_id": 7}, "run_id"),
-    ({"target": "pipeline"}, "target"), ({"target": None}, "target"),
-    ({"mode": "manual"}, "mode"), ({"mode": None}, "mode"),
-    ({"scheduled_time": "2026-12-16T03:00:00Z"}, "scheduled_time"),     # not the claim's time
-    ({"scheduled_time": None}, "scheduled_time")]
+# ---------------------------- one validator, run by the writer before the PUT too
+
+def _spy_on(monkeypatch, world, module, name: str) -> list:
+    """Record each call of a validator: the object it was given, what it answered,
+    and how many requests the servers had seen by then."""
+    real, calls = getattr(module, name), []
+
+    def spied(record, **kwargs):
+        calls.append((json.loads(json.dumps(record)), real(record, **kwargs),
+                      len(world.log.all())))
+        return real(record, **kwargs)
+    monkeypatch.setattr(module, name, spied)
+    return calls
 
 
-@pytest.mark.parametrize("wrong, label", WRONG_RECORDS, ids=lambda v: str(v)[:40])
-def test_a_success_record_that_fails_its_check_never_counts_as_a_success(thursday, wrong, label):
-    """Each field wrong in turn, against the claim. The partner (nothing wrong) is
-    the silence of a run that succeeded."""
-    world, target = thursday, "v1"
-    run = seed_claim(world, target, WEDNESDAY)
-    body = wrong if isinstance(wrong, bytes) else _success_record(run, target, change=wrong)
-    world.s3.seed(store.success_key(run), body)
-    assert world.check(target) == 0
-    if label is None:
-        assert world.sns.messages == []
-        return
-    assert check_lines(world)[1] == (f"run {run}: success record invalid ({label}); "
-                                     f"it is not counted as a success")
-
-
-def test_another_schemas_record_under_the_success_key_is_not_a_success(thursday):
-    """A failed record's body under the success key: every field but the schema fits."""
-    world, target = thursday, "v1"
-    run = seed_claim(world, target, WEDNESDAY)
-    world.s3.seed(store.success_key(run), _failed_record(run, target, entry.CRASHED, []))
-    assert world.check(target) == 0
-    assert "success record invalid (schema)" in check_lines(world)[1]
-
-
-@pytest.mark.parametrize("wrong, label", WRONG_RECORDS + [
-    ({"code": "Not A Code"}, "code"), ({"code": None}, "code"),
-    ({"ids": "S1"}, "ids"), ({"ids": ["not an id"]}, "ids"), ({"ids": [7]}, "ids")],
-    ids=lambda v: str(v)[:40])
-def test_a_failed_record_that_fails_its_check_is_reported_invalid_and_is_still_a_failed_run(
-        thursday, wrong, label):
-    """Each field wrong in turn. A perfect success record is there too: the failed
-    record still wins (change B), valid or not. The partner reports the code."""
-    world, target = thursday, "v1"
-    run = seed_claim(world, target, WEDNESDAY)
-    world.s3.seed(store.success_key(run), _success_record(run, target))
-    body = wrong if isinstance(wrong, bytes) else _failed_record(
-        run, target, entry.CALL_FAILED, ["throttled"], change=wrong)
-    world.s3.seed(store.failed_key(run), body)
-    assert world.check(target) == 0
-    if label is None:
-        assert check_lines(world)[1] == f"failed run {run} code {entry.CALL_FAILED} ids throttled"
-        return
-    assert check_lines(world)[1] == f"failed run {run}: failed record invalid ({label})"
-
-
-def test_the_records_a_real_run_writes_pass_the_checks_own_checks(ready, world):
-    """The check's rules are held against what the entrypoint really writes: the claim
-    and the success record of a good run, and the failed record of a failed one."""
+def test_each_writer_runs_the_checks_own_validator_on_the_object_before_it_puts_it(
+        ready, world, monkeypatch):
+    """The claim, the success record and the failed record are each given to their
+    validator BEFORE the PUT, and what is then stored is that object. A good run for
+    the first two; a failed run, a week later, for the third."""
     target = "v1"
     ready(target)
+    claims = _spy_on(monkeypatch, world, wl, "claim_fault")
+    successes = _spy_on(monkeypatch, world, entry, "success_fault")
+    faileds = _spy_on(monkeypatch, world, entry, "failed_fault")
     assert world.run(target) == 0
-    claim = world.s3.json(CLAIM_KEY[target])
-    assert entry.claim_fault(claim, key=CLAIM_KEY[target], target=target) is None
-    success = world.s3.json(store.success_key(RUN_ID[target]))
-    assert entry.record_fault(success, schema=entry.SUCCESS_SCHEMA, claim=claim) is None
-    assert entry.record_fault(success, schema=entry.FAILED_SCHEMA, claim=claim) == "schema"
-    assert entry.claim_fault(claim, key=CLAIM_KEY["pipeline"], target="pipeline") == "target"
+    run = RUN_ID[target]
+    for calls, key in ((claims, CLAIM_KEY[target]), (successes, store.success_key(run))):
+        assert len(calls) == 1
+        given, answer, seen = calls[0]
+        assert answer is None and given == world.s3.json(key)
+        assert seen <= world.log.index("s3", f"PUT {key}")      # checked, and only then sent
+    assert faileds == []
 
     world.clock.advance(7 * 86400)
     world.freeze(target, dict(W.invented_baseline(target, world.net, None), keys={}))
     assert world.run(target, "2026-12-23T04:00:00Z") == 1
-    run = "2026-12-23T0400-v1"
-    later = world.s3.json("ws7/claims/v1/2026-12-23")
-    assert entry.record_fault(world.failed(run), schema=entry.FAILED_SCHEMA, claim=later) is None
-    assert entry.record_fault(world.failed(run), schema=entry.FAILED_SCHEMA, claim=claim) == "run_id"
+    later = "2026-12-23T0400-v1"
+    assert len(faileds) == 1 and len(successes) == 1            # no success record was built
+    given, answer, seen = faileds[0]
+    assert answer is None and given == world.failed(later)
+    assert seen <= world.log.index("s3", f"PUT {store.failed_key(later)}")
+    # and the same functions pass them when the check reads them back
+    claim = world.s3.json("ws7/claims/v1/2026-12-23")
+    assert entry.failed_fault(world.failed(later), claim=claim) is None
+    assert entry.failed_fault(world.failed(later), claim=world.s3.json(CLAIM_KEY[target])) == "run_id"
+    assert entry.success_fault(world.s3.json(store.success_key(run)),
+                               claim=world.s3.json(CLAIM_KEY[target])) is None
+
+
+@pytest.mark.parametrize("refused", [None, "status", "finished_at"])
+def test_a_success_record_its_validator_refuses_is_never_written_and_the_run_fails(
+        ready, world, monkeypatch, refused):
+    """The writer's side of the shared validator. The partner (nothing refused)
+    writes the record."""
+    target = "v1"
+    ready(target)
+    if refused:
+        monkeypatch.setattr(entry, "success_fault", lambda _record, **_kwargs: refused)
+    code = world.run(target)
+    key = store.success_key(RUN_ID[target])
+    if not refused:
+        assert code == 0 and world.s3.count("PUT", key) == 1
+        return
+    assert code == 1 and world.s3.count("PUT", key) == 0        # never sent
+    record = world.failed(RUN_ID[target])
+    assert (record["code"], record["ids"]) == (entry.SUCCESS_RECORD_INVALID, [refused])
+    assert world.published()["RunOk"] == [0]
+
+
+@pytest.mark.parametrize("refused", [None, "ledger", "failed_at"])
+def test_a_failed_record_its_validator_refuses_is_never_written_and_runok_0_still_goes_out(
+        ready, world, monkeypatch, refused):
+    target = "v1"
+    stub = W.default_stub(target)
+    W.fail_nth(stub, FIRST_STEP[target], 1, THROTTLE)
+    ready(target, stub=stub)
+    if refused:
+        monkeypatch.setattr(entry, "failed_fault", lambda _record, **_kwargs: refused)
+    assert world.run(target) == 1
+    key = store.failed_key(RUN_ID[target])
+    out = world.published()
+    assert (out["RunOk"], out["RunRefused"], out["CallsNotResponse"]) == ([0], [1], [1])
+    if not refused:
+        assert world.s3.count("PUT", key) == 1
+        return
+    assert world.s3.count("PUT", key) == 0
+    assert f"ws7 stop code={entry.FAILED_RECORD_INVALID} ids={refused}" in world.lines
+
+
+def test_a_clock_that_went_back_makes_records_the_check_would_reject_and_none_is_written(
+        ready, world):
+    """Nothing forced here: the real validators, on records the real writers built. The
+    clock steps back an hour as the manifest is stored, so `finished_at`, and then
+    `failed_at`, would be before the scheduled time. Neither record is written;
+    RunOk = 0 is still published, and the check reports a run that did not finish."""
+    target = "v1"
+    ready(target)
+    world.s3.after_put(PREFIX[target] + "manifest.json", lambda: world.clock.advance(-3600))
+    assert world.run(target) == 1
+    run = RUN_ID[target]
+    assert world.s3.count("PUT", store.success_key(run)) == 0
+    assert world.s3.count("PUT", store.failed_key(run)) == 0
+    assert f"ws7 stop code={entry.SUCCESS_RECORD_INVALID} ids=finished_at" in world.lines
+    assert f"ws7 stop code={entry.FAILED_RECORD_INVALID} ids=failed_at" in world.lines
+    out = world.published()
+    assert (out["RunOk"], out["RunRefused"]) == ([0], [1])
+    world.clock.offset = 0.0
+    world.clock.start = THURSDAY
+    assert world.check(target) == 0
+    assert check_lines(world)[1] == f"run {run} started and did not finish: no success record"
 
 
 def test_a_check_that_cannot_read_s3_says_so_on_the_topic_and_exits_1(thursday):

@@ -180,6 +180,7 @@ SCHEDULED_TIME_INVALID = "ws7_scheduled_time_invalid"
 SCHEDULED_TIME_FUTURE = "ws7_scheduled_time_future"
 START_TOO_LATE = "ws7_start_too_late"
 CLAIM_UNAVAILABLE = "ws7_claim_unavailable"
+CLAIM_INVALID = "ws7_claim_invalid"
 RESERVATION_INVALID = "ws7_reservation_invalid"
 WALL_CLOCK_LIMIT_TOO_SHORT = "ws7_wall_clock_limit_too_short"
 RUN_IN_PROGRESS = "ws7_run_in_progress"
@@ -200,7 +201,8 @@ BASIS_UNKNOWN = "ws7_basis_unknown"
 SETTLED_FIGURE_INVALID = "ws7_settled_figure_invalid"
 ESTIMATE_DIFFERS = "ws7_estimate_differs"
 CODES = (DUPLICATE, TARGET_UNKNOWN, MODE_UNKNOWN, SCHEDULED_TIME_INVALID, SCHEDULED_TIME_FUTURE,
-         START_TOO_LATE, CLAIM_UNAVAILABLE, RESERVATION_INVALID, WALL_CLOCK_LIMIT_TOO_SHORT,
+         START_TOO_LATE, CLAIM_UNAVAILABLE, CLAIM_INVALID, RESERVATION_INVALID,
+         WALL_CLOCK_LIMIT_TOO_SHORT,
          RUN_IN_PROGRESS, ADMITTED_PAST_DEADLINE, ADMISSION_INVALID, BLOCKED_UNRESOLVED, OVER_CAP, LEDGER_CONFLICT, LEDGER_UNAVAILABLE,
          LEDGER_INVALID, LEDGER_WRITE_INVALID, ENTRY_EXISTS, ENTRY_UNKNOWN, ENTRY_NOT_OPEN,
          ENTRY_NOT_UNRESOLVED, REPORT_INVALID, BASIS_UNKNOWN, SETTLED_FIGURE_INVALID,
@@ -247,6 +249,51 @@ class Claim:
         return self.scheduled_time[:7]
 
 
+CLAIM_FIELDS = ("schema", "target", "mode", "scheduled_time", "run_id", "claim_id", "claimed_at")
+
+
+def claim_fault(claim: object, *, key: str, target: str, mode: str,
+                max_start_delay_s: int) -> str | None:
+    """Why `claim` is not the claim object of `target` and `mode` that belongs at `key`:
+    a fixed label naming the first field that fails, or None when it is that claim.
+
+    ONE VALIDATOR, SHARED BY THE WRITER AND THE READER. `claim()` calls it on the
+    object it is about to PUT, and the Thursday check (evals/ws7_entry.py) calls it on
+    the object it has just read, so the job can never write a claim its own check
+    would reject. EVERY FIELD IS CHECKED: its type, its pattern or range, and its
+    agreement with the occurrence (the key, the target, the mode). An unknown or
+    missing field is refused.
+
+    - the object: a JSON object with exactly the seven fields (`fields` otherwise);
+    - `schema`: the string `ws7-claim/1`;
+    - `target`, `mode`: the strings this occurrence has;
+    - `scheduled_time`: a UTC time, `YYYY-MM-DDTHH:MM:SSZ`, whose claim key is `key`;
+    - `run_id`: the ID that target, mode and scheduled time give;
+    - `claim_id`: 32 hex characters;
+    - `claimed_at`: a UTC time, from the scheduled time to `max_start_delay_s` after it."""
+    if type(claim) is not dict:
+        return "not_an_object"
+    if set(claim) != set(CLAIM_FIELDS):
+        return "fields"
+    if type(claim["schema"]) is not str or claim["schema"] != CLAIM_SCHEMA:
+        return "schema"
+    if type(claim["target"]) is not str or claim["target"] != target or target not in TARGETS:
+        return "target"
+    if type(claim["mode"]) is not str or claim["mode"] != mode or mode not in MODES:
+        return "mode"
+    when = store.parse_utc(claim["scheduled_time"])
+    if when is None or store.claim_key(target, mode, when) != key:
+        return "scheduled_time"                     # not a time, or not this occurrence's
+    if type(claim["run_id"]) is not str or claim["run_id"] != store.run_id(target, mode, when):
+        return "run_id"
+    if type(claim["claim_id"]) is not str or not _TOKEN_RE.fullmatch(claim["claim_id"]):
+        return "claim_id"
+    claimed = store.parse_utc(claim["claimed_at"])
+    if claimed is None or not 0 <= (claimed - when).total_seconds() <= max_start_delay_s:
+        return "claimed_at"
+    return None
+
+
 def parse_scheduled_time(text: object) -> datetime:
     """The schedule's own scheduled time: ISO 8601 to the second, with `Z` or an
     explicit offset. A time with no zone is refused, not guessed."""
@@ -267,7 +314,9 @@ def claim(st: store.Store, cfg: reserve.Config, *, target: str, mode: str, sched
     no older than `max_start_delay_s` (scheduled and manual alike). Then one
     object is created with `If-None-Match: *`. If the key is taken the job
     raises Duplicate. A write whose reply failed is read back: the claim is
-    this job's only if the object carries this job's `claim_id`."""
+    this job's only if the object carries this job's `claim_id`.
+
+    The object is checked by `claim_fault` before it is sent (`ws7_claim_invalid`)."""
     if target not in TARGETS:
         raise Stop(TARGET_UNKNOWN)
     if mode not in MODES:
@@ -284,11 +333,17 @@ def claim(st: store.Store, cfg: reserve.Config, *, target: str, mode: str, sched
         raise ValueError("a claim ID is 32 hex characters")
     held = Claim(target, mode, store.utc_text(scheduled), store.run_id(target, mode, scheduled),
                  claim_id, store.utc_text(now), store.claim_key(target, mode, scheduled))
-    body = _dump({"schema": CLAIM_SCHEMA, "target": held.target, "mode": held.mode,
-                  "scheduled_time": held.scheduled_time, "run_id": held.run_id,
-                  "claim_id": held.claim_id, "claimed_at": held.claimed_at})
+    written = {"schema": CLAIM_SCHEMA, "target": held.target, "mode": held.mode,
+               "scheduled_time": held.scheduled_time, "run_id": held.run_id,
+               "claim_id": held.claim_id, "claimed_at": held.claimed_at}
+    # Before the PUT: the validator the Thursday check runs on what it reads. A claim
+    # the check would reject is never written.
+    fault = claim_fault(written, key=held.key, target=target, mode=mode,
+                        max_start_delay_s=cfg.max_start_delay_s)
+    if fault is not None:
+        raise Stop(CLAIM_INVALID, ids=(fault,))
     try:
-        outcome = st.create(held.key, body, attempts=cfg.ledger_cas_attempts)
+        outcome = st.create(held.key, _dump(written), attempts=cfg.ledger_cas_attempts)
     except store.StoreError as exc:
         raise Stop(CLAIM_UNAVAILABLE, ids=(held.run_id, exc.code)) from None
     if outcome != store.CREATED:

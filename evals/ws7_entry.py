@@ -109,11 +109,13 @@ THE THURSDAY CHECK makes no Bedrock call, no claim and no CloudWatch call. It
 calls `Ledger.expire()` first, then reads the scheduled claim of the day
 CHECK_LOOKBACK_DAYS before its own scheduled time, takes the run's ID FROM THE
 CLAIM OBJECT (it never builds one from its own scheduled time), and reads that
-run's success and failed records. IT TRUSTS NONE OF THE THREE AS READ: each is
-checked (schema, run ID, target, mode, scheduled time) against the occurrence
-and the claim, and one that fails is reported as invalid, with a fixed label. An
-invalid record never counts as a success. It sends one message when there is
-anything to report.
+run's success and failed records. IT TRUSTS NONE OF THE THREE AS READ: every field
+of each is checked (its type, its pattern or range, its agreement with the claim
+and the occurrence; an unknown field is refused), by ONE VALIDATOR PER OBJECT
+THAT ITS WRITER ALSO RUNS BEFORE THE PUT (`ws7_ledger.claim_fault`,
+`success_fault`, `failed_fault`). So the job never writes a record its own check
+would reject. One that fails is reported as invalid, with a fixed label, and
+never counts as a success. It sends one message when there is anything to report.
 
 THE LOG. One fixed line per stage: labels, IDs and counts. The runners' and the
 scorers' own output is discarded, and no traceback is printed: either could quote a
@@ -136,6 +138,7 @@ import hashlib
 import io
 import json
 import os
+import re
 import sys
 import tempfile
 import time
@@ -204,6 +207,8 @@ COMPARE_OUTPUT_EXISTS = "ws7_compare_output_exists"
 EVIDENCE_UNSTORABLE = "ws7_evidence_unstorable"
 EVIDENCE_UNAVAILABLE = "ws7_evidence_unavailable"
 SUCCESS_RECORD_UNAVAILABLE = "ws7_success_record_unavailable"
+SUCCESS_RECORD_INVALID = "ws7_success_record_invalid"
+FAILED_RECORD_INVALID = "ws7_failed_record_invalid"
 CRASHED = "ws7_crashed"
 RUNOK_PUBLISH_FAILED = "ws7_runok_publish_failed"
 CHECK_FAILED = "ws7_check_failed"
@@ -212,7 +217,8 @@ CODES = (CONFIG_INVALID, CORPUS_UNREADABLE, PRECHECK_FAILED, SCENARIOS_NOT_DISTI
          RUNNER_STOPPED_EARLY, PREFLIGHT_FAILED, PREFLIGHT_FILES_UNEXPECTED,
          PREFLIGHT_OVER_RESERVATION, GENERATION_FAILED, SCORER_STOPPED, NO_BASELINE,
          COMPARE_ERROR, COMPARE_OUTPUT_EXISTS, EVIDENCE_UNSTORABLE, EVIDENCE_UNAVAILABLE,
-         SUCCESS_RECORD_UNAVAILABLE, CRASHED, RUNOK_PUBLISH_FAILED, CHECK_FAILED)
+         SUCCESS_RECORD_UNAVAILABLE, SUCCESS_RECORD_INVALID, FAILED_RECORD_INVALID, CRASHED,
+         RUNOK_PUBLISH_FAILED, CHECK_FAILED)
 
 _CAPTURED = "ws7_precheck_captured"
 IDS_SHOWN = 8                 # IDs named in one stop; the rest are counted
@@ -883,7 +889,8 @@ class _Scheduled:
         try:
             outcome = self.st.create(key, body, attempts=self.cfg.ledger_cas_attempts, kind=kind)
         except store.StoreError as exc:
-            code = EVIDENCE_UNSTORABLE if exc.code == store.OBJECT_TOO_LARGE else EVIDENCE_UNAVAILABLE
+            code = EVIDENCE_UNSTORABLE if exc.code == store.OBJECT_TOO_LARGE \
+                else EVIDENCE_UNAVAILABLE
             raise Stop(code, ids=(exc.code,)) from None
         if outcome != store.CREATED:
             raise Stop(EVIDENCE_UNAVAILABLE, ids=("key_taken",))
@@ -1001,6 +1008,11 @@ class _Scheduled:
                   "evidence": prefix, "git_commit": self.who.git_commit,
                   "image_digest": self.who.image_digest,
                   "finished_at": store.utc_text(store.read_clock(deps.wall))}
+        # Before the PUT: the validator the Thursday check runs on what it reads. A
+        # success record the check would reject is never written.
+        fault = success_fault(record, claim=claim_view(self.held))
+        if fault is not None:
+            raise Stop(SUCCESS_RECORD_INVALID, ids=(fault,))
         try:
             outcome = self.st.create(store.success_key(run), compare.render(record),
                                      attempts=self.cfg.ledger_cas_attempts)
@@ -1097,8 +1109,14 @@ class _Scheduled:
         wrong in building it can stop the metrics that follow."""
         if self.held is None:
             return
-        body = compare.render(self._failed_record(stop, also))
-        outcome = self.st.create(store.failed_key(self.held.run_id), body,
+        record = self._failed_record(stop, also)
+        # Before the PUT: the validator the Thursday check runs on what it reads. A
+        # failed record the check would reject is never written; the steps after this
+        # one still run, so RunOk = 0 is still published.
+        fault = failed_fault(record, claim=claim_view(self.held))
+        if fault is not None:
+            raise Stop(FAILED_RECORD_INVALID, ids=(fault,))
+        outcome = self.st.create(store.failed_key(self.held.run_id), compare.render(record),
                                  attempts=self.cfg.ledger_cas_attempts)
         self.say("failed_record", written=int(outcome == store.CREATED))
 
@@ -1147,43 +1165,155 @@ def _read_object(st: store.Store, key: str) -> object:
         return _NOT_JSON
 
 
-def claim_fault(claim: object, *, key: str, target: str) -> str | None:
-    """Why the object at `key` is not the scheduled claim of this target for this
-    occurrence: a fixed label, or None when it is.
+# ONE VALIDATOR FOR EACH RECORD, SHARED BY THE CODE THAT WRITES IT AND THE CHECK THAT
+# READS IT (Codex P2, PR #9, re-check), as the comparator's public checks are shared.
+# `_succeed` and `_fail_record` call these on the object they are about to PUT, and the
+# Thursday check calls them on the object it has just read: the job can never write a
+# record its own check would reject. The claim's validator is `ws7_ledger.claim_fault`,
+# which `ws7_ledger.claim()` calls before its own PUT.
+#
+# EVERY FIELD IS CHECKED: its type (exactly: `True` is not an integer, `1` is not a
+# string), its pattern or range, and its agreement with the claim. An unknown or
+# missing field is refused. Each returns a fixed label naming the first field that
+# fails, or None.
 
-    The run's ID is the claim's own. The check never builds one from its own
-    scheduled time, because the run's UTC hour moves with the London clock. Here the
-    claim's ID is only held to the claim's own scheduled time, as `claim()` wrote it."""
-    if claim is _NOT_JSON:
-        return "not_json"
-    if type(claim) is not dict:
+SUCCESS_FIELDS = ("schema", "run_id", "target", "mode", "scheduled_time", "status", "breaches",
+                  "baseline_id", "summary_sha256", "comparison_sha256", "evidence", "git_commit",
+                  "image_digest", "finished_at")
+FAILED_FIELDS = ("schema", "run_id", "target", "mode", "scheduled_time", "code", "ids", "counts",
+                 "also", "ledger", "evidence", "files_refused", "git_commit", "image_digest",
+                 "failed_at")
+# One breach value for each family and kind there is a metric name for.
+MAX_BREACHES = len(publish.BREACH_FAMILIES) * len(compare.KINDS)
+# What became of the ledger entry: not admitted; a settle that was tried and did not
+# return; the entry's state or kind; or the code the settle stopped with.
+LEDGER_WORDS = ("not_admitted", "failed") + wl.STATES + wl.KINDS
+EVIDENCE_WORDS = ("none", "not_finished", "stored")     # or the code storing stopped with
+_CODE_RE = re.compile(r"ws7_[a-z0-9_]{1,60}")
+_HEX64_RE = re.compile(r"[0-9a-f]{64}")
+_COMMIT_RE = re.compile(r"[0-9a-f]{40}")                # as ws7_manifest.identity() holds it
+_DIGEST_RE = re.compile(r"sha256:[0-9a-f]{64}")
+
+
+def claim_view(held: wl.Claim) -> dict:
+    """The fields of a held claim that a record must agree with, as the claim object
+    has them."""
+    return {"run_id": held.run_id, "target": held.target, "mode": held.mode,
+            "scheduled_time": held.scheduled_time}
+
+
+def _text(value: object, pattern) -> bool:
+    return type(value) is str and pattern.fullmatch(value) is not None
+
+
+def _count(value: object) -> bool:
+    return type(value) is int and value >= 0            # a bool is not a count
+
+
+def _head_fault(record: object, schema: str, fields: tuple, claim: dict) -> str | None:
+    """The five fields both records share, and the shape of the object."""
+    if type(record) is not dict:
         return "not_an_object"
-    if claim.get("schema") != wl.CLAIM_SCHEMA:
-        return "schema"
-    if claim.get("target") != target:
-        return "target"
-    if claim.get("mode") != SCHEDULED:
-        return "mode"
-    when = store.parse_utc(claim.get("scheduled_time"))
-    if when is None or store.claim_key(target, SCHEDULED, when) != key:
-        return "scheduled_time"                     # not a time, or not this occurrence's day
-    if claim.get("run_id") != store.run_id(target, SCHEDULED, when):
-        return "run_id"
+    if set(record) != set(fields):
+        return "fields"
+    for name, wanted in (("schema", schema), ("run_id", claim["run_id"]),
+                         ("target", claim["target"]), ("mode", claim["mode"]),
+                         ("scheduled_time", claim["scheduled_time"])):
+        if type(record[name]) is not str or record[name] != wanted:
+            return name
     return None
 
 
-def record_fault(record: object, *, schema: str, claim: dict) -> str | None:
-    """Why a success or failed record is not the record of the run this claim names:
-    a fixed label, or None when it is. `claim` has passed `claim_fault`."""
-    if record is _NOT_JSON:
-        return "not_json"
-    if type(record) is not dict:
-        return "not_an_object"
-    for name, wanted in (("schema", schema), ("run_id", claim["run_id"]),
-                         ("target", claim["target"]), ("mode", SCHEDULED),
-                         ("scheduled_time", claim["scheduled_time"])):
-        if type(record.get(name)) is not str or record[name] != wanted:
+def _not_after_the_schedule(text: object, claim: dict) -> bool:
+    """Is `text` not a UTC time at or after the claim's scheduled time?"""
+    when, scheduled = store.parse_utc(text), store.parse_utc(claim["scheduled_time"])
+    return when is None or scheduled is None or when < scheduled
+
+
+def _identity_fault(record: dict) -> str | None:
+    if not _text(record["git_commit"], _COMMIT_RE):
+        return "git_commit"
+    if not _text(record["image_digest"], _DIGEST_RE):
+        return "image_digest"
+    return None
+
+
+def success_fault(record: object, *, claim: dict) -> str | None:
+    """Why `record` is not the success record (`ws7-success/1`) of the run `claim`
+    names: a fixed label, or None when it is. `claim` is a claim object that has
+    passed `ws7_ledger.claim_fault`, or `claim_view()` of the claim the job holds.
+
+    - `schema`, `run_id`, `target`, `mode`, `scheduled_time`: strings, the claim's own;
+    - `status`: `no_breach` or `breach`;
+    - `breaches`: a whole number from 0 to MAX_BREACHES, above 0 exactly when the
+      status is `breach`;
+    - `baseline_id`: an ID;
+    - `summary_sha256`, `comparison_sha256`: 64 hex characters;
+    - `evidence`: the run's own prefix;
+    - `git_commit`: 40 hex characters; `image_digest`: `sha256:` and 64 hex characters;
+    - `finished_at`: a UTC time, not before the scheduled time."""
+    fault = _head_fault(record, SUCCESS_SCHEMA, SUCCESS_FIELDS, claim)
+    if fault is not None:
+        return fault
+    if type(record["status"]) is not str or record["status"] not in (compare.NO_BREACH,
+                                                                     compare.BREACH):
+        return "status"
+    breaches = record["breaches"]
+    if not _count(breaches) or breaches > MAX_BREACHES \
+            or (breaches > 0) != (record["status"] == compare.BREACH):
+        return "breaches"
+    if not _text(record["baseline_id"], store.ID_RE):
+        return "baseline_id"
+    for name in ("summary_sha256", "comparison_sha256"):
+        if not _text(record[name], _HEX64_RE):
             return name
+    if type(record["evidence"]) is not str \
+            or record["evidence"] != store.run_prefix(claim["mode"], claim["run_id"]):
+        return "evidence"
+    fault = _identity_fault(record)
+    if fault is not None:
+        return fault
+    if _not_after_the_schedule(record["finished_at"], claim):
+        return "finished_at"
+    return None
+
+
+def failed_fault(record: object, *, claim: dict) -> str | None:
+    """Why `record` is not the failed record (`ws7-failed/1`) of the run `claim`
+    names: a fixed label, or None when it is.
+
+    - `schema`, `run_id`, `target`, `mode`, `scheduled_time`: strings, the claim's own;
+    - `code`: a `ws7_` code; `also`: a list of them;
+    - `ids`: a list of IDs; `counts`: an object of fixed labels to integers;
+    - `ledger`: one of LEDGER_WORDS, or a `ws7_` code;
+    - `evidence`: one of EVIDENCE_WORDS, or a `ws7_` code;
+    - `files_refused`: a whole number;
+    - `git_commit`: 40 hex characters; `image_digest`: `sha256:` and 64 hex characters;
+    - `failed_at`: a UTC time, not before the scheduled time."""
+    fault = _head_fault(record, FAILED_SCHEMA, FAILED_FIELDS, claim)
+    if fault is not None:
+        return fault
+    if not _text(record["code"], _CODE_RE):
+        return "code"
+    ids, counts, also = record["ids"], record["counts"], record["also"]
+    if type(ids) is not list or not all(_text(i, store.ID_RE) for i in ids):
+        return "ids"
+    if type(counts) is not dict or not all(_text(k, store._LABEL_RE) and type(v) is int
+                                           for k, v in counts.items()):
+        return "counts"
+    if type(also) is not list or not all(_text(code, _CODE_RE) for code in also):
+        return "also"
+    for name, words in (("ledger", LEDGER_WORDS), ("evidence", EVIDENCE_WORDS)):
+        value = record[name]
+        if type(value) is not str or not (value in words or _CODE_RE.fullmatch(value)):
+            return name
+    if not _count(record["files_refused"]):
+        return "files_refused"
+    fault = _identity_fault(record)
+    if fault is not None:
+        return fault
+    if _not_after_the_schedule(record["failed_at"], claim):
+        return "failed_at"
     return None
 
 
@@ -1193,30 +1323,30 @@ def _failed_line(st: store.Store, claim: dict) -> str:
     record that fails its check is reported as invalid; the run is still a failed run."""
     run = claim["run_id"]
     record = _read_object(st, store.failed_key(run))
-    fault = record_fault(record, schema=FAILED_SCHEMA, claim=claim)
-    if fault is None:
-        code, ids = record.get("code"), record.get("ids")
-        if type(code) is not str or not store._LABEL_RE.fullmatch(code):
-            fault = "code"
-        elif type(ids) is not list \
-                or not all(type(i) is str and store.ID_RE.fullmatch(i) for i in ids):
-            fault = "ids"
+    fault = "not_json" if record is _NOT_JSON else failed_fault(record, claim=claim)
     if fault is not None:
         return f"failed run {run}: failed record invalid ({fault})"
+    code, ids = record["code"], record["ids"]
     line = f"failed run {run} code {code}"
     if code == wl.BLOCKED_UNRESOLVED and ids:
         return line + ": blocked by unresolved " + ", ".join(ids[:IDS_SHOWN])
     return line + (" ids " + ", ".join(ids[:IDS_SHOWN]) if ids else "")
 
 
-def _occurrence(st: store.Store, key: str, target: str) -> str | None:
+def _occurrence(st: store.Store, key: str, target: str, cfg: reserve.Config) -> str | None:
     """What the check has to say about the occurrence whose claim key is `key`, or
     None when its run succeeded. NOTHING READ HERE IS TRUSTED AS READ: the claim, the
-    failed record and the success record are each checked first."""
+    failed record and the success record are each checked first, every field of each,
+    by the validator its writer ran before the PUT.
+
+    The run's ID is the claim's own. The check never builds one from its own
+    scheduled time, because the run's UTC hour moves with the London clock; the
+    claim's ID is only held to the claim's own scheduled time."""
     if not _listed(st, key):
         return publish.NO_CLAIM_LINE
     claim = _read_object(st, key)
-    fault = claim_fault(claim, key=key, target=target)
+    fault = "not_json" if claim is _NOT_JSON else wl.claim_fault(
+        claim, key=key, target=target, mode=SCHEDULED, max_start_delay_s=cfg.max_start_delay_s)
     if fault is not None:
         return f"claim object invalid ({fault}): it is not read as a scheduled claim"
     run = claim["run_id"]
@@ -1225,8 +1355,8 @@ def _occurrence(st: store.Store, key: str, target: str) -> str | None:
         return _failed_line(st, claim)
     if not _listed(st, store.success_key(run)):
         return f"run {run} started and did not finish: no success record"
-    fault = record_fault(_read_object(st, store.success_key(run)), schema=SUCCESS_SCHEMA,
-                         claim=claim)
+    record = _read_object(st, store.success_key(run))
+    fault = "not_json" if record is _NOT_JSON else success_fault(record, claim=claim)
     if fault is not None:
         return f"run {run}: success record invalid ({fault}); it is not counted as a success"
     return None
@@ -1260,7 +1390,7 @@ def check(target: str, scheduled_time: str, deps: Deps) -> int:
         ledger.expire()
         unresolved = ledger.unresolved()
 
-        found = _occurrence(st, store.claim_key(target, SCHEDULED, day), target)
+        found = _occurrence(st, store.claim_key(target, SCHEDULED, day), target, cfg)
         findings = [] if found is None else [found]
         for month, run, kind in unresolved:
             findings.append(f"unresolved entry {run} ({kind}, month {month}): "

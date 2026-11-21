@@ -40,6 +40,7 @@ import gold as G  # noqa: E402
 import ws7_client as wc  # noqa: E402
 import ws7_entry as entry  # noqa: E402
 import ws7_fakes as fakes  # noqa: E402
+import ws7_ledger as wl  # noqa: E402
 import ws7_manifest as wm  # noqa: E402
 import ws7_reserve as reserve  # noqa: E402
 import ws7_store as store  # noqa: E402
@@ -76,6 +77,8 @@ SCENARIOS = list(CORPUS)                                            # corpus ord
 STEPS = {t: tuple(step.id for step in reserve.plan(t).steps) for t in TARGETS}
 FIRST_STEP = {t: STEPS[t][0] for t in TARGETS}
 LEDGER_KEY = store.ledger_key("2026-12")
+CLAIM_PREFIX = store.PREFIX + "claims/"
+RECORD_PREFIXES = (CLAIM_PREFIX, store.SUCCESS_PREFIX, store.FAILED_PREFIX)
 CLAIM_KEY = {t: f"ws7/claims/{t}/2026-12-16" for t in TARGETS}
 
 
@@ -307,6 +310,17 @@ class World:
                         wm.COMMIT_VARIABLE: COMMIT, wm.DIGEST_VARIABLE: DIGEST}
         self.endpoints = {"s3": self.s3.url, "ssm": self.ssm.url, "cloudwatch": self.cw.url,
                           "sns": self.sns.url}
+        # Every claim, success record and failed record the job itself creates, as it
+        # was sent: `stop()` holds each to the validator the Thursday check uses.
+        self.written: list = []
+        create = store.Store.create
+
+        def recording(st, key, body, **kwargs):
+            outcome = create(st, key, body, **kwargs)
+            if outcome == store.CREATED and key.startswith(RECORD_PREFIXES):
+                self.written.append((key, bytes(body)))
+            return outcome
+        monkeypatch.setattr(store.Store, "create", recording)
         # Every stub reply times out in seconds.
         monkeypatch.setattr(rpe, "READ_TIMEOUT_S", READ_TIMEOUT_S)
         monkeypatch.setattr(rpe, "READ_TIMEOUT_5A_S", READ_TIMEOUT_S)
@@ -389,3 +403,23 @@ class World:
     def stop(self) -> None:
         for server in self._servers:
             server.stop()
+        self.check_written()
+
+    def check_written(self) -> None:
+        """WHAT EACH WRITER WROTE PASSES ITS VALIDATOR, in every test that uses this
+        world: each claim, success record and failed record the job created is held to
+        the validator the Thursday check runs on what it reads."""
+        claims: dict = {}
+        for key, body in self.written:
+            if key.startswith(CLAIM_PREFIX):
+                claim = json.loads(body)
+                assert wl.claim_fault(claim, key=key, target=claim.get("target"),
+                                      mode=claim.get("mode"),
+                                      max_start_delay_s=CFG.max_start_delay_s) is None, key
+                claims[claim["run_id"]] = claim
+        for key, body in self.written:
+            record = json.loads(body)
+            if key.startswith(store.SUCCESS_PREFIX):
+                assert entry.success_fault(record, claim=claims[record["run_id"]]) is None, key
+            elif key.startswith(store.FAILED_PREFIX):
+                assert entry.failed_fault(record, claim=claims[record["run_id"]]) is None, key

@@ -1948,6 +1948,13 @@ starts; the failed record; the prefixes of success records and retained copies.
   process ends (for example, flushing and closing stdout itself before `sys.exit`, and
   treating a failure there as best effort), and tests it in a child process whose stdout is a
   closed pipe: the exit code is the job's, for a successful run, a failed run and a usage error.
+- **The guide's wording on the pipeline's gate** (Codex P3, PR #9 second re-check, carried by
+  the author, 21 Nov 2026). This guide ("What a runner's return means"), ADR-011 D7 and the
+  docstring of `evals/ws7_entry.py` say "the pipeline has no safety-net gate". What is meant is
+  narrower, and the sentences should say it: **the pipeline's runner records no gate result in
+  its index** (`batch.json`), so a gate cannot explain a pipeline runner's exit code. The
+  pipeline's safety-netting is still checked: at assembly (`score_assemble`, the gate status in
+  ADR-011 D9's Assembly family) and by `score_batch`, and the comparator judges both.
 - **ADR-011 D9 and D10 still say a failed run publishes no breach metric and sends no message**,
   while also describing a run that delivered them and then failed (Codex P3, PR #9 re-check,
   carried by the author, 21 Nov 2026). Qualify both: a run that fails **before its comparison**

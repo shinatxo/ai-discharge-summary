@@ -1250,17 +1250,24 @@ def test_the_reports_own_unmetered_count_and_flag_must_equal_what_the_rows_give(
                                   "server_error2"])
 def test_an_outcome_the_guard_does_not_write_is_refused(world, word):
     """A row whose outcome is not one of the guard's final outcomes, wherever it is in
-    the report, with totals that add up either way: `ws7_report_invalid`, before any
-    write. The partner is every final outcome, above."""
+    the report, with totals that add up either way, and with the report's own count
+    and flag either way: as if the word were a metered call, and as the guard's rule
+    for "unmetered" would count a word it does not know. The second is the one only
+    the outcome check refuses: without it the report would settle as unmetered.
+    `ws7_report_invalid`, before any write. The partner is every final outcome, above."""
     admitted = start(world, W1)
+    assert wc._unmetered(word) is True              # the rule alone would take the word
     for position in (0, 1):
         calls = [_call(admitted, 1, 700, batch="preflight"), _call(admitted, 2, 900)]
         calls[position] = dict(calls[position], outcome=word)
         counted = _whole(admitted, calls)                            # counted in the totals
         left_out = dict(_whole(admitted, [c for c in calls if c["outcome"] != word]), calls=calls)
-        for given in (counted, left_out):
-            assert wl.report_fault(given) == wl.REPORT_INVALID, (position, word)
-            stopped(lambda: world.ledger.settle(admitted, given), wl.REPORT_INVALID)
+        for totals in (counted, left_out):
+            as_metered = dict(totals, unmetered_calls=0, unmetered=False)
+            as_the_rule_counts_it = dict(totals, unmetered_calls=1, unmetered=True)
+            for given in (as_metered, as_the_rule_counts_it):
+                assert wl.report_fault(given) == wl.REPORT_INVALID, (position, word)
+                stopped(lambda: world.ledger.settle(admitted, given), wl.REPORT_INVALID)
     assert len(ledger_puts(world)) == 1
 
 

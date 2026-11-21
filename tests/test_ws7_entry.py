@@ -2657,6 +2657,27 @@ def test_a_stop_that_is_not_the_jobs_own_is_a_crash_wherever_the_run_catches_it(
         assert world.entry_of(RUN_ID[target])["state"] == "settled"
 
 
+@pytest.mark.parametrize("raised", [RuntimeError, SystemExit, KeyboardInterrupt])
+def test_a_settle_step_that_raises_anything_at_all_is_recorded_as_a_crashed_settle(world, raised):
+    """The failure path's settle step, on its own. The settle now turns whatever it
+    catches into a stop, so nothing else should reach this step; if something does,
+    whatever its type, the step still records a crashed settle for the failed record
+    and passes it on to the loop, which goes to the next step."""
+    run = entry._Scheduled("v1", WHEN, world.deps())
+
+    def settle():
+        raise raised()
+    run._settle = settle
+    also: list = []
+    try:
+        run._fail_ledger(entry.Stop(entry.CRASHED), also)
+    except BaseException as exc:        # noqa: BLE001 - the test must see what got out
+        assert type(exc) is raised
+    else:
+        pytest.fail("the step returned")
+    assert also == [entry.CRASHED]
+
+
 @pytest.mark.parametrize("stop", list(NOT_OWN))
 def test_the_failure_path_itself_takes_nothing_it_is_handed_on_trust(world, stop):
     """The second layer: `_fail` is handed a stop that is not the job's own, directly.

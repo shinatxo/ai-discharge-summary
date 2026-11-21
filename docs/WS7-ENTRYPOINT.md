@@ -1465,6 +1465,21 @@ Kept, so outside that prefix:
   list, is not `.json` or `.md`, or is not a plain file stops the run
   (`ws7_evidence_unstorable`). It is never skipped** (the author's ruling 7). Every file is
   decided before any is sent.
+- **The known score files are allowed as soon as scoring begins** (Codex P2, PR #9). A scorer
+  that stops after `score_batch` wrote its reports does not make those reports unknown files:
+  they are stored, and the run fails with the scorer's own code.
+- **On the failure path one refused file does not stop the rest** (the author's ruling,
+  21 Nov 2026). The run has already failed, and its records are evidence:
+  - the guard's report is stored first, then the run's other documents, then every file on the
+    list;
+  - a file that is not on the list (or is not `.json` or `.md`, is not a plain file, cannot be
+    read, or is larger than one object may be) is **never uploaded**;
+  - the failed record counts them in `files_refused`.
+
+  On the success path ruling 7 is unchanged: the run stops, nothing has been sent, and its
+  failure path then stores what is allowed. Both paths send the guard's report first.
+- Sending stops at the first object S3 will not take, on either path. If S3 is refusing writes,
+  trying the rest would only delay the failed record and `RunOk` = 0.
 - A `.md` report is stored as `text/markdown; charset=utf-8`, everything else as
   `application/json`. The store refuses any other content type.
 - The list includes `scores/patient_version.json`, `scores/PATIENT_VERSION.md` and
@@ -1474,8 +1489,8 @@ Kept, so outside that prefix:
   task role's whole reach is `ws7/`, so the job can never overwrite an incident copy and the
   lifecycle rule does not touch it. The author copies by hand (slice 3's runbook). Nothing in
   WS7 writes it, and the store refuses every key under it.
-- A failed run stores what records exist, by the same rule. A run that fails before scoring has
-  no manifest: its keys need the scores. Its failed record carries the commit and the digest.
+- A run that fails before scoring has no manifest: its keys need the scores. Its failed record
+  carries the commit and the digest.
 
 ### What is published
 
@@ -1559,7 +1574,7 @@ stops or raises is logged, and the next is still tried.
 | Step | What it does |
 |---|---|
 | 1. The ledger | Settle from the guard's report; `mark_crashed()` only when there is no guard |
-| 2. The records | Store what records exist |
+| 2. The records | Store what records exist: the guard's report first, then every allowed file. A file that may not be stored is left out and counted |
 | 3. The failed record | Build it, the clock read included, and write it. Only for a run that holds its claim |
 | 4. The markers | `RunRefused` = 1 and, from the claim's holder, `RunOk` = 0 (and `NoBaseline` = 1) |
 | 5. The counters | The run's counts, from its summary or else from the guard's report |
@@ -1589,7 +1604,8 @@ stops or raises is logged, and the next is still tried.
 
 The failed record (`ws7-failed/1`) holds the run's ID, target, mode and scheduled time, the code,
 the IDs and counts the stop carried, any further codes (`also`), what became of the ledger entry
-(`ledger`), whether the records were stored (`evidence`), the commit, the digest and the time.
+(`ledger`), whether the records were stored (`evidence`), how many files were left out of the
+store (`files_refused`), the commit, the digest and the time.
 
 ### The Thursday check
 
@@ -1939,7 +1955,11 @@ PYTHONDONTWRITEBYTECODE=1 python -m pytest -p no:cacheprovider -q tests/test_ws7
     never to be read; ten results that disagree with their exit code; a file already at the
     output path; a rule for PART C.
   - Storing: the file list equal, in both directions, to what the real runners and scorers
-    wrote; an extra file, or a link, stopping the run with nothing stored.
+    wrote; an extra file, or a link, stopping a run that would have succeeded, and never
+    uploaded. `score_batch` writing its reports and the assembly replay then raising: the
+    reports and the guard's report stored, and the run failed by the scorer's code. Unknown
+    files on the failure path: not uploaded, counted, and the rest stored, the guard's report
+    first.
   - The precheck: its fingerprint equal to the wrapper's for every scenario; two scenarios with
     one first request stopping the run with no request at any server; the sleep shown never to
     be called, with a control in which a throttling client does make the runner sleep.

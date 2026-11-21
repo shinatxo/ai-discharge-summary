@@ -49,7 +49,9 @@ one, the next is still tried (Codex P2, PR #9).
 
  1. The ledger is settled (from the guard's report; `mark_crashed()` only when
     there is no guard).
- 2. What records exist are stored.
+ 2. What records exist are stored: the guard's report first, then every file the
+    runners and scorers write. A file that is not on that list is never uploaded;
+    here it does not stop the rest, and the failed record counts it.
  3. The failed record the Thursday check reads is built (the clock read included)
     and written.
  4. `RunRefused` = 1 and `RunOk` = 0 are published.
@@ -495,7 +497,8 @@ class _Scheduled:
         self.reservation = None
         self.baseline_id = None
         self.waived = False
-        self.stored = "none"
+        self.stored = "none"            # "none", "not_finished", "stored", or a code
+        self.files_refused = 0          # files left out of the store on the failure path
 
     def say(self, stage: str, **fields) -> None:
         parts = [f"ws7 entry mode=scheduled target={self.target} stage={stage}"]
@@ -727,6 +730,9 @@ class _Scheduled:
             steps += [("score_assemble", lambda: SA.write(batch_dir / "scores" / "assemble",
                                                           SA.replay(batch_dir, False, None))),
                       ("haz03_check", lambda: ws.write_haz03(batch_dir))]
+        # Scoring begins: from here the known score files may be in the folder. A scorer
+        # that stops after it wrote its reports must not make them unknown files.
+        self.batches[label]["scored"] = True
         for name, step in steps:
             try:
                 with _quiet():
@@ -735,7 +741,6 @@ class _Scheduled:
                 raise
             except (Exception, SystemExit):         # a scorer that stops is a failed run (D2)
                 raise Stop(SCORER_STOPPED, ids=(name,)) from None
-        self.batches[label]["scored"] = True
         self.key_parts = ws.key_parts(batch_dir)
         self.waived = self.ledger.assurance_waived(self.held.month)
         report = self.guard.report()
@@ -821,62 +826,94 @@ class _Scheduled:
             raise Stop(EVIDENCE_UNAVAILABLE, ids=("key_taken",))
 
     def _store(self, *, strict: bool) -> None:
-        """Store the run's records under its own prefix (D8): each batch folder, the
-        guard's report, the summary, the comparison result and the manifest.
+        """Store the run's records under its own prefix (D8): the guard's report, the
+        summary, the comparison result, each batch folder and the manifest.
 
-        Every file is decided before any is sent: a file that is not on the list of
-        what the runners and scorers write, is not `.json` or `.md`, or is not a plain
-        file, stops the run (`ws7_evidence_unstorable`). It is never skipped."""
+        EVERY FILE IS DECIDED BEFORE ANY IS SENT. A file may be stored only if it is
+        on the list of what the runners and scorers write, is `.json` or `.md`, is a
+        plain file that can be read, and is no larger than one object may be.
+
+        - `strict` (the success path, ruling 7): one file that may not be stored
+          stops the run with `ws7_evidence_unstorable`, and nothing is sent.
+        - not `strict` (the failure path): such a file is never uploaded, and it does
+          not stop the rest. It is counted in `files_refused`, which the failed
+          record carries.
+
+        Sending stops at the first object S3 will not take: if S3 is refusing writes,
+        trying the rest would only delay the failed record and `RunOk` = 0."""
         if self.stored != "none" or self.held is None:
             return
+        uploads, refused = self._plan()
+        if strict and refused:
+            # Nothing was sent, and `stored` is still "none": the failure path stores
+            # what is allowed, and leaves these out.
+            where = sorted(refused)[0]
+            raise Stop(EVIDENCE_UNSTORABLE, ids=(where,), counts=refused[where])
+        if strict and self.key_parts is None:
+            raise Stop(wm.MANIFEST_INVALID)
+        self.files_refused = sum(n for counts in refused.values() for n in counts.values())
         self.stored = "not_finished"
         try:
-            objects = self._store_all(strict)
+            for key, body, kind in uploads:
+                self._put(key, body, kind)
+            if self.key_parts is not None:
+                manifest = wm.build_manifest(
+                    held=self.held, own=self.own, who=self.who, cfg=self.cfg,
+                    reservation=self.reservation, baseline_id=self.baseline_id,
+                    month_assurance_waived=self.waived, **self.key_parts)
+                wm.write_manifest(self.st, manifest, attempts=self.cfg.ledger_cas_attempts)
         except Stop as stop:
             self.stored = stop.code
             raise
         self.stored = "stored"
-        self.say("stored", objects=objects)
+        self.say("stored", objects=len(uploads) + (self.key_parts is not None),
+                 files_refused=self.files_refused)
 
-    def _store_all(self, strict: bool) -> int:
-        run, uploads = self.held.run_id, []
+    def _plan(self) -> tuple:
+        """(what to send, what may not be sent). The first is a list of
+        `(key, body, content type)`, in the order it is sent: the guard's report
+        first, then the run's other documents, then each batch folder. The second
+        maps a batch label (or "documents") to `{reason: how many}`, for the files
+        that may not be stored: "unexpected", "unreadable", "too_large". Nothing is
+        sent here."""
+        run, uploads, refused = self.held.run_id, [], {}
+
+        def refuse(where: str, why: str) -> None:
+            counts = refused.setdefault(where, {})
+            counts[why] = counts.get(why, 0) + 1
+
+        if self.guard is not None:
+            self.documents.setdefault("guard_report.json", compare.render(self.guard.report()))
+        for name in sorted(self.documents, key=lambda n: (n != "guard_report.json", n)):
+            if len(self.documents[name]) > store.MAX_OBJECT_BYTES:
+                refuse("documents", "too_large")
+                continue
+            uploads.append((store.evidence_key(SCHEDULED, run, name), self.documents[name],
+                            store.JSON_TYPE))
         for label, batch in sorted(self.batches.items()):
             batch_dir, scenarios = batch["dir"], batch["scenarios"]
             if not batch_dir.is_dir():
                 continue
             files, other = files_in(batch_dir)
             allowed = expected_files(self.target, scenarios, scored=batch["scored"])
-            unexpected = [name for name in files
-                          if name not in allowed or store.content_type(name) is None]
-            if unexpected or other:
-                raise Stop(EVIDENCE_UNSTORABLE, ids=(label,),
-                           counts={"unexpected": len(unexpected) + other})
+            for _ in range(other):                  # a link, a socket: never followed, never sent
+                refuse(label, "unexpected")
             for name in files:
+                kind = store.content_type(name)
+                if name not in allowed or kind is None:
+                    refuse(label, "unexpected")
+                    continue
                 try:
                     body = (batch_dir / name).read_bytes()
                 except OSError:
-                    raise Stop(EVIDENCE_UNSTORABLE, ids=(label,)) from None
+                    refuse(label, "unreadable")
+                    continue
+                if len(body) > store.MAX_OBJECT_BYTES:
+                    refuse(label, "too_large")
+                    continue
                 uploads.append((store.evidence_key(SCHEDULED, run, "batches", label,
-                                                   *name.split("/")),
-                                body, store.content_type(name)))
-        if self.guard is not None:
-            self.documents.setdefault("guard_report.json", compare.render(self.guard.report()))
-        for name in sorted(self.documents):
-            uploads.append((store.evidence_key(SCHEDULED, run, name), self.documents[name],
-                            store.JSON_TYPE))
-        if any(len(body) > store.MAX_OBJECT_BYTES for _key, body, _kind in uploads):
-            raise Stop(EVIDENCE_UNSTORABLE, ids=(store.OBJECT_TOO_LARGE,))
-        for key, body, kind in uploads:
-            self._put(key, body, kind)
-        if self.key_parts is not None:
-            manifest = wm.build_manifest(
-                held=self.held, own=self.own, who=self.who, cfg=self.cfg,
-                reservation=self.reservation, baseline_id=self.baseline_id,
-                month_assurance_waived=self.waived, **self.key_parts)
-            wm.write_manifest(self.st, manifest, attempts=self.cfg.ledger_cas_attempts)
-        elif strict:
-            raise Stop(wm.MANIFEST_INVALID)
-        return len(uploads) + (self.key_parts is not None)
+                                                   *name.split("/")), body, kind))
+        return uploads, refused
 
     # ------------------------------------------------------- the endings
 
@@ -964,7 +1001,7 @@ class _Scheduled:
             raise
 
     def _fail_evidence(self, _stop: Stop, _also: list) -> None:
-        """2. What records exist."""
+        """2. What records exist: the guard's report first, then every allowed file."""
         try:
             self._store(strict=False)
         except Stop:
@@ -979,6 +1016,7 @@ class _Scheduled:
                 "code": stop.code, "ids": list(stop.ids),
                 "counts": dict(sorted(stop.counts.items())), "also": list(also),
                 "ledger": self.settled or "not_admitted", "evidence": self.stored,
+                "files_refused": self.files_refused,
                 "git_commit": self.who.git_commit, "image_digest": self.who.image_digest,
                 "failed_at": store.utc_text(store.read_clock(self.deps.wall))}
 

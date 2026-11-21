@@ -19,7 +19,8 @@ the run. Updated 21 Nov 2026 with the rulings after the review of PR #9: the pre
 go/no-go is no failed generation, only the expected files and a cost within its reservation, and
 a v1 gate failure is not in it; and each metric is published at most once per run, with what
 was delivered before a later failure left to stand; and a `RunOk` = 1 that CloudWatch rejects
-fails the run, with a failed record.
+fails the run, with a failed record; and once a run has failed, a file that may not be stored
+is left out and counted, and does not stop the rest.
 
 This is a design. Slice 1, the offline comparator, is built (`docs/WS7-COMPARATOR.md`). Of slice 2,
 parts 1 to 4 and part 5a are built (`docs/WS7-ENTRYPOINT.md`): the client wrapper and the
@@ -586,6 +587,9 @@ object is absent, or unchanged since it was read.
   - **Only `.json` and `.md` files, and only the files the runners and scorers are known to
     write.** Any other file in a batch folder stops the run; it is never skipped (the author's
     ruling, 20 Nov 2026).
+  - **Once a run has failed, one such file does not stop the rest** (the author's ruling,
+    21 Nov 2026). The guard's report is stored first, then every allowed file. The other file
+    is never uploaded, and the failed record counts it.
 
 *AWS concept:* an S3 lifecycle rule deletes objects on a clock.
 

@@ -715,9 +715,12 @@ def test_a_pre_flight_that_wrote_a_file_that_is_not_expected_stops_the_run(ready
     assert (record["code"], record["counts"]) == (
         entry.PREFLIGHT_FILES_UNEXPECTED, {"unexpected": 1, "missing": 0})
     assert not (world.runs_dir / MAIN[target]).exists()
-    # the file is never skipped: nothing of that folder was stored
-    assert record["evidence"] == entry.EVIDENCE_UNSTORABLE
-    assert run_keys(world, target) == []
+    # the failure path stores what the runner does write, and never that file
+    assert (record["evidence"], record["files_refused"]) == ("stored", 1)
+    allowed = entry.expected_files(target, [CFG.preflight_scenario], scored=False)
+    assert set(run_keys(world, target)) == {PREFIX[target] + "guard_report.json"} | {
+        PREFIX[target] + f"batches/{PRE[target]}/{known}" for known in allowed}
+    assert (world.runs_dir / PRE[target] / name).is_file()      # it was there, and was left out
 
 
 @pytest.mark.parametrize("target", TARGETS)
@@ -1167,10 +1170,12 @@ def test_a_rule_for_part_c_fails_the_run_and_publishes_no_breach_value(ready, wo
 # ====================================================================== STORING ==
 
 @pytest.mark.parametrize("name", ["extra.json", "notes.txt", "scores/EXTRA.md", "link.json"])
-def test_a_file_that_is_not_on_the_list_stops_the_run_and_is_never_skipped(ready, world, name):
-    """The author's ruling 7. The extra file appears in the main batch folder as the
-    ledger is settled. Every file is decided before any is sent, so nothing at all is
-    stored under the run's prefix."""
+def test_a_file_that_is_not_on_the_list_stops_the_run_and_is_never_uploaded(ready, world, name):
+    """The author's ruling 7, unchanged on the success path: a file the runners and
+    scorers do not write stops the run. The extra file appears in the main batch
+    folder as the ledger is settled. The run fails; its failure path then stores the
+    guard's report and every file that IS on the list, never the extra one, and
+    counts it (Codex P2, PR #9)."""
     target = "pipeline"
     ready(target)
     main = world.runs_dir / MAIN[target]
@@ -1188,8 +1193,15 @@ def test_a_file_that_is_not_on_the_list_stops_the_run_and_is_never_skipped(ready
     record = world.failed(RUN_ID[target])
     assert (record["code"], record["ids"], record["counts"]) == (
         entry.EVIDENCE_UNSTORABLE, [MAIN[target]], {"unexpected": 1})
-    assert record["evidence"] == entry.EVIDENCE_UNSTORABLE
-    assert run_keys(world, target) == []
+    assert (record["evidence"], record["files_refused"]) == ("stored", 1)
+    stored = set(run_keys(world, target))
+    assert PREFIX[target] + f"batches/{MAIN[target]}/{name}" not in stored
+    assert stored == {PREFIX[target] + known for known in (
+        "guard_report.json", "summary.json", "comparison.json", "manifest.json")} | {
+        PREFIX[target] + f"batches/{PRE[target]}/{known}"
+        for known in entry.expected_files(target, [CFG.preflight_scenario], scored=False)} | {
+        PREFIX[target] + f"batches/{MAIN[target]}/{known}"
+        for known in entry.expected_files(target, SCENARIOS, scored=True)}
     assert no_success(world, target) and world.published()["RunOk"] == [0]
 
 
@@ -1626,6 +1638,76 @@ def test_a_gate_failure_on_the_pre_flight_scenario_is_not_a_no_go(ready, world, 
     assert not stopped_with(world, entry.PREFLIGHT_FAILED)
 
 
+# ============================================== STORING ON THE FAILURE PATH ==
+
+def test_a_scorer_that_stops_after_the_reports_were_written_does_not_make_them_unknown(
+        ready, world, monkeypatch):
+    """Codex P2, PR #9. `score_batch` writes its reports, and the assembly replay then
+    stops. The known score files are allowed from the moment scoring begins, so the
+    reports and the guard's report are stored, and the run fails with the scorer's
+    own code, not with a storing code."""
+    target = "pipeline"
+    ready(target)
+    monkeypatch.setattr(SA, "replay", _raising)
+    assert world.run(target) == 1
+    record = world.failed(RUN_ID[target])
+    assert (record["code"], record["ids"]) == (entry.SCORER_STOPPED, ["score_assemble"])
+    assert (record["evidence"], record["files_refused"]) == ("stored", 0)
+    stored = set(run_keys(world, target))
+    written = {name for name in entry.files_in(world.runs_dir / MAIN[target])[0]
+               if name.startswith("scores/")}
+    assert written and "scores/safety_net.json" in written
+    assert "scores/assemble/assemble.json" not in written       # the replay never wrote
+    assert {PREFIX[target] + f"batches/{MAIN[target]}/{name}" for name in written} <= stored
+    assert PREFIX[target] + "guard_report.json" in stored
+    assert not any(SENTINEL in line for line in world.lines)
+
+
+@pytest.mark.parametrize("extra", [(), ("extra.json",), ("extra.json", "notes.txt", "r1/EXTRA.md")])
+def test_an_unknown_file_on_the_failure_path_is_left_out_and_counted_and_the_rest_is_stored(
+        ready, world, extra):
+    """The author's ruling (21 Nov 2026). The run fails for another reason (a throttled
+    call), and files the runners do not write are in the main batch folder. One
+    refused file does not stop the rest: the guard's report goes first, then every
+    allowed file; the unknown files are never uploaded, and the failed record counts
+    them. The partner has no unknown file."""
+    target = "v1"
+    stub = _fail_a_main_batch_call(target)
+    main = world.runs_dir / MAIN[target]
+
+    def add():
+        for name in extra:
+            (main / name).write_text("invented", "utf-8")
+    W.on_nth(stub, FIRST_STEP[target], 3, add)
+    ready(target, stub=stub)
+    assert world.run(target) == 1
+    record = world.failed(RUN_ID[target])
+    assert (record["code"], record["evidence"], record["files_refused"]) == (
+        entry.CALL_FAILED, "stored", len(extra))
+    assert all((main / name).is_file() for name in extra)
+    stored = run_keys(world, target)
+    assert set(stored) == {PREFIX[target] + "guard_report.json"} | {
+        PREFIX[target] + f"batches/{PRE[target]}/{name}"
+        for name in entry.expected_files(target, [CFG.preflight_scenario], scored=False)} | {
+        PREFIX[target] + f"batches/{MAIN[target]}/{name}"
+        for name in entry.expected_files(target, SCENARIOS, scored=False)}
+    # the guard's report is the first record of the run to be stored
+    first = next(what for server, what in world.log.all()
+                 if server == "s3" and what.startswith(f"PUT {PREFIX[target]}"))
+    assert first == f"PUT {PREFIX[target]}guard_report.json"
+
+
+def test_the_guards_report_is_the_first_record_a_successful_run_stores_too(ready, world):
+    target = "v1"
+    ready(target)
+    assert world.run(target) == 0
+    first = next(what for server, what in world.log.all()
+                 if server == "s3" and what.startswith(f"PUT {PREFIX[target]}"))
+    assert first == f"PUT {PREFIX[target]}guard_report.json"
+    assert world.lines.count("ws7 entry mode=scheduled target=v1 stage=stored "
+                             f"objects={len(run_keys(world, target))} files_refused=0") == 1
+
+
 # ============================================ THE DISTINCT-SCENARIOS PRECHECK ==
 
 def _argv(target: str) -> list:
@@ -1920,7 +2002,7 @@ def _failed_record(run: str, target: str, code: str, ids: list, when: str = WHEN
     return compare.render({**{
         "schema": entry.FAILED_SCHEMA, "run_id": run, "target": target, "mode": "scheduled",
         "scheduled_time": when, "code": code, "ids": ids, "counts": {}, "also": [],
-        "ledger": "not_admitted", "evidence": "none",
+        "ledger": "not_admitted", "evidence": "none", "files_refused": 0,
         "git_commit": W.COMMIT, "image_digest": W.DIGEST,
         "failed_at": "2026-12-16T04:00:40Z"}, **(change or {})})
 

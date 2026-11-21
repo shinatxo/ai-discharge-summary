@@ -1550,8 +1550,8 @@ tried whatever became of the one before.
 | Any other exception | `ws7_crashed` | If the claim is held | If the claim is held |
 | `RunOk` = 1 could not be published | `ws7_runok_publish_failed`, in the log | No | No |
 
-The failed record (`ws7-failed/1`) holds the run's ID, target and scheduled time, the code, the
-IDs and counts the stop carried, any further codes (`also`), what became of the ledger entry
+The failed record (`ws7-failed/1`) holds the run's ID, target, mode and scheduled time, the code,
+the IDs and counts the stop carried, any further codes (`also`), what became of the ledger entry
 (`ledger`), whether the records were stored (`evidence`), the commit, the digest and the time.
 
 ### The Thursday check
@@ -1567,6 +1567,19 @@ publishes to the topic.
    change B). In British Summer Time the 04:00 London run is 03:00 UTC, and its ID is
    `<date>T0300-<target>`. Tests cover a winter week and a summer week.
 4. That run's failed record and success record.
+5. **Nothing it reads is trusted as read** (Codex P2, PR #9). The claim, the failed record and
+   the success record are each checked before they are used:
+
+   | Object | Checked |
+   |---|---|
+   | The claim | It is a JSON object; `schema` is `ws7-claim/1`; `target` is the check's target; `mode` is `scheduled`; `scheduled_time` is a UTC time on the occurrence's day; `run_id` is the ID that time gives |
+   | The success record | It is a JSON object; `schema` is `ws7-success/1`; `run_id`, `target` and `scheduled_time` are the claim's; `mode` is `scheduled` |
+   | The failed record | The same, with `ws7-failed/1`; and `code` is a fixed label and `ids` a list of IDs |
+
+   An object that fails is reported as **invalid, with a fixed label** that names the first
+   check it failed: `not_json`, `not_an_object`, `schema`, `target`, `mode`, `scheduled_time`,
+   `run_id`, `code` or `ids`. **An invalid record never counts as a success**, and an invalid
+   claim names no run, so no record is read on its word. Both records now carry `mode`.
 
 | What it finds | The line it reports |
 |---|---|
@@ -1575,6 +1588,9 @@ publishes to the topic.
 | A run blocked by an unresolved entry | `failed run <run_id> code ws7_blocked_unresolved: blocked by unresolved <entry's run_id>` |
 | A claim and neither record | `run <run_id> started and did not finish: no success record` |
 | A claim and a success record only | Nothing |
+| A claim that fails its check | `claim object invalid (<label>): it is not read as a scheduled claim` |
+| A success record that fails its check, and no failed record | `run <run_id>: success record invalid (<label>); it is not counted as a success` |
+| A failed record that fails its check | `failed run <run_id>: failed record invalid (<label>)`. It is still a failed run |
 | Any unresolved entry, in any month | `unresolved entry <run_id> (<kind>, month <month>): it blocks every scheduled run until it is resolved` |
 | The occurrence's month is waived | `month <YYYY-MM>: assurance waived`, every week of that month |
 
@@ -1887,6 +1903,10 @@ PYTHONDONTWRITEBYTECODE=1 python -m pytest -p no:cacheprovider -q tests/test_ws7
     be called, with a control in which a throttling client does make the runner sleep.
   - The check: a winter week and a summer week; each line of the table above; the look-back at
     0, 1 and 2 days; a run that died on Wednesday reported as abandoned that Thursday.
+  - What the check reads: each field wrong in turn, for the claim, the success record and the
+    failed record, each reported by its label, each with a valid partner. A perfect success
+    record beside an invalid claim does not count. The check's rules are also held against the
+    claim and the records a real run writes.
   - Every other command line, `--help` included: exit code 2, the one fixed usage line, nothing
     built and nothing sent. An invented sentinel in the rejected argument, for each kind of
     argument error, is in neither stream; the positive control gives the same command line to

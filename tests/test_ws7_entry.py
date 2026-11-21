@@ -186,8 +186,8 @@ def test_what_a_successful_run_stores_and_where(ready, world, target):
 
     record = world.s3.json(store.success_key(run))
     assert record == {
-        "schema": entry.SUCCESS_SCHEMA, "run_id": run, "target": target, "scheduled_time": WHEN,
-        "status": "no_breach", "breaches": 0, "baseline_id": W.BASELINE_ID,
+        "schema": entry.SUCCESS_SCHEMA, "run_id": run, "target": target, "mode": "scheduled",
+        "scheduled_time": WHEN, "status": "no_breach", "breaches": 0, "baseline_id": W.BASELINE_ID,
         "summary_sha256": entry._sha256(world.s3.body(PREFIX[target] + "summary.json")),
         "comparison_sha256": entry._sha256(world.s3.body(PREFIX[target] + "comparison.json")),
         "evidence": PREFIX[target], "git_commit": W.COMMIT, "image_digest": W.DIGEST,
@@ -1675,19 +1675,33 @@ def test_the_check_looks_exactly_one_utc_day_back(thursday, days, found):
                     else publish.NO_CLAIM_LINE)
 
 
-def _failed_record(run: str, target: str, code: str, ids: list) -> bytes:
-    return compare.render({"schema": entry.FAILED_SCHEMA, "run_id": run, "target": target,
-                           "scheduled_time": WHEN, "code": code, "ids": ids, "counts": {},
-                           "also": [], "ledger": "not_admitted", "evidence": "none",
-                           "git_commit": W.COMMIT, "image_digest": W.DIGEST,
-                           "failed_at": "2026-12-16T04:00:40Z"})
+def _failed_record(run: str, target: str, code: str, ids: list, when: str = WHEN,
+                   change: dict | None = None) -> bytes:
+    """A failed record, as the entrypoint writes one (invented), with `change` applied."""
+    return compare.render({**{
+        "schema": entry.FAILED_SCHEMA, "run_id": run, "target": target, "mode": "scheduled",
+        "scheduled_time": when, "code": code, "ids": ids, "counts": {}, "also": [],
+        "ledger": "not_admitted", "evidence": "none",
+        "git_commit": W.COMMIT, "image_digest": W.DIGEST,
+        "failed_at": "2026-12-16T04:00:40Z"}, **(change or {})})
+
+
+def _success_record(run: str, target: str, when: str = WHEN,
+                    change: dict | None = None) -> bytes:
+    """A success record, as the entrypoint writes one (invented), with `change` applied."""
+    return compare.render({**{
+        "schema": entry.SUCCESS_SCHEMA, "run_id": run, "target": target, "mode": "scheduled",
+        "scheduled_time": when, "status": "no_breach", "breaches": 0,
+        "baseline_id": W.BASELINE_ID, "summary_sha256": "1" * 64, "comparison_sha256": "2" * 64,
+        "evidence": f"ws7/runs/scheduled/{run}/", "git_commit": W.COMMIT,
+        "image_digest": W.DIGEST, "finished_at": "2026-12-16T04:40:00Z"}, **(change or {})})
 
 
 def test_a_success_record_and_a_failed_record_together_are_a_failed_run(thursday):
     """The author's change B. The partner: the success record alone is silence."""
     world, target = thursday, "pipeline"
     run = seed_claim(world, target, WEDNESDAY)
-    world.s3.seed(store.success_key(run), b"{}")
+    world.s3.seed(store.success_key(run), _success_record(run, target))
     assert world.check(target) == 0
     assert world.sns.messages == []
     world.s3.seed(store.failed_key(run), _failed_record(run, target, publish.PUBLISH_FAILED, []))
@@ -1783,35 +1797,158 @@ def test_a_waived_month_is_reported_every_week_of_that_month_and_not_the_next(th
     for wednesday in (9, 16, 23, 30):               # every Wednesday left in December
         when = datetime(2026, 12, wednesday, 4, 0, tzinfo=timezone.utc)
         run = seed_claim(world, target, when)
-        world.s3.seed(store.success_key(run), b"{}")
+        world.s3.seed(store.success_key(run), _success_record(run, target, store.utc_text(when)))
         world.sns.messages.clear()
         world.clock.start = when + timedelta(days=1, hours=6, minutes=1)
         assert world.check(target, store.utc_text(when + timedelta(days=1, hours=6))) == 0
         assert check_lines(world)[1] == "month 2026-12: assurance waived"
     # the first Wednesday of January: the run succeeded and its month is not waived
     when = datetime(2027, 1, 6, 4, 0, tzinfo=timezone.utc)
-    world.s3.seed(store.success_key(seed_claim(world, target, when)), b"{}")
+    run = seed_claim(world, target, when)
+    world.s3.seed(store.success_key(run), _success_record(run, target, store.utc_text(when)))
     world.sns.messages.clear()
     world.clock.start = when + timedelta(days=1, hours=6, minutes=1)
     assert world.check(target, "2027-01-07T10:00:00Z") == 0
     assert world.sns.messages == []
 
 
-@pytest.mark.parametrize("body", [b"not json", b"{}", b'{"schema":"ws7-claim/1"}'])
-def test_a_claim_object_the_check_cannot_read_is_reported_not_guessed(thursday, body):
+# ---------------------------------------- the check trusts nothing as read (Codex P2, PR #9)
+
+def _claim(target: str, when: datetime = WEDNESDAY, change: dict | None = None) -> bytes:
+    """A scheduled claim, as `claim()` writes one (invented), with `change` applied."""
+    return wl._dump({**{
+        "schema": wl.CLAIM_SCHEMA, "target": target, "mode": "scheduled",
+        "scheduled_time": store.utc_text(when), "run_id": store.run_id(target, "scheduled", when),
+        "claim_id": "c" * 32, "claimed_at": store.utc_text(when + timedelta(seconds=37))},
+        **(change or {})})
+
+
+OTHER = {"v1": "pipeline", "pipeline": "v1"}
+# (what is wrong with the object, the label the check reports it by). None: nothing is wrong.
+WRONG_CLAIMS = [
+    (None, None),
+    (b"not json", "not_json"), (b"\xff\xfe", "not_json"),
+    (b"[]", "not_an_object"), (b"null", "not_an_object"), (b'"ws7-claim/1"', "not_an_object"),
+    ({"schema": "ws7-claim/2"}, "schema"), ({"schema": None}, "schema"),
+    ({"target": "pipeline"}, "target"), ({"target": 7}, "target"),
+    ({"mode": "manual"}, "mode"), ({"mode": None}, "mode"),
+    ({"scheduled_time": "2026-12-16T04:00:00"}, "scheduled_time"),      # no zone
+    ({"scheduled_time": "2026-12-15T04:00:00Z"}, "scheduled_time"),     # another day's occurrence
+    ({"scheduled_time": 7}, "scheduled_time"),
+    ({"run_id": "2026-12-16T0300-v1"}, "run_id"),                       # not its own time's ID
+    ({"run_id": "2026-12-16T0400-pipeline"}, "run_id"),                 # another target's run
+    ({"run_id": "2026-12-16T0400-v1-manual"}, "run_id"),
+    ({"run_id": None}, "run_id")]
+
+
+@pytest.mark.parametrize("wrong, label", WRONG_CLAIMS, ids=lambda v: str(v)[:40])
+def test_a_claim_object_that_fails_its_check_is_reported_invalid_and_never_trusted(
+        thursday, wrong, label):
+    """Each field wrong in turn. The run the claim would name has a perfect success
+    record, and it still does not count: an invalid claim names no run. The partner
+    (nothing wrong) is silent, because that success record is then read and trusted."""
     world, target = thursday, "v1"
+    body = wrong if isinstance(wrong, bytes) else _claim(target, change=wrong)
     world.s3.seed(CLAIM_KEY[target], body)
+    for run in {RUN_ID[target], "2026-12-16T0300-v1", "2026-12-16T0400-pipeline"}:
+        world.s3.seed(store.success_key(run), _success_record(run, target))
     assert world.check(target) == 0
-    assert check_lines(world)[1] == "the claim object cannot be read as a scheduled claim"
+    if label is None:
+        assert world.sns.messages == []
+        return
+    assert check_lines(world)[1] == (f"claim object invalid ({label}): "
+                                     f"it is not read as a scheduled claim")
+    # nothing was read on the word of an invalid claim
+    assert not any(key.startswith(("ws7/success/", "ws7/failed/"))
+                   for method, key in world.s3.requests if method == "GET")
 
 
-def test_a_claim_whose_run_id_is_not_the_one_its_time_gives_is_still_read_as_written(thursday):
-    """The check never builds a run ID: it reports the one in the claim, whatever the
-    time of day in it."""
+def test_the_claims_run_id_is_reported_as_the_claim_wrote_it_at_whatever_hour(thursday):
+    """The check never builds a run ID from its own scheduled time: a claim made at
+    03:00 UTC names its 03:00 run."""
     world, target = thursday, "v1"
     seed_claim(world, target, datetime(2026, 12, 16, 3, 0, tzinfo=timezone.utc))
     assert world.check(target) == 0
     assert check_lines(world)[1].startswith("run 2026-12-16T0300-v1 started")
+
+
+WRONG_RECORDS = [
+    (None, None),
+    (b"not json", "not_json"), (b"[]", "not_an_object"), (b"{}", "schema"),
+    ({"schema": "ws7-other/1"}, "schema"), ({"schema": None}, "schema"),
+    ({"run_id": "2026-12-09T0400-v1"}, "run_id"), ({"run_id": 7}, "run_id"),
+    ({"target": "pipeline"}, "target"), ({"target": None}, "target"),
+    ({"mode": "manual"}, "mode"), ({"mode": None}, "mode"),
+    ({"scheduled_time": "2026-12-16T03:00:00Z"}, "scheduled_time"),     # not the claim's time
+    ({"scheduled_time": None}, "scheduled_time")]
+
+
+@pytest.mark.parametrize("wrong, label", WRONG_RECORDS, ids=lambda v: str(v)[:40])
+def test_a_success_record_that_fails_its_check_never_counts_as_a_success(thursday, wrong, label):
+    """Each field wrong in turn, against the claim. The partner (nothing wrong) is
+    the silence of a run that succeeded."""
+    world, target = thursday, "v1"
+    run = seed_claim(world, target, WEDNESDAY)
+    body = wrong if isinstance(wrong, bytes) else _success_record(run, target, change=wrong)
+    world.s3.seed(store.success_key(run), body)
+    assert world.check(target) == 0
+    if label is None:
+        assert world.sns.messages == []
+        return
+    assert check_lines(world)[1] == (f"run {run}: success record invalid ({label}); "
+                                     f"it is not counted as a success")
+
+
+def test_another_schemas_record_under_the_success_key_is_not_a_success(thursday):
+    """A failed record's body under the success key: every field but the schema fits."""
+    world, target = thursday, "v1"
+    run = seed_claim(world, target, WEDNESDAY)
+    world.s3.seed(store.success_key(run), _failed_record(run, target, entry.CRASHED, []))
+    assert world.check(target) == 0
+    assert "success record invalid (schema)" in check_lines(world)[1]
+
+
+@pytest.mark.parametrize("wrong, label", WRONG_RECORDS + [
+    ({"code": "Not A Code"}, "code"), ({"code": None}, "code"),
+    ({"ids": "S1"}, "ids"), ({"ids": ["not an id"]}, "ids"), ({"ids": [7]}, "ids")],
+    ids=lambda v: str(v)[:40])
+def test_a_failed_record_that_fails_its_check_is_reported_invalid_and_is_still_a_failed_run(
+        thursday, wrong, label):
+    """Each field wrong in turn. A perfect success record is there too: the failed
+    record still wins (change B), valid or not. The partner reports the code."""
+    world, target = thursday, "v1"
+    run = seed_claim(world, target, WEDNESDAY)
+    world.s3.seed(store.success_key(run), _success_record(run, target))
+    body = wrong if isinstance(wrong, bytes) else _failed_record(
+        run, target, entry.CALL_FAILED, ["throttled"], change=wrong)
+    world.s3.seed(store.failed_key(run), body)
+    assert world.check(target) == 0
+    if label is None:
+        assert check_lines(world)[1] == f"failed run {run} code {entry.CALL_FAILED} ids throttled"
+        return
+    assert check_lines(world)[1] == f"failed run {run}: failed record invalid ({label})"
+
+
+def test_the_records_a_real_run_writes_pass_the_checks_own_checks(ready, world):
+    """The check's rules are held against what the entrypoint really writes: the claim
+    and the success record of a good run, and the failed record of a failed one."""
+    target = "v1"
+    ready(target)
+    assert world.run(target) == 0
+    claim = world.s3.json(CLAIM_KEY[target])
+    assert entry.claim_fault(claim, key=CLAIM_KEY[target], target=target) is None
+    success = world.s3.json(store.success_key(RUN_ID[target]))
+    assert entry.record_fault(success, schema=entry.SUCCESS_SCHEMA, claim=claim) is None
+    assert entry.record_fault(success, schema=entry.FAILED_SCHEMA, claim=claim) == "schema"
+    assert entry.claim_fault(claim, key=CLAIM_KEY["pipeline"], target="pipeline") == "target"
+
+    world.clock.advance(7 * 86400)
+    world.freeze(target, dict(W.invented_baseline(target, world.net, None), keys={}))
+    assert world.run(target, "2026-12-23T04:00:00Z") == 1
+    run = "2026-12-23T0400-v1"
+    later = world.s3.json("ws7/claims/v1/2026-12-23")
+    assert entry.record_fault(world.failed(run), schema=entry.FAILED_SCHEMA, claim=later) is None
+    assert entry.record_fault(world.failed(run), schema=entry.FAILED_SCHEMA, claim=claim) == "run_id"
 
 
 def test_a_check_that_cannot_read_s3_says_so_on_the_topic_and_exits_1(thursday):

@@ -673,6 +673,10 @@ two acts are to write a success record to S3 and then to publish `RunOk` = 1.
     keyed by the UTC date; the ID also holds the UTC hour, which is 04 in winter and 03 in
     British Summer Time.
   - If a success record and a failed record both exist, it is reported as a failed run.
+  - **The check trusts none of the three objects as read** (as built, 21 Nov 2026). The claim,
+    the success record and the failed record are each checked (schema, run ID, target, mode,
+    scheduled time) against the occurrence and the claim. One that fails is reported as invalid,
+    with a fixed label, and never counts as a success.
   - The check first marks any reservation left open past its limit as abandoned, so a run that
     died on Wednesday is reported as abandoned that Thursday.
 - A run **blocked by an unresolved ledger entry** (D7, point 4) has a claim and a failed record

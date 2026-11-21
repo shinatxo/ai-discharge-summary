@@ -56,6 +56,14 @@ publishes its breach values, sends the job's message, writes its success record,
 publishes `RunOk` = 1 and exits 0. A failed scheduled run sends no message of its
 own; the Thursday check and the alarms report it.
 
+THE PRE-FLIGHT'S GO/NO-GO (D7) is three things: no failed generation, only the
+expected files, and a cost within its reservation. A v1 safety-net gate failure
+on the pre-flight scenario is NOT one of them: it is quality evidence, and the
+comparator judges it on the main batch. A runner's exit code 1 is accepted, from
+either batch, only when the batch's own index explains it: a failed generation
+or, for v1, a recorded gate failure. An exit code that disagrees with the index
+is `ws7_runner_refused`.
+
 THE COMPARATOR is called through `ws7_compare.main`, with an output path that is
 new for the call and must not exist before it. Its exit code is checked BEFORE its
 result is read. Exit 2 is a failed run: `ws7_no_baseline` (which publishes
@@ -578,15 +586,23 @@ class _Scheduled:
         if raised:
             raise Stop(RUNNER_CRASHED, ids=(label,))
         index = _read_json(self.batches[label]["dir"] / "batch.json")
-        # 0: clean. 1: a failed generation or, for v1, a gate failure: both are counted,
-        # neither is a runner that refused to start. Anything else (a canary window, an
-        # existing batch folder, a corpus it could not read) is a refusal.
+        # Anything but 0 or 1 (a canary window, an existing batch folder, a corpus it
+        # could not read) is a runner that refused to start.
         if type(exit_code) is not int or exit_code not in (0, 1) or type(index) is not dict \
                 or type(index.get("generations")) is not list:
             raise Stop(RUNNER_REFUSED, ids=(label,),
                        counts={"exit_code": exit_code if type(exit_code) is int else -1})
         if index.get("stopped_early") is not False:
             raise Stop(RUNNER_STOPPED_EARLY, ids=(label,))
+        # 0: clean. 1: a failed generation or, for v1, a safety-net gate failure. Both
+        # runners return 1 for other reasons too (run_cold_eval.py:663, a confirmation
+        # that was not given), so 1 is accepted ONLY when the batch's own index explains
+        # it, and 0 only when the index has nothing to explain (Codex P2, PR #9).
+        failed, gates = self._failed_generations(index), self._gate_failures(index)
+        if (exit_code == 1) != bool(failed or gates):
+            raise Stop(RUNNER_REFUSED, ids=(label,),
+                       counts={"exit_code": exit_code, "generations_failed": failed,
+                               "gate_failures": gates})
         return index
 
     @staticmethod
@@ -594,8 +610,20 @@ class _Scheduled:
         return sum(1 for g in index["generations"]
                    if type(g) is not dict or g.get("error_code") is not None)
 
+    @staticmethod
+    def _gate_failures(index: dict) -> int:
+        """Generations whose v1 safety-net gate did not pass, as the runner recorded
+        them (`gate_ok` in batch.json). The pipeline runner records no gate."""
+        return sum(1 for g in index["generations"]
+                   if type(g) is dict and g.get("gate_ok") is False)
+
     def _generate(self) -> None:
-        # ---- the pre-flight: one scenario, alone, as its own batch (D7)
+        # ---- the pre-flight: one scenario, alone, as its own batch (D7). Its go/no-go
+        # is three things: no failed generation, only the expected files, within its
+        # reservation. A v1 gate failure is not one of them: it is quality evidence,
+        # which the comparator judges on the main batch. Stopping here for it would
+        # turn a safety-netting regression into "pre-flight failed", with no
+        # comparison and no breach alarm.
         label = self.labels[PREFLIGHT]
         index = self._judge(PREFLIGHT, *self._dispatch(PREFLIGHT))
         if len(index["generations"]) != 1 or self._failed_generations(index):

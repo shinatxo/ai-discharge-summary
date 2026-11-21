@@ -15,7 +15,9 @@ comparator refuses. Updated 20 Nov 2026 with the rulings on part 5a: `RunOk` is 
 the process that holds the scheduled claim; once a call fails, the run sends no further call; a
 breach is a successful run; a failed scheduled run sends no message of its own; the retained
 prefix is outside `ws7/`; and a stored file that is not one the runners and scorers write stops
-the run.
+the run. Updated 21 Nov 2026 with the rulings after the review of PR #9: the pre-flight's
+go/no-go is no failed generation, only the expected files and a cost within its reservation, and
+a v1 gate failure is not in it.
 
 This is a design. Slice 1, the offline comparator, is built (`docs/WS7-COMPARATOR.md`). Of slice 2,
 parts 1 to 4 and part 5a are built (`docs/WS7-ENTRYPOINT.md`): the client wrapper and the
@@ -237,6 +239,14 @@ canary windows.
 **Pre-flight.** Before the 18, one scenario runs alone as its own batch. The run continues only if
 it finished without error, wrote only the files expected, and cost no more than its reservation.
 (The orchestrator has a function called `_preflight`. That is a different thing.)
+
+- **"Without error" means no failed generation** (the author's ruling, 21 Nov 2026). A v1
+  safety-net gate failure on the pre-flight scenario is quality evidence, not a no-go: the main
+  batch runs and the comparator judges it. Stopping there would turn a safety-netting regression
+  into "pre-flight failed", with no comparison and no breach alarm.
+- A runner's exit code 1, from either batch, is accepted only when the batch's own index explains
+  it: a failed generation, or a recorded gate failure. Otherwise the run fails
+  (`docs/WS7-ENTRYPOINT.md`, "What a runner's return means").
 
 **No retries.**
 

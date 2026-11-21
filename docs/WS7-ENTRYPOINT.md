@@ -1361,23 +1361,45 @@ and the wrapper itself refuses the rest only when a call is unmetered.
 
 ### The pre-flight
 
-One scenario, alone, as its own batch (ADR-011 D7). The run goes on only if:
+One scenario, alone, as its own batch (ADR-011 D7). **The go/no-go is D7's, and it is three
+things:** no failed generation, only the expected files, and a cost within its reservation.
 
 | Check | Otherwise |
 |---|---|
-| No call failed (above) | The first failure's code |
+| No call failed (above), and the runner's return is one the batch explains (below) | The first failure's code, or `ws7_runner_refused` |
 | Its one generation has no error | `ws7_preflight_failed` |
 | The folder holds only files a runner writes, and the three it must | `ws7_preflight_files_unexpected` |
 | It cost no more than one generation's worst case. Exactly that much is allowed | `ws7_preflight_over_reservation` |
+
+**A v1 safety-net gate failure on the pre-flight scenario is not a no-go** (the author's ruling,
+21 Nov 2026). The v1 runner returns 1 for it and records it in `batch.json` (`gate_ok` false).
+
+- It is quality evidence, not a fault in the run. The main batch runs, and the comparator judges
+  the gate's result there, against the baseline, like any other quality metric.
+- Stopping at the pre-flight would turn a safety-netting regression into "pre-flight failed":
+  a failed run, with no comparison, no breach value and no breach alarm. The regression WS7
+  exists to report would be reported as a broken harness.
+- A test moves the pre-flight to a scenario the stub's v1 text fails the gate on: the pre-flight
+  returns 1, the main batch runs, and the run is compared and succeeds.
 
 ### What a runner's return means
 
 | The runner | Meaning |
 |---|---|
-| Exit code 0, or 1, with a `batch.json` | It ran. 1 is a failed generation or, for v1, a gate failure: both are counted, not refused |
+| Exit code 0, with a `batch.json` that records no failed generation and no gate failure | It ran, clean |
+| Exit code 1, with a `batch.json` that records a failed generation or, for v1, a gate failure | It ran. Both are counted, not refused |
+| Exit code 0 or 1 that the `batch.json` does not explain | `ws7_runner_refused`, with the exit code and both counts |
 | Any other exit code, or no `batch.json` | `ws7_runner_refused`: a canary window, an existing batch folder, a corpus it could not read |
 | It raised | `ws7_runner_crashed` |
 | `stopped_early`, or fewer generations than scenarios | `ws7_runner_stopped_early` |
+
+**An exit code of 1 is accepted only when the batch explains it** (Codex P2, PR #9; the author's
+ruling, 21 Nov 2026). Both runners return 1 for a failed generation, and also for other things
+(a confirmation that was not given, `evals/run_cold_eval.py:663` and
+`evals/run_pipeline_eval.py:331`). So a 1, from the pre-flight or the main batch, is accepted
+only beside an index that records a failed generation (`error_code`) or a gate failure
+(`gate_ok` false). The rule is held in both directions: a 0 beside an index that records either
+is refused too.
 
 ### Settling
 
@@ -1851,7 +1873,10 @@ PYTHONDONTWRITEBYTECODE=1 python -m pytest -p no:cacheprovider -q tests/test_ws7
   - The deadline at its boundary and one second before; a deadline that passes mid-run; a
     settle decided after `expires_at`.
   - The pre-flight's three checks, the cost one at exactly the reservation and one cache-read
-    token over.
+    token over. A gate failure on the pre-flight scenario: the main batch runs and is compared.
+  - A runner's exit code 1 with nothing in the index to explain it, from each batch:
+    `ws7_runner_refused`. Its partners: a 1 a recorded gate failure explains, and a 1 a failed
+    generation explains. An exit code 0 beside a failed generation: refused too.
   - The comparator: a missing file; an exit code that is not 0, 1 or 2, with the result shown
     never to be read; ten results that disagree with their exit code; a file already at the
     output path; a rule for PART C.

@@ -293,6 +293,7 @@ class World:
         self.clock = Clock(start)
         self.runner_now = lambda: QUIET             # what the runners read as "now"
         self.lines: list = []
+        self.config_path = reserve.CONFIG_PATH      # a test may point this at a copy
         self.runs_dir = tmp_path / "runs"
         self.frozen = tmp_path / "frozen"
         self.runs_dir.mkdir()
@@ -331,7 +332,8 @@ class World:
     def deps(self) -> entry.Deps:
         return entry.Deps(environ=self.environ, endpoints=self.endpoints, wall=self.clock.wall,
                           monotonic=self.clock.monotonic, runner_now=lambda: self.runner_now(),
-                          runs_dir=self.runs_dir, baseline_dir=self.frozen, out=self.lines.append)
+                          runs_dir=self.runs_dir, baseline_dir=self.frozen,
+                          config_path=self.config_path, out=self.lines.append)
 
     def call(self, argv: list) -> int:
         started = time.monotonic()

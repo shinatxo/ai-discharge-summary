@@ -1281,6 +1281,112 @@ def test_no_text_reaches_a_metric_a_message_or_the_log(ready, world, baseline_of
     assert mark not in world.s3.body(store.success_key(RUN_ID[target]))
 
 
+# ======================================= AN EXIT CODE THE BATCH MUST EXPLAIN ==
+
+def _forge_exit(monkeypatch, target: str, nth: int, forged: int) -> list:
+    """Make the `nth` runner call (1: the pre-flight, 2: the main batch) return
+    `forged` after the real runner has run. Returns the real exit codes, as they come."""
+    runner = rpe if target == "pipeline" else rce
+    real, codes = runner.main, []
+
+    def main(*args, **kwargs):
+        codes.append(real(*args, **kwargs))
+        return forged if len(codes) == nth else codes[-1]
+    monkeypatch.setattr(runner, "main", main)
+    return codes
+
+
+@pytest.mark.parametrize("nth, kind", [(1, PRE), (2, MAIN), (0, None)])
+def test_an_exit_code_1_the_batch_does_not_explain_is_a_runner_that_refused(
+        ready, world, monkeypatch, nth, kind):
+    """Codex P2, PR #9. Both runners return 1 for a failed generation, and also for
+    other things. From either batch, a 1 beside an index with no failed generation
+    and no gate failure is `ws7_runner_refused`. The partner (nth 0) forges nothing."""
+    target = "pipeline"
+    ready(target)
+    codes = _forge_exit(monkeypatch, target, nth, 1)
+    code = world.run(target)
+    if kind is None:
+        assert code == 0 and codes == [0, 0]
+        return
+    assert code == 1 and codes == [0] * nth                     # the real runner said 0
+    record = world.failed(RUN_ID[target])
+    assert (record["code"], record["ids"], record["counts"]) == (
+        entry.RUNNER_REFUSED, [kind[target]],
+        {"exit_code": 1, "generations_failed": 0, "gate_failures": 0})
+    assert world.entry_of(RUN_ID[target])["state"] == "settled"
+    assert no_success(world, target)
+    if nth == 1:
+        assert not (world.runs_dir / MAIN[target]).exists()     # the main batch never started
+
+
+def test_an_exit_code_0_beside_a_failed_generation_is_refused_too(ready, world, monkeypatch):
+    """The other direction of the same rule. The partner is
+    `test_a_failed_v1_generation_is_counted_and_the_run_is_still_compared`, in which
+    the runner returns 1 for the same batch and the run goes on."""
+    target = "v1"
+    ready(target, stub=_failing_generation_stub(target, "S2"))
+    codes = _forge_exit(monkeypatch, target, 2, 0)
+    assert world.run(target) == 1
+    assert codes == [0, 1]
+    record = world.failed(RUN_ID[target])
+    assert (record["code"], record["ids"]) == (entry.RUNNER_REFUSED, [MAIN[target]])
+    assert (record["counts"]["exit_code"], record["counts"]["generations_failed"]) == (0, 1)
+
+
+def _gate_failing_scenario() -> str:
+    """A scenario whose notes record no seek-help trigger: the stub's v1 text, which
+    has no fall-back line, fails the safety-net gate on it."""
+    gate = rce.safety_net_gate
+    return next(sid for sid in SCENARIOS if not gate.check_combined(
+        W.CORPUS[sid].notes, stubs.V1_COMBINED_TEXT, gate.V1_LINES).ok)
+
+
+def test_an_exit_code_1_that_a_recorded_gate_failure_explains_is_accepted(ready, world,
+                                                                          monkeypatch):
+    """The partner of the refusal: v1's main batch really returns 1, because some
+    scenarios fail the safety-net gate, and its index says so. The run goes on."""
+    target = "v1"
+    ready(target)
+    codes = _forge_exit(monkeypatch, target, 0, 1)              # forges nothing: it only listens
+    assert world.run(target) == 0
+    assert codes == [0, 1]
+    index = json.loads((world.runs_dir / MAIN[target] / "batch.json").read_text("utf-8"))
+    assert entry._Scheduled._gate_failures(index) > 0
+    assert entry._Scheduled._failed_generations(index) == 0
+    assert _gate_failing_scenario() in {g["scenario_id"] for g in index["generations"]
+                                        if g["gate_ok"] is False}
+
+
+def test_a_gate_failure_on_the_pre_flight_scenario_is_not_a_no_go(ready, world, monkeypatch,
+                                                                  tmp_path):
+    """The author's ruling (21 Nov 2026). The pre-flight's go/no-go is D7's: no failed
+    generation, only the expected files, within its reservation. Here the pre-flight
+    scenario fails the v1 safety-net gate, so the pre-flight batch returns 1 with a
+    recorded gate failure. That is quality evidence: the main batch runs, and the
+    comparator judges it. The partner, a pre-flight whose generation FAILS, stops:
+    `test_a_pre_flight_generation_that_fails_stops_the_run_before_the_main_batch`."""
+    target = "v1"
+    scenario = _gate_failing_scenario()
+    assert scenario != CFG.preflight_scenario
+    config = json.loads(reserve.CONFIG_PATH.read_text("utf-8"))
+    config["preflight_scenario"] = scenario
+    world.config_path = tmp_path / "ws7_config.json"
+    world.config_path.write_text(json.dumps(config), "utf-8")
+    ready(target)
+    codes = _forge_exit(monkeypatch, target, 0, 1)
+    assert world.run(target) == 0
+    assert codes == [1, 1]                                      # the pre-flight returned 1
+    index = json.loads((world.runs_dir / PRE[target] / "batch.json").read_text("utf-8"))
+    assert [(g["scenario_id"], g["gate_ok"], g["error_code"]) for g in index["generations"]] == [
+        (scenario, False, None)]
+    # the main batch ran, the comparator judged it, and the run is a success
+    assert world.stub.count(FIRST_STEP[target]) == len(SCENARIOS) + 1
+    assert world.s3.json(PREFIX[target] + "comparison.json")["status"] == "no_breach"
+    assert world.metric("RunOk") == [1]
+    assert not stopped_with(world, entry.PREFLIGHT_FAILED)
+
+
 # ============================================ THE DISTINCT-SCENARIOS PRECHECK ==
 
 def _argv(target: str) -> list:

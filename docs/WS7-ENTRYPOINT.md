@@ -1581,6 +1581,12 @@ stops or raises is logged, and the next is still tried.
 
 - The markers and the counters are two calls. A counter that cannot be built or sent never
   holds back `RunOk` = 0.
+- **Nothing a step raises ends the path early, whatever its type** (Codex P2, PR #9, re-check).
+  `SystemExit` and `KeyboardInterrupt` derive from `BaseException`, not `Exception`, so a handler
+  for `Exception` lets them through. Every handler on the failure path is for `BaseException`:
+  the loop over the five steps, the settle, the store, and the log (`best_effort`). A log sink,
+  the clock, a store call or a publish call that raises any of them costs that one step and no
+  other.
 - A `SystemExit` from inside a run is handled as any other crash is: `ws7_crashed`, and the
   failure path runs.
 - A test breaks one thing in each case: the log stream, the settling write, the first stored
@@ -1658,7 +1664,8 @@ publishes to the topic.
 One fixed line for each stage: labels, IDs and counts. A stop is printed as `Stop.line()`. No
 traceback is printed, and of an unexpected exception only its class name.
 
-**Logging is best effort everywhere and never raises** (Codex P2, PR #9). A log stream that
+**Logging is best effort everywhere and never raises** (Codex P2, PR #9). `best_effort` catches
+`BaseException`, so that holds whatever the stream raises. A log stream that
 fails (a closed pipe, a full disk) changes nothing a run, a duplicate or the check does: with a
 stream that raises on every line, a good run still ends with `RunOk` = 1 and a failed run still
 settles, writes its failed record and publishes `RunOk` = 0.
@@ -1980,6 +1987,11 @@ PYTHONDONTWRITEBYTECODE=1 python -m pytest -p no:cacheprovider -q tests/test_ws7
     first stored record, the clock, the building of the failed record, its write, each publish),
     and every later step still tried, the ledger first. A log stream that raises on every line,
     under a good run, a duplicate and a check.
+  - The same by exception type: the log sink, the settle, the first store call, the clock, the
+    building of the failed record, its write and each publish call, each raising an
+    `Exception`, `SystemExit(0)`, `SystemExit(1)` and `KeyboardInterrupt` inside the process.
+    Every later step still reaches its server, the ledger is settled first, and the job
+    returns 1.
   - At most once: a breach run whose message, or whose success record, fails after the counters
     were accepted leaves exactly one sample of every counter at the fake, and the failure path
     makes one request. The control: counters that were not acknowledged are sent by the failure

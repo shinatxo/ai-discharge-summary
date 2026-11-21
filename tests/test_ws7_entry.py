@@ -1429,6 +1429,148 @@ def test_every_step_of_the_failure_path_is_tried_whatever_became_of_the_one_befo
     assert no_success(world, target) and world.sns.messages == []
 
 
+RAISED = {"Exception": lambda: RuntimeError(SENTINEL), "SystemExit(0)": lambda: SystemExit(0),
+          "SystemExit(1)": lambda: SystemExit(1), "KeyboardInterrupt": KeyboardInterrupt}
+RAISING_STEPS = ["log", "settle", "store", "clock", "build", "write", "markers", "counters"]
+
+
+def _raise_inside(world, monkeypatch, target: str, step: str, make) -> None:
+    """Make one thing the failure path uses raise `make()`, in this process: the log
+    sink, the settle, the first store call, the clock, the building of the failed
+    record, its write, or one of the two publish calls. Everything else is real."""
+    run = RUN_ID[target]
+    if step == "log":
+        def sink(_line):
+            raise make()
+        world.out = sink
+    elif step == "settle":
+        def settle(*_args, **_kwargs):
+            raise make()
+        monkeypatch.setattr(wl.Ledger, "settle", settle)
+    elif step in ("store", "write"):
+        real = store.Store.create
+        broken = PREFIX[target] if step == "store" else store.failed_key(run)
+
+        def create(self, key, *args, **kwargs):
+            if key.startswith(broken):
+                raise make()
+            return real(self, key, *args, **kwargs)
+        monkeypatch.setattr(store.Store, "create", create)
+    elif step == "clock":
+        def stop_the_clock():
+            world.clock.fail = make()
+        world.s3.after_put(LEDGER_KEY, lambda: None)            # the booking
+        world.s3.after_put(LEDGER_KEY, stop_the_clock)          # the settle has landed
+    elif step == "build":
+        def build(*_args, **_kwargs):
+            raise make()
+        monkeypatch.setattr(entry._Scheduled, "_failed_record", build)
+    else:
+        real_put = publish.Publisher.put
+        name = "RunRefused" if step == "markers" else "SpendGuardTrips"
+
+        def put(self, values):
+            if any(item[0] == name for item in values):
+                raise make()
+            return real_put(self, values)
+        monkeypatch.setattr(publish.Publisher, "put", put)
+
+
+@pytest.mark.parametrize("raised", list(RAISED))
+@pytest.mark.parametrize("step", RAISING_STEPS)
+def test_nothing_raised_inside_the_failure_path_ends_it_early_whatever_its_type(
+        ready, world, monkeypatch, step, raised):
+    """THE CLASS (Codex P2, PR #9, re-check): `SystemExit` and `KeyboardInterrupt`
+    derive from `BaseException`, not `Exception`. Nothing raised by a log sink, the
+    clock, a store call or a publish call may end the failure path early, whatever
+    its type.
+
+    The run fails at the pre-flight (a throttled call), so all five steps are still
+    to do. Each step in turn raises an `Exception`, `SystemExit(0)`, `SystemExit(1)`
+    and `KeyboardInterrupt`. Every LATER step still reaches its server, the ledger
+    is settled first, and the job returns 1: nothing gets out of it."""
+    target = "v1"
+    run = RUN_ID[target]
+    stub = W.default_stub(target)
+    W.fail_nth(stub, FIRST_STEP[target], 1, THROTTLE)
+    ready(target, stub=stub)
+    _raise_inside(world, monkeypatch, target, step, RAISED[raised])
+
+    assert world.run(target) == 1                   # `World.call` fails the test if anything escapes
+    world.clock.fail = None
+    # ---- the steps that reached a server: all but the one that raised in this process.
+    # (When the settle raises, the last ledger write the servers saw is the booking,
+    # which still comes before every other step; the entry's state is checked below.)
+    not_sent = {"log": None, "settle": None, "clock": "failed_record", "build": "failed_record",
+                "write": "failed_record"}.get(step, step)
+    assert _failure_steps(world, target) == [s for s in ALL_STEPS if s != not_sent]
+    # ---- the ledger first: settled before anything else of the failure path
+    booked = world.entry_of(run)
+    if step == "settle":
+        assert booked["state"] == "open"            # the settle itself raised; the rest still ran
+    else:
+        assert (booked["state"], booked["basis"]) == ("settled", "metered")
+    # ---- what landed is everything but the one thing that raised
+    assert (PREFIX[target] + "guard_report.json" in world.s3.keys()) == (step != "store")
+    has_record = store.failed_key(run) in world.s3.keys()
+    assert has_record == (step not in ("clock", "build", "write"))
+    out = world.published()
+    assert ("RunOk" in out, "RunRefused" in out) == ((step != "markers"),) * 2
+    assert ("CallsNotResponse" in out) == (step != "counters")
+    assert out.get("RunOk", [0]) == [0] and all(len(values) == 1 for values in out.values())
+    if has_record:
+        record = world.failed(run)
+        assert record["code"] == entry.CALL_FAILED
+        assert record["evidence"] == ("stored" if step != "store" else entry.CRASHED)
+        assert record["also"] == ([] if step != "settle" else [entry.CRASHED])
+    assert not any(SENTINEL in line or "Traceback" in line for line in world.lines)
+    assert no_success(world, target) and world.sns.messages == []
+
+
+@pytest.mark.parametrize("raised", list(RAISED))
+def test_a_log_sink_cannot_end_anything_whatever_it_raises(ready, world, raised):
+    """`best_effort` catches `BaseException`. With a sink that raises on every line: a
+    good run ends with RunOk = 1, a second delivery is a duplicate, and the check
+    still sends its report. The positive control: the sink itself does raise."""
+    target = "v1"
+    make = RAISED[raised]
+
+    def sink(_line):
+        raise make()
+    with pytest.raises(BaseException) as control:
+        sink("a line")
+    assert type(control.value) is type(make())
+    assert entry.best_effort(sink)("a line") is None
+
+    ready(target)
+    world.out = sink
+    assert world.run(target) == 0
+    assert world.metric("RunOk") == [1] and not no_success(world, target)
+    assert world.run(target) == 0
+    assert world.metric("Duplicate") == [1]
+    world.s3.remove(store.success_key(RUN_ID[target]))
+    world.clock.start = THURSDAY
+    assert world.check(target) == 0
+    assert check_lines(world)[1] == f"run {RUN_ID[target]} started and did not finish: no success record"
+
+
+@pytest.mark.parametrize("raised", list(RAISED))
+def test_a_check_that_failed_still_exits_1_whatever_its_own_failure_report_raises(
+        thursday, monkeypatch, raised):
+    """The check's last act, when it has itself failed, is to say so on the topic.
+    Whatever that call raises, the check returns 1."""
+    world, target = thursday, "v1"
+    world.s3.script_list(500)
+
+    def alert(*_args, **_kwargs):
+        raise RAISED[raised]()
+    monkeypatch.setattr(publish.Publisher, "alert", alert)
+    assert world.check(target) == 1
+    assert f"ws7 entry mode=check target={target} stage=crashed error=" \
+           f"{type(RAISED[raised]()).__name__} during=alert" in world.lines
+    assert not any(SENTINEL in line for line in world.lines)
+
+
 def test_a_log_stream_that_fails_changes_nothing_a_run_a_duplicate_or_a_check_does(
         ready, world, capsys):
     """Logging is best effort everywhere. With a log stream that raises on every

@@ -45,7 +45,9 @@ the FIRST failure's code and settles from the guard's report.
 
 A FAILURE. Every handled failure is a `Stop` with a fixed code. The failure path
 (`_fail`) is five steps, in this order, EACH TRIED ON ITS OWN: whatever becomes of
-one, the next is still tried (Codex P2, PR #9).
+one, the next is still tried (Codex P2, PR #9). That holds for anything a step
+raises, of any type: the handlers are for `BaseException`, because `SystemExit`
+and `KeyboardInterrupt` do not derive from `Exception`.
 
  1. The ledger is settled (from the guard's report; `mark_crashed()` only when
     there is no guard).
@@ -105,7 +107,7 @@ anything to report.
 THE LOG. One fixed line per stage: labels, IDs and counts. The runners' and the
 scorers' own output is discarded, and no traceback is printed: either could quote a
 record. LOGGING IS BEST EFFORT: a log stream that fails never changes what a run
-does.
+does, whatever it raises.
 
 THE COMMAND LINE. An argument the parser refuses is answered with one fixed usage
 line on stderr and exit code 2. argparse's own messages quote the argument they
@@ -212,11 +214,15 @@ def _say(line: str) -> None:
 def best_effort(out):
     """`out`, made unable to raise. LOGGING IS BEST EFFORT EVERYWHERE: a closed pipe
     or a full disk under the log must never stop a settle, a failed record or a
-    metric that would have followed the line."""
+    metric that would have followed the line.
+
+    It catches `BaseException`, not `Exception`: `SystemExit` and `KeyboardInterrupt`
+    do not derive from `Exception`, and a sink that raised one of them would
+    otherwise end the failure path early (Codex P2, PR #9)."""
     def emit(line: str) -> None:
         try:
             out(line)
-        except Exception:               # noqa: BLE001 - whatever the stream did, the run goes on
+        except BaseException:           # noqa: BLE001 - whatever the stream raised, the run goes on
             pass
     return emit
 
@@ -969,7 +975,12 @@ class _Scheduled:
     def _fail(self, stop: Stop) -> int:
         """A failed run. THE FAILURE PATH NEVER FAILS OPEN: its five steps are tried
         in this order, each on its own. A step that stops or raises is logged, and
-        the next one is still tried."""
+        the next one is still tried.
+
+        NOTHING A STEP RAISES ENDS THE PATH EARLY, WHATEVER ITS TYPE. The handler is
+        for `BaseException`: `SystemExit` and `KeyboardInterrupt` do not derive from
+        `Exception`, and a log sink, the clock, a store call or a publish call that
+        raised one of them would otherwise skip every step after it."""
         self.out(stop.line())
         also: list = []
         for name, step in (("settle", self._fail_ledger), ("store", self._fail_evidence),
@@ -979,7 +990,7 @@ class _Scheduled:
                 step(stop, also)
             except Stop as failed:
                 self.out(failed.line())
-            except (Exception, SystemExit) as exc:  # noqa: BLE001 - never stops the next
+            except BaseException as exc:            # noqa: BLE001 - never stops the next
                 self.say("crashed", error=type(exc).__name__, during=name)
         return 1
 
@@ -996,7 +1007,7 @@ class _Scheduled:
         except Stop as failed:
             also.append(failed.code)
             raise
-        except (Exception, SystemExit):
+        except BaseException:
             also.append(CRASHED)
             raise
 
@@ -1006,7 +1017,7 @@ class _Scheduled:
             self._store(strict=False)
         except Stop:
             raise
-        except (Exception, SystemExit):
+        except BaseException:
             self.stored = CRASHED
             raise
 
@@ -1218,7 +1229,7 @@ def check(target: str, scheduled_time: str, deps: Deps) -> int:
             publisher.alert(subject, f"{subject}\ncode {code}; see the task log")
         except Stop as failed:
             out(failed.line())
-        except (Exception, SystemExit) as exc:      # noqa: BLE001
+        except BaseException as exc:                # noqa: BLE001 - whatever its type
             say("crashed", error=type(exc).__name__, during="alert")
     return 1
 
@@ -1269,7 +1280,7 @@ def main(argv: list | None = None, deps: Deps | None = None) -> int:
     except (Exception, SystemExit):     # noqa: BLE001 - a usage error: nothing is built or sent
         try:
             print(USAGE, file=sys.stderr, flush=True)
-        except Exception:               # noqa: BLE001 - a closed stderr changes nothing
+        except BaseException:           # noqa: BLE001 - a closed stderr changes nothing
             pass
         return 2
     deps = deps or Deps()

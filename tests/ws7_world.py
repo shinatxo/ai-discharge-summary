@@ -85,7 +85,7 @@ class Clock:
 
     def __init__(self, start: datetime = START):
         self.start, self.offset = start, 0.0
-        self.fail: Exception | None = None
+        self.fail: BaseException | None = None
 
     def wall(self) -> datetime:
         if self.fail is not None:
@@ -342,7 +342,12 @@ class World:
 
     def call(self, argv: list) -> int:
         started = time.monotonic()
-        code = entry.main(argv, self.deps())
+        try:
+            code = entry.main(argv, self.deps())
+        except BaseException as exc:    # noqa: BLE001 - a SystemExit or KeyboardInterrupt too
+            # The entrypoint returns an exit code; it never raises. Reported as a failed
+            # test, so that an interrupt it let out cannot stop the whole test session.
+            raise AssertionError(f"the entrypoint raised {type(exc).__name__}") from None
         assert time.monotonic() - started < RUN_LIMIT_S, "the entrypoint waited on something"
         return code
 

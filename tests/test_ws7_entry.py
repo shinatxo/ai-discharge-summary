@@ -886,6 +886,33 @@ def test_the_tripwire_keeps_its_first_reason_and_never_clears_it():
     assert wire.look() is True and wire.reason == entry.REPORT_UNREADABLE
 
 
+@pytest.mark.parametrize("raised, reason", [(KeyboardInterrupt, "ws7_interrupted"),
+                                            (RuntimeError, None), (SystemExit, None)])
+def test_an_interrupt_that_passes_through_a_call_is_kept_whatever_the_runner_does_with_it(
+        raised, reason):
+    """The wrapper every runner calls through notes an interrupt as it passes, so a
+    runner that caught it and went on could not make the run forget. An ordinary
+    exception from a call, or a `SystemExit`, is the runner's to handle: no reason."""
+    class Guard:
+        def report(self):
+            return {"calls": [], "batches": {}, "unmetered": False, "unmetered_calls": 0,
+                    "total_usd_nanos": 0}
+
+    class Inner:
+        def converse(self, **_request):
+            raise raised()
+    wire = entry._Tripwire()
+    wire.watch(Guard())
+    client = entry._StoppingClient(Inner(), wire)
+    with pytest.raises(raised):
+        client.converse(modelId="invented")
+    assert wire.reason == reason
+    if reason:                                      # and every later call is refused here
+        with pytest.raises(wc.Ws7Refused):
+            client.converse(modelId="invented")
+        assert wire.refused == 1
+
+
 def _interrupt_on_the_line(world, stage: str, make=KeyboardInterrupt) -> list:
     """A log sink that raises `make()` once, while the line of `stage` is being written,
     and otherwise keeps the lines."""
@@ -1017,6 +1044,21 @@ def test_an_interrupt_caught_before_the_claim_stops_the_run_before_it_claims(rea
     assert len(fired) == 1 and stopped_with(world, entry.INTERRUPTED)
     assert world.published() == {"RunRefused": [1]}
     assert not any(method == "PUT" for method, _key in world.s3.requests)
+
+
+def test_an_interrupt_caught_between_the_claim_and_admission_books_nothing(ready, world):
+    """Caught by the log while the claim's line is written: the run holds its claim, and
+    stops before admission. Nothing is reserved, so there is no ledger at all."""
+    target = "v1"
+    ready(target)
+    fired = _interrupt_on_the_line(world, "claim")
+    assert world.run(target) == 1
+    assert len(fired) == 1
+    record = world.failed(RUN_ID[target])
+    assert (record["code"], record["ids"], record["ledger"]) == (
+        entry.INTERRUPTED, ["admission"], "not_admitted")
+    assert LEDGER_KEY not in world.s3.keys() and world.bedrock_requests() == 0
+    assert world.published() == {"RunRefused": [1], "RunOk": [0]}
 
 
 # =================================================================== THE DEADLINE ==
@@ -2073,6 +2115,9 @@ def test_nothing_raised_inside_the_failure_path_ends_it_early_whatever_its_type(
         # error is taken as the store failing: that step's own code.)
         crashed = entry.EVIDENCE_UNAVAILABLE if raised == "a StoreError subclass" else entry.CRASHED
         assert record["evidence"] == ("stored" if step != "store" else crashed)
+        # a stop that is not the job's own, raised by a step, is a crash label: its own
+        # code is never logged as a stop
+        assert not stopped_with(world, entry.NO_BASELINE) and not stopped_with(world, store.PUT_REFUSED)
         settle_code = entry.INTERRUPTED if raised == "KeyboardInterrupt" else entry.CRASHED
         assert record["also"] == ([] if step != "settle" else [settle_code])
         assert record["ledger"] == ("crashed" if step == "settle" else "settled")
@@ -2587,6 +2632,9 @@ def test_a_stop_that_is_not_the_jobs_own_is_a_crash_wherever_the_run_catches_it(
     assert "Duplicate" not in out and out.get("NoBaseline", [0]) != [1]
     assert not stopped_with(world, entry.NO_BASELINE) and not stopped_with(world, wl.DUPLICATE)
     assert any(line.startswith(f"ws7 stop code={code} ids={label}") for line in world.lines)
+    if (code, label) == CRASH:                      # taken where the run caught it, and logged so
+        where = "claim" if place == "the claim" and stop == "a Duplicate subclass" else "run"
+        assert f"ws7 entry mode=scheduled target=v1 stage=crashed during={where}" in world.lines
     if not claimed:
         assert out == {"RunRefused": [1]} and not any(m == "PUT" and k.startswith("ws7/failed/")
                                                       for m, k in world.s3.requests)
@@ -2599,6 +2647,15 @@ def test_a_stop_that_is_not_the_jobs_own_is_a_crash_wherever_the_run_catches_it(
         steps = _failure_steps(world, target)
         assert steps[:3] == ["settle", "store", "failed_record"] and "markers" in steps
         assert world.entry_of(RUN_ID[target])["state"] == "settled"
+
+
+@pytest.mark.parametrize("stop", list(NOT_OWN))
+def test_the_failure_path_itself_takes_nothing_it_is_handed_on_trust(world, stop):
+    """The second layer: `_fail` is handed a stop that is not the job's own, directly.
+    It renders a crash by its fixed label, not the stop it was given, and returns 1."""
+    run = entry._Scheduled("v1", WHEN, world.deps())
+    assert run._fail(NOT_OWN[stop]()) == 1
+    assert world.lines == [f"ws7 stop code={entry.CRASHED} ids={entry.NOT_A_JOB_STOP}"]
 
 
 @pytest.mark.parametrize("stop", list(NOT_OWN))

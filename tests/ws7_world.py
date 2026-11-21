@@ -103,6 +103,41 @@ SentinelNamed = type(NAME_SENTINEL, (Exception,), {"__doc__": "An exception clas
                                                               "is the sentinel."})
 
 
+class LineRaises(store.Stop):
+    """A `Stop` subclass whose own `line()` raises."""
+
+    def line(self):
+        raise RuntimeError(NAME_SENTINEL)
+
+
+class LineCarries(store.Stop):
+    """A `Stop` subclass whose own `line()` returns text: here, the sentinel."""
+
+    def line(self):
+        return f"ws7 stop code={self.code} {NAME_SENTINEL}"
+
+
+class LineExits(store.Stop):
+    """A `Stop` subclass whose own `line()` raises `SystemExit(0)`."""
+
+    def line(self):
+        raise SystemExit(0)
+
+
+class StoreErrorCarries(store.StoreError):
+    """A subclass of the store's own error, with a `line()` of its own."""
+
+    def line(self):
+        return f"ws7 stop code={NAME_SENTINEL}"
+
+
+class DuplicateCarries(wl.Duplicate):
+    """A subclass of the claim's own `Duplicate`, with a `line()` of its own."""
+
+    def line(self):
+        return f"ws7 stop code={NAME_SENTINEL}"
+
+
 class Clock:
     """One clock for the wall and the monotonic time. It moves only when told to.
     A test may break the wall clock: once `fail` is set, reading it raises that."""

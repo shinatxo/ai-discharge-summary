@@ -234,6 +234,56 @@ CODES = (CONFIG_INVALID, CORPUS_UNREADABLE, PRECHECK_FAILED, SCENARIOS_NOT_DISTI
          RUNOK_PUBLISH_FAILED, CHECK_FAILED)
 
 _CAPTURED = "ws7_precheck_captured"
+
+# THE STOPS THE JOB RENDERS AND ACTS ON (Codex, PR #9, third re-check). A `Stop` is an
+# ordinary Python class: a subclass can give itself a `line()` that raises, or that
+# returns any text. So what the job has caught is never rendered, and no method of it is
+# ever called. `own_stop` turns it into a NEW `Stop` of the exact class, or refuses it.
+#
+# The job's own three stop classes, each BY EXACT TYPE. A subclass of any of them is not
+# one of them: `ws7_store.Stop`, `ws7_store.StoreError` (what the store raises) and
+# `ws7_ledger.Duplicate` (what the claim raises).
+OWN_STOP_TYPES = (Stop, store.StoreError, wl.Duplicate)
+# Every fixed code a stop of the job's can carry: each module's own list, and the one
+# code of ws7_client's that is raised as a stop here and is not in its list of refusals.
+ALL_CODES = frozenset(CODES + publish.CODES + store.CODES + wl.CODES + wm.CODES + ws.CODES
+                      + wc.CODES + (wc.ENDPOINT_REFUSED,))
+IDS_MAX = 256                 # IDs in one stop: far more than any stop names
+NOT_A_JOB_STOP = "not_a_job_stop"
+
+
+def own_stop(caught: object) -> Stop | None:
+    """`caught`, as a stop the job may render and act on, or None.
+
+    It is one only if it is EXACTLY one of the job's own stop classes (not a subclass),
+    its code is one of the job's fixed codes, every ID matches the ID pattern, and
+    every count is a bounded whole number under a fixed label. The fields are read
+    from the instance's own dictionary: no property and no method of the object is
+    used. What is returned is a new `Stop`, built here from those checked fields."""
+    if type(caught) not in OWN_STOP_TYPES:
+        return None
+    fields = vars(caught)
+    code, ids, counts = fields.get("code"), fields.get("ids"), fields.get("counts")
+    if type(code) is not str or code not in ALL_CODES:
+        return None
+    if type(ids) is not tuple or len(ids) > IDS_MAX \
+            or not all(type(i) is str and store.ID_RE.fullmatch(i) for i in ids):
+        return None
+    if type(counts) is not dict or not all(
+            type(k) is str and store._LABEL_RE.fullmatch(k)
+            and type(v) is int and -COUNT_MAX <= v <= COUNT_MAX for k, v in counts.items()):
+        return None
+    return Stop(code, ids=ids, counts=counts)
+
+
+def stop_line(stop: Stop) -> str:
+    """One log line for a stop that `own_stop` made, BUILT HERE from its checked fields:
+    the code, the IDs and the counts. The stop's own method is not used."""
+    parts = [f"ws7 stop code={stop.code}"]
+    if stop.ids:
+        parts.append("ids=" + ",".join(stop.ids))
+    parts.extend(f"{name}={value}" for name, value in sorted(stop.counts.items()))
+    return " ".join(parts)
 IDS_SHOWN = 8                 # IDs named in one stop; the rest are counted
 
 
@@ -681,6 +731,21 @@ class _Scheduled:
             return " ".join(parts)
         self.out(line)
 
+    def stopped(self, stop: Stop) -> None:
+        """Log a stop `own_stop` made. The line is built here, inside the best-effort
+        boundary, from the stop's checked fields."""
+        self.out(lambda: stop_line(stop))
+
+    def taken(self, caught: object, where: str) -> Stop:
+        """A stop the job has caught, as one it may act on. Anything that is not the
+        job's own stop (`own_stop`) is a crash, logged by the fixed label of where it
+        was caught, and it becomes `ws7_crashed`."""
+        stop = own_stop(caught)
+        if stop is None:
+            self.say("crashed", during=where)
+            stop = Stop(CRASHED, ids=(NOT_A_JOB_STOP,))
+        return stop
+
     # ------------------------------------------------------------- the run
 
     def run(self) -> int:
@@ -691,7 +756,10 @@ class _Scheduled:
             # end a run that holds its claim with exit code 0.
             try:
                 self._claim()
-            except wl.Duplicate as stop:
+            except wl.Duplicate as caught:
+                stop = own_stop(caught)             # the claim's own Duplicate, exactly
+                if stop is None:
+                    return self._fail(self.taken(caught, "claim"))
                 return self._duplicate(stop)
             self._admit()
             self._generate()
@@ -701,8 +769,8 @@ class _Scheduled:
         except wl.Duplicate:
             self.say("crashed", during="run")
             return self._fail(Stop(CRASHED, ids=("duplicate_not_from_the_claim",)))
-        except Stop as stop:
-            return self._fail(stop)
+        except Stop as caught:
+            return self._fail(self.taken(caught, "run"))
         except BaseException:                       # noqa: BLE001 - the outermost handler
             # Whatever it is: a SystemExit and a KeyboardInterrupt are not Exceptions, and a
             # run they ended must still settle and write its failed record.
@@ -915,14 +983,21 @@ class _Scheduled:
                     report = None                   # the ledger refuses it: ws7_report_invalid
                 try:
                     entry = self.ledger.settle(self.admission, report)
-                except Stop as stop:
-                    if stop.code not in wl.REPORT_CODES:
+                except Stop as caught:
+                    stop = own_stop(caught)
+                    if stop is None or stop.code not in wl.REPORT_CODES:
                         raise
                     refused = stop
                     entry = self.ledger.mark_crashed(self.admission)
-        except Stop as stop:
-            self.settled, self.settle_stop = stop.code, stop
-            raise
+        except Stop as caught:
+            stop = own_stop(caught)
+            if stop is None:                        # not the ledger's own stop: the settle crashed
+                self.say("crashed", during="settle")
+                stop = Stop(CRASHED, ids=("settle",))
+            else:
+                self.settled = stop.code
+            self.settle_stop = stop
+            raise stop from None
         self.settled = entry["state"] if entry["kind"] is None else entry["kind"]
         self.say("settled", state=self.settled, counted_usd_micros=entry["counted_usd_micros"])
         if refused is not None:
@@ -1027,9 +1102,10 @@ class _Scheduled:
                        counts={"errors": len(errors) if type(errors) is list else 0})
         try:
             publish.check_result(result, exit_code=exit_code)
-        except Stop as stop:
-            if stop.code == publish.PART_C_RULED:
-                raise
+        except Stop as caught:
+            stop = own_stop(caught)
+            if stop is not None and stop.code == publish.PART_C_RULED:
+                raise stop from None
             raise Stop(COMPARE_ERROR, ids=("result_disagrees",),
                        counts={"exit_code": exit_code}) from None
         if result["run_id"] != self.labels[MAIN] \
@@ -1042,10 +1118,13 @@ class _Scheduled:
     def _put(self, key: str, body: bytes, kind: str) -> None:
         try:
             outcome = self.st.create(key, body, attempts=self.cfg.ledger_cas_attempts, kind=kind)
-        except store.StoreError as exc:
-            code = EVIDENCE_UNSTORABLE if exc.code == store.OBJECT_TOO_LARGE \
+        except store.StoreError as caught:
+            stop = own_stop(caught)                 # the store's own error, exactly, or not at all
+            if stop is None:
+                raise Stop(EVIDENCE_UNAVAILABLE, ids=(NOT_A_JOB_STOP,)) from None
+            code = EVIDENCE_UNSTORABLE if stop.code == store.OBJECT_TOO_LARGE \
                 else EVIDENCE_UNAVAILABLE
-            raise Stop(code, ids=(exc.code,)) from None
+            raise Stop(code, ids=(stop.code,)) from None
         if outcome != store.CREATED:
             raise Stop(EVIDENCE_UNAVAILABLE, ids=("key_taken",))
 
@@ -1086,9 +1165,13 @@ class _Scheduled:
                     reservation=self.reservation, baseline_id=self.baseline_id,
                     month_assurance_waived=self.waived, **self.key_parts)
                 wm.write_manifest(self.st, manifest, attempts=self.cfg.ledger_cas_attempts)
-        except Stop as stop:
+        except Stop as caught:
+            stop = own_stop(caught)
+            if stop is None:
+                self.stored = CRASHED
+                raise Stop(CRASHED, ids=("store",)) from None
             self.stored = stop.code
-            raise
+            raise stop from None
         self.stored = "stored"
         self.say("stored", objects=len(uploads) + (self.key_parts is not None),
                  files_refused=self.files_refused)
@@ -1170,8 +1253,10 @@ class _Scheduled:
         try:
             outcome = self.st.create(store.success_key(run), compare.render(record),
                                      attempts=self.cfg.ledger_cas_attempts)
-        except store.StoreError as exc:
-            raise Stop(SUCCESS_RECORD_UNAVAILABLE, ids=(exc.code,)) from None
+        except store.StoreError as caught:
+            stop = own_stop(caught)
+            raise Stop(SUCCESS_RECORD_UNAVAILABLE,
+                       ids=(stop.code if stop is not None else NOT_A_JOB_STOP,)) from None
         if outcome != store.CREATED:
             raise Stop(SUCCESS_RECORD_UNAVAILABLE, ids=("key_taken",))
         self.say("success", status=result["status"], breaches=breaches)
@@ -1180,18 +1265,24 @@ class _Scheduled:
         # record, so the Thursday check reports a failed run, and RunOk = 0 is tried.
         try:
             self.publisher.put([(publish.RUN_OK, 1)])
-        except Stop as stop:
-            raise Stop(RUNOK_PUBLISH_FAILED, ids=(stop.code,)) from None
+        except Stop as caught:
+            stop = own_stop(caught)
+            raise Stop(RUNOK_PUBLISH_FAILED,
+                       ids=(stop.code if stop is not None else NOT_A_JOB_STOP,)) from None
         return 0
 
     def _duplicate(self, stop: Stop) -> int:
         """A duplicate delivery: it reserved and spent nothing. It counts one
         duplicate and publishes nothing else, and never `RunOk`."""
-        self.out(stop.line)
+        self.stopped(stop)
         try:
             self.publisher.put([(publish.DUPLICATE, 1)])
-        except Stop as failed:
-            self.say("stop", code=failed.code)
+        except Stop as caught:
+            failed = own_stop(caught)
+            if failed is None:
+                self.say("crashed", during="duplicate")
+            else:
+                self.say("stop", code=failed.code)
             return 1
         except BaseException:                       # noqa: BLE001 - this is outside run()'s try
             self.say("crashed", during="duplicate")
@@ -1206,16 +1297,26 @@ class _Scheduled:
         NOTHING A STEP RAISES ENDS THE PATH EARLY, WHATEVER ITS TYPE. The handler is
         for `BaseException`: `SystemExit` and `KeyboardInterrupt` do not derive from
         `Exception`, and a log sink, the clock, a store call or a publish call that
-        raised one of them would otherwise skip every step after it."""
-        self.out(stop.line)
+        raised one of them would otherwise skip every step after it.
+
+        ONLY THE JOB'S OWN STOPS ARE RENDERED OR ACTED ON (`own_stop`). The stop the
+        run failed by, and every stop a step raises, is taken as a new, exact `Stop`
+        with checked fields, or it is a crash named by where it was caught. Its line
+        is built here; no method of a caught object is called."""
+        stop = own_stop(stop) or Stop(CRASHED, ids=(NOT_A_JOB_STOP,))
+        self.stopped(stop)
         also: list = []
         for name, step in (("settle", self._fail_ledger), ("store", self._fail_evidence),
                            ("failed_record", self._fail_record),
                            ("markers", self._fail_markers), ("counters", self._fail_counters)):
             try:
                 step(stop, also)
-            except Stop as failed:
-                self.out(failed.line)
+            except Stop as caught:
+                failed = own_stop(caught)
+                if failed is None:
+                    self.say("crashed", during=name)
+                else:
+                    self.stopped(failed)
             except BaseException:                   # noqa: BLE001 - never stops the next
                 self.say("crashed", during=name)
         return 1
@@ -1227,11 +1328,12 @@ class _Scheduled:
         if earlier is not None and earlier is not stop:
             # The settle was tried when the last runner returned, and it was refused.
             also.append(earlier.code)
-            self.out(earlier.line)
+            self.stopped(earlier)
         try:
             self._settle()
-        except Stop as failed:
-            also.append(failed.code)
+        except Stop as caught:
+            failed = own_stop(caught)
+            also.append(failed.code if failed is not None else CRASHED)
             raise
         except BaseException:
             also.append(CRASHED)
@@ -1555,9 +1657,14 @@ def check(target: str, scheduled_time: str, deps: Deps) -> int:
             publisher.alert(subject, text)
             say("alert_sent")
         return 0
-    except Stop as stop:
-        out(stop.line)
-        code = stop.code
+    except Stop as caught:
+        stop = own_stop(caught)                     # the job's own stop, or a crash
+        if stop is None:
+            say("crashed", during="check")
+            code = CRASHED
+        else:
+            out(lambda: stop_line(stop))
+            code = stop.code
     except BaseException:                           # noqa: BLE001 - whatever its type
         say("crashed", during="check")              # no class name: a fixed label says where
         code = CRASHED
@@ -1566,8 +1673,12 @@ def check(target: str, scheduled_time: str, deps: Deps) -> int:
         try:
             subject = f"WS7 check - target {target} - the check failed"
             publisher.alert(subject, f"{subject}\ncode {code}; see the task log")
-        except Stop as failed:
-            out(failed.line)
+        except Stop as caught:
+            failed = own_stop(caught)
+            if failed is None:
+                say("crashed", during="alert")
+            else:
+                out(lambda: stop_line(failed))
         except BaseException:                       # noqa: BLE001 - whatever its type
             say("crashed", during="alert")
     return 1

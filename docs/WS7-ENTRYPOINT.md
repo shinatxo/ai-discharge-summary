@@ -1866,6 +1866,28 @@ a string that matched an ID pattern. The job never formats an object it did not 
 - **Every line is built inside the best-effort boundary.** `best_effort` is given the function
   that builds the line, and calls it inside its `try`: a line that cannot be built costs that
   one line.
+- **Only the job's own stops are rendered or acted on** (Codex, PR #9, third re-check). A `Stop`
+  is an ordinary Python class: a subclass can give itself a `line()` that raises, or that returns
+  any text. So the job never renders what it caught and never calls a method on it. Every stop
+  it catches goes through `own_stop()`, which returns a new, exact `Stop` or nothing:
+
+  | Rule | |
+  |---|---|
+  | Its class | Exactly one of the job's own three: `ws7_store.Stop`, `ws7_store.StoreError` (what the store raises) or `ws7_ledger.Duplicate` (what the claim raises). **A subclass of any of them is not one** |
+  | Its code | One of the job's fixed codes: every module's own list (110 codes; a test holds the list to the modules) |
+  | Its IDs | A tuple of at most 256 strings, each matching the ID pattern |
+  | Its counts | Fixed labels to whole numbers within ±(2^63 - 1) |
+
+  - The fields are read from the object's own dictionary, so no property of it is used either.
+  - The line is built by `stop_line()` in `evals/ws7_entry.py`, from those checked fields.
+  - **Anything else is a crash, named by the fixed label of where it was caught**: the run fails
+    with `ws7_crashed` and the label `not_a_job_stop` (or that place's own fixed code, where it
+    has one: the comparator's result, the store). Its code is never acted on, so a stop that
+    calls itself "no baseline" publishes no `NoBaseline`, and one that calls itself a duplicate
+    never ends a run with exit code 0.
+  - The same rule is applied wherever a stop is caught: the run, the claim, the settle, the
+    store, the success record, `RunOk` = 1, each step of the failure path, a duplicate, and the
+    Thursday check, whose failure report puts the code in an SNS message.
 
 **Logging is best effort everywhere and never raises** (Codex P2, PR #9). `best_effort` catches
 `BaseException`, so that holds whatever the stream raises. A log stream that
@@ -2260,6 +2282,11 @@ PYTHONDONTWRITEBYTECODE=1 python -m pytest -p no:cacheprovider -q tests/test_ws7
     exception whose class-name lookup raises, and one whose class is named with a sentinel,
     raised at every place the seven other endings are. Every test holds that sentinel out of
     every log line, CloudWatch and SNS request, stored object, stdout and stderr.
+  - Stops that are not the job's own: three `Stop` subclasses with a `line()` of their own (one
+    raises, one returns a sentinel, one raises `SystemExit(0)`), a `StoreError` subclass, a
+    `Duplicate` subclass, and an exact `Stop` with a code that is not the job's. Each from eight
+    places in a run, three at its end, the failure path's eight steps and two places in the
+    check. Each is a crash by a fixed label, every later step runs, and the sentinel is nowhere.
   - Every other command line, `--help` included: exit code 2, the one fixed usage line, nothing
     built and nothing sent. An invented sentinel in the rejected argument, for each kind of
     argument error, is in neither stream; the positive control gives the same command line to

@@ -1709,7 +1709,12 @@ def test_every_step_of_the_failure_path_is_tried_whatever_became_of_the_one_befo
 
 RAISED = {"Exception": lambda: RuntimeError(SENTINEL), "SystemExit(0)": lambda: SystemExit(0),
           "SystemExit(1)": lambda: SystemExit(1), "KeyboardInterrupt": KeyboardInterrupt,
-          **UNNAMEABLE}
+          **UNNAMEABLE,
+          # stops that are not the job's own: each has a line() of its own
+          "a Stop whose line() raises": lambda: W.LineRaises(entry.NO_BASELINE),
+          "a Stop whose line() carries a sentinel": lambda: W.LineCarries(entry.NO_BASELINE),
+          "a Stop whose line() raises SystemExit(0)": lambda: W.LineExits(entry.NO_BASELINE),
+          "a StoreError subclass": lambda: W.StoreErrorCarries(store.PUT_REFUSED)}
 RAISING_STEPS = ["log", "settle", "store", "clock", "build", "write", "markers", "counters"]
 
 
@@ -1800,7 +1805,10 @@ def test_nothing_raised_inside_the_failure_path_ends_it_early_whatever_its_type(
     if has_record:
         record = world.failed(run)
         assert record["code"] == entry.CALL_FAILED
-        assert record["evidence"] == ("stored" if step != "store" else entry.CRASHED)
+        # a store call that raised: the store step crashed. (A subclass of the store's own
+        # error is taken as the store failing: that step's own code.)
+        crashed = entry.EVIDENCE_UNAVAILABLE if raised == "a StoreError subclass" else entry.CRASHED
+        assert record["evidence"] == ("stored" if step != "store" else crashed)
         assert record["also"] == ([] if step != "settle" else [entry.CRASHED])
     assert not any(SENTINEL in line or "Traceback" in line for line in world.lines)
     assert no_success(world, target) and world.sns.messages == []
@@ -2129,9 +2137,7 @@ def test_a_line_that_cannot_be_built_costs_that_line_and_nothing_else():
 
 def test_a_stop_that_cannot_be_printed_does_not_end_the_failure_path(ready, world, monkeypatch):
     """The same through the entrypoint: the run's own stop carries a count that cannot be
-    printed (the job's own code is made to raise it). Its line is lost; the settle, the
-    store, the markers and the counters still run, and the failed record's step is the
-    one that stops, because the record cannot be written either."""
+    printed (the job's own code is made to raise it)."""
     target = "v1"
     stub = W.default_stub(target)
     W.fail_nth(stub, FIRST_STEP[target], 1, THROTTLE)
@@ -2145,10 +2151,15 @@ def test_a_stop_that_cannot_be_printed_does_not_end_the_failure_path(ready, worl
             raise store.Stop(stop.code, ids=stop.ids, counts={"call": 10 ** 5000}) from None
     monkeypatch.setattr(entry._Scheduled, "_judge", judge)
     assert world.run(target) == 1
-    assert _failure_steps(world, target) == ["settle", "store", "markers", "counters"]
+    # A stop whose count is beyond the bound is not one the job renders or acts on: it
+    # is a crash, by a fixed label. Every step of the failure path runs.
+    assert _failure_steps(world, target) == ALL_STEPS
+    record = world.failed(RUN_ID[target])
+    assert (record["code"], record["ids"], record["counts"]) == (
+        entry.CRASHED, [entry.NOT_A_JOB_STOP], {})
     assert world.entry_of(RUN_ID[target])["state"] == "settled"
     assert world.published()["RunOk"] == [0]
-    assert f"ws7 stop code={entry.FAILED_RECORD_INVALID} ids=counts" in world.lines
+    assert "ws7 entry mode=scheduled target=v1 stage=crashed during=run" in world.lines
     assert all(len(line) < 300 for line in world.lines)
 
 
@@ -2183,6 +2194,196 @@ def test_an_exception_is_logged_by_where_it_happened_never_by_its_class_or_messa
     printed = capsys.readouterr()
     everything = "\n".join(world.lines) + printed.out + printed.err + json.dumps(record)
     assert W.NAME_SENTINEL not in everything and "Unnameable" not in everything
+
+
+# ======================= ONLY THE JOB'S OWN STOPS ARE RENDERED OR ACTED ON ==
+
+# Stops that are not the job's own. Each carries a code the run WOULD act on if it were
+# trusted: "no baseline" publishes NoBaseline = 1, and a duplicate ends the run with 0.
+NOT_OWN = {
+    "a Stop subclass whose line() raises": lambda: W.LineRaises(entry.NO_BASELINE, ids=("invented",)),
+    "a Stop subclass whose line() carries a sentinel": lambda: W.LineCarries(
+        entry.NO_BASELINE, ids=("invented",)),
+    "a Stop subclass whose line() raises SystemExit(0)": lambda: W.LineExits(entry.NO_BASELINE),
+    "a StoreError subclass": lambda: W.StoreErrorCarries(store.PUT_REFUSED),
+    "a Duplicate subclass": lambda: W.DuplicateCarries(wl.DUPLICATE, ids=("2026-12-16T0400-v1",),
+                                                      counts={"duplicates": 1}),
+    "an exact Stop with a code that is not the job's": lambda: store.Stop("ws7_name_sentinel_code"),
+}
+
+
+def test_own_stop_takes_only_an_exact_stop_of_the_jobs_with_checked_fields():
+    """THE CLASS (Codex, PR #9, third re-check): the failure path renders only an exact
+    Stop (not a subclass) whose code is one of the job's fixed codes and whose fields
+    validate. It builds the line itself, and never calls a method on what it caught."""
+    good = store.Stop(entry.CALL_FAILED, ids=("throttled",), counts={"call": 3})
+    taken = entry.own_stop(good)
+    assert type(taken) is store.Stop and taken is not good
+    assert (taken.code, taken.ids, taken.counts) == (good.code, good.ids, good.counts)
+    assert entry.stop_line(taken) == good.line() == "ws7 stop code=ws7_call_failed ids=throttled call=3"
+    # the job's own two other classes, by exact type: each becomes an exact Stop
+    for own in (store.StoreError(store.PUT_REFUSED),
+                wl.Duplicate(wl.DUPLICATE, ids=("2026-12-16T0400-v1",), counts={"duplicates": 1})):
+        assert type(entry.own_stop(own)) is store.Stop and entry.own_stop(own).code == own.code
+    # not the job's own: a subclass, another code, and fields changed after it was made
+    for name, make in NOT_OWN.items():
+        assert entry.own_stop(make()) is None, name
+    for field, value in (("code", W.NAME_SENTINEL), ("code", 7), ("code", None),
+                         ("ids", ["throttled"]), ("ids", ("not an id",)), ("ids", (7,)),
+                         ("ids", ("a",) * (entry.IDS_MAX + 1)), ("ids", None),
+                         ("counts", {"call": 10 ** 5000}), ("counts", {"call": 2 ** 63}),
+                         ("counts", {"call": True}), ("counts", {"call": 1.5}),
+                         ("counts", {"Not A Label": 1}), ("counts", [("call", 1)]), ("counts", None)):
+        changed = store.Stop(entry.CALL_FAILED, ids=("throttled",), counts={"call": 3})
+        setattr(changed, field, value)
+        assert entry.own_stop(changed) is None, (field, str(value)[:30])
+    for other in (RuntimeError("x"), KeyboardInterrupt(), None, "ws7_call_failed", good.line):
+        assert entry.own_stop(other) is None
+    assert entry.own_stop(store.Stop(entry.CALL_FAILED, ids=("a",) * entry.IDS_MAX)) is not None
+
+
+def test_every_fixed_code_the_job_defines_is_one_own_stop_accepts():
+    """`ALL_CODES` is held to the modules: every constant that is a `ws7_` code, in each
+    of the job's modules, is in it. (One is not a stop's code: the label the precheck's
+    recorder refuses a request with.)"""
+    found = set()
+    for module in (entry, publish, store, wl, wm, ws, wc):
+        found |= {value for name, value in vars(module).items()
+                  if name.isupper() and type(value) is str and store._LABEL_RE.fullmatch(value)
+                  and value.startswith("ws7_")}
+    assert found - entry.ALL_CODES == {entry._CAPTURED}
+    assert entry.ALL_CODES <= found and len(entry.ALL_CODES) > 100
+
+
+# Where the job's own code can raise a stop, in a scheduled run: (what is patched,
+# whether the run holds its claim by then, the fixed code and label the run fails by).
+# Two places have a code of their own for "what I called did not answer as it should";
+# everywhere else it is the crash code, with a fixed label.
+CRASH = ("ws7_crashed", "not_a_job_stop")
+STOP_PLACES = {
+    "the match check": (wm, "match_check", False, CRASH),
+    "the claim": (wl, "claim", False, CRASH),
+    "admission": (wl.Ledger, "admit", True, CRASH),
+    "judging a runner's return": (entry._Scheduled, "_judge", True, CRASH),
+    "the summary": (ws, "build_summary", True, CRASH),
+    "the comparator's result": (publish, "check_result", True,
+                                ("ws7_compare_error", "result_disagrees")),
+    "the manifest": (wm, "write_manifest", True, ("ws7_crashed", "store")),
+    "the run's metrics": (publish.Publisher, "put", True, CRASH),
+}
+# A `Duplicate` that did not come from the claim, exact or a subclass, has a label of its own.
+STRAY_DUPLICATE = ("ws7_crashed", "duplicate_not_from_the_claim")
+
+
+@pytest.mark.parametrize("stop", list(NOT_OWN))
+@pytest.mark.parametrize("place", list(STOP_PLACES))
+def test_a_stop_that_is_not_the_jobs_own_is_a_crash_wherever_the_run_catches_it(
+        ready, world, monkeypatch, place, stop):
+    """A stop that is not the job's own, raised from each place in a run where the job's
+    own code can raise one. The run fails as a crash, by a fixed label: the stop's own
+    code is not acted on (no NoBaseline, no duplicate, never exit 0), its `line()` is
+    never called, and every step of the failure path still runs. The sentinel is in no
+    stream, metric, message or stored object (`World.stop()` and the fixture check)."""
+    target = "v1"
+    module, name, claimed, (code, label) = STOP_PLACES[place]
+    if stop == "a Duplicate subclass" and place not in ("the claim", "the comparator's result",
+                                                         "the manifest"):
+        code, label = STRAY_DUPLICATE
+    ready(target)
+    real = getattr(module, name)
+
+    def raises(*args, **kwargs):
+        if place == "the run's metrics" and args[1][0][0] != publish.NO_BASELINE:
+            return real(*args, **kwargs)            # only the run's own metrics call is broken
+        raise NOT_OWN[stop]()
+    monkeypatch.setattr(module, name, raises)
+    assert world.run(target) == 1                   # never 0, whatever the stop claimed to be
+    out = world.published()
+    assert "Duplicate" not in out and out.get("NoBaseline", [0]) != [1]
+    assert not stopped_with(world, entry.NO_BASELINE) and not stopped_with(world, wl.DUPLICATE)
+    assert any(line.startswith(f"ws7 stop code={code} ids={label}") for line in world.lines)
+    if not claimed:
+        assert out == {"RunRefused": [1]} and not any(m == "PUT" and k.startswith("ws7/failed/")
+                                                      for m, k in world.s3.requests)
+        return
+    record = world.failed(RUN_ID[target])
+    assert (record["code"], record["ids"][0]) == (code, label)
+    assert (out["RunOk"], out["RunRefused"]) == ([0], [1])
+    assert no_success(world, target)
+    if place != "admission":                        # every step after it ran, the ledger first
+        steps = _failure_steps(world, target)
+        assert steps[:3] == ["settle", "store", "failed_record"] and "markers" in steps
+        assert world.entry_of(RUN_ID[target])["state"] == "settled"
+
+
+@pytest.mark.parametrize("stop", list(NOT_OWN))
+@pytest.mark.parametrize("where", ["the success record", "RunOk = 1", "a duplicate's count"])
+def test_a_stop_that_is_not_the_jobs_own_at_the_end_of_a_run(ready, world, monkeypatch, where,
+                                                             stop):
+    """The same at the three last places: the success record's write, `RunOk` = 1, and a
+    duplicate's one publish. Each is that place's own fixed code or a crash label, with
+    a fixed word where the stop's code would have gone."""
+    target = "v1"
+    ready(target)
+    if where == "a duplicate's count":
+        assert world.run(target) == 0
+    real_put, real_create = publish.Publisher.put, store.Store.create
+
+    def put(self, values):
+        if values in ([(publish.RUN_OK, 1)], [(publish.DUPLICATE, 1)]):
+            raise NOT_OWN[stop]()
+        return real_put(self, values)
+
+    def create(self, key, *args, **kwargs):
+        if key.startswith(store.SUCCESS_PREFIX):
+            raise NOT_OWN[stop]()
+        return real_create(self, key, *args, **kwargs)
+    if where == "the success record":
+        monkeypatch.setattr(store.Store, "create", create)
+    else:
+        monkeypatch.setattr(publish.Publisher, "put", put)
+    assert world.run(target) == 1
+    if where == "a duplicate's count":
+        assert "ws7 entry mode=scheduled target=v1 stage=crashed during=duplicate" in world.lines
+        assert world.published()["RunOk"] == [1] and "Duplicate" not in world.published()
+        return
+    record = world.failed(RUN_ID[target])
+    if where == "RunOk = 1":
+        assert (record["code"], record["ids"]) == (entry.RUNOK_PUBLISH_FAILED,
+                                                   [entry.NOT_A_JOB_STOP])
+    elif isinstance(NOT_OWN[stop](), store.StoreError):
+        assert (record["code"], record["ids"]) == (entry.SUCCESS_RECORD_UNAVAILABLE,
+                                                   [entry.NOT_A_JOB_STOP])
+    elif stop == "a Duplicate subclass":
+        assert (record["code"], record["ids"]) == STRAY_DUPLICATE[:1] + ([STRAY_DUPLICATE[1]],)
+    else:
+        assert (record["code"], record["ids"]) == (entry.CRASHED, [entry.NOT_A_JOB_STOP])
+    assert world.published()["RunOk"] == [0]
+
+
+@pytest.mark.parametrize("stop", list(NOT_OWN))
+@pytest.mark.parametrize("where", ["the ledger", "the report"])
+def test_a_stop_that_is_not_the_jobs_own_in_the_check(thursday, monkeypatch, where, stop):
+    """And in the Thursday check, whose failure report goes to the topic: the code in
+    the message is the fixed crash code, never the caught stop's. Raised while the
+    check reads the ledger, and again by the report it then tries to send."""
+    world, target = thursday, "v1"
+
+    def raises(*_args, **_kwargs):
+        raise NOT_OWN[stop]()
+    if where == "the ledger":
+        monkeypatch.setattr(wl.Ledger, "expire", raises)
+        assert world.check(target) == 1
+        assert check_lines(world) == [f"WS7 check - target {target} - the check failed",
+                                      f"code {entry.CRASHED}; see the task log"]
+        assert f"ws7 entry mode=check target={target} stage=crashed during=check" in world.lines
+    else:
+        world.s3.script_list(500)
+        monkeypatch.setattr(publish.Publisher, "alert", raises)
+        assert world.check(target) == 1
+        assert world.sns.bodies == []
+        assert f"ws7 entry mode=check target={target} stage=crashed during=alert" in world.lines
+    assert not any("no_baseline" in line or "duplicate" in line for line in world.lines)
 
 
 # ================================== EACH METRIC IS PUBLISHED AT MOST ONCE PER RUN ==

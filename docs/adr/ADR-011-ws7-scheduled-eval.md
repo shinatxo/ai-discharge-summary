@@ -436,6 +436,12 @@ which an entry was resolved as an accepted estimate has no such assurance, and i
        accounting was interrupted part-way, for example), or that has no report, reports itself
        as **crashed**: its cost is unknown, so its entry is unresolved at its reservation,
        never metered.
+     - **A run that has failed to read its report once, or has caught an interrupt while its
+       entry was still open, also reports itself as crashed** (the author's ruling,
+       21 Nov 2026). It never settles from the guard afterwards, even if a later read succeeds
+       and the report looks complete: what an interrupt left behind may be half-written. The
+       run fails with `ws7_report_unreadable` or `ws7_interrupted`, which it checks before
+       every dispatch and before success.
    - An unresolved entry **blocks every later inside-cap (scheduled) run**, in that month or any
      later one, until the author resolves it.
    - The author resolves an unresolved entry, of any of the three kinds, by recording a settled

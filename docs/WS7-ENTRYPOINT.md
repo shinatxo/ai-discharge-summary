@@ -1515,6 +1515,34 @@ type** (Codex P2, PR #9, re-check). `index_counts()` reads the index:
     resolves it;
   - the ledger's refusal is still raised once the mark has landed, so the run fails by it; if
     the run had already failed, the code is recorded beside the first one (`also`).
+- **A failed report read, or a caught interrupt, never un-happens** (Codex, PR #9, third
+  re-check; the author's ruling, 21 Nov 2026). The run keeps one reason, a fixed code, the first
+  time either happens, and never clears it:
+
+  | Reason | Kept when |
+  |---|---|
+  | `ws7_report_unreadable` | A read of the guard's report failed, by anything but an interrupt. A later read that succeeds changes nothing |
+  | `ws7_interrupted` | A `KeyboardInterrupt` was caught anywhere in the run: by a report read, by the wrapper during a call, by the log while a line was being written, or by any handler that goes on |
+
+  - **The reason is checked before the claim, before admission, before every dispatch and before
+    success**, and it fails the run with its own code. So there is no main batch after a
+    pre-flight whose report read failed, and never `RunOk` = 1.
+  - **After an interrupt caught while the ledger entry is still open, the run never settles from
+    the guard. It calls `mark_crashed()`**, so the entry is unresolved at its reservation. The
+    same holds after a failed report read. Why: an interrupt arrives between any two
+    instructions, so whatever was being written when it came may be half-written, and a report
+    that looks complete is not proof that it is.
+  - Every read the run DECIDES from goes through one method, which refuses once there is a
+    reason: a runner's return, the settle, the summary. The failure path still reads the report
+    afresh as a RECORD, to store it and to count from it: a failed run's report is what the
+    author resolves the entry from. Nothing is decided from that read.
+  - **A settle that did not return** (an interrupt in the middle of it, any other exception, a
+    stop that is not the ledger's own) is followed by one `mark_crashed()`. Whether the settle's
+    write landed is not known to the run; the ledger knows, and it refuses the mark if the entry
+    is no longer open.
+  - An interrupt caught after the entry was settled leaves it settled. The run still fails.
+  - An interrupt means `KeyboardInterrupt`. A `SystemExit` a runner raises is still
+    `ws7_runner_crashed`, and that run still settles from the guard, as ruled before.
 - Tests stop one call's accounting at each of five points (after the request is sent; after
   the reply and before usage is recorded; after usage and before the run's total; between the
   run's total and the batch's; after the totals and before the run is marked unmetered), by an
@@ -1684,7 +1712,7 @@ stops or raises is logged, and the next is still tried.
 
 | Step | What it does |
 |---|---|
-| 1. The ledger | Settle from the guard's report; `mark_crashed()` when there is no guard, or when the report cannot be settled from |
+| 1. The ledger | Settle from the guard's report; `mark_crashed()` when there is no guard, when the report cannot be settled from, or after a failed report read or a caught interrupt |
 | 2. The records | Store what records exist: the guard's report first, then every allowed file. A file that may not be stored is left out and counted |
 | 3. The failed record | Build it, the clock read included, and write it. Only for a run that holds its claim |
 | 4. The markers | `RunRefused` = 1 and, from the claim's holder, `RunOk` = 0 (and `NoBaseline` = 1) |
@@ -1718,6 +1746,7 @@ stops or raises is logged, and the next is still tried.
 | The comparator | `ws7_no_baseline`, `ws7_compare_error`, `ws7_compare_output_exists`, `ws7_part_c_ruled` | Yes | Yes |
 | Storing and publishing | `ws7_evidence_unstorable`, `ws7_evidence_unavailable`, the manifest's codes, `ws7_publish_failed`, `ws7_alert_failed`, `ws7_success_record_unavailable`, `ws7_success_record_invalid` | Yes | Yes |
 | Any other exception | `ws7_crashed` | If the claim is held | If the claim is held |
+| A report read that failed, or an interrupt that was caught, at any time | `ws7_report_unreadable`, `ws7_interrupted` | If the claim is held | If the claim is held |
 | `RunOk` = 1 was not acknowledged | `ws7_runok_publish_failed` | Yes, beside the success record | Yes |
 
 The failed record (`ws7-failed/1`) holds the run's ID, target, mode and scheduled time, the code,
@@ -2211,6 +2240,13 @@ PYTHONDONTWRITEBYTECODE=1 python -m pytest -p no:cacheprovider -q tests/test_ws7
     call is sent, the entry is unresolved at its reservation, and next week's run is refused
     with `ws7_blocked_unresolved` and sends nothing. The partner: a clean run settles as
     metered and next week's run is admitted.
+  - A report read that fails once, straight after the last pre-flight reply and after the last
+    main reply, by an interrupt and by an exception, for both targets, with every later read
+    succeeding: no main batch after the pre-flight's, never `RunOk` = 1, the failed record
+    written, the entry a crashed run at its reservation, next week's run blocked. An interrupt
+    caught at four places while the entry is open (two log lines, the outermost handler, inside
+    the settle), with two partners after the settle; and at four log lines between the settle
+    and success, each with an ordinary exception as its partner.
   - A throttle on the main batch's second scenario: no request for any later scenario reaches the
     stub; the partner sends all 18. A 500: unmetered and unresolved. A failed pre-flight: the
     main batch never starts.

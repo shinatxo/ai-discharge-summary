@@ -645,16 +645,24 @@ def test_accounting_that_did_not_finish_leaves_the_entry_unresolved_at_its_reser
         == RESERVED[target]["total_usd_micros"]
     record = world.failed(run)
     assert record["ledger"] == "crashed"
-    assert set([record["code"], *record["also"]]) & set(wl.REPORT_CODES)
-    # the run's own code: a call left `sent`; totals that are not the rows; or, when the
-    # call itself could not be metered, that first, with the ledger's refusal beside it
-    assert record["code"] == {0: wl.REPORT_INCOMPLETE, 1: wl.REPORT_INCOMPLETE,
-                              2: wl.REPORT_INCONSISTENT, 3: wl.REPORT_INCONSISTENT,
-                              4: wc.UNMETERED}[ACCOUNTING_POINTS.index(point)]
-    if point == ACCOUNTING_POINTS[4]:
-        # the rows hold a call that could not be metered, and the report's own flag says
-        # the run is metered: the ledger works it out from the rows and refuses the report
-        assert record["also"] == [wl.REPORT_INVALID]
+    label = PRE[target] if batch == "the pre-flight" else MAIN[target]
+    if ends == "an interrupt":
+        # An interrupt was caught: the run has failed by that, whatever the report then
+        # looks like, and it never settles from the guard (the author's ruling).
+        assert (record["code"], record["ids"], record["also"]) == (
+            entry.INTERRUPTED, [label], [entry.INTERRUPTED])
+    else:
+        # the run's own code: a call left `sent`; totals that are not the rows; or, when
+        # the call itself could not be metered, that first, with the ledger's refusal
+        # beside it
+        assert record["code"] == {0: wl.REPORT_INCOMPLETE, 1: wl.REPORT_INCOMPLETE,
+                                  2: wl.REPORT_INCONSISTENT, 3: wl.REPORT_INCONSISTENT,
+                                  4: wc.UNMETERED}[ACCOUNTING_POINTS.index(point)]
+        assert set([record["code"], *record["also"]]) & set(wl.REPORT_CODES)
+        if point == ACCOUNTING_POINTS[4]:
+            # the rows hold a call that could not be metered, and the report's own flag
+            # says the run is metered: the ledger works it out from the rows and refuses
+            assert record["also"] == [wl.REPORT_INVALID]
     assert world.published()["RunOk"] == [0] and no_success(world, target)
     assert not any(SENTINEL in line for line in world.lines)
 
@@ -761,6 +769,254 @@ def test_a_guard_whose_report_cannot_be_read_is_a_crashed_run_too(ready, world, 
     booked = world.entry_of(RUN_ID[target])
     assert (booked["state"], booked["kind"]) == ("unresolved", "crashed")
     assert booked["counted_usd_micros"] == RESERVED[target]["total_usd_micros"]
+
+
+# ================ A FAILED REPORT READ, OR A CAUGHT INTERRUPT, NEVER UN-HAPPENS ==
+
+READ_FAILS = {"an interrupt": (KeyboardInterrupt, "ws7_interrupted"),
+              "an exception": (lambda: RuntimeError(SENTINEL), "ws7_report_unreadable")}
+
+
+def _one_report_read_fails(monkeypatch, after_call: int, make) -> list:
+    """Make the guard's report raise `make()` ONCE: the first time it is read after the
+    guard's `after_call`-th call has its final outcome. Every later read is the real
+    one, and succeeds. Returns a list that holds one item once it has happened."""
+    real, fired = wc.Guard.report, []
+
+    def report(self):
+        done = len(self.calls) == after_call and self.calls[-1]["outcome"] != "sent"
+        if done and not fired:
+            fired.append(len(self.calls))
+            raise make()
+        return real(self)
+    monkeypatch.setattr(wc.Guard, "report", report)
+    return fired
+
+
+@pytest.mark.parametrize("fails", list(READ_FAILS))
+@pytest.mark.parametrize("batch", ["the pre-flight", "the main batch"])
+@pytest.mark.parametrize("target", TARGETS)
+def test_a_report_read_that_failed_once_fails_the_run_though_a_later_read_succeeds(
+        ready, world, monkeypatch, target, batch, fails):
+    """THE CLASS (Codex, PR #9, third re-check): once the run has failed to read the
+    guard's report, or has caught an interrupt anywhere after admission, the run has
+    failed, and that never un-happens.
+
+    The report read straight after the LAST reply of the pre-flight, or of the main
+    batch, fails once, by an interrupt or by an ordinary exception. Every later read
+    succeeds, and the report it gives is complete and consistent, so nothing else is
+    wrong. Before this fix the run went on: after the pre-flight it dispatched the
+    main batch, and after the main batch it settled as metered and published
+    RunOk = 1. Now: no main batch after a failed pre-flight read; never RunOk = 1; the
+    failed record is written, with the reason's own fixed code; the entry is a crashed
+    run, unresolved at its reservation; and the next scheduled run is blocked. The
+    partner is `test_a_clean_run_settles_metered_and_the_next_scheduled_run_is_admitted`."""
+    make, code = READ_FAILS[fails]
+    ready(target)                                   # the invented baseline is made first
+    pre_flight = batch == "the pre-flight"
+    last = N_STEPS[target] * (1 if pre_flight else len(SCENARIOS) + 1)
+    fired = _one_report_read_fails(monkeypatch, last, make)
+    assert world.run(target) == 1
+    run, label = RUN_ID[target], (PRE if pre_flight else MAIN)[target]
+    assert fired == [last]                          # it happened once, after that reply
+    # every reply had arrived, and the report is one the ledger would have settled from
+    assert world.bedrock_requests() == last
+    stored = world.s3.json(PREFIX[target] + "guard_report.json")
+    assert wl.report_fault(stored) is None and len(stored["calls"]) == last
+    if pre_flight:
+        assert not (world.runs_dir / MAIN[target]).exists()     # no main batch after it
+    record = world.failed(run)
+    assert (record["code"], record["ids"], record["ledger"]) == (code, [label], "crashed")
+    booked = world.entry_of(run)
+    assert (booked["state"], booked["kind"], booked["basis"]) == ("unresolved", "crashed", None)
+    assert booked["counted_usd_micros"] == RESERVED[target]["total_usd_micros"]
+    out = world.published()
+    assert (out["RunOk"], out["RunRefused"]) == ([0], [1])      # never RunOk = 1
+    assert no_success(world, target) and world.sns.messages == []
+    assert not any(SENTINEL in line for line in world.lines)
+    # ---- the next scheduled run is blocked, and sends nothing
+    world.clock.advance(7 * 86400)
+    assert world.run(target, "2026-12-23T04:00:00Z") == 1
+    later = world.failed(f"2026-12-23T0400-{target}")
+    assert (later["code"], later["ids"]) == (wl.BLOCKED_UNRESOLVED, [run])
+    assert world.bedrock_requests() == last
+
+
+def test_the_tripwire_keeps_its_first_reason_and_never_clears_it():
+    """The mechanism on its own: the first reason is kept; `report()` then refuses for
+    good, with that code, though the guard can be read again; `evidence()` still reads."""
+    class Guard:
+        def __init__(self):
+            self.raises = []
+
+        def report(self):
+            if self.raises:
+                raise self.raises.pop(0)
+            return {"calls": [], "batches": {}, "unmetered": False, "unmetered_calls": 0,
+                    "total_usd_nanos": 0}
+    for first, code in ((KeyboardInterrupt(), entry.INTERRUPTED),
+                        (RuntimeError(SENTINEL), entry.REPORT_UNREADABLE),
+                        (SystemExit(0), entry.REPORT_UNREADABLE)):
+        guard, wire = Guard(), entry._Tripwire()
+        wire.watch(guard)
+        assert wire.report()["calls"] == [] and wire.reason is None and not wire.look()
+        guard.raises = [first]
+        with pytest.raises(store.Stop) as stop:
+            wire.report()
+        assert stop.value.code == wire.reason == code and wire.tripped
+        for _ in range(3):                          # the guard reads perfectly well again
+            assert guard.report()["calls"] == []
+            with pytest.raises(store.Stop) as again:
+                wire.report()
+            assert again.value.code == code and wire.look() is True
+        wire.fail(entry.REPORT_UNREADABLE)          # a second reason does not replace the first
+        wire.caught(KeyboardInterrupt())
+        assert wire.reason == code
+        assert wire.evidence()["calls"] == []       # as a record, it can still be read
+    # an interrupt a handler caught is a reason; anything else a handler caught is not
+    wire = entry._Tripwire()
+    for exc in (RuntimeError("x"), SystemExit(0), store.Stop(entry.CRASHED)):
+        wire.caught(exc)
+    assert wire.reason is None and not wire.tripped
+    wire.caught(KeyboardInterrupt())
+    assert wire.reason == entry.INTERRUPTED and wire.tripped
+    # a guard that returns something that is not a report
+    wire = entry._Tripwire()
+    wire.watch(type("G", (), {"report": lambda self: None})())
+    assert wire.look() is True and wire.reason == entry.REPORT_UNREADABLE
+
+
+def _interrupt_on_the_line(world, stage: str, make=KeyboardInterrupt) -> list:
+    """A log sink that raises `make()` once, while the line of `stage` is being written,
+    and otherwise keeps the lines."""
+    fired = []
+
+    def sink(line: str) -> None:
+        if f" stage={stage}" in line and not fired:
+            fired.append(line)
+            raise make()
+        world.lines.append(line)
+    world.out = sink
+    return fired
+
+
+OPEN_ENTRY = ["the 'admitted' log line", "the 'preflight' log line", "judging the pre-flight",
+              "the settle, before its write",
+              # the two partners: by then the entry is no longer open
+              "the settle, after its write", "judging the main batch"]
+
+
+@pytest.mark.parametrize("where", OPEN_ENTRY)
+@pytest.mark.parametrize("target", TARGETS)
+def test_an_interrupt_caught_while_the_entry_is_open_never_settles_from_the_guard(
+        ready, world, monkeypatch, target, where):
+    """The author's ruling (21 Nov 2026): after an interrupt caught while the ledger
+    entry is still open, the run never settles from the guard; it calls
+    `mark_crashed()`, so the entry is unresolved at its reservation.
+
+    An interrupt caught at each kind of place between admission and the settle: by the
+    log (while a line is written), by the run's outermost handler, and inside the
+    settle itself. The guard's report is complete and consistent each time, so before
+    this fix each run was settled as metered.
+
+    The two partners are interrupts that arrive when the entry is no longer open. One
+    comes after the settle's write has landed, inside the settle: the ledger then
+    refuses the crash mark, and the entry stays as the settle left it. The other
+    comes while the main batch's return is judged, which is after the settle. Both
+    runs still fail."""
+    ready(target)
+    run = RUN_ID[target]
+    if where.endswith("log line"):
+        fired = _interrupt_on_the_line(world, "admitted" if "admitted" in where else "preflight")
+    elif where.startswith("judging"):
+        real, fired = entry._Scheduled._judge, []
+
+        def judge(self, kind, *args):
+            if kind == ("preflight" if "pre-flight" in where else "main") and not fired:
+                fired.append(kind)
+                raise KeyboardInterrupt
+            return real(self, kind, *args)
+        monkeypatch.setattr(entry._Scheduled, "_judge", judge)
+    else:
+        real, fired = wl.Ledger.settle, []
+
+        def settle(self, admitted, report):
+            if "before" in where:
+                fired.append("before")
+                raise KeyboardInterrupt
+            entry_written = real(self, admitted, report)
+            fired.append("after")
+            raise KeyboardInterrupt
+        monkeypatch.setattr(wl.Ledger, "settle", settle)
+    assert world.run(target) == 1
+    assert len(fired) == 1
+    record = world.failed(run)
+    booked = world.entry_of(run)
+    out = world.published()
+    assert (out["RunOk"], out["RunRefused"]) == ([0], [1]) and no_success(world, target)
+    if where == "the settle, after its write":
+        # the settle had landed; the ledger refused the mark, and says why
+        assert (booked["state"], booked["basis"]) == ("settled", "metered")
+        assert record["ledger"] == wl.ENTRY_NOT_OPEN
+        return
+    if where == "judging the main batch":
+        assert (booked["state"], booked["basis"]) == ("settled", "metered")
+        assert (record["code"], record["ledger"]) == (entry.CRASHED, "settled")
+        return
+    assert (booked["state"], booked["kind"]) == ("unresolved", "crashed")
+    assert booked["counted_usd_micros"] == RESERVED[target]["total_usd_micros"]
+    assert record["ledger"] == "crashed"
+    assert entry.INTERRUPTED in [record["code"], *record["also"]]
+    if where in ("the 'admitted' log line", "the 'preflight' log line"):
+        assert record["code"] == entry.INTERRUPTED              # caught by the log, found at the next check
+    if where == "the 'admitted' log line":
+        assert world.bedrock_requests() == 0                    # no runner was started
+    if where == "the 'preflight' log line":
+        assert not (world.runs_dir / MAIN[target]).exists()
+    # ---- and it blocks the next scheduled run
+    world.out = world.lines.append
+    world.clock.advance(7 * 86400)
+    assert world.run(target, "2026-12-23T04:00:00Z") == 1
+    assert world.failed(f"2026-12-23T0400-{target}")["code"] == wl.BLOCKED_UNRESOLVED
+
+
+@pytest.mark.parametrize("stage", ["settled", "summary", "compared", "stored"])
+@pytest.mark.parametrize("interrupted", [True, False])
+def test_an_interrupt_caught_after_the_settle_still_fails_the_run_before_success(
+        ready, world, stage, interrupted):
+    """The reason is checked before success. An interrupt caught by the log after the
+    entry was settled, at each line between the settle and the success: the entry
+    stays settled as metered (it was no longer open), and the run still fails, with
+    `ws7_interrupted`, and never publishes RunOk = 1. The partner: the same sink
+    raising an ordinary exception on the same line changes nothing, and the run
+    succeeds."""
+    target = "v1"
+    ready(target)
+    fired = _interrupt_on_the_line(world, stage,
+                                   KeyboardInterrupt if interrupted else lambda: RuntimeError(SENTINEL))
+    code = world.run(target)
+    assert len(fired) == 1
+    booked = world.entry_of(RUN_ID[target])
+    assert (booked["state"], booked["basis"]) == ("settled", "metered")
+    if not interrupted:
+        assert code == 0 and world.metric("RunOk") == [1]
+        return
+    assert code == 1
+    record = world.failed(RUN_ID[target])
+    assert (record["code"], record["ledger"]) == (entry.INTERRUPTED, "settled")
+    assert world.metric("RunOk") == [0] and no_success(world, target)
+
+
+def test_an_interrupt_caught_before_the_claim_stops_the_run_before_it_claims(ready, world):
+    """Caught by the log while the precheck's line is written: the run stops before the
+    claim, with the same code. It has claimed, reserved and spent nothing."""
+    target = "v1"
+    ready(target)
+    fired = _interrupt_on_the_line(world, "precheck")
+    assert world.run(target) == 1
+    assert len(fired) == 1 and stopped_with(world, entry.INTERRUPTED)
+    assert world.published() == {"RunRefused": [1]}
+    assert not any(method == "PUT" for method, _key in world.s3.requests)
 
 
 # =================================================================== THE DEADLINE ==
@@ -1782,16 +2038,24 @@ def test_nothing_raised_inside_the_failure_path_ends_it_early_whatever_its_type(
 
     assert world.run(target) == 1                   # `World.call` fails the test if anything escapes
     world.clock.fail = None
+    if (step, raised) == ("log", "KeyboardInterrupt"):
+        # An interrupt caught while the first line was being logged, before the claim:
+        # the run has failed by it and stops there. It claimed, reserved and spent nothing.
+        assert world.published() == {"RunRefused": [1]}
+        assert world.s3.requests == [] and world.bedrock_requests() == 0
+        return
     # ---- the steps that reached a server: all but the one that raised in this process.
-    # (When the settle raises, the last ledger write the servers saw is the booking,
-    # which still comes before every other step; the entry's state is checked below.)
+    # (When the settle raises, the last ledger write is the crash mark that follows it.)
     not_sent = {"log": None, "settle": None, "clock": "failed_record", "build": "failed_record",
                 "write": "failed_record"}.get(step, step)
     assert _failure_steps(world, target) == [s for s in ALL_STEPS if s != not_sent]
     # ---- the ledger first: settled before anything else of the failure path
     booked = world.entry_of(run)
     if step == "settle":
-        assert booked["state"] == "open"            # the settle itself raised; the rest still ran
+        # The settle did not return, so the run was marked crashed: unresolved at its
+        # reservation, never left open and never settled from a guard it could not trust.
+        assert (booked["state"], booked["kind"]) == ("unresolved", "crashed")
+        assert booked["counted_usd_micros"] == RESERVED[target]["total_usd_micros"]
     else:
         assert (booked["state"], booked["basis"]) == ("settled", "metered")
     # ---- what landed is everything but the one thing that raised
@@ -1809,7 +2073,9 @@ def test_nothing_raised_inside_the_failure_path_ends_it_early_whatever_its_type(
         # error is taken as the store failing: that step's own code.)
         crashed = entry.EVIDENCE_UNAVAILABLE if raised == "a StoreError subclass" else entry.CRASHED
         assert record["evidence"] == ("stored" if step != "store" else crashed)
-        assert record["also"] == ([] if step != "settle" else [entry.CRASHED])
+        settle_code = entry.INTERRUPTED if raised == "KeyboardInterrupt" else entry.CRASHED
+        assert record["also"] == ([] if step != "settle" else [settle_code])
+        assert record["ledger"] == ("crashed" if step == "settle" else "settled")
     assert not any(SENTINEL in line or "Traceback" in line for line in world.lines)
     assert no_success(world, target) and world.sns.messages == []
 
@@ -1831,13 +2097,24 @@ def test_a_log_sink_cannot_end_anything_whatever_it_raises(ready, world, raised)
 
     ready(target)
     world.out = sink
-    assert world.run(target) == 0
+    if raised == "KeyboardInterrupt":
+        # The one thing a sink can raise that is not forgotten: an interrupt caught while
+        # a line is being written fails the run. Here it is caught before the claim, so
+        # the run stops having claimed, reserved and spent nothing.
+        assert world.run(target) == 1
+        assert world.published() == {"RunRefused": [1]} and world.s3.requests == []
+        world.out = world.lines.append
+        assert world.run(target) == 0               # the partner: the same run, not interrupted
+    else:
+        assert world.run(target) == 0
     assert world.metric("RunOk") == [1] and not no_success(world, target)
-    assert world.run(target) == 0
-    assert world.metric("Duplicate") == [1]
+    world.out = sink
+    if raised != "KeyboardInterrupt":
+        assert world.run(target) == 0
+        assert world.metric("Duplicate") == [1]
     world.s3.remove(store.success_key(RUN_ID[target]))
     world.clock.start = THURSDAY
-    assert world.check(target) == 0
+    assert world.check(target) == 0                 # the check holds no entry: it reports
     assert check_lines(world)[1] == f"run {RUN_ID[target]} started and did not finish: no success record"
 
 
@@ -1945,10 +2222,18 @@ def test_a_runner_that_raises_after_writing_a_clean_index_is_a_crashed_runner_ne
     index = json.loads((world.runs_dir / kind[target] / "batch.json").read_text("utf-8"))
     assert entry.index_counts(target, index)[0] == 0            # and its index is clean
     record = world.failed(RUN_ID[target])
-    assert (record["code"], record["ids"], record["ledger"]) == (
-        entry.RUNNER_CRASHED, [kind[target]], "settled")
     booked = world.entry_of(RUN_ID[target])
-    assert (booked["state"], booked["basis"]) == ("settled", "metered")
+    if ending == "KeyboardInterrupt":
+        # An interrupt, caught while the entry was still open: the run fails by that, and
+        # it never settles from the guard. The entry is unresolved at its reservation.
+        assert (record["code"], record["ids"], record["ledger"]) == (
+            entry.INTERRUPTED, [kind[target]], "crashed")
+        assert (booked["state"], booked["kind"]) == ("unresolved", "crashed")
+        assert booked["counted_usd_micros"] == RESERVED[target]["total_usd_micros"]
+    else:
+        assert (record["code"], record["ids"], record["ledger"]) == (
+            entry.RUNNER_CRASHED, [kind[target]], "settled")
+        assert (booked["state"], booked["basis"]) == ("settled", "metered")
     out = world.published()
     assert out["RunOk"] == [0] and out["RunRefused"] == [1]     # never RunOk = 1
     assert no_success(world, target) and world.sns.messages == []

@@ -223,6 +223,8 @@ SUCCESS_RECORD_UNAVAILABLE = "ws7_success_record_unavailable"
 SUCCESS_RECORD_INVALID = "ws7_success_record_invalid"
 FAILED_RECORD_INVALID = "ws7_failed_record_invalid"
 CRASHED = "ws7_crashed"
+REPORT_UNREADABLE = "ws7_report_unreadable"       # the guard's report could not be read, once
+INTERRUPTED = "ws7_interrupted"                   # an interrupt was caught in the run, once
 RUNOK_PUBLISH_FAILED = "ws7_runok_publish_failed"
 CHECK_FAILED = "ws7_check_failed"
 CODES = (CONFIG_INVALID, CORPUS_UNREADABLE, PRECHECK_FAILED, SCENARIOS_NOT_DISTINCT,
@@ -231,9 +233,13 @@ CODES = (CONFIG_INVALID, CORPUS_UNREADABLE, PRECHECK_FAILED, SCENARIOS_NOT_DISTI
          PREFLIGHT_OVER_RESERVATION, GENERATION_FAILED, SCORER_STOPPED, NO_BASELINE,
          COMPARE_ERROR, COMPARE_OUTPUT_EXISTS, EVIDENCE_UNSTORABLE, EVIDENCE_UNAVAILABLE,
          SUCCESS_RECORD_UNAVAILABLE, SUCCESS_RECORD_INVALID, FAILED_RECORD_INVALID, CRASHED,
-         RUNOK_PUBLISH_FAILED, CHECK_FAILED)
+         REPORT_UNREADABLE, INTERRUPTED, RUNOK_PUBLISH_FAILED, CHECK_FAILED)
 
 _CAPTURED = "ws7_precheck_captured"
+
+# A report the run does not settle from: one the ledger refuses, and the tripwire's two
+# reasons. The run is then marked crashed.
+NOT_SETTLED_FROM = wl.REPORT_CODES + (REPORT_UNREADABLE, INTERRUPTED)
 
 # THE STOPS THE JOB RENDERS AND ACTS ON (Codex, PR #9, third re-check). A `Stop` is an
 # ordinary Python class: a subclass can give itself a `line()` that raises, or that
@@ -291,7 +297,7 @@ def _say(line: str) -> None:
     print(line, flush=True)
 
 
-def best_effort(out):
+def best_effort(out, caught=None):
     """`out`, made unable to raise. LOGGING IS BEST EFFORT EVERYWHERE: a closed pipe
     or a full disk under the log must never stop a settle, a failed record or a
     metric that would have followed the line.
@@ -307,8 +313,14 @@ def best_effort(out):
     def emit(line) -> None:
         try:
             out(line() if callable(line) else line)
-        except BaseException:           # noqa: BLE001 - whatever the stream raised, the run goes on
-            pass
+        except BaseException as exc:    # noqa: BLE001 - whatever the stream raised, the run goes on
+            # ... but what was caught is not forgotten: `caught` is told, so that an
+            # interrupt that arrived while a line was being written still fails the run.
+            if caught is not None:
+                try:
+                    caught(exc)
+                except BaseException:   # noqa: BLE001
+                    pass
     return emit
 
 
@@ -381,29 +393,93 @@ def first_failure(report: dict) -> Stop | None:
 
 
 class _Tripwire:
-    """Whether the run has failed, read from the guard's own report.
+    """Whether the run has failed, and why it can no longer be trusted.
+
+    ONCE THE RUN HAS FAILED TO READ THE GUARD'S REPORT, OR HAS CAUGHT AN INTERRUPT, IT
+    HAS FAILED, AND THAT NEVER UN-HAPPENS (Codex, PR #9, third re-check). `reason` is a
+    fixed code, kept the FIRST time either happens and never cleared:
+    `ws7_report_unreadable` or `ws7_interrupted`. A later read that succeeds changes
+    nothing: the state an interrupt left behind may be half-written, and a report
+    that could not be read once is not trusted because it can be read again.
+
+    - `report()` is the one way the run reads the guard's report to DECIDE anything
+      (a runner's return, the settle, the summary). It refuses once there is a reason.
+    - The run checks the reason before the claim, before admission, before every
+      dispatch and before success (`_Scheduled._sound`), and fails by it.
+    - After an interrupt caught while the ledger entry is still open, the run never
+      settles from the guard: it marks the run crashed (`_Scheduled._settle`).
 
     It is looked at only between calls: before one is sent, and after one has returned
     or raised (both runners send one call at a time). So at every look each call
     should have its final outcome and the totals should be the sum of the rows. A row
     still `sent`, or a report the ledger would not settle from, means the accounting
     of a call did not finish. The run's cost is then unknown, and it sends no further
-    call (Codex P1, PR #9, second re-check). A report that cannot be read at all is
-    treated the same way: only what can be checked is trusted."""
+    call (Codex P1, PR #9, second re-check)."""
 
-    def __init__(self, guard: wc.Guard):
-        self._guard = guard
+    def __init__(self):
+        self._guard = None
         self.tripped = False
         self.refused = 0          # calls refused here, after the first failure
+        self.reason = None        # a fixed code: kept the first time, never cleared
+
+    def watch(self, guard: wc.Guard) -> None:
+        self._guard = guard
+
+    def fail(self, reason: str) -> None:
+        """The run has failed, for good. The first reason is the one that is kept."""
+        if self.reason is None:
+            self.reason = reason
+        self.tripped = True
+
+    def caught(self, exc: object) -> None:
+        """What a handler caught and went on from. AN INTERRUPT FAILS THE RUN, whoever
+        caught it and wherever: a `KeyboardInterrupt` arrives between any two
+        instructions, so whatever was being written when it came may be half-written."""
+        if isinstance(exc, KeyboardInterrupt):
+            self.fail(INTERRUPTED)
+
+    def _read(self) -> dict:
+        """One read of the guard's report. A read that fails, by an interrupt or by
+        anything else, is kept as the reason."""
+        try:
+            report = self._guard.report()
+            if type(report) is not dict or type(report.get("calls")) is not list:
+                raise TypeError("not a report")
+        except BaseException as exc:    # noqa: BLE001 - an interrupt, or anything else
+            self.fail(INTERRUPTED if isinstance(exc, KeyboardInterrupt) else REPORT_UNREADABLE)
+            raise Stop(self.reason) from None
+        return report
+
+    def report(self) -> dict:
+        """The guard's report, to decide something from. Refused, with the reason's
+        own code, once the run can no longer be trusted, and from then on."""
+        if self.reason is not None:
+            raise Stop(self.reason)
+        return self._read()
+
+    def evidence(self) -> dict | None:
+        """The guard's report as a RECORD of the run, for the failure path to store and
+        to count from: read afresh whatever the reason, because a run that failed is
+        exactly the one whose report the author needs. Nothing is decided from it.
+        None when it cannot be read."""
+        if self._guard is None:
+            return None
+        try:
+            return self._read()
+        except Stop:
+            return None
 
     def look(self) -> bool:
         if not self.tripped:
             try:
-                report = self._guard.report()
+                report = self.report()
                 self.tripped = any(row["outcome"] != wc.RESPONSE for row in report["calls"]) \
                     or wl.report_fault(report) is not None
-            except BaseException:               # noqa: BLE001 - a report that cannot be read
-                self.tripped = True
+            except Stop:
+                self.tripped = True             # `report()` kept the reason
+            except BaseException as exc:        # noqa: BLE001 - rows that cannot be read
+                self.fail(INTERRUPTED if isinstance(exc, KeyboardInterrupt)
+                          else REPORT_UNREADABLE)
         return self.tripped
 
 
@@ -424,6 +500,10 @@ class _StoppingClient:
             raise wc.Ws7Refused(RUN_FAILED)
         try:
             return self._inner.converse(**request)
+        except KeyboardInterrupt:
+            # An interrupt during a call fails the run, whatever the runner makes of it.
+            self._wire.fail(INTERRUPTED)
+            raise
         finally:
             self._wire.look()
 
@@ -697,7 +777,8 @@ class _Scheduled:
     def __init__(self, target: str, scheduled_time: str, deps: Deps):
         self.target, self.scheduled_time, self.deps = target, scheduled_time, deps
         self.environ = os.environ if deps.environ is None else deps.environ
-        self.out = best_effort(deps.out)
+        self.wire = _Tripwire()         # the run's one "this never un-happens" flag
+        self.out = best_effort(deps.out, self.wire.caught)
         self.publisher = None
         self.st = None
         self.ledger = None
@@ -705,7 +786,7 @@ class _Scheduled:
         self.held = None                # the claim: only its holder publishes RunOk
         self.admission = None
         self.guard = None
-        self.wire = None
+        self.reports: dict = {}         # batch label -> the report its runner was judged on
         self.settled = None             # None: not tried. Otherwise the entry's state, or a code
         self.settle_stop = None         # the stop a settle that was tried ended in, if any
         self.batches: dict = {}         # label -> {"dir", "scenarios", "scored"}
@@ -730,6 +811,20 @@ class _Scheduled:
             parts += [f"{name}={value}" for name, value in fields.items()]
             return " ".join(parts)
         self.out(line)
+
+    def _sound(self, where: str) -> None:
+        """Stop, by the tripwire's own fixed code, once the run can no longer be trusted:
+        a report read has failed, or an interrupt has been caught. Checked before the
+        claim, before admission, before every dispatch and before success."""
+        if self.wire.reason is not None:
+            raise Stop(self.wire.reason, ids=(where,))
+
+    def _report(self, where: str) -> dict:
+        """The guard's report, to decide from; or the tripwire's stop, naming `where`."""
+        try:
+            return self.wire.report()
+        except Stop:
+            raise Stop(self.wire.reason, ids=(where,)) from None
 
     def stopped(self, stop: Stop) -> None:
         """Log a stop `own_stop` made. The line is built here, inside the best-effort
@@ -771,7 +866,8 @@ class _Scheduled:
             return self._fail(Stop(CRASHED, ids=("duplicate_not_from_the_claim",)))
         except Stop as caught:
             return self._fail(self.taken(caught, "run"))
-        except BaseException:                       # noqa: BLE001 - the outermost handler
+        except BaseException as exc:                # noqa: BLE001 - the outermost handler
+            self.wire.caught(exc)                   # an interrupt: the guard is no longer trusted
             # Whatever it is: a SystemExit and a KeyboardInterrupt are not Exceptions, and a
             # run they ended must still settle and write its failed record.
             # No traceback, no class name and no message: any of them could carry text,
@@ -822,6 +918,7 @@ class _Scheduled:
         self.say("match")
 
     def _claim(self) -> None:
+        self._sound("claim")
         cfg, deps = self.cfg, self.deps
         held = wl.claim(self.st, cfg, target=self.target, mode=SCHEDULED,
                         scheduled_time=self.scheduled_time, clock=deps.wall)
@@ -831,6 +928,7 @@ class _Scheduled:
         self.say("claim", run=held.run_id)
 
     def _admit(self) -> None:
+        self._sound("admission")
         cfg, deps, held = self.cfg, self.deps, self.held
         self.margin = cfg.input_allowance_margin_percent
         self.reservation = reserve.reservation(self.target, len(self.scenarios) + 1, self.margin)
@@ -843,7 +941,7 @@ class _Scheduled:
         self.guard = wc.Guard(self.plan, reservation_nanos=self.reservation["total_usd_nanos"],
                               margin_percent=self.margin, deadline=self.deadline,
                               clock=deps.monotonic, run_id=self.admission.run_id)
-        self.wire = _Tripwire(self.guard)
+        self.wire.watch(self.guard)
         self.factory = stopping_factory(self.guard, self.wire,
                                         endpoint_url=deps.endpoints.get("bedrock"))
         self.runs_dir = Path(deps.runs_dir) if deps.runs_dir is not None \
@@ -853,6 +951,7 @@ class _Scheduled:
     def _dispatch(self, kind: str) -> tuple:
         """Start one runner. Returns (its exit code, whether it raised)."""
         label = self.labels[kind]
+        self._sound(label)              # never a runner after a failed read or an interrupt
         # Dispatch stops at the deadline: no runner is started at or after it.
         if self.deps.monotonic() >= self.deadline:
             raise Stop(wc.DEADLINE, ids=(label,))
@@ -867,7 +966,8 @@ class _Scheduled:
                 exit_code = runner.main(list(self.argv[kind]), client_factory=self.factory,
                                         now=self.deps.runner_now, sleep=no_wait,
                                         confirm=_never_confirm, runs_dir=self.runs_dir)
-        except BaseException:                       # noqa: BLE001 - a SystemExit too, with any code
+        except BaseException as exc:                # noqa: BLE001 - a SystemExit too, with any code
+            self.wire.caught(exc)                   # an interrupt fails the run for good
             # A RUNNER ENDS ONLY BY RETURNING. Anything it raises is a crash of that
             # runner, a SystemExit included, whatever its code (0, 1, 2, None, a string):
             # the argv is an allow-list, so a parser exit already means something is
@@ -880,7 +980,7 @@ class _Scheduled:
     def _judge(self, kind: str, exit_code: object, raised: bool) -> dict:
         """What a runner's return means. Returns the batch's index (`batch.json`)."""
         label = self.labels[kind]
-        report = self.guard.report()
+        report = self.reports[label] = self._report(label)
         failure = first_failure(report)
         if failure is not None:                     # ruling e2: the first failure's code
             raise Stop(failure.code, ids=failure.ids + (label,),
@@ -937,7 +1037,8 @@ class _Scheduled:
         if unexpected or missing or other:
             raise Stop(PREFLIGHT_FILES_UNEXPECTED, ids=(label,),
                        counts={"unexpected": len(unexpected) + other, "missing": len(missing)})
-        spent = self.guard.batch_total_nanos(label)
+        # From the report the pre-flight's return was judged on: complete and consistent.
+        spent = self.reports[label]["batches"][label]["total_usd_nanos"]
         limit = reserve.reservation(self.target, 1, self.margin)["total_usd_nanos"]
         if spent > limit:
             raise Stop(PREFLIGHT_OVER_RESERVATION, ids=(label,),
@@ -963,46 +1064,62 @@ class _Scheduled:
         whatever comes of it, it is not tried again.
 
         THE RUN IS MARKED CRASHED WHEN THERE IS NO GUARD REPORT, OR WHEN THE REPORT
-        CANNOT BE SETTLED FROM (the author's ruling, 21 Nov 2026, widening change A).
-        The ledger refuses a report that is incomplete or inconsistent
-        (`ws7_ledger.report_fault`), or that cannot be read: the run's cost is then
-        unknown, so its entry becomes unresolved at its reservation and blocks every
-        later scheduled run until the author resolves it. The ledger's refusal is
-        still raised, after the mark has landed, so the run fails by it."""
+        CANNOT BE SETTLED FROM (the author's rulings, 21 Nov 2026, widening change A).
+        That is: the ledger refuses the report (`ws7_ledger.settlement`); or the report
+        cannot be read; or a read of it has failed before; or AN INTERRUPT HAS BEEN
+        CAUGHT WHILE THE ENTRY WAS STILL OPEN. In each case the run's cost is unknown,
+        so its entry becomes unresolved at its reservation and blocks every later
+        scheduled run until the author resolves it. The reason is still raised, after
+        the mark has landed, so the run fails by it.
+
+        A settle that did not return (an interrupt in the middle of it, any other
+        exception, a stop that is not the ledger's own) is followed by one
+        `mark_crashed()`. Whether the settle's write landed is not known here; the
+        ledger knows, and it refuses the mark if the entry is no longer open."""
         if self.admission is None or self.settled is not None:
             return
         self.settled = "failed"
-        refused = None
+        refused = None                  # why the guard's report was not settled from
         try:
-            if self.guard is None:
-                entry = self.ledger.mark_crashed(self.admission)
-            else:
+            entry = None
+            if self.guard is not None:
                 try:
-                    report = self.guard.report()
-                except BaseException:               # noqa: BLE001 - a guard left half-written
-                    report = None                   # the ledger refuses it: ws7_report_invalid
-                try:
-                    entry = self.ledger.settle(self.admission, report)
+                    # `report()` refuses once a read has failed or an interrupt was caught.
+                    entry = self.ledger.settle(self.admission, self.wire.report())
                 except Stop as caught:
                     stop = own_stop(caught)
-                    if stop is None or stop.code not in wl.REPORT_CODES:
+                    if stop is None or stop.code not in NOT_SETTLED_FROM:
                         raise
                     refused = stop
-                    entry = self.ledger.mark_crashed(self.admission)
-        except Stop as caught:
+            if entry is None:
+                entry = self.ledger.mark_crashed(self.admission)
+        except BaseException as caught:             # noqa: BLE001
             stop = own_stop(caught)
-            if stop is None:                        # not the ledger's own stop: the settle crashed
-                self.say("crashed", during="settle")
-                stop = Stop(CRASHED, ids=("settle",))
-            else:
-                self.settled = stop.code
-            self.settle_stop = stop
-            raise stop from None
+            if stop is not None:                    # the ledger's own refusal: it decided
+                self.settled, self.settle_stop = stop.code, stop
+                raise stop from None
+            self.wire.caught(caught)
+            self._mark_after_a_settle_that_did_not_return()
         self.settled = entry["state"] if entry["kind"] is None else entry["kind"]
         self.say("settled", state=self.settled, counted_usd_micros=entry["counted_usd_micros"])
         if refused is not None:
             self.settle_stop = refused
             raise refused
+
+    def _mark_after_a_settle_that_did_not_return(self) -> None:
+        """One `mark_crashed()`, and then the stop the run fails by. Always raises."""
+        self.say("crashed", during="settle")
+        try:
+            entry = self.ledger.mark_crashed(self.admission)
+            self.settled = entry["state"] if entry["kind"] is None else entry["kind"]
+        except BaseException as caught:             # noqa: BLE001
+            stop = own_stop(caught)
+            if stop is not None:                    # for example: the settle had landed
+                self.settled = stop.code
+            else:
+                self.wire.caught(caught)
+        self.settle_stop = Stop(self.wire.reason or CRASHED, ids=("settle",))
+        raise self.settle_stop
 
     def _score_and_compare(self) -> tuple:
         label = self.labels[MAIN]
@@ -1031,6 +1148,7 @@ class _Scheduled:
                 with _quiet():
                     step()
             except BaseException as exc:            # noqa: BLE001 - a scorer that stops, however
+                self.wire.caught(exc)
                 # it stops, is a failed run (D2): any exception, a SystemExit with any code,
                 # AND A STOP OR A DUPLICATE. Only the job's own code may raise a Stop the
                 # run acts on, and no code but the claim a Duplicate.
@@ -1039,7 +1157,7 @@ class _Scheduled:
                 raise Stop(SCORER_STOPPED, ids=(name,)) from None
         self.key_parts = ws.key_parts(batch_dir)
         self.waived = self.ledger.assurance_waived(self.held.month)
-        report = self.guard.report()
+        report = self._report(label)
         self.summary = ws.build_summary(batch_dir, own=self.own, report=report, batch_label=label,
                                         month_assurance_waived=self.waived)
         self.documents["summary.json"] = ws.render(self.summary)
@@ -1070,8 +1188,9 @@ class _Scheduled:
             with _quiet():
                 exit_code = compare.main(["--baseline", str(baseline), "--rules", str(rules),
                                           "--run", str(summary_path), "--out", str(out)])
-        except BaseException:                       # noqa: BLE001 - a usage error (SystemExit,
+        except BaseException as exc:                # noqa: BLE001 - a usage error (SystemExit,
             # whatever its code), or anything else: the comparator ends only by returning
+            self.wire.caught(exc)
             raise Stop(COMPARE_ERROR, ids=("comparator_raised",)) from None
         # The exit code is the authority, and it is judged first.
         if type(exit_code) is not int or exit_code not in (0, 1, 2):
@@ -1189,8 +1308,13 @@ class _Scheduled:
             counts = refused.setdefault(where, {})
             counts[why] = counts.get(why, 0) + 1
 
-        if self.guard is not None:
-            self.documents.setdefault("guard_report.json", compare.render(self.guard.report()))
+        if self.guard is not None and "guard_report.json" not in self.documents:
+            # As a record, not to decide from: read afresh, whatever the tripwire says.
+            record = self.wire.evidence()
+            if record is None:
+                refuse("documents", "unreadable")
+            else:
+                self.documents["guard_report.json"] = compare.render(record)
         for name in sorted(self.documents, key=lambda n: (n != "guard_report.json", n)):
             if len(self.documents[name]) > store.MAX_OBJECT_BYTES:
                 refuse("documents", "too_large")
@@ -1225,6 +1349,7 @@ class _Scheduled:
     # ------------------------------------------------------- the endings
 
     def _succeed(self, result: dict, exit_code: int) -> int:
+        self._sound("success")                      # before anything says the run succeeded
         deps, run = self.deps, self.held.run_id
         prefix = store.run_prefix(SCHEDULED, run)
         values = [(publish.NO_BASELINE, 0)] + publish.breach_values(result) \
@@ -1250,6 +1375,7 @@ class _Scheduled:
         fault = success_fault(record, claim=claim_view(self.held))
         if fault is not None:
             raise Stop(SUCCESS_RECORD_INVALID, ids=(fault,))
+        self._sound("success")                      # and again, before the record that says so
         try:
             outcome = self.st.create(store.success_key(run), compare.render(record),
                                      attempts=self.cfg.ledger_cas_attempts)
@@ -1317,7 +1443,8 @@ class _Scheduled:
                     self.say("crashed", during=name)
                 else:
                     self.stopped(failed)
-            except BaseException:                   # noqa: BLE001 - never stops the next
+            except BaseException as exc:            # noqa: BLE001 - never stops the next
+                self.wire.caught(exc)
                 self.say("crashed", during=name)
         return 1
 
@@ -1395,7 +1522,10 @@ class _Scheduled:
         if self.summary is not None:
             values = publish.run_counts(self.summary, self.target)
         elif self.guard is not None:
-            values = publish.guard_counts(self.guard.report())
+            record = self.wire.evidence()           # counted from, never decided from
+            if record is None:
+                raise Stop(REPORT_UNREADABLE, ids=("counters",))
+            values = publish.guard_counts(record)
         else:
             return
         values = self.publisher.unsent(values)

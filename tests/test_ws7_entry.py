@@ -1231,17 +1231,46 @@ def test_metrics_that_cannot_be_published_fail_the_run_before_its_success_record
     assert "NoBaseline" not in out and not any(n.startswith("Breach") for n in out)
 
 
-def test_if_runok_1_cannot_be_published_the_success_record_stands_and_the_job_exits_1(ready, world):
+@pytest.mark.parametrize("acknowledged", [False, True])
+def test_if_runok_1_is_not_acknowledged_the_run_fails_with_its_own_code_and_a_failed_record(
+        ready, world, acknowledged):
+    """Codex P2, PR #9, accepted by the author. CloudWatch rejects `RunOk` = 1 after
+    the success record was written. The run goes through the claimed failure handler
+    with `ws7_runok_publish_failed`: the failed record is written beside the success
+    record, so the Thursday check reports a failed run (change B), and `RunOk` = 0
+    is tried. The partner: `RunOk` = 1 acknowledged, and no failed record."""
     target = "v1"
     ready(target)
-    world.cw.script(None, 500)                      # the metrics are taken; RunOk is not
-    assert world.run(target) == 1
-    assert not no_success(world, target)
-    assert store.failed_key(RUN_ID[target]) not in world.s3.keys()
-    assert "RunOk" not in world.published()
-    assert f"ws7 entry mode=scheduled target=v1 stage=stop code={entry.RUNOK_PUBLISH_FAILED} " \
-           f"cause={publish.PUBLISH_FAILED}" in world.lines
-    assert len(events(world, "cloudwatch")) == 2    # it was tried once, and nothing after it
+    if not acknowledged:
+        world.cw.script(None, 500)                  # the metrics are taken; RunOk = 1 is not
+    code = world.run(target)
+    run = RUN_ID[target]
+    assert not no_success(world, target)            # the success record stands either way
+    if acknowledged:
+        assert code == 0 and world.metric("RunOk") == [1]
+        assert store.failed_key(run) not in world.s3.keys()
+        assert "RunRefused" not in world.published()
+        return
+    assert code == 1
+    record = world.failed(run)
+    assert (record["code"], record["ids"], record["ledger"], record["evidence"]) == (
+        entry.RUNOK_PUBLISH_FAILED, [publish.PUBLISH_FAILED], "settled", "stored")
+    out = world.published()
+    assert (out["RunOk"], out["RunRefused"]) == ([0], [1])
+    # the run's metrics, RunOk = 1 (rejected), then the failure's markers: nothing else,
+    # and no counter a second time
+    assert [what.split(" ")[1].split(",")[0] for what in events(world, "cloudwatch")] == [
+        "NoBaseline", "RunOk", "RunRefused"]
+    assert all(len(values) == 1 for values in out.values())
+    # the failed record was written after the success record, and before RunOk = 0
+    log = world.log
+    assert log.index("s3", f"PUT {store.success_key(run)}") \
+        < log.index("s3", f"PUT {store.failed_key(run)}") \
+        < log.index("cloudwatch", "PutMetricData RunRefused")
+    world.clock.start = THURSDAY
+    assert world.check(target) == 0
+    assert check_lines(world)[1] == (f"failed run {run} code {entry.RUNOK_PUBLISH_FAILED} "
+                                     f"ids {publish.PUBLISH_FAILED}")
 
 
 def test_a_breach_message_that_cannot_be_sent_fails_the_run(ready, world, baseline_of):

@@ -18,7 +18,8 @@ prefix is outside `ws7/`; and a stored file that is not one the runners and scor
 the run. Updated 21 Nov 2026 with the rulings after the review of PR #9: the pre-flight's
 go/no-go is no failed generation, only the expected files and a cost within its reservation, and
 a v1 gate failure is not in it; and each metric is published at most once per run, with what
-was delivered before a later failure left to stand.
+was delivered before a later failure left to stand; and a `RunOk` = 1 that CloudWatch rejects
+fails the run, with a failed record.
 
 This is a design. Slice 1, the offline comparator, is built (`docs/WS7-COMPARATOR.md`). Of slice 2,
 parts 1 to 4 and part 5a are built (`docs/WS7-ENTRYPOINT.md`): the client wrapper and the
@@ -700,7 +701,7 @@ two acts are to write a success record to S3 and then to publish `RunOk` = 1.
 | Setting | Value |
 |---|---|
 | Metric | `RunOk`, namespace `DischargeAssistant/Eval`, dimension `Target` |
-| Published | Once, value 1, by the scheduled run as its last act. A scheduled run that fails **while it holds its claim** publishes 0. A run that stops before its claim publishes no `RunOk`: that process cannot know it is not a duplicate (the author's ruling, 20 Nov 2026). Manual runs, duplicates and the check never publish it |
+| Published | Once, value 1, by the scheduled run as its last act. A scheduled run that fails **while it holds its claim** publishes 0. If CloudWatch does not acknowledge the 1, that run is a failed run too: it writes its failed record beside its success record, so the check reports it, and tries 0 (as built, 21 Nov 2026). A run that stops before its claim publishes no `RunOk`: that process cannot know it is not a duplicate (the author's ruling, 20 Nov 2026). Manual runs, duplicates and the check never publish it |
 | Statistic | Maximum |
 | Period | 86,400 seconds (one day) |
 | Evaluation periods | 7 |

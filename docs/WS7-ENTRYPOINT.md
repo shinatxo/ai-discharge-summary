@@ -1501,8 +1501,11 @@ Namespace `DischargeAssistant/Eval`, one dimension, `Target`. Every value is a w
   stored. It publishes `RunOk` = 1 and exits 0.
 - The metrics are published before the success record. If they cannot be, the run fails
   (`ws7_publish_failed`): a breach value that was not published is never followed by `RunOk` = 1.
-- If `RunOk` = 1 itself cannot be published, the success record stands, no failed record is
-  written beside it, and the job exits 1. The backstop alarm may then fire.
+- **If CloudWatch does not acknowledge `RunOk` = 1, the run fails like any other run that holds
+  its claim**, with `ws7_runok_publish_failed` (Codex P2, PR #9, accepted by the author). The
+  success record stands. The failed record is written beside it, so the Thursday check reports a
+  failed run (the two-record rule below), and `RunOk` = 0 and `RunRefused` = 1 are tried. The
+  job exits 1. Its counters are not sent again.
 - D7 says each spend-guard trip is published. Under e2 a tripped run has no summary, so the
   three guard counters are published from the report on the failure path.
 - Until `evals/score_assemble.py` is fixed, `StepFailures…` and `GenerationsFailed` can only be 0
@@ -1582,7 +1585,7 @@ stops or raises is logged, and the next is still tried.
 | The comparator | `ws7_no_baseline`, `ws7_compare_error`, `ws7_compare_output_exists`, `ws7_part_c_ruled` | Yes | Yes |
 | Storing and publishing | `ws7_evidence_unstorable`, `ws7_evidence_unavailable`, the manifest's codes, `ws7_publish_failed`, `ws7_alert_failed`, `ws7_success_record_unavailable` | Yes | Yes |
 | Any other exception | `ws7_crashed` | If the claim is held | If the claim is held |
-| `RunOk` = 1 could not be published | `ws7_runok_publish_failed`, in the log | No | No |
+| `RunOk` = 1 was not acknowledged | `ws7_runok_publish_failed` | Yes, beside the success record | Yes |
 
 The failed record (`ws7-failed/1`) holds the run's ID, target, mode and scheduled time, the code,
 the IDs and counts the stop carried, any further codes (`also`), what became of the ledger entry
@@ -1954,6 +1957,8 @@ PYTHONDONTWRITEBYTECODE=1 python -m pytest -p no:cacheprovider -q tests/test_ws7
     were accepted leaves exactly one sample of every counter at the fake, and the failure path
     makes one request. The control: counters that were not acknowledged are sent by the failure
     path.
+  - `RunOk` = 1 rejected after the success record: a failed record beside it, `RunOk` = 0, and
+    the check reporting a failed run. The partner: `RunOk` = 1 accepted, and no failed record.
   - Every other command line, `--help` included: exit code 2, the one fixed usage line, nothing
     built and nothing sent. An invented sentinel in the rejected argument, for each kind of
     argument error, is in neither stream; the positive control gives the same command line to

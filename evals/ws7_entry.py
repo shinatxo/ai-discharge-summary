@@ -71,6 +71,11 @@ publishes its breach values, sends the job's message, writes its success record,
 publishes `RunOk` = 1 and exits 0. A failed scheduled run sends no message of its
 own; the Thursday check and the alarms report it.
 
+IF `RunOk` = 1 IS NOT ACKNOWLEDGED the run fails like any other run that holds its
+claim, with `ws7_runok_publish_failed`: the failed record is written beside the
+success record (the Thursday check then reports a failed run) and `RunOk` = 0 is
+tried.
+
 THE PRE-FLIGHT'S GO/NO-GO (D7) is three things: no failed generation, only the
 expected files, and a cost within its reservation. A v1 safety-net gate failure
 on the pre-flight scenario is NOT one of them: it is quality evidence, and the
@@ -904,13 +909,13 @@ class _Scheduled:
         if outcome != store.CREATED:
             raise Stop(SUCCESS_RECORD_UNAVAILABLE, ids=("key_taken",))
         self.say("success", status=result["status"], breaches=breaches)
-        # The last act. If it fails the success record stands, and no failed record is
-        # written beside it: the backstop alarm may then fire, which errs towards an alert.
+        # The last act. If CloudWatch does not acknowledge it, the run fails as any run
+        # that holds its claim fails: the failed record is written beside the success
+        # record, so the Thursday check reports a failed run, and RunOk = 0 is tried.
         try:
             self.publisher.put([(publish.RUN_OK, 1)])
         except Stop as stop:
-            self.say("stop", code=RUNOK_PUBLISH_FAILED, cause=stop.code)
-            return 1
+            raise Stop(RUNOK_PUBLISH_FAILED, ids=(stop.code,)) from None
         return 0
 
     def _duplicate(self, stop: Stop) -> int:

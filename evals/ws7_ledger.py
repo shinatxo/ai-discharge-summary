@@ -154,6 +154,7 @@ _EVALS = Path(__file__).resolve().parent
 if str(_EVALS) not in sys.path:
     sys.path.insert(0, str(_EVALS))
 
+import ws7_client as wc  # noqa: E402
 import ws7_reserve as reserve  # noqa: E402
 import ws7_store as store  # noqa: E402
 from ws7_store import MODES, SCHEDULED, TARGETS, Stop  # noqa: E402
@@ -555,36 +556,45 @@ def _read_report(report: object, admitted: Admission) -> tuple:
     return micros, unmetered
 
 
-# The guard's words (evals/ws7_client.py) for a call that has been sent and has no
-# final outcome yet, and for a call it refused before sending.
-_SENT, _REFUSED = "sent", "refused"
+# The guard's own words (evals/ws7_client.py), imported, never copied here. A call the
+# guard has sent and not yet given an outcome is `sent`: that word is not one of its
+# constants, and it is the one outcome that is NOT final.
+_SENT = "sent"
+# Every FINAL outcome the guard can write: a reply (with usage, or without), each label
+# `_failure_label` can give a call that failed, and a refusal.
+FINAL_OUTCOMES = (wc.RESPONSE, wc.USAGE_UNKNOWN, wc.REFUSED) + wc.NO_RESPONSE
 
 
-def report_fault(report: object) -> str | None:
-    """Why a guard's report cannot be settled from: one of REPORT_CODES, or None.
+def settlement(report: object) -> tuple:
+    """(fault, total in nano-dollars, unmetered): what a guard's report settles at,
+    WORKED OUT FROM ITS ROWS. `fault` is one of REPORT_CODES, or None; the other two
+    mean something only when it is None.
 
-    A LEDGER ENTRY IS SETTLED AS METERED ONLY FROM A REPORT THAT IS COMPLETE AND
-    CONSISTENT (Codex P1, PR #9, second re-check). The guard writes a call's row as
-    `sent`, and only when the call ends does it give the row its outcome and cost,
-    then add the cost to the run's total, then to the batch's, then mark the run
-    unmetered if it is. Anything that ends the process's work between two of those
-    steps (an interrupt the failure path then catches, an exception) leaves a report
-    whose total is not the run's cost. So before any write:
+    SETTLEMENT WORKS EVERYTHING OUT FROM THE ROWS (Codex, PR #9, third re-check). The
+    guard writes a call's row as `sent`, and only when the call ends does it give the
+    row its outcome and cost, then add the cost to the run's total, then to the
+    batch's, then mark the run unmetered if it is. Anything that ends the work
+    between two of those steps leaves a report whose own totals, count and flag are
+    not what happened. So nothing the report says ABOUT itself is trusted: the total,
+    the number of unmetered calls and the unmetered status are computed here from the
+    rows, with the guard's own rule (`ws7_client._unmetered`), and the report's own
+    figures must then EQUAL them.
 
-    - COMPLETE: every call has a final outcome. No row is left `sent`
-      (`ws7_report_incomplete`).
-    - CONSISTENT (`ws7_report_inconsistent`):
-      - the run's total is the sum of its rows' costs, and each batch's total is the
-        sum of that batch's rows;
-      - a refused call cost nothing, and every other call belongs to a batch the
-        report names;
-      - the `unmetered` flag is set exactly when a row is unmetered.
+    - Every row's outcome is one of FINAL_OUTCOMES. A row still `sent` is
+      `ws7_report_incomplete`. Any other word is not one the guard writes:
+      `ws7_report_invalid`.
+    - The report's own `unmetered_calls` and `unmetered` flag equal what the rows
+      give. Otherwise `ws7_report_invalid`.
+    - The run's total is the sum of its rows' costs, and each batch's total is the
+      sum of that batch's rows; a refused call cost nothing; every other call belongs
+      to a batch the report names. Otherwise `ws7_report_inconsistent`.
     - A report without those fields, in those types, is `ws7_report_invalid`.
 
     A report that fails means the run's cost is unknown. Unknown cost is unresolved
     (ADR-011 D7, point 4), never metered: the entrypoint marks the run crashed."""
+    bad = (REPORT_INVALID, 0, False)
     if type(report) is not dict:
-        return REPORT_INVALID
+        return bad
     calls, batches = report.get("calls"), report.get("batches")
     if type(calls) is not list or type(batches) is not dict \
             or type(report.get("unmetered")) is not bool \
@@ -592,30 +602,42 @@ def report_fault(report: object) -> str | None:
             or not _count(report.get("unmetered_calls")) \
             or not all(type(b) is dict and _count(b.get("total_usd_nanos"))
                        for b in batches.values()):
-        return REPORT_INVALID
-    incomplete, consistent, total = False, True, 0
+        return bad
+    incomplete, consistent, total, unmetered_calls = False, True, 0, 0
     by_batch = dict.fromkeys(batches, 0)
     for row in calls:
         if type(row) is not dict or type(row.get("outcome")) is not str \
                 or not _count(row.get("cost_usd_nanos")):
-            return REPORT_INVALID
+            return bad
         outcome, cost, label = row["outcome"], row["cost_usd_nanos"], row.get("batch")
         if outcome == _SENT:
             incomplete = True                       # sent, and never given an outcome
-        elif outcome == _REFUSED:
+            continue
+        if outcome not in FINAL_OUTCOMES:
+            return bad                              # not a word the guard writes
+        if outcome == wc.REFUSED:
             consistent = consistent and cost == 0
         elif type(label) is str and label in by_batch:
             total += cost
             by_batch[label] += cost
         else:
             consistent = False                      # a call in no batch the report names
+        unmetered_calls += wc._unmetered(outcome)   # the guard's own rule, on this row
     if incomplete:
-        return REPORT_INCOMPLETE
+        return REPORT_INCOMPLETE, 0, False
+    # What the report says about itself must be what its rows say.
+    if report["unmetered_calls"] != unmetered_calls \
+            or report["unmetered"] != (unmetered_calls > 0):
+        return bad
     if not consistent or total != report["total_usd_nanos"] \
-            or any(by_batch[label] != b["total_usd_nanos"] for label, b in batches.items()) \
-            or report["unmetered"] != (report["unmetered_calls"] > 0):
-        return REPORT_INCONSISTENT
-    return None
+            or any(by_batch[label] != b["total_usd_nanos"] for label, b in batches.items()):
+        return REPORT_INCONSISTENT, 0, False
+    return None, total, unmetered_calls > 0
+
+
+def report_fault(report: object) -> str | None:
+    """Why a guard's report cannot be settled from: one of REPORT_CODES, or None."""
+    return settlement(report)[0]
 
 
 def _blocked(snap: dict, now: datetime, mode: str, *, exclude: str | None = None) -> Stop | None:
@@ -894,18 +916,22 @@ class Ledger:
         report must be that run's own (WHOSE REPORT, module docstring). Returns
         the entry as written.
 
-        The report must also be complete and consistent (`report_fault`). One that is
-        not is refused before any write, with `ws7_report_incomplete` or
-        `ws7_report_inconsistent`: the run's cost is then unknown, and the caller
-        marks the run crashed, so the entry is unresolved at its reservation."""
+        What the entry is settled at is worked out from the report's ROWS
+        (`settlement`): the total, and whether the run is unmetered. The report's own
+        total, count and flag must equal them. A report that fails is refused before
+        any write, with `ws7_report_incomplete`, `ws7_report_inconsistent` or
+        `ws7_report_invalid`: the run's cost is then unknown, and the caller marks the
+        run crashed, so the entry is unresolved at its reservation."""
         if not isinstance(admitted, Admission):
             raise TypeError("settle() needs the Admission that admit() returned")
-        micros, unmetered = _read_report(report, admitted)
-        # Before any write: a report that is incomplete or inconsistent is not the
-        # run's cost, so nothing is settled from it.
-        fault = report_fault(report)
+        _read_report(report, admitted)              # whose report it is, and its shape
+        # Before any write: the total and the unmetered status are worked out from the
+        # rows, and the report's own figures must equal them. A report that fails is not
+        # the run's cost, so nothing is settled from it.
+        fault, total_nanos, unmetered = settlement(report)
         if fault is not None:
             raise Stop(fault, ids=(admitted.run_id,))
+        micros = reserve.to_micros(total_nanos)
         self.expire()
         if unmetered:
             return self._close(admitted, state=UNRESOLVED, kind=UNMETERED, counted=micros)

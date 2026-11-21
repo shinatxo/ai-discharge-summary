@@ -599,10 +599,22 @@ entry is left open, to be abandoned and resolved.
   | Rule | Otherwise |
   |---|---|
   | Complete: every call has a final outcome. No row is left `sent` | `ws7_report_incomplete` |
+  | Every row's outcome is one of the guard's final outcomes: a reply, a reply with no usable usage, a refusal, or one of the seven labels of a call that failed | `ws7_report_invalid` |
+  | The report's own `unmetered_calls` and `unmetered` flag equal what the rows give | `ws7_report_invalid` |
   | The run's total is the sum of its rows' costs, and each batch's total is the sum of that batch's rows | `ws7_report_inconsistent` |
   | A refused call cost nothing, and every other call is in a batch the report names | `ws7_report_inconsistent` |
-  | The `unmetered` flag is set exactly when a row is unmetered | `ws7_report_inconsistent` |
   | The rows, the batches and those totals are there, in their types | `ws7_report_invalid` |
+
+  - **Settlement works everything out from the rows** (Codex, PR #9, third re-check).
+    `settlement()` computes the total, the number of unmetered calls and the unmetered status
+    from the rows alone, and `settle()` writes the entry at those. Nothing the report says about
+    itself is used: its own total, count and flag only have to equal what the rows give.
+  - The outcomes and the rule for "unmetered" are the guard's own, **imported from
+    `evals/ws7_client.py`, not copied** (`RESPONSE`, `USAGE_UNKNOWN`, `REFUSED`, `NO_RESPONSE`,
+    and `_unmetered()`). That file is not changed.
+  - The case this closes: a call whose cost is unknown (a 500, say) in a report whose own count
+    said 0 and whose flag said metered. Taking the report's word, the run was settled as
+    metered.
 
   - Why: the guard writes a call's row as `sent`, and only when the call ends does it give the
     row its outcome and cost, then add the cost to the run's total, then to the batch's, then
@@ -2159,6 +2171,11 @@ PYTHONDONTWRITEBYTECODE=1 python -m pytest -p no:cacheprovider -q tests/test_ws7
   - The order of a successful run; nothing sent before the match check, and no model call before
     the claim and the reservation; the settle landing before any score file exists; `RunOk` = 1
     as the last request any server received.
+  - Settlement from the rows (`tests/test_ws7_ledger.py`): each of the guard's ten final
+    outcomes accepted with its metered or unmetered result; each with the report's own count
+    or flag wrong in each direction; twelve words the guard does not write. Through the
+    entrypoint, one call ended in each way the stub can end it, and the real guard's report
+    settled as its rows say.
   - A report that cannot be settled from: one call's accounting stopped at each of five points,
     by an interrupt and by an exception, in each batch, for both targets. Each time no further
     call is sent, the entry is unresolved at its reservation, and next week's run is refused

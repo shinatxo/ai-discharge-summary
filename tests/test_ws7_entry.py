@@ -634,8 +634,9 @@ def test_accounting_that_did_not_finish_leaves_the_entry_unresolved_at_its_reser
 
     assert world.bedrock_requests() == nth          # the call was sent, and nothing after it
     report = world.s3.json(PREFIX[target] + "guard_report.json")
-    assert wl.report_fault(report) in (wl.REPORT_INCOMPLETE, wl.REPORT_INCONSISTENT)
-    assert (wl.report_fault(report) == wl.REPORT_INCOMPLETE) == (point in ACCOUNTING_POINTS[:2])
+    assert wl.report_fault(report) == {0: wl.REPORT_INCOMPLETE, 1: wl.REPORT_INCOMPLETE,
+                                       2: wl.REPORT_INCONSISTENT, 3: wl.REPORT_INCONSISTENT,
+                                       4: wl.REPORT_INVALID}[ACCOUNTING_POINTS.index(point)]
     # ---- unresolved, as a crashed run, at its reservation: never metered
     booked = world.entry_of(run)
     assert (booked["state"], booked["kind"], booked["basis"]) == ("unresolved", "crashed", None)
@@ -650,7 +651,9 @@ def test_accounting_that_did_not_finish_leaves_the_entry_unresolved_at_its_reser
                               2: wl.REPORT_INCONSISTENT, 3: wl.REPORT_INCONSISTENT,
                               4: wc.UNMETERED}[ACCOUNTING_POINTS.index(point)]
     if point == ACCOUNTING_POINTS[4]:
-        assert record["also"] == [wl.REPORT_INCONSISTENT]
+        # the rows hold a call that could not be metered, and the report's own flag says
+        # the run is metered: the ledger works it out from the rows and refuses the report
+        assert record["also"] == [wl.REPORT_INVALID]
     assert world.published()["RunOk"] == [0] and no_success(world, target)
     assert not any(SENTINEL in line for line in world.lines)
 
@@ -681,6 +684,55 @@ def test_a_clean_run_settles_metered_and_the_next_scheduled_run_is_admitted(read
     world.clock.advance(7 * 86400)
     assert world.run(target, "2026-12-23T04:00:00Z") == 0
     assert world.metric("RunOk") == [1, 1]
+
+
+REAL_OUTCOMES = {       # what the stub does to one call -> (the guard's word for it, the entry)
+    "a throttle": (THROTTLE, "throttled", ("settled", None, "metered")),
+    "a 500": (ERROR_500, "server_error", ("unresolved", "unmetered", None)),
+    "a 500 with the throttle's code": (stubs.THROTTLE_CODE_500, "server_error",
+                                       ("unresolved", "unmetered", None)),
+    "a 429 that is not a throttle": (stubs.OTHER_CODE_429, "client_error",
+                                     ("unresolved", "unmetered", None)),
+    "a reply that never comes": (stubs.STALL, "read_timeout", ("unresolved", "unmetered", None)),
+    "a reply with no usage": (None, "response_usage_unknown", ("unresolved", "unmetered", None)),
+}
+
+
+@pytest.mark.parametrize("what", list(REAL_OUTCOMES))
+def test_each_outcome_a_real_guard_writes_is_settled_as_its_rows_say(ready, world, what):
+    """The same rule against reports the real guard made, through the entrypoint: one
+    call of the main batch ends in each way the stub can make it end. The ledger
+    accepts the report (the entry is never a crashed run) and settles it as that
+    outcome's row says: metered for a call that did not run the model, unresolved as
+    unmetered for one whose cost is unknown."""
+    target = "v1"
+    kind, word, (state, entry_kind, basis) = REAL_OUTCOMES[what]
+    stub = W.default_stub(target)
+    if kind is None:
+        answered = []
+
+        def no_usage_once():
+            answered.append(1)
+            stub.usage[FIRST_STEP[target]] = None if len(answered) == 2 else dict(stubs.HONEST_USAGE)
+        receive = stub.receive
+
+        def scripted(name: str) -> str:
+            if name == FIRST_STEP[target]:
+                no_usage_once()
+            return receive(name)
+        stub.receive = scripted
+    else:
+        W.fail_nth(stub, FIRST_STEP[target], 2, kind)
+    ready(target, stub=stub)
+    assert world.run(target) == 1
+    report = world.s3.json(PREFIX[target] + "guard_report.json")
+    assert wl.report_fault(report) is None
+    assert [c["outcome"] for c in report["calls"] if c["outcome"] != "response"] == [word]
+    assert wl.settlement(report)[2] is (entry_kind == "unmetered") is report["unmetered"]
+    booked = world.entry_of(RUN_ID[target])
+    assert (booked["state"], booked["kind"], booked["basis"]) == (state, entry_kind, basis)
+    assert booked["counted_usd_micros"] == report["total_usd_micros"]
+    assert world.failed(RUN_ID[target])["ledger"] == (entry_kind or state)
 
 
 def test_a_guard_whose_report_cannot_be_read_is_a_crashed_run_too(ready, world, monkeypatch):

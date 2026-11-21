@@ -72,6 +72,10 @@ THE LOG. One fixed line per stage: labels, IDs and counts. The runners' and the
 scorers' own output is discarded, and no traceback is printed: either could quote a
 record.
 
+THE COMMAND LINE. An argument the parser refuses is answered with one fixed usage
+line on stderr and exit code 2. argparse's own messages quote the argument they
+refuse, so none of them is ever printed, and there is no `--help`.
+
 Exit codes: 0 a successful run (a breach included), a duplicate, or a check that
 completed; 1 a failed run or a failed check; 2 a usage error.
 """
@@ -1040,24 +1044,53 @@ def check(target: str, scheduled_time: str, deps: Deps) -> int:
 
 # --------------------------------------------------------------------------- CLI
 
+USAGE = ("usage: ws7_entry.py {scheduled,check} --target {pipeline,v1} "
+         "--scheduled-time <ISO 8601 with a zone>")
+
+
+class _UsageError(Exception):
+    """The command line was refused. It carries nothing: argparse's message quotes
+    the argument it refused."""
+
+
+class _Parser(argparse.ArgumentParser):
+    """A parser that prints nothing. Every refusal in argparse goes through `error`,
+    whose message quotes the argument that was refused (`invalid choice: '...'`,
+    `unrecognized arguments: ...`). Here it raises instead, and `main` prints one
+    fixed line."""
+
+    def error(self, message):           # noqa: ARG002 - the message is never used
+        raise _UsageError
+
+
+def build_parser(parser_class=_Parser) -> argparse.ArgumentParser:
+    """The command line: two subcommands, two arguments each, and no `--help`.
+    `parser_class` is here for one test, which shows what plain argparse prints."""
+    parser = parser_class(prog="ws7_entry.py", add_help=False)
+    modes = parser.add_subparsers(dest="mode", required=True, parser_class=parser_class)
+    for name in ("scheduled",       # the weekly run: generate, score, compare, store, publish
+                 "check"):          # the Thursday check: no Bedrock call and no claim
+        sub = modes.add_parser(name, add_help=False)
+        sub.add_argument("--target", required=True, choices=store.TARGETS)
+        # the schedule's own scheduled time, ISO 8601 with a zone
+        sub.add_argument("--scheduled-time", required=True)
+    return parser
+
+
 def scheduled(target: str, scheduled_time: str, deps: Deps) -> int:
     return _Scheduled(target, scheduled_time, deps).run()
 
 
 def main(argv: list | None = None, deps: Deps | None = None) -> int:
-    parser = argparse.ArgumentParser(
-        description="WS7 entrypoint: the scheduled run and the Thursday check (ADR-011).")
-    modes = parser.add_subparsers(dest="mode", required=True)
-    for name, text in (("scheduled", "the weekly run: generate, score, compare, store, publish"),
-                       ("check", "the Thursday check: no Bedrock call and no claim")):
-        sub = modes.add_parser(name, help=text)
-        sub.add_argument("--target", required=True, choices=store.TARGETS)
-        sub.add_argument("--scheduled-time", required=True,
-                         help="the schedule's own scheduled time, ISO 8601 with a zone")
     try:
-        args = parser.parse_args(argv)
-    except SystemExit as exc:                       # a usage error: nothing is built or sent
-        return exc.code if type(exc.code) is int else 2
+        with _quiet():                  # whatever argparse might print, none of it is shown
+            args = build_parser().parse_args(argv)
+    except (Exception, SystemExit):     # noqa: BLE001 - a usage error: nothing is built or sent
+        try:
+            print(USAGE, file=sys.stderr, flush=True)
+        except Exception:               # noqa: BLE001 - a closed stderr changes nothing
+            pass
+        return 2
     deps = deps or Deps()
     if args.mode == "check":
         return check(args.target, args.scheduled_time, deps)

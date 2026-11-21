@@ -1256,6 +1256,18 @@ python evals/ws7_entry.py check     --target v1 --scheduled-time 2026-12-17T10:0
 - There is no argument for an endpoint, a bucket, a baseline, rules, config or corpus path, a
   clock or a mode. Any other command line is a usage error: exit code 2, and nothing is built or
   sent.
+- **A usage error prints one fixed line on stderr and nothing else** (Codex P2, PR #9):
+
+  ```
+  usage: ws7_entry.py {scheduled,check} --target {pipeline,v1} --scheduled-time <ISO 8601 with a zone>
+  ```
+
+  argparse's own messages quote the argument they refuse (`invalid choice: '…'`,
+  `unrecognized arguments: …`), so none of them is ever printed, to stdout or to stderr. That
+  holds for an unknown argument, a bad value and a missing one. There is no `--help`: it is a
+  usage error like any other.
+- `--scheduled-time` takes any string, so a bad one is refused by the job, not by argparse: a
+  failed run with `ws7_scheduled_time_invalid`. The value is never printed.
 - The alert topic must be an SNS topic ARN in `eu-west-2` (`ws7_topic_refused`).
 - **Exit codes:** 0 for a successful run (a breach included), a duplicate, or a check that
   completed; 1 for a failed run or a failed check; 2 for a usage error.
@@ -1850,7 +1862,10 @@ PYTHONDONTWRITEBYTECODE=1 python -m pytest -p no:cacheprovider -q tests/test_ws7
     be called, with a control in which a throttling client does make the runner sleep.
   - The check: a winter week and a summer week; each line of the table above; the look-back at
     0, 1 and 2 days; a run that died on Wednesday reported as abandoned that Thursday.
-  - Every other command line: exit code 2, with nothing built and nothing sent.
+  - Every other command line, `--help` included: exit code 2, the one fixed usage line, nothing
+    built and nothing sent. An invented sentinel in the rejected argument, for each kind of
+    argument error, is in neither stream; the positive control gives the same command line to
+    the same parser built on plain argparse, which prints it.
 
 **Keeping the tests offline.** Every test in the three part 2 files, the part 4 file and the two part 5a files uses `offline_aws`, and every
 client they build points at a fake on `127.0.0.1` or is never called. The `offline_aws` fixture:

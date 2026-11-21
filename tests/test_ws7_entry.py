@@ -16,6 +16,7 @@ positive control in which something was.
 
 from __future__ import annotations
 
+import argparse
 import builtins
 import json
 import os
@@ -1727,6 +1728,7 @@ def test_a_check_that_cannot_reach_the_topic_exits_1(thursday):
 # ========================================================================== THE CLI ==
 
 SCHEDULE_ARGS = ["--target", "v1", "--scheduled-time", WHEN]
+CLI_SENTINEL = "WS7-CLI-SENTINEL-invented"
 
 
 @pytest.mark.parametrize("argv", [
@@ -1742,39 +1744,114 @@ SCHEDULE_ARGS = ["--target", "v1", "--scheduled-time", WHEN]
     ["scheduled", *SCHEDULE_ARGS, "--bucket", "another-bucket"],
     ["scheduled", *SCHEDULE_ARGS, "--baseline", "/tmp/b.json"],
     ["check", *SCHEDULE_ARGS, "--lookback-days", "0"],
+    ["scheduled", *SCHEDULE_ARGS, "--help"], ["--help"], ["scheduled", "-h"],
     ["--mode", "manual", "scheduled", *SCHEDULE_ARGS]], ids=lambda a: " ".join(a) or "none")
 def test_any_other_command_line_is_a_usage_error_that_builds_and_sends_nothing(
         ready, world, argv, capsys):
     """There are two subcommands and two arguments. In 5a no manual mode exists, and
     nothing on the command line names a mode, an endpoint, a bucket, a path or a
-    clock. The partner is every other test here, which uses the one valid form."""
+    clock. The answer is one fixed line. The partner is every other test here, which
+    uses the one valid form."""
     ready("v1")
     assert world.call(argv) == 2
     assert world.log.all() == [] and world.lines == []
-    capsys.readouterr()
+    printed = capsys.readouterr()
+    assert (printed.out, printed.err) == ("", entry.USAGE + "\n")
+
+
+REFUSED_ARGV = {       # each kind of argument error, with a sentinel in what is refused
+    "an unknown option": ["scheduled", *SCHEDULE_ARGS, f"--{CLI_SENTINEL}", "1"],
+    "an unknown value": ["scheduled", *SCHEDULE_ARGS, CLI_SENTINEL],
+    "a bad value": ["scheduled", "--target", CLI_SENTINEL, "--scheduled-time", WHEN],
+    "a bad subcommand": [CLI_SENTINEL, *SCHEDULE_ARGS],
+    "a missing argument": ["scheduled", "--scheduled-time", CLI_SENTINEL],
+    "a missing value": ["check", "--target", "v1", f"--{CLI_SENTINEL}", "--scheduled-time"],
+}
+# What plain argparse prints for each. For something missing it prints its own
+# sentence, which names no value; for the rest it quotes what it refused.
+PLAIN_ARGPARSE_PRINTS = dict.fromkeys(REFUSED_ARGV, CLI_SENTINEL) | {
+    "a missing argument": "the following arguments are required: --target",
+    "a missing value": "argument --scheduled-time: expected one argument"}
+
+
+@pytest.mark.parametrize("kind", list(REFUSED_ARGV))
+def test_no_argparse_text_reaches_stdout_or_stderr(ready, world, capsys, kind):
+    """Codex P2, PR #9. argparse's messages quote the argument they refuse. Here an
+    invented sentinel is in the rejected argument, for each kind of error: it is in
+    neither stream, and what is printed is the one fixed usage line.
+
+    THE POSITIVE CONTROL: the same command line, given to the same parser built on
+    plain `argparse.ArgumentParser`, does print it."""
+    argv = REFUSED_ARGV[kind]
+    ready("v1")
+    assert world.call(argv) == 2
+    printed = capsys.readouterr()
+    assert (printed.out, printed.err) == ("", entry.USAGE + "\n")
+    assert CLI_SENTINEL not in printed.out + printed.err and CLI_SENTINEL not in entry.USAGE
+    assert world.log.all() == [] and world.lines == []
+
+    with pytest.raises(SystemExit) as plain:
+        entry.build_parser(argparse.ArgumentParser).parse_args(argv)
+    assert plain.value.code == 2
+    control = capsys.readouterr()
+    assert PLAIN_ARGPARSE_PRINTS[kind] in control.err
+    assert control.err != entry.USAGE + "\n"
+
+
+def test_a_scheduled_time_argparse_accepts_and_the_job_refuses_reaches_no_stream_either(
+        ready, world, capsys):
+    """`--scheduled-time` takes any string, so a bad one is refused by the job, not by
+    argparse: a failed run, by a fixed code. The sentinel is in no stream, no log line
+    and no request. The control: it really was the argument the job was given."""
+    target = "v1"
+    ready(target)
+    given = []
+    real = wl.parse_scheduled_time
+
+    def parse(text):
+        given.append(text)
+        return real(text)
+    wl.parse_scheduled_time, kept = parse, wl.parse_scheduled_time
+    try:
+        assert world.run(target, CLI_SENTINEL) == 1
+    finally:
+        wl.parse_scheduled_time = kept
+    assert given == [CLI_SENTINEL]
+    assert stopped_with(world, wl.SCHEDULED_TIME_INVALID)
+    printed = capsys.readouterr()
+    assert CLI_SENTINEL not in printed.out + printed.err + "".join(world.lines)
+    assert not any(CLI_SENTINEL.encode() in body for body in world.cw.bodies)
+    assert world.published() == {"RunRefused": [1]} and world.s3.requests == []
 
 
 def test_the_real_command_line_refuses_a_manual_mode_without_touching_anything(tmp_path):
     """The script itself, in a child process with invented credentials and no route
-    to AWS configured: a usage error exits 2 before any client is built."""
+    to AWS configured: a usage error exits 2 before any client is built, and prints
+    the one fixed line and nothing of what it was given."""
     env = {"PATH": os.environ.get("PATH", ""), "PYTHONDONTWRITEBYTECODE": "1",
            "AWS_ACCESS_KEY_ID": "ws7-test-invented-id", "AWS_SECRET_ACCESS_KEY": "ws7-test-invented-value",
            "AWS_EC2_METADATA_DISABLED": "true", "AWS_CONFIG_FILE": str(tmp_path / "none"),
            "AWS_SHARED_CREDENTIALS_FILE": str(tmp_path / "none"),
            "HTTPS_PROXY": "http://127.0.0.1:9", "HTTP_PROXY": "http://127.0.0.1:9"}
-    for argv in (["baseline", *SCHEDULE_ARGS], []):
+    for argv in (["baseline", *SCHEDULE_ARGS], [], ["scheduled", "--target", CLI_SENTINEL],
+                 ["scheduled", "--help"]):
         done = subprocess.run([sys.executable, str(ROOT / "evals" / "ws7_entry.py"), *argv],
                               env=env, cwd=tmp_path, capture_output=True, text=True,
                               timeout=CHILD_LIMIT_S)
         assert done.returncode == 2, done.stderr
-        assert done.stdout == "" and "usage:" in done.stderr
+        assert (done.stdout, done.stderr) == ("", entry.USAGE + "\n")
     assert list(tmp_path.iterdir()) == []
 
 
 def test_the_deps_a_run_takes_cannot_be_named_on_the_command_line():
-    """What `Deps` holds (endpoints, clocks, folders) has no argument."""
-    parser_help = subprocess.run([sys.executable, str(ROOT / "evals" / "ws7_entry.py"), "scheduled",
-                                  "--help"], capture_output=True, text=True, timeout=CHILD_LIMIT_S)
-    assert parser_help.returncode == 0
-    options = {word.strip(",") for word in parser_help.stdout.split() if word.startswith("--")}
-    assert options == {"--help", "--target", "--scheduled-time"}
+    """What `Deps` holds (endpoints, clocks, folders) has no argument: each subcommand
+    takes `--target` and `--scheduled-time` and nothing else, not even `--help`."""
+    parser = entry.build_parser()
+    modes = next(a for a in parser._actions if isinstance(a, argparse._SubParsersAction))
+    assert [a for a in parser._actions if a is not modes] == []
+    assert sorted(modes.choices) == ["check", "scheduled"]
+    for sub in modes.choices.values():
+        assert sorted(o for a in sub._actions for o in a.option_strings) == [
+            "--scheduled-time", "--target"]
+        assert all(a.option_strings for a in sub._actions)      # no positional argument
+    assert set(entry.USAGE.split()) >= {"{scheduled,check}", "--target", "--scheduled-time"}

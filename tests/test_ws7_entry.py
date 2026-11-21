@@ -1223,7 +1223,12 @@ def test_metrics_that_cannot_be_published_fail_the_run_before_its_success_record
     assert code_in(world, target) == publish.PUBLISH_FAILED
     assert no_success(world, target)
     assert world.metric("RunOk") == [0]             # published by the failure path's own call
-    assert len(events(world, "cloudwatch")) == 2    # each tried once: the metrics, then the failure's
+    # each tried once: the run's metrics (refused), the failure's markers, and the run's
+    # counters
+    assert len(events(world, "cloudwatch")) == 3
+    out = world.published()
+    assert out["CostUsdMicros"][0] > 0 and all(len(values) == 1 for values in out.values())
+    assert "NoBaseline" not in out and not any(n.startswith("Breach") for n in out)
 
 
 def test_if_runok_1_cannot_be_published_the_success_record_stands_and_the_job_exits_1(ready, world):
@@ -1279,6 +1284,156 @@ def test_no_text_reaches_a_metric_a_message_or_the_log(ready, world, baseline_of
     for name in ("summary.json", "comparison.json", "manifest.json", "guard_report.json"):
         assert mark not in world.s3.body(PREFIX[target] + name), name
     assert mark not in world.s3.body(store.success_key(RUN_ID[target]))
+
+
+# ======================================== THE FAILURE PATH NEVER FAILS OPEN ==
+
+def _raising(*_args, **_kwargs):
+    raise RuntimeError(SENTINEL)
+
+
+def _fail_a_main_batch_call(target: str):
+    """A stub that throttles the main batch's second scenario: a run that fails with
+    a guard and no summary, so every step of the failure path has something to do."""
+    stub = W.default_stub(target)
+    W.fail_nth(stub, FIRST_STEP[target], 3, THROTTLE)
+    return stub
+
+
+def _failure_steps(world, target: str) -> list:
+    """The steps of the failure path that reached a server, in the order they did:
+    the settling write, the first stored record, the failed record, the failure's
+    markers and the run's counters."""
+    run = RUN_ID[target]
+    marks = (("settle", "s3", f"PUT {LEDGER_KEY}", True),       # the last ledger write
+             ("store", "s3", f"PUT {PREFIX[target]}", False),
+             ("failed_record", "s3", f"PUT {store.failed_key(run)}", False),
+             ("markers", "cloudwatch", "PutMetricData RunRefused", False),
+             ("counters", "cloudwatch", "PutMetricData SpendGuardTrips", False))
+    seen = []
+    for step, server, what, last in marks:
+        hits = [i for i, (srv, text) in enumerate(world.log.all())
+                if srv == server and text.startswith(what)]
+        if hits:
+            seen.append((hits[-1] if last else hits[0], step))
+    return [step for _at, step in sorted(seen)]
+
+
+ALL_STEPS = ["settle", "store", "failed_record", "markers", "counters"]
+
+
+@pytest.mark.parametrize("broken", ["nothing", "log", "settle", "store", "clock", "build",
+                                    "s3_write", "markers", "counters"])
+def test_every_step_of_the_failure_path_is_tried_whatever_became_of_the_one_before(
+        ready, world, monkeypatch, broken):
+    """Codex P2, PR #9: the failure path must not fail open. One thing is broken in
+    each case: the log stream, the settling write, the first stored record, the clock
+    (once the ledger is settled), the building of the failed record, the failed
+    record's write, and each of the two publishes. In every case each LATER step is
+    still tried, and the ledger write comes first. The partner breaks nothing."""
+    target = "v1"
+    run = RUN_ID[target]
+    ready(target, stub=_fail_a_main_batch_call(target))
+    if broken == "log":
+        world.out = _raising
+    elif broken == "settle":
+        world.s3.after_put(LEDGER_KEY, lambda: world.s3.script_put(LEDGER_KEY, fakes.DENY_403))
+    elif broken == "store":
+        world.s3.script_put(PREFIX[target] + "guard_report.json", fakes.DENY_403)
+    elif broken == "clock":
+        def stop_the_clock():
+            world.clock.fail = RuntimeError(SENTINEL)
+        world.s3.after_put(LEDGER_KEY, lambda: None)            # the booking
+        world.s3.after_put(LEDGER_KEY, stop_the_clock)          # the settle has landed
+    elif broken == "build":
+        monkeypatch.setattr(entry._Scheduled, "_failed_record", _raising)
+    elif broken == "s3_write":
+        world.s3.script_put(store.failed_key(run), fakes.DENY_403)
+    elif broken == "markers":
+        world.cw.script(500)
+    elif broken == "counters":
+        world.cw.script(None, 500)
+
+    assert world.run(target) == 1
+    world.clock.fail = None
+    # ---- every step reached its server, in order, the ledger first
+    never_sent = {"clock": "failed_record", "build": "failed_record"}.get(broken)
+    assert _failure_steps(world, target) == [s for s in ALL_STEPS if s != never_sent]
+    # ---- and what landed is everything but the one thing that was broken
+    booked = world.entry_of(run)
+    if broken == "settle":
+        assert booked["state"] == "open"                        # it expires, and is then abandoned
+    else:
+        assert (booked["state"], booked["basis"]) == ("settled", "metered")
+    assert (PREFIX[target] + "guard_report.json" in world.s3.keys()) == (broken != "store")
+    has_record = store.failed_key(run) in world.s3.keys()
+    assert has_record == (broken not in ("clock", "build", "s3_write"))
+    out = world.published()
+    assert ("RunOk" in out, "RunRefused" in out) == ((broken != "markers"),) * 2
+    assert ("CallsNotResponse" in out) == (broken != "counters")
+    assert all(len(values) == 1 for values in out.values())
+    if has_record:
+        record = world.failed(run)
+        assert record["code"] == entry.CALL_FAILED
+        assert record["evidence"] == ("stored" if broken != "store" else entry.EVIDENCE_UNAVAILABLE)
+        assert (record["ledger"] == "settled") == (broken != "settle")
+        assert record["also"] == ([] if broken != "settle" else [record["ledger"]])
+    # ---- the log says which step was lost, and nothing of the exception but its class
+    assert not any(SENTINEL in line or "Traceback" in line for line in world.lines)
+    if broken in ("clock", "build"):
+        assert ("ws7 entry mode=scheduled target=v1 stage=crashed error=RuntimeError "
+                "during=failed_record") in world.lines
+    if broken == "log":
+        assert world.lines == []
+    assert no_success(world, target) and world.sns.messages == []
+
+
+def test_a_log_stream_that_fails_changes_nothing_a_run_a_duplicate_or_a_check_does(
+        ready, world, capsys):
+    """Logging is best effort everywhere. With a log stream that raises on every
+    line: a good run still ends with RunOk = 1, a second delivery is still counted as
+    a duplicate, and the check still sends its report."""
+    target = "v1"
+    ready(target)
+    world.out = _raising
+    assert world.run(target) == 0
+    assert world.metric("RunOk") == [1] and not no_success(world, target)
+    assert world.run(target) == 0
+    assert world.metric("Duplicate") == [1] and world.metric("RunOk") == [1]
+    world.s3.remove(store.success_key(RUN_ID[target]))
+    world.clock.start = THURSDAY
+    assert world.check(target) == 0
+    assert check_lines(world)[1] == f"run {RUN_ID[target]} started and did not finish: no success record"
+    assert world.lines == []
+    printed = capsys.readouterr()
+    assert (printed.out, printed.err) == ("", "")
+
+
+def test_best_effort_makes_a_stream_unable_to_raise_and_the_stream_itself_does_raise():
+    """The positive control: the stream the tests above break really raises."""
+    with pytest.raises(RuntimeError):
+        _raising("a line")
+    assert entry.best_effort(_raising)("a line") is None
+    kept: list = []
+    entry.best_effort(kept.append)("a line")
+    assert kept == ["a line"]
+
+
+def test_something_that_exits_inside_a_run_is_a_crashed_run_that_still_settles(ready, world,
+                                                                               monkeypatch):
+    """A `SystemExit` from inside the run is handled as any crash is: the failure path
+    runs, and nothing leaves the process without a settle and a failed record."""
+    target = "v1"
+    ready(target)
+
+    def exits(*_args, **_kwargs):
+        raise SystemExit(SENTINEL)
+    monkeypatch.setattr(ws, "build_summary", exits)
+    assert world.run(target) == 1
+    record = world.failed(RUN_ID[target])
+    assert (record["code"], record["ledger"]) == (entry.CRASHED, "settled")
+    assert world.published()["RunOk"] == [0]
+    assert not any(SENTINEL in line for line in world.lines)
 
 
 # ======================================= AN EXIT CODE THE BATCH MUST EXPLAIN ==

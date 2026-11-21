@@ -1531,9 +1531,25 @@ no line the job printed.
 
 ### A failed run
 
-Every handled failure is a `Stop` with a fixed code. In this order: the ledger is settled; what
-records exist are stored; the failed record is written; the metrics are published. Each step is
-tried whatever became of the one before.
+Every handled failure is a `Stop` with a fixed code. **The failure path never fails open**
+(Codex P2, PR #9). It is five steps, in this order, and each is tried on its own: a step that
+stops or raises is logged, and the next is still tried.
+
+| Step | What it does |
+|---|---|
+| 1. The ledger | Settle from the guard's report; `mark_crashed()` only when there is no guard |
+| 2. The records | Store what records exist |
+| 3. The failed record | Build it, the clock read included, and write it. Only for a run that holds its claim |
+| 4. The markers | `RunRefused` = 1 and, from the claim's holder, `RunOk` = 0 (and `NoBaseline` = 1) |
+| 5. The counters | The run's counts, from its summary or else from the guard's report |
+
+- The markers and the counters are two calls. A counter that cannot be built or sent never
+  holds back `RunOk` = 0.
+- A `SystemExit` from inside a run is handled as any other crash is: `ws7_crashed`, and the
+  failure path runs.
+- A test breaks one thing in each case: the log stream, the settling write, the first stored
+  record, the clock, the building of the failed record, its write, and each publish. Every later
+  step still reaches its server, with the ledger write first.
 
 | Stage | Codes | Failed record | `RunOk` = 0 |
 |---|---|---|---|
@@ -1604,6 +1620,11 @@ publishes to the topic.
 
 One fixed line for each stage: labels, IDs and counts. A stop is printed as `Stop.line()`. No
 traceback is printed, and of an unexpected exception only its class name.
+
+**Logging is best effort everywhere and never raises** (Codex P2, PR #9). A log stream that
+fails (a closed pipe, a full disk) changes nothing a run, a duplicate or the check does: with a
+stream that raises on every line, a good run still ends with `RunOk` = 1 and a failed run still
+settles, writes its failed record and publishes `RunOk` = 0.
 
 ### Carried items closed
 
@@ -1907,6 +1928,10 @@ PYTHONDONTWRITEBYTECODE=1 python -m pytest -p no:cacheprovider -q tests/test_ws7
     failed record, each reported by its label, each with a valid partner. A perfect success
     record beside an invalid claim does not count. The check's rules are also held against the
     claim and the records a real run writes.
+  - The failure path: one thing broken in each case (the log stream, the settling write, the
+    first stored record, the clock, the building of the failed record, its write, each publish),
+    and every later step still tried, the ledger first. A log stream that raises on every line,
+    under a good run, a duplicate and a check.
   - Every other command line, `--help` included: exit code 2, the one fixed usage line, nothing
     built and nothing sent. An invented sentinel in the rejected argument, for each kind of
     argument error, is in neither stream; the positive control gives the same command line to

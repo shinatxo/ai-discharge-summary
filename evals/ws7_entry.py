@@ -43,13 +43,22 @@ shows such a call, every further call in the run is refused with
 `ws7_run_failed`, raised as the wrapper raises its own refusals. The run fails with
 the FIRST failure's code and settles from the guard's report.
 
-A FAILURE. Every handled failure is a `Stop` with a fixed code. In this order:
-the ledger is settled (from the guard's report; `mark_crashed()` only when there is
-no guard); what records exist are stored; the failed record the Thursday check reads
-is written; `RunOk` = 0 and `RunRefused` = 1 are published. `RunOk` is published
-only by the process that holds the scheduled claim: before the claim a process
-cannot know it is not a duplicate, and a duplicate never publishes `RunOk`. A stop
-before the claim publishes `RunRefused` alone and writes no S3 object.
+A FAILURE. Every handled failure is a `Stop` with a fixed code. The failure path
+(`_fail`) is five steps, in this order, EACH TRIED ON ITS OWN: whatever becomes of
+one, the next is still tried (Codex P2, PR #9).
+
+ 1. The ledger is settled (from the guard's report; `mark_crashed()` only when
+    there is no guard).
+ 2. What records exist are stored.
+ 3. The failed record the Thursday check reads is built (the clock read included)
+    and written.
+ 4. `RunRefused` = 1 and `RunOk` = 0 are published.
+ 5. The run's counters are published.
+
+`RunOk` is published only by the process that holds the scheduled claim: before
+the claim a process cannot know it is not a duplicate, and a duplicate never
+publishes `RunOk`. A stop before the claim publishes `RunRefused` alone and
+writes no S3 object.
 
 A BREACH IS A SUCCESSFUL RUN (D9): it generated, scored, compared and stored. It
 publishes its breach values, sends the job's message, writes its success record,
@@ -82,7 +91,8 @@ anything to report.
 
 THE LOG. One fixed line per stage: labels, IDs and counts. The runners' and the
 scorers' own output is discarded, and no traceback is printed: either could quote a
-record.
+record. LOGGING IS BEST EFFORT: a log stream that fails never changes what a run
+does.
 
 THE COMMAND LINE. An argument the parser refuses is answered with one fixed usage
 line on stderr and exit code 2. argparse's own messages quote the argument they
@@ -184,6 +194,18 @@ IDS_SHOWN = 8                 # IDs named in one stop; the rest are counted
 
 def _say(line: str) -> None:
     print(line, flush=True)
+
+
+def best_effort(out):
+    """`out`, made unable to raise. LOGGING IS BEST EFFORT EVERYWHERE: a closed pipe
+    or a full disk under the log must never stop a settle, a failed record or a
+    metric that would have followed the line."""
+    def emit(line: str) -> None:
+        try:
+            out(line)
+        except Exception:               # noqa: BLE001 - whatever the stream did, the run goes on
+            pass
+    return emit
 
 
 @dataclass
@@ -443,6 +465,7 @@ class _Scheduled:
     def __init__(self, target: str, scheduled_time: str, deps: Deps):
         self.target, self.scheduled_time, self.deps = target, scheduled_time, deps
         self.environ = os.environ if deps.environ is None else deps.environ
+        self.out = best_effort(deps.out)
         self.publisher = None
         self.st = None
         self.ledger = None
@@ -466,7 +489,7 @@ class _Scheduled:
     def say(self, stage: str, **fields) -> None:
         parts = [f"ws7 entry mode=scheduled target={self.target} stage={stage}"]
         parts += [f"{name}={value}" for name, value in fields.items()]
-        self.deps.out(" ".join(parts))
+        self.out(" ".join(parts))
 
     # ------------------------------------------------------------- the run
 
@@ -482,7 +505,7 @@ class _Scheduled:
             return self._duplicate(stop)
         except Stop as stop:
             return self._fail(stop)
-        except Exception as exc:        # noqa: BLE001 - the outermost handler
+        except (Exception, SystemExit) as exc:      # noqa: BLE001 - the outermost handler
             # No traceback: one could quote a record. The class name is a name in code.
             self.say("crashed", error=type(exc).__name__)
             return self._fail(Stop(CRASHED))
@@ -887,7 +910,7 @@ class _Scheduled:
     def _duplicate(self, stop: Stop) -> int:
         """A duplicate delivery: it reserved and spent nothing. It counts one
         duplicate and publishes nothing else, and never `RunOk`."""
-        self.deps.out(stop.line())
+        self.out(stop.line())
         try:
             self.publisher.put([(publish.DUPLICATE, 1)])
         except Stop as failed:
@@ -896,67 +919,92 @@ class _Scheduled:
         return 0
 
     def _fail(self, stop: Stop) -> int:
-        """A failed run. Each step is tried whatever became of the one before."""
-        self.deps.out(stop.line())
-        also = []
-        # 1. The ledger, first.
+        """A failed run. THE FAILURE PATH NEVER FAILS OPEN: its five steps are tried
+        in this order, each on its own. A step that stops or raises is logged, and
+        the next one is still tried."""
+        self.out(stop.line())
+        also: list = []
+        for name, step in (("settle", self._fail_ledger), ("store", self._fail_evidence),
+                           ("failed_record", self._fail_record),
+                           ("markers", self._fail_markers), ("counters", self._fail_counters)):
+            try:
+                step(stop, also)
+            except Stop as failed:
+                self.out(failed.line())
+            except (Exception, SystemExit) as exc:  # noqa: BLE001 - never stops the next
+                self.say("crashed", error=type(exc).__name__, during=name)
+        return 1
+
+    def _fail_ledger(self, stop: Stop, also: list) -> None:
+        """1. The ledger, first: settled from the guard's report, or marked crashed
+        when there is no guard."""
+        earlier = self.settle_stop
+        if earlier is not None and earlier is not stop:
+            # The settle was tried when the last runner returned, and it was refused.
+            also.append(earlier.code)
+            self.out(earlier.line())
         try:
             self._settle()
         except Stop as failed:
             also.append(failed.code)
-            self.deps.out(failed.line())
-        except Exception as exc:                    # noqa: BLE001
+            raise
+        except (Exception, SystemExit):
             also.append(CRASHED)
-            self.say("crashed", error=type(exc).__name__, during="settle")
-        if self.settle_stop is not None and self.settle_stop is not stop \
-                and self.settle_stop.code not in also:
-            # The settle was tried when the last runner returned, and it was refused.
-            also.append(self.settle_stop.code)
-            self.deps.out(self.settle_stop.line())
-        # 2. What records exist.
+            raise
+
+    def _fail_evidence(self, _stop: Stop, _also: list) -> None:
+        """2. What records exist."""
         try:
             self._store(strict=False)
-        except Stop as failed:
-            self.deps.out(failed.line())
-        except Exception as exc:                    # noqa: BLE001
+        except Stop:
+            raise
+        except (Exception, SystemExit):
             self.stored = CRASHED
-            self.say("crashed", error=type(exc).__name__, during="store")
-        # 3. The failed record: only for a run that holds its claim.
+            raise
+
+    def _failed_record(self, stop: Stop, also: list) -> dict:
+        return {"schema": FAILED_SCHEMA, "run_id": self.held.run_id, "target": self.target,
+                "mode": SCHEDULED, "scheduled_time": self.held.scheduled_time,
+                "code": stop.code, "ids": list(stop.ids),
+                "counts": dict(sorted(stop.counts.items())), "also": list(also),
+                "ledger": self.settled or "not_admitted", "evidence": self.stored,
+                "git_commit": self.who.git_commit, "image_digest": self.who.image_digest,
+                "failed_at": store.utc_text(store.read_clock(self.deps.wall))}
+
+    def _fail_record(self, stop: Stop, also: list) -> None:
+        """3. The failed record the Thursday check reads: only for a run that holds its
+        claim. It is built here, the clock read included, so that nothing that goes
+        wrong in building it can stop the metrics that follow."""
+        if self.held is None:
+            return
+        body = compare.render(self._failed_record(stop, also))
+        outcome = self.st.create(store.failed_key(self.held.run_id), body,
+                                 attempts=self.cfg.ledger_cas_attempts)
+        self.say("failed_record", written=int(outcome == store.CREATED))
+
+    def _fail_markers(self, stop: Stop, _also: list) -> None:
+        """4. The failure's own markers. `RunOk` = 0 only from the claim's holder."""
+        if self.publisher is None:
+            return
+        values = [(publish.RUN_REFUSED, 1)]
         if self.held is not None:
-            record = {"schema": FAILED_SCHEMA, "run_id": self.held.run_id, "target": self.target,
-                      "mode": SCHEDULED, "scheduled_time": self.held.scheduled_time,
-                      "code": stop.code,
-                      "ids": list(stop.ids), "counts": dict(sorted(stop.counts.items())),
-                      "also": also, "ledger": self.settled or "not_admitted",
-                      "evidence": self.stored,
-                      "git_commit": self.who.git_commit, "image_digest": self.who.image_digest,
-                      "failed_at": store.utc_text(store.read_clock(self.deps.wall))}
-            try:
-                outcome = self.st.create(store.failed_key(self.held.run_id), compare.render(record),
-                                         attempts=self.cfg.ledger_cas_attempts)
-                self.say("failed_record", written=int(outcome == store.CREATED))
-            except Stop as failed:
-                self.deps.out(failed.line())
-            except Exception as exc:                # noqa: BLE001
-                self.say("crashed", error=type(exc).__name__, during="failed_record")
-        # 4. The metrics. RunOk = 0 only from the claim's holder.
-        if self.publisher is not None:
-            values = [(publish.RUN_REFUSED, 1)]
-            try:
-                if self.held is not None:
-                    values.append((publish.RUN_OK, 0))
-                if stop.code == NO_BASELINE:
-                    values.append((publish.NO_BASELINE, 1))
-                if self.summary is not None:
-                    values += publish.run_counts(self.summary, self.target)
-                elif self.guard is not None:
-                    values += publish.guard_counts(self.guard.report())
-                self.publisher.put(values)
-            except Stop as failed:
-                self.deps.out(failed.line())
-            except Exception as exc:                # noqa: BLE001
-                self.say("crashed", error=type(exc).__name__, during="publish")
-        return 1
+            values.append((publish.RUN_OK, 0))
+        if stop.code == NO_BASELINE:
+            values.append((publish.NO_BASELINE, 1))
+        self.publisher.put(values)
+
+    def _fail_counters(self, _stop: Stop, _also: list) -> None:
+        """5. The run's counters: from its summary if it has one, else from the guard's
+        report."""
+        if self.publisher is None:
+            return
+        if self.summary is not None:
+            values = publish.run_counts(self.summary, self.target)
+        elif self.guard is not None:
+            values = publish.guard_counts(self.guard.report())
+        else:
+            return
+        self.publisher.put(values)
 
 
 # ------------------------------------------------------------- the Thursday check
@@ -1066,10 +1114,11 @@ def check(target: str, scheduled_time: str, deps: Deps) -> int:
     """The Thursday check (D9): did the scheduled run succeed? No Bedrock call, no
     claim, no CloudWatch call. It reads S3 and publishes to the topic."""
     environ = os.environ if deps.environ is None else deps.environ
+    out = best_effort(deps.out)
 
     def say(stage: str, **fields) -> None:
-        deps.out(" ".join([f"ws7 entry mode=check target={target} stage={stage}"]
-                          + [f"{name}={value}" for name, value in fields.items()]))
+        out(" ".join([f"ws7 entry mode=check target={target} stage={stage}"]
+                     + [f"{name}={value}" for name, value in fields.items()]))
 
     publisher = None
     try:
@@ -1106,9 +1155,9 @@ def check(target: str, scheduled_time: str, deps: Deps) -> int:
             say("alert_sent")
         return 0
     except Stop as stop:
-        deps.out(stop.line())
+        out(stop.line())
         code = stop.code
-    except Exception as exc:                        # noqa: BLE001 - no traceback: see the module docstring
+    except (Exception, SystemExit) as exc:          # noqa: BLE001 - no traceback is printed
         say("crashed", error=type(exc).__name__)
         code = CRASHED
     # The check itself failed. Say so on the topic if it can still be reached.
@@ -1117,8 +1166,8 @@ def check(target: str, scheduled_time: str, deps: Deps) -> int:
             subject = f"WS7 check - target {target} - the check failed"
             publisher.alert(subject, f"{subject}\ncode {code}; see the task log")
         except Stop as failed:
-            deps.out(failed.line())
-        except Exception as exc:                    # noqa: BLE001
+            out(failed.line())
+        except (Exception, SystemExit) as exc:      # noqa: BLE001
             say("crashed", error=type(exc).__name__, during="alert")
     return 1
 

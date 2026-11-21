@@ -80,12 +80,16 @@ CLAIM_KEY = {t: f"ws7/claims/{t}/2026-12-16" for t in TARGETS}
 
 
 class Clock:
-    """One clock for the wall and the monotonic time. It moves only when told to."""
+    """One clock for the wall and the monotonic time. It moves only when told to.
+    A test may break the wall clock: once `fail` is set, reading it raises that."""
 
     def __init__(self, start: datetime = START):
         self.start, self.offset = start, 0.0
+        self.fail: Exception | None = None
 
     def wall(self) -> datetime:
+        if self.fail is not None:
+            raise self.fail
         return self.start + timedelta(seconds=self.offset)
 
     def monotonic(self) -> float:
@@ -293,6 +297,7 @@ class World:
         self.clock = Clock(start)
         self.runner_now = lambda: QUIET             # what the runners read as "now"
         self.lines: list = []
+        self.out = self.lines.append                # the log stream; a test may break it
         self.config_path = reserve.CONFIG_PATH      # a test may point this at a copy
         self.runs_dir = tmp_path / "runs"
         self.frozen = tmp_path / "frozen"
@@ -333,7 +338,7 @@ class World:
         return entry.Deps(environ=self.environ, endpoints=self.endpoints, wall=self.clock.wall,
                           monotonic=self.clock.monotonic, runner_now=lambda: self.runner_now(),
                           runs_dir=self.runs_dir, baseline_dir=self.frozen,
-                          config_path=self.config_path, out=self.lines.append)
+                          config_path=self.config_path, out=lambda line: self.out(line))
 
     def call(self, argv: list) -> int:
         started = time.monotonic()

@@ -1989,7 +1989,9 @@ PYTHONDONTWRITEBYTECODE=1 python -m pytest -p no:cacheprovider -q tests/test_ws7
   - Every other command line, `--help` included: exit code 2, the one fixed usage line, nothing
     built and nothing sent. An invented sentinel in the rejected argument, for each kind of
     argument error, is in neither stream; the positive control gives the same command line to
-    the same parser built on plain argparse, which prints it.
+    the same parser built on plain argparse, which prints it. The two layers are each tested
+    alone: the parser raises and prints nothing with the streams open, and `main` shows nothing
+    even of a parser that prints.
 
 **Keeping the tests offline.** Every test in the three part 2 files, the part 4 file and the two part 5a files uses `offline_aws`, and every
 client they build points at a fake on `127.0.0.1` or is never called. The `offline_aws` fixture:

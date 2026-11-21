@@ -2362,6 +2362,30 @@ def test_no_argparse_text_reaches_stdout_or_stderr(ready, world, capsys, kind):
     assert control.err != entry.USAGE + "\n"
 
 
+def test_the_parser_alone_raises_on_a_usage_error_and_prints_nothing(capsys):
+    """The first of two layers. The parser's own `error` raises, so nothing is printed
+    even while both streams are open, and the exception carries nothing of what was
+    refused."""
+    for kind, argv in REFUSED_ARGV.items():
+        with pytest.raises(entry._UsageError) as refused:
+            entry.build_parser().parse_args(argv)
+        assert refused.value.args == (), kind
+        printed = capsys.readouterr()
+        assert (printed.out, printed.err) == ("", ""), kind
+
+
+def test_both_streams_are_discarded_while_the_command_line_is_parsed(world, capsys, monkeypatch):
+    """The second layer. Even with a parser that prints as plain argparse does, `main`
+    shows nothing of it: both streams are discarded while it parses."""
+    build = entry.build_parser
+    monkeypatch.setattr(entry, "build_parser", lambda: build(argparse.ArgumentParser))
+    for kind, argv in REFUSED_ARGV.items():
+        assert world.call(argv) == 2
+        printed = capsys.readouterr()
+        assert (printed.out, printed.err) == ("", entry.USAGE + "\n"), kind
+    assert world.log.all() == [] and world.lines == []
+
+
 def test_a_scheduled_time_argparse_accepts_and_the_job_refuses_reaches_no_stream_either(
         ready, world, capsys):
     """`--scheduled-time` takes any string, so a bad one is refused by the job, not by

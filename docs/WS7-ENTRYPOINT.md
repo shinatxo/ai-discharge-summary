@@ -1743,6 +1743,13 @@ starts; the failed record; the prefixes of success records and retained copies.
 - **Manual runs publish no CloudWatch metric.**
 - 5b uses 5a's run: the precheck, the match check, the guard's deadline, the wrapper that stops
   every call once the run has failed, and settling before scoring.
+- **Reject an existing batch path before it is registered as evidence** (Codex P3, PR #9,
+  carried by the author, 21 Nov 2026). `_dispatch()` records a batch folder as the run's own
+  (`evals/ws7_entry.py`, `self.batches[label] = …`) before the runner has refused a folder that
+  is already there. The runner does refuse it (`ws7_runner_refused`, exit code 2), but the
+  failure path then stores that folder's allowed files as this run's records, though this run
+  wrote none of them. The entrypoint must refuse a batch path that exists before it registers
+  it, with a fixed code, in the scheduled and the manual modes.
 - **Where a candidate goes.** The manual baseline mode writes the envelope under the run's own
   prefix, `ws7/runs/manual/<run_id>/`. 5b names the object. It is never written to a path a
   baseline is read from.

@@ -3010,6 +3010,21 @@ def test_a_parse_that_ends_any_other_way_is_a_usage_error_too(world, capsys, mon
     assert world.log.all() == [] and world.lines == []
 
 
+@pytest.mark.parametrize("ending", list(ENDINGS))
+def test_a_usage_line_that_cannot_be_printed_still_exits_2(world, monkeypatch, ending):
+    """The usage line is best effort too: a stderr that raises anything, of any type,
+    does not change the exit code. The partner prints it: the tests above."""
+    class Broken:
+        def write(self, _text):
+            raise ENDINGS[ending]()
+
+        def flush(self):
+            raise ENDINGS[ending]()
+    monkeypatch.setattr(sys, "stderr", Broken())
+    assert world.call(["scheduled", "--target", "v2"]) == 2
+    assert world.log.all() == [] and world.lines == []
+
+
 def test_a_scheduled_time_argparse_accepts_and_the_job_refuses_reaches_no_stream_either(
         ready, world, capsys):
     """`--scheduled-time` takes any string, so a bad one is refused by the job, not by

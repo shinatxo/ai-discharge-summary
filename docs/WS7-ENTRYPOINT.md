@@ -2114,7 +2114,7 @@ PYTHONDONTWRITEBYTECODE=1 python -m pytest -p no:cacheprovider -q tests/test_ws7
     building of the failed record, its write and each publish call, each raising an
     `Exception`, `SystemExit(0)`, `SystemExit(1)` and `KeyboardInterrupt` inside the process.
     Every later step still reaches its server, the ledger is settled first, and the job
-    returns 1.
+    returns 1. A stderr that raises while the usage line is printed: still exit code 2.
   - At most once: a breach run whose message, or whose success record, fails after the counters
     were accepted leaves exactly one sample of every counter at the fake, and the failure path
     makes one request. The control: counters that were not acknowledged are sent by the failure

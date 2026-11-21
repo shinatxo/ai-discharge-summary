@@ -665,10 +665,10 @@ def _finite_float(text: str) -> float:
 
 
 def _bounded_int(text: str) -> int:
-    """A JSON integer of no more digits than Python will convert, whatever the
-    interpreter's own limit is set to at the moment."""
-    limit = sys.get_int_max_str_digits() or MAX_INT_DIGITS
-    if len(text.lstrip("-")) > min(limit, MAX_INT_DIGITS):
+    """A JSON integer of no more digits than Python's default limit, whatever the
+    interpreter's own limit is set to at the moment: off, or higher, this bound holds;
+    lower, `int()` itself refuses, and the loader treats that the same."""
+    if len(text.lstrip("-")) > MAX_INT_DIGITS:
         raise ValueError("an integer too long to be one")
     return int(text)
 

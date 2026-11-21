@@ -34,6 +34,14 @@ nothing to S3.
 12. The success record.
 13. `RunOk` = 1, last of all.
 
+CODE THE JOB DOES NOT OWN ENDS ONLY BY RETURNING (Codex P2, PR #9, re-check). The
+runners, the scorers and the comparator are called in this process. Whatever one
+of them RAISES is a crash of that code, with a fixed code: any exception, a
+`KeyboardInterrupt`, and a `SystemExit` with any code (0, 1, 2, None, a string). A
+raise is never read as an exit code and never as a pass. The same holds at the
+outermost handler of a run, of a duplicate and of the check: each is for
+`BaseException`, so nothing leaves the job without the failure path having run.
+
 ONCE A RUN HAS FAILED IT SPENDS NOTHING MORE (the author's change A, 20 Nov 2026).
 Under ruling e2 any call whose outcome is not `response`, and any refusal, fails the
 run. The runner does not know that and goes on to the next scenario, and the
@@ -380,7 +388,7 @@ def first_requests(target: str, argv: list) -> dict:
         if not scenarios or not all(type(s.id) is str and compare._SCENARIO_RE.fullmatch(s.id)
                                     for s in scenarios):
             raise ValueError("a scenario ID is not an ID")
-    except (Exception, SystemExit):               # whatever the loader made of the file
+    except BaseException:                         # noqa: BLE001 - whatever the loader raised
         raise Stop(CORPUS_UNREADABLE) from None
     v1 = None
     if target == "v1":
@@ -388,7 +396,7 @@ def first_requests(target: str, argv: list) -> dict:
             system = rce.load_system_prompt(args.prompt)
             patient = rce.load_system_prompt(args.patient_prompt) \
                 if args.patient_second_pass else None
-        except Exception:
+        except BaseException:                     # noqa: BLE001 - not the job's code: any raise
             raise Stop(PRECHECK_FAILED) from None
         v1 = rce.Config(system, {}, patient, {} if patient else None, args.prompt_caching,
                         args.gate)
@@ -405,7 +413,7 @@ def first_requests(target: str, argv: list) -> dict:
                 record = rce.run_generation(recorder, scenario, v1, batch_id="ws7-precheck", run=1,
                                             started_at="", sleep=_precheck_sleep)
                 ok = record.get("error") == {"code": _Captured.__name__, "message": _CAPTURED}
-        except Exception:
+        except BaseException:                     # noqa: BLE001 - not the job's code: any raise
             ok = False
         if not ok or len(recorder.fingerprints) != 1:
             raise Stop(PRECHECK_FAILED, ids=(scenario.id,))
@@ -525,7 +533,9 @@ class _Scheduled:
             return self._duplicate(stop)
         except Stop as stop:
             return self._fail(stop)
-        except (Exception, SystemExit) as exc:      # noqa: BLE001 - the outermost handler
+        except BaseException as exc:                # noqa: BLE001 - the outermost handler
+            # Whatever it is: a SystemExit and a KeyboardInterrupt are not Exceptions, and a
+            # run they ended must still settle and write its failed record.
             # No traceback: one could quote a record. The class name is a name in code.
             self.say("crashed", error=type(exc).__name__)
             return self._fail(Stop(CRASHED))
@@ -615,10 +625,12 @@ class _Scheduled:
                 exit_code = runner.main(list(self.argv[kind]), client_factory=self.factory,
                                         now=self.deps.runner_now, sleep=no_wait,
                                         confirm=_never_confirm, runs_dir=self.runs_dir)
-        except SystemExit as exc:                   # argparse's way of refusing an argv
-            exit_code = exc.code
-        except Exception:                           # noqa: BLE001
-            raised = True
+        except BaseException:                       # noqa: BLE001 - a SystemExit too, with any code
+            # A RUNNER ENDS ONLY BY RETURNING. Anything it raises is a crash of that
+            # runner, a SystemExit included, whatever its code (0, 1, 2, None, a string):
+            # the argv is an allow-list, so a parser exit already means something is
+            # wrong. It is never read as an exit code (Codex P2, PR #9, re-check).
+            exit_code, raised = None, True
         finally:
             self.guard.end_batch()
         return exit_code, raised
@@ -745,7 +757,8 @@ class _Scheduled:
                     step()
             except Stop:
                 raise
-            except (Exception, SystemExit):         # a scorer that stops is a failed run (D2)
+            except BaseException:                   # noqa: BLE001 - a scorer that stops, however
+                # it stops, is a failed run (D2): any exception, a SystemExit with any code
                 raise Stop(SCORER_STOPPED, ids=(name,)) from None
         self.key_parts = ws.key_parts(batch_dir)
         self.waived = self.ledger.assurance_waived(self.held.month)
@@ -780,7 +793,8 @@ class _Scheduled:
             with _quiet():
                 exit_code = compare.main(["--baseline", str(baseline), "--rules", str(rules),
                                           "--run", str(summary_path), "--out", str(out)])
-        except (Exception, SystemExit):             # a usage error, or anything else
+        except BaseException:                       # noqa: BLE001 - a usage error (SystemExit,
+            # whatever its code), or anything else: the comparator ends only by returning
             raise Stop(COMPARE_ERROR, ids=("comparator_raised",)) from None
         # The exit code is the authority, and it is judged first.
         if type(exit_code) is not int or exit_code not in (0, 1, 2):
@@ -969,6 +983,9 @@ class _Scheduled:
             self.publisher.put([(publish.DUPLICATE, 1)])
         except Stop as failed:
             self.say("stop", code=failed.code)
+            return 1
+        except BaseException as exc:                # noqa: BLE001 - this is outside run()'s try
+            self.say("crashed", error=type(exc).__name__, during="duplicate")
             return 1
         return 0
 
@@ -1219,7 +1236,7 @@ def check(target: str, scheduled_time: str, deps: Deps) -> int:
     except Stop as stop:
         out(stop.line())
         code = stop.code
-    except (Exception, SystemExit) as exc:          # noqa: BLE001 - no traceback is printed
+    except BaseException as exc:                    # noqa: BLE001 - whatever its type; no traceback
         say("crashed", error=type(exc).__name__)
         code = CRASHED
     # The check itself failed. Say so on the topic if it can still be reached.
@@ -1277,7 +1294,7 @@ def main(argv: list | None = None, deps: Deps | None = None) -> int:
     try:
         with _quiet():                  # whatever argparse might print, none of it is shown
             args = build_parser().parse_args(argv)
-    except (Exception, SystemExit):     # noqa: BLE001 - a usage error: nothing is built or sent
+    except BaseException:               # noqa: BLE001 - a usage error: nothing is built or sent
         try:
             print(USAGE, file=sys.stderr, flush=True)
         except BaseException:           # noqa: BLE001 - a closed stderr changes nothing

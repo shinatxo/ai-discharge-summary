@@ -108,6 +108,21 @@ def no_success(world, target: str) -> bool:
     return store.success_key(RUN_ID[target]) not in world.s3.keys()
 
 
+# Every way code the job does not own can end without returning: an exception, an
+# interrupt, and a SystemExit with each kind of code. Each is made new when it is raised.
+ENDINGS = {"Exception": lambda: RuntimeError(SENTINEL), "KeyboardInterrupt": KeyboardInterrupt,
+           "SystemExit(0)": lambda: SystemExit(0), "SystemExit(1)": lambda: SystemExit(1),
+           "SystemExit(2)": lambda: SystemExit(2), "SystemExit(None)": lambda: SystemExit(None),
+           "SystemExit(text)": lambda: SystemExit(SENTINEL)}
+
+
+def _ends(ending: str):
+    """A function that ends as `ending` says, whatever it is called with."""
+    def ended(*_args, **_kwargs):
+        raise ENDINGS[ending]()
+    return ended
+
+
 # ============================================================ A SUCCESSFUL RUN ==
 
 @pytest.mark.parametrize("target", TARGETS)
@@ -814,25 +829,25 @@ def test_a_failed_v1_generation_is_counted_and_the_run_is_still_compared(ready, 
     assert out["GenerationsFailed"] == [1] and out["RunOk"] == [1]
 
 
-@pytest.mark.parametrize("module, name, scorer, error", [
-    (SB, "score_batch", "score_batch", KeyError(SENTINEL)),
-    (SA, "replay", "score_assemble", SystemExit(SENTINEL)),
-    (ws.H3, "check_record", "haz03_check", ValueError(SENTINEL))])
-def test_a_scorer_that_stops_is_a_failed_run(ready, world, monkeypatch, module, name, scorer, error):
-    """ADR-011 D2. Whatever the scorer raised, the code is fixed and nothing of the
-    exception is logged."""
+@pytest.mark.parametrize("ending", list(ENDINGS))
+@pytest.mark.parametrize("module, name, scorer", [
+    (SB, "score_batch", "score_batch"), (SA, "replay", "score_assemble"),
+    (ws.H3, "check_record", "haz03_check")])
+def test_a_scorer_that_stops_is_a_failed_run(ready, world, monkeypatch, module, name, scorer,
+                                             ending):
+    """ADR-011 D2. A scorer ends only by returning. Whatever it raised (an exception,
+    an interrupt, a SystemExit with any code, 0 included), the run fails with one
+    fixed code, RunOk = 1 is never sent, and nothing of the exception is logged. The
+    partner is every successful run, in which each scorer returns."""
     target = "pipeline"
     ready(target)
-
-    def stopping(*_args, **_kwargs):
-        raise error
-    monkeypatch.setattr(module, name, stopping)
+    monkeypatch.setattr(module, name, _ends(ending))
     assert world.run(target) == 1
     record = world.failed(RUN_ID[target])
     assert (record["code"], record["ids"], record["ledger"]) == (
         entry.SCORER_STOPPED, [scorer], "settled")
     assert not any(SENTINEL in line for line in world.lines)
-    assert world.published()["RunOk"] == [0]
+    assert world.published()["RunOk"] == [0] and no_success(world, target)
 
 
 def test_a_summary_that_is_refused_is_a_failed_run_with_the_refusals_code(ready, world,
@@ -1026,12 +1041,6 @@ def _comparator(monkeypatch, act) -> None:
     monkeypatch.setattr(compare, "main", main)
 
 
-def _raise(error):
-    def act(_out, _code):
-        raise error
-    return act
-
-
 @pytest.mark.parametrize("returned", [7, -1, None, True, "0", 0.0], ids=repr)
 def test_an_exit_code_that_is_not_0_1_or_2_fails_the_run_and_the_result_is_never_read(
         ready, world, monkeypatch, returned):
@@ -1059,17 +1068,21 @@ def test_on_a_good_run_the_result_is_read_after_the_exit_code(ready, world, monk
     assert _result_path(world, target) in read
 
 
-@pytest.mark.parametrize("error", [SystemExit(2), SystemExit(0), RuntimeError(SENTINEL)], ids=repr)
-def test_a_comparator_that_raises_is_a_failed_run(ready, world, monkeypatch, error):
-    target = "pipeline"
+@pytest.mark.parametrize("ending", list(ENDINGS))
+def test_a_comparator_that_raises_is_a_failed_run(ready, world, monkeypatch, ending):
+    """The comparator ends only by returning. It has written a perfect "no breach"
+    result and then raises: whatever it raised, a SystemExit(0) included, the run
+    fails and the result is never read."""
+    target = "v1"
     ready(target)
-    _comparator(monkeypatch, _raise(error))
+    _comparator(monkeypatch, lambda _out, _code: _ends(ending)())
     read = _reads(monkeypatch)
     assert world.run(target) == 1
     record = world.failed(RUN_ID[target])
     assert (record["code"], record["ids"]) == (entry.COMPARE_ERROR, ["comparator_raised"])
-    assert _result_path(world, target) not in read
+    assert _result_path(world, target).is_file() and _result_path(world, target) not in read
     assert not any(SENTINEL in line for line in world.lines)
+    assert world.published()["RunOk"] == [0] and no_success(world, target)
 
 
 def _rewrite(out: Path, **changes) -> None:
@@ -1602,20 +1615,131 @@ def test_best_effort_makes_a_stream_unable_to_raise_and_the_stream_itself_does_r
     assert kept == ["a line"]
 
 
-def test_something_that_exits_inside_a_run_is_a_crashed_run_that_still_settles(ready, world,
-                                                                               monkeypatch):
-    """A `SystemExit` from inside the run is handled as any crash is: the failure path
-    runs, and nothing leaves the process without a settle and a failed record."""
+@pytest.mark.parametrize("ending", list(ENDINGS))
+def test_anything_raised_inside_a_run_is_a_crashed_run_that_still_settles(ready, world,
+                                                                         monkeypatch, ending):
+    """The outermost handler of a run is for `BaseException`. Whatever is raised inside
+    the run, the failure path runs: nothing leaves the process without a settle and a
+    failed record, and RunOk = 1 is never sent."""
     target = "v1"
     ready(target)
-
-    def exits(*_args, **_kwargs):
-        raise SystemExit(SENTINEL)
-    monkeypatch.setattr(ws, "build_summary", exits)
+    monkeypatch.setattr(ws, "build_summary", _ends(ending))
     assert world.run(target) == 1
     record = world.failed(RUN_ID[target])
     assert (record["code"], record["ledger"]) == (entry.CRASHED, "settled")
-    assert world.published()["RunOk"] == [0]
+    assert world.published()["RunOk"] == [0] and no_success(world, target)
+    assert f"ws7 entry mode=scheduled target=v1 stage=crashed error=" \
+           f"{type(ENDINGS[ending]()).__name__}" in world.lines
+    assert not any(SENTINEL in line for line in world.lines)
+
+
+# ============================== CODE THE JOB DOES NOT OWN ENDS ONLY BY RETURNING ==
+
+def _end_runner_after(monkeypatch, target: str, nth: int, ending: str) -> list:
+    """Let the real runner run, write its index and return; then, for the `nth` call
+    (1: the pre-flight, 2: the main batch), end as `ending` says instead of returning.
+    Returns the exit codes the real runner gave."""
+    runner = rpe if target == "pipeline" else rce
+    real, codes = runner.main, []
+
+    def main(*args, **kwargs):
+        codes.append(real(*args, **kwargs))
+        if len(codes) == nth:
+            raise ENDINGS[ending]()
+        return codes[-1]
+    monkeypatch.setattr(runner, "main", main)
+    return codes
+
+
+@pytest.mark.parametrize("ending", list(ENDINGS))
+@pytest.mark.parametrize("nth, kind", [(1, PRE), (2, MAIN)])
+@pytest.mark.parametrize("target", TARGETS)
+def test_a_runner_that_raises_after_writing_a_clean_index_is_a_crashed_runner_never_a_return(
+        ready, world, monkeypatch, target, nth, kind, ending):
+    """THE CLASS (Codex P2, PR #9, re-check): code the job does not own ends only by
+    returning. A `SystemExit` raised by a runner, with any code (0, 1, 2, None or a
+    string), is a crash of that runner, never a normal return.
+
+    Here the real runner has run and written an index that explains its exit code, in
+    the pre-flight or in the main batch, and then raises. Before the fix a
+    `SystemExit(0)` was read as exit code 0 and the run went on to RunOk = 1. Now:
+    `ws7_runner_crashed`, RunOk = 1 is never sent, the ledger is settled and the
+    failed record is written. The partner is every successful run: the same runner,
+    returning."""
+    ready(target)
+    codes = _end_runner_after(monkeypatch, target, nth, ending)
+    assert world.run(target) == 1
+    assert len(codes) == nth                                    # the real runner did run
+    index = json.loads((world.runs_dir / kind[target] / "batch.json").read_text("utf-8"))
+    assert entry._Scheduled._failed_generations(index) == 0     # and its index is clean
+    record = world.failed(RUN_ID[target])
+    assert (record["code"], record["ids"], record["ledger"]) == (
+        entry.RUNNER_CRASHED, [kind[target]], "settled")
+    booked = world.entry_of(RUN_ID[target])
+    assert (booked["state"], booked["basis"]) == ("settled", "metered")
+    out = world.published()
+    assert out["RunOk"] == [0] and out["RunRefused"] == [1]     # never RunOk = 1
+    assert no_success(world, target) and world.sns.messages == []
+    if nth == 1:
+        assert not (world.runs_dir / MAIN[target]).exists()     # the main batch never started
+    assert not any(SENTINEL in line for line in world.lines)
+
+
+@pytest.mark.parametrize("ending", list(ENDINGS))
+def test_a_duplicate_whose_own_count_raises_exits_1_and_publishes_nothing(ready, world,
+                                                                         monkeypatch, ending):
+    """A duplicate is handled outside the run's own handler. Whatever its one publish
+    call raises, the job returns 1, and it publishes no RunOk and no RunRefused. The
+    partner: `test_a_second_delivery_is_a_duplicate_...`, in which the count lands."""
+    target = "v1"
+    ready(target)
+    assert world.run(target) == 0
+    before = len(events(world, "cloudwatch"))
+    real = publish.Publisher.put
+
+    def put(self, values):
+        if values == [(publish.DUPLICATE, 1)]:
+            raise ENDINGS[ending]()
+        return real(self, values)
+    monkeypatch.setattr(publish.Publisher, "put", put)
+    assert world.run(target) == 1
+    assert len(events(world, "cloudwatch")) == before           # nothing more was published
+    assert world.published()["RunOk"] == [1]                    # the first run's own
+    assert f"ws7 entry mode=scheduled target=v1 stage=crashed error=" \
+           f"{type(ENDINGS[ending]()).__name__} during=duplicate" in world.lines
+
+
+@pytest.mark.parametrize("ending", list(ENDINGS))
+def test_anything_raised_inside_the_check_is_a_failed_check_that_says_so(thursday, monkeypatch,
+                                                                         ending):
+    """The outermost handler of the check is for `BaseException` too: the check returns
+    1 and says on the topic that it failed. The partner is every check that completes."""
+    world, target = thursday, "v1"
+    monkeypatch.setattr(wl.Ledger, "expire", _ends(ending))
+    assert world.check(target) == 1
+    assert check_lines(world) == [f"WS7 check - target {target} - the check failed",
+                                  f"code {entry.CRASHED}; see the task log"]
+    assert not any(SENTINEL in line for line in world.lines)
+
+
+@pytest.mark.parametrize("ending", list(ENDINGS))
+@pytest.mark.parametrize("target, module, name, code", [
+    ("v1", rce, "load_corpus", entry.CORPUS_UNREADABLE),
+    ("pipeline", rce, "select_scenarios", entry.CORPUS_UNREADABLE),
+    ("v1", rce, "load_system_prompt", entry.PRECHECK_FAILED),
+    ("v1", rce, "run_generation", entry.PRECHECK_FAILED),
+    ("pipeline", rpe, "run_pipeline", entry.PRECHECK_FAILED)])
+def test_runner_code_that_raises_in_the_precheck_stops_the_run_before_the_claim(
+        ready, world, monkeypatch, target, module, name, code, ending):
+    """The precheck calls the runners' own loaders and request builders. Whatever one
+    of them raises, the run stops with a fixed code before the claim: nothing is
+    written, nothing is spent, and RunRefused alone is published."""
+    ready(target)
+    monkeypatch.setattr(module, name, _ends(ending))
+    assert world.run(target) == 1
+    assert stopped_with(world, code)
+    assert world.s3.requests == [] and world.bedrock_requests() == 0
+    assert world.published() == {"RunRefused": [1]}
     assert not any(SENTINEL in line for line in world.lines)
 
 
@@ -2525,6 +2649,15 @@ def test_both_streams_are_discarded_while_the_command_line_is_parsed(world, caps
         assert world.call(argv) == 2
         printed = capsys.readouterr()
         assert (printed.out, printed.err) == ("", entry.USAGE + "\n"), kind
+    assert world.log.all() == [] and world.lines == []
+
+
+@pytest.mark.parametrize("ending", list(ENDINGS))
+def test_a_parse_that_ends_any_other_way_is_a_usage_error_too(world, capsys, monkeypatch, ending):
+    monkeypatch.setattr(entry, "build_parser", _ends(ending))
+    assert world.call(["scheduled", *SCHEDULE_ARGS]) == 2
+    printed = capsys.readouterr()
+    assert (printed.out, printed.err) == ("", entry.USAGE + "\n")
     assert world.log.all() == [] and world.lines == []
 
 

@@ -1390,8 +1390,32 @@ things:** no failed generation, only the expected files, and a cost within its r
 | Exit code 1, with a `batch.json` that records a failed generation or, for v1, a gate failure | It ran. Both are counted, not refused |
 | Exit code 0 or 1 that the `batch.json` does not explain | `ws7_runner_refused`, with the exit code and both counts |
 | Any other exit code, or no `batch.json` | `ws7_runner_refused`: a canary window, an existing batch folder, a corpus it could not read |
-| It raised | `ws7_runner_crashed` |
+| It raised anything: an exception, an interrupt, or a `SystemExit` with any code | `ws7_runner_crashed` |
 | `stopped_early`, or fewer generations than scenarios | `ws7_runner_stopped_early` |
+
+**A runner ends only by returning** (Codex P2, PR #9, re-check). A `SystemExit` a runner
+raises, with any code (0, 1, 2, None or a string), is a crash of that runner. It is never read
+as an exit code: before this fix a `SystemExit(0)` raised after a clean index was read as a
+clean return, and the run went on to `RunOk` = 1. The runner's argv is an allow-list, so a
+parser exit already means something is wrong.
+
+The same rule holds for every other piece of code the job calls and does not own, and for the
+outermost handlers. Each handler is for `BaseException`:
+
+| Where | What a raise becomes |
+|---|---|
+| A runner, in the pre-flight or the main batch (`_dispatch`) | `ws7_runner_crashed` |
+| A scorer: `score_batch`, `score_assemble`, the HAZ-03 check | `ws7_scorer_stopped`, naming the scorer |
+| The comparator (`ws7_compare.main`) | `ws7_compare_error`; its result is not read |
+| The runners' loaders and request builders, in the precheck | `ws7_corpus_unreadable` or `ws7_precheck_failed`, before the claim |
+| Anything else inside a run (the outermost handler) | `ws7_crashed`; the failure path runs |
+| A duplicate's one publish call | Exit code 1; nothing else is published |
+| Anything inside the check (its outermost handler) | Exit code 1; the check says on the topic that it failed |
+| The command line's parser | The fixed usage line, exit code 2 |
+
+The scorers and the comparator already treated a `SystemExit` as a failure; they and the two
+outermost handlers did not catch a `KeyboardInterrupt`. The runner was the one place where a
+raise was read as a return.
 
 **An exit code of 1 is accepted only when the batch explains it** (Codex P2, PR #9; the author's
 ruling, 21 Nov 2026). Both runners return 1 for a failed generation, and also for other things
@@ -1587,8 +1611,9 @@ stops or raises is logged, and the next is still tried.
   the loop over the five steps, the settle, the store, and the log (`best_effort`). A log sink,
   the clock, a store call or a publish call that raises any of them costs that one step and no
   other.
-- A `SystemExit` from inside a run is handled as any other crash is: `ws7_crashed`, and the
-  failure path runs.
+- Anything raised inside a run that no other handler names is handled as a crash:
+  `ws7_crashed`, and the failure path runs. That includes a `SystemExit` and a
+  `KeyboardInterrupt` ("What a runner's return means", above).
 - A test breaks one thing in each case: the log stream, the settling write, the first stored
   record, the clock, the building of the failed record, its write, and each publish. Every later
   step still reaches its server, with the ledger write first.
@@ -1962,6 +1987,12 @@ PYTHONDONTWRITEBYTECODE=1 python -m pytest -p no:cacheprovider -q tests/test_ws7
     settle decided after `expires_at`.
   - The pre-flight's three checks, the cost one at exactly the reservation and one cache-read
     token over. A gate failure on the pre-flight scenario: the main batch runs and is compared.
+  - A runner that raises after writing a clean index, in the pre-flight and in the main batch,
+    for both targets: an exception, an interrupt, and `SystemExit` with 0, 1, 2, None and a
+    string. Each is `ws7_runner_crashed`: `RunOk` = 1 is never sent, the ledger is settled and
+    the failed record is written. The same seven endings for each scorer, the comparator, the
+    precheck's runner code, the run's and the check's outermost handlers, a duplicate's publish
+    and the parser.
   - A runner's exit code 1 with nothing in the index to explain it, from each batch:
     `ws7_runner_refused`. Its partners: a 1 a recorded gate failure explains, and a 1 a failed
     generation explains. An exit code 0 beside a failed generation: refused too.

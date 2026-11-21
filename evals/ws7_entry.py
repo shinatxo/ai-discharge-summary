@@ -123,7 +123,13 @@ never counts as a success. It sends one message when there is anything to report
 
 THE LOG. One fixed line per stage: labels, IDs and counts. The runners' and the
 scorers' own output is discarded, and no traceback is printed: either could quote a
-record. LOGGING IS BEST EFFORT: a log stream that fails never changes what a run
+record. BUILDING A DIAGNOSTIC NEVER RAISES AND NEVER CARRIES TEXT (Codex P2, PR #9,
+second re-check): every value in a stop or a log line is a fixed label, a bounded
+count or a string that matched an ID pattern. An exception is logged by a fixed
+label for where it happened (`during=run`, `during=settle`, ...), never by its
+class name or message. A runner's return code is used only once it is an integer
+from 0 to 255. Every line is built inside the best-effort boundary. LOGGING IS BEST
+EFFORT: a log stream that fails never changes what a run
 does, whatever it raises.
 
 THE COMMAND LINE. An argument the parser refuses is answered with one fixed usage
@@ -185,6 +191,8 @@ SETTLE_MARGIN_S = 300
 CHECK_LOOKBACK_DAYS = 1
 
 PREFLIGHT, MAIN = "preflight", "main"
+EXIT_CODE_MAX = 255           # what a process can return; a runner's code beyond it is not one
+COUNT_MAX = 2 ** 63 - 1       # a count in a record: far above any real one, and printable
 SUCCESS_SCHEMA = "ws7-success/1"
 FAILED_SCHEMA = "ws7-failed/1"
 BASELINE_NAME = "ws7_baseline_{target}.json"       # frozen by pull request (slice 4)
@@ -239,10 +247,15 @@ def best_effort(out):
 
     It catches `BaseException`, not `Exception`: `SystemExit` and `KeyboardInterrupt`
     do not derive from `Exception`, and a sink that raised one of them would
-    otherwise end the failure path early (Codex P2, PR #9)."""
-    def emit(line: str) -> None:
+    otherwise end the failure path early (Codex P2, PR #9).
+
+    BUILDING THE LINE IS INSIDE THE BOUNDARY TOO (Codex P2, PR #9, second re-check).
+    `line` is a string, or a function that builds one, and the function is called
+    here, inside the `try`. So a line that cannot be built (a count too long for
+    Python to print, say) costs that one line and nothing else."""
+    def emit(line) -> None:
         try:
-            out(line)
+            out(line() if callable(line) else line)
         except BaseException:           # noqa: BLE001 - whatever the stream raised, the run goes on
             pass
     return emit
@@ -599,9 +612,16 @@ class _Scheduled:
         self.files_refused = 0          # files left out of the store on the failure path
 
     def say(self, stage: str, **fields) -> None:
-        parts = [f"ws7 entry mode=scheduled target={self.target} stage={stage}"]
-        parts += [f"{name}={value}" for name, value in fields.items()]
-        self.out(" ".join(parts))
+        """One log line: fixed labels, IDs and counts the job made itself. NEVER an
+        object it did not create: an exception is named by the fixed label of where it
+        happened (`during=`), never by its class name or its message, because a class
+        from outside the job can be named anything and its name can raise. The line is
+        built inside `best_effort`."""
+        def line() -> str:
+            parts = [f"ws7 entry mode=scheduled target={self.target} stage={stage}"]
+            parts += [f"{name}={value}" for name, value in fields.items()]
+            return " ".join(parts)
+        self.out(line)
 
     # ------------------------------------------------------------- the run
 
@@ -625,11 +645,12 @@ class _Scheduled:
             return self._fail(Stop(CRASHED, ids=("duplicate_not_from_the_claim",)))
         except Stop as stop:
             return self._fail(stop)
-        except BaseException as exc:                # noqa: BLE001 - the outermost handler
+        except BaseException:                       # noqa: BLE001 - the outermost handler
             # Whatever it is: a SystemExit and a KeyboardInterrupt are not Exceptions, and a
             # run they ended must still settle and write its failed record.
-            # No traceback: one could quote a record. The class name is a name in code.
-            self.say("crashed", error=type(exc).__name__)
+            # No traceback, no class name and no message: any of them could carry text,
+            # and looking up a class's name can itself raise. A fixed label says where.
+            self.say("crashed", during="run")
             return self._fail(Stop(CRASHED))
 
     def _before_the_claim(self) -> None:
@@ -747,12 +768,17 @@ class _Scheduled:
             raise Stop(RUNNER_CRASHED, ids=(label,))
         index = _read_json(self.batches[label]["dir"] / "batch.json")
         counts = index_counts(self.target, index)
+        # A RETURN CODE IS AN INTEGER IN A SMALL FIXED RANGE BEFORE IT IS USED IN ANY
+        # DIAGNOSTIC. Anything else (None, a string, True, a negative number, a number
+        # of 5,001 digits, which Python will not even print) is named by a fixed label
+        # and never copied into a stop, a log line or a record.
+        if type(exit_code) is not int or not 0 <= exit_code <= EXIT_CODE_MAX:
+            raise Stop(RUNNER_REFUSED, ids=(label, "exit_code_not_a_code"))
         # Anything but 0 or 1 (a canary window, an existing batch folder, a corpus it
         # could not read) is a runner that refused to start. So is an index this
         # target's runner did not write.
-        if type(exit_code) is not int or exit_code not in (0, 1) or counts is None:
-            raise Stop(RUNNER_REFUSED, ids=(label,),
-                       counts={"exit_code": exit_code if type(exit_code) is int else -1})
+        if exit_code not in (0, 1) or counts is None:
+            raise Stop(RUNNER_REFUSED, ids=(label,), counts={"exit_code": exit_code})
         if index.get("stopped_early") is not False:
             raise Stop(RUNNER_STOPPED_EARLY, ids=(label,))
         # 0: clean. 1: a failed generation or, for v1, a safety-net gate failure. Both
@@ -1102,14 +1128,14 @@ class _Scheduled:
     def _duplicate(self, stop: Stop) -> int:
         """A duplicate delivery: it reserved and spent nothing. It counts one
         duplicate and publishes nothing else, and never `RunOk`."""
-        self.out(stop.line())
+        self.out(stop.line)
         try:
             self.publisher.put([(publish.DUPLICATE, 1)])
         except Stop as failed:
             self.say("stop", code=failed.code)
             return 1
-        except BaseException as exc:                # noqa: BLE001 - this is outside run()'s try
-            self.say("crashed", error=type(exc).__name__, during="duplicate")
+        except BaseException:                       # noqa: BLE001 - this is outside run()'s try
+            self.say("crashed", during="duplicate")
             return 1
         return 0
 
@@ -1122,7 +1148,7 @@ class _Scheduled:
         for `BaseException`: `SystemExit` and `KeyboardInterrupt` do not derive from
         `Exception`, and a log sink, the clock, a store call or a publish call that
         raised one of them would otherwise skip every step after it."""
-        self.out(stop.line())
+        self.out(stop.line)
         also: list = []
         for name, step in (("settle", self._fail_ledger), ("store", self._fail_evidence),
                            ("failed_record", self._fail_record),
@@ -1130,9 +1156,9 @@ class _Scheduled:
             try:
                 step(stop, also)
             except Stop as failed:
-                self.out(failed.line())
-            except BaseException as exc:            # noqa: BLE001 - never stops the next
-                self.say("crashed", error=type(exc).__name__, during=name)
+                self.out(failed.line)
+            except BaseException:                   # noqa: BLE001 - never stops the next
+                self.say("crashed", during=name)
         return 1
 
     def _fail_ledger(self, stop: Stop, also: list) -> None:
@@ -1142,7 +1168,7 @@ class _Scheduled:
         if earlier is not None and earlier is not stop:
             # The settle was tried when the last runner returned, and it was refused.
             also.append(earlier.code)
-            self.out(earlier.line())
+            self.out(earlier.line)
         try:
             self._settle()
         except Stop as failed:
@@ -1276,7 +1302,7 @@ def _text(value: object, pattern) -> bool:
 
 
 def _count(value: object) -> bool:
-    return type(value) is int and value >= 0            # a bool is not a count
+    return type(value) is int and 0 <= value <= COUNT_MAX       # a bool is not a count
 
 
 def _head_fault(record: object, schema: str, fields: tuple, claim: dict) -> str | None:
@@ -1367,8 +1393,9 @@ def failed_fault(record: object, *, claim: dict) -> str | None:
     ids, counts, also = record["ids"], record["counts"], record["also"]
     if type(ids) is not list or not all(_text(i, store.ID_RE) for i in ids):
         return "ids"
-    if type(counts) is not dict or not all(_text(k, store._LABEL_RE) and type(v) is int
-                                           for k, v in counts.items()):
+    if type(counts) is not dict or not all(
+            _text(k, store._LABEL_RE) and type(v) is int and -COUNT_MAX <= v <= COUNT_MAX
+            for k, v in counts.items()):
         return "counts"
     if type(also) is not list or not all(_text(code, _CODE_RE) for code in also):
         return "also"
@@ -1438,8 +1465,8 @@ def check(target: str, scheduled_time: str, deps: Deps) -> int:
     out = best_effort(deps.out)
 
     def say(stage: str, **fields) -> None:
-        out(" ".join([f"ws7 entry mode=check target={target} stage={stage}"]
-                     + [f"{name}={value}" for name, value in fields.items()]))
+        out(lambda: " ".join([f"ws7 entry mode=check target={target} stage={stage}"]
+                             + [f"{name}={value}" for name, value in fields.items()]))
 
     publisher = None
     try:
@@ -1476,10 +1503,10 @@ def check(target: str, scheduled_time: str, deps: Deps) -> int:
             say("alert_sent")
         return 0
     except Stop as stop:
-        out(stop.line())
+        out(stop.line)
         code = stop.code
-    except BaseException as exc:                    # noqa: BLE001 - whatever its type; no traceback
-        say("crashed", error=type(exc).__name__)
+    except BaseException:                           # noqa: BLE001 - whatever its type
+        say("crashed", during="check")              # no class name: a fixed label says where
         code = CRASHED
     # The check itself failed. Say so on the topic if it can still be reached.
     if publisher is not None and code not in (publish.ALERT_FAILED, publish.ALERT_INVALID):
@@ -1487,9 +1514,9 @@ def check(target: str, scheduled_time: str, deps: Deps) -> int:
             subject = f"WS7 check - target {target} - the check failed"
             publisher.alert(subject, f"{subject}\ncode {code}; see the task log")
         except Stop as failed:
-            out(failed.line())
-        except BaseException as exc:                # noqa: BLE001 - whatever its type
-            say("crashed", error=type(exc).__name__, during="alert")
+            out(failed.line)
+        except BaseException:                       # noqa: BLE001 - whatever its type
+            say("crashed", during="alert")
     return 1
 
 

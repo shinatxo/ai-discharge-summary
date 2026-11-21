@@ -82,6 +82,27 @@ RECORD_PREFIXES = (CLAIM_PREFIX, store.SUCCESS_PREFIX, store.FAILED_PREFIX)
 CLAIM_KEY = {t: f"ws7/claims/{t}/2026-12-16" for t in TARGETS}
 
 
+# The name of an exception class, and its message: invented, and it must reach no
+# stream, no metric, no message and no stored object. `World.stop()` checks all of them.
+NAME_SENTINEL = "WS7_NAME_SENTINEL_invented"
+
+
+class _NameRaises(type):
+    """A metaclass whose classes cannot be asked their name."""
+
+    @property
+    def __name__(cls):
+        raise RuntimeError(NAME_SENTINEL)
+
+
+class Unnameable(Exception, metaclass=_NameRaises):
+    """An exception whose class-name lookup raises: `type(exc).__name__` fails."""
+
+
+SentinelNamed = type(NAME_SENTINEL, (Exception,), {"__doc__": "An exception class whose name "
+                                                              "is the sentinel."})
+
+
 class Clock:
     """One clock for the wall and the monotonic time. It moves only when told to.
     A test may break the wall clock: once `fail` is set, reading it raises that."""
@@ -404,6 +425,17 @@ class World:
         for server in self._servers:
             server.stop()
         self.check_written()
+        self.check_no_name()
+
+    def check_no_name(self) -> None:
+        """NO EXCEPTION'S CLASS NAME OR MESSAGE REACHES ANYTHING, in every test that
+        uses this world: not a log line, a CloudWatch or SNS request, or a stored
+        object. (The tests check stdout and stderr themselves.)"""
+        mark = NAME_SENTINEL.encode()
+        assert not any(NAME_SENTINEL in line for line in self.lines), "a log line"
+        assert not any(mark in body for body in self.cw.bodies), "a CloudWatch request"
+        assert not any(mark in body for body in self.sns.bodies), "an SNS request"
+        assert not any(mark in self.s3.body(key) for key in self.s3.keys()), "a stored object"
 
     def check_written(self) -> None:
         """WHAT EACH WRITER WROTE PASSES ITS VALIDATOR, in every test that uses this

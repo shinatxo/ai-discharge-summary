@@ -1415,7 +1415,8 @@ things:** no failed generation, only the expected files, and a cost within its r
 | Exit code 1, with a `batch.json` that records a failed generation or, for v1, a gate failure | It ran. Both are counted, not refused |
 | Exit code 0 or 1 that the `batch.json` does not explain | `ws7_runner_refused`, with the exit code and both counts |
 | A `batch.json` whose entries are not in the shape that target's runner writes | `ws7_runner_refused`, with the exit code |
-| Any other exit code, or no `batch.json` | `ws7_runner_refused`: a canary window, an existing batch folder, a corpus it could not read |
+| Any other exit code from 0 to 255, or no `batch.json` | `ws7_runner_refused`, with the code: a canary window, an existing batch folder, a corpus it could not read |
+| A return value that is not an integer from 0 to 255 | `ws7_runner_refused`, with the fixed label `exit_code_not_a_code`; the value is never printed ("The log", below) |
 | It raised anything: an exception, an interrupt, or a `SystemExit` with any code | `ws7_runner_crashed` |
 | `stopped_early`, or fewer generations than scenarios | `ws7_runner_stopped_early` |
 
@@ -1811,7 +1812,33 @@ one, is refused.**
 ### The log
 
 One fixed line for each stage: labels, IDs and counts. A stop is printed as `Stop.line()`. No
-traceback is printed, and of an unexpected exception only its class name.
+traceback is printed.
+
+**Building a diagnostic never raises and never carries text** (Codex P2, PR #9, second
+re-check). Every value in a stop, a log line or a record is a fixed label, a bounded count, or
+a string that matched an ID pattern. The job never formats an object it did not create.
+
+- **An exception is logged by a fixed label for where it happened, never by its class name or
+  its message.** A class from outside the job can be named anything, and looking up its name
+  can itself raise. The line is `stage=crashed during=<where>`:
+
+  | `during=` | Where |
+  |---|---|
+  | `run` | Anywhere in a scheduled run that no other handler names |
+  | `settle`, `store`, `failed_record`, `markers`, `counters` | That step of the failure path |
+  | `duplicate` | A duplicate's one publish call |
+  | `check`, `alert` | The Thursday check, and its own failure report |
+
+- **A runner's return code is used only once it is an integer from 0 to 255.** Anything else
+  (None, a string, `True`, a negative number, a number of 5,001 digits, which Python will not
+  print) is the fixed label `exit_code_not_a_code`, and is never copied into a stop, a line or
+  a record. The comparator's code is used only once it is 0, 1 or 2. The scorers' return values
+  are passed back to the scorers and never used in a diagnostic.
+- **A count in the failed record is a whole number within ±(2^63 - 1).** A record with a count
+  beyond that is refused by its validator.
+- **Every line is built inside the best-effort boundary.** `best_effort` is given the function
+  that builds the line, and calls it inside its `try`: a line that cannot be built costs that
+  one line.
 
 **Logging is best effort everywhere and never raises** (Codex P2, PR #9). `best_effort` catches
 `BaseException`, so that holds whatever the stream raises. A log stream that
@@ -2189,6 +2216,11 @@ PYTHONDONTWRITEBYTECODE=1 python -m pytest -p no:cacheprovider -q tests/test_ws7
     path.
   - `RunOk` = 1 rejected after the success record: a failed record beside it, `RunOk` = 0, and
     the check reporting a failed run. The partner: `RunOk` = 1 accepted, and no failed record.
+  - Diagnostics: a runner returning a number of 5,001 digits (and eight other things that are
+    not codes) from each batch, with every step of the failure path still running; an
+    exception whose class-name lookup raises, and one whose class is named with a sentinel,
+    raised at every place the seven other endings are. Every test holds that sentinel out of
+    every log line, CloudWatch and SNS request, stored object, stdout and stderr.
   - Every other command line, `--help` included: exit code 2, the one fixed usage line, nothing
     built and nothing sent. An invented sentinel in the rejected argument, for each kind of
     argument error, is in neither stream; the positive control gives the same command line to

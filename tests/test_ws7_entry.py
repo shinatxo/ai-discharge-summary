@@ -110,10 +110,22 @@ def no_success(world, target: str) -> bool:
 
 # Every way code the job does not own can end without returning: an exception, an
 # interrupt, and a SystemExit with each kind of code. Each is made new when it is raised.
+# Two more are exceptions a diagnostic must not try to name: a class whose name lookup
+# raises, and a class whose name (and message) is a sentinel.
+UNNAMEABLE = {"a class whose name raises": lambda: W.Unnameable(W.NAME_SENTINEL),
+              "a class named with a sentinel": lambda: W.SentinelNamed(W.NAME_SENTINEL)}
 ENDINGS = {"Exception": lambda: RuntimeError(SENTINEL), "KeyboardInterrupt": KeyboardInterrupt,
            "SystemExit(0)": lambda: SystemExit(0), "SystemExit(1)": lambda: SystemExit(1),
            "SystemExit(2)": lambda: SystemExit(2), "SystemExit(None)": lambda: SystemExit(None),
-           "SystemExit(text)": lambda: SystemExit(SENTINEL)}
+           "SystemExit(text)": lambda: SystemExit(SENTINEL), **UNNAMEABLE}
+
+
+@pytest.fixture(autouse=True)
+def _no_exception_is_named_in_a_stream(capsys):
+    """No exception's class name or message reaches stdout or stderr, in any test."""
+    yield
+    printed = capsys.readouterr()
+    assert W.NAME_SENTINEL not in printed.out + printed.err
 
 
 # WS7's own exception types, raised by code that is not the job's. Each is one the run
@@ -785,7 +797,8 @@ def test_a_crash_before_there_is_a_guard_marks_the_run_crashed(ready, world, mon
     assert (booked["state"], booked["kind"]) == ("unresolved", "crashed")
     assert booked["counted_usd_micros"] == RESERVED[target]["total_usd_micros"]
     assert world.published() == {"RunRefused": [1], "RunOk": [0]}
-    assert "ws7 entry mode=scheduled target=pipeline stage=crashed error=RuntimeError" in world.lines
+    assert "ws7 entry mode=scheduled target=pipeline stage=crashed during=run" in world.lines
+    assert not any("RuntimeError" in line for line in world.lines)       # not even its class
     assert not any(SENTINEL in line or "Traceback" in line for line in world.lines)
     assert world.bedrock_requests() == 0
 
@@ -1227,7 +1240,11 @@ def _comparator(monkeypatch, act) -> None:
     monkeypatch.setattr(compare, "main", main)
 
 
-@pytest.mark.parametrize("returned", [7, -1, None, True, "0", 0.0], ids=repr)
+NOT_EXIT_CODES = {"7": 7, "-1": -1, "None": None, "True": True, "'0'": "0", "0.0": 0.0,
+                  "a number of 5,001 digits": 10 ** 5000}
+
+
+@pytest.mark.parametrize("returned", list(NOT_EXIT_CODES))
 def test_an_exit_code_that_is_not_0_1_or_2_fails_the_run_and_the_result_is_never_read(
         ready, world, monkeypatch, returned):
     """The exit code is judged BEFORE the result is read. Here the comparator leaves a
@@ -1235,7 +1252,7 @@ def test_an_exit_code_that_is_not_0_1_or_2_fails_the_run_and_the_result_is_never
     result file is never opened. The control: on a good run it is."""
     target = "v1"
     ready(target)
-    _comparator(monkeypatch, lambda _out, _code: returned)
+    _comparator(monkeypatch, lambda _out, _code: NOT_EXIT_CODES[returned])
     read = _reads(monkeypatch)
     assert world.run(target) == 1
     result = _result_path(world, target)
@@ -1619,18 +1636,20 @@ def test_every_step_of_the_failure_path_is_tried_whatever_became_of_the_one_befo
         assert record["evidence"] == ("stored" if broken != "store" else entry.EVIDENCE_UNAVAILABLE)
         assert (record["ledger"] == "settled") == (broken != "settle")
         assert record["also"] == ([] if broken != "settle" else [record["ledger"]])
-    # ---- the log says which step was lost, and nothing of the exception but its class
-    assert not any(SENTINEL in line or "Traceback" in line for line in world.lines)
+    # ---- the log says which step was lost, by a fixed label, and nothing of the exception
+    assert not any(SENTINEL in line or "Traceback" in line or "RuntimeError" in line
+                   for line in world.lines)
     if broken in ("clock", "build"):
-        assert ("ws7 entry mode=scheduled target=v1 stage=crashed error=RuntimeError "
-                "during=failed_record") in world.lines
+        assert "ws7 entry mode=scheduled target=v1 stage=crashed during=failed_record" \
+            in world.lines
     if broken == "log":
         assert world.lines == []
     assert no_success(world, target) and world.sns.messages == []
 
 
 RAISED = {"Exception": lambda: RuntimeError(SENTINEL), "SystemExit(0)": lambda: SystemExit(0),
-          "SystemExit(1)": lambda: SystemExit(1), "KeyboardInterrupt": KeyboardInterrupt}
+          "SystemExit(1)": lambda: SystemExit(1), "KeyboardInterrupt": KeyboardInterrupt,
+          **UNNAMEABLE}
 RAISING_STEPS = ["log", "settle", "store", "clock", "build", "write", "markers", "counters"]
 
 
@@ -1739,7 +1758,7 @@ def test_a_log_sink_cannot_end_anything_whatever_it_raises(ready, world, raised)
         raise make()
     with pytest.raises(BaseException) as control:
         sink("a line")
-    assert type(control.value) is type(make())
+    assert isinstance(control.value, type(make()))
     assert entry.best_effort(sink)("a line") is None
 
     ready(target)
@@ -1766,8 +1785,7 @@ def test_a_check_that_failed_still_exits_1_whatever_its_own_failure_report_raise
         raise RAISED[raised]()
     monkeypatch.setattr(publish.Publisher, "alert", alert)
     assert world.check(target) == 1
-    assert f"ws7 entry mode=check target={target} stage=crashed error=" \
-           f"{type(RAISED[raised]()).__name__} during=alert" in world.lines
+    assert f"ws7 entry mode=check target={target} stage=crashed during=alert" in world.lines
     assert not any(SENTINEL in line for line in world.lines)
 
 
@@ -1815,8 +1833,7 @@ def test_anything_raised_inside_a_run_is_a_crashed_run_that_still_settles(ready,
     record = world.failed(RUN_ID[target])
     assert (record["code"], record["ledger"]) == (entry.CRASHED, "settled")
     assert world.published()["RunOk"] == [0] and no_success(world, target)
-    assert f"ws7 entry mode=scheduled target=v1 stage=crashed error=" \
-           f"{type(ENDINGS[ending]()).__name__}" in world.lines
+    assert "ws7 entry mode=scheduled target=v1 stage=crashed during=run" in world.lines
     assert not any(SENTINEL in line for line in world.lines)
 
 
@@ -1893,8 +1910,7 @@ def test_a_duplicate_whose_own_count_raises_exits_1_and_publishes_nothing(ready,
     assert world.run(target) == 1
     assert len(events(world, "cloudwatch")) == before           # nothing more was published
     assert world.published()["RunOk"] == [1]                    # the first run's own
-    assert f"ws7 entry mode=scheduled target=v1 stage=crashed error=" \
-           f"{type(ENDINGS[ending]()).__name__} during=duplicate" in world.lines
+    assert "ws7 entry mode=scheduled target=v1 stage=crashed during=duplicate" in world.lines
 
 
 @pytest.mark.parametrize("ending", list(ENDINGS))
@@ -1992,6 +2008,121 @@ def test_a_stop_from_the_jobs_own_scoring_code_is_still_the_runs_code(ready, wor
     monkeypatch.setattr(ws, "write_haz03", own)
     assert world.run(target) == 1
     assert code_in(world, target) == ws.SCORES_INVALID
+
+
+# ============================= A DIAGNOSTIC NEVER RAISES AND NEVER CARRIES TEXT ==
+
+NOT_A_CODE = {"a number of 5,001 digits": 10 ** 5000, "256": 256, "2 ** 63": 2 ** 63, "-1": -1,
+              "True": True, "None": None, "a string": "1", "a float": 1.0, "a list": [1]}
+
+
+@pytest.mark.parametrize("returned", list(NOT_A_CODE) + ["2", "3", "255"])
+@pytest.mark.parametrize("nth, kind", [(1, PRE), (2, MAIN)])
+def test_a_runners_return_code_is_used_only_if_it_is_an_integer_from_0_to_255(
+        ready, world, monkeypatch, nth, kind, returned):
+    """THE CLASS (Codex P2, PR #9, second re-check): building a diagnostic may never
+    raise or carry text. A runner's return code is checked as an int in a small fixed
+    range before use; anything else is a fixed label.
+
+    Python will not print an integer of 5,001 digits, so a stop that carried one could
+    not be logged or written, and before this fix the failure path ended at its first
+    line. Each value that is not a code, from each batch: the run fails by a fixed
+    label, and EVERY step of the failure path still runs. The partners (2, 3, 255) are
+    codes: they are carried as counts."""
+    target = "v1"
+    ready(target)
+    value = NOT_A_CODE[returned] if returned in NOT_A_CODE else int(returned)
+    _forge_exit(monkeypatch, target, nth, value)
+    assert world.run(target) == 1
+    run = RUN_ID[target]
+    record = world.failed(run)
+    if returned in NOT_A_CODE:
+        assert (record["code"], record["ids"], record["counts"]) == (
+            entry.RUNNER_REFUSED, [kind[target], "exit_code_not_a_code"], {})
+    else:
+        assert (record["code"], record["ids"], record["counts"]) == (
+            entry.RUNNER_REFUSED, [kind[target]], {"exit_code": value})
+    # every step of the failure path ran, the ledger first
+    assert _failure_steps(world, target) == ALL_STEPS
+    assert world.entry_of(run)["state"] == "settled" and record["ledger"] == "settled"
+    out = world.published()
+    assert (out["RunOk"], out["RunRefused"]) == ([0], [1]) and "CallsNotResponse" in out
+    # nothing of the value is in any line: each line is short, and the stop was logged
+    assert all(len(line) < 300 for line in world.lines)
+    assert any(line.startswith(f"ws7 stop code={entry.RUNNER_REFUSED}") for line in world.lines)
+
+
+def test_a_line_that_cannot_be_built_costs_that_line_and_nothing_else():
+    """Building the line is inside the best-effort boundary. A stop whose count Python
+    cannot print raises when it is formatted; `best_effort` is given the function, not
+    the string, so nothing gets out. The control: formatting it directly does raise."""
+    stop = store.Stop(entry.RUNNER_REFUSED, counts={"exit_code": 10 ** 5000})
+    with pytest.raises(ValueError):
+        stop.line()
+    kept: list = []
+    emit = entry.best_effort(kept.append)
+    assert emit(stop.line) is None and kept == []
+    emit(store.Stop(entry.RUNNER_REFUSED, counts={"exit_code": 3}).line)        # the partner
+    emit("a plain line")
+    assert kept == [f"ws7 stop code={entry.RUNNER_REFUSED} exit_code=3", "a plain line"]
+
+
+def test_a_stop_that_cannot_be_printed_does_not_end_the_failure_path(ready, world, monkeypatch):
+    """The same through the entrypoint: the run's own stop carries a count that cannot be
+    printed (the job's own code is made to raise it). Its line is lost; the settle, the
+    store, the markers and the counters still run, and the failed record's step is the
+    one that stops, because the record cannot be written either."""
+    target = "v1"
+    stub = W.default_stub(target)
+    W.fail_nth(stub, FIRST_STEP[target], 1, THROTTLE)
+    ready(target, stub=stub)
+    real = entry._Scheduled._judge
+
+    def judge(self, kind, *args):
+        try:
+            return real(self, kind, *args)
+        except store.Stop as stop:
+            raise store.Stop(stop.code, ids=stop.ids, counts={"call": 10 ** 5000}) from None
+    monkeypatch.setattr(entry._Scheduled, "_judge", judge)
+    assert world.run(target) == 1
+    assert _failure_steps(world, target) == ["settle", "store", "markers", "counters"]
+    assert world.entry_of(RUN_ID[target])["state"] == "settled"
+    assert world.published()["RunOk"] == [0]
+    assert f"ws7 stop code={entry.FAILED_RECORD_INVALID} ids=counts" in world.lines
+    assert all(len(line) < 300 for line in world.lines)
+
+
+@pytest.mark.parametrize("unnameable", list(UNNAMEABLE))
+def test_an_exception_is_logged_by_where_it_happened_never_by_its_class_or_message(
+        ready, world, monkeypatch, capsys, unnameable):
+    """An exception whose class-name lookup raises, and one whose class is NAMED with a
+    sentinel (and carries it as its message), raised inside a run. The control: the
+    name really cannot be read, or really is the sentinel. The run is a crash logged
+    by a fixed label; every step of the failure path runs; and the sentinel is in no
+    stream, no metric, no message and no stored object (`World.stop()` checks those
+    for every test in this file, with every other place these two are raised)."""
+    raised = UNNAMEABLE[unnameable]()
+    if unnameable == "a class whose name raises":
+        with pytest.raises(RuntimeError):
+            type(raised).__name__
+    else:
+        assert type(raised).__name__ == W.NAME_SENTINEL and W.NAME_SENTINEL in str(raised)
+    target = "v1"
+    stub = W.default_stub(target)
+    W.on_nth(stub, FIRST_STEP[target], 1, lambda: None)
+    ready(target, stub=stub)
+
+    def crash(*_args, **_kwargs):
+        raise UNNAMEABLE[unnameable]()
+    monkeypatch.setattr(entry._Scheduled, "_judge", crash)
+    assert world.run(target) == 1
+    assert "ws7 entry mode=scheduled target=v1 stage=crashed during=run" in world.lines
+    assert _failure_steps(world, target) == ALL_STEPS
+    record = world.failed(RUN_ID[target])
+    assert (record["code"], record["ledger"]) == (entry.CRASHED, "settled")
+    printed = capsys.readouterr()
+    everything = "\n".join(world.lines) + printed.out + printed.err + json.dumps(record)
+    assert W.NAME_SENTINEL not in everything and "Unnameable" not in everything
 
 
 # ================================== EACH METRIC IS PUBLISHED AT MOST ONCE PER RUN ==
@@ -2983,6 +3114,11 @@ INSIDE_THE_TYPE = [
     ("failed", {"counts": {"call": True}}, "counts"), ("failed", {"counts": {"call": 1.5}}, "counts"),
     ("failed", {"counts": {"Not A Label": 1}}, "counts"),
     ("failed", {"counts": {"call": 3, "exit_code": -1}}, None),
+    ("failed", {"counts": {"call": 2 ** 63}}, "counts"),             # a count with no bound
+    ("failed", {"counts": {"call": -(2 ** 63)}}, "counts"),
+    ("failed", {"counts": {"call": 2 ** 63 - 1}}, None),             # the boundary
+    ("failed", {"files_refused": 2 ** 63}, "files_refused"),
+    ("failed", {"files_refused": 2 ** 63 - 1}, None),
     ("failed", {"also": ["ws7_crashed", "crashed"]}, "also"),
     ("failed", {"also": ["ws7_entry_not_open"]}, None),
     ("failed", {"ledger": "paid"}, "ledger"), ("failed", {"ledger": "unmetered"}, None),

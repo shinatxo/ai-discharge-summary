@@ -248,8 +248,12 @@ it finished without error, wrote only the files expected, and cost no more than 
   batch runs and the comparator judges it. Stopping there would turn a safety-netting regression
   into "pre-flight failed", with no comparison and no breach alarm.
 - A runner's exit code 1, from either batch, is accepted only when the batch's own index explains
-  it: a failed generation, or a recorded gate failure. Otherwise the run fails
-  (`docs/WS7-ENTRYPOINT.md`, "What a runner's return means").
+  it, by the fields that target's runner writes, each read by exact type: a failed generation,
+  or for v1 a recorded gate failure. The pipeline has no safety-net gate, so only a failed
+  generation explains a pipeline 1. Otherwise the run fails (`docs/WS7-ENTRYPOINT.md`, "What a
+  runner's return means").
+- A runner ends only by returning. A `SystemExit` it raises, with any code, is a crash of that
+  runner, never a normal return (as built, 21 Nov 2026).
 
 **No retries.**
 

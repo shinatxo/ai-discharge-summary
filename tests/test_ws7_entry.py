@@ -1671,7 +1671,7 @@ def test_a_runner_that_raises_after_writing_a_clean_index_is_a_crashed_runner_ne
     assert world.run(target) == 1
     assert len(codes) == nth                                    # the real runner did run
     index = json.loads((world.runs_dir / kind[target] / "batch.json").read_text("utf-8"))
-    assert entry._Scheduled._failed_generations(index) == 0     # and its index is clean
+    assert entry.index_counts(target, index)[0] == 0            # and its index is clean
     record = world.failed(RUN_ID[target])
     assert (record["code"], record["ids"], record["ledger"]) == (
         entry.RUNNER_CRASHED, [kind[target]], "settled")
@@ -1851,6 +1851,151 @@ def test_an_exit_code_0_beside_a_failed_generation_is_refused_too(ready, world, 
     assert (record["counts"]["exit_code"], record["counts"]["generations_failed"]) == (0, 1)
 
 
+# A value of each JSON type, and of each shape within a type that could be mistaken
+# for an explanation ("false", 0, an empty string).
+JSON_VALUES = {"a string": "x", "the string false": "false", "an empty string": "",
+               "an integer": 1, "zero": 0, "a float": 1.5, "true": True, "false": False,
+               "null": None, "an empty list": [], "a list": ["x"], "an empty object": {},
+               "an object": {"error_code": "x"}}
+# Every field of an index entry that could pass for an explanation of an exit code.
+INDEX_FIELDS = ("error_code", "gate_ok", "gate_status", "failed_step")
+
+
+def _clean_index(target: str, scenarios: list) -> dict:
+    """A clean index in the shape that target's runner writes (invented)."""
+    rows = []
+    for sid in scenarios:
+        row = {"run": 1, "scenario_id": sid, "record": f"r1/{sid}.json", "error_code": None,
+               "cost_usd_est": 0.01}
+        row.update({"failed_step": None} if target == "pipeline"
+                   else {"gate_status": "documented_advice", "gate_ok": True})
+        rows.append(row)
+    return {"batch_id": "b", "stopped_early": False, "generations": rows}
+
+
+def _explains(target: str, field: str, value: object) -> tuple | None:
+    """What the rule says of one entry whose `field` is `value`: (failed generations,
+    gate failures), or None for an index that target's runner did not write."""
+    if field == "error_code":
+        if value is None:
+            return 0, 0
+        return (1, 0) if type(value) is str and value else None
+    if field == "gate_ok" and target == "v1":
+        if value is None or value is True:
+            return 0, 0
+        return (0, 1) if value is False else None
+    return 0, 0                 # not a field that explains anything for this target
+
+
+@pytest.mark.parametrize("value", list(JSON_VALUES))
+@pytest.mark.parametrize("field", INDEX_FIELDS)
+@pytest.mark.parametrize("target", TARGETS)
+def test_only_the_fields_a_targets_runner_writes_explain_an_exit_code_each_by_exact_type(
+        target, field, value):
+    """THE CLASS (Codex P2, PR #9, re-check): an exit code is explained only by the
+    fields that target's runner writes, checked by exact type. The pipeline has no
+    safety-net gate, so for the pipeline only a failed generation explains a 1; for
+    v1, a failed generation or `gate_ok` that is exactly the boolean false.
+
+    Every field that could pass for an explanation, with a value of each JSON type.
+    The partners are in the same table: the one value of each field that does explain
+    a 1, and the values that leave the index clean."""
+    index = _clean_index(target, ["S1", "S2"])
+    assert entry.index_counts(target, index) == (0, 0)
+    assert entry.exit_code_explained(target, index, 0)
+    assert not entry.exit_code_explained(target, index, 1)
+
+    index["generations"][1][field] = JSON_VALUES[value]
+    wanted = _explains(target, field, JSON_VALUES[value])
+    assert entry.index_counts(target, index) == wanted
+    explains_a_1 = wanted is not None and wanted != (0, 0)
+    assert entry.exit_code_explained(target, index, 1) is explains_a_1
+    assert entry.exit_code_explained(target, index, 0) is (wanted == (0, 0))
+    # an explanation is exactly these, and no other
+    assert explains_a_1 == (
+        (field == "error_code" and value in ("a string", "the string false"))
+        or (target, field, value) == ("v1", "gate_ok", "false"))
+
+
+@pytest.mark.parametrize("exit_code", [2, 3, -1, True, False, None, "1", 1.0, [1]], ids=repr)
+def test_nothing_but_the_integers_0_and_1_is_an_exit_code_an_index_can_explain(exit_code):
+    for target in TARGETS:
+        clean = _clean_index(target, ["S1"])
+        failed = _clean_index(target, ["S1"])
+        failed["generations"][0]["error_code"] = "invented_code"
+        assert entry.exit_code_explained(target, clean, 0)       # the partners
+        assert entry.exit_code_explained(target, failed, 1)
+        assert not entry.exit_code_explained(target, clean, exit_code)
+        assert not entry.exit_code_explained(target, failed, exit_code)
+
+
+@pytest.mark.parametrize("index", [
+    None, [], "x", {}, {"generations": None}, {"generations": {}}, {"generations": [None]},
+    {"generations": ["S1"]}, {"generations": [[]]}, {"generations": [{}]},
+    {"generations": [{"gate_ok": False}]}], ids=repr)
+def test_an_index_that_is_not_a_list_of_entries_with_an_error_code_explains_nothing(index):
+    for target in TARGETS:
+        assert entry.index_counts(target, index) is None
+        assert not entry.exit_code_explained(target, index, 0)
+        assert not entry.exit_code_explained(target, index, 1)
+    # the partner; and v1's runner always writes `gate_ok`, the pipeline's never does
+    assert entry.index_counts("pipeline", {"generations": [{"error_code": None}]}) == (0, 0)
+    assert entry.index_counts("v1", {"generations": [{"error_code": None}]}) is None
+    assert entry.index_counts("v1", {"generations": [{"error_code": None, "gate_ok": None}]}) == (0, 0)
+
+
+def _forge_pre_flight(monkeypatch, world, target: str, field: str, value: object) -> None:
+    """Let the real pre-flight run; then put `value` in `field` of its index entry and
+    have the runner return 1."""
+    runner = rpe if target == "pipeline" else rce
+    real, calls = runner.main, []
+
+    def main(*args, **kwargs):
+        code = real(*args, **kwargs)
+        calls.append(code)
+        if len(calls) > 1:
+            return code
+        path = world.runs_dir / PRE[target] / "batch.json"
+        index = json.loads(path.read_text("utf-8"))
+        index["generations"][0][field] = value
+        path.write_text(json.dumps(index), "utf-8")
+        return 1
+    monkeypatch.setattr(runner, "main", main)
+
+
+@pytest.mark.parametrize("value", list(JSON_VALUES))
+@pytest.mark.parametrize("field", INDEX_FIELDS)
+@pytest.mark.parametrize("target", TARGETS)
+def test_through_the_entrypoint_an_exit_1_is_accepted_only_for_that_targets_own_explanation(
+        ready, world, monkeypatch, target, field, value):
+    """The same table, through the entrypoint. The real pre-flight runs; its index
+    entry then gets one forged field, and the runner returns 1.
+
+    - A failed generation (`error_code` a non-empty string) explains the 1, for either
+      target: the run reaches the pre-flight's own go/no-go, which stops it
+      (`ws7_preflight_failed`).
+    - For v1 only, `gate_ok` exactly false explains it: the run goes on and succeeds.
+    - Everything else is `ws7_runner_refused`: for the pipeline that includes
+      `gate_ok` false, which its runner never writes."""
+    ready(target)
+    _forge_pre_flight(monkeypatch, world, target, field, JSON_VALUES[value])
+    wanted = _explains(target, field, JSON_VALUES[value])
+    code = world.run(target)
+    if wanted == (0, 1):
+        assert (target, field, value) == ("v1", "gate_ok", "false")
+        assert code == 0 and world.metric("RunOk") == [1]
+        return
+    assert code == 1
+    record = world.failed(RUN_ID[target])
+    if wanted == (1, 0):
+        assert (record["code"], record["ids"]) == (entry.PREFLIGHT_FAILED, [PRE[target]])
+    else:
+        assert (record["code"], record["ids"]) == (entry.RUNNER_REFUSED, [PRE[target]])
+        assert record["counts"]["exit_code"] == 1
+    assert not (world.runs_dir / MAIN[target]).exists()         # the main batch never started
+    assert world.published()["RunOk"] == [0] and no_success(world, target)
+
+
 def _gate_failing_scenario() -> str:
     """A scenario whose notes record no seek-help trigger: the stub's v1 text, which
     has no fall-back line, fails the safety-net gate on it."""
@@ -1869,8 +2014,8 @@ def test_an_exit_code_1_that_a_recorded_gate_failure_explains_is_accepted(ready,
     assert world.run(target) == 0
     assert codes == [0, 1]
     index = json.loads((world.runs_dir / MAIN[target] / "batch.json").read_text("utf-8"))
-    assert entry._Scheduled._gate_failures(index) > 0
-    assert entry._Scheduled._failed_generations(index) == 0
+    failed, gates = entry.index_counts(target, index)
+    assert (failed, gates > 0) == (0, True)
     assert _gate_failing_scenario() in {g["scenario_id"] for g in index["generations"]
                                         if g["gate_ok"] is False}
 

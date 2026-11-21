@@ -92,9 +92,12 @@ THE PRE-FLIGHT'S GO/NO-GO (D7) is three things: no failed generation, only the
 expected files, and a cost within its reservation. A v1 safety-net gate failure
 on the pre-flight scenario is NOT one of them: it is quality evidence, and the
 comparator judges it on the main batch. A runner's exit code 1 is accepted, from
-either batch, only when the batch's own index explains it: a failed generation
-or, for v1, a recorded gate failure. An exit code that disagrees with the index
-is `ws7_runner_refused`.
+either batch, only when the batch's own index explains it, by the fields THAT
+TARGET'S runner writes, each read by exact type: a failed generation (`error_code`
+a non-empty string) or, for v1 only, a gate failure (`gate_ok` exactly `false`).
+The pipeline has no safety-net gate, so nothing but a failed generation explains
+a pipeline 1. An exit code that disagrees with the index, or an index with a
+field of any other type, is `ws7_runner_refused`.
 
 THE COMPARATOR is called through `ws7_compare.main`, with an output path that is
 new for the call and must not exist before it. Its exit code is checked BEFORE its
@@ -483,6 +486,58 @@ def _sha256(data: bytes) -> str:
     return hashlib.sha256(data).hexdigest()
 
 
+# ---------------------------------------------------------- a batch's own index
+
+def index_counts(target: str, index: object) -> tuple | None:
+    """(failed generations, safety-net gate failures) in a batch's own index
+    (`batch.json`), or None when the index is not one this target's runner wrote.
+
+    AN EXIT CODE IS EXPLAINED ONLY BY THE FIELDS THAT TARGET'S RUNNER WRITES, EACH
+    READ BY EXACT TYPE (Codex P2, PR #9, re-check):
+
+    - `error_code`, written by both runners for every generation
+      (run_pipeline_eval.py:431, run_cold_eval.py:568): null, or a non-empty string.
+      A string is a failed generation.
+    - `gate_ok`, written by the v1 runner only (run_cold_eval.py:567): exactly
+      `true`, `false` or null. `false` is a gate failure. THE PIPELINE HAS NO
+      SAFETY-NET GATE: its runner writes no such field, so for the pipeline the
+      field is not read at all and can explain nothing.
+
+    Nothing else in the index explains anything: not `failed_step`, not
+    `gate_status`. A field of any other type (`0`, `""`, `"false"`, a list) is not a
+    value either runner writes, so the index is refused; it is never read as
+    "failed" or as "clean"."""
+    rows = index.get("generations") if type(index) is dict else None
+    if type(rows) is not list:
+        return None
+    failed = gates = 0
+    for row in rows:
+        if type(row) is not dict or "error_code" not in row:
+            return None
+        code = row["error_code"]
+        if code is not None and (type(code) is not str or not code):
+            return None
+        failed += code is not None
+        if target == "v1":
+            if "gate_ok" not in row:
+                return None
+            gate = row["gate_ok"]
+            if gate is not None and type(gate) is not bool:
+                return None
+            gates += gate is False
+    return failed, gates
+
+
+def exit_code_explained(target: str, index: object, exit_code: object) -> bool:
+    """Does this batch's own index explain this exit code? 0: the index records no
+    failed generation and no gate failure. 1: it records at least one. Anything else,
+    or an index `index_counts` refuses, explains nothing."""
+    counts = index_counts(target, index)
+    if type(exit_code) is not int or exit_code not in (0, 1) or counts is None:
+        return False
+    return (exit_code == 1) == bool(counts[0] or counts[1])
+
+
 # ------------------------------------------------------------------ a scheduled run
 
 class _Scheduled:
@@ -645,10 +700,11 @@ class _Scheduled:
         if raised:
             raise Stop(RUNNER_CRASHED, ids=(label,))
         index = _read_json(self.batches[label]["dir"] / "batch.json")
+        counts = index_counts(self.target, index)
         # Anything but 0 or 1 (a canary window, an existing batch folder, a corpus it
-        # could not read) is a runner that refused to start.
-        if type(exit_code) is not int or exit_code not in (0, 1) or type(index) is not dict \
-                or type(index.get("generations")) is not list:
+        # could not read) is a runner that refused to start. So is an index this
+        # target's runner did not write.
+        if type(exit_code) is not int or exit_code not in (0, 1) or counts is None:
             raise Stop(RUNNER_REFUSED, ids=(label,),
                        counts={"exit_code": exit_code if type(exit_code) is int else -1})
         if index.get("stopped_early") is not False:
@@ -657,24 +713,11 @@ class _Scheduled:
         # runners return 1 for other reasons too (run_cold_eval.py:663, a confirmation
         # that was not given), so 1 is accepted ONLY when the batch's own index explains
         # it, and 0 only when the index has nothing to explain (Codex P2, PR #9).
-        failed, gates = self._failed_generations(index), self._gate_failures(index)
-        if (exit_code == 1) != bool(failed or gates):
+        if not exit_code_explained(self.target, index, exit_code):
             raise Stop(RUNNER_REFUSED, ids=(label,),
-                       counts={"exit_code": exit_code, "generations_failed": failed,
-                               "gate_failures": gates})
+                       counts={"exit_code": exit_code, "generations_failed": counts[0],
+                               "gate_failures": counts[1]})
         return index
-
-    @staticmethod
-    def _failed_generations(index: dict) -> int:
-        return sum(1 for g in index["generations"]
-                   if type(g) is not dict or g.get("error_code") is not None)
-
-    @staticmethod
-    def _gate_failures(index: dict) -> int:
-        """Generations whose v1 safety-net gate did not pass, as the runner recorded
-        them (`gate_ok` in batch.json). The pipeline runner records no gate."""
-        return sum(1 for g in index["generations"]
-                   if type(g) is dict and g.get("gate_ok") is False)
 
     def _generate(self) -> None:
         # ---- the pre-flight: one scenario, alone, as its own batch (D7). Its go/no-go
@@ -685,7 +728,7 @@ class _Scheduled:
         # comparison and no breach alarm.
         label = self.labels[PREFLIGHT]
         index = self._judge(PREFLIGHT, *self._dispatch(PREFLIGHT))
-        if len(index["generations"]) != 1 or self._failed_generations(index):
+        if len(index["generations"]) != 1 or index_counts(self.target, index)[0]:
             raise Stop(PREFLIGHT_FAILED, ids=(label,))
         batch_dir, scenarios = self.batches[label]["dir"], self.batches[label]["scenarios"]
         files, other = files_in(batch_dir)
@@ -737,7 +780,7 @@ class _Scheduled:
     def _score_and_compare(self) -> tuple:
         label = self.labels[MAIN]
         batch_dir = self.batches[label]["dir"]
-        failed = self._failed_generations(self.main_index)
+        failed = index_counts(self.target, self.main_index)[0]
         if self.target == "pipeline" and failed:
             # The assembly replay stops on any failed pipeline generation
             # (evals/score_assemble.py:202), so that batch can have no summary. Decided

@@ -1389,6 +1389,7 @@ things:** no failed generation, only the expected files, and a cost within its r
 | Exit code 0, with a `batch.json` that records no failed generation and no gate failure | It ran, clean |
 | Exit code 1, with a `batch.json` that records a failed generation or, for v1, a gate failure | It ran. Both are counted, not refused |
 | Exit code 0 or 1 that the `batch.json` does not explain | `ws7_runner_refused`, with the exit code and both counts |
+| A `batch.json` whose entries are not in the shape that target's runner writes | `ws7_runner_refused`, with the exit code |
 | Any other exit code, or no `batch.json` | `ws7_runner_refused`: a canary window, an existing batch folder, a corpus it could not read |
 | It raised anything: an exception, an interrupt, or a `SystemExit` with any code | `ws7_runner_crashed` |
 | `stopped_early`, or fewer generations than scenarios | `ws7_runner_stopped_early` |
@@ -1421,9 +1422,24 @@ raise was read as a return.
 ruling, 21 Nov 2026). Both runners return 1 for a failed generation, and also for other things
 (a confirmation that was not given, `evals/run_cold_eval.py:663` and
 `evals/run_pipeline_eval.py:331`). So a 1, from the pre-flight or the main batch, is accepted
-only beside an index that records a failed generation (`error_code`) or a gate failure
-(`gate_ok` false). The rule is held in both directions: a 0 beside an index that records either
-is refused too.
+only beside an index that records a failed generation or a gate failure. The rule is held in
+both directions: a 0 beside an index that records either is refused too.
+
+**An exit code is explained only by the fields that target's runner writes, each read by exact
+type** (Codex P2, PR #9, re-check). `index_counts()` reads the index:
+
+| Field | Written by | Read as |
+|---|---|---|
+| `error_code` | Both runners, for every generation (`evals/run_pipeline_eval.py:431`, `evals/run_cold_eval.py:568`) | null: no failure. A non-empty string: a failed generation. Anything else: not an index the runner wrote |
+| `gate_ok` | The v1 runner only (`evals/run_cold_eval.py:567`) | For v1: `true` or null: no gate failure. Exactly `false`: a gate failure. Anything else: not an index the runner wrote. **For the pipeline it is not read at all** |
+| `failed_step`, `gate_status`, any other field | | Never read: they explain nothing |
+
+- **The pipeline has no safety-net gate.** So for the pipeline only a failed generation explains
+  an exit code 1. A pipeline index with `gate_ok` false and an exit code 1 is refused.
+- "By exact type" means `0`, `""`, `"false"`, `[]` and `{}` are not `false` or null. An index
+  that holds one where a runner writes a boolean, a string or null is refused; it is never read
+  as "failed" and never as "clean".
+- The exit code itself is the integer 0 or 1. `True`, `"1"` and `1.0` are not.
 
 ### Settling
 
@@ -1996,6 +2012,11 @@ PYTHONDONTWRITEBYTECODE=1 python -m pytest -p no:cacheprovider -q tests/test_ws7
   - A runner's exit code 1 with nothing in the index to explain it, from each batch:
     `ws7_runner_refused`. Its partners: a 1 a recorded gate failure explains, and a 1 a failed
     generation explains. An exit code 0 beside a failed generation: refused too.
+  - What explains an exit code, as a table: for each target, each of `error_code`, `gate_ok`,
+    `gate_status` and `failed_step`, with thirteen values covering every JSON type. Once on
+    `index_counts()` and `exit_code_explained()`, for exit codes 0 and 1, and once through the
+    entrypoint with the pre-flight's index forged. Only a non-empty string `error_code` (either
+    target) and `gate_ok` exactly false (v1 only) explain a 1.
   - The comparator: a missing file; an exit code that is not 0, 1 or 2, with the result shown
     never to be read; ten results that disagree with their exit code; a file already at the
     output path; a rule for PART C.

@@ -1801,6 +1801,14 @@ one, is refused.**
   would pass its validator. The entrypoint has three reads, and all three use it: a batch's own
   index (`batch.json`; otherwise `ws7_runner_refused`), the comparator's result (otherwise
   `ws7_compare_error`), and each object the check reads (otherwise `not_json`).
+- **Every number that loader returns is finite and within Python's integer conversion limit,
+  however the JSON spells it** (Codex, PR #9, third re-check). `1e400` and `-1e400` are valid
+  JSON, and Python reads them as plus and minus infinity, the values `Infinity` and `-Infinity`
+  give by another spelling. An integer of 5,000 digits is valid JSON too, and Python will not
+  print it. Each is refused like the others. The loader's bound on an integer is 4,300 digits,
+  Python's own default, and it holds whatever the interpreter's limit is set to. Tests put each
+  spelling in every field of each object the check reads, in a batch's index and in the
+  comparator's result, with the interpreter's own limit turned off.
 - **An invalid record never counts as a success**, and an invalid claim names no run, so no
   record is read on its word.
 - **A record its validator refuses is not written.** For the success record the run then fails.

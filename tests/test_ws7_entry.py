@@ -19,6 +19,7 @@ from __future__ import annotations
 import argparse
 import builtins
 import json
+import math
 import os
 import subprocess
 import sys
@@ -3407,6 +3408,141 @@ def test_a_comparison_result_with_a_duplicate_member_nan_or_infinity_is_not_read
         entry.COMPARE_ERROR, ["result_unreadable"], {"exit_code": 0})
     assert world.published()["RunOk"] == [0] and no_success(world, target)
     assert "NoBaseline" not in world.published()
+
+
+# ------------------------- every number the loader returns is finite and can be printed
+
+DIGITS_5000 = "1" + "0" * 4999
+# Valid JSON, each a number Python's own loader turns into something that is not one.
+TOO_LARGE = {"1e400": "1e400", "-1e400": "-1e400", "an integer of 5,000 digits": DIGITS_5000,
+             "a negative integer of 5,000 digits": "-" + DIGITS_5000}
+
+
+@pytest.fixture
+def no_int_limit():
+    """Turn the interpreter's own limit on integer text off, as a process can, so that
+    only the loader's own bound stands between a 5,000-digit integer and the job."""
+    before = sys.get_int_max_str_digits()
+    sys.set_int_max_str_digits(0)
+    yield
+    sys.set_int_max_str_digits(before)
+
+
+@pytest.mark.parametrize("text, wanted", [
+    ("1e308", 1e308), ("-1e308", -1e308), ("1.7976931348623157e308", 1.7976931348623157e308),
+    ("1e-400", 0.0), ("0.5", 0.5), ("-0", 0), ("12", 12),                # numbers, each returned
+    ("9" * 4300, int("9" * 4300)), ("-" + "9" * 4300, -int("9" * 4300)),  # the longest integers
+    ("1e400", None), ("-1e400", None), ("1E400", None), ("1e+400", None), ("1.5e999", None),
+    ("0.1e400", None), ("123456789e400", None), ("1e309", None), ("-1.8e308", None),
+    ("9" * 4301, None), ("-" + "9" * 4301, None), (DIGITS_5000, None), ("-" + DIGITS_5000, None)],
+    ids=lambda v: str(v)[:24])
+def test_every_number_the_strict_loader_returns_is_finite_and_can_be_printed(text, wanted,
+                                                                              no_int_limit):
+    """THE CLASS (Codex, PR #9, third re-check): every number the shared loader returns
+    is finite and within Python's integer conversion limit, however the JSON spells it.
+
+    Each spelling alone, as a member's value, and inside a list inside an object. The
+    interpreter's own integer limit is OFF here, so the control shows what Python's
+    loader does with each: it reads all of them, the infinite ones as infinity."""
+    for raw in (text, '{"a":' + text + "}", '{"a":[{"b":' + text + "}]}"):
+        lenient = json.loads(raw)                                   # the control: Python reads it
+        read = entry.strict_json(raw.encode())
+        if wanted is None:
+            assert read is entry.NOT_JSON, raw[:30]
+        else:
+            assert read == lenient and read is not entry.NOT_JSON
+    if wanted is None:
+        value = json.loads(text)
+        assert (type(value) is float and not math.isfinite(value)) \
+            or (type(value) is int and len(str(abs(value))) > entry.MAX_INT_DIGITS)
+    else:
+        value = entry.strict_json(text.encode())
+        assert value == wanted and (type(value) is int or math.isfinite(value))
+        assert str(value)                                           # and it can be printed
+
+
+def test_a_long_integer_is_refused_whatever_the_interpreters_own_limit_is():
+    """With the default limit Python's loader refuses a 5,000-digit integer by itself;
+    with the limit off it reads it. The strict loader refuses it either way, and with a
+    LOWER limit it refuses what the interpreter then could not print."""
+    raw = ('{"a":' + DIGITS_5000 + "}").encode()
+    assert sys.get_int_max_str_digits() == entry.MAX_INT_DIGITS == 4300
+    assert entry.strict_json(raw) is entry.NOT_JSON
+    before = sys.get_int_max_str_digits()
+    try:
+        sys.set_int_max_str_digits(0)
+        assert json.loads(raw)["a"] > 0                              # the control
+        assert entry.strict_json(raw) is entry.NOT_JSON
+        sys.set_int_max_str_digits(1000)
+        assert entry.strict_json(("9" * 1001).encode()) is entry.NOT_JSON
+        assert entry.strict_json(("9" * 1000).encode()) == int("9" * 1000)
+    finally:
+        sys.set_int_max_str_digits(before)
+
+
+@pytest.mark.parametrize("spelling", list(TOO_LARGE))
+@pytest.mark.parametrize("which", list(OUTSIDE))
+def test_a_number_that_is_not_finite_or_too_long_in_an_object_the_check_reads_is_invalid(
+        thursday, which, spelling, no_int_limit):
+    """Each spelling in place of every field of the claim, the success record and the
+    failed record in turn: `not_json`. The control: Python's own loader reads each.
+    The partner: the object without it."""
+    world = thursday
+    valid = _valid(which)
+    for field in FIELDS[which]:
+        marked = compare.render({**valid, field: "@@HERE@@"}).decode("utf-8")
+        body = marked.replace('"@@HERE@@"', TOO_LARGE[spelling]).encode()
+        assert type(json.loads(body)[field]) in (int, float)        # the control
+        assert entry.strict_json(body) is entry.NOT_JSON
+        assert _checked(world, which, body=body) == _line(INVALID_LINE[which], "not_json"), field
+    assert _checked(world, which) == _line(VALID_LINE[which])
+
+
+@pytest.mark.parametrize("spelling", list(TOO_LARGE))
+@pytest.mark.parametrize("target", TARGETS)
+def test_a_batch_index_with_a_number_that_is_not_finite_or_too_long_is_not_read(
+        ready, world, monkeypatch, target, spelling, no_int_limit):
+    """The same loader reads a batch's own index: the pre-flight's `cost_usd_est` is
+    rewritten to each spelling after the real runner returned 0. `ws7_runner_refused`.
+    The partner, which rewrites nothing, is in the test of duplicate members."""
+    ready(target)
+    seen = []
+
+    def rewrite(raw: bytes) -> bytes:
+        index = json.loads(raw)
+        index["generations"][0]["cost_usd_est"] = "@@HERE@@"
+        seen.append(json.dumps(index).replace('"@@HERE@@"', TOO_LARGE[spelling]).encode())
+        return seen[-1]
+    _rewrite_pre_flight_index(monkeypatch, world, target, rewrite)
+    assert world.run(target) == 1
+    assert json.loads(seen[0]) and entry.strict_json(seen[0]) is entry.NOT_JSON
+    record = world.failed(RUN_ID[target])
+    assert (record["code"], record["ids"], record["counts"]) == (
+        entry.RUNNER_REFUSED, [PRE[target]], {"exit_code": 0})
+    assert not (world.runs_dir / MAIN[target]).exists()
+    assert all(len(line) < 300 for line in world.lines)
+
+
+@pytest.mark.parametrize("spelling", list(TOO_LARGE))
+def test_a_comparison_result_with_a_number_that_is_not_finite_or_too_long_is_not_read(
+        ready, world, monkeypatch, spelling, no_int_limit):
+    """And it reads the comparator's result: a member with each spelling is added to
+    the real "no breach" result. `ws7_compare_error`, never a pass."""
+    target = "v1"
+    ready(target)
+    seen = []
+
+    def act(out: Path, code: int):
+        seen.append(out.read_bytes().replace(b"{", b'{"invented":' + TOO_LARGE[spelling].encode()
+                                             + b",", 1))
+        out.write_bytes(seen[-1])
+        return code
+    _comparator(monkeypatch, act)
+    assert world.run(target) == 1
+    assert json.loads(seen[0]) and entry.strict_json(seen[0]) is entry.NOT_JSON
+    record = world.failed(RUN_ID[target])
+    assert (record["code"], record["ids"]) == (entry.COMPARE_ERROR, ["result_unreadable"])
+    assert world.published()["RunOk"] == [0] and no_success(world, target)
 
 
 # ---------------------------- one validator, run by the writer before the PUT too

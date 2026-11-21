@@ -147,6 +147,7 @@ import contextlib
 import hashlib
 import io
 import json
+import math
 import os
 import re
 import sys
@@ -518,6 +519,28 @@ def files_in(batch_dir: Path) -> tuple:
 
 
 NOT_JSON = object()           # what `strict_json` gives for bytes it will not read
+# The longest integer `strict_json` returns, in digits: Python's own default limit for
+# turning an integer into text and back (4,300). An integer beyond it could be read,
+# with the interpreter's limit turned off, and then not printed.
+MAX_INT_DIGITS = sys.int_info.default_max_str_digits
+
+
+def _finite_float(text: str) -> float:
+    """A JSON number with a fraction or an exponent, as a float that is a NUMBER. Python
+    reads `1e400` as infinity and `-1e400` as minus infinity, and says nothing."""
+    value = float(text)
+    if not math.isfinite(value):
+        raise ValueError("a number too large to be one")
+    return value
+
+
+def _bounded_int(text: str) -> int:
+    """A JSON integer of no more digits than Python will convert, whatever the
+    interpreter's own limit is set to at the moment."""
+    limit = sys.get_int_max_str_digits() or MAX_INT_DIGITS
+    if len(text.lstrip("-")) > min(limit, MAX_INT_DIGITS):
+        raise ValueError("an integer too long to be one")
+    return int(text)
 
 
 def strict_json(raw: object) -> object:
@@ -525,6 +548,12 @@ def strict_json(raw: object) -> object:
     second re-check). Strict, as the comparator is (`ws7_compare._parse`, whose two
     hooks are used here): UTF-8 only, NO DUPLICATE MEMBER in any object, and no NaN or
     Infinity. Anything else is `NOT_JSON`, never a value.
+
+    EVERY NUMBER IT RETURNS IS FINITE AND WITHIN PYTHON'S INTEGER CONVERSION LIMIT,
+    HOWEVER THE JSON SPELLS IT (Codex, PR #9, third re-check). `1e400` and `-1e400`
+    are valid JSON, and Python reads them as plus and minus infinity: the same values
+    `Infinity` and `-Infinity` give, by another spelling. An integer of 5,000 digits
+    is valid JSON too, and Python will not print it. Each is `NOT_JSON`.
 
     Why duplicates: Python's own loader keeps the LAST of two members with one name
     and says nothing. A file that holds `"error_code": "x"` and then
@@ -536,10 +565,11 @@ def strict_json(raw: object) -> object:
     record)."""
     try:
         return json.loads(raw.decode("utf-8"), object_pairs_hook=compare._no_duplicate_keys,
-                          parse_constant=compare._no_constants)
+                          parse_constant=compare._no_constants, parse_float=_finite_float,
+                          parse_int=_bounded_int)
     except (AttributeError, ValueError, RecursionError):
         # not bytes; not UTF-8; not JSON; a duplicate member; NaN or Infinity; a number
-        # too long to be one
+        # that is not finite, or too long to be one
         return NOT_JSON
 
 

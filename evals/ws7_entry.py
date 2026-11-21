@@ -53,12 +53,18 @@ one, the next is still tried (Codex P2, PR #9).
  3. The failed record the Thursday check reads is built (the clock read included)
     and written.
  4. `RunRefused` = 1 and `RunOk` = 0 are published.
- 5. The run's counters are published.
+ 5. The run's counters are published, unless CloudWatch already has them.
 
 `RunOk` is published only by the process that holds the scheduled claim: before
 the claim a process cannot know it is not a duplicate, and a duplicate never
 publishes `RunOk`. A stop before the claim publishes `RunRefused` alone and
 writes no S3 object.
+
+EACH METRIC IS PUBLISHED AT MOST ONCE PER RUN. The publisher keeps the names
+CloudWatch acknowledged. A step that fails after the run's counters and breach
+values were accepted (the breach message, the success record, `RunOk` = 1) sends
+only the failure's own markers. What was delivered before the failure stands: the
+counters, the breach values and, if it was sent, the breach message.
 
 A BREACH IS A SUCCESSFUL RUN (D9): it generated, scored, compared and stored. It
 publishes its breach values, sends the job's message, writes its success record,
@@ -995,7 +1001,7 @@ class _Scheduled:
 
     def _fail_counters(self, _stop: Stop, _also: list) -> None:
         """5. The run's counters: from its summary if it has one, else from the guard's
-        report."""
+        report. A counter CloudWatch has already acknowledged is not sent again."""
         if self.publisher is None:
             return
         if self.summary is not None:
@@ -1004,7 +1010,9 @@ class _Scheduled:
             values = publish.guard_counts(self.guard.report())
         else:
             return
-        self.publisher.put(values)
+        values = self.publisher.unsent(values)
+        if values:
+            self.publisher.put(values)
 
 
 # ------------------------------------------------------------- the Thursday check

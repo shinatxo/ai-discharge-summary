@@ -1509,6 +1509,24 @@ Namespace `DischargeAssistant/Eval`, one dimension, `Target`. Every value is a w
   in a published pipeline run. The failed record carries the count.
 - A name outside the set above, or a value that is not a whole number, sends nothing
   (`ws7_publish_invalid`).
+- **Each metric is published at most once per run** (Codex P2, PR #9). The publisher keeps the
+  names CloudWatch acknowledged, and refuses a list that holds one of them again
+  (`ws7_publish_repeated`).
+- **What was delivered before a later step failed stands.** A run publishes its counters and
+  breach values, then sends its breach message, writes its success record and publishes
+  `RunOk` = 1. If one of the later steps fails, the run fails, and:
+
+  | Already delivered | What happens to it |
+  |---|---|
+  | The run's counters and `NoBaseline` = 0 | They stand. The failure path sends them again only if CloudWatch did not acknowledge them |
+  | The breach values | They stand, so a breach alarm can fire for a run that then failed |
+  | The breach message, if it was sent | It stands. No second message is sent |
+
+  The failure path then sends `RunOk` = 0 and `RunRefused` = 1, and nothing else. So an alarm on
+  a breach metric and the `RunOk` alarm can both report the same run; each is true.
+- A call whose reply failed is not acknowledged. CloudWatch may or may not have taken it, and
+  the job cannot tell which, so the failure path's second try can leave two samples of a counter
+  for that one run. That case is a failed run, and the failed record names the code.
 
 **The breach message.** Sent only on a breach, after the metrics and before the success record.
 If it cannot be sent, the run fails (`ws7_alert_failed`). A failed scheduled run sends no message
@@ -1932,6 +1950,10 @@ PYTHONDONTWRITEBYTECODE=1 python -m pytest -p no:cacheprovider -q tests/test_ws7
     first stored record, the clock, the building of the failed record, its write, each publish),
     and every later step still tried, the ledger first. A log stream that raises on every line,
     under a good run, a duplicate and a check.
+  - At most once: a breach run whose message, or whose success record, fails after the counters
+    were accepted leaves exactly one sample of every counter at the fake, and the failure path
+    makes one request. The control: counters that were not acknowledged are sent by the failure
+    path.
   - Every other command line, `--help` included: exit code 2, the one fixed usage line, nothing
     built and nothing sent. An invented sentinel in the rejected argument, for each kind of
     argument error, is in neither stream; the positive control gives the same command line to

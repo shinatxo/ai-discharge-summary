@@ -17,7 +17,8 @@ breach is a successful run; a failed scheduled run sends no message of its own; 
 prefix is outside `ws7/`; and a stored file that is not one the runners and scorers write stops
 the run. Updated 21 Nov 2026 with the rulings after the review of PR #9: the pre-flight's
 go/no-go is no failed generation, only the expected files and a cost within its reservation, and
-a v1 gate failure is not in it.
+a v1 gate failure is not in it; and each metric is published at most once per run, with what
+was delivered before a later failure left to stand.
 
 This is a design. Slice 1, the offline comparator, is built (`docs/WS7-COMPARATOR.md`). Of slice 2,
 parts 1 to 4 and part 5a are built (`docs/WS7-ENTRYPOINT.md`): the client wrapper and the
@@ -603,6 +604,12 @@ Per-scenario detail goes to the run summary in S3, not into metric dimensions.
 - A run that fails publishes no breach value, because it made no comparison. So an alarm on a
   breach metric must not treat missing data as a breach; `RunOk` and "no baseline" report a run
   that did not compare.
+- **Each metric is published at most once per run** (as built, 21 Nov 2026). A run publishes its
+  counters and breach values, then sends its breach message, writes its success record and
+  publishes `RunOk` = 1. If a step after the first fails, the run fails, and **what was already
+  delivered stands**: the counters, the breach values and, if it was sent, the breach message.
+  The failure then adds only `RunOk` = 0 and `RunRefused` = 1. So a run that compared and
+  breached, and then failed to finish, can raise a breach alarm and the `RunOk` alarm together.
 
 **Metric families** (namespace `DischargeAssistant/Eval`, dimension `Target`):
 
@@ -758,6 +765,11 @@ count log lines the deployed worker writes, which carry fixed codes and IDs only
   the log's fields. It carries no note text and no model output.
   - The job sends that message **on a breach only**. A failed scheduled run sends no message of
     its own: the Thursday check and the alarms report it (the author's ruling, 20 Nov 2026).
+  - **A breach message can come from a run that then failed** (as built, 21 Nov 2026). The
+    message is sent before the success record. If the success record or `RunOk` = 1 then fails,
+    the run is a failed run, and the message and the breach values already delivered stand
+    (D9). Triage reads both: the breach is real evidence, and the Thursday check names the
+    failure.
 - **An alarm is a candidate, not an incident.** The author triages it.
 - **The clocks are the log's own, and they start at the alarm.** The alarm time is the report
   time for the log's existing targets: acknowledge within 2 working days, clinical risk

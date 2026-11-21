@@ -32,6 +32,13 @@ before it is used, and the finished text is checked once more against the
 characters a message may hold. No note text and no model output can be in one.
 
 One attempt per call: the clients are built by `ws7_store.build_client`.
+
+AT MOST ONCE. A `Publisher` is one run's. It keeps the names CloudWatch has
+ACKNOWLEDGED (`acknowledged`), and it refuses a list that holds one of them again
+(`ws7_publish_repeated`), so no step of a run can publish a second sample of a
+metric the run has already delivered. `unsent()` gives a caller the values that
+are still to go. A call whose reply failed is not acknowledged: CloudWatch may or
+may not have taken it, and nothing here can tell which.
 """
 
 from __future__ import annotations
@@ -75,13 +82,14 @@ KIND_LABELS = {1: "zero-tolerance counter", 2: "per-scenario flip", 3: "noisy co
 
 PUBLISH_INVALID = "ws7_publish_invalid"
 PUBLISH_FAILED = "ws7_publish_failed"
+PUBLISH_REPEATED = "ws7_publish_repeated"
 ALERT_INVALID = "ws7_alert_invalid"
 ALERT_FAILED = "ws7_alert_failed"
 TOPIC_REFUSED = "ws7_topic_refused"
 PART_C_RULED = "ws7_part_c_ruled"
 RESULT_INVALID = "ws7_compare_result_invalid"
-CODES = (PUBLISH_INVALID, PUBLISH_FAILED, ALERT_INVALID, ALERT_FAILED, TOPIC_REFUSED, PART_C_RULED,
-         RESULT_INVALID)
+CODES = (PUBLISH_INVALID, PUBLISH_FAILED, PUBLISH_REPEATED, ALERT_INVALID, ALERT_FAILED,
+         TOPIC_REFUSED, PART_C_RULED, RESULT_INVALID)
 
 _NAME_RE = re.compile(r"[A-Za-z0-9]{1,64}")
 _TOPIC_RE = re.compile(r"arn:aws:sns:eu-west-2:[0-9]{12}:[A-Za-z0-9_-]{1,256}")
@@ -364,10 +372,16 @@ class Publisher:
         self._sns = sns
         self._topic = None if topic is None else topic_arn(topic)
         self._names = allowed_names(target)
+        self.acknowledged: set = set()      # the names CloudWatch has taken from this run
+
+    def unsent(self, values: list) -> list:
+        """The (name, value) pairs whose name CloudWatch has not yet acknowledged."""
+        return [item for item in values if item[0] not in self.acknowledged]
 
     def put(self, values: list) -> None:
         """Publish (name, value) pairs in one PutMetricData call. Everything is
-        checked first; a list that fails sends nothing."""
+        checked first; a list that fails sends nothing. A name this run has already
+        delivered is never sent again."""
         if self._cloudwatch is None or type(values) not in (list, tuple) or not values:
             raise Stop(PUBLISH_INVALID)
         data, seen = [], set()
@@ -381,6 +395,8 @@ class Publisher:
             if name in STATE_METRICS or name.startswith("Breach"):
                 if value not in (0, 1):
                     raise Stop(PUBLISH_INVALID)
+            if name in self.acknowledged:
+                raise Stop(PUBLISH_REPEATED)
             seen.add(name)
             data.append({"MetricName": name, "Value": float(value), "Unit": "None",
                          "Dimensions": [{"Name": DIMENSION, "Value": self.target}]})
@@ -388,6 +404,7 @@ class Publisher:
             self._cloudwatch.put_metric_data(Namespace=NAMESPACE, MetricData=data)
         except Exception:               # noqa: BLE001 - whatever stopped it, it was not published
             raise Stop(PUBLISH_FAILED) from None
+        self.acknowledged |= seen
 
     def alert(self, subject: str, text: str) -> None:
         """Send one message to the alert topic. The text is checked first."""

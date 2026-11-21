@@ -1224,7 +1224,7 @@ def test_metrics_that_cannot_be_published_fail_the_run_before_its_success_record
     assert no_success(world, target)
     assert world.metric("RunOk") == [0]             # published by the failure path's own call
     # each tried once: the run's metrics (refused), the failure's markers, and the run's
-    # counters
+    # counters, which CloudWatch had not acknowledged
     assert len(events(world, "cloudwatch")) == 3
     out = world.published()
     assert out["CostUsdMicros"][0] > 0 and all(len(values) == 1 for values in out.values())
@@ -1434,6 +1434,61 @@ def test_something_that_exits_inside_a_run_is_a_crashed_run_that_still_settles(r
     assert (record["code"], record["ledger"]) == (entry.CRASHED, "settled")
     assert world.published()["RunOk"] == [0]
     assert not any(SENTINEL in line for line in world.lines)
+
+
+# ================================== EACH METRIC IS PUBLISHED AT MOST ONCE PER RUN ==
+
+def _breaching_v1_stub():
+    scenario = next(s for s in SCENARIOS if W.v1_text_with_an_invented_dose(s))
+    return W.v1_stub_with_text({scenario: W.v1_text_with_an_invented_dose(scenario)})
+
+
+@pytest.mark.parametrize("failing", ["nothing", "sns", "success_record"])
+def test_a_step_that_fails_after_the_counters_were_accepted_never_publishes_them_again(
+        ready, world, failing):
+    """Codex P2, PR #9. A breach run. CloudWatch accepts the run's counters and breach
+    values; then the breach message, or the success record, fails. The failure path
+    sends RunOk = 0 and RunRefused = 1 and nothing else: exactly one sample of every
+    counter is at the fake. What was delivered before the failure stands. The
+    partner, in which nothing fails, has the same one sample of each."""
+    target = "v1"
+    ready(target, stub=_breaching_v1_stub())
+    if failing == "sns":
+        world.sns.script(500)
+    elif failing == "success_record":
+        world.s3.script_put(store.success_key(RUN_ID[target]), fakes.DENY_403)
+    code = world.run(target)
+    out = world.published()
+    counters = {publish.pascal(name) for name in publish.run_metrics(target)}
+    assert counters <= set(out) and out["CostUsdMicros"][0] > 0
+    assert all(len(values) == 1 for values in out.values()), out
+    # delivered before the failure, and it stands
+    assert out["BreachMedicationsKind1"] == [1] and out["NoBaseline"] == [0]
+    assert len(world.sns.messages) == (0 if failing == "sns" else 1)
+    requests = [what.split(" ")[1].split(",")[0] for what in events(world, "cloudwatch")]
+    if failing == "nothing":
+        assert code == 0 and requests == ["NoBaseline", "RunOk"] and out["RunOk"] == [1]
+        return
+    assert code == 1
+    assert requests == ["NoBaseline", "RunRefused"]             # no third request: no counter again
+    assert (out["RunOk"], out["RunRefused"]) == ([0], [1])
+    assert code_in(world, target) == {"sns": publish.ALERT_FAILED,
+                                      "success_record": entry.SUCCESS_RECORD_UNAVAILABLE}[failing]
+    assert not stopped_with(world, publish.PUBLISH_REPEATED)    # it was never even tried
+    assert no_success(world, target)
+
+
+def test_counters_cloudwatch_did_not_acknowledge_are_sent_by_the_failure_path(ready, world):
+    """The positive control for the test above: when the run's own metrics call was
+    refused, the failure path does send the counters, once."""
+    target = "v1"
+    ready(target)
+    world.cw.script(500)
+    assert world.run(target) == 1
+    out = world.published()
+    assert out["CostUsdMicros"][0] > 0 and out["RunOk"] == [0]
+    assert [what.split(" ")[1].split(",")[0] for what in events(world, "cloudwatch")] == [
+        "NoBaseline", "RunRefused", "CostUsdMicros"]
 
 
 # ======================================= AN EXIT CODE THE BATCH MUST EXPLAIN ==

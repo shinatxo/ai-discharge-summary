@@ -269,6 +269,46 @@ def test_a_metric_call_that_fails_is_tried_once_and_reported_by_a_fixed_code(cw)
     assert cw.values("RunOk") == [0]
 
 
+def test_a_name_cloudwatch_acknowledged_is_never_sent_again_by_the_same_publisher(cw):
+    """Each metric is published at most once per run (Codex P2, PR #9). A list that
+    holds an acknowledged name is refused whole, and nothing is sent. The partner: a
+    list of other names goes."""
+    pub = publisher("v1", cw)
+    pub.put([("CostUsdMicros", 5), ("NoBaseline", 0)])
+    assert pub.acknowledged == {"CostUsdMicros", "NoBaseline"}
+    for again in ([("CostUsdMicros", 5)], [("CostUsdMicros", 6)],
+                  [("RunOk", 0), ("NoBaseline", 1)]):
+        assert code_of(lambda: pub.put(again)) == publish.PUBLISH_REPEATED
+    assert len(cw.bodies) == 1                              # the one request, and no other
+    pub.put([("RunOk", 0), ("RunRefused", 1)])
+    assert len(cw.bodies) == 2 and cw.values("CostUsdMicros") == [5]
+    assert publish.PUBLISH_REPEATED in publish.CODES
+
+
+def test_unsent_is_the_values_cloudwatch_has_not_acknowledged(cw):
+    pub = publisher("v1", cw)
+    values = [("CostUsdMicros", 5), ("CallsRefused", 0), ("SpendGuardTrips", 0)]
+    assert pub.unsent(values) == values
+    pub.put(values[:2])
+    assert pub.unsent(values) == [("SpendGuardTrips", 0)]
+    pub.put(pub.unsent(values))
+    assert pub.unsent(values) == []
+    assert all(len(cw.values(name)) == 1 for name, _value in values)
+
+
+def test_a_call_that_failed_is_not_acknowledged_and_another_publisher_starts_clean(cw):
+    """What CloudWatch did not acknowledge may be sent again; a new run's publisher
+    knows nothing of the last run's."""
+    cw.script(500)
+    pub = publisher("v1", cw)
+    assert code_of(lambda: pub.put([("CostUsdMicros", 5)])) == publish.PUBLISH_FAILED
+    assert pub.acknowledged == set() and pub.unsent([("CostUsdMicros", 5)]) == [("CostUsdMicros", 5)]
+    pub.put([("CostUsdMicros", 5)])
+    assert pub.acknowledged == {"CostUsdMicros"}
+    publisher("v1", cw).put([("CostUsdMicros", 7)])         # the next run
+    assert cw.values("CostUsdMicros") == [5, 7]
+
+
 def test_a_publisher_with_no_cloudwatch_client_cannot_put_a_metric(sns):
     """The Thursday check is given no CloudWatch client at all."""
     assert code_of(lambda: publisher("v1", sns=sns).put([("RunOk", 1)])) == publish.PUBLISH_INVALID

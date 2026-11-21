@@ -644,6 +644,13 @@ def test_accounting_that_did_not_finish_leaves_the_entry_unresolved_at_its_reser
     record = world.failed(run)
     assert record["ledger"] == "crashed"
     assert set([record["code"], *record["also"]]) & set(wl.REPORT_CODES)
+    # the run's own code: a call left `sent`; totals that are not the rows; or, when the
+    # call itself could not be metered, that first, with the ledger's refusal beside it
+    assert record["code"] == {0: wl.REPORT_INCOMPLETE, 1: wl.REPORT_INCOMPLETE,
+                              2: wl.REPORT_INCONSISTENT, 3: wl.REPORT_INCONSISTENT,
+                              4: wc.UNMETERED}[ACCOUNTING_POINTS.index(point)]
+    if point == ACCOUNTING_POINTS[4]:
+        assert record["also"] == [wl.REPORT_INCONSISTENT]
     assert world.published()["RunOk"] == [0] and no_success(world, target)
     assert not any(SENTINEL in line for line in world.lines)
 

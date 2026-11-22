@@ -5041,4 +5041,3 @@ def test_a_real_ctrl_c_in_the_check_never_raises_and_fails_it_before_its_last_ac
         assert world.sns.messages == []                         # nothing to report
     else:
         assert check_lines(world)[1].startswith("no claim")     # its one message, sent
-

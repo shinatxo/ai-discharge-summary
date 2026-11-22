@@ -21,8 +21,11 @@ import builtins
 import json
 import math
 import os
+import signal
 import subprocess
 import sys
+import threading
+import time
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
@@ -1015,16 +1018,24 @@ def test_an_interrupt_caught_while_the_entry_is_open_never_settles_from_the_guar
     assert world.failed(f"2026-12-23T0400-{target}")["code"] == wl.BLOCKED_UNRESOLVED
 
 
-@pytest.mark.parametrize("stage", ["settled", "summary", "compared", "stored"])
+@pytest.mark.parametrize("stage", ["settled", "generated", "summary", "compared", "stored",
+                                   "success"])
 @pytest.mark.parametrize("interrupted", [True, False])
 def test_an_interrupt_caught_after_the_settle_still_fails_the_run_before_success(
         ready, world, stage, interrupted):
     """The reason is checked before success. An interrupt caught by the log after the
-    entry was settled, at each line between the settle and the success: the entry
+    entry was settled, at each line between the settle and the last act: the entry
     stays settled as metered (it was no longer open), and the run still fails, with
     `ws7_interrupted`, and never publishes RunOk = 1. The partner: the same sink
     raising an ordinary exception on the same line changes nothing, and the run
-    succeeds."""
+    succeeds.
+
+    THE 'success' LINE IS CODEX'S BLOCKER (PR #9, fourth re-check): it is written after
+    the success record and after what was the last check, so an interrupt caught there
+    ended in RunOk = 1 and exit 0. The reason is now checked once more, just before
+    RunOk = 1. The success record is already written, so the failed record goes beside
+    it, and the Thursday check reports a failed run. This is a `KeyboardInterrupt`
+    raised by other means; a real Ctrl+C is tested further down."""
     target = "v1"
     ready(target)
     fired = _interrupt_on_the_line(world, stage,
@@ -1039,7 +1050,11 @@ def test_an_interrupt_caught_after_the_settle_still_fails_the_run_before_success
     assert code == 1
     record = world.failed(RUN_ID[target])
     assert (record["code"], record["ledger"]) == (entry.INTERRUPTED, "settled")
-    assert world.metric("RunOk") == [0] and no_success(world, target)
+    assert world.metric("RunOk") == [0]
+    if stage == "success":
+        assert not no_success(world, target) and record["ids"] == ["run_ok"]
+    else:
+        assert no_success(world, target)
 
 
 def test_an_interrupt_caught_before_the_claim_stops_the_run_before_it_claims(ready, world):
@@ -4425,3 +4440,605 @@ def test_the_deps_a_run_takes_cannot_be_named_on_the_command_line():
             "--scheduled-time", "--target"]
         assert all(a.option_strings for a in sub._actions)      # no positional argument
     assert set(entry.USAGE.split()) >= {"{scheduled,check}", "--target", "--scheduled-time"}
+
+
+# ================================ A CTRL+C NEVER RAISES INSIDE THE JOB (Codex, PR #9,
+# ================================ fourth re-check) ==================================
+#
+# THE CLASS: a Ctrl+C never raises inside the job. While a run or the check is in
+# progress, the job's SIGINT handler only sets the latch. The latch is checked before
+# every act the run cannot take back, and a set latch fails the run by the existing
+# rules. A Ctrl+C that arrives after the last check, the one before RunOk = 1, changes
+# nothing: the run had finished.
+#
+# Every signal below is a real SIGINT, sent by this process to itself with `os.kill`.
+
+SIGNAL_LIMIT_S = 5.0        # a SIGINT a process sends itself is handled within milliseconds
+THREAD_LIMIT_S = 10.0
+
+
+class CtrlC:
+    """A real SIGINT from inside a run, and what became of it.
+
+    IT IS SENT ONLY WHILE THE JOB'S OWN HANDLER IS IN PLACE, so no test can interrupt
+    the test session (or, with the system default in place, end it). It then waits,
+    for a bounded time, until Python has run the handler: signals are handled between
+    instructions of the main thread, and each of these is sent from the main thread.
+
+    If the handler RAISES, that is counted, and the `KeyboardInterrupt` goes on into
+    the job, as it would from a real Ctrl+C."""
+
+    def __init__(self):
+        self.sent = self.latched = self.raised = self.unhandled = self.not_installed = 0
+        self.latch = None
+
+    def __call__(self) -> None:
+        latch = getattr(signal.getsignal(signal.SIGINT), "__self__", None)
+        if type(latch) is not entry._Latch:
+            self.not_installed += 1
+            return
+        self.latch = latch
+        self.sent += 1
+        try:
+            os.kill(os.getpid(), signal.SIGINT)
+            limit = time.monotonic() + SIGNAL_LIMIT_S
+            while not latch.set:
+                if time.monotonic() > limit:
+                    self.unhandled += 1
+                    return
+                time.sleep(0.001)
+            self.latched += 1
+        except KeyboardInterrupt:
+            self.raised += 1
+            raise
+
+    def tally(self) -> dict:
+        return {"sent": self.sent, "latched": self.latched, "raised": self.raised,
+                "unhandled": self.unhandled, "not_installed": self.not_installed}
+
+
+ONE_LATCHED = {"sent": 1, "latched": 1, "raised": 0, "unhandled": 0, "not_installed": 0}
+NONE_SENT = {"sent": 0, "latched": 0, "raised": 0, "unhandled": 0, "not_installed": 0}
+
+
+@pytest.fixture
+def ctrl_c():
+    """A sender of real SIGINTs. Whatever the test did, the SIGINT handler the test
+    started with is in place again when it ends; a test that left another fails."""
+    before = signal.getsignal(signal.SIGINT)
+    sender = CtrlC()
+    yield sender
+    after = signal.getsignal(signal.SIGINT)
+    signal.signal(signal.SIGINT, before)
+    assert after is before, "the test left another SIGINT handler in place"
+
+
+def _once(action) -> tuple:
+    """`fire()` runs `action()` the first time it is called. `reached` says it was."""
+    reached = []
+
+    def fire() -> None:
+        if not reached:
+            reached.append(True)
+            action()
+    return fire, reached
+
+
+def _at_the_line(stage: str):
+    """As the log line of `stage` is written."""
+    def install(world, _monkeypatch, _target, fire) -> None:
+        def sink(line: str) -> None:
+            if f" stage={stage}" in line:
+                fire()
+            world.lines.append(line)
+        world.out = sink
+    return install
+
+
+def _at_the_call(ordinal):
+    """As the call numbered `ordinal(target)` is sent, counting every call the run's
+    client sends from 1: after the stopping client's own check, before the reply."""
+    def install(_world, monkeypatch, target, fire) -> None:
+        real, sent = wc.client_factory, []
+
+        def factory(guard, **kwargs):
+            inner = real(guard, **kwargs)
+
+            def make(read_timeout=None):
+                client = inner(read_timeout)
+
+                class Sending:
+                    def converse(self, **request):
+                        sent.append(1)
+                        if len(sent) == ordinal(target):
+                            fire()
+                        return client.converse(**request)
+                return Sending()
+            return make
+        monkeypatch.setattr(wc, "client_factory", factory)
+    return install
+
+
+def _in_the_settle(_world, monkeypatch, _target, fire) -> None:
+    """Inside the settle, after its write has landed."""
+    real = wl.Ledger.settle
+
+    def settle(self, admitted, report):
+        written = real(self, admitted, report)
+        fire()
+        return written
+    monkeypatch.setattr(wl.Ledger, "settle", settle)
+
+
+def _at_the_put(which: str, when: str):
+    """Around one CloudWatch call: the run's first (its metrics) or RunOk = 1, just
+    before the request is made or just after it was acknowledged."""
+    def install(_world, monkeypatch, _target, fire) -> None:
+        real = publish.Publisher.put
+
+        def put(self, values):
+            mine = which == "metrics" or list(values) == [(publish.RUN_OK, 1)]
+            if mine and when == "before":
+                fire()
+            real(self, values)
+            if mine and when == "after":
+                fire()
+        monkeypatch.setattr(publish.Publisher, "put", put)
+    return install
+
+
+def _at_the_success_record(_world, monkeypatch, target, fire) -> None:
+    """As the success record is put."""
+    real = store.Store.create               # the world's own recording wrapper
+
+    def create(st, key, body, **kwargs):
+        if key == store.success_key(RUN_ID[target]):
+            fire()
+        return real(st, key, body, **kwargs)
+    monkeypatch.setattr(store.Store, "create", create)
+
+
+CALLS = {t: len(STEPS[t]) * (len(SCENARIOS) + 1) for t in TARGETS}    # the pre-flight's, then 18
+# Where the SIGINT arrives, from admission to the last check, and what the existing
+# rules then make of the ledger entry:
+#   "crashed"   it was still open: never settled from the guard, marked crashed
+#   "settled"   it was settled already, and stays so; no success record
+#   "recorded"  as "settled", and the success record had been written
+BEFORE_RUNOK = {
+    "the 'admitted' log line": (_at_the_line("admitted"), "crashed"),
+    "the first pre-flight call": (_at_the_call(lambda t: 1), "crashed"),
+    "the 'preflight' log line": (_at_the_line("preflight"), "crashed"),
+    "the first main call": (_at_the_call(lambda t: len(STEPS[t]) + 1), "crashed"),
+    "the last main call": (_at_the_call(lambda t: CALLS[t]), "crashed"),
+    "the settle, after its write": (_in_the_settle, "settled"),
+    "the 'settled' log line": (_at_the_line("settled"), "settled"),
+    "the 'generated' log line": (_at_the_line("generated"), "settled"),
+    "the 'summary' log line": (_at_the_line("summary"), "settled"),
+    "the 'compared' log line": (_at_the_line("compared"), "settled"),
+    "the 'stored' log line": (_at_the_line("stored"), "settled"),
+    "the run's metrics, as they are sent": (_at_the_put("metrics", "before"), "settled"),
+    "the success record, as it is put": (_at_the_success_record, "recorded"),
+    "the 'success' log line": (_at_the_line("success"), "recorded"),
+}
+AFTER_THE_METRICS_CHECK = ("the run's metrics, as they are sent",
+                           "the success record, as it is put", "the 'success' log line")
+# ... and after the last check: the run had finished.
+AFTER_THE_LAST_CHECK = {
+    "RunOk = 1, as it is sent": _at_the_put("run_ok", "before"),
+    "RunOk = 1, once it is acknowledged": _at_the_put("run_ok", "after"),
+}
+
+
+@pytest.mark.parametrize("sent", [True, False], ids=["a SIGINT", "no signal"])
+@pytest.mark.parametrize("where", list(BEFORE_RUNOK))
+@pytest.mark.parametrize("target", TARGETS)
+def test_a_real_ctrl_c_before_the_last_check_never_raises_and_always_fails_the_run(
+        ready, world, monkeypatch, ctrl_c, target, where, sent):
+    """A real SIGINT at each step from admission to the last check, for both targets.
+
+    It never raises: the job's handler sets the latch and returns. And the run always
+    fails: never RunOk = 1, never exit 0, never a success record without a failed
+    record beside it, no message of its own. The ledger entry follows the existing
+    rules: still open when the signal came, it is never settled from the guard, it is
+    marked crashed, and it blocks next week's run; already settled, it stays settled.
+
+    The last two places are Codex's blocker: the success record has been written, and
+    at `9f9397f` nothing looked again before RunOk = 1.
+
+    THE PARTNER, for every place: the same run with the same hook and no signal is a
+    clean success, so each place is on the run's path and the signal is the cause."""
+    install, expected = BEFORE_RUNOK[where]
+    ready(target)
+    fire, reached = _once(ctrl_c if sent else lambda: None)
+    install(world, monkeypatch, target, fire)
+    before = signal.getsignal(signal.SIGINT)
+    code = world.run(target)
+    assert reached == [True], "the run never came to this place"
+    assert signal.getsignal(signal.SIGINT) is before            # main() put it back
+    run = RUN_ID[target]
+    if not sent:
+        assert ctrl_c.tally() == NONE_SENT
+        assert code == 0 and world.metric("RunOk") == [1]
+        assert not no_success(world, target) and store.failed_key(run) not in world.s3.keys()
+        assert world.bedrock_requests() == CALLS[target]
+        return
+    assert ctrl_c.tally() == ONE_LATCHED                        # handled once; nothing raised
+    assert code == 1
+    assert world.metric("RunOk") == [0] and world.sns.messages == []
+    record, booked = world.failed(run), world.entry_of(run)     # the failed record is there
+    assert record["code"] == entry.INTERRUPTED
+    assert no_success(world, target) == (expected != "recorded")
+    # the run's own metrics went out only where the signal came after the check before them
+    assert world.metric("NoBaseline") == ([0] if where in AFTER_THE_METRICS_CHECK else [])
+    if expected != "crashed":
+        assert (booked["state"], booked["basis"]) == ("settled", "metered")
+        assert record["ledger"] == "settled"
+        if expected == "recorded":
+            assert record["ids"] == ["run_ok"]                  # stopped by the last check
+        return
+    assert (booked["state"], booked["kind"]) == ("unresolved", "crashed")
+    assert booked["counted_usd_micros"] == RESERVED[target]["total_usd_micros"]
+    assert record["ledger"] == "crashed"
+    if where == "the 'admitted' log line":
+        assert world.bedrock_requests() == 0                    # no runner was started:
+        assert not (world.runs_dir / PRE[target]).exists()      # not even to be refused its calls
+    if where == "the 'preflight' log line":
+        assert not (world.runs_dir / MAIN[target]).exists()     # no main batch was dispatched
+    if where == "the first pre-flight call":
+        assert world.bedrock_requests() == 1                    # the one in flight; the rest refused
+    if where == "the last main call":
+        assert world.bedrock_requests() == CALLS[target]        # every call answered, and still crashed
+    # ---- and it blocks the next scheduled run
+    world.out = world.lines.append
+    world.clock.advance(7 * 86400)
+    assert world.run(target, "2026-12-23T04:00:00Z") == 1
+    assert world.failed(f"2026-12-23T0400-{target}")["code"] == wl.BLOCKED_UNRESOLVED
+
+
+@pytest.mark.parametrize("where", list(AFTER_THE_LAST_CHECK))
+@pytest.mark.parametrize("target", TARGETS)
+def test_a_real_ctrl_c_after_the_last_check_changes_nothing_the_run_had_finished(
+        ready, world, monkeypatch, ctrl_c, target, where):
+    """The last check of the latch is the line before RunOk = 1 is sent. A SIGINT as
+    that request is made, or once it has been acknowledged, sets the latch and nothing
+    reads it again: the run stays a success. The partners are the places before the
+    last check, above, where the same signal fails the run."""
+    ready(target)
+    fire, reached = _once(ctrl_c)
+    AFTER_THE_LAST_CHECK[where](world, monkeypatch, target, fire)
+    before = signal.getsignal(signal.SIGINT)
+    assert world.run(target) == 0
+    assert reached == [True] and ctrl_c.tally() == ONE_LATCHED and ctrl_c.latch.set
+    assert signal.getsignal(signal.SIGINT) is before
+    run = RUN_ID[target]
+    assert world.metric("RunOk") == [1] and not no_success(world, target)
+    assert store.failed_key(run) not in world.s3.keys()
+    booked = world.entry_of(run)
+    assert (booked["state"], booked["basis"]) == ("settled", "metered")
+
+
+@pytest.mark.parametrize("target", TARGETS)
+def test_a_ctrl_c_while_the_run_waits_for_a_reply_is_latched_and_fails_the_run(
+        ready, world, ctrl_c, target):
+    """The likeliest real Ctrl+C: the run is blocked reading a reply from the network.
+    Here the SIGINT is sent from the stub's own thread as the first main request
+    arrives, so the main thread is inside that read. Nothing raises there; the reply
+    comes back, every later call is refused, and the entry is marked crashed."""
+    stub, latches = W.default_stub(target), []
+
+    def as_the_request_arrives() -> None:
+        latch = getattr(signal.getsignal(signal.SIGINT), "__self__", None)
+        if type(latch) is entry._Latch:                 # only ever to the job's own handler
+            latches.append(latch)
+            os.kill(os.getpid(), signal.SIGINT)
+    W.on_nth(stub, FIRST_STEP[target], 2, as_the_request_arrives)       # 1 is the pre-flight's
+    ready(target, stub=stub)
+    assert world.run(target) == 1
+    assert len(latches) == 1 and latches[0].set
+    run = RUN_ID[target]
+    record, booked = world.failed(run), world.entry_of(run)
+    assert (record["code"], record["ledger"]) == (entry.INTERRUPTED, "crashed")
+    assert (booked["state"], booked["kind"]) == ("unresolved", "crashed")
+    assert world.bedrock_requests() == len(STEPS[target]) + 1           # no call after that one
+    assert world.metric("RunOk") == [0] and no_success(world, target)
+
+
+@pytest.mark.parametrize("sent", [True, False], ids=["a SIGINT", "no signal"])
+@pytest.mark.parametrize("target", TARGETS)
+def test_a_real_ctrl_c_before_the_breach_alert_means_the_message_is_never_sent(
+        ready, world, monkeypatch, baseline_of, ctrl_c, target, sent):
+    """A message once sent cannot be unsent, so the latch is checked before it. A
+    breach run, with a SIGINT as the run's metrics are sent, which is after the check
+    before them: the breach message is not sent, there is no success record, and the
+    run fails. The partner: the same breach run with no signal sends its one message
+    and succeeds."""
+    if target == "v1":
+        stub = _breaching_v1_stub()
+    else:
+        safety_net = baseline_of(target)["metrics"]["safety_net_verdict"]
+        scenario = sorted(set(safety_net["verdicts"]) - set(safety_net["unstable"]))[0]
+        stub = W.pipeline_stub_with_changes(
+            {scenario: W.advice_the_notes_do_not_document(scenario)})
+    ready(target, stub=stub)
+    fire, reached = _once(ctrl_c if sent else lambda: None)
+    _at_the_put("metrics", "before")(world, monkeypatch, target, fire)
+    code = world.run(target)
+    assert reached == [True]
+    if not sent:
+        assert code == 0 and len(world.sns.messages) == 1 and world.metric("RunOk") == [1]
+        assert world.s3.json(store.success_key(RUN_ID[target]))["status"] == "breach"
+        return
+    assert ctrl_c.tally() == ONE_LATCHED and code == 1
+    assert world.sns.messages == [] and no_success(world, target)
+    record = world.failed(RUN_ID[target])
+    assert (record["code"], record["ids"]) == (entry.INTERRUPTED, ["alert"])
+    assert world.metric("RunOk") == [0]
+
+
+@pytest.mark.parametrize("stage", ["precheck", "match", "claim"])
+@pytest.mark.parametrize("target", TARGETS)
+def test_a_real_ctrl_c_before_admission_stops_the_run_before_it_claims_or_reserves(
+        ready, world, ctrl_c, target, stage):
+    """Before admission there is no ledger entry. Latched while the precheck's line or
+    the match check's line is written, the run stops at its first check, before the
+    claim: it has claimed, reserved and spent nothing. Latched while the claim's line is
+    written, it holds its claim and stops before admission: nothing is reserved, so
+    there is no ledger at all, and the failed record says so."""
+    ready(target)
+    fire, reached = _once(ctrl_c)
+    _at_the_line(stage)(world, None, target, fire)
+    assert world.run(target) == 1
+    assert reached == [True] and ctrl_c.tally() == ONE_LATCHED
+    assert stopped_with(world, entry.INTERRUPTED) and world.bedrock_requests() == 0
+    assert LEDGER_KEY not in world.s3.keys()
+    if stage != "claim":
+        assert world.published() == {"RunRefused": [1]}
+        assert not any(method == "PUT" for method, _key in world.s3.requests)
+        return
+    record = world.failed(RUN_ID[target])
+    assert (record["code"], record["ids"], record["ledger"]) == (
+        entry.INTERRUPTED, ["admission"], "not_admitted")
+    assert world.published() == {"RunRefused": [1], "RunOk": [0]}
+
+
+# ---------------------------------------------------------------- the latch itself
+
+class _QuietGuard:
+    def report(self):
+        return {"calls": [], "batches": {}, "unmetered": False, "unmetered_calls": 0,
+                "total_usd_nanos": 0}
+
+
+def test_a_set_latch_is_the_tripwires_reason_at_every_read_and_it_never_un_happens():
+    """The handler sets the latch and returns nothing. From the next read on, the
+    tripwire's reason is `ws7_interrupted`: `report()` refuses, `look()` is true, and
+    the stopping client refuses a call before the guard's client sees it. It is kept
+    even if the latch were cleared. The partners: a latch that is never set, and no
+    latch at all, change nothing."""
+    class Inner:
+        calls = 0
+
+        def converse(self, **_request):
+            Inner.calls += 1
+            return {"invented": True}
+
+    for latch in (entry._Latch(), None):                        # the two partners
+        wire = entry._Tripwire(latch)
+        wire.watch(_QuietGuard())
+        assert wire.reason is None and not wire.tripped and wire.look() is False
+        assert wire.report()["calls"] == []
+        assert entry._StoppingClient(Inner(), wire).converse(modelId="invented") == {"invented": True}
+    assert Inner.calls == 2
+
+    for first_read in ("reason", "look", "report", "a call"):
+        latch = entry._Latch()
+        wire = entry._Tripwire(latch)
+        wire.watch(_QuietGuard())
+        assert latch.set is False and wire.reason is None
+        try:
+            returned = latch.on_signal(signal.SIGINT, None)
+        except BaseException as exc:    # noqa: BLE001 - an interrupt here would end the session
+            pytest.fail(f"the handler raised {type(exc).__name__}")
+        assert returned is None and latch.set is True
+        if first_read == "reason":
+            assert wire.reason == entry.INTERRUPTED
+        elif first_read == "look":
+            assert wire.look() is True
+        elif first_read == "report":
+            assert _refused_with(wire.report) == entry.INTERRUPTED
+        else:
+            with pytest.raises(wc.Ws7Refused):
+                entry._StoppingClient(Inner(), wire).converse(modelId="invented")
+            assert wire.refused == 1
+        assert wire.reason == entry.INTERRUPTED and wire.tripped and wire.look() is True
+        latch.set = False                                       # nothing does this; if it did
+        assert wire.reason == entry.INTERRUPTED and wire.look() is True
+        assert _refused_with(wire.report) == entry.INTERRUPTED
+    assert Inner.calls == 2                                     # no call got past a set latch
+
+    # the first reason is the one that is kept
+    latch = entry._Latch()
+    wire = entry._Tripwire(latch)
+    wire.fail(entry.REPORT_UNREADABLE)
+    latch.on_signal(signal.SIGINT, None)
+    assert wire.reason == entry.REPORT_UNREADABLE and wire.tripped
+
+
+# ------------------------------------------------- the handler: installed, put back
+
+def _a_handler(_signum, _frame) -> None:
+    """A SIGINT handler of the caller's own. Never called here."""
+
+
+HANDLERS = {"Python's own": signal.default_int_handler, "a function of the caller's": _a_handler,
+            "ignored": signal.SIG_IGN, "the system default": signal.SIG_DFL}
+MAIN_ENDS = {"returns 0": 0, "returns 1": 1, "raises an exception": RuntimeError,
+             "raises KeyboardInterrupt": KeyboardInterrupt, "raises SystemExit": SystemExit,
+             "a usage error": 2}
+
+
+@pytest.mark.parametrize("ending", list(MAIN_ENDS))
+@pytest.mark.parametrize("previous", list(HANDLERS))
+@pytest.mark.parametrize("mode", ["scheduled", "check"])
+def test_main_installs_the_latch_and_puts_the_previous_handler_back_however_it_ends(
+        ctrl_c, monkeypatch, mode, previous, ending):
+    """`main()` is the only place the handler is installed. While the run or the check
+    is in progress the SIGINT handler is the latch's, and the latch is the one the run
+    was given. When `main()` returns (0, 1, or 2 for a usage error) and when it raises
+    (an exception, a `KeyboardInterrupt`, a `SystemExit`), the handler that was there
+    before is back: Python's own, a function of the caller's, "ignored" or the system
+    default. No signal is sent in this test."""
+    was, end = HANDLERS[previous], MAIN_ENDS[ending]
+    during = []
+
+    def body(_target, _scheduled_time, _deps, latch):
+        during.append((signal.getsignal(signal.SIGINT), latch))
+        if type(end) is int:
+            return end
+        raise end()
+    monkeypatch.setattr(entry, mode, body)
+    argv = [] if ending == "a usage error" else [mode, "--target", "v1", "--scheduled-time", WHEN]
+    the_sessions_own = signal.signal(signal.SIGINT, was)
+    try:
+        try:
+            out = entry.main(argv, object())
+        except BaseException as exc:    # noqa: BLE001 - the three it is made to raise
+            out = type(exc)
+        after = signal.getsignal(signal.SIGINT)
+    finally:
+        signal.signal(signal.SIGINT, the_sessions_own)
+    assert after is was                                         # put back, however it ended
+    assert out == end
+    if ending == "a usage error":
+        assert during == []
+        return
+    (handler, latch), = during
+    assert type(latch) is entry._Latch and handler == latch.on_signal and latch.set is False
+    assert handler is not was
+
+
+def test_off_the_main_thread_main_installs_no_handler_and_still_runs(ctrl_c, monkeypatch):
+    """Python runs signal handlers, and raises a Ctrl+C's `KeyboardInterrupt`, in the
+    main thread only, and refuses to set a handler from any other. Called from
+    another thread, `main()` installs nothing and runs. The partner: the same call
+    from the main thread has the latch's handler in place while it runs."""
+    seen: dict = {}
+
+    def body(_target, _scheduled_time, _deps, _latch):
+        seen["during"] = signal.getsignal(signal.SIGINT)
+        return 0
+    monkeypatch.setattr(entry, "scheduled", body)
+    argv = ["scheduled", "--target", "v1", "--scheduled-time", WHEN]
+    before = signal.getsignal(signal.SIGINT)
+
+    def call() -> None:
+        try:
+            seen["code"] = entry.main(argv, object())
+        except BaseException as exc:    # noqa: BLE001 - reported by the assertion below
+            seen["raised"] = type(exc).__name__
+    thread = threading.Thread(target=call, daemon=True)
+    thread.start()
+    thread.join(THREAD_LIMIT_S)
+    assert not thread.is_alive(), "main() did not return"
+    assert seen == {"during": before, "code": 0}
+    assert signal.getsignal(signal.SIGINT) is before
+
+    seen.clear()                                                # the partner
+    assert entry.main(argv, object()) == 0
+    assert type(getattr(seen["during"], "__self__", None)) is entry._Latch
+    assert signal.getsignal(signal.SIGINT) is before
+
+
+def test_a_handler_that_was_not_set_from_python_is_left_in_place(ctrl_c, monkeypatch):
+    """`getsignal` gives None for a handler installed from outside Python. It cannot be
+    put back from here, and it does not raise in Python, so `main()` leaves it: it
+    sets no handler at all. The partner: with an ordinary handler in place it sets
+    two, the latch's and then the one that was there."""
+    monkeypatch.setattr(entry, "scheduled", lambda *_args: 0)
+    argv = ["scheduled", "--target", "v1", "--scheduled-time", WHEN]
+    before, real, calls = signal.getsignal(signal.SIGINT), signal.signal, []
+
+    def recording(signum, handler):
+        calls.append((signum, handler))
+        return real(signum, handler)
+    with monkeypatch.context() as patch:
+        patch.setattr(signal, "signal", recording)
+        assert entry.main(argv, object()) == 0                  # the partner
+        assert [signum for signum, _handler in calls] == [signal.SIGINT, signal.SIGINT]
+        assert type(getattr(calls[0][1], "__self__", None)) is entry._Latch
+        assert calls[1][1] is before
+        del calls[:]
+        patch.setattr(signal, "getsignal", lambda _signum: None)
+        assert entry.main(argv, object()) == 0
+        assert calls == []
+    assert signal.getsignal(signal.SIGINT) is before
+
+
+# -------------------------------------------------------------------- the check
+
+FAILED_CHECK = "WS7 check - target {target} - the check failed"
+
+
+def _before_expire(_world, monkeypatch, _target, fire) -> None:
+    """While the check loads its config, which is before `expire()`."""
+    real = reserve.load_config
+
+    def load_config(*args, **kwargs):
+        cfg = real(*args, **kwargs)
+        fire()
+        return cfg
+    monkeypatch.setattr(reserve, "load_config", load_config)
+
+
+# place -> (how the signal is delivered, whether a run succeeded on the Wednesday,
+#           whether the check fails when the signal is sent)
+CHECK_PLACES = {
+    "before expire()": (_before_expire, False, True),
+    "the 'checked' line, with something to report": (_at_the_line("checked"), False, True),
+    "the 'checked' line, with nothing to report": (_at_the_line("checked"), True, True),
+    "once its message was sent": (_at_the_line("alert_sent"), False, False),
+}
+
+
+@pytest.mark.parametrize("sent", [True, False], ids=["a SIGINT", "no signal"])
+@pytest.mark.parametrize("where", list(CHECK_PLACES))
+@pytest.mark.parametrize("target", TARGETS)
+def test_a_real_ctrl_c_in_the_check_never_raises_and_fails_it_before_its_last_act(
+        ready, world, monkeypatch, ctrl_c, target, where, sent):
+    """The check defers a Ctrl+C to the latch too, and reads it before `expire()`,
+    which writes, and before its last act: its message when there is something to
+    report, and otherwise its exit code 0, which says the run succeeded. A set latch
+    fails the check as anything else does: exit 1, and it says so on the topic, with
+    the fixed code. Once its message has been sent the check has finished, and a
+    Ctrl+C changes nothing. The partner, for every place: the same check with no
+    signal completes."""
+    install, ran, fails = CHECK_PLACES[where]
+    if ran:
+        ready(target)
+        assert world.run(target) == 0
+    world.clock.start = THURSDAY
+    expired, real_expire = [], wl.Ledger.expire
+
+    def expire(self):
+        expired.append(True)
+        return real_expire(self)
+    monkeypatch.setattr(wl.Ledger, "expire", expire)
+    fire, reached = _once(ctrl_c if sent else lambda: None)
+    install(world, monkeypatch, target, fire)
+    before = signal.getsignal(signal.SIGINT)
+    code = world.check(target)
+    assert reached == [True] and signal.getsignal(signal.SIGINT) is before
+    assert ctrl_c.tally() == (ONE_LATCHED if sent else NONE_SENT)
+    failed = [FAILED_CHECK.format(target=target), f"code {entry.INTERRUPTED}; see the task log"]
+    if sent and fails:
+        assert code == 1 and check_lines(world) == failed       # the one message: it failed
+        assert expired == ([] if where == "before expire()" else [True])
+        label = "expire" if where == "before expire()" else "report"
+        assert f"ws7 stop code={entry.INTERRUPTED} ids={label}" in world.lines
+        return
+    assert code == 0 and expired == [True]
+    if ran:
+        assert world.sns.messages == []                         # nothing to report
+    else:
+        assert check_lines(world)[1].startswith("no claim")     # its one message, sent
+

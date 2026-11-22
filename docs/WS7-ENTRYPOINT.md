@@ -1522,11 +1522,46 @@ type** (Codex P2, PR #9, re-check). `index_counts()` reads the index:
   | Reason | Kept when |
   |---|---|
   | `ws7_report_unreadable` | A read of the guard's report failed, by anything but an interrupt. A later read that succeeds changes nothing |
-  | `ws7_interrupted` | A `KeyboardInterrupt` was caught anywhere in the run: by a report read, by the wrapper during a call, by the log while a line was being written, or by any handler that goes on |
+  | `ws7_interrupted` | A Ctrl+C set the latch (below). Or a `KeyboardInterrupt` raised by other means was caught anywhere in the run: by a report read, by the wrapper during a call, by the log while a line was being written, or by any handler that goes on |
 
-  - **The reason is checked before the claim, before admission, before every dispatch and before
-    success**, and it fails the run with its own code. So there is no main batch after a
-    pre-flight whose report read failed, and never `RunOk` = 1.
+  - **A Ctrl+C never raises inside the job** (Codex, PR #9, fourth re-check; the author's
+    ruling, 22 Nov 2026). A `KeyboardInterrupt` can arrive between any two lines, so a check
+    for one can narrow the gap it falls into and cannot close it: there is always a line after
+    the last check. At `9f9397f` a real Ctrl+C while the final `success` line was being logged
+    was swallowed after the last check, and the run ended with `RunOk` = 1 and exit code 0. So
+    the gap is closed at its source:
+    - While `main()` runs, the process's SIGINT handler is the job's own, and **all it does is
+      set a latch** (`_Latch`). It raises nothing. Nothing the job was writing is left
+      half-written, and there is nothing for a handler to catch.
+    - `main()` is the only place the handler is installed, and it **puts the previous handler
+      back when it returns or raises**, so a caller in the same process (a test, pytest's own
+      Ctrl+C) has its own handler again. It installs nothing off the main thread (Python
+      handles signals in the main thread only), or when the handler in place was not set from
+      Python.
+    - The latch is folded into the reason at every read of it, so every check below sees it.
+    - **SIGTERM is not handled.** It ends the process, and the open entry is abandoned later,
+      as before.
+    - A `KeyboardInterrupt` raised by other means is still caught and kept, as before.
+  - **The reason is checked before every act the run cannot take back**, and it fails the run
+    with its own code:
+
+    | Check | The act it comes before |
+    |---|---|
+    | `_sound("claim")` | The claim |
+    | `_sound("admission")` | Admission, which reserves |
+    | `_sound(<batch label>)` | Each dispatch of a runner |
+    | The stopping client's own look | Each call it sends |
+    | `report()` in the settle | Settling from the guard (with a reason: `mark_crashed()`) |
+    | `_sound("success")` | The run's metrics |
+    | `_sound("alert")` | The breach message |
+    | `_sound("success")`, again | The success record's PUT |
+    | `_sound("run_ok")` | `RunOk` = 1, the last act |
+
+    So there is no main batch after a pre-flight whose report read failed, and never `RunOk` = 1
+    after a reason. **The check before `RunOk` = 1 is the last.** A reason found there comes
+    after the success record was written, so the failed record goes beside it and the Thursday
+    check reports a failed run. A Ctrl+C after that check finds a run that had finished: it sets
+    the latch, nothing reads it again, and the run stays a success.
   - **After an interrupt caught while the ledger entry is still open, the run never settles from
     the guard. It calls `mark_crashed()`**, so the entry is unresolved at its reservation. The
     same holds after a failed report read. Why: an interrupt arrives between any two
@@ -1541,8 +1576,8 @@ type** (Codex P2, PR #9, re-check). `index_counts()` reads the index:
     write landed is not known to the run; the ledger knows, and it refuses the mark if the entry
     is no longer open.
   - An interrupt caught after the entry was settled leaves it settled. The run still fails.
-  - An interrupt means `KeyboardInterrupt`. A `SystemExit` a runner raises is still
-    `ws7_runner_crashed`, and that run still settles from the guard, as ruled before.
+  - An interrupt means a latched Ctrl+C or a `KeyboardInterrupt`. A `SystemExit` a runner raises
+    is still `ws7_runner_crashed`, and that run still settles from the guard, as ruled before.
 - Tests stop one call's accounting at each of five points (after the request is sent; after
   the reply and before usage is recorded; after usage and before the run's total; between the
   run's total and the batch's; after the totals and before the run is marked unmetered), by an
@@ -1746,7 +1781,7 @@ stops or raises is logged, and the next is still tried.
 | The comparator | `ws7_no_baseline`, `ws7_compare_error`, `ws7_compare_output_exists`, `ws7_part_c_ruled` | Yes | Yes |
 | Storing and publishing | `ws7_evidence_unstorable`, `ws7_evidence_unavailable`, the manifest's codes, `ws7_publish_failed`, `ws7_alert_failed`, `ws7_success_record_unavailable`, `ws7_success_record_invalid` | Yes | Yes |
 | Any other exception | `ws7_crashed` | If the claim is held | If the claim is held |
-| A report read that failed, or an interrupt that was caught, at any time | `ws7_report_unreadable`, `ws7_interrupted` | If the claim is held | If the claim is held |
+| A report read that failed, a Ctrl+C that set the latch, or an interrupt that was caught, at any time up to the last check | `ws7_report_unreadable`, `ws7_interrupted` | If the claim is held | If the claim is held |
 | `RunOk` = 1 was not acknowledged | `ws7_runok_publish_failed` | Yes, beside the success record | Yes |
 
 The failed record (`ws7-failed/1`) holds the run's ID, target, mode and scheduled time, the code,
@@ -1770,6 +1805,13 @@ publishes to the topic.
 4. That run's failed record and success record.
 5. **Nothing it reads is trusted as read** (Codex P2, PR #9). The claim, the failed record and
    the success record are each checked before they are used.
+
+**A Ctrl+C is deferred to the latch in the check too** ("Settling", above). The check reads the
+latch before `expire()`, which writes, and before its last act: its message when there is
+something to report, and otherwise its exit code 0, which says the run succeeded. A set latch
+fails the check as anything else does: `ws7_interrupted`, exit code 1, and it says on the topic
+that the check failed. Once its message has been sent the check has finished, and a Ctrl+C
+changes nothing.
 
 **One validator for each object, shared by its writer and the check** (Codex P2, PR #9,
 re-check; the author's ruling, 21 Nov 2026), as the comparator's public checks are shared:
@@ -2033,6 +2075,17 @@ starts; the failed record; the prefixes of success records and retained copies.
   publishes no breach value and sends no message; a run that fails after it leaves what
   CloudWatch **acknowledged** and what SNS accepted. Use "acknowledged" where the text now says
   "delivered" or "published".
+- **The exact-class check should compare by identity** (Codex P3, PR #9 fourth re-check, carried
+  by the author, 22 Nov 2026; `evals/ws7_entry.py`, `own_stop`). `type(caught) not in
+  OWN_STOP_TYPES` is a tuple membership test, which compares with `==`, and a class can be made
+  with a metaclass whose `__eq__` answers yes. Compare with `is` against each of the three
+  classes, and add a test with such a class.
+- **The settle marks itself tried before its protected region** (Codex P3, PR #9 fourth
+  re-check, carried by the author, 22 Nov 2026; `evals/ws7_entry.py`, `_settle`).
+  `self.settled = "failed"` is set on the line before the `try` that turns whatever the settle
+  raises into a stop and a crash mark. Anything that ended the method between those two lines
+  would leave the entry open with the settle recorded as tried, so the failure path would not
+  try it again. Move the assignment inside the protected region, and test it.
 - **Where a candidate goes.** The manual baseline mode writes the envelope under the run's own
   prefix, `ws7/runs/manual/<run_id>/`. 5b names the object. It is never written to a path a
   baseline is read from.
@@ -2246,8 +2299,27 @@ PYTHONDONTWRITEBYTECODE=1 python -m pytest -p no:cacheprovider -q tests/test_ws7
     succeeding: no main batch after the pre-flight's, never `RunOk` = 1, the failed record
     written, the entry a crashed run at its reservation, next week's run blocked. An interrupt
     caught at four places while the entry is open (two log lines, the outermost handler, inside
-    the settle), with two partners after the settle; and at four log lines between the settle
-    and success, each with an ordinary exception as its partner.
+    the settle), with two partners after the settle; and at six log lines between the settle
+    and the last act, the `success` line included, each with an ordinary exception as its
+    partner.
+  - **A real SIGINT** (`os.kill` on the test's own process, sent only while the job's handler is
+    in place), at fourteen places from admission to the last check, for both targets: two log
+    lines and three calls while the entry is open (the first pre-flight call, the first and the
+    last main call); inside the settle after its write; five log lines after it; as the run's
+    metrics are sent; as the success record is put; and the `success` line. Each time nothing
+    raises, the run exits 1, `RunOk` is 0 and never 1, the failed record is written (beside the
+    success record where that had been written), and no message is sent. An entry that was open
+    is a crashed run at its reservation and blocks next week's run; one already settled stays
+    settled. Each place has its partner: the same hook with no signal is a clean success. As
+    `RunOk` = 1 is sent, and once it is acknowledged, the same signal changes nothing. One more
+    is sent from the stub's thread while the run waits for a reply. On a breach run, a SIGINT
+    before the alert means no message is sent.
+  - The handler: while a run or the check is in progress it is the latch's, and the previous
+    one (Python's own, a function, "ignored", the system default) is back after `main()` returns
+    0, 1 or 2 and after it raises an exception, a `KeyboardInterrupt` or a `SystemExit`. Off the
+    main thread, and with a handler that was not set from Python, nothing is installed.
+  - The check: a real SIGINT before `expire()`, at the `checked` line with and without something
+    to report, and once the message was sent, for both targets, each with its partner.
   - A throttle on the main batch's second scenario: no request for any later scenario reaches the
     stub; the partner sends all 18. A 500: unmetered and unresolved. A failed pre-flight: the
     main batch never starts.

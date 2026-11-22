@@ -442,6 +442,17 @@ which an entry was resolved as an accepted estimate has no such assurance, and i
        and the report looks complete: what an interrupt left behind may be half-written. The
        run fails with `ws7_report_unreadable` or `ws7_interrupted`, which it checks before
        every dispatch and before success.
+     - **A Ctrl+C is deferred to a latch; it never raises inside the job** (the author's
+       ruling, 22 Nov 2026). While a run or the check is in progress, the job's SIGINT handler
+       only sets the latch. The latch is checked before every act that cannot be taken back:
+       the claim, admission, each dispatch, each call the run's client sends, the settle, the
+       run's metrics, the breach message, the success record's PUT and `RunOk` = 1; in the
+       check, before `expire()` and before its message or its exit code 0. A set latch fails
+       the run by the rule above (`ws7_interrupted`; with the entry still open, crashed). The
+       check before `RunOk` = 1 is the last: a Ctrl+C after it finds a run that had finished and
+       changes nothing. The command line installs the handler and puts the previous one back
+       when it ends. SIGTERM is not handled: it ends the process, and the open entry becomes
+       the abandoned case.
    - An unresolved entry **blocks every later inside-cap (scheduled) run**, in that month or any
      later one, until the author resolves it.
    - The author resolves an unresolved entry, of any of the three kinds, by recording a settled

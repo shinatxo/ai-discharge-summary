@@ -132,6 +132,20 @@ from 0 to 255. Every line is built inside the best-effort boundary. LOGGING IS B
 EFFORT: a log stream that fails never changes what a run
 does, whatever it raises.
 
+A CTRL+C NEVER RAISES INSIDE THE JOB (Codex, PR #9, fourth re-check). While
+`main()` runs, the process's SIGINT handler is the job's own, and all it does is set
+a latch (`_Latch`). It raises nothing, so nothing the job was writing is left
+half-written and no handler has to catch it. The latch is read wherever the run
+reads the tripwire's reason, and that is checked before every act the run cannot
+take back: the claim, admission, each dispatch, each call the stopping client
+sends, the settle, the breach alert, the success record's PUT and `RunOk` = 1. A
+set latch fails the run by the rules a caught interrupt already has
+(`ws7_interrupted`; with the ledger entry still open, `mark_crashed()`). The check
+before `RunOk` = 1 is the last: a Ctrl+C after it finds a run that had finished, and
+changes nothing. `main()` puts the previous handler back when it returns or raises.
+SIGTERM is not handled: it ends the process, and the open entry is abandoned later.
+A `KeyboardInterrupt` raised by any other means is still caught and kept, as before.
+
 THE COMMAND LINE. An argument the parser refuses is answered with one fixed usage
 line on stderr and exit code 2. argparse's own messages quote the argument they
 refuse, so none of them is ever printed, and there is no `--help`.
@@ -150,8 +164,10 @@ import json
 import math
 import os
 import re
+import signal
 import sys
 import tempfile
+import threading
 import time
 from dataclasses import dataclass, field
 from datetime import timedelta
@@ -224,7 +240,7 @@ SUCCESS_RECORD_INVALID = "ws7_success_record_invalid"
 FAILED_RECORD_INVALID = "ws7_failed_record_invalid"
 CRASHED = "ws7_crashed"
 REPORT_UNREADABLE = "ws7_report_unreadable"       # the guard's report could not be read, once
-INTERRUPTED = "ws7_interrupted"                   # an interrupt was caught in the run, once
+INTERRUPTED = "ws7_interrupted"                   # a Ctrl+C was latched, or an interrupt caught, once
 RUNOK_PUBLISH_FAILED = "ws7_runok_publish_failed"
 CHECK_FAILED = "ws7_check_failed"
 CODES = (CONFIG_INVALID, CORPUS_UNREADABLE, PRECHECK_FAILED, SCENARIOS_NOT_DISTINCT,
@@ -392,6 +408,47 @@ def first_failure(report: dict) -> Stop | None:
     return None
 
 
+class _Latch:
+    """WHAT A CTRL+C DOES WHILE THE JOB RUNS: IT SETS THIS, AND NOTHING ELSE (Codex,
+    PR #9, fourth re-check).
+
+    A `KeyboardInterrupt` can arrive between any two instructions. Checking for one
+    more often narrows the gap it can fall into and cannot close it: there is always
+    a line after the last check. So the job does not let a Ctrl+C raise at all.
+    `main()` installs `on_signal` as the SIGINT handler for as long as it runs, the
+    handler sets `set`, and the run reads it at the points it chooses
+    (`_Tripwire.reason`, `check`). Nothing ever clears it."""
+
+    __slots__ = ("set",)
+
+    def __init__(self):
+        self.set = False
+
+    def on_signal(self, _signum, _frame) -> None:
+        self.set = True
+
+
+_LEFT = object()        # no handler was installed, so there is none to put back
+
+
+def defer_interrupt(latch: _Latch) -> object:
+    """Make `latch` what a SIGINT does in this process. Returns the handler that was
+    there, for `main()` to put back, or `_LEFT` when it installed nothing:
+
+    - off the main thread. Python runs signal handlers, and so raises a Ctrl+C's
+      `KeyboardInterrupt`, in the main thread only, and only the main thread may set
+      one. A run in another thread cannot be interrupted this way.
+    - when the handler in place was not set from Python (`getsignal` gives None).
+      It cannot be put back from here, and it does not raise in Python either."""
+    if threading.current_thread() is not threading.main_thread():
+        return _LEFT
+    previous = signal.getsignal(signal.SIGINT)
+    if previous is None:
+        return _LEFT
+    signal.signal(signal.SIGINT, latch.on_signal)
+    return previous
+
+
 class _Tripwire:
     """Whether the run has failed, and why it can no longer be trusted.
 
@@ -404,10 +461,13 @@ class _Tripwire:
 
     - `report()` is the one way the run reads the guard's report to DECIDE anything
       (a runner's return, the settle, the summary). It refuses once there is a reason.
-    - The run checks the reason before the claim, before admission, before every
-      dispatch and before success (`_Scheduled._sound`), and fails by it.
+    - The run checks the reason before every act it cannot take back, from the claim
+      to `RunOk` = 1 (`_Scheduled._sound`), and fails by it.
     - After an interrupt caught while the ledger entry is still open, the run never
       settles from the guard: it marks the run crashed (`_Scheduled._settle`).
+    - A CTRL+C IS NOT CAUGHT, IT IS LATCHED (`_Latch`), and the latch is folded in at
+      every read of `reason`. So each of the checks above sees it, and none of them
+      has to remember to look.
 
     It is looked at only between calls: before one is sent, and after one has returned
     or raised (both runners send one call at a time). So at every look each call
@@ -416,19 +476,28 @@ class _Tripwire:
     of a call did not finish. The run's cost is then unknown, and it sends no further
     call (Codex P1, PR #9, second re-check)."""
 
-    def __init__(self):
+    def __init__(self, latch: _Latch | None = None):
         self._guard = None
+        self._latch = latch       # set by a Ctrl+C, in main()'s handler; never by the run
+        self._reason = None       # a fixed code: kept the first time, never cleared
         self.tripped = False
         self.refused = 0          # calls refused here, after the first failure
-        self.reason = None        # a fixed code: kept the first time, never cleared
 
     def watch(self, guard: wc.Guard) -> None:
         self._guard = guard
 
+    @property
+    def reason(self) -> str | None:
+        """Why the run has failed for good, or None. EVERY READ LOOKS AT THE LATCH
+        FIRST: a Ctrl+C since the last read is `ws7_interrupted` from this read on."""
+        if self._latch is not None and self._latch.set:
+            self.fail(INTERRUPTED)
+        return self._reason
+
     def fail(self, reason: str) -> None:
         """The run has failed, for good. The first reason is the one that is kept."""
-        if self.reason is None:
-            self.reason = reason
+        if self._reason is None:
+            self._reason = reason
         self.tripped = True
 
     def caught(self, exc: object) -> None:
@@ -774,10 +843,11 @@ class _Scheduled:
     """One scheduled run. The fields fill in as it goes; `fail()` reads them to know
     how far it got."""
 
-    def __init__(self, target: str, scheduled_time: str, deps: Deps):
+    def __init__(self, target: str, scheduled_time: str, deps: Deps,
+                 latch: _Latch | None = None):
         self.target, self.scheduled_time, self.deps = target, scheduled_time, deps
         self.environ = os.environ if deps.environ is None else deps.environ
-        self.wire = _Tripwire()         # the run's one "this never un-happens" flag
+        self.wire = _Tripwire(latch)    # the run's one "this never un-happens" flag
         self.out = best_effort(deps.out, self.wire.caught)
         self.publisher = None
         self.st = None
@@ -814,8 +884,10 @@ class _Scheduled:
 
     def _sound(self, where: str) -> None:
         """Stop, by the tripwire's own fixed code, once the run can no longer be trusted:
-        a report read has failed, or an interrupt has been caught. Checked before the
-        claim, before admission, before every dispatch and before success."""
+        a report read has failed, an interrupt has been caught, or a Ctrl+C has set the
+        latch. Checked before every act the run cannot take back: the claim, admission,
+        every dispatch, the run's metrics, the breach alert, the success record's PUT
+        and `RunOk` = 1."""
         if self.wire.reason is not None:
             raise Stop(self.wire.reason, ids=(where,))
 
@@ -1360,6 +1432,7 @@ class _Scheduled:
             subject, text = publish.breach_message(
                 target=self.target, run_id=run, result=result, keys=self.summary["keys"],
                 bucket=self.st.bucket, prefix=prefix, now=store.read_clock(deps.wall))
+            self._sound("alert")                    # a message once sent cannot be unsent
             self.publisher.alert(subject, text)
         record = {"schema": SUCCESS_SCHEMA, "run_id": run, "target": self.target,
                   "mode": SCHEDULED, "scheduled_time": self.held.scheduled_time,
@@ -1386,6 +1459,12 @@ class _Scheduled:
         if outcome != store.CREATED:
             raise Stop(SUCCESS_RECORD_UNAVAILABLE, ids=("key_taken",))
         self.say("success", status=result["status"], breaches=breaches)
+        # THE LAST CHECK, BEFORE THE LAST ACT (Codex, PR #9, fourth re-check). A Ctrl+C
+        # latched, or an interrupt caught, at any time up to this line fails the run:
+        # the failed record is written beside the success record, so the Thursday check
+        # reports a failed run, and RunOk = 0 is tried. A Ctrl+C after this line finds a
+        # run that had finished: it only sets the latch, and nothing reads it again.
+        self._sound("run_ok")
         # The last act. If CloudWatch does not acknowledge it, the run fails as any run
         # that holds its claim fails: the failed record is written beside the success
         # record, so the Thursday check reports a failed run, and RunOk = 0 is tried.
@@ -1743,11 +1822,20 @@ def _occurrence(st: store.Store, key: str, target: str, cfg: reserve.Config) -> 
     return None
 
 
-def check(target: str, scheduled_time: str, deps: Deps) -> int:
+def check(target: str, scheduled_time: str, deps: Deps, latch: _Latch | None = None) -> int:
     """The Thursday check (D9): did the scheduled run succeed? No Bedrock call, no
-    claim, no CloudWatch call. It reads S3 and publishes to the topic."""
+    claim, no CloudWatch call. It reads S3 and publishes to the topic.
+
+    A CTRL+C IS DEFERRED TO THE LATCH HERE TOO. It is read before `expire()`, which
+    writes, and before the check's last act: its message when there is something to
+    report, and otherwise its exit code 0, which says the run succeeded. A set latch
+    fails the check as anything else does: exit 1, and it says so on the topic."""
     environ = os.environ if deps.environ is None else deps.environ
     out = best_effort(deps.out)
+
+    def uninterrupted(where: str) -> None:
+        if latch is not None and latch.set:
+            raise Stop(INTERRUPTED, ids=(where,))
 
     def say(stage: str, **fields) -> None:
         out(lambda: " ".join([f"ws7 entry mode=check target={target} stage={stage}"]
@@ -1768,6 +1856,7 @@ def check(target: str, scheduled_time: str, deps: Deps) -> int:
         ledger = wl.Ledger(st, cfg, clock=deps.wall)
         # expire() first: a run that died on Wednesday is abandoned by this call, and
         # so is reported as unresolved by the next one.
+        uninterrupted("expire")
         ledger.expire()
         unresolved = ledger.unresolved()
 
@@ -1780,6 +1869,7 @@ def check(target: str, scheduled_time: str, deps: Deps) -> int:
         if ledger.assurance_waived(month):
             findings.append(f"month {month}: assurance waived")
         say("checked", findings=len(findings))
+        uninterrupted("report")                     # before the message, or before exit 0
         if findings:
             subject, text = publish.check_message(
                 target=target, day=f"{day:%Y-%m-%d}", findings=findings, bucket=st.bucket,
@@ -1849,11 +1939,25 @@ def build_parser(parser_class=_Parser) -> argparse.ArgumentParser:
     return parser
 
 
-def scheduled(target: str, scheduled_time: str, deps: Deps) -> int:
-    return _Scheduled(target, scheduled_time, deps).run()
+def scheduled(target: str, scheduled_time: str, deps: Deps, latch: _Latch | None = None) -> int:
+    return _Scheduled(target, scheduled_time, deps, latch).run()
 
 
 def main(argv: list | None = None, deps: Deps | None = None) -> int:
+    """The command line. FOR AS LONG AS IT RUNS, A CTRL+C ONLY SETS THE LATCH: the
+    handler is installed here and nowhere else, and the one that was there is put back
+    when this returns or raises, so a caller in the same process (a test, pytest's own
+    Ctrl+C) has its own handler again afterwards."""
+    latch = _Latch()
+    previous = defer_interrupt(latch)
+    try:
+        return _main(argv, deps, latch)
+    finally:
+        if previous is not _LEFT:
+            signal.signal(signal.SIGINT, previous)
+
+
+def _main(argv: list | None, deps: Deps | None, latch: _Latch) -> int:
     try:
         with _quiet():                  # whatever argparse might print, none of it is shown
             args = build_parser().parse_args(argv)
@@ -1865,8 +1969,8 @@ def main(argv: list | None = None, deps: Deps | None = None) -> int:
         return 2
     deps = deps or Deps()
     if args.mode == "check":
-        return check(args.target, args.scheduled_time, deps)
-    return scheduled(args.target, args.scheduled_time, deps)
+        return check(args.target, args.scheduled_time, deps, latch)
+    return scheduled(args.target, args.scheduled_time, deps, latch)
 
 
 if __name__ == "__main__":

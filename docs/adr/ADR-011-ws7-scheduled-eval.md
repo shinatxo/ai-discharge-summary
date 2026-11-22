@@ -436,12 +436,15 @@ which an entry was resolved as an accepted estimate has no such assurance, and i
        accounting was interrupted part-way, for example), or that has no report, reports itself
        as **crashed**: its cost is unknown, so its entry is unresolved at its reservation,
        never metered.
-     - **A run that has failed to read its report once, or has caught an interrupt while its
-       entry was still open, also reports itself as crashed** (the author's ruling,
-       21 Nov 2026). It never settles from the guard afterwards, even if a later read succeeds
-       and the report looks complete: what an interrupt left behind may be half-written. The
-       run fails with `ws7_report_unreadable` or `ws7_interrupted`, which it checks before
-       every dispatch and before success.
+     - **A run that has failed to read its report once, or has caught a `KeyboardInterrupt`
+       while its entry was still open, also reports itself as crashed** (the author's ruling,
+       21 Nov 2026; its scope narrowed on 22 Nov 2026). It never settles from the guard
+       afterwards, even if a later read succeeds and the report looks complete: what a
+       `KeyboardInterrupt` left behind may be half-written. The run fails with
+       `ws7_report_unreadable` or `ws7_interrupted`, which it checks before every dispatch and
+       before success. For interrupts, this ruling now applies to a `KeyboardInterrupt` raised
+       by other means, and to a Ctrl+C found at a check before the settlement begins. It does
+       not apply to a Ctrl+C that arrives once the settlement has passed its check (below).
      - **A Ctrl+C is deferred to a latch; it never raises inside the job** (the author's
        ruling, 22 Nov 2026). While a run or the check is in progress, the job's SIGINT handler
        only sets the latch. The latch is checked before every act that cannot be taken back:
@@ -453,6 +456,19 @@ which an entry was resolved as an accepted estimate has no such assurance, and i
        changes nothing. The command line installs the handler and puts the previous one back
        when it ends. SIGTERM is not handled: it ends the process, and the open entry becomes
        the abandoned case.
+     - **A Ctrl+C is acted on at the next latch check, and what has passed its check
+       completes** (the author's ruling, 22 Nov 2026). There is always a moment between a
+       check and the act it guards, and more checks only move that moment, so the rule is
+       about what has begun:
+       - Anything that has passed its check completes: a dispatch, a call, a settlement (its
+         reads and its PUT), a record, the breach message, `RunOk` = 1.
+       - Because the handler never raises, a Ctrl+C cannot leave the guard's report
+         half-written, so a settlement that has begun is accurate. Once the entry is metered,
+         later runs are admitted as normal.
+       - After a Ctrl+C, at most the one runner start or call already past its check goes
+         out. It is inside the reservation and it is counted.
+       - A latch found set at a check while the entry is still open means the run reports
+         itself as crashed, as above.
    - An unresolved entry **blocks every later inside-cap (scheduled) run**, in that month or any
      later one, until the author resolves it.
    - The author resolves an unresolved entry, of any of the three kinds, by recording a settled

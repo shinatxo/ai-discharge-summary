@@ -1562,11 +1562,39 @@ type** (Codex P2, PR #9, re-check). `index_counts()` reads the index:
     after the success record was written, so the failed record goes beside it and the Thursday
     check reports a failed run. A Ctrl+C after that check finds a run that had finished: it sets
     the latch, nothing reads it again, and the run stays a success.
-  - **After an interrupt caught while the ledger entry is still open, the run never settles from
-    the guard. It calls `mark_crashed()`**, so the entry is unresolved at its reservation. The
-    same holds after a failed report read. Why: an interrupt arrives between any two
-    instructions, so whatever was being written when it came may be half-written, and a report
-    that looks complete is not proof that it is.
+  - **A Ctrl+C is acted on at the next check; what has passed its check completes** (the
+    author's ruling, 22 Nov 2026, on Codex's fifth re-check of PR #9). There is always a moment
+    between a check and the act it guards, and more checks only move that moment. So the rule
+    is about what has begun:
+    - **Anything that has passed its check completes:** a dispatch, a call, a settlement (its
+      reads and its PUT), a record, the breach message, `RunOk` = 1.
+    - **A settlement that has begun is accurate.** The handler never raises, so a Ctrl+C
+      cannot leave the guard's report half-written. Once the entry is settled as metered, later
+      runs are admitted as normal.
+    - **After a Ctrl+C, at most the one runner start or the one call already past its check
+      goes out.** It is inside the reservation and it is counted.
+    - **A latch found set at a check while the entry is still open** keeps the behaviour
+      below: `mark_crashed()`.
+
+    This is what a deferred signal does, and it is intended. Three cases Codex named, each a
+    Ctrl+C that arrives just after a check: during the settlement's S3 read, the settlement
+    completes as metered and the next run is admitted; during the dispatch's deadline check or
+    the stopping client's look before a call, that runner or that one request still goes out;
+    during the Thursday check's message build, its ordinary report goes out with exit code 0
+    (a note for part 5b, below).
+  - **A run that has caught a `KeyboardInterrupt` while its ledger entry was still open, or
+    found the latch set at a check before its settlement began, never settles from the guard.
+    It calls `mark_crashed()`**, so the entry is unresolved at its reservation (the author's
+    ruling, 21 Nov 2026, narrowed on 22 Nov 2026). The same holds after a failed report read.
+    The ruling's two cases:
+    - **A `KeyboardInterrupt` raised by other means.** It arrives between any two
+      instructions, so whatever was being written when it came may be half-written, and a
+      report that looks complete is not proof that it is.
+    - **A Ctrl+C found at a check before the settlement begins.** Nothing is half-written, but
+      the run has failed before it settled, and it reports itself as crashed.
+
+    It does not cover a Ctrl+C that arrives once the settlement has passed its check: that
+    settlement completes, as above.
   - Every read the run DECIDES from goes through one method, which refuses once there is a
     reason: a runner's return, the settle, the summary. The failure path still reads the report
     afresh as a RECORD, to store it and to count from it: a failed run's report is what the
@@ -1575,9 +1603,11 @@ type** (Codex P2, PR #9, re-check). `index_counts()` reads the index:
     stop that is not the ledger's own) is followed by one `mark_crashed()`. Whether the settle's
     write landed is not known to the run; the ledger knows, and it refuses the mark if the entry
     is no longer open.
-  - An interrupt caught after the entry was settled leaves it settled. The run still fails.
-  - An interrupt means a latched Ctrl+C or a `KeyboardInterrupt`. A `SystemExit` a runner raises
-    is still `ws7_runner_crashed`, and that run still settles from the guard, as ruled before.
+  - An interrupt caught, or a Ctrl+C that arrives, after the entry was settled leaves it
+    settled. The run still fails if a check is still to come.
+  - `ws7_interrupted` means a Ctrl+C found at a check or a `KeyboardInterrupt` that was caught.
+    A `SystemExit` a runner raises is still `ws7_runner_crashed`, and that run still settles
+    from the guard, as ruled before.
 - Tests stop one call's accounting at each of five points (after the request is sent; after
   the reply and before usage is recorded; after usage and before the run's total; between the
   run's total and the batch's; after the totals and before the run is marked unmetered), by an
@@ -1811,7 +1841,9 @@ latch before `expire()`, which writes, and before its last act: its message when
 something to report, and otherwise its exit code 0, which says the run succeeded. A set latch
 fails the check as anything else does: `ws7_interrupted`, exit code 1, and it says on the topic
 that the check failed. Once its message has been sent the check has finished, and a Ctrl+C
-changes nothing.
+changes nothing. By the ruling of 22 Nov 2026, the same is true once the check has passed its
+last read of the latch: a Ctrl+C while its message is being built or sent lets the ordinary
+report go out, with exit code 0.
 
 **One validator for each object, shared by its writer and the check** (Codex P2, PR #9,
 re-check; the author's ruling, 21 Nov 2026), as the comparator's public checks are shared:
@@ -2086,6 +2118,13 @@ starts; the failed record; the prefixes of success records and retained copies.
   raises into a stop and a crash mark. Anything that ended the method between those two lines
   would leave the entry open with the settle recorded as tried, so the failure path would not
   try it again. Move the assignment inside the protected region, and test it.
+- **An interrupted Thursday check can still send its ordinary report and exit 0** (Codex P3,
+  PR #9 fifth re-check, carried by the author, 22 Nov 2026; `evals/ws7_entry.py`, `check`). A
+  Ctrl+C that arrives after the check's last read of the latch, while its message is being
+  built or sent, is not acted on: the report goes out and the exit code is 0. This follows the
+  ruling of 22 Nov 2026 (what has passed its check completes), and the report it sends is a
+  true one. 5b decides whether an interrupted check should also say that it was interrupted,
+  and where (its log, its exit code), and tests what it decides.
 - **Where a candidate goes.** The manual baseline mode writes the envelope under the run's own
   prefix, `ws7/runs/manual/<run_id>/`. 5b names the object. It is never written to a path a
   baseline is read from.

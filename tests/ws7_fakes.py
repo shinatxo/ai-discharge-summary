@@ -1,4 +1,5 @@
-"""Strict local stand-ins for S3 and SSM (ADR-011 D7, D11; slice 2, part 2).
+"""Strict local stand-ins for S3, SSM, CloudWatch and SNS (ADR-011 D7, D9, D11; slice 2,
+parts 2 and 5).
 
 Each fake is a real HTTP server on 127.0.0.1. The WS7 store builds a real
 botocore client and points it at the fake, so botocore's signing, its transport
@@ -48,6 +49,21 @@ either, depending on a permission (see evals/ws7_store.py). WS7 must behave
 the same both ways.
 
 The SSM fake implements GetParameter only.
+
+The CloudWatch fake implements PutMetricData only, and the SNS fake Publish only
+(part 5). Each speaks ONE wire protocol, the one botocore 1.43.110 uses for that
+service: `json` (awsJson 1.0) for CloudWatch and `query` for SNS. CloudWatch's
+model also lists `smithy-rpc-v2-cbor` and `query`; botocore 1.43.110 picks `json`
+because its own priority list puts it first (`botocore/utils.py`,
+PRIORITY_ORDERED_SUPPORTED_PROTOCOLS). A request in any other protocol is a FAULT
+that names the protocol it came in, for example
+`cloudwatch:protocol:smithy-rpc-v2-cbor`, so a botocore that prefers another format
+fails the tests loudly, by name, and is never skipped. Any other operation, and any
+request field these fakes do not implement, is a fault too.
+
+`SequenceLog` is one locked list that every server appends to as a request
+ARRIVES: the order of events across all the servers of one test, with no
+timestamps.
 """
 
 from __future__ import annotations
@@ -56,7 +72,7 @@ import hashlib
 import json
 import threading
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
-from urllib.parse import parse_qs, quote, unquote, urlsplit
+from urllib.parse import parse_qs, parse_qsl, quote, unquote, urlsplit
 from xml.sax.saxutils import escape
 
 JOIN_LIMIT_S = 5.0
@@ -151,9 +167,15 @@ class _Fake:
 
     def __init__(self):
         self.faults: list = []
+        self.log = None                  # a SequenceLog, when a test watches the order
+        self.log_name = type(self).__name__
         self._lock = threading.RLock()
         self._server = None
         self._thread = None
+
+    def _note(self, what: str) -> None:
+        if self.log is not None:
+            self.log.note(self.log_name, what)
 
     @property
     def address(self) -> tuple:
@@ -208,6 +230,7 @@ class S3Fake(_Fake):
         self.truncate_listing = False    # answer a listing as truncated
         self.requests: list = []         # (method, key or "?list") per request received, in order
         self.puts: list = []             # (key, "if-none-match" | "if-match", status) per PUT
+        self.content_types: dict = {}    # key -> the Content-Type of the PUT that landed
         self.missing_gets = 0            # GETs for a key that was not there
         self.signed_regions: list = []   # the region each request was signed for, in order
         self._any_script: list = []      # [(status, code, headers, extra xml), ...], one per request
@@ -287,6 +310,7 @@ class S3Fake(_Fake):
             # "AWS4-HMAC-SHA256 Credential=<id>/<date>/<region>/s3/aws4_request, ..."
             scope = headers.get("Authorization", "").partition("Credential=")[2].split("/")
             self.signed_regions.append(scope[2] if len(scope) > 2 else None)
+            self._note(f"{method} {key or '?list'}")
             if self._any_script and method in ("GET", "PUT"):
                 status, code, extra_headers, extra = self._any_script.pop(0)
                 self.requests.append((method, key or "?list"))
@@ -377,6 +401,7 @@ class S3Fake(_Fake):
         else:
             status, code = 200, None
             etag = self.seed(key, body)
+            self.content_types[key] = headers.get("Content-Type")
             for action in [self._after_put[key].pop(0)] if self._after_put.get(key) else []:
                 action()
 
@@ -425,6 +450,7 @@ class SsmFake(_Fake):
                 return 501, json_type, b'{"__type":"NotImplemented","message":"fake"}'
             name = asked["Name"]
             self.requests.append(name)
+            self._note(f"GetParameter {name}")
             if self._script:
                 return self._script.pop(0), json_type, b'{"__type":"InternalServerError","message":"fake"}'
             if name not in self.parameters:
@@ -434,3 +460,206 @@ class SsmFake(_Fake):
                                    "DataType": "text",
                                    "ARN": f"arn:aws:ssm:eu-west-2:000000000000:parameter{name}"}}
             return 200, json_type, json.dumps(reply).encode("utf-8")
+
+
+# --------------------------------------------------------------- the order
+
+class SequenceLog:
+    """One list, under one lock, that every watched server appends to when a request
+    arrives: `(server, what)` in order. The code under test sends one request at a
+    time and waits for each reply, so the order of arrival is the order of calls."""
+
+    def __init__(self):
+        self._lock = threading.Lock()
+        self.events: list = []
+
+    def note(self, server: str, what: str) -> None:
+        with self._lock:
+            self.events.append((server, what))
+
+    def watch(self, name: str, server) -> None:
+        """Watch a fake (it notes each request itself) or a Bedrock stub
+        (tests/ws7_stub.py, whose `receive` is wrapped here, on the instance)."""
+        if isinstance(server, _Fake):
+            server.log, server.log_name = self, name
+            return
+        receive = server.receive
+
+        def noted(step: str) -> str:
+            self.note(name, step)
+            return receive(step)
+        server.receive = noted
+
+    def all(self) -> list:
+        with self._lock:
+            return list(self.events)
+
+    def servers(self) -> list:
+        return [server for server, _what in self.all()]
+
+    def index(self, server: str, what: str | None = None, *, last: bool = False) -> int:
+        """The position of the first (or last) event at `server` (whose `what` starts
+        with `what`, if given). Raises if there is none: an order is never proved
+        from an event that did not happen."""
+        hits = [i for i, (srv, text) in enumerate(self.all())
+                if srv == server and (what is None or text.startswith(what))]
+        assert hits, f"no event at {server} starting {what!r}"
+        return hits[-1] if last else hits[0]
+
+
+# ---------------------------------------------------------------- protocols
+
+def _other_protocol(headers) -> str | None:
+    """The name of the wire protocol a request came in, as botocore names them."""
+    if headers.get("smithy-protocol"):
+        return "smithy-" + headers["smithy-protocol"]
+    content = headers.get("Content-Type", "")
+    if headers.get("X-Amz-Target") or "x-amz-json" in content:
+        return "json"
+    if "x-www-form-urlencoded" in content:
+        return "query"
+    return "unknown"
+
+
+# --------------------------------------------------------------- CloudWatch
+
+CLOUDWATCH_PROTOCOL = "json"
+CLOUDWATCH_TARGET = "GraniteServiceVersion20100801."
+_JSON_1_0 = {"Content-Type": "application/x-amz-json-1.0"}
+
+
+class CloudWatchFake(_Fake):
+    """PutMetricData over the `json` protocol (awsJson 1.0), and nothing else.
+
+    `calls` holds one entry per request accepted: the namespace and its datums, each
+    `{"name", "value", "unit", "dimensions"}`. `bodies` holds every request body
+    received, as bytes, so a test can search what was really sent."""
+
+    def __init__(self):
+        super().__init__()
+        self.calls: list = []
+        self.bodies: list = []
+        self._script: list = []          # [status or None, ...], one consumed per request
+
+    def script(self, *statuses) -> None:
+        self._script.extend(statuses)
+
+    def datums(self) -> list:
+        """Every datum accepted, in order: (name, value, dimensions)."""
+        with self._lock:
+            return [(d["name"], d["value"], d["dimensions"]) for call in self.calls
+                    for d in call["data"]]
+
+    def values(self, name: str) -> list:
+        return [value for n, value, _dims in self.datums() if n == name]
+
+    def _refuse(self, what: str) -> tuple:
+        self.faults.append(what)
+        return 501, dict(_JSON_1_0), b'{"__type":"NotImplemented","message":"fake"}'
+
+    def handle(self, method: str, raw_path: str, headers, body: bytes) -> tuple:
+        with self._lock:
+            self.bodies.append(bytes(body))
+            protocol = _other_protocol(headers)
+            if protocol != CLOUDWATCH_PROTOCOL:
+                # A botocore that sends CloudWatch another way: say which, and fail.
+                self._note(f"protocol:{protocol}")
+                return self._refuse(f"cloudwatch:protocol:{protocol}")
+            target = headers.get("X-Amz-Target") or ""
+            operation = target[len(CLOUDWATCH_TARGET):] if target.startswith(CLOUDWATCH_TARGET) \
+                else target
+            if method != "POST" or urlsplit(raw_path).path != "/" or operation != "PutMetricData":
+                self._note(f"operation:{operation}")
+                return self._refuse(f"cloudwatch:operation:{method}:{operation}")
+            try:
+                asked = json.loads(body.decode("utf-8"))
+            except ValueError:
+                return self._refuse("cloudwatch:body_not_json")
+            data = asked.get("MetricData") if type(asked) is dict else None
+            if type(asked) is not dict or set(asked) != {"Namespace", "MetricData"} \
+                    or type(asked["Namespace"]) is not str or type(data) is not list or not data:
+                return self._refuse("cloudwatch:parameters")
+            datums = []
+            for datum in data:
+                dims = datum.get("Dimensions") if type(datum) is dict else None
+                if type(datum) is not dict or set(datum) != {"MetricName", "Dimensions", "Value",
+                                                             "Unit"} \
+                        or type(datum["MetricName"]) is not str or type(datum["Unit"]) is not str \
+                        or type(datum["Value"]) not in (int, float) or type(dims) is not list \
+                        or not all(type(d) is dict and set(d) == {"Name", "Value"}
+                                   and type(d["Name"]) is str and type(d["Value"]) is str
+                                   for d in dims):
+                    return self._refuse("cloudwatch:datum")
+                datums.append({"name": datum["MetricName"], "value": datum["Value"],
+                               "unit": datum["Unit"],
+                               "dimensions": {d["Name"]: d["Value"] for d in dims}})
+            self._note("PutMetricData " + ",".join(d["name"] for d in datums))
+            status = self._script.pop(0) if self._script else None
+            if status is not None:       # None in a script: answer this one as usual
+                return status, dict(_JSON_1_0), (
+                    b'{"__type":"com.amazonaws.cloudwatch#InternalServiceFault","message":"fake"}')
+            self.calls.append({"namespace": asked["Namespace"], "data": datums})
+            return 200, dict(_JSON_1_0), b"{}"
+
+
+# ---------------------------------------------------------------------- SNS
+
+SNS_PROTOCOL = "query"
+
+
+class SnsFake(_Fake):
+    """Publish over the `query` protocol, and nothing else.
+
+    `messages` holds one `{"topic", "subject", "message"}` per request accepted, and
+    `bodies` every request body received, as bytes."""
+
+    def __init__(self):
+        super().__init__()
+        self.messages: list = []
+        self.bodies: list = []
+        self._script: list = []
+
+    def script(self, *statuses: int) -> None:
+        self._script.extend(statuses)
+
+    def _refuse(self, what: str) -> tuple:
+        self.faults.append(what)
+        return 501, {"Content-Type": "text/xml"}, (
+            b"<ErrorResponse><Error><Type>Receiver</Type><Code>NotImplemented</Code>"
+            b"<Message>fake</Message></Error><RequestId>fake</RequestId></ErrorResponse>")
+
+    def handle(self, method: str, raw_path: str, headers, body: bytes) -> tuple:
+        with self._lock:
+            self.bodies.append(bytes(body))
+            protocol = _other_protocol(headers)
+            if protocol != SNS_PROTOCOL:
+                self._note(f"protocol:{protocol}")
+                return self._refuse(f"sns:protocol:{protocol}")
+            try:
+                pairs = parse_qsl(body.decode("utf-8"), keep_blank_values=True,
+                                  strict_parsing=True)
+            except ValueError:
+                return self._refuse("sns:body_not_a_form")
+            asked = dict(pairs)
+            action = asked.get("Action")
+            if method != "POST" or urlsplit(raw_path).path != "/" or action != "Publish":
+                self._note(f"action:{action}")
+                return self._refuse(f"sns:action:{method}:{action}")
+            if len(asked) != len(pairs) \
+                    or set(asked) != {"Action", "Version", "TopicArn", "Subject", "Message"}:
+                return self._refuse("sns:parameters:" + ",".join(sorted(
+                    set(asked) - {"Action", "Version", "TopicArn", "Subject", "Message"})))
+            self._note("Publish")
+            xml = {"Content-Type": "text/xml"}
+            if self._script:
+                status = self._script.pop(0)
+                return status, xml, (
+                    b"<ErrorResponse><Error><Type>Receiver</Type><Code>InternalFailure</Code>"
+                    b"<Message>fake</Message></Error><RequestId>fake</RequestId></ErrorResponse>")
+            self.messages.append({"topic": asked["TopicArn"], "subject": asked["Subject"],
+                                  "message": asked["Message"]})
+            return 200, xml, (
+                b'<PublishResponse xmlns="http://sns.amazonaws.com/doc/2010-03-31/">'
+                b"<PublishResult><MessageId>fake-message-id</MessageId></PublishResult>"
+                b"<ResponseMetadata><RequestId>fake</RequestId></ResponseMetadata>"
+                b"</PublishResponse>")

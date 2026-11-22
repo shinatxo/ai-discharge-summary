@@ -353,13 +353,22 @@ def _check_own(batch: _Batch, own: dict) -> None:
 
 # ----------------------------------------------------------------- HAZ-03
 
+class ScorerStopped(Exception):
+    """A scorer this module calls raised. The scorer is not the job's code, so whatever
+    it raised (any exception, an interrupt, a `SystemExit`, even one of WS7's own `Stop`
+    or `Duplicate`) is a scorer that stopped, and nothing of it is kept. It is not a
+    `Stop`: only the job's own code may raise a `Stop` that a run acts on."""
+
+
 def write_haz03(batch_dir: Path, gold_dir: Path = G.GOLD_DIR) -> Path:
     """Run the HAZ-03 check, unchanged, on every record of a pipeline batch, and
     write `scores/haz03.json`. The rows are the check's own, and they hold IDs, enum
     values and fixed labels only (haz03_check.py:35): the check copies the facts'
     `age_group` as it finds it, so each row goes through `haz03_row` first. The gold
     is the gold score_batch scored against: each file's sha256 must be the one in
-    score_batch's gold map."""
+    score_batch's gold map.
+
+    Anything the check itself raises is `ScorerStopped`, never a `Stop`."""
     batch = _Batch(batch_dir)
     if batch.target != "pipeline":
         raise Stop(BATCH_INVALID)          # the check does not cover v1 (haz03_check.py:33)
@@ -377,7 +386,11 @@ def write_haz03(batch_dir: Path, gold_dir: Path = G.GOLD_DIR) -> Path:
         if type(gold) is not dict or gold.get("scenario_id") != sid or type(record) is not dict \
                 or record.get("scenario_id") != sid:
             raise Stop(SCORES_INVALID)
-        results.append(haz03_row(H3.check_record(record, gold), sid))
+        try:
+            checked = H3.check_record(record, gold)
+        except BaseException:               # noqa: BLE001 - the scorer's raise, whatever it is
+            raise ScorerStopped() from None
+        results.append(haz03_row(checked, sid))
     out = batch.dir / "scores" / HAZ03_NAME
     out.write_bytes(compare.render({"check": "HAZ-03", "check_version": H3.CHECK_VERSION,
                                     "batch_id": batch.batch_id, "results": results}))
@@ -723,10 +736,14 @@ def _differing_keys(summaries: list) -> tuple:
 
 
 def _corpus_scenarios(corpus_path: Path) -> set:
-    """The scenario IDs in the corpus file itself, never a number written here."""
+    """The scenario IDs in the corpus file itself, never a number written here.
+
+    The loader is the runner's own, and it is not changed. Whatever it raises on a
+    file it cannot use is translated here: a file that is valid JSON with a numeric
+    `notes` value makes it raise AttributeError (Codex P3, PR #8 re-check)."""
     try:
         return {scenario.id for scenario in rce.load_corpus(Path(corpus_path))[0]}
-    except (OSError, ValueError, KeyError, TypeError):
+    except (OSError, ValueError, KeyError, TypeError, AttributeError):
         raise Stop(NOT_WHOLE_CORPUS) from None
 
 
@@ -753,6 +770,9 @@ def build_candidate(summaries: object, *, baseline_id: object,
     runs = []
     for summary in summaries:
         try:
+            # As given first, and only then the copy: a JSON round trip would turn an
+            # integer scenario key 1 into "1", and the copy would pass (Codex P3, PR #8).
+            compare.check_run(summary)
             run = compare.check_run(json.loads(json.dumps(summary)))      # a copy
         except (compare.CompareError, TypeError, ValueError):
             raise Stop(CANDIDATE_SUMMARY_INVALID) from None

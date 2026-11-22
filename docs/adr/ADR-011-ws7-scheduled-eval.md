@@ -11,12 +11,24 @@ ruling on part 3: a verdict metric that a rule names covers exactly the gold's s
 baseline and in the run. Updated 20 Nov 2026 with the rulings on part 4: step failures and
 assembly rejections are published by step, with the codes kept in the stored records; the cost
 metric is the batch's own total; and code builds only a candidate baseline, in an envelope the
-comparator refuses.
+comparator refuses. Updated 20 Nov 2026 with the rulings on part 5a: `RunOk` is published only by
+the process that holds the scheduled claim; once a call fails, the run sends no further call; a
+breach is a successful run; a failed scheduled run sends no message of its own; the retained
+prefix is outside `ws7/`; and a stored file that is not one the runners and scorers write stops
+the run. Updated 21 Nov 2026 with the rulings after the review of PR #9: the pre-flight's
+go/no-go is no failed generation, only the expected files and a cost within its reservation, and
+a v1 gate failure is not in it; and each metric is published at most once per run, with what
+was delivered before a later failure left to stand; and a `RunOk` = 1 that CloudWatch rejects
+fails the run, with a failed record; and once a run has failed, a file that may not be stored
+is left out and counted, and does not stop the rest.
 
 This is a design. Slice 1, the offline comparator, is built (`docs/WS7-COMPARATOR.md`). Of slice 2,
-parts 1 to 4 are built (`docs/WS7-ENTRYPOINT.md`): the client wrapper and the reservation; the
-claim, the ledger, the match check and the run manifest; the follow-ups from the reviews of
-PR #4 and PR #6; and the run summary and the candidate baseline. Nothing is deployed or run. Every deploy, and every run that costs
+parts 1 to 4 and part 5a are built (`docs/WS7-ENTRYPOINT.md`): the client wrapper and the
+reservation; the claim, the ledger, the match check and the run manifest; the follow-ups from the
+reviews of PR #4 and PR #6; the run summary and the candidate baseline; and the entrypoint's
+scheduled run and Thursday check, with the comparator call and publishing. Part 5b (the manual
+baseline, the manual confirm and the resolve command) and part 6 (the image) are not built.
+Nothing is deployed or run. Every deploy, and every run that costs
 money, needs the author's explicit yes at the time. No number in a breach rule is set here: the
 author sets them before the first live run, and they change only by pull request.
 
@@ -154,6 +166,9 @@ those batches. This was established by reading the code, not by running it. Thre
      record has no `branches` entry (`:148-150`). So today any failed pipeline generation is a
      replay that stops, and so a failed run. The scorer is not changed by that part
      (`docs/WS7-ENTRYPOINT.md`, "What part 4 found").
+   - **Built in slice 2 part 5a:** the entrypoint stops such a run from the batch's own index,
+     before any scorer is called, with the fixed code `ws7_generation_failed`. A v1 run has no
+     replay, so a failed v1 generation is `no_output` in the summary and the run is compared.
 2. It runs the assembly steps directly. It is not the worker's orchestrator. That gap belongs to
    the later runner described below.
 3. It also reports meaning warnings on PART C. Those numbers are held back with the PART C slice
@@ -228,6 +243,18 @@ canary windows.
 it finished without error, wrote only the files expected, and cost no more than its reservation.
 (The orchestrator has a function called `_preflight`. That is a different thing.)
 
+- **"Without error" means no failed generation** (the author's ruling, 21 Nov 2026). A v1
+  safety-net gate failure on the pre-flight scenario is quality evidence, not a no-go: the main
+  batch runs and the comparator judges it. Stopping there would turn a safety-netting regression
+  into "pre-flight failed", with no comparison and no breach alarm.
+- A runner's exit code 1, from either batch, is accepted only when the batch's own index explains
+  it, by the fields that target's runner writes, each read by exact type: a failed generation,
+  or for v1 a recorded gate failure. The pipeline has no safety-net gate, so only a failed
+  generation explains a pipeline 1. Otherwise the run fails (`docs/WS7-ENTRYPOINT.md`, "What a
+  runner's return means").
+- A runner ends only by returning. A `SystemExit` it raises, with any code, is a crash of that
+  runner, never a normal return (as built, 21 Nov 2026).
+
 **No retries.**
 
 - The schedule's retry policy is zero.
@@ -261,6 +288,14 @@ it finished without error, wrote only the files expected, and cost no more than 
     construction the live client must be Bedrock runtime in eu-west-2, or it is refused before any
     request (`docs/WS7-ENTRYPOINT.md`).
 - So a throttle fails that generation, and the run is reported as failed.
+- **Once a run has failed, it sends no further call** (slice 2 part 5a; the author's change,
+  20 Nov 2026). Any call whose outcome is not a response, and any refusal, fails the run. The
+  runner does not know that and would go on to the next scenario, and the wrapper itself refuses
+  the rest only when a call is unmetered. So the entrypoint wraps each client once more: once
+  the wrapper's report shows such a call, every further call in the run is refused, in the
+  pre-flight and the main batch, and each generation ends as it does at the wrapper's own
+  refusals. The run fails with the first failure's code and settles from the wrapper's report.
+  `evals/ws7_client.py` is not changed.
 - This is tighter than the code under test, which may retry (Context, finding 8). No runner and
   no pipeline file is changed.
 - The reason is the ceiling below. With the two retries the code allows, the output part of the
@@ -395,6 +430,45 @@ which an entry was resolved as an accepted estimate has no such assurance, and i
      report themselves. A run that dies outright reports nothing, so its entry stays open and
      is found at its wall-clock limit: that is the abandoned case. An entry takes one kind, the
      first one written.
+     - **A run is settled as metered only from a report that is complete and consistent** (the
+       author's ruling, 21 Nov 2026): every call has a final outcome, and the totals equal the
+       sum of the calls, for each batch and for the run. A run whose report is not (its
+       accounting was interrupted part-way, for example), or that has no report, reports itself
+       as **crashed**: its cost is unknown, so its entry is unresolved at its reservation,
+       never metered.
+     - **A run that has failed to read its report once, or has caught a `KeyboardInterrupt`
+       while its entry was still open, also reports itself as crashed** (the author's ruling,
+       21 Nov 2026; its scope narrowed on 22 Nov 2026). It never settles from the guard
+       afterwards, even if a later read succeeds and the report looks complete: what a
+       `KeyboardInterrupt` left behind may be half-written. The run fails with
+       `ws7_report_unreadable` or `ws7_interrupted`, which it checks before every dispatch and
+       before success. For interrupts, this ruling now applies to a `KeyboardInterrupt` raised
+       by other means, and to a Ctrl+C found at a check before the settlement begins. It does
+       not apply to a Ctrl+C that arrives once the settlement has passed its check (below).
+     - **A Ctrl+C is deferred to a latch; it never raises inside the job** (the author's
+       ruling, 22 Nov 2026). While a run or the check is in progress, the job's SIGINT handler
+       only sets the latch. The latch is checked before every act that cannot be taken back:
+       the claim, admission, each dispatch, each call the run's client sends, the settle, the
+       run's metrics, the breach message, the success record's PUT and `RunOk` = 1; in the
+       check, before `expire()` and before its message or its exit code 0. A set latch fails
+       the run by the rule above (`ws7_interrupted`; with the entry still open, crashed). The
+       check before `RunOk` = 1 is the last: a Ctrl+C after it finds a run that had finished and
+       changes nothing. The command line installs the handler and puts the previous one back
+       when it ends. SIGTERM is not handled: it ends the process, and the open entry becomes
+       the abandoned case.
+     - **A Ctrl+C is acted on at the next latch check, and what has passed its check
+       completes** (the author's ruling, 22 Nov 2026). There is always a moment between a
+       check and the act it guards, and more checks only move that moment, so the rule is
+       about what has begun:
+       - Anything that has passed its check completes: a dispatch, a call, a settlement (its
+         reads and its PUT), a record, the breach message, `RunOk` = 1.
+       - Because the handler never raises, a Ctrl+C cannot leave the guard's report
+         half-written, so a settlement that has begun is accurate. Once the entry is metered,
+         later runs are admitted as normal.
+       - After a Ctrl+C, at most the one runner start or call already past its check goes
+         out. It is inside the reservation and it is counted.
+       - A latch found set at a check while the entry is still open means the run reports
+         itself as crashed, as above.
    - An unresolved entry **blocks every later inside-cap (scheduled) run**, in that month or any
      later one, until the author resolves it.
    - The author resolves an unresolved entry, of any of the three kinds, by recording a settled
@@ -544,8 +618,21 @@ object is absent, or unchanged since it was read.
   nothing that is kept sits under it. The layout is in `docs/WS7-ENTRYPOINT.md`.
 - **A run that becomes an incident is copied to a retained prefix before the 90 days are up.** That
   copy is a step in triage (D10).
+  - **The retained prefix is `retained/<run_id>/`, outside `ws7/`** (the author's ruling,
+    20 Nov 2026). The task role's whole reach is `ws7/` (D6), so the job can never overwrite an
+    incident copy, and the lifecycle rule does not touch it. The author makes the copy by hand,
+    with their own credentials (slice 3's runbook). Nothing in the job writes it.
 - What is stored: the run manifest, the batch records (model output on synthetic notes), the
   scores, the assembly report and the comparison result. No real data.
+  - As built (slice 2 part 5a): also the pre-flight batch, the run summary and the client
+    wrapper's report. Success records are at `ws7/success/<run_id>.json` and failed records at
+    `ws7/failed/<run_id>.json`, both kept.
+  - **Only `.json` and `.md` files, and only the files the runners and scorers are known to
+    write.** Any other file in a batch folder stops the run; it is never skipped (the author's
+    ruling, 20 Nov 2026).
+  - **Once a run has failed, one such file does not stop the rest** (the author's ruling,
+    21 Nov 2026). The guard's report is stored first, then every allowed file. The other file
+    is never uploaded, and the failed record counts it.
 
 *AWS concept:* an S3 lifecycle rule deletes objects on a clock.
 
@@ -554,6 +641,23 @@ object is absent, or unchanged since it was read.
 **Where drift is decided.** The job compares each run with a frozen baseline and publishes one
 breach value (0 or 1) per family and kind. The CloudWatch alarms are then simple: breach above 0.
 Per-scenario detail goes to the run summary in S3, not into metric dimensions.
+
+- As built (slice 2 part 5a): the breach metrics are named `Breach<Family>Kind<n>`, for example
+  `BreachSafetyNettingKind2`, with the one dimension `Target`. There is no name for PART C (D13):
+  a comparison row for that family fails the run. The other metrics are `RunOk`, `RunRefused`,
+  `Duplicate`, `NoBaseline` and the Run family's counts (`docs/WS7-ENTRYPOINT.md`, "What is
+  published").
+- **A breach is a successful run** (the author's ruling, 20 Nov 2026): it generated, scored,
+  compared and stored. It publishes its breach values and `RunOk` = 1.
+- A run that fails publishes no breach value, because it made no comparison. So an alarm on a
+  breach metric must not treat missing data as a breach; `RunOk` and "no baseline" report a run
+  that did not compare.
+- **Each metric is published at most once per run** (as built, 21 Nov 2026). A run publishes its
+  counters and breach values, then sends its breach message, writes its success record and
+  publishes `RunOk` = 1. If a step after the first fails, the run fails, and **what was already
+  delivered stands**: the counters, the breach values and, if it was sent, the breach message.
+  The failure then adds only `RunOk` = 0 and `RunRefused` = 1. So a run that compared and
+  breached, and then failed to finish, can raise a breach alarm and the `RunOk` alarm together.
 
 **Metric families** (namespace `DischargeAssistant/Eval`, dimension `Target`):
 
@@ -613,9 +717,25 @@ two acts are to write a success record to S3 and then to publish `RunOk` = 1.
 
 - A second schedule, **Thursday 10:00 Europe/London**, starts the same task in a check mode. Check
   mode makes no Bedrock call and no claim.
-- It looks for Wednesday's claim and success record, and sends an alert when the run never
-  started (no claim), started and did not finish (a claim and no success record), or finished as
-  failed.
+- It looks for Wednesday's claim and success record, and sends an alert when there is no claim,
+  when the run started and did not finish (a claim and no success record), or when it finished
+  as failed.
+  - **"No claim" does not mean the run never started** (the author's change, 20 Nov 2026). A run
+    that stopped before its claim, at the match check for example, also leaves no claim. The
+    report says: "no claim: the run did not start, or stopped before its claim; see the task
+    log".
+  - **The check takes the run's ID from the claim object and never builds one.** The claim is
+    keyed by the UTC date; the ID also holds the UTC hour, which is 04 in winter and 03 in
+    British Summer Time.
+  - If a success record and a failed record both exist, it is reported as a failed run.
+  - **The check trusts none of the three objects as read** (as built, 21 Nov 2026). The claim,
+    the success record and the failed record each have one validator, which the code that writes
+    the object runs before the PUT and the check runs after the GET, so the job never writes a
+    record its own check would reject. Every field is checked: its type, its pattern or range,
+    and its agreement with the claim and the occurrence; an unknown field is refused. An object
+    that fails is reported as invalid, with a fixed label, and never counts as a success.
+  - The check first marks any reservation left open past its limit as abandoned, so a run that
+    died on Wednesday is reported as abandoned that Thursday.
 - A run **blocked by an unresolved ledger entry** (D7, point 4) has a claim and a failed record
   with its own fixed code. The check reports that cause by name, so the alert says what the
   author must resolve.
@@ -630,7 +750,7 @@ two acts are to write a success record to S3 and then to publish `RunOk` = 1.
 | Setting | Value |
 |---|---|
 | Metric | `RunOk`, namespace `DischargeAssistant/Eval`, dimension `Target` |
-| Published | Once, value 1, by the scheduled run as its last act. A run that fails in a way it can handle publishes 0. Manual runs, duplicates and the check never publish it |
+| Published | Once, value 1, by the scheduled run as its last act. A scheduled run that fails **while it holds its claim** publishes 0. If CloudWatch does not acknowledge the 1, that run is a failed run too: it writes its failed record beside its success record, so the check reports it, and tries 0 (as built, 21 Nov 2026). A run that stops before its claim publishes no `RunOk`: that process cannot know it is not a duplicate (the author's ruling, 20 Nov 2026). Manual runs, duplicates and the check never publish it |
 | Statistic | Maximum |
 | Period | 86,400 seconds (one day) |
 | Evaluation periods | 7 |
@@ -693,6 +813,13 @@ count log lines the deployed worker writes, which carry fixed codes and IDs only
 
 - CloudWatch sends the alarm by email. The job also sends its own short message built to map onto
   the log's fields. It carries no note text and no model output.
+  - The job sends that message **on a breach only**. A failed scheduled run sends no message of
+    its own: the Thursday check and the alarms report it (the author's ruling, 20 Nov 2026).
+  - **A breach message can come from a run that then failed** (as built, 21 Nov 2026). The
+    message is sent before the success record. If the success record or `RunOk` = 1 then fails,
+    the run is a failed run, and the message and the breach values already delivered stand
+    (D9). Triage reads both: the breach is real evidence, and the Thursday check names the
+    failure.
 - **An alarm is a candidate, not an incident.** The author triages it.
 - **The clocks are the log's own, and they start at the alarm.** The alarm time is the report
   time for the log's existing targets: acknowledge within 2 working days, clinical risk
@@ -704,7 +831,8 @@ count log lines the deployed worker writes, which carry fixed codes and IDs only
   2. **Quality finding.** A real change with no patient-safety effect. Recorded with its evidence
      and followed up as ordinary work.
   3. **Incident.** It has, or could have, a patient-safety effect. It gets an `INC-YYYY-NNN`
-     entry under the log's section 2, and the run is copied to retained storage (D8).
+     entry under the log's section 2, and the author copies the run by hand to
+     `retained/<run_id>/` (D8).
 - The job never edits the log. It is a controlled document approved by the CSO.
 - **The log's wording comes first.** The log gains this route, with CSO approval, before the
   schedule is switched on. Switching it on requires that approval (see the order of work).
@@ -949,6 +1077,11 @@ reservation is reached. No AWS and no spend.
   under `ws7/` and can do nothing else; whether a missing key gives 404 or 403 is recorded; a
   real ETag is accepted by `If-Match`; two tasks racing for one claim leave one holder; the
   expected-version parameters can be read and not written.
+- **The metrics and the topic, with the task role** (slice 2 part 5a was tested against local
+  fakes only; `docs/WS7-ENTRYPOINT.md`, "What the new fakes cannot prove"). Real CloudWatch
+  accepts the metric names, the dimension and the values, and the role may publish only in the
+  namespace; each alarm sees its datapoints; the encrypted topic accepts the role's message and
+  delivers it.
 - **The clock changes.** Both schedules and the alarm window name `Europe/London`, not a fixed
   offset. In the weeks of 28 March 2027 and 31 October 2027, the Wednesday run and the Thursday
   check fire at 04:00 and 10:00 local time, and the alarm history shows no false alarm.

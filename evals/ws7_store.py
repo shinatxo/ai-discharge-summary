@@ -1,18 +1,20 @@
 #!/usr/bin/env python3
-"""WS7 store: the S3 and SSM clients, S3's conditional writes, and the key layout
-(ADR-011 D6, D7, D8).
+"""WS7 store: the S3, SSM, CloudWatch and SNS clients, S3's conditional writes, and
+the key layout (ADR-011 D6, D7, D8, D9).
 
-Four things live here, and nothing else in WS7 builds an S3 or SSM client or
-names an S3 key:
+Four things live here, and nothing else in WS7 builds an S3, SSM, CloudWatch or
+SNS client or names an S3 key:
 
-1. `build_client`: the one place WS7 creates an S3 or SSM client. One attempt
-   per call (the callers do their own, counted, retries), eu-west-2 only, and
-   endpoint URLs set in the environment or the AWS config file are ignored. A
-   test endpoint must be http://127.0.0.1:<port>.
+1. `build_client`: the one place WS7 creates an S3, SSM, CloudWatch or SNS
+   client. One attempt per call (the callers do their own, counted, retries),
+   eu-west-2 only, and endpoint URLs set in the environment or the AWS config
+   file are ignored. A test endpoint must be http://127.0.0.1:<port>.
 2. `Store`: list, get and two conditional puts. THERE IS NO UNCONDITIONAL
    WRITE and no delete. Every key must sit under `ws7/`.
-3. The key layout: claims, ledgers and run prefixes (docs/WS7-ENTRYPOINT.md,
-   "The S3 layout").
+3. The key layout: claims, ledgers, run prefixes, success records and failed
+   records (docs/WS7-ENTRYPOINT.md, "The S3 layout"). The retained prefix for
+   incident copies is named here and sits OUTSIDE `ws7/`, so this store can
+   never write it.
 4. `Stop`: how every WS7 refusal is raised. It carries a fixed code, IDs and
    counts, and nothing else: no note text, no model output, no AWS message.
 
@@ -87,7 +89,9 @@ MODES = (SCHEDULED, MANUAL)
 LIVE_REGION = "eu-west-2"
 # Written out rather than built from the region.
 LIVE_ENDPOINTS = {"s3": "https://s3.eu-west-2.amazonaws.com",
-                  "ssm": "https://ssm.eu-west-2.amazonaws.com"}
+                  "ssm": "https://ssm.eu-west-2.amazonaws.com",
+                  "cloudwatch": "https://monitoring.eu-west-2.amazonaws.com",
+                  "sns": "https://sns.eu-west-2.amazonaws.com"}
 _STUB_ENDPOINT_RE = re.compile(r"http://127\.0\.0\.1:[0-9]{1,5}")
 RETRIES = {"mode": "standard", "total_max_attempts": 1}   # the callers count their own tries
 CONNECT_TIMEOUT_S = 10
@@ -95,7 +99,17 @@ READ_TIMEOUT_S = 20
 
 PREFIX = "ws7/"                       # the task role's whole reach in the bucket (D6)
 LEDGER_PREFIX = PREFIX + "ledger/"
+# Kept, so outside `ws7/runs/scheduled/`, which the lifecycle rule expires (D8).
+SUCCESS_PREFIX = PREFIX + "success/"
+FAILED_PREFIX = PREFIX + "failed/"
+# Incident copies (D10). OUTSIDE `ws7/`: the task role cannot reach it and `Store`
+# refuses every key under it, so the job can never overwrite a copy the author made.
+RETAINED_PREFIX = "retained/"
 MAX_OBJECT_BYTES = 1_048_576          # a claim, a ledger or a manifest is far smaller
+# What an object may be stored as. A run's evidence is JSON and Markdown, and nothing else.
+JSON_TYPE = "application/json"
+MARKDOWN_TYPE = "text/markdown; charset=utf-8"
+CONTENT_TYPES = {".json": JSON_TYPE, ".md": MARKDOWN_TYPE}
 
 # A bucket WS7 will talk to: an ordinary general-purpose bucket name. No dots, and no
 # "--", which rules out directory buckets (--x-s3) and the other suffixes that make
@@ -105,6 +119,7 @@ _KEY_RE = re.compile(r"ws7/[A-Za-z0-9._/-]{1,200}")
 ID_RE = re.compile(r"[A-Za-z0-9._:-]{1,64}")        # the comparator's ID pattern
 _LABEL_RE = re.compile(r"[a-z0-9_]{1,64}")
 _MONTH_RE = re.compile(r"[0-9]{4}-(?:0[1-9]|1[0-2])")
+_PART_RE = re.compile(r"[A-Za-z0-9._-]{1,80}")
 _UTC_RE = re.compile(r"[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z")
 
 # What a conditional put came to.
@@ -254,6 +269,44 @@ def run_prefix(mode: str, run: str) -> str:
     return f"{PREFIX}runs/{mode}/{run}/"
 
 
+def _run_id_text(run: object) -> str:
+    if type(run) is not str or not ID_RE.fullmatch(run):
+        raise ValueError("a run ID is needed")
+    return run
+
+
+def success_key(run: str) -> str:
+    """A scheduled run's success record: written once, as the run's last act but one
+    (D9). Kept, so it is not under the run's own prefix."""
+    return f"{SUCCESS_PREFIX}{_run_id_text(run)}.json"
+
+
+def failed_key(run: str) -> str:
+    """The failed record of a scheduled run that stopped while it held its claim. The
+    Thursday check reads it. Kept."""
+    return f"{FAILED_PREFIX}{_run_id_text(run)}.json"
+
+
+def retained_prefix(run: str) -> str:
+    """Where the author copies a run that became an incident (D10). It is outside
+    `ws7/`: nothing in WS7 writes it, and `Store` refuses every key under it."""
+    return f"{RETAINED_PREFIX}{_run_id_text(run)}/"
+
+
+def evidence_key(mode: str, run: str, *parts: str) -> str:
+    """One stored file of a run, under the run's own prefix. Each part is a plain
+    name: letters, digits, `.`, `_` and `-`, and never `.` or `..`."""
+    if not parts or not all(type(p) is str and _PART_RE.fullmatch(p) and p.strip(".")
+                            for p in parts):
+        raise ValueError("an evidence key is made of plain names")
+    return run_prefix(mode, run) + "/".join(parts)
+
+
+def content_type(name: str) -> str | None:
+    """What a file of this name is stored as, or None: it is not stored at all."""
+    return next((kind for suffix, kind in CONTENT_TYPES.items() if name.endswith(suffix)), None)
+
+
 def _check_target_mode(target: str, mode: str) -> None:
     if target not in TARGETS or mode not in MODES:
         raise ValueError("an unknown target or mode")
@@ -288,10 +341,11 @@ class _SendOnce:
 
 
 def build_client(service: str, *, endpoint_url: str | None = None):
-    """The one place WS7 creates an S3 or SSM client.
+    """The one place WS7 creates an S3, SSM, CloudWatch or SNS client.
 
     Endpoint URLs configured in the environment (AWS_ENDPOINT_URL,
-    AWS_ENDPOINT_URL_S3, AWS_ENDPOINT_URL_SSM) or in the AWS config file are
+    AWS_ENDPOINT_URL_S3, AWS_ENDPOINT_URL_SSM, AWS_ENDPOINT_URL_CLOUDWATCH,
+    AWS_ENDPOINT_URL_SNS) or in the AWS config file are
     ignored: botocore's `ignore_configured_endpoint_urls=True`, as
     evals/ws7_client.py uses for Bedrock. The live path passes no `endpoint_url`
     and must resolve to the service's own endpoint in eu-west-2; a FIPS or
@@ -388,24 +442,28 @@ class Store:
             raise StoreError(OBJECT_TOO_LARGE)
         return body, etag
 
-    def put_if_absent(self, key: str, body: bytes) -> tuple:
+    def put_if_absent(self, key: str, body: bytes, *, kind: str = JSON_TYPE) -> tuple:
         """Write only if the key is free (`If-None-Match: *`). Returns the outcome
-        and, when WRITTEN, the new ETag."""
-        return self._put(key, body, EXISTS, IfNoneMatch="*")
+        and, when WRITTEN, the new ETag. `kind` is the content type: JSON, or
+        Markdown for a stored report."""
+        return self._put(key, body, EXISTS, kind, IfNoneMatch="*")
 
     def put_if_match(self, key: str, body: bytes, etag: str) -> tuple:
         """Write only if the object is still the one that was read (`If-Match`)."""
         if type(etag) is not str or not etag:
             raise StoreError(PUT_REFUSED)
-        return self._put(key, body, CHANGED, IfMatch=etag)
+        return self._put(key, body, CHANGED, JSON_TYPE, IfMatch=etag)
 
-    def _put(self, key: str, body: bytes, failed_condition: str, **condition) -> tuple:
+    def _put(self, key: str, body: bytes, failed_condition: str, kind: str,
+             **condition) -> tuple:
         self._check_key(key)
         if type(body) is not bytes or len(body) > MAX_OBJECT_BYTES:
             raise StoreError(OBJECT_TOO_LARGE)
+        if type(kind) is not str or kind not in CONTENT_TYPES.values():
+            raise StoreError(PUT_REFUSED)               # never sent
         try:
             reply = self._s3.put_object(Bucket=self.bucket, Key=key, Body=body,
-                                        ContentType="application/json", **condition)
+                                        ContentType=kind, **condition)
         except ResendRefused:
             raise StoreError(RESEND_REFUSED) from None
         except ClientError as exc:
@@ -429,7 +487,7 @@ class Store:
         # A 200 with no ETag: the write landed, but the next If-Match has nothing to use.
         return (WRITTEN, etag) if type(etag) is str and etag else (AMBIGUOUS, None)
 
-    def create(self, key: str, body: bytes, *, attempts: int) -> str:
+    def create(self, key: str, body: bytes, *, attempts: int, kind: str = JSON_TYPE) -> str:
         """Create `key` once. CREATED: the object is this call's bytes. TAKEN: it is
         someone else's.
 
@@ -442,7 +500,7 @@ class Store:
             raise ValueError("attempts must be a whole number of one or more")
         unsure = False
         for _ in range(attempts):
-            outcome, _etag = self.put_if_absent(key, body)
+            outcome, _etag = self.put_if_absent(key, body, kind=kind)
             if outcome == WRITTEN:
                 return CREATED
             if outcome == EXISTS and not unsure:

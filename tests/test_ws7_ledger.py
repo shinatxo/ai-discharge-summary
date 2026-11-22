@@ -112,14 +112,23 @@ def start(world, when: str = W3, target: str = "pipeline", mode: str = "schedule
 def report(admitted: wl.Admission, total_nanos: int = 1_903_211_000, *, unmetered: bool = False,
            **extra) -> dict:
     """What Guard.report() gives settle() for this run, with invented totals: the
-    run's target and reservation, and the two batches part 5 opens."""
-    batch = {"planned": 1, "started": 1, "total_usd_nanos": 0}
+    run's target and reservation, the two batches part 5 opens, and one call in the
+    main batch that cost the whole total. It is complete and consistent: the call has
+    a final outcome, the totals are the sum of the rows, and the `unmetered` flag is
+    set exactly when the call's outcome is one that makes a run unmetered."""
+    main = f"{admitted.run_id}.main"
+    call = {"seq": 1, "batch": main, "generation": 1, "step": "invented",
+            "outcome": "server_error" if unmetered else "response", "code": None,
+            "cost_usd_nanos": total_nanos, "worst_case": unmetered}
     out = {"target": admitted.target, "run_id": admitted.run_id, "unmetered": unmetered,
+           "unmetered_calls": int(unmetered),
            "total_usd_nanos": total_nanos,
            "total_usd_micros": reserve.to_micros(total_nanos),
            "reservation_usd_nanos": admitted.reservation_usd_micros * 1000,
-           "batches": {f"{admitted.run_id}.preflight": dict(batch),
-                       f"{admitted.run_id}.main": dict(batch)}}
+           "batches": {f"{admitted.run_id}.preflight": {"planned": 1, "started": 1,
+                                                        "total_usd_nanos": 0},
+                       main: {"planned": 1, "started": 1, "total_usd_nanos": total_nanos}},
+           "calls": [call]}
     out.update(extra)
     return out
 
@@ -210,6 +219,57 @@ def test_a_claim_is_one_object_written_with_if_none_match(world):
         "scheduled_time": "2026-12-16T04:00:00Z", "run_id": "2026-12-16T0400-pipeline",
         "claim_id": held.claim_id, "claimed_at": "2026-12-16T04:00:37Z"}
     assert world.fake.requests == [("PUT", key)]                          # no ledger was read
+
+
+def test_a_claim_is_given_to_the_checks_own_validator_before_it_is_put(world, monkeypatch):
+    """One validator, shared: `claim()` runs `claim_fault` on the object it is about to
+    PUT, and the Thursday check runs it on what it reads. What is stored is the object
+    that was checked."""
+    world.clock.set("2026-12-16T04:00:37Z")
+    real, seen = wl.claim_fault, []
+
+    def spied(claim, **kwargs):
+        seen.append((dict(claim), kwargs, list(world.fake.requests)))
+        return real(claim, **kwargs)
+    monkeypatch.setattr(wl, "claim_fault", spied)
+    held = take(world)
+    assert len(seen) == 1
+    given, kwargs, sent_before = seen[0]
+    assert sent_before == []                                    # checked before anything was sent
+    assert given == world.fake.json(held.key)
+    assert kwargs == {"key": held.key, "target": "pipeline", "mode": "scheduled",
+                      "max_start_delay_s": world.cfg.max_start_delay_s}
+    assert real(given, **kwargs) is None
+
+
+@pytest.mark.parametrize("fault", ["run_id", "claimed_at", "fields"])
+def test_a_claim_its_validator_refuses_is_never_written(world, monkeypatch, fault):
+    """The writer's side. The partner is every claim in this file, which is written."""
+    world.clock.set("2026-12-16T04:00:37Z")
+    monkeypatch.setattr(wl, "claim_fault", lambda _claim, **_kwargs: fault)
+    stop = stopped(lambda: take(world), wl.CLAIM_INVALID)
+    assert stop.ids == (fault,)
+    assert world.fake.requests == [] and world.fake.keys() == []
+
+
+@pytest.mark.parametrize("mode", ["scheduled", "manual"])
+def test_the_claim_validator_holds_a_claim_to_its_own_key_target_and_mode(world, mode):
+    """A claim of either mode passes at its own key, and at no other: not as the other
+    mode's claim, not as the other target's, and not a second past its start window."""
+    world.clock.set("2026-12-16T04:00:37Z")
+    held = take(world, mode=mode)
+    claim = world.fake.json(held.key)
+    rules = {"key": held.key, "target": "pipeline", "mode": mode,
+             "max_start_delay_s": world.cfg.max_start_delay_s}
+    assert wl.claim_fault(claim, **rules) is None
+    other = "manual" if mode == "scheduled" else "scheduled"
+    assert wl.claim_fault(claim, **{**rules, "mode": other}) == "mode"
+    assert wl.claim_fault(claim, **{**rules, "target": "v1"}) == "target"
+    assert wl.claim_fault(claim, **{**rules, "key": held.key + "x"}) == "scheduled_time"
+    assert wl.claim_fault(claim, **{**rules, "max_start_delay_s": 36}) == "claimed_at"
+    assert wl.claim_fault(claim, **{**rules, "max_start_delay_s": 37}) is None
+    assert wl.claim_fault({**claim, "note": 1}, **rules) == "fields"
+    assert wl.claim_fault(None, **rules) == "not_an_object"
 
 
 def test_a_second_delivery_is_a_duplicate_that_reads_no_ledger_and_writes_nothing(world):
@@ -971,6 +1031,300 @@ def test_a_report_that_is_not_this_runs_own_is_refused_and_the_entry_stays_open(
     assert world.ledger.settle(admitted, report(admitted))["state"] == wl.SETTLED   # the partner
 
 
+def _relabelled(given: dict, old: str, new: str) -> dict:
+    """A report with one batch, and its calls, moved to another label."""
+    out = dict(given, batches={(new if label == old else label): batch
+                               for label, batch in given["batches"].items()})
+    out["calls"] = [dict(call, batch=new if call["batch"] == old else call["batch"])
+                    for call in given["calls"]]
+    return out
+
+
+def test_a_complete_report_whose_batches_are_labelled_for_another_run_is_refused(world):
+    """The report is complete and consistent in itself; only its batch labels are not
+    this run's. The partner is the same report with its own labels, which settles."""
+    admitted = start(world, W1)
+    own = f"{admitted.run_id}.main"
+    for other in ("2026-12-09T0400-pipeline.main", "b", admitted.run_id, admitted.run_id + ".",
+                  f"{admitted.run_id}-manual.main"):
+        moved = _relabelled(report(admitted), own, other)
+        assert wl.report_fault(moved) is None                   # nothing else is wrong with it
+        stopped(lambda: world.ledger.settle(admitted, moved), wl.REPORT_INVALID)
+    assert len(ledger_puts(world)) == 1
+    assert world.ledger.settle(admitted, report(admitted))["state"] == "settled"
+
+
+def _call(admitted, seq: int, cost: int, outcome: str = "response", batch: str = "main") -> dict:
+    return {"seq": seq, "batch": f"{admitted.run_id}.{batch}", "generation": 1, "step": "invented",
+            "outcome": outcome, "code": None, "cost_usd_nanos": cost, "worst_case": False}
+
+
+def _whole(admitted, calls: list, **change) -> dict:
+    """A report whose totals are the sums of `calls`, with `change` applied on top."""
+    def spent(batch):
+        return sum(c["cost_usd_nanos"] for c in calls
+                   if c["batch"] == f"{admitted.run_id}.{batch}" and c["outcome"] != "refused")
+    total = spent("preflight") + spent("main")
+    return report(admitted, total, calls=calls, batches={
+        f"{admitted.run_id}.preflight": {"planned": 1, "started": 1,
+                                         "total_usd_nanos": spent("preflight")},
+        f"{admitted.run_id}.main": {"planned": 18, "started": 18, "total_usd_nanos": spent("main")}},
+        **change)
+
+
+def test_a_report_with_a_call_left_sent_is_refused_before_any_write_and_never_settled(world):
+    """THE CLASS (Codex P1, PR #9, second re-check): a ledger entry is settled as
+    metered only from a report that is complete and consistent. Here one call was
+    sent and never given an outcome, at each position in the report. `settle()`
+    refuses with `ws7_report_incomplete` and writes nothing; the entry stays open,
+    and `mark_crashed()` then leaves it unresolved at its reservation. The partner:
+    the same calls, each with its outcome, settle as metered."""
+    admitted = start(world, W1)
+    before = world.fake.body(DEC)
+    done = [_call(admitted, 1, 700, batch="preflight"), _call(admitted, 2, 900),
+            _call(admitted, 3, 400)]
+    for position in range(3):
+        calls = [dict(c) for c in done]
+        calls[position] = dict(calls[position], outcome="sent")
+        for given in (_whole(admitted, calls),                  # totals as if it had finished
+                      report(admitted, 0, calls=calls)):        # and totals that never counted it
+            stop = stopped(lambda: world.ledger.settle(admitted, given), wl.REPORT_INCOMPLETE)
+            assert stop.ids == (admitted.run_id,)
+    assert world.fake.body(DEC) == before and len(ledger_puts(world)) == 1      # no write at all
+    crashed = world.ledger.mark_crashed(admitted)
+    assert (crashed["state"], crashed["kind"]) == ("unresolved", "crashed")
+    assert crashed["counted_usd_micros"] == admitted.reservation_usd_micros
+
+    world.clock.set("2026-12-09T04:00:30Z")
+    again = start(world, W2, mode="manual")                     # a manual run is not blocked
+    settled = world.ledger.settle(again, _whole(again, [_call(again, 1, 700, batch="preflight"),
+                                                         _call(again, 2, 900)]))
+    assert (settled["state"], settled["basis"], settled["counted_usd_micros"]) == (
+        "settled", "metered", reserve.to_micros(1600))
+
+
+INCONSISTENT = {
+    "the run's total is one more than its rows": lambda r: dict(
+        r, total_usd_nanos=r["total_usd_nanos"] + 1000,
+        total_usd_micros=reserve.to_micros(r["total_usd_nanos"] + 1000)),
+    "the run's total never counted a row": lambda r: dict(r, total_usd_nanos=0, total_usd_micros=0),
+    "a batch's total is not the sum of its rows": lambda r: dict(r, batches={
+        label: dict(b, total_usd_nanos=b["total_usd_nanos"] + (1 if label.endswith(".main") else 0))
+        for label, b in r["batches"].items()}),
+    "two batches' totals are swapped": lambda r: dict(r, batches=dict(zip(
+        r["batches"], reversed(list(r["batches"].values()))))),
+    "a row is in a batch the report does not name": lambda r: dict(r, calls=[
+        dict(c, batch=c["batch"] + "x") if c["seq"] == 2 else c for c in r["calls"]]),
+    "a row is in no batch": lambda r: dict(r, calls=[
+        dict(c, batch=None) if c["seq"] == 2 else c for c in r["calls"]]),
+    # The run's total counts one more call, and no batch does: every batch's total is
+    # still the sum of its own rows, and the run's total is the sum of all the rows.
+    "one more call, in a batch the report does not name, counted in the run's total":
+        lambda r: dict(
+            r, total_usd_nanos=r["total_usd_nanos"] + 1000,
+            total_usd_micros=reserve.to_micros(r["total_usd_nanos"] + 1000),
+            calls=r["calls"] + [dict(r["calls"][0], seq=9, batch=r["calls"][0]["batch"] + "x",
+                                     cost_usd_nanos=1000)]),
+    "one more call, in no batch, counted in the run's total": lambda r: dict(
+        r, total_usd_nanos=r["total_usd_nanos"] + 1000,
+        total_usd_micros=reserve.to_micros(r["total_usd_nanos"] + 1000),
+        calls=r["calls"] + [dict(r["calls"][0], seq=9, batch=None, cost_usd_nanos=1000)]),
+    "a refused call has a cost": lambda r: dict(r, calls=r["calls"] + [
+        {"seq": 9, "batch": None, "outcome": "refused", "code": "ws7_no_batch", "cost_usd_nanos": 5}]),
+}
+
+
+@pytest.mark.parametrize("what", list(INCONSISTENT))
+def test_a_report_whose_totals_are_not_its_rows_is_refused_before_any_write(world, what):
+    """Consistent means: the run's total is the sum of its rows, each batch's total is
+    the sum of that batch's rows, a refused call cost nothing, and every other call is
+    in a batch the report names. Each broken in turn; the partner is the report before
+    it was broken. (The `unmetered` flag and count have their own tests, below.)"""
+    admitted = start(world, W1)
+    before = world.fake.body(DEC)
+    good = _whole(admitted, [_call(admitted, 1, 700, batch="preflight"), _call(admitted, 2, 900),
+                             _call(admitted, 3, 400)])
+    assert wl.report_fault(good) is None
+    bad = INCONSISTENT[what](good)
+    assert wl.report_fault(bad) == wl.REPORT_INCONSISTENT
+    stop = stopped(lambda: world.ledger.settle(admitted, bad), wl.REPORT_INCONSISTENT)
+    assert stop.ids == (admitted.run_id,)
+    assert world.fake.body(DEC) == before and len(ledger_puts(world)) == 1
+    assert world.ledger.settle(admitted, good)["basis"] == "metered"            # the partner
+
+
+# ------------------------- settlement works everything out from the rows
+
+# What the guard's own rule makes of each final outcome it can write, spelt out here from
+# its constants: a reply with usage and a refusal are metered; a failure in which the
+# model did not run is metered; a reply with no usable usage, and every other failure,
+# make the run unmetered.
+UNMETERED_OUTCOMES = {wc.USAGE_UNKNOWN} | (set(wc.NO_RESPONSE) - set(wc.NOT_RUN))
+EVERY_OUTCOME = (wc.RESPONSE, wc.USAGE_UNKNOWN, wc.REFUSED) + wc.NO_RESPONSE
+
+
+def _one_call(admitted, outcome: str, **change) -> dict:
+    """A complete report of one call with this outcome, as the guard would write it: a
+    refused call cost nothing and is in no total; its own count and flag are what the
+    guard's rule gives. `change` is applied on top."""
+    cost = 0 if outcome == wc.REFUSED else 900
+    unmetered = outcome in UNMETERED_OUTCOMES
+    calls = [_call(admitted, 1, 700, batch="preflight"), _call(admitted, 2, cost, outcome)]
+    return _whole(admitted, calls, unmetered=unmetered, unmetered_calls=int(unmetered), **change)
+
+
+def test_the_outcomes_tested_here_are_every_final_outcome_the_guard_can_write():
+    """The ledger takes the guard's words from the guard's own module, and this list is
+    all of them: a reply, a reply with no usable usage, a refusal, and each label
+    `_failure_label` can return. `sent` is the one outcome that is not final."""
+    assert wl.FINAL_OUTCOMES == EVERY_OUTCOME and len(set(EVERY_OUTCOME)) == 10
+    assert wl._SENT not in wl.FINAL_OUTCOMES
+    for outcome in EVERY_OUTCOME:
+        assert wc._unmetered(outcome) is (outcome in UNMETERED_OUTCOMES), outcome
+    assert UNMETERED_OUTCOMES == {"response_usage_unknown", "server_error", "client_error",
+                                  "read_timeout", "other_error"}
+    from botocore.exceptions import (ClientError, ConnectTimeoutError, EndpointConnectionError,
+                                     ParamValidationError, ReadTimeoutError)
+
+    def client_error(status, code):
+        return ClientError({"Error": {"Code": code},
+                            "ResponseMetadata": {"HTTPStatusCode": status}}, "Converse")
+    raised = [client_error(429, "ThrottlingException"), client_error(500, "InternalServerException"),
+              client_error(400, "ValidationException"), client_error(429, "ModelNotReadyException"),
+              ReadTimeoutError(endpoint_url="http://127.0.0.1:1"),
+              ConnectTimeoutError(endpoint_url="http://127.0.0.1:1"),
+              EndpointConnectionError(endpoint_url="http://127.0.0.1:1"),
+              ParamValidationError(report="invented"), RuntimeError("invented"), KeyboardInterrupt()]
+    labels = {wc._failure_label(exc) for exc in raised}
+    assert labels == set(wc.NO_RESPONSE)            # every label, and no other
+
+
+@pytest.mark.parametrize("outcome", EVERY_OUTCOME)
+def test_every_final_outcome_is_settled_as_the_rows_say_metered_or_unmetered(world, outcome):
+    """THE CLASS (Codex, PR #9, third re-check): settlement works everything out from
+    the rows. Every outcome the guard can write, each accepted with its correct
+    result: metered, or unresolved as unmetered, at the sum of the rows."""
+    admitted = start(world, W1)
+    given = _one_call(admitted, outcome)
+    fault, total, unmetered = wl.settlement(given)
+    assert (fault, total, unmetered) == (None, 700 + (0 if outcome == wc.REFUSED else 900),
+                                         outcome in UNMETERED_OUTCOMES)
+    entry = world.ledger.settle(admitted, given)
+    if outcome in UNMETERED_OUTCOMES:
+        assert (entry["state"], entry["kind"]) == ("unresolved", "unmetered")
+    else:
+        assert (entry["state"], entry["basis"]) == ("settled", "metered")
+    assert entry["counted_usd_micros"] == reserve.to_micros(total)
+
+
+@pytest.mark.parametrize("wrong", ["one more", "one fewer", "the flag the other way",
+                                   "both, as if the other kind of call"])
+@pytest.mark.parametrize("outcome", EVERY_OUTCOME)
+def test_the_reports_own_unmetered_count_and_flag_must_equal_what_the_rows_give(world, outcome,
+                                                                                wrong):
+    """Each outcome, with the report's own count or flag wrong in each direction. The
+    rows are right and the report is wrong about itself: `ws7_report_invalid`, before
+    any write. The dangerous case is the last: a call that makes the run unmetered,
+    in a report that says it has none, would be settled as metered if the report's
+    own word were taken. The partner: the same rows with the figures they give."""
+    admitted = start(world, W1)
+    before = world.fake.body(DEC)
+    good = _one_call(admitted, outcome)
+    assert wl.report_fault(good) is None
+    count, flag = good["unmetered_calls"], good["unmetered"]
+    change = {"one more": {"unmetered_calls": count + 1},
+              "one fewer": {"unmetered_calls": count - 1},
+              "the flag the other way": {"unmetered": not flag},
+              "both, as if the other kind of call": {"unmetered_calls": 1 - count,
+                                                     "unmetered": not flag}}[wrong]
+    bad = dict(good, **change)
+    assert wl.report_fault(bad) == wl.REPORT_INVALID
+    stop = stopped(lambda: world.ledger.settle(admitted, bad), wl.REPORT_INVALID)
+    assert stop.ids == (admitted.run_id,)
+    assert world.fake.body(DEC) == before and len(ledger_puts(world)) == 1
+    assert world.ledger.settle(admitted, good)["state"] in ("settled", "unresolved")   # the partner
+
+
+@pytest.mark.parametrize("word", ["Response", "RESPONSE", "response ", "ok", "", "unknown",
+                                  "success", "response_usage", "refused_", "sent_", "timeout",
+                                  "server_error2"])
+def test_an_outcome_the_guard_does_not_write_is_refused(world, word):
+    """A row whose outcome is not one of the guard's final outcomes, wherever it is in
+    the report, with totals that add up either way, and with the report's own count
+    and flag either way: as if the word were a metered call, and as the guard's rule
+    for "unmetered" would count a word it does not know. The second is the one only
+    the outcome check refuses: without it the report would settle as unmetered.
+    `ws7_report_invalid`, before any write. The partner is every final outcome, above."""
+    admitted = start(world, W1)
+    assert wc._unmetered(word) is True              # the rule alone would take the word
+    for position in (0, 1):
+        calls = [_call(admitted, 1, 700, batch="preflight"), _call(admitted, 2, 900)]
+        calls[position] = dict(calls[position], outcome=word)
+        counted = _whole(admitted, calls)                            # counted in the totals
+        left_out = dict(_whole(admitted, [c for c in calls if c["outcome"] != word]), calls=calls)
+        for totals in (counted, left_out):
+            as_metered = dict(totals, unmetered_calls=0, unmetered=False)
+            as_the_rule_counts_it = dict(totals, unmetered_calls=1, unmetered=True)
+            for given in (as_metered, as_the_rule_counts_it):
+                assert wl.report_fault(given) == wl.REPORT_INVALID, (position, word)
+                stopped(lambda: world.ledger.settle(admitted, given), wl.REPORT_INVALID)
+    assert len(ledger_puts(world)) == 1
+
+
+def test_what_an_entry_is_settled_at_comes_from_the_rows_not_from_the_reports_own_figures(world):
+    """`settle()` uses the total and the status `settlement()` worked out from the rows.
+    Here `_read_report` is made to answer as if the report said something else (a
+    larger total, unmetered): the entry is still settled at what the rows give."""
+    admitted = start(world, W1)
+    given = _one_call(admitted, wc.RESPONSE)
+    real = wl._read_report
+    wl._read_report = lambda report, admission: (real(report, admission)[0] + 5, True)
+    try:
+        entry = world.ledger.settle(admitted, given)
+    finally:
+        wl._read_report = real
+    assert (entry["state"], entry["basis"], entry["counted_usd_micros"]) == (
+        "settled", "metered", reserve.to_micros(1600))
+
+
+@pytest.mark.parametrize("change", [
+    {"calls": None}, {"calls": {}}, {"calls": [None]}, {"calls": ["sent"]}, {"calls": [[]]},
+    {"calls": [{"outcome": "response"}]}, {"calls": [{"cost_usd_nanos": 1}]},
+    {"calls": [{"outcome": 7, "cost_usd_nanos": 1}]}, {"calls": [{"outcome": None, "cost_usd_nanos": 1}]},
+    {"calls": [{"outcome": "response", "cost_usd_nanos": True}]},
+    {"calls": [{"outcome": "response", "cost_usd_nanos": -1}]},
+    {"calls": [{"outcome": "response", "cost_usd_nanos": 1.0}]},
+    {"calls": [{"outcome": "response", "cost_usd_nanos": "1"}]},
+    {"unmetered_calls": None}, {"unmetered_calls": True}, {"unmetered_calls": -1},
+], ids=str)
+def test_a_report_without_its_rows_in_their_types_is_refused(world, change):
+    admitted = start(world, W1)
+    given = dict(report(admitted), **change)
+    assert wl.report_fault(given) == wl.REPORT_INVALID
+    stopped(lambda: world.ledger.settle(admitted, given), wl.REPORT_INVALID)
+    assert len(ledger_puts(world)) == 1
+    for missing in ("calls", "unmetered_calls"):
+        without = {k: v for k, v in report(admitted).items() if k != missing}
+        assert wl.report_fault(without) == wl.REPORT_INVALID
+    assert wl.report_fault(None) == wl.REPORT_INVALID and wl.report_fault([]) == wl.REPORT_INVALID
+
+
+def test_refused_calls_and_unmetered_calls_do_not_make_a_report_inconsistent(world):
+    """What a real run's report holds: calls the guard refused (they cost nothing and
+    may be in no batch), and a call that made the run unmetered, counted at its worst
+    case and marked. Each settles as it did before: this is not a refusal."""
+    admitted = start(world, W1)
+    calls = [_call(admitted, 1, 700, batch="preflight"), _call(admitted, 2, 900, "server_error"),
+             dict(_call(admitted, 3, 0, "refused"), code="ws7_unmetered"),
+             {"seq": 4, "batch": None, "outcome": "refused", "code": "ws7_no_batch",
+              "cost_usd_nanos": 0}]
+    given = _whole(admitted, calls, unmetered=True, unmetered_calls=1)
+    assert wl.report_fault(given) is None
+    entry = world.ledger.settle(admitted, given)
+    assert (entry["state"], entry["kind"], entry["counted_usd_micros"]) == (
+        "unresolved", "unmetered", reserve.to_micros(1600))
+
+
 def test_a_report_whose_micro_dollar_total_is_a_boolean_is_refused(world):
     """In Python True == 1, so a `total_usd_micros` of True compares equal to a
     nano-dollar total that rounds up to one micro-dollar. A boolean is not a count:
@@ -1442,7 +1796,9 @@ def test_no_stop_and_no_stored_object_carries_text(world):
     world.clock.set("2026-12-02T04:00:30Z")
     stops.append(stopped(lambda: take(world, f"{W1} {SENTINEL}")))
     admitted = start(world, W1)
-    noisy = report(admitted, note=SENTINEL, calls=[{"step": "combined", "text": SENTINEL}])
+    clean = report(admitted)
+    noisy = dict(clean, note=SENTINEL, calls=[dict(clean["calls"][0], step="combined",
+                                                   text=SENTINEL)])
     assert SENTINEL in json.dumps(noisy)                                  # the control: it was there
     stops.append(stopped(lambda: world.ledger.settle(admitted, dict(noisy, target=SENTINEL))))
     stops.append(stopped(lambda: world.ledger.settle(admitted, dict(
@@ -1472,7 +1828,7 @@ def test_no_stop_and_no_stored_object_carries_text(world):
 
 
 def test_every_refusal_has_a_fixed_code():
-    assert len(set(wl.CODES)) == len(wl.CODES) == 26
+    assert len(set(wl.CODES)) == len(wl.CODES) == 29
     assert all(code.startswith("ws7_") and store._LABEL_RE.fullmatch(code) for code in wl.CODES)
     assert not set(wl.CODES) & set(store.CODES) and not set(wl.CODES) & set(wc.CODES)
 

@@ -185,7 +185,9 @@ def own_values(target: str, argv: list, cfg: reserve.Config) -> dict:
     try:
         with contextlib.redirect_stderr(io.StringIO()), contextlib.redirect_stdout(io.StringIO()):
             args = runner.parse_args(list(argv))
-    except SystemExit:                      # argparse's way of refusing an argv
+    except BaseException:                   # noqa: BLE001 - argparse's SystemExit, or whatever
+        # else the runner's parser raised: it is not the job's code, so even a Stop it
+        # raised is only a parser that would not take the argv
         raise Stop(RUNNER_ARGV_INVALID) from None
     # What the allow-list implies, checked on what the parser made of it.
     if args.runs != 1 or args.dry_run or (target == "pipeline" and args.verify) \
@@ -193,19 +195,21 @@ def own_values(target: str, argv: list, cfg: reserve.Config) -> dict:
         raise Stop(RUNNER_ARGV_INVALID)
     values = {"target": target, "model_id": reserve.plan(target).model_id,
               "prompt_caching": args.prompt_caching}
-    if target == "pipeline":
-        from pipeline import orchestrate
-        values["pipeline_version"] = orchestrate.pipeline_version()
-    else:
-        try:
+    # The pipeline's own version and the runner's own hash function are not the job's
+    # code either: whatever one raises, a Stop included, is values that could not be read.
+    try:
+        if target == "pipeline":
+            from pipeline import orchestrate
+            values["pipeline_version"] = orchestrate.pipeline_version()
+        else:
             values["v1_prompt_sha256"] = {
                 "system_prompt": reserve.rce.sha256_bytes(Path(args.prompt).read_bytes()),
                 "patient_system_prompt": reserve.rce.sha256_bytes(
                     Path(args.patient_prompt).read_bytes())}
-        except OSError:
-            raise Stop(RUNNER_ARGV_INVALID) from None
-        values["patient_second_pass"] = args.patient_second_pass
-        values[GATE] = args.gate
+            values["patient_second_pass"] = args.patient_second_pass
+            values[GATE] = args.gate
+    except BaseException:                   # noqa: BLE001
+        raise Stop(RUNNER_ARGV_INVALID) from None
     if not _own_ok(values, target):
         raise Stop(RUNNER_ARGV_INVALID)
     return values
@@ -375,16 +379,21 @@ def build_keys(own: object, *, corpus_sha256: object, gold_sha256: object,
     One function for the run manifest and the run summary (evals/ws7_summary.py), so
     the two cannot be built differently. The result is a copy: it never aliases an
     argument. It has passed the comparator's own check (`ws7_compare.check_keys`).
-    Anything out of shape is `ws7_manifest_invalid`."""
+    Anything out of shape is `ws7_manifest_invalid`.
+
+    THE ORIGINAL OBJECTS ARE CHECKED BEFORE THEY ARE COPIED (Codex P3, PR #8). The copy
+    is a JSON round trip, and JSON has only string keys: an integer scenario key `1`
+    would come back as `"1"` and pass. So the check runs on what was given, and the
+    copy is made only of what passed."""
     bad = Stop(MANIFEST_INVALID)
     target = own.get("target") if type(own) is dict else None
     if type(target) is not str or target not in store.TARGETS or not _own_ok(own, target):
         raise bad
     try:
-        keys = json.loads(json.dumps(dict(
-            _compared(own, target), corpus_sha256=corpus_sha256, gold_sha256=gold_sha256,
-            scorer_versions=scorer_versions)))
-        return compare.check_keys(keys, "manifest")
+        given = dict(_compared(own, target), corpus_sha256=corpus_sha256, gold_sha256=gold_sha256,
+                     scorer_versions=scorer_versions)
+        compare.check_keys(given, "manifest")               # as given: before any copy
+        return compare.check_keys(json.loads(json.dumps(given)), "manifest")
     except (compare.CompareError, TypeError, ValueError):
         raise bad from None
 

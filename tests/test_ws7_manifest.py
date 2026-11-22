@@ -120,6 +120,35 @@ def manifest(target: str = "pipeline", mode: str = "scheduled", **change) -> dic
 
 # ======================================================= the job's own values ==
 
+@pytest.mark.parametrize("raised", [
+    RuntimeError("invented"), KeyboardInterrupt(), SystemExit(0), SystemExit(2),
+    store.Stop("ws7_no_baseline"), store.Stop(wm.MATCH_DIFFERS)], ids=repr)
+@pytest.mark.parametrize("target, where, name", [
+    ("pipeline", "runner", "parse_args"), ("v1", "runner", "parse_args"),
+    ("pipeline", "orchestrate", "pipeline_version"), ("v1", "runner", "sha256_bytes")])
+def test_whatever_the_runners_code_raises_in_own_values_is_one_fixed_refusal(
+        monkeypatch, target, where, name, raised):
+    """`own_values` calls the runner's parser, the pipeline's version and the runner's
+    hash function. None is the job's code: whatever one raises, a `Stop` of WS7's own
+    included, is `ws7_runner_argv_invalid`. The partner is `own(target)`, unbroken."""
+    from pipeline import orchestrate
+    assert own(target)
+    module = orchestrate if where == "orchestrate" else (
+        reserve.rpe if target == "pipeline" and name == "parse_args" else reserve.rce)
+
+    def broken(*_args, **_kwargs):
+        raise raised
+    monkeypatch.setattr(module, name, broken)
+    try:
+        own(target)
+    except store.Stop as stop:
+        assert (stop.code, stop.ids, stop.counts) == (wm.RUNNER_ARGV_INVALID, (), {})
+    except BaseException as exc:        # noqa: BLE001 - an interrupt must fail this test, not end the session
+        pytest.fail(f"own_values let a {type(exc).__name__} out")
+    else:
+        pytest.fail("own_values returned")
+
+
 def test_the_pipelines_own_values_come_from_the_pipeline_and_the_runners_parser():
     assert own("pipeline") == {"target": "pipeline", "model_id": "anthropic.claude-sonnet-4-6",
                                "prompt_caching": True,
@@ -470,6 +499,22 @@ def test_a_manifest_is_not_built_from_a_value_out_of_shape(change):
     assert manifest()                                                     # the partner
     stop = stopped(lambda: manifest(**change), wm.MANIFEST_INVALID)
     assert SENTINEL not in stop.line()
+
+
+@pytest.mark.parametrize("target", ["pipeline", "v1"])
+@pytest.mark.parametrize("part, given", [
+    ("gold_sha256", {1: "b" * 64}), ("gold_sha256", {True: "b" * 64}),
+    ("gold_sha256", {"S1": "b" * 64, 2: "c" * 64}), ("scorer_versions", {1: 2}),
+    ("scorer_versions", {None: 2})], ids=repr)
+def test_a_manifest_is_not_built_from_keys_that_pass_only_after_a_json_round_trip(target, part,
+                                                                               given):
+    """Codex P3, PR #8 (part 5, carried item C). `build_keys()` copies its inputs with
+    a JSON round trip, which turns an integer key 1 into "1". It now checks what it was
+    given before it copies it. The partner: the same keys as strings build a manifest."""
+    as_strings = json.loads(json.dumps(given))
+    assert all(type(key) is str for key in as_strings) and as_strings != given
+    assert manifest(target, **{part: as_strings})["keys"][part] == as_strings
+    stopped(lambda: manifest(target, **{part: given}), wm.MANIFEST_INVALID)
 
 
 @pytest.mark.parametrize("change", [{"patient_second_pass": False}, {"safety_net_gate": False},

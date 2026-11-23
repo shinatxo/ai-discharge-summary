@@ -2058,21 +2058,29 @@ the author's machine only (the checks below); the pull request records what they
   last, a new commit reinstalls no pin and recopies no folder.
 - **The commit is the builder's statement**, as the digest is the deployer's. `COPY` takes
   whatever is in the folders it names, tracked by git or not, so the image is built from a clean
-  checkout of the commit it names (check 1 below; slice 3's runbook).
-  - **The rule: every file in the working folder that decides what the builder reads is either
-    shown by check 1 or stops the build** (Codex P1, PR #10; the author's ruling, 23 Nov 2026).
-  - Those files are the `Dockerfile`, `.dockerignore`, `requirements-eval.txt`, the four copied
-    folders, and `Dockerfile.dockerignore`. The last is not tracked and must not exist: when
-    it does, the builder reads it **instead of** `.dockerignore`, so `evals/runs` and
-    `evals/calibration` would no longer be kept out.
-  - Check 1 names all of them, so an untracked `Dockerfile.dockerignore` prints `??`. And
-    neither build (checks 2 and 7) runs while that file exists.
-  - **Check 1 shows only what git looks at, so check 1b shows what git has been told not to
-    look at** (the author's ruling, 23 Nov 2026). A tracked file marked `assume-unchanged` or
-    `skip-worktree` can be edited with nothing in `git status`, and that includes
-    `.dockerignore` itself: check 1 would pass while the build reads an edited ignore file.
-    Check 1b lists every file so marked among the same paths as check 1. If it prints a line,
-    the build must not go ahead.
+  checkout of the commit it names (checks 1 and 1b below; slice 3's runbook).
+  - **The rule: no image is pushed unless check 5 has passed on that same image, identified by
+    its image ID, after its last build** (the author's ruling, 23 Nov 2026, after Codex's
+    re-check of PR #10). Check 5 looks inside the built image and does not depend on git. It is
+    the control for ADR-011's condition: neither protected folder is in an image "before any
+    image is pushed to a registry".
+  - **Checks 0 to 1b and the build guards catch mistakes early. They are not the control.** They
+    read git's view of the working folder, and local git configuration can change that view in
+    more ways than a list can cover ("Known limits", below).
+  - What they catch. The files in the working folder that decide what the builder reads are the
+    `Dockerfile`, `.dockerignore`, `requirements-eval.txt`, the four copied folders, and
+    `Dockerfile.dockerignore`. The last is not tracked and must not exist: when it does, the
+    builder reads it **instead of** `.dockerignore` (Codex P1, PR #10).
+    - Check 1 names all of them, and lists untracked files whatever `status.showUntrackedFiles`
+      says (Codex P3, re-check of PR #10). An untracked `Dockerfile.dockerignore` prints `??`.
+    - Check 1b lists every file marked `assume-unchanged` or `skip-worktree`. Git does not look
+      at such a file, so check 1 cannot show an edit to it, `.dockerignore` included (the
+      author's ruling, 23 Nov 2026). If it prints a line, the build must not go ahead.
+    - The build guards (checks 2 and 7) build nothing while a `Dockerfile.dockerignore` exists,
+      and nothing unless the raw bytes of the `Dockerfile` and of `.dockerignore` are the
+      commit's. The bytes are hashed with no filter and no encoding applied, because a
+      `working-tree-encoding` attribute or a filter can make a changed file compare clean
+      (Codex P1, re-check of PR #10).
 - **The task definition must not set `WS7_GIT_COMMIT`** (slice 3). An override there would let a
   task claim a commit its image was not built from.
 
@@ -2090,12 +2098,14 @@ the author's machine only (the checks below); the pull request records what they
     never uses it: the entrypoint always hands the runners a temporary `runs_dir`.
 - The file has no `!` line, and there is no `Dockerfile.dockerignore`, which the builder would
   read instead of `.dockerignore`. The test pins both.
-- **A build does not run the test, so the build has two guards of its own** (Codex P1, PR #10).
-  An untracked `Dockerfile.dockerignore` in the working folder would replace `.dockerignore`
-  for that build, whatever the commit holds. Check 1's pathspec names the file, so it prints
-  `??`; and checks 2 and 7 build nothing while it exists. Both guards are part of every
-  build of this image, slice 3's included. So is check 1b, which shows that `.dockerignore`
-  itself is not hidden from check 1 by a git flag ("The commit", above).
+- **A build does not run the test, so the build procedure has guards of its own, and one
+  control** (Codex P1, PR #10, and its re-check).
+  - The guards: check 1 names `Dockerfile.dockerignore`, so an untracked one prints `??`; check
+    1b shows that no file, `.dockerignore` included, is hidden from check 1 by a git flag; and
+    neither build runs while a `Dockerfile.dockerignore` exists, or unless the raw bytes of
+    `.dockerignore` are the commit's.
+  - The control: check 5 looks for both folders inside the built image, and no image is pushed
+    unless it has passed on that image ("The commit", above).
 
 ### The default command
 
@@ -2150,28 +2160,65 @@ The `Dockerfile` header said "No AWS calls". It now says:
 No command here pushes anything or needs AWS, and every `docker run` is `--network none`.
 
 - Run it from the repository's root: every path in it is relative to that folder.
-- **Every file in the working folder that decides what the builder reads is either shown by
-  check 1 or stops the build** ("The commit", above). Checks 2 and 7 build only if
-  `Dockerfile.dockerignore` does not exist. Otherwise each prints one `STOP` line and builds
-  nothing.
+- **The rule: no image is pushed unless check 5 has passed on that same image, identified by its
+  image ID, after its last build.** Check 5 prints the image ID it ran against. A rebuild makes
+  another image, and check 5 is run again on it. Nothing in part 6 pushes. Slice 3's push is a
+  guarded step that runs check 5 against the image ID it pushes.
+- **Checks 0 to 1b and the build guards catch mistakes early. They are not the control**
+  ("Known limits", below).
 - **Check 1 counts only if check 1b prints nothing.** A file that 1b prints is one git does not
   look at, so check 1 cannot show an edit to it. Do not build: clear the flag, and start again
   from check 1.
-- **If a build prints `STOP`, stop there.** Remove the file, and start again from check 1. The
+- **The build guards.** `ok_to_build` is defined once, at the top of the block, and checks 2 and
+  7 build only if it passes. Otherwise it prints one `STOP` line and nothing is built. It stops:
+  - when `$C` is not a 40-character commit;
+  - when a `Dockerfile.dockerignore` exists (a dangling symlink counts);
+  - when git cannot find the `Dockerfile` or `.dockerignore` in that commit, or cannot hash the
+    file. **Each git command is checked for success before its output is compared**: two failed
+    commands print two empty strings, which are equal;
+  - when the raw bytes of either file are not that commit's.
+- **If a build prints `STOP`, stop there.** Put the cause right, and start again from check 1. The
   later checks would otherwise run against an older image, or none.
 
 ```zsh
 C=$(git rev-parse HEAD); IMG=discharge-eval:ws7-p6
 
+# The build guards, used by checks 2 and 7. Prints one STOP line and returns 1 unless:
+# $C is a 40-character commit; there is no Dockerfile.dockerignore; and the raw bytes of
+# the Dockerfile and of .dockerignore are that commit's (no filter and no encoding
+# applied). Each git command is checked before its output is compared.
+ok_to_build() {
+  local f want have hex='^[0-9a-f]{40}$'
+  if ! [[ "$C" =~ $hex ]]; then
+    echo "STOP: \$C is not a 40-character commit. Nothing was built."; return 1
+  fi
+  if [ -e Dockerfile.dockerignore ] || [ -L Dockerfile.dockerignore ]; then
+    echo "STOP: Dockerfile.dockerignore exists. The builder would read it instead of .dockerignore. Nothing was built."; return 1
+  fi
+  for f in Dockerfile .dockerignore; do
+    if ! want=$(git rev-parse --verify --quiet "$C:$f" 2>/dev/null) || [ -z "$want" ]; then
+      echo "STOP: git cannot find $f in commit $C. Nothing was built."; return 1
+    fi
+    if ! have=$(git hash-object --no-filters -- "$f" 2>/dev/null) || [ -z "$have" ]; then
+      echo "STOP: git cannot hash the file $f. Nothing was built."; return 1
+    fi
+    if [ "$want" != "$have" ]; then
+      echo "STOP: the bytes of $f are not the ones in commit $C. Nothing was built."; return 1
+    fi
+  done
+  return 0
+}
+
 # 0. No tracked file is dropped by a credential pattern in .dockerignore. Prints nothing.
 git ls-files -- src prompts evals tests ':(exclude)evals/runs' ':(exclude)evals/calibration' \
   | grep -E 'secret|credential|\.key$|\.pem$|\.p12$|/\.env|samconfig|/\.aws/'
 
-# 1. A clean tree. Prints nothing, or only "!!" lines for __pycache__ or .DS_Store,
-#    which .dockerignore drops. A Dockerfile.dockerignore prints "??" (or "!!"):
-#    remove it before going on.
-git status --porcelain --ignored -- Dockerfile .dockerignore Dockerfile.dockerignore \
-  requirements-eval.txt src prompts evals tests \
+# 1. A clean tree. Prints nothing, or only "!!" lines for files under __pycache__ or
+#    for .DS_Store, which .dockerignore drops. A Dockerfile.dockerignore prints "??"
+#    (or "!!"): remove it before going on. Untracked files are listed whatever
+#    status.showUntrackedFiles says.
+git status --porcelain --ignored --untracked-files=all -- Dockerfile .dockerignore \
+  Dockerfile.dockerignore requirements-eval.txt src prompts evals tests \
   ':(exclude)evals/runs' ':(exclude)evals/calibration'
 
 # 1b. No tracked file is hidden from check 1. Prints nothing.
@@ -2186,11 +2233,9 @@ git ls-files -v -- Dockerfile .dockerignore Dockerfile.dockerignore \
   requirements-eval.txt src prompts evals tests \
   ':(exclude)evals/runs' ':(exclude)evals/calibration' | grep -E '^[[:lower:]S] '
 
-# 2. The build, only if there is no Dockerfile.dockerignore.
+# 2. The build, only if the guards pass (otherwise one STOP line).
 #    Ends "naming to docker.io/library/discharge-eval:ws7-p6". Nothing is pushed.
-if [ -e Dockerfile.dockerignore ] || [ -L Dockerfile.dockerignore ]; then
-  echo "STOP: Dockerfile.dockerignore exists. The builder would read it instead of .dockerignore. Nothing was built."
-else
+if ok_to_build; then
   docker build --platform linux/arm64 --build-arg WS7_GIT_COMMIT=$C -t $IMG .
 fi
 
@@ -2200,19 +2245,25 @@ docker run --rm --network none $IMG; echo "exit $?"
 # 4. The commit in the image is the commit built from. Prints "same".
 [ "$(docker run --rm --network none $IMG printenv WS7_GIT_COMMIT)" = "$C" ] && echo same
 
-# 5. Four "absent" lines, then five names, one a line:
-#    evals, prompts, requirements-eval.txt, src, tests
-docker run --rm --network none $IMG sh -c \
-  'for d in evals/runs evals/calibration docs infra; do [ -e $d ] && echo "PRESENT $d" || echo "absent $d"; done; ls'
+# 5. THE CONTROL: what the image holds. No image is pushed unless this has passed on
+#    that same image, after its last build. Prints "image" and the image ID it runs
+#    against; then four "absent" lines; then five names, one a line: evals, prompts,
+#    requirements-eval.txt, src, tests. A symlink counts as present. A "PRESENT"
+#    line or a STOP line is a failure.
+if ID=$(docker image inspect --format '{{.Id}}' $IMG) && [ -n "$ID" ]; then
+  echo "image $ID"
+  docker run --rm --network none "$ID" sh -c \
+    'for d in evals/runs evals/calibration docs infra; do if [ -e "$d" ] || [ -L "$d" ]; then echo "PRESENT $d"; else echo "absent $d"; fi; done; ls'
+else
+  echo "STOP: there is no image $IMG to check."
+fi
 
 # 6. No arguments: the one fixed usage line ("Running it", part 5a), then "exit 2".
 docker run --rm --network none $IMG python evals/ws7_entry.py; echo "exit $?"
 
-# 7. Built without the argument, only if there is no Dockerfile.dockerignore.
+# 7. Built without the argument, only if the guards pass (otherwise one STOP line).
 #    Every RUN and COPY step shows CACHED. Prints ''
-if [ -e Dockerfile.dockerignore ] || [ -L Dockerfile.dockerignore ]; then
-  echo "STOP: Dockerfile.dockerignore exists. The builder would read it instead of .dockerignore. Nothing was built."
-else
+if ok_to_build; then
   docker build --platform linux/arm64 -t discharge-eval:ws7-noarg .
 fi
 docker run --rm --network none discharge-eval:ws7-noarg \
@@ -2234,6 +2285,23 @@ docker image inspect --format '{{.Architecture}} {{.Config.User}}' $IMG
 #     Dockerfile sets (PYTHON..., PIP_...) and the base image's own.
 docker image inspect --format '{{range .Config.Env}}{{println .}}{{end}}' $IMG | cut -d= -f1
 ```
+
+### Known limits
+
+From Codex's review and re-check of PR #10, and the author's ruling of 23 Nov 2026.
+
+- **The checks before the build rely on git's view of the working folder, and local git
+  configuration can change that view**: an encoding attribute, a filter, a flag on a file, a
+  setting that hides untracked files. Each case found so far has a guard above. A list of guards
+  cannot be shown to be complete, so none of them is the control.
+- **For the protected folders, check 5 at the push is the control.** It reads the image, not
+  git: no image is pushed unless check 5 has passed on that same image, identified by its image
+  ID, after its last build.
+- **For the commit label on every copied file, part 6 has no control.** Checks 1 and 1b are what
+  the author's machine has. Slice 3's runbook builds from a clean export of the commit, with the
+  machine's git configuration isolated.
+- Check 5 has been written and read, and its loop tried on a folder outside any image. What a
+  real image prints is seen only when the author runs it.
 
 ### What part 6 does not do
 
@@ -2428,12 +2496,17 @@ fixing them changes the test file (the author's ruling, 23 Nov 2026):
 - The image is built from a clean checkout of the release commit, for `linux/arm64`, with
   `--build-arg WS7_GIT_COMMIT` (part 6, "Building and checking it"). The set-up checks show
   that the pushed image's `WS7_GIT_COMMIT` is the release commit and its architecture is arm64.
-  - **The runbook's build keeps all three of part 6's guards** (Codex P1, PR #10; the author's
-    rulings, 23 Nov 2026): check 1, with `Dockerfile.dockerignore` in its pathspec, shows
-    nothing; check 1b shows no file marked `assume-unchanged` or `skip-worktree`, so nothing
-    is hidden from check 1; and the build runs only if `Dockerfile.dockerignore` does not
-    exist. Every file in the working folder that decides what the builder reads is either
-    shown by check 1 or stops the build.
+  - **The push is a guarded step: it runs part 6's check 5 against the image ID it pushes, and
+    pushes nothing unless that passes** (the author's ruling, 23 Nov 2026, after Codex's re-check
+    of PR #10). No image is pushed unless check 5 has passed on that same image, identified by
+    its image ID, after its last build. That is the control for the protected folders.
+  - **The runbook builds from a clean export of the release commit, with the machine's git
+    configuration isolated**, so that the commit label is true of every copied file. Part 6's
+    checks 0 to 1b and its build guards read git's view of a working folder, which local
+    configuration can change (part 6, "Known limits"). The runbook keeps what still applies as
+    early checks, not as the control: the clean-tree checks 1 and 1b wherever it builds from a
+    working folder, and no build while a `Dockerfile.dockerignore` exists or unless the raw
+    bytes of the `Dockerfile` and `.dockerignore` are the commit's.
 
 ## Tests
 

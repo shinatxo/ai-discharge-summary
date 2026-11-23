@@ -20,14 +20,18 @@ go/no-go is no failed generation, only the expected files and a cost within its 
 a v1 gate failure is not in it; and each metric is published at most once per run, with what
 was delivered before a later failure left to stand; and a `RunOk` = 1 that CloudWatch rejects
 fails the run, with a failed record; and once a run has failed, a file that may not be stored
-is left out and counted, and does not stop the rest.
+is left out and counted, and does not stop the rest. Updated 23 Nov 2026 with the ruling on
+part 6: the image's default command is the nine WS7 test files, and the full suite stays with
+CI and the author's machine.
 
 This is a design. Slice 1, the offline comparator, is built (`docs/WS7-COMPARATOR.md`). Of slice 2,
-parts 1 to 4 and part 5a are built (`docs/WS7-ENTRYPOINT.md`): the client wrapper and the
+parts 1 to 4, part 5a and part 6 are built (`docs/WS7-ENTRYPOINT.md`): the client wrapper and the
 reservation; the claim, the ledger, the match check and the run manifest; the follow-ups from the
-reviews of PR #4 and PR #6; the run summary and the candidate baseline; and the entrypoint's
-scheduled run and Thursday check, with the comparator call and publishing. Part 5b (the manual
-baseline, the manual confirm and the resolve command) and part 6 (the image) are not built.
+reviews of PR #4 and PR #6; the run summary and the candidate baseline; the entrypoint's
+scheduled run and Thursday check, with the comparator call and publishing; and the image
+changes (the commit as a build argument with no default, `evals/calibration` kept out of the
+image, the header, and the default command). Part 5b (the manual baseline, the manual confirm
+and the resolve command) is not built. No image has been pushed to a registry.
 Nothing is deployed or run. Every deploy, and every run that costs
 money, needs the author's explicit yes at the time. No number in a breach rule is set here: the
 author sets them before the first live run, and they change only by pull request.
@@ -1032,6 +1036,15 @@ limit, and the figures are provisional until the baseline.
   none of the scripts the job runs, nor anything they import, names that folder; the scripts that
   do are the calibration and blind-sheet tools. The same pull request must confirm that the
   image's test command still passes, or give the job its own build target.
+  - **As built (part 6; the author's ruling, 23 Nov 2026):** `.dockerignore` excludes
+    `evals/calibration`, and a search of `tests/` and `evals/` at `3d5214e` found the same as the
+    17 Nov search. The image's old test command, `pytest tests/`, could not pass, for reasons
+    that came before this change and are not about that folder: six test files read `infra/`,
+    or read a saved run with no skip, and neither is in the image. So **the image's default
+    command is the nine WS7 test files**, which read neither; the full suite stays with CI and
+    the author's machine. The job was not given a build target of its own: the image that is
+    tested is the image that is pushed, at the same digest. `tests/test_image_files.py` pins
+    the two files on the checkout (`docs/WS7-ENTRYPOINT.md`, "Part 6: the image").
 - The `Dockerfile` header says "No AWS calls". That stops being true.
 - `PYTHONHASHSEED=0` is set in the task definition. `evals/score_batch.py` is left as it is.
 - `docs/COST.md` gains the eval stack.

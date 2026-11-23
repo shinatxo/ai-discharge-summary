@@ -12,9 +12,10 @@ each one.
 | 4 | The run summary and the candidate baseline | **Built** |
 | 5a | The scheduled run, the Thursday check, the comparator call and publishing | **Built** |
 | 5b | The manual baseline, the manual confirm and the resolve command | Not built |
-| 6 | The image changes | Not built |
+| 6 | The image changes | **Built** |
 
-Nothing here makes an AWS call or a model call, and nothing has been deployed or run live.
+Nothing here makes an AWS call or a model call, and nothing has been deployed or run live. No
+image has been pushed to a registry.
 Every reply, usage figure and request text in the tests is invented.
 
 ## Part 1: the client wrapper and the reservation
@@ -844,12 +845,14 @@ it is given, and asks no metadata endpoint.
 
 | Variable | Value | Set by |
 |---|---|---|
-| `WS7_GIT_COMMIT` | The 40-character commit the image was built from | A build argument in the `Dockerfile` (part 6) |
+| `WS7_GIT_COMMIT` | The 40-character commit the image was built from | The image: a build argument in the `Dockerfile`, with no default (part 6). **Never the task definition** |
 | `WS7_IMAGE_DIGEST` | `sha256:` and 64 hex characters | The ECS task definition, beside the image reference, which pins the image by the same digest (slice 3) |
 
 - A run with either missing or malformed is refused: `ws7_identity_missing`.
 - The digest is the deployer's statement. Slice 3's set-up check compares it with the task
   definition's image reference.
+- The commit is the builder's statement: the image is built from a clean checkout of the commit
+  it names (part 6, "The commit").
 
 ### Refusals
 
@@ -1281,7 +1284,8 @@ python evals/ws7_entry.py check     --target v1 --scheduled-time 2026-12-17T10:0
 | From | What |
 |---|---|
 | The schedule, as arguments | The mode (the subcommand), `--target`, `--scheduled-time` |
-| The task definition, as environment variables | `WS7_BUCKET`, `WS7_ALERT_TOPIC_ARN`, `WS7_GIT_COMMIT`, `WS7_IMAGE_DIGEST` |
+| The task definition, as environment variables | `WS7_BUCKET`, `WS7_ALERT_TOPIC_ARN`, `WS7_IMAGE_DIGEST` |
+| The image, set when it is built | `WS7_GIT_COMMIT` (part 6). The task definition must not set it |
 
 - There is no argument for an endpoint, a bucket, a baseline, rules, config or corpus path, a
   clock or a mode. Any other command line is a usage error: exit code 2, and nothing is built or
@@ -2034,6 +2038,160 @@ with the task role:
 - real error shapes, throttling and size limits for both services;
 - that a `.md` object is stored and served as Markdown on the real bucket.
 
+## Part 6: the image
+
+Two files change, `Dockerfile` and `.dockerignore`, and one test file is new,
+`tests/test_image_files.py`. No file in `evals/` or `src/` is changed. **No image has been pushed
+to a registry, and nothing has been deployed or run.** The image is built and checked by hand, on
+the author's machine only (the checks below); the pull request records what they printed.
+
+### The commit
+
+- The `Dockerfile` declares `ARG WS7_GIT_COMMIT` and sets the environment variable
+  `WS7_GIT_COMMIT` from it (ADR-011 D11).
+- **There is no default.** An image built without `--build-arg WS7_GIT_COMMIT=…` has the variable
+  set and empty, and the job refuses to run: `ws7_identity_missing`. It never carries a made-up
+  commit. `tests/test_ws7_manifest.py::test_a_run_with_the_commit_or_the_digest_missing_or_malformed_is_refused`
+  has that case, an empty commit beside a valid digest, with a valid pair as its control.
+- **The argument and the variable come after every `RUN` and `COPY`.** A changed build argument is
+  a cache miss for every `RUN` after it, and a changed `ENV` for every layer after it. Placed
+  last, a new commit reinstalls no pin and recopies no folder.
+- **The commit is the builder's statement**, as the digest is the deployer's. `COPY` takes
+  whatever is in the folders it names, tracked by git or not, so the image is built from a clean
+  checkout of the commit it names (check 1 below; slice 3's runbook).
+- **The task definition must not set `WS7_GIT_COMMIT`** (slice 3). An override there would let a
+  task claim a commit its image was not built from.
+
+### The ignore file
+
+- `.dockerignore` now excludes `evals/calibration`, beside `evals/runs` (ADR-011, "What has to
+  change in implementation pull requests").
+- Nothing the job runs reads either folder. `tests/` and `evals/` were searched at `3d5214e` for
+  the two path strings; the folders themselves were not opened or listed.
+  - `evals/calibration` is named by the calibration and blind-sheet tools, as their default
+    paths (`calibrate_verifier.py`, `make_blind_sheets.py`, `make_compose_sheets.py`,
+    `make_patient_sheets.py`), and by one test, which skips when the folder is absent
+    (`tests/test_make_patient_sheets.py:48`). No module the job loads imports any of those tools.
+  - `evals/runs` is the runners' default output root (`evals/run_cold_eval.py:105`). The job
+    never uses it: the entrypoint always hands the runners a temporary `runs_dir`.
+- The file has no `!` line, and there is no `Dockerfile.dockerignore`, which the builder would
+  read instead of `.dockerignore`. The test pins both.
+
+### The default command
+
+**The default command is the nine WS7 test files (the author's ruling, 23 Nov 2026).** The full
+suite runs in CI and on the author's machine, not in the image.
+
+- Why: `pytest tests/` cannot pass in the image. This was found by reading the tests at `3d5214e`,
+  before part 6 changed anything; no image was built to show it.
+
+  | What stops it | Where |
+  |---|---|
+  | A collection error, which ends pytest before any test runs: the module loads `infra/trace_query.py` at import, and `infra/` is not in the image | `tests/test_trace_query.py:25-27` |
+  | Tests that read `infra/template.yaml` | `tests/test_template_trace.py`; `tests/test_worker.py:452` and `:462` |
+  | Tests that read a saved run and have no skip | `tests/test_pipeline_orchestrate.py:614`; `tests/test_score_meds.py:157` (8 cases); `tests/test_score_safety_net.py:117` (4 cases) |
+
+  The last two were already there when the image was made (`8c78790`, 26 Oct 2026), and nothing
+  in CI builds the image. Excluding `evals/calibration` is not among the causes: it turns one
+  test into a skip.
+- The nine files are the job's own tests: the real runners, scorers and comparator against local
+  fakes on `127.0.0.1`. They and their helpers read nothing from `docs/`, `infra/` or
+  `evals/runs`, and none has a skip marker, so in the image every test is expected to pass and
+  none to be skipped.
+- The image that is tested is the image that is pushed, at the same digest. ADR-011's
+  alternative, a build target of its own for the job, was not taken: it would keep a second
+  stage whose full-suite command still fails, or push an image that cannot test itself.
+- **It stays a `CMD`, not an `ENTRYPOINT`.** The ECS task's `command` replaces a `CMD` whole, and
+  a bare `docker run` stays offline and harmless.
+- `tests/test_image_files.py` fails if the command's list and `tests/test_ws7_*.py` on disk
+  differ either way, so a tenth WS7 test file cannot be left out of the image's command.
+- **A follow-up, not in this part:** skip guards in those six test files, so that the full suite
+  could run in the image with no mounts.
+
+### The header
+
+The `Dockerfile` header said "No AWS calls". It now says:
+
+- the default command runs the nine WS7 test files (the full suite runs in CI), offline;
+- the ECS task (slice 3) overrides the command to run `evals/ws7_entry.py`, which calls Bedrock,
+  S3, SSM, CloudWatch and SNS with the task role;
+- no credentials are ever baked in.
+
+### Unchanged
+
+- `python:3.13.13-slim-trixie`, the non-root `app` user (uid 10001), the five named `COPY`s and
+  their read-only modes.
+- The architecture is set by the build command (`--platform linux/arm64`), not by the
+  `Dockerfile`.
+- `PYTHONHASHSEED=0` is not in the image. The task definition sets it (ADR-011; slice 3).
+
+### Building and checking it
+
+No command here pushes anything or needs AWS, and every `docker run` is `--network none`.
+
+```zsh
+C=$(git rev-parse HEAD); IMG=discharge-eval:ws7-p6
+
+# 0. No tracked file is dropped by a credential pattern in .dockerignore. Prints nothing.
+git ls-files -- src prompts evals tests ':(exclude)evals/runs' ':(exclude)evals/calibration' \
+  | grep -E 'secret|credential|\.key$|\.pem$|\.p12$|/\.env|samconfig|/\.aws/'
+
+# 1. A clean tree. Prints nothing, or only "!!" lines for __pycache__ or .DS_Store,
+#    which .dockerignore drops.
+git status --porcelain --ignored -- Dockerfile .dockerignore requirements-eval.txt \
+  src prompts evals tests ':(exclude)evals/runs' ':(exclude)evals/calibration'
+
+# 2. The build. Ends "naming to docker.io/library/discharge-eval:ws7-p6". Nothing is pushed.
+docker build --platform linux/arm64 --build-arg WS7_GIT_COMMIT=$C -t $IMG .
+
+# 3. The default command, offline. Every test passes, none is skipped, "exit 0".
+docker run --rm --network none $IMG; echo "exit $?"
+
+# 4. The commit in the image is the commit built from. Prints "same".
+[ "$(docker run --rm --network none $IMG printenv WS7_GIT_COMMIT)" = "$C" ] && echo same
+
+# 5. Four "absent" lines, then: evals prompts requirements-eval.txt src tests
+docker run --rm --network none $IMG sh -c \
+  'for d in evals/runs evals/calibration docs infra; do [ -e $d ] && echo "PRESENT $d" || echo "absent $d"; done; ls'
+
+# 6. No arguments: the one fixed usage line ("Running it", part 5a), then "exit 2".
+docker run --rm --network none $IMG python evals/ws7_entry.py; echo "exit $?"
+
+# 7. Built without the argument. Every RUN and COPY step shows CACHED. Prints ''
+docker build --platform linux/arm64 -t discharge-eval:ws7-noarg .
+docker run --rm --network none discharge-eval:ws7-noarg \
+  python -c 'import os; print(repr(os.environ.get("WS7_GIT_COMMIT")))'
+
+# 8. identity() inside each image, with an invented digest.
+#    The first prints $C. The second prints: ws7 stop code=ws7_identity_missing
+D=sha256:$(printf '0%.0s' {1..64})
+for I in $IMG discharge-eval:ws7-noarg; do docker run --rm --network none -e WS7_IMAGE_DIGEST=$D $I python -c '
+import os, sys; sys.path.insert(0, "evals"); import ws7_manifest as wm
+try: print(wm.identity(os.environ).git_commit)
+except wm.Stop as e: print(e.line())'; done
+
+# 9. The architecture and the user. Prints: arm64 app
+docker image inspect --format '{{.Architecture}} {{.Config.User}}' $IMG
+
+# 10. The image's environment, names only. WS7_GIT_COMMIT is there; no AWS_* name,
+#     no WS7_IMAGE_DIGEST and no PYTHONHASHSEED.
+docker image inspect --format '{{range .Config.Env}}{{println .}}{{end}}' $IMG | cut -d= -f1
+```
+
+### What part 6 does not do
+
+- It pushes no image and creates no registry (slice 3).
+- It does not change `CLAUDE.md` sections (b) and (c), `docs/COST.md` or any template (slice 3).
+- It does not correct the docstring of `evals/ws7_entry.py` (lines 8 to 11), which still lists
+  the commit among the task definition's variables. No `evals/ws7_*.py` file was to change in
+  this part; part 5b changes that file and corrects it ("Notes for later parts").
+
+### What the test cannot prove
+
+`tests/test_image_files.py` reads two text files. It cannot show what a built image holds, that
+the build is for arm64, or that ECS replaces the command. The checks above show the first two on
+one machine. Slice 3's set-up checks show all three where the job runs.
+
 ## Notes for later parts
 
 ### The next PR that may change `evals/ws7_reserve.py`
@@ -2072,6 +2230,10 @@ starts; the failed record; the prefixes of success records and retained copies.
 
 ### Part 5b: the manual modes and the resolve command
 
+- **Correct the docstring of `evals/ws7_entry.py`** (lines 8 to 11). It lists `WS7_GIT_COMMIT`
+  among the variables the task definition sets. The image sets it (part 6); the task definition
+  sets the bucket, the alert topic and the image digest. Part 6 changed no `evals/ws7_*.py`
+  file, so the correction is 5b's.
 - **The yes** (the author's ruling, 20 Nov 2026; the details are for 5b's plan). A manual mode
   needs, in the invocation itself, the run ID the job derives and the reservation it computes.
   **A manual command without its yes stops with `ws7_manual_not_approved` and prints the run ID
@@ -2149,11 +2311,6 @@ starts; the failed record; the prefixes of success records and retained copies.
   only against AWS's documentation, never against real rows. (The console groups by one dimension
   at a time, hence the two steps.)
 
-### Part 6: the image
-
-- The `Dockerfile` takes the commit as a build argument and sets `WS7_GIT_COMMIT` from it
-  (part 2, "The run manifest").
-
 ### Slice 4: the baseline
 
 - **No baseline is frozen until the author has decided how adjudications are keyed** (the
@@ -2189,6 +2346,17 @@ starts; the failed record; the prefixes of success records and retained copies.
   author's own credentials.
 - **Pass `ExpectedBucketOwner` on every S3 call.** The task definition supplies the account ID,
   so a mistyped bucket name can never write into another account's bucket.
+- **The task definition must not set `WS7_GIT_COMMIT`.** The image sets it (part 6). An override
+  would let a task claim a commit its image was not built from.
+- The task definition gives the command, `python evals/ws7_entry.py` with the schedule's
+  arguments. The image's own default command is the nine WS7 test files.
+- The task definition sets `PYTHONHASHSEED=0` (ADR-011). The image does not.
+- **The task needs a writable temporary directory.** The job writes its batches under
+  `tempfile.mkdtemp()` (`evals/ws7_entry.py`), and the image's own tree is read-only for `app`.
+  So a read-only root file system needs a writable mount for it.
+- The image is built from a clean checkout of the release commit, for `linux/arm64`, with
+  `--build-arg WS7_GIT_COMMIT` (part 6, "Building and checking it"). The set-up checks show
+  that the pushed image's `WS7_GIT_COMMIT` is the release commit and its architecture is arm64.
 
 ## Tests
 
@@ -2441,6 +2609,23 @@ PYTHONDONTWRITEBYTECODE=1 python -m pytest -p no:cacheprovider -q tests/test_ws7
     the same parser built on plain argparse, which prints it. The two layers are each tested
     alone: the parser raises and prints nothing with the streams open, and `main` shows nothing
     even of a parser that prints.
+
+- `tests/test_image_files.py` (part 6) is **not one of the nine**, and the image's command never
+  runs it. It checks the checkout, not the image, and it never skips: the `Dockerfile` is not in
+  the image, and a skip-if-absent would pass silently in CI if a path were wrong. It reads
+  `Dockerfile` and `.dockerignore` and pins five things, each as a whole class:
+  - the commit argument has no default: one bare `ARG`, one `ENV` set from it and from nothing
+    else, and no other instruction names the variable;
+  - both come after the last `RUN` and `COPY`, the `ENV` after the `ARG`, in one stage;
+  - `evals/runs` and `evals/calibration` are both ignored, the file has no `!` line, and there
+    is no `Dockerfile.dockerignore`;
+  - every `COPY` is one of the five named ones, exactly, so there is no `COPY .`; no `ADD` or
+    other instruction the test does not read; no `RUN` that mounts the build context;
+  - the `CMD` is pytest on exactly `tests/test_ws7_*.py` as they are on disk, both ways.
+
+  ```zsh
+  PYTHONDONTWRITEBYTECODE=1 python -m pytest -p no:cacheprovider -q tests/test_image_files.py
+  ```
 
 **Keeping the tests offline.** Every test in the three part 2 files, the part 4 file and the two part 5a files uses `offline_aws`, and every
 client they build points at a fake on `127.0.0.1` or is never called. The `offline_aws` fixture:

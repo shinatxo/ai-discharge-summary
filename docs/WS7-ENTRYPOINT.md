@@ -2067,6 +2067,12 @@ the author's machine only (the checks below); the pull request records what they
     `evals/calibration` would no longer be kept out.
   - Check 1 names all of them, so an untracked `Dockerfile.dockerignore` prints `??`. And
     neither build (checks 2 and 7) runs while that file exists.
+  - **Check 1 shows only what git looks at, so check 1b shows what git has been told not to
+    look at** (the author's ruling, 23 Nov 2026). A tracked file marked `assume-unchanged` or
+    `skip-worktree` can be edited with nothing in `git status`, and that includes
+    `.dockerignore` itself: check 1 would pass while the build reads an edited ignore file.
+    Check 1b lists every file so marked among the same paths as check 1. If it prints a line,
+    the build must not go ahead.
 - **The task definition must not set `WS7_GIT_COMMIT`** (slice 3). An override there would let a
   task claim a commit its image was not built from.
 
@@ -2088,7 +2094,8 @@ the author's machine only (the checks below); the pull request records what they
   An untracked `Dockerfile.dockerignore` in the working folder would replace `.dockerignore`
   for that build, whatever the commit holds. Check 1's pathspec names the file, so it prints
   `??`; and checks 2 and 7 build nothing while it exists. Both guards are part of every
-  build of this image, slice 3's included.
+  build of this image, slice 3's included. So is check 1b, which shows that `.dockerignore`
+  itself is not hidden from check 1 by a git flag ("The commit", above).
 
 ### The default command
 
@@ -2147,6 +2154,9 @@ No command here pushes anything or needs AWS, and every `docker run` is `--netwo
   check 1 or stops the build** ("The commit", above). Checks 2 and 7 build only if
   `Dockerfile.dockerignore` does not exist. Otherwise each prints one `STOP` line and builds
   nothing.
+- **Check 1 counts only if check 1b prints nothing.** A file that 1b prints is one git does not
+  look at, so check 1 cannot show an edit to it. Do not build: clear the flag, and start again
+  from check 1.
 - **If a build prints `STOP`, stop there.** Remove the file, and start again from check 1. The
   later checks would otherwise run against an older image, or none.
 
@@ -2163,6 +2173,18 @@ git ls-files -- src prompts evals tests ':(exclude)evals/runs' ':(exclude)evals/
 git status --porcelain --ignored -- Dockerfile .dockerignore Dockerfile.dockerignore \
   requirements-eval.txt src prompts evals tests \
   ':(exclude)evals/runs' ':(exclude)evals/calibration'
+
+# 1b. No tracked file is hidden from check 1. Prints nothing.
+#     A printed line is a file git has been told not to look at: a lower-case tag
+#     ("h") is assume-unchanged, "S" is skip-worktree, "s" is both. Check 1 cannot
+#     show an edit to such a file, so THE BUILD MUST NOT GO AHEAD. Clear the flag,
+#     each kind with its own command (one command does not clear both):
+#       git update-index --no-assume-unchanged <file>
+#       git update-index --no-skip-worktree <file>
+#     then start again from check 1.
+git ls-files -v -- Dockerfile .dockerignore Dockerfile.dockerignore \
+  requirements-eval.txt src prompts evals tests \
+  ':(exclude)evals/runs' ':(exclude)evals/calibration' | grep -E '^[[:lower:]S] '
 
 # 2. The build, only if there is no Dockerfile.dockerignore.
 #    Ends "naming to docker.io/library/discharge-eval:ws7-p6". Nothing is pushed.
@@ -2406,10 +2428,12 @@ fixing them changes the test file (the author's ruling, 23 Nov 2026):
 - The image is built from a clean checkout of the release commit, for `linux/arm64`, with
   `--build-arg WS7_GIT_COMMIT` (part 6, "Building and checking it"). The set-up checks show
   that the pushed image's `WS7_GIT_COMMIT` is the release commit and its architecture is arm64.
-  - **The runbook's build keeps both of part 6's guards** (Codex P1, PR #10): check 1, with
-    `Dockerfile.dockerignore` in its pathspec, shows nothing; and the build runs only if
-    `Dockerfile.dockerignore` does not exist. Every file in the working folder that decides
-    what the builder reads is either shown by that check or stops the build.
+  - **The runbook's build keeps all three of part 6's guards** (Codex P1, PR #10; the author's
+    rulings, 23 Nov 2026): check 1, with `Dockerfile.dockerignore` in its pathspec, shows
+    nothing; check 1b shows no file marked `assume-unchanged` or `skip-worktree`, so nothing
+    is hidden from check 1; and the build runs only if `Dockerfile.dockerignore` does not
+    exist. Every file in the working folder that decides what the builder reads is either
+    shown by check 1 or stops the build.
 
 ## Tests
 

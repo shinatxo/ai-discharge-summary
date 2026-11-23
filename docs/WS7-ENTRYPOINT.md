@@ -2150,7 +2150,8 @@ docker run --rm --network none $IMG; echo "exit $?"
 # 4. The commit in the image is the commit built from. Prints "same".
 [ "$(docker run --rm --network none $IMG printenv WS7_GIT_COMMIT)" = "$C" ] && echo same
 
-# 5. Four "absent" lines, then: evals prompts requirements-eval.txt src tests
+# 5. Four "absent" lines, then five names, one a line:
+#    evals, prompts, requirements-eval.txt, src, tests
 docker run --rm --network none $IMG sh -c \
   'for d in evals/runs evals/calibration docs infra; do [ -e $d ] && echo "PRESENT $d" || echo "absent $d"; done; ls'
 
@@ -2174,7 +2175,8 @@ except wm.Stop as e: print(e.line())'; done
 docker image inspect --format '{{.Architecture}} {{.Config.User}}' $IMG
 
 # 10. The image's environment, names only. WS7_GIT_COMMIT is there; no AWS_* name,
-#     no WS7_IMAGE_DIGEST and no PYTHONHASHSEED.
+#     no WS7_IMAGE_DIGEST and no PYTHONHASHSEED. The other names are the four this
+#     Dockerfile sets (PYTHON..., PIP_...) and the base image's own.
 docker image inspect --format '{{range .Config.Env}}{{println .}}{{end}}' $IMG | cut -d= -f1
 ```
 

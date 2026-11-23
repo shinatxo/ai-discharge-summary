@@ -1046,6 +1046,9 @@ limit, and the figures are provisional until the baseline.
     tested is the image that is pushed, at the same digest. `tests/test_image_files.py` pins
     the two files on the checkout (`docs/WS7-ENTRYPOINT.md`, "Part 6: the image").
 - The `Dockerfile` header says "No AWS calls". That stops being true.
+  - **As built (part 6):** the header says the default command runs the nine WS7 test files,
+    offline; the ECS task (slice 3) overrides it to run `evals/ws7_entry.py`, which calls
+    Bedrock, S3, SSM, CloudWatch and SNS with the task role; and no credentials are baked in.
 - `PYTHONHASHSEED=0` is set in the task definition. `evals/score_batch.py` is left as it is.
 - `docs/COST.md` gains the eval stack.
 - `docs/WS4-SAFETY-INCIDENT-LOG.md` gains the alarm route, the rule that the alarm time is the

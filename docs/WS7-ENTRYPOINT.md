@@ -2059,6 +2059,14 @@ the author's machine only (the checks below); the pull request records what they
 - **The commit is the builder's statement**, as the digest is the deployer's. `COPY` takes
   whatever is in the folders it names, tracked by git or not, so the image is built from a clean
   checkout of the commit it names (check 1 below; slice 3's runbook).
+  - **The rule: every file in the working folder that decides what the builder reads is either
+    shown by check 1 or stops the build** (Codex P1, PR #10; the author's ruling, 23 Nov 2026).
+  - Those files are the `Dockerfile`, `.dockerignore`, `requirements-eval.txt`, the four copied
+    folders, and `Dockerfile.dockerignore`. The last is not tracked and must not exist: when
+    it does, the builder reads it **instead of** `.dockerignore`, so `evals/runs` and
+    `evals/calibration` would no longer be kept out.
+  - Check 1 names all of them, so an untracked `Dockerfile.dockerignore` prints `??`. And
+    neither build (checks 2 and 7) runs while that file exists.
 - **The task definition must not set `WS7_GIT_COMMIT`** (slice 3). An override there would let a
   task claim a commit its image was not built from.
 
@@ -2076,6 +2084,11 @@ the author's machine only (the checks below); the pull request records what they
     never uses it: the entrypoint always hands the runners a temporary `runs_dir`.
 - The file has no `!` line, and there is no `Dockerfile.dockerignore`, which the builder would
   read instead of `.dockerignore`. The test pins both.
+- **A build does not run the test, so the build has two guards of its own** (Codex P1, PR #10).
+  An untracked `Dockerfile.dockerignore` in the working folder would replace `.dockerignore`
+  for that build, whatever the commit holds. Check 1's pathspec names the file, so it prints
+  `??`; and checks 2 and 7 build nothing while it exists. Both guards are part of every
+  build of this image, slice 3's included.
 
 ### The default command
 
@@ -2129,6 +2142,14 @@ The `Dockerfile` header said "No AWS calls". It now says:
 
 No command here pushes anything or needs AWS, and every `docker run` is `--network none`.
 
+- Run it from the repository's root: every path in it is relative to that folder.
+- **Every file in the working folder that decides what the builder reads is either shown by
+  check 1 or stops the build** ("The commit", above). Checks 2 and 7 build only if
+  `Dockerfile.dockerignore` does not exist. Otherwise each prints one `STOP` line and builds
+  nothing.
+- **If a build prints `STOP`, stop there.** Remove the file, and start again from check 1. The
+  later checks would otherwise run against an older image, or none.
+
 ```zsh
 C=$(git rev-parse HEAD); IMG=discharge-eval:ws7-p6
 
@@ -2137,12 +2158,19 @@ git ls-files -- src prompts evals tests ':(exclude)evals/runs' ':(exclude)evals/
   | grep -E 'secret|credential|\.key$|\.pem$|\.p12$|/\.env|samconfig|/\.aws/'
 
 # 1. A clean tree. Prints nothing, or only "!!" lines for __pycache__ or .DS_Store,
-#    which .dockerignore drops.
-git status --porcelain --ignored -- Dockerfile .dockerignore requirements-eval.txt \
-  src prompts evals tests ':(exclude)evals/runs' ':(exclude)evals/calibration'
+#    which .dockerignore drops. A Dockerfile.dockerignore prints "??" (or "!!"):
+#    remove it before going on.
+git status --porcelain --ignored -- Dockerfile .dockerignore Dockerfile.dockerignore \
+  requirements-eval.txt src prompts evals tests \
+  ':(exclude)evals/runs' ':(exclude)evals/calibration'
 
-# 2. The build. Ends "naming to docker.io/library/discharge-eval:ws7-p6". Nothing is pushed.
-docker build --platform linux/arm64 --build-arg WS7_GIT_COMMIT=$C -t $IMG .
+# 2. The build, only if there is no Dockerfile.dockerignore.
+#    Ends "naming to docker.io/library/discharge-eval:ws7-p6". Nothing is pushed.
+if [ -e Dockerfile.dockerignore ] || [ -L Dockerfile.dockerignore ]; then
+  echo "STOP: Dockerfile.dockerignore exists. The builder would read it instead of .dockerignore. Nothing was built."
+else
+  docker build --platform linux/arm64 --build-arg WS7_GIT_COMMIT=$C -t $IMG .
+fi
 
 # 3. The default command, offline. Every test passes, none is skipped, "exit 0".
 docker run --rm --network none $IMG; echo "exit $?"
@@ -2158,8 +2186,13 @@ docker run --rm --network none $IMG sh -c \
 # 6. No arguments: the one fixed usage line ("Running it", part 5a), then "exit 2".
 docker run --rm --network none $IMG python evals/ws7_entry.py; echo "exit $?"
 
-# 7. Built without the argument. Every RUN and COPY step shows CACHED. Prints ''
-docker build --platform linux/arm64 -t discharge-eval:ws7-noarg .
+# 7. Built without the argument, only if there is no Dockerfile.dockerignore.
+#    Every RUN and COPY step shows CACHED. Prints ''
+if [ -e Dockerfile.dockerignore ] || [ -L Dockerfile.dockerignore ]; then
+  echo "STOP: Dockerfile.dockerignore exists. The builder would read it instead of .dockerignore. Nothing was built."
+else
+  docker build --platform linux/arm64 -t discharge-eval:ws7-noarg .
+fi
 docker run --rm --network none discharge-eval:ws7-noarg \
   python -c 'import os; print(repr(os.environ.get("WS7_GIT_COMMIT")))'
 
@@ -2313,6 +2346,20 @@ starts; the failed record; the prefixes of success records and retained copies.
   only against AWS's documentation, never against real rows. (The console groups by one dimension
   at a time, hence the two steps.)
 
+### The next PR that changes `tests/test_image_files.py` or the `Dockerfile`
+
+Two findings from Codex's review of PR #10, both P3, left out of that pull request because
+fixing them changes the test file (the author's ruling, 23 Nov 2026):
+
+- **The `Dockerfile` reader's continuation rules are not BuildKit's.** `instructions()` treats
+  a line ending in a doubled backslash as a continuation, and puts a space between the
+  fragments it joins. BuildKit does neither. So a standalone `ADD`, or a `WS7_GIT_COMMIT` key
+  split across a continuation, can pass the test. Match BuildKit's continuation rules, or
+  refuse those forms, with regression cases.
+- **The ignore reader splits on every Unicode line break; Docker splits on LF only.**
+  `ignore_patterns()` uses `str.splitlines()`. Read the bytes and split on LF, with a
+  regression case.
+
 ### Slice 4: the baseline
 
 - **No baseline is frozen until the author has decided how adjudications are keyed** (the
@@ -2359,6 +2406,10 @@ starts; the failed record; the prefixes of success records and retained copies.
 - The image is built from a clean checkout of the release commit, for `linux/arm64`, with
   `--build-arg WS7_GIT_COMMIT` (part 6, "Building and checking it"). The set-up checks show
   that the pushed image's `WS7_GIT_COMMIT` is the release commit and its architecture is arm64.
+  - **The runbook's build keeps both of part 6's guards** (Codex P1, PR #10): check 1, with
+    `Dockerfile.dockerignore` in its pathspec, shows nothing; and the build runs only if
+    `Dockerfile.dockerignore` does not exist. Every file in the working folder that decides
+    what the builder reads is either shown by that check or stops the build.
 
 ## Tests
 

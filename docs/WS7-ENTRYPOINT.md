@@ -2183,6 +2183,34 @@ No command here pushes anything or needs AWS, and every `docker run` is `--netwo
   printed the image line, four `absent` lines and the five names. Any `PRESENT` or `STOP` line
   makes it non-zero, and so does a `docker run` that fails. It is a function that returns: it
   never exits the shell. The script it runs in the image is POSIX `sh`.
+- **No command in check 5 can fail and turn a match into a miss** (Codex P1, third re-check of
+  PR #10; the author's ruling, 25 Nov 2026). The standing rule: a check never tests a command
+  substitution's output without first checking that the command succeeded.
+  - **Every decision in the in-image script is made by the shell itself.** A name is matched
+    with a `case` pattern (`[Rr][Uu][Nn][Ss]` and so on), and a name that is not plain ASCII is
+    found with a bracket pattern for any byte outside space to tilde, under `LC_ALL=C`. The
+    script calls no `tr`, and has no command substitution at all.
+  - **How `dash` reads that range.** It compares each byte's value with the two ends of the
+    range, with no locale collation. On the Mac's `dash`, every byte value from 1 to 255 was
+    tried: the 95 from space to tilde are plain, the other 160 are not. The long s is the bytes
+    C5 BF in UTF-8, both outside the range. The image's `dash` has not been run by Claude, so
+    **the script tests itself first**: a mixed-case name must match, a longer one must not, a
+    plain name must be plain and `runſ` must not be. If any of the four fails, it prints `STOP`
+    and stops.
+  - **A pass is counted, not assumed.** The script ends with status 0 only if nothing bad was
+    found **and** it printed four `absent` lines **and** it counted exactly the five names.
+  - Every command, and what happens when it fails:
+
+    | Command | Where | Used for | If it fails |
+    |---|---|---|---|
+    | `docker image inspect` | `check5` | The image ID | Its status is checked first, and an empty ID is a failure too: `STOP`, status 1 |
+    | `docker run` | `check5` | Runs the script | Its status is `check5`'s status: not 0. No pass lines are printed |
+    | `sh` in the image | `docker run` | Runs the script | `docker run` fails, as above. A syntax error ends the script with a status that is not 0 |
+    | `ls -A` (the one outside command in the script) | The script | Its status only: can the folder be listed? Its output is discarded | `STOP: cannot list …`, status 1. If it wrongly succeeds on a folder that cannot be read, the glob finds nothing: `STOP: evals/ lists no entries`, or for the root the five names are not counted |
+    | The globs (`"$dir"/*` and the two dot-file forms) | The script | The names | A folder that gives no names is a `STOP`, as above |
+    | `case` | The script | Every match, and the plain-ASCII test | Built in. The self-test stops the script if patterns do not work as needed |
+    | `[`, `echo`, `printf`, `$(( ))`, `${p##*/}`, `export`, `exit`, `return`, `continue` | The script | Tests, lines, counting | Built in to `dash`. `bad=1` is set before the line is printed, so a line that could not be written does not change the status. A missed count leaves `absent` or `count` short, which is not a pass |
+    | `echo`, `local`, `[` | `check5` | Lines | Built in to `zsh` |
 - **Checks 0 to 1b and the build guards catch mistakes early. They are not the control**
   ("Known limits", below).
 - **Check 1 counts only if check 1b prints nothing.** A file that 1b prints is one git does not
@@ -2262,7 +2290,15 @@ fi
 docker run --rm --network none $IMG; echo "exit $?"
 
 # 4. The commit in the image is the commit built from. Prints "same".
-[ "$(docker run --rm --network none $IMG printenv WS7_GIT_COMMIT)" = "$C" ] && echo same
+#    The command is checked before its output is compared: a failed run, or an empty
+#    value, is a STOP, never a match.
+if ! GOT=$(docker run --rm --network none $IMG printenv WS7_GIT_COMMIT) || [ -z "$GOT" ]; then
+  echo "STOP: the image's WS7_GIT_COMMIT could not be read."
+elif [ "$GOT" = "$C" ]; then
+  echo same
+else
+  echo "DIFFERENT: the image says $GOT"
+fi
 
 # 5. THE CONTROL: what the image holds. No image is pushed unless this has passed on
 #    that same image, after its last build. A pass is ALL of: the "image" line with the
@@ -2273,32 +2309,72 @@ docker run --rm --network none $IMG; echo "exit $?"
 #    its case, with docs and infra (in /app) and runs and calibration (in /app/evals).
 #    A symlink counts. A name that is not plain ASCII is a STOP: this Mac's volume
 #    treats some such names as the same folder (a long s for the "s" in "runs").
-#    The script is POSIX sh: it runs under the image's /bin/sh.
+#    The script is POSIX sh: it runs under the image's /bin/sh. EVERY DECISION IN IT
+#    IS MADE BY THE SHELL ITSELF (case patterns, [ ], globs), so no outside tool can
+#    fail and turn a match into a miss. The one outside command is ls, asked only
+#    whether a folder can be listed; its failure is a STOP.
 CHECK5_SCRIPT='
-root=$1; bad=0
-probe() {   # probe <folder> <label> <protected name>...
-  dir=$1; label=$2; shift 2
-  if ! ls -A "$dir" >/dev/null 2>&1; then
-    echo "STOP: cannot list ${label:-the image root}"; bad=1; return
-  fi
-  seen=0; odd=0
-  for want in "$@"; do
-    found=0
-    for p in "$dir"/* "$dir"/.[!.]* "$dir"/..?*; do
-      if [ ! -e "$p" ] && [ ! -L "$p" ]; then continue; fi
-      seen=1; name=${p##*/}
-      if [ -n "$(printf %s "$name" | LC_ALL=C tr -d "[:print:]")" ]; then odd=1; continue; fi
-      if [ "$(printf %s "$name" | LC_ALL=C tr "[:upper:]" "[:lower:]")" = "$want" ]; then
-        echo "PRESENT $label$name"; found=1; bad=1
-      fi
-    done
-    if [ "$found" = 0 ]; then echo "absent $label$want"; fi
-  done
-  if [ "$odd" = 1 ]; then echo "STOP: a name in ${label:-the image root} is not plain ASCII"; bad=1; fi
-  if [ "$seen" = 0 ]; then echo "STOP: ${label:-the image root} lists no entries"; bad=1; fi
+LC_ALL=C; export LC_ALL
+root=$1; bad=0; absent=0
+
+plain() {   # is $1 made only of bytes from space to tilde?
+  case "$1" in *[!\ -~]*) return 1 ;; esac
+  return 0
 }
-probe "$root/evals" evals/ runs calibration
-probe "$root" "" docs infra
+selftest() {   # the controls: this shell matches names as the checks below need
+  case "RuNs" in [Rr][Uu][Nn][Ss]) ;; *) return 1 ;; esac
+  case "runsx" in [Rr][Uu][Nn][Ss]) return 1 ;; esac
+  if ! plain "requirements-eval.txt ~"; then return 1; fi
+  if plain "runſ"; then return 1; fi
+  return 0
+}
+if ! selftest; then
+  echo "STOP: this shell does not match names as check 5 needs"; exit 1
+fi
+
+dir=$root/evals
+if ! ls -A "$dir" >/dev/null 2>&1; then
+  bad=1; echo "STOP: cannot list evals/"
+else
+  seen=0; odd=0; runs=0; calibration=0
+  for p in "$dir"/* "$dir"/.[!.]* "$dir"/..?*; do
+    if [ ! -e "$p" ] && [ ! -L "$p" ]; then continue; fi
+    seen=1; name=${p##*/}
+    if ! plain "$name"; then bad=1; odd=1; continue; fi
+    case "$name" in
+      [Rr][Uu][Nn][Ss])
+        bad=1; runs=1; echo "PRESENT evals/$name" ;;
+      [Cc][Aa][Ll][Ii][Bb][Rr][Aa][Tt][Ii][Oo][Nn])
+        bad=1; calibration=1; echo "PRESENT evals/$name" ;;
+    esac
+  done
+  if [ "$runs" = 0 ]; then absent=$((absent + 1)); echo "absent evals/runs"; fi
+  if [ "$calibration" = 0 ]; then absent=$((absent + 1)); echo "absent evals/calibration"; fi
+  if [ "$odd" != 0 ]; then bad=1; echo "STOP: a name in evals/ is not plain ASCII"; fi
+  if [ "$seen" != 1 ]; then bad=1; echo "STOP: evals/ lists no entries"; fi
+fi
+
+dir=$root
+if ! ls -A "$dir" >/dev/null 2>&1; then
+  bad=1; echo "STOP: cannot list the image root"
+else
+  odd=0; docs=0; infra=0
+  for p in "$dir"/* "$dir"/.[!.]* "$dir"/..?*; do
+    if [ ! -e "$p" ] && [ ! -L "$p" ]; then continue; fi
+    name=${p##*/}
+    if ! plain "$name"; then bad=1; odd=1; continue; fi
+    case "$name" in
+      [Dd][Oo][Cc][Ss])
+        bad=1; docs=1; echo "PRESENT $name" ;;
+      [Ii][Nn][Ff][Rr][Aa])
+        bad=1; infra=1; echo "PRESENT $name" ;;
+    esac
+  done
+  if [ "$docs" = 0 ]; then absent=$((absent + 1)); echo "absent docs"; fi
+  if [ "$infra" = 0 ]; then absent=$((absent + 1)); echo "absent infra"; fi
+  if [ "$odd" != 0 ]; then bad=1; echo "STOP: a name in the image root is not plain ASCII"; fi
+fi
+
 count=0; other=0
 for p in "$root"/* "$root"/.[!.]* "$root"/..?*; do
   if [ ! -e "$p" ] && [ ! -L "$p" ]; then continue; fi
@@ -2309,9 +2385,14 @@ for p in "$root"/* "$root"/.[!.]* "$root"/..?*; do
   esac
 done
 if [ "$count" != 5 ] || [ "$other" != 0 ]; then
-  echo "STOP: the image root does not hold exactly the five names"; bad=1
+  bad=1; echo "STOP: the image root does not hold exactly the five names"
 fi
-exit $bad
+
+# A pass is counted, not assumed: nothing bad, four absent lines, the five names.
+if [ "$bad" = 0 ] && [ "$absent" = 4 ] && [ "$count" = 5 ] && [ "$other" = 0 ]; then
+  exit 0
+fi
+exit 1
 '
 check5() {   # check5 <image>: returns 0 only on a pass. It returns; it never exits the shell.
   local id
@@ -2370,8 +2451,9 @@ From Codex's review and re-check of PR #10, and the author's ruling of 23 Nov 20
   copy of their content under another path is a different class. That is the data rule
   (CLAUDE.md, section g), and check 1 shows an untracked file early.
 - Check 5 has been written and read, and its in-image script tried on folders outside any
-  image, under the Mac's `dash` and its own `ls` and `tr`. What a real image prints, under the
-  image's own shell and tools, is seen only when the author runs it.
+  image, under the Mac's `dash` and its own `ls`. What a real image prints, under the image's
+  own shell, is seen only when the author runs it. The script's self-test is what stops it
+  there if that shell reads a pattern differently.
 
 ### What part 6 does not do
 

@@ -12,9 +12,10 @@ each one.
 | 4 | The run summary and the candidate baseline | **Built** |
 | 5a | The scheduled run, the Thursday check, the comparator call and publishing | **Built** |
 | 5b | The manual baseline, the manual confirm and the resolve command | Not built |
-| 6 | The image changes | Not built |
+| 6 | The image changes | **Built** |
 
-Nothing here makes an AWS call or a model call, and nothing has been deployed or run live.
+Nothing here makes an AWS call or a model call, and nothing has been deployed or run live. No
+image has been pushed to a registry.
 Every reply, usage figure and request text in the tests is invented.
 
 ## Part 1: the client wrapper and the reservation
@@ -844,12 +845,14 @@ it is given, and asks no metadata endpoint.
 
 | Variable | Value | Set by |
 |---|---|---|
-| `WS7_GIT_COMMIT` | The 40-character commit the image was built from | A build argument in the `Dockerfile` (part 6) |
+| `WS7_GIT_COMMIT` | The 40-character commit the image was built from | The image: a build argument in the `Dockerfile`, with no default (part 6). **Never the task definition** |
 | `WS7_IMAGE_DIGEST` | `sha256:` and 64 hex characters | The ECS task definition, beside the image reference, which pins the image by the same digest (slice 3) |
 
 - A run with either missing or malformed is refused: `ws7_identity_missing`.
 - The digest is the deployer's statement. Slice 3's set-up check compares it with the task
   definition's image reference.
+- The commit is the builder's statement: the image is built from a clean checkout of the commit
+  it names (part 6, "The commit").
 
 ### Refusals
 
@@ -1281,7 +1284,8 @@ python evals/ws7_entry.py check     --target v1 --scheduled-time 2026-12-17T10:0
 | From | What |
 |---|---|
 | The schedule, as arguments | The mode (the subcommand), `--target`, `--scheduled-time` |
-| The task definition, as environment variables | `WS7_BUCKET`, `WS7_ALERT_TOPIC_ARN`, `WS7_GIT_COMMIT`, `WS7_IMAGE_DIGEST` |
+| The task definition, as environment variables | `WS7_BUCKET`, `WS7_ALERT_TOPIC_ARN`, `WS7_IMAGE_DIGEST` |
+| The image, set when it is built | `WS7_GIT_COMMIT` (part 6). The task definition must not set it |
 
 - There is no argument for an endpoint, a bucket, a baseline, rules, config or corpus path, a
   clock or a mode. Any other command line is a usage error: exit code 2, and nothing is built or
@@ -2034,6 +2038,437 @@ with the task role:
 - real error shapes, throttling and size limits for both services;
 - that a `.md` object is stored and served as Markdown on the real bucket.
 
+## Part 6: the image
+
+Two files change, `Dockerfile` and `.dockerignore`, and one test file is new,
+`tests/test_image_files.py`. No file in `evals/` or `src/` is changed. **No image has been pushed
+to a registry, and nothing has been deployed or run.** The image is built and checked by hand, on
+the author's machine only (the checks below); the pull request records what they printed.
+
+### The commit
+
+- The `Dockerfile` declares `ARG WS7_GIT_COMMIT` and sets the environment variable
+  `WS7_GIT_COMMIT` from it (ADR-011 D11).
+- **There is no default.** An image built without `--build-arg WS7_GIT_COMMIT=…` has the variable
+  set and empty, and the job refuses to run: `ws7_identity_missing`. It never carries a made-up
+  commit. `tests/test_ws7_manifest.py::test_a_run_with_the_commit_or_the_digest_missing_or_malformed_is_refused`
+  has that case, an empty commit beside a valid digest, with a valid pair as its control.
+- **The argument and the variable come after every `RUN` and `COPY`.** A changed build argument is
+  a cache miss for every `RUN` after it, and a changed `ENV` for every layer after it. Placed
+  last, a new commit reinstalls no pin and recopies no folder.
+- **The commit is the builder's statement**, as the digest is the deployer's. `COPY` takes
+  whatever is in the folders it names, tracked by git or not, so the image is built from a clean
+  checkout of the commit it names (checks 1 and 1b below; slice 3's runbook).
+  - **The rule: no image is pushed unless check 5 has passed on that same image, identified by
+    its image ID, after its last build** (the author's ruling, 23 Nov 2026, after Codex's
+    re-check of PR #10). Check 5 looks inside the built image and does not depend on git. It is
+    the control for ADR-011's condition: neither protected folder is in an image "before any
+    image is pushed to a registry".
+  - **Checks 0 to 1b and the build guards catch mistakes early. They are not the control.** They
+    read git's view of the working folder, and local git configuration can change that view in
+    more ways than a list can cover ("Known limits", below).
+  - What they catch. The files in the working folder that decide what the builder reads are the
+    `Dockerfile`, `.dockerignore`, `requirements-eval.txt`, the four copied folders, and
+    `Dockerfile.dockerignore`. The last is not tracked and must not exist: when it does, the
+    builder reads it **instead of** `.dockerignore` (Codex P1, PR #10).
+    - Check 1 names all of them, and lists untracked files whatever `status.showUntrackedFiles`
+      says (Codex P3, re-check of PR #10). An untracked `Dockerfile.dockerignore` prints `??`.
+    - Check 1b lists every file marked `assume-unchanged` or `skip-worktree`. Git does not look
+      at such a file, so check 1 cannot show an edit to it, `.dockerignore` included (the
+      author's ruling, 23 Nov 2026). If it prints a line, the build must not go ahead.
+    - The build guards (checks 2 and 7) build nothing while a `Dockerfile.dockerignore` exists,
+      and nothing unless the raw bytes of the `Dockerfile` and of `.dockerignore` are the
+      commit's. The bytes are hashed with no filter and no encoding applied, because a
+      `working-tree-encoding` attribute or a filter can make a changed file compare clean
+      (Codex P1, re-check of PR #10).
+- **The task definition must not set `WS7_GIT_COMMIT`** (slice 3). An override there would let a
+  task claim a commit its image was not built from.
+
+### The ignore file
+
+- `.dockerignore` now excludes `evals/calibration`, beside `evals/runs` (ADR-011, "What has to
+  change in implementation pull requests").
+- Nothing the job runs reads either folder. `tests/` and `evals/` were searched at `3d5214e` for
+  the two path strings; the folders themselves were not opened or listed.
+  - `evals/calibration` is named by the calibration and blind-sheet tools, as their default
+    paths (`calibrate_verifier.py`, `make_blind_sheets.py`, `make_compose_sheets.py`,
+    `make_patient_sheets.py`), and by one test, which skips when the folder is absent
+    (`tests/test_make_patient_sheets.py:48`). No module the job loads imports any of those tools.
+  - `evals/runs` is the runners' default output root (`evals/run_cold_eval.py:105`). The job
+    never uses it: the entrypoint always hands the runners a temporary `runs_dir`.
+- The file has no `!` line, and there is no `Dockerfile.dockerignore`, which the builder would
+  read instead of `.dockerignore`. The test pins both.
+- **A build does not run the test, so the build procedure has guards of its own, and one
+  control** (Codex P1, PR #10, and its re-check).
+  - The guards: check 1 names `Dockerfile.dockerignore`, so an untracked one prints `??`; check
+    1b shows that no file, `.dockerignore` included, is hidden from check 1 by a git flag; and
+    neither build runs while a `Dockerfile.dockerignore` exists, or unless the raw bytes of
+    `.dockerignore` are the commit's.
+  - The control: check 5 looks for both folders inside the built image, and no image is pushed
+    unless it has passed on that image ("The commit", above).
+
+### The default command
+
+**The default command is the nine WS7 test files (the author's ruling, 23 Nov 2026).** The full
+suite runs in CI and on the author's machine, not in the image.
+
+- Why: `pytest tests/` cannot pass in the image. This was found by reading the tests at `3d5214e`,
+  before part 6 changed anything; no image was built to show it.
+
+  | What stops it | Where |
+  |---|---|
+  | A collection error, which ends pytest before any test runs: the module loads `infra/trace_query.py` at import, and `infra/` is not in the image | `tests/test_trace_query.py:25-27` |
+  | Tests that read `infra/template.yaml` | `tests/test_template_trace.py`; `tests/test_worker.py:452` and `:462` |
+  | Tests that read a saved run and have no skip | `tests/test_pipeline_orchestrate.py:614`; `tests/test_score_meds.py:157` (8 cases); `tests/test_score_safety_net.py:117` (4 cases) |
+
+  The last two were already there when the image was made (`8c78790`, 26 Oct 2026), and nothing
+  in CI builds the image. Excluding `evals/calibration` is not among the causes: it turns one
+  test into a skip.
+- The nine files are the job's own tests: the real runners, scorers and comparator against local
+  fakes on `127.0.0.1`. They and their helpers read nothing from `docs/`, `infra/` or
+  `evals/runs`, and none has a skip marker, so in the image every test is expected to pass and
+  none to be skipped.
+- The image that is tested is the image that is pushed, at the same digest. ADR-011's
+  alternative, a build target of its own for the job, was not taken: it would keep a second
+  stage whose full-suite command still fails, or push an image that cannot test itself.
+- **It stays a `CMD`, not an `ENTRYPOINT`.** The ECS task's `command` replaces a `CMD` whole, and
+  a bare `docker run` stays offline and harmless.
+- `tests/test_image_files.py` fails if the command's list and `tests/test_ws7_*.py` on disk
+  differ either way, so a tenth WS7 test file cannot be left out of the image's command.
+- **A follow-up, not in this part:** skip guards in those six test files, so that the full suite
+  could run in the image with no mounts.
+
+### The header
+
+The `Dockerfile` header said "No AWS calls". It now says:
+
+- the default command runs the nine WS7 test files (the full suite runs in CI), offline;
+- the ECS task (slice 3) overrides the command to run `evals/ws7_entry.py`, which calls Bedrock,
+  S3, SSM, CloudWatch and SNS with the task role;
+- no credentials are ever baked in.
+
+### Unchanged
+
+- `python:3.13.13-slim-trixie`, the non-root `app` user (uid 10001), the five named `COPY`s and
+  their read-only modes.
+- The architecture is set by the build command (`--platform linux/arm64`), not by the
+  `Dockerfile`.
+- `PYTHONHASHSEED=0` is not in the image. The task definition sets it (ADR-011; slice 3).
+
+### Building and checking it
+
+No command here pushes anything or needs AWS, and every `docker run` is `--network none`.
+
+- Run it from the repository's root: every path in it is relative to that folder.
+- **The rule: no image is pushed unless check 5 has passed on that same image, identified by its
+  image ID, after its last build.** Check 5 prints the image ID it ran against. A rebuild makes
+  another image, and check 5 is run again on it. Nothing in part 6 pushes. Slice 3's push is a
+  guarded step that runs check 5 against the image ID it pushes, and goes by its status.
+- **What check 5 must see** (Codex P1, second re-check of PR #10; the author's ruling, 25 Nov
+  2026): **a protected folder in the image under any name the Mac's file system treats as that
+  folder's name.**
+  - The Mac's volume is case-insensitive, so `evals/runs` can be a folder stored as
+    `evals/Runs`. `.dockerignore` matches by case, so `COPY evals/` would carry `Runs` into
+    the image, and a probe of the lower-case path alone would print `absent`.
+  - So check 5 lists `/app` and `/app/evals` inside the image and compares every name, whatever
+    its case, with `docs` and `infra` (in `/app`) and `runs` and `calibration` (in
+    `/app/evals`). It prints `PRESENT` and the name as found. A symlink counts.
+  - **A name that is not plain ASCII is a `STOP`.** Case is not the whole of it: the volume
+    also treats `runſ`, with a long s (U+017F), as `runs` (tried on the author's machine,
+    25 Nov 2026). Check 5 does not try to fold such names; it refuses any. No tracked name at
+    either level is anything but plain ASCII.
+  - A folder that cannot be listed, or lists nothing, is a `STOP`. So is an image root that
+    does not hold exactly the five names.
+- **Check 5 has a status** (Codex P3, the same re-check). `check5` returns zero only when it
+  printed the image line, four `absent` lines and the five names. Any `PRESENT` or `STOP` line
+  makes it non-zero, and so does a `docker run` that fails. It is a function that returns: it
+  never exits the shell. The script it runs in the image is POSIX `sh`.
+- **No command in check 5 can fail and turn a match into a miss** (Codex P1, third re-check of
+  PR #10; the author's ruling, 25 Nov 2026). The standing rule: a check never tests a command
+  substitution's output without first checking that the command succeeded.
+  - **Every decision in the in-image script is made by the shell itself.** A name is matched
+    with a `case` pattern (`[Rr][Uu][Nn][Ss]` and so on), and a name that is not plain ASCII is
+    found with a bracket pattern for any byte outside space to tilde, under `LC_ALL=C`. The
+    script calls no `tr`, and has no command substitution at all.
+  - **How `dash` reads that range.** It compares each byte's value with the two ends of the
+    range, with no locale collation. On the Mac's `dash`, every byte value from 1 to 255 was
+    tried: the 95 from space to tilde are plain, the other 160 are not. The long s is the bytes
+    C5 BF in UTF-8, both outside the range. The image's `dash` has not been run by Claude, so
+    **the script tests itself first**: a mixed-case name must match, a longer one must not, a
+    plain name must be plain and `runſ` must not be. If any of the four fails, it prints `STOP`
+    and stops.
+  - **A pass is counted, not assumed.** The script ends with status 0 only if nothing bad was
+    found **and** it printed four `absent` lines **and** it counted exactly the five names.
+  - Every command, and what happens when it fails:
+
+    | Command | Where | Used for | If it fails |
+    |---|---|---|---|
+    | `docker image inspect` | `check5` | The image ID | Its status is checked first, and an empty ID is a failure too: `STOP`, status 1 |
+    | `docker run` | `check5` | Runs the script | Its status is `check5`'s status: not 0. No pass lines are printed |
+    | `sh` in the image | `docker run` | Runs the script | `docker run` fails, as above. A syntax error ends the script with a status that is not 0 |
+    | `ls -A` (the one outside command in the script) | The script | Its status only: can the folder be listed? Its output is discarded | `STOP: cannot list …`, status 1. If it wrongly succeeds on a folder that cannot be read, the glob finds nothing: `STOP: evals/ lists no entries`, or for the root the five names are not counted |
+    | The globs (`"$dir"/*` and the two dot-file forms) | The script | The names | A folder that gives no names is a `STOP`, as above |
+    | `case` | The script | Every match, and the plain-ASCII test | Built in. The self-test stops the script if patterns do not work as needed |
+    | `[`, `echo`, `printf`, `$(( ))`, `${p##*/}`, `export`, `exit`, `return`, `continue` | The script | Tests, lines, counting | Built in to `dash`. `bad=1` is set before the line is printed, so a line that could not be written does not change the status. A missed count leaves `absent` or `count` short, which is not a pass |
+    | `echo`, `local`, `[` | `check5` | Lines | Built in to `zsh` |
+- **Checks 0 to 1b and the build guards catch mistakes early. They are not the control**
+  ("Known limits", below).
+- **Check 1 counts only if check 1b prints nothing.** A file that 1b prints is one git does not
+  look at, so check 1 cannot show an edit to it. Do not build: clear the flag, and start again
+  from check 1.
+- **The build guards.** `ok_to_build` is defined once, at the top of the block, and checks 2 and
+  7 build only if it passes. Otherwise it prints one `STOP` line and nothing is built. It stops:
+  - when `$C` is not a 40-character commit;
+  - when a `Dockerfile.dockerignore` exists (a dangling symlink counts);
+  - when git cannot find the `Dockerfile` or `.dockerignore` in that commit, or cannot hash the
+    file. **Each git command is checked for success before its output is compared**: two failed
+    commands print two empty strings, which are equal;
+  - when the raw bytes of either file are not that commit's.
+- **If a build prints `STOP`, stop there.** Put the cause right, and start again from check 1. The
+  later checks would otherwise run against an older image, or none.
+
+```zsh
+C=$(git rev-parse HEAD); IMG=discharge-eval:ws7-p6
+
+# The build guards, used by checks 2 and 7. Prints one STOP line and returns 1 unless:
+# $C is a 40-character commit; there is no Dockerfile.dockerignore; and the raw bytes of
+# the Dockerfile and of .dockerignore are that commit's (no filter and no encoding
+# applied). Each git command is checked before its output is compared.
+ok_to_build() {
+  local f want have hex='^[0-9a-f]{40}$'
+  if ! [[ "$C" =~ $hex ]]; then
+    echo "STOP: \$C is not a 40-character commit. Nothing was built."; return 1
+  fi
+  if [ -e Dockerfile.dockerignore ] || [ -L Dockerfile.dockerignore ]; then
+    echo "STOP: Dockerfile.dockerignore exists. The builder would read it instead of .dockerignore. Nothing was built."; return 1
+  fi
+  for f in Dockerfile .dockerignore; do
+    if ! want=$(git rev-parse --verify --quiet "$C:$f" 2>/dev/null) || [ -z "$want" ]; then
+      echo "STOP: git cannot find $f in commit $C. Nothing was built."; return 1
+    fi
+    if ! have=$(git hash-object --no-filters -- "$f" 2>/dev/null) || [ -z "$have" ]; then
+      echo "STOP: git cannot hash the file $f. Nothing was built."; return 1
+    fi
+    if [ "$want" != "$have" ]; then
+      echo "STOP: the bytes of $f are not the ones in commit $C. Nothing was built."; return 1
+    fi
+  done
+  return 0
+}
+
+# 0. No tracked file is dropped by a credential pattern in .dockerignore. Prints nothing.
+git ls-files -- src prompts evals tests ':(exclude)evals/runs' ':(exclude)evals/calibration' \
+  | grep -E 'secret|credential|\.key$|\.pem$|\.p12$|/\.env|samconfig|/\.aws/'
+
+# 1. A clean tree. Prints nothing, or only "!!" lines for files under __pycache__ or
+#    for .DS_Store, which .dockerignore drops. A Dockerfile.dockerignore prints "??"
+#    (or "!!"): remove it before going on. Untracked files are listed whatever
+#    status.showUntrackedFiles says.
+git status --porcelain --ignored --untracked-files=all -- Dockerfile .dockerignore \
+  Dockerfile.dockerignore requirements-eval.txt src prompts evals tests \
+  ':(exclude)evals/runs' ':(exclude)evals/calibration'
+
+# 1b. No tracked file is hidden from check 1. Prints nothing.
+#     A printed line is a file git has been told not to look at: a lower-case tag
+#     ("h") is assume-unchanged, "S" is skip-worktree, "s" is both. Check 1 cannot
+#     show an edit to such a file, so THE BUILD MUST NOT GO AHEAD. Clear the flag,
+#     each kind with its own command (one command does not clear both):
+#       git update-index --no-assume-unchanged <file>
+#       git update-index --no-skip-worktree <file>
+#     then start again from check 1.
+git ls-files -v -- Dockerfile .dockerignore Dockerfile.dockerignore \
+  requirements-eval.txt src prompts evals tests \
+  ':(exclude)evals/runs' ':(exclude)evals/calibration' | grep -E '^[[:lower:]S] '
+
+# 2. The build, only if the guards pass (otherwise one STOP line).
+#    Ends "naming to docker.io/library/discharge-eval:ws7-p6". Nothing is pushed.
+if ok_to_build; then
+  docker build --platform linux/arm64 --build-arg WS7_GIT_COMMIT=$C -t $IMG .
+fi
+
+# 3. The default command, offline. Every test passes, none is skipped, "exit 0".
+docker run --rm --network none $IMG; echo "exit $?"
+
+# 4. The commit in the image is the commit built from. Prints "same".
+#    The command is checked before its output is compared: a failed run, or an empty
+#    value, is a STOP, never a match.
+if ! GOT=$(docker run --rm --network none $IMG printenv WS7_GIT_COMMIT) || [ -z "$GOT" ]; then
+  echo "STOP: the image's WS7_GIT_COMMIT could not be read."
+elif [ "$GOT" = "$C" ]; then
+  echo same
+else
+  echo "DIFFERENT: the image says $GOT"
+fi
+
+# 5. THE CONTROL: what the image holds. No image is pushed unless this has passed on
+#    that same image, after its last build. A pass is ALL of: the "image" line with the
+#    image ID it ran against; four "absent" lines; the five names, one a line (evals,
+#    prompts, requirements-eval.txt, src, tests); and "check 5 status 0".
+#    A "PRESENT" line or a "STOP" line is a failure, and the status is then not 0.
+#    Inside the image it lists /app and /app/evals and compares every name, whatever
+#    its case, with docs and infra (in /app) and runs and calibration (in /app/evals).
+#    A symlink counts. A name that is not plain ASCII is a STOP: this Mac's volume
+#    treats some such names as the same folder (a long s for the "s" in "runs").
+#    The script is POSIX sh: it runs under the image's /bin/sh. EVERY DECISION IN IT
+#    IS MADE BY THE SHELL ITSELF (case patterns, [ ], globs), so no outside tool can
+#    fail and turn a match into a miss. The one outside command is ls, asked only
+#    whether a folder can be listed; its failure is a STOP.
+CHECK5_SCRIPT='
+LC_ALL=C; export LC_ALL
+root=$1; bad=0; absent=0
+
+plain() {   # is $1 made only of bytes from space to tilde?
+  case "$1" in *[!\ -~]*) return 1 ;; esac
+  return 0
+}
+selftest() {   # the controls: this shell matches names as the checks below need
+  case "RuNs" in [Rr][Uu][Nn][Ss]) ;; *) return 1 ;; esac
+  case "runsx" in [Rr][Uu][Nn][Ss]) return 1 ;; esac
+  if ! plain "requirements-eval.txt ~"; then return 1; fi
+  if plain "runſ"; then return 1; fi
+  return 0
+}
+if ! selftest; then
+  echo "STOP: this shell does not match names as check 5 needs"; exit 1
+fi
+
+dir=$root/evals
+if ! ls -A "$dir" >/dev/null 2>&1; then
+  bad=1; echo "STOP: cannot list evals/"
+else
+  seen=0; odd=0; runs=0; calibration=0
+  for p in "$dir"/* "$dir"/.[!.]* "$dir"/..?*; do
+    if [ ! -e "$p" ] && [ ! -L "$p" ]; then continue; fi
+    seen=1; name=${p##*/}
+    if ! plain "$name"; then bad=1; odd=1; continue; fi
+    case "$name" in
+      [Rr][Uu][Nn][Ss])
+        bad=1; runs=1; echo "PRESENT evals/$name" ;;
+      [Cc][Aa][Ll][Ii][Bb][Rr][Aa][Tt][Ii][Oo][Nn])
+        bad=1; calibration=1; echo "PRESENT evals/$name" ;;
+    esac
+  done
+  if [ "$runs" = 0 ]; then absent=$((absent + 1)); echo "absent evals/runs"; fi
+  if [ "$calibration" = 0 ]; then absent=$((absent + 1)); echo "absent evals/calibration"; fi
+  if [ "$odd" != 0 ]; then bad=1; echo "STOP: a name in evals/ is not plain ASCII"; fi
+  if [ "$seen" != 1 ]; then bad=1; echo "STOP: evals/ lists no entries"; fi
+fi
+
+dir=$root
+if ! ls -A "$dir" >/dev/null 2>&1; then
+  bad=1; echo "STOP: cannot list the image root"
+else
+  odd=0; docs=0; infra=0
+  for p in "$dir"/* "$dir"/.[!.]* "$dir"/..?*; do
+    if [ ! -e "$p" ] && [ ! -L "$p" ]; then continue; fi
+    name=${p##*/}
+    if ! plain "$name"; then bad=1; odd=1; continue; fi
+    case "$name" in
+      [Dd][Oo][Cc][Ss])
+        bad=1; docs=1; echo "PRESENT $name" ;;
+      [Ii][Nn][Ff][Rr][Aa])
+        bad=1; infra=1; echo "PRESENT $name" ;;
+    esac
+  done
+  if [ "$docs" = 0 ]; then absent=$((absent + 1)); echo "absent docs"; fi
+  if [ "$infra" = 0 ]; then absent=$((absent + 1)); echo "absent infra"; fi
+  if [ "$odd" != 0 ]; then bad=1; echo "STOP: a name in the image root is not plain ASCII"; fi
+fi
+
+count=0; other=0
+for p in "$root"/* "$root"/.[!.]* "$root"/..?*; do
+  if [ ! -e "$p" ] && [ ! -L "$p" ]; then continue; fi
+  name=${p##*/}; printf "%s\n" "$name"
+  case "$name" in
+    evals|prompts|requirements-eval.txt|src|tests) count=$((count + 1)) ;;
+    *) other=1 ;;
+  esac
+done
+if [ "$count" != 5 ] || [ "$other" != 0 ]; then
+  bad=1; echo "STOP: the image root does not hold exactly the five names"
+fi
+
+# A pass is counted, not assumed: nothing bad, four absent lines, the five names.
+if [ "$bad" = 0 ] && [ "$absent" = 4 ] && [ "$count" = 5 ] && [ "$other" = 0 ]; then
+  exit 0
+fi
+exit 1
+'
+check5() {   # check5 <image>: returns 0 only on a pass. It returns; it never exits the shell.
+  local id
+  if ! id=$(docker image inspect --format '{{.Id}}' "$1" 2>/dev/null) || [ -z "$id" ]; then
+    echo "STOP: there is no image $1 to check."; return 1
+  fi
+  echo "image $id"
+  docker run --rm --network none "$id" sh -c "$CHECK5_SCRIPT" check5 /app
+}
+check5 $IMG; echo "check 5 status $?"
+
+# 6. No arguments: the one fixed usage line ("Running it", part 5a), then "exit 2".
+docker run --rm --network none $IMG python evals/ws7_entry.py; echo "exit $?"
+
+# 7. Built without the argument, only if the guards pass (otherwise one STOP line).
+#    Every RUN and COPY step shows CACHED. Prints ''
+if ok_to_build; then
+  docker build --platform linux/arm64 -t discharge-eval:ws7-noarg .
+fi
+docker run --rm --network none discharge-eval:ws7-noarg \
+  python -c 'import os; print(repr(os.environ.get("WS7_GIT_COMMIT")))'
+
+# 8. identity() inside each image, with an invented digest.
+#    The first prints $C. The second prints: ws7 stop code=ws7_identity_missing
+D=sha256:$(printf '0%.0s' {1..64})
+for I in $IMG discharge-eval:ws7-noarg; do docker run --rm --network none -e WS7_IMAGE_DIGEST=$D $I python -c '
+import os, sys; sys.path.insert(0, "evals"); import ws7_manifest as wm
+try: print(wm.identity(os.environ).git_commit)
+except wm.Stop as e: print(e.line())'; done
+
+# 9. The architecture and the user. Prints: arm64 app
+docker image inspect --format '{{.Architecture}} {{.Config.User}}' $IMG
+
+# 10. The image's environment, names only. WS7_GIT_COMMIT is there; no AWS_* name,
+#     no WS7_IMAGE_DIGEST and no PYTHONHASHSEED. The other names are the four this
+#     Dockerfile sets (PYTHON..., PIP_...) and the base image's own.
+docker image inspect --format '{{range .Config.Env}}{{println .}}{{end}}' $IMG | cut -d= -f1
+```
+
+### Known limits
+
+From Codex's review and re-check of PR #10, and the author's ruling of 23 Nov 2026.
+
+- **The checks before the build rely on git's view of the working folder, and local git
+  configuration can change that view**: an encoding attribute, a filter, a flag on a file, a
+  setting that hides untracked files. Each case found so far has a guard above. A list of guards
+  cannot be shown to be complete, so none of them is the control.
+- **For the protected folders, check 5 at the push is the control.** It reads the image, not
+  git: no image is pushed unless check 5 has passed on that same image, identified by its image
+  ID, after its last build.
+- **For the commit label on every copied file, part 6 has no control.** Checks 1 and 1b are what
+  the author's machine has. Slice 3's runbook builds from a clean export of the commit, with the
+  machine's git configuration isolated.
+- **Where check 5's class ends.** Check 5 controls the protected folders reaching the image
+  under any spelling of their own path: `evals/runs`, `evals/calibration`, `docs`, `infra`. A
+  copy of their content under another path is a different class. That is the data rule
+  (CLAUDE.md, section g), and check 1 shows an untracked file early.
+- Check 5 has been written and read, and its in-image script tried on folders outside any
+  image, under the Mac's `dash` and its own `ls`. What a real image prints, under the image's
+  own shell, is seen only when the author runs it. The script's self-test is what stops it
+  there if that shell reads a pattern differently.
+
+### What part 6 does not do
+
+- It pushes no image and creates no registry (slice 3).
+- It does not change `CLAUDE.md` sections (b) and (c), `docs/COST.md` or any template (slice 3).
+- It does not correct the docstring of `evals/ws7_entry.py` (lines 8 to 11), which still lists
+  the commit among the task definition's variables. No `evals/ws7_*.py` file was to change in
+  this part; part 5b changes that file and corrects it ("Notes for later parts").
+
+### What the test cannot prove
+
+`tests/test_image_files.py` reads two text files. It cannot show what a built image holds, that
+the build is for arm64, or that ECS replaces the command. The checks above show the first two on
+one machine. Slice 3's set-up checks show all three where the job runs.
+
 ## Notes for later parts
 
 ### The next PR that may change `evals/ws7_reserve.py`
@@ -2072,6 +2507,10 @@ starts; the failed record; the prefixes of success records and retained copies.
 
 ### Part 5b: the manual modes and the resolve command
 
+- **Correct the docstring of `evals/ws7_entry.py`** (lines 8 to 11). It lists `WS7_GIT_COMMIT`
+  among the variables the task definition sets. The image sets it (part 6); the task definition
+  sets the bucket, the alert topic and the image digest. Part 6 changed no `evals/ws7_*.py`
+  file, so the correction is 5b's.
 - **The yes** (the author's ruling, 20 Nov 2026; the details are for 5b's plan). A manual mode
   needs, in the invocation itself, the run ID the job derives and the reservation it computes.
   **A manual command without its yes stops with `ws7_manual_not_approved` and prints the run ID
@@ -2149,10 +2588,29 @@ starts; the failed record; the prefixes of success records and retained copies.
   only against AWS's documentation, never against real rows. (The console groups by one dimension
   at a time, hence the two steps.)
 
-### Part 6: the image
+### The next PR that changes `tests/test_image_files.py` or the `Dockerfile`
 
-- The `Dockerfile` takes the commit as a build argument and sets `WS7_GIT_COMMIT` from it
-  (part 2, "The run manifest").
+Two findings from Codex's review of PR #10, both P3, left out of that pull request because
+fixing them changes the test file (the author's ruling, 23 Nov 2026):
+
+- **The `Dockerfile` reader's continuation rules are not BuildKit's.** `instructions()` treats
+  a line ending in a doubled backslash as a continuation, and puts a space between the
+  fragments it joins. BuildKit does neither. So a standalone `ADD`, or a `WS7_GIT_COMMIT` key
+  split across a continuation, can pass the test. Match BuildKit's continuation rules, or
+  refuse those forms, with regression cases.
+- **The ignore reader splits on every Unicode line break; Docker splits on LF only.**
+  `ignore_patterns()` uses `str.splitlines()`. Read the bytes and split on LF, with a
+  regression case.
+
+### Slice 3's push script
+
+- **Require `$C` to resolve to a commit** (Codex P3, second re-check of PR #10; a follow-up by
+  the author's ruling, 25 Nov 2026). `ok_to_build` (part 6) accepts any 40 hexadecimal
+  characters that hold the two files, so a tree's SHA passes it. In part 6's block `$C` comes
+  from `git rev-parse HEAD`, which is a commit. A push script that takes `$C` from anywhere
+  else must check it first: `git rev-parse --verify --quiet "$C^{commit}"`.
+- It uses `check5`'s status, against the image ID it pushes (part 6, "Building and checking
+  it").
 
 ### Slice 4: the baseline
 
@@ -2189,6 +2647,28 @@ starts; the failed record; the prefixes of success records and retained copies.
   author's own credentials.
 - **Pass `ExpectedBucketOwner` on every S3 call.** The task definition supplies the account ID,
   so a mistyped bucket name can never write into another account's bucket.
+- **The task definition must not set `WS7_GIT_COMMIT`.** The image sets it (part 6). An override
+  would let a task claim a commit its image was not built from.
+- The task definition gives the command, `python evals/ws7_entry.py` with the schedule's
+  arguments. The image's own default command is the nine WS7 test files.
+- The task definition sets `PYTHONHASHSEED=0` (ADR-011). The image does not.
+- **The task needs a writable temporary directory.** The job writes its batches under
+  `tempfile.mkdtemp()` (`evals/ws7_entry.py`), and the image's own tree is read-only for `app`.
+  So a read-only root file system needs a writable mount for it.
+- The image is built from a clean checkout of the release commit, for `linux/arm64`, with
+  `--build-arg WS7_GIT_COMMIT` (part 6, "Building and checking it"). The set-up checks show
+  that the pushed image's `WS7_GIT_COMMIT` is the release commit and its architecture is arm64.
+  - **The push is a guarded step: it runs part 6's check 5 against the image ID it pushes, and
+    pushes nothing unless its status is zero** (the author's rulings, 23 and 25 Nov 2026, after
+    Codex's re-checks of PR #10). No image is pushed unless check 5 has passed on that same image, identified by
+    its image ID, after its last build. That is the control for the protected folders.
+  - **The runbook builds from a clean export of the release commit, with the machine's git
+    configuration isolated**, so that the commit label is true of every copied file. Part 6's
+    checks 0 to 1b and its build guards read git's view of a working folder, which local
+    configuration can change (part 6, "Known limits"). The runbook keeps what still applies as
+    early checks, not as the control: the clean-tree checks 1 and 1b wherever it builds from a
+    working folder, and no build while a `Dockerfile.dockerignore` exists or unless the raw
+    bytes of the `Dockerfile` and `.dockerignore` are the commit's.
 
 ## Tests
 
@@ -2441,6 +2921,23 @@ PYTHONDONTWRITEBYTECODE=1 python -m pytest -p no:cacheprovider -q tests/test_ws7
     the same parser built on plain argparse, which prints it. The two layers are each tested
     alone: the parser raises and prints nothing with the streams open, and `main` shows nothing
     even of a parser that prints.
+
+- `tests/test_image_files.py` (part 6) is **not one of the nine**, and the image's command never
+  runs it. It checks the checkout, not the image, and it never skips: the `Dockerfile` is not in
+  the image, and a skip-if-absent would pass silently in CI if a path were wrong. It reads
+  `Dockerfile` and `.dockerignore` and pins five things, each as a whole class:
+  - the commit argument has no default: one bare `ARG`, one `ENV` set from it and from nothing
+    else, and no other instruction names the variable;
+  - both come after the last `RUN` and `COPY`, the `ENV` after the `ARG`, in one stage;
+  - `evals/runs` and `evals/calibration` are both ignored, the file has no `!` line, and there
+    is no `Dockerfile.dockerignore`;
+  - every `COPY` is one of the five named ones, exactly, so there is no `COPY .`; no `ADD` or
+    other instruction the test does not read; no `RUN` that mounts the build context;
+  - the `CMD` is pytest on exactly `tests/test_ws7_*.py` as they are on disk, both ways.
+
+  ```zsh
+  PYTHONDONTWRITEBYTECODE=1 python -m pytest -p no:cacheprovider -q tests/test_image_files.py
+  ```
 
 **Keeping the tests offline.** Every test in the three part 2 files, the part 4 file and the two part 5a files uses `offline_aws`, and every
 client they build points at a fake on `127.0.0.1` or is never called. The `offline_aws` fixture:

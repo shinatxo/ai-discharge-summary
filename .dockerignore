@@ -14,8 +14,11 @@
 **/.venv
 **/venv
 
-# Saved runs: mounted at run time, never baked into the image
+# Saved runs and calibration folders: never baked into the image (ADR-011).
+# A saved batch is mounted at run time. Nothing the job runs reads either folder.
+# tests/test_image_files.py checks both lines, and that this file has no "!" line.
 evals/runs
+evals/calibration
 
 # Not needed by the scorer or the tests
 docs

@@ -2163,7 +2163,26 @@ No command here pushes anything or needs AWS, and every `docker run` is `--netwo
 - **The rule: no image is pushed unless check 5 has passed on that same image, identified by its
   image ID, after its last build.** Check 5 prints the image ID it ran against. A rebuild makes
   another image, and check 5 is run again on it. Nothing in part 6 pushes. Slice 3's push is a
-  guarded step that runs check 5 against the image ID it pushes.
+  guarded step that runs check 5 against the image ID it pushes, and goes by its status.
+- **What check 5 must see** (Codex P1, second re-check of PR #10; the author's ruling, 25 Nov
+  2026): **a protected folder in the image under any name the Mac's file system treats as that
+  folder's name.**
+  - The Mac's volume is case-insensitive, so `evals/runs` can be a folder stored as
+    `evals/Runs`. `.dockerignore` matches by case, so `COPY evals/` would carry `Runs` into
+    the image, and a probe of the lower-case path alone would print `absent`.
+  - So check 5 lists `/app` and `/app/evals` inside the image and compares every name, whatever
+    its case, with `docs` and `infra` (in `/app`) and `runs` and `calibration` (in
+    `/app/evals`). It prints `PRESENT` and the name as found. A symlink counts.
+  - **A name that is not plain ASCII is a `STOP`.** Case is not the whole of it: the volume
+    also treats `runſ`, with a long s (U+017F), as `runs` (tried on the author's machine,
+    25 Nov 2026). Check 5 does not try to fold such names; it refuses any. No tracked name at
+    either level is anything but plain ASCII.
+  - A folder that cannot be listed, or lists nothing, is a `STOP`. So is an image root that
+    does not hold exactly the five names.
+- **Check 5 has a status** (Codex P3, the same re-check). `check5` returns zero only when it
+  printed the image line, four `absent` lines and the five names. Any `PRESENT` or `STOP` line
+  makes it non-zero, and so does a `docker run` that fails. It is a function that returns: it
+  never exits the shell. The script it runs in the image is POSIX `sh`.
 - **Checks 0 to 1b and the build guards catch mistakes early. They are not the control**
   ("Known limits", below).
 - **Check 1 counts only if check 1b prints nothing.** A file that 1b prints is one git does not
@@ -2246,17 +2265,63 @@ docker run --rm --network none $IMG; echo "exit $?"
 [ "$(docker run --rm --network none $IMG printenv WS7_GIT_COMMIT)" = "$C" ] && echo same
 
 # 5. THE CONTROL: what the image holds. No image is pushed unless this has passed on
-#    that same image, after its last build. Prints "image" and the image ID it runs
-#    against; then four "absent" lines; then five names, one a line: evals, prompts,
-#    requirements-eval.txt, src, tests. A symlink counts as present. A "PRESENT"
-#    line or a STOP line is a failure.
-if ID=$(docker image inspect --format '{{.Id}}' $IMG) && [ -n "$ID" ]; then
-  echo "image $ID"
-  docker run --rm --network none "$ID" sh -c \
-    'for d in evals/runs evals/calibration docs infra; do if [ -e "$d" ] || [ -L "$d" ]; then echo "PRESENT $d"; else echo "absent $d"; fi; done; ls'
-else
-  echo "STOP: there is no image $IMG to check."
+#    that same image, after its last build. A pass is ALL of: the "image" line with the
+#    image ID it ran against; four "absent" lines; the five names, one a line (evals,
+#    prompts, requirements-eval.txt, src, tests); and "check 5 status 0".
+#    A "PRESENT" line or a "STOP" line is a failure, and the status is then not 0.
+#    Inside the image it lists /app and /app/evals and compares every name, whatever
+#    its case, with docs and infra (in /app) and runs and calibration (in /app/evals).
+#    A symlink counts. A name that is not plain ASCII is a STOP: this Mac's volume
+#    treats some such names as the same folder (a long s for the "s" in "runs").
+#    The script is POSIX sh: it runs under the image's /bin/sh.
+CHECK5_SCRIPT='
+root=$1; bad=0
+probe() {   # probe <folder> <label> <protected name>...
+  dir=$1; label=$2; shift 2
+  if ! ls -A "$dir" >/dev/null 2>&1; then
+    echo "STOP: cannot list ${label:-the image root}"; bad=1; return
+  fi
+  seen=0; odd=0
+  for want in "$@"; do
+    found=0
+    for p in "$dir"/* "$dir"/.[!.]* "$dir"/..?*; do
+      if [ ! -e "$p" ] && [ ! -L "$p" ]; then continue; fi
+      seen=1; name=${p##*/}
+      if [ -n "$(printf %s "$name" | LC_ALL=C tr -d "[:print:]")" ]; then odd=1; continue; fi
+      if [ "$(printf %s "$name" | LC_ALL=C tr "[:upper:]" "[:lower:]")" = "$want" ]; then
+        echo "PRESENT $label$name"; found=1; bad=1
+      fi
+    done
+    if [ "$found" = 0 ]; then echo "absent $label$want"; fi
+  done
+  if [ "$odd" = 1 ]; then echo "STOP: a name in ${label:-the image root} is not plain ASCII"; bad=1; fi
+  if [ "$seen" = 0 ]; then echo "STOP: ${label:-the image root} lists no entries"; bad=1; fi
+}
+probe "$root/evals" evals/ runs calibration
+probe "$root" "" docs infra
+count=0; other=0
+for p in "$root"/* "$root"/.[!.]* "$root"/..?*; do
+  if [ ! -e "$p" ] && [ ! -L "$p" ]; then continue; fi
+  name=${p##*/}; printf "%s\n" "$name"
+  case "$name" in
+    evals|prompts|requirements-eval.txt|src|tests) count=$((count + 1)) ;;
+    *) other=1 ;;
+  esac
+done
+if [ "$count" != 5 ] || [ "$other" != 0 ]; then
+  echo "STOP: the image root does not hold exactly the five names"; bad=1
 fi
+exit $bad
+'
+check5() {   # check5 <image>: returns 0 only on a pass. It returns; it never exits the shell.
+  local id
+  if ! id=$(docker image inspect --format '{{.Id}}' "$1" 2>/dev/null) || [ -z "$id" ]; then
+    echo "STOP: there is no image $1 to check."; return 1
+  fi
+  echo "image $id"
+  docker run --rm --network none "$id" sh -c "$CHECK5_SCRIPT" check5 /app
+}
+check5 $IMG; echo "check 5 status $?"
 
 # 6. No arguments: the one fixed usage line ("Running it", part 5a), then "exit 2".
 docker run --rm --network none $IMG python evals/ws7_entry.py; echo "exit $?"
@@ -2300,8 +2365,13 @@ From Codex's review and re-check of PR #10, and the author's ruling of 23 Nov 20
 - **For the commit label on every copied file, part 6 has no control.** Checks 1 and 1b are what
   the author's machine has. Slice 3's runbook builds from a clean export of the commit, with the
   machine's git configuration isolated.
-- Check 5 has been written and read, and its loop tried on a folder outside any image. What a
-  real image prints is seen only when the author runs it.
+- **Where check 5's class ends.** Check 5 controls the protected folders reaching the image
+  under any spelling of their own path: `evals/runs`, `evals/calibration`, `docs`, `infra`. A
+  copy of their content under another path is a different class. That is the data rule
+  (CLAUDE.md, section g), and check 1 shows an untracked file early.
+- Check 5 has been written and read, and its in-image script tried on folders outside any
+  image, under the Mac's `dash` and its own `ls` and `tr`. What a real image prints, under the
+  image's own shell and tools, is seen only when the author runs it.
 
 ### What part 6 does not do
 
@@ -2450,6 +2520,16 @@ fixing them changes the test file (the author's ruling, 23 Nov 2026):
   `ignore_patterns()` uses `str.splitlines()`. Read the bytes and split on LF, with a
   regression case.
 
+### Slice 3's push script
+
+- **Require `$C` to resolve to a commit** (Codex P3, second re-check of PR #10; a follow-up by
+  the author's ruling, 25 Nov 2026). `ok_to_build` (part 6) accepts any 40 hexadecimal
+  characters that hold the two files, so a tree's SHA passes it. In part 6's block `$C` comes
+  from `git rev-parse HEAD`, which is a commit. A push script that takes `$C` from anywhere
+  else must check it first: `git rev-parse --verify --quiet "$C^{commit}"`.
+- It uses `check5`'s status, against the image ID it pushes (part 6, "Building and checking
+  it").
+
 ### Slice 4: the baseline
 
 - **No baseline is frozen until the author has decided how adjudications are keyed** (the
@@ -2497,8 +2577,8 @@ fixing them changes the test file (the author's ruling, 23 Nov 2026):
   `--build-arg WS7_GIT_COMMIT` (part 6, "Building and checking it"). The set-up checks show
   that the pushed image's `WS7_GIT_COMMIT` is the release commit and its architecture is arm64.
   - **The push is a guarded step: it runs part 6's check 5 against the image ID it pushes, and
-    pushes nothing unless that passes** (the author's ruling, 23 Nov 2026, after Codex's re-check
-    of PR #10). No image is pushed unless check 5 has passed on that same image, identified by
+    pushes nothing unless its status is zero** (the author's rulings, 23 and 25 Nov 2026, after
+    Codex's re-checks of PR #10). No image is pushed unless check 5 has passed on that same image, identified by
     its image ID, after its last build. That is the control for the protected folders.
   - **The runbook builds from a clean export of the release commit, with the machine's git
     configuration isolated**, so that the commit label is true of every copied file. Part 6's

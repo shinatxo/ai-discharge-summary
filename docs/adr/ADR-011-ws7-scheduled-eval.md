@@ -250,8 +250,12 @@ can assume it (`infra/cicd-oidc-role.yaml:66`).
     task**. But an eval schedule can be switched on, or pointed away from the eval task, from
     there.
   - What notices: `infra/eval/schedules.sh` (every exit 0, `status` included) and
-    `infra/eval/deploy.sh` read both live schedules and stop if either is not in the state the
-    stack's parameter says.
+    `infra/eval/deploy.sh` (before its change set, and again in its last line) read both live
+    schedules and stop if either is not in the state the stack's parameter says.
+  - What puts it right: `infra/eval/schedules.sh force-off` writes each live eval schedule that
+    is `ENABLED` back with `State` `DISABLED` and its definition otherwise unchanged. **Nothing on
+    a path to `DISABLED` enables anything** (the author's ruling, 26 Nov 2026): a recovery that
+    switched on first could start a paid run.
 - **It can change the email subscription** (a filter policy, or an unsubscribe). The topic's deny
   covers the topic's own actions, not a subscription's.
 - **What it could do without a control:** write the two expected-version parameters, delete the

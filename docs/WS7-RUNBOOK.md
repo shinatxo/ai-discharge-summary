@@ -209,8 +209,8 @@ infra/eval/deploy.sh --account ${ACCOUNT} --image-digest <the pushed digest>
 - The script first checks that the digest is an image in the eval repository.
 - From the second time on (section 9) it also reads both live schedules before any change set,
   and stops if either is not in the state the stack's `ScheduleState` says: a schedule changed
-  outside the stack is put right first (`infra/eval/schedules.sh --account $ACCOUNT status` says
-  how).
+  outside the stack is put right first (`infra/eval/schedules.sh force-off`, section 6,
+  switches a live schedule off without switching anything on).
 
 ## 4. Set the two expected-version parameters
 
@@ -507,7 +507,26 @@ frozen baseline (slice 4), and the author's yes.
 infra/eval/schedules.sh --account ${ACCOUNT} status
 infra/eval/schedules.sh --account ${ACCOUNT} on      # type ENABLE to confirm
 infra/eval/schedules.sh --account ${ACCOUNT} off     # type DISABLE to confirm
+infra/eval/schedules.sh --account ${ACCOUNT} force-off   # type the stack name to confirm
 ```
+
+**Every one of these reports success only about the live schedules.** `status`, `on` and `off`
+each read both live schedules at the end, and stop unless both are in the state the stack's
+`ScheduleState` says. `deploy.sh` does the same before its change set and again in its last line.
+
+**If one of them stops because a live schedule is `ENABLED` and the stack says `DISABLED`** (it was
+changed outside the stack): run `force-off`. The STOP names each schedule that is out of step.
+
+- `force-off` reads each live eval schedule that is `ENABLED` and writes it back with `State`
+  `DISABLED` and its definition otherwise unchanged (`get-schedule`, then `update-schedule`). It
+  changes nothing else, does not touch the stack, reads both again, and exits 0 only if both are
+  `DISABLED`.
+- **Nothing on a path to `DISABLED` switches anything on** (the author's ruling, 26 Nov 2026). No
+  script tells you to run `on` in order to get to off: that would enable the Wednesday run on the
+  way, and a paid run could start if 04:00 came, or you were interrupted, before the `off`.
+- If the stack itself says `ENABLED`, `force-off` ends by telling you to run `off`, which brings
+  the stack into line with the schedules. Switch on again, when you mean to, with `on`.
+- It needs `python3`, to copy the schedule's definition.
 
 - `on` refuses unless **all 26 alarms have their actions on**, each alarm's one action is the eval
   topic, and an email subscription is confirmed. If it names alarms with their actions off:
@@ -518,7 +537,7 @@ infra/eval/schedules.sh --account ${ACCOUNT} off     # type DISABLE to confirm
         --query 'MetricAlarms[?ActionsEnabled==`false`].AlarmName' --output text)
   ```
 
-- Both scripts change the stack's `ScheduleState` parameter through a change set that holds the two
+- `on` and `off` change the stack's `ScheduleState` parameter through a change set that holds the two
   schedules and nothing else. Do not use `aws scheduler update-schedule`: the next stack update
   would silently undo it.
 - **Switch on between Thursday 10:00 and Wednesday 04:00 London**, so the first event is the
@@ -554,6 +573,9 @@ Management Log's own and start at the alarm.
 
    A failed run has `ws7/failed/<run_id>.json`, with its code.
 3. Decide the outcome: a false alarm, a quality finding, or an incident (D10).
+   - If the weekly run must not start again until this is settled, switch the schedules off now:
+     `infra/eval/schedules.sh --account ${ACCOUNT} off`. If that stops because a live schedule is
+     out of step with the stack, run `force-off` first (section 6). Neither switches anything on.
 4. **An incident: copy the run to `retained/<run_id>/` before its 90 days are up.** The task role
    cannot reach `retained/`, and the lifecycle rule does not touch it.
 
@@ -638,7 +660,10 @@ The old image stays in the repository, tagged. Delete it by hand when you no lon
 
 Only if the stack is to be removed. Every step is a separate yes.
 
-1. `infra/eval/schedules.sh --account $ACCOUNT off`.
+1. `infra/eval/schedules.sh --account ${ACCOUNT} off`. If it stops because a live schedule is
+   `ENABLED` while the stack says `DISABLED`, run `infra/eval/schedules.sh --account ${ACCOUNT}
+   force-off`, which switches every live eval schedule off and enables nothing. Go on only when
+   `status` shows both `DISABLED`.
 2. Delete every image, or the stack delete fails on the repository:
 
    ```zsh
@@ -702,7 +727,8 @@ Only if the stack is to be removed. Every step is a separate yes.
   Denying CI the scheduler writes on `schedule-group/discharge-eval` and the subscription
   changes, and narrowing the rest, is a separate pull request before slice 6 (ADR-011, "Known
   limits of the stack"). Until then, `infra/eval/schedules.sh status` and `deploy.sh` both stop
-  when a live schedule is not in the state the stack says.
+  when a live schedule is not in the state the stack says, and `force-off` switches such a
+  schedule off without switching anything on.
 - **The base image is named by tag**, `python:3.13.13-slim-trixie`, not by digest. Two builds of
   one commit can differ in the base layers. Each pushed image is checked as built.
 - **One subnet, one availability zone.** An outage there is a missed run, which the heartbeat

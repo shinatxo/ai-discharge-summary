@@ -2709,6 +2709,20 @@ says otherwise.
   Say so where it is printed, or quiet the push.
 - **The set-up table's claims for C6, C7, and the CloudWatch and SNS error shapes and size
   limits.** State for each exactly what is observed on AWS and what stays covered offline only.
+- **`guard.sh` reads `all=$(env)`** (Codex's re-check of PR #11, 26 Nov 2026). With shell tracing
+  on, that would print every exported value, credentials included. Read the variable NAMES
+  only, and keep the refusal if they cannot be listed.
+- **The future CI deny must name `schedule/discharge-eval/*`, not
+  `schedule-group/discharge-eval`.** `CreateSchedule` and `UpdateSchedule` authorise against the
+  schedule's ARN. ADR-011 and the runbook say `schedule-group/discharge-eval`: correct that
+  wording here, or in the CI-role pull request if that comes first.
+- **Tear-down's final image count must be an explicit success condition.** An image-level failure
+  inside a successful `BatchDeleteImage` reply left one image and exit 0: the block prints the
+  count and does not test it.
+- **The lifecycle status poll: `--no-paginate` on the status query only.**
+- **The target-change confirmation says "every alarm" follows the target.** It is both schedules
+  and 24 alarms, not 26: the two scheduler alarms have no `Target` dimension. The runbook's
+  section 9 says "all 26" as well.
 - **For the next docs pull request: the KMS rotation wording** in ADR-011's Costs and
   `docs/COST.md` (when a rotated key version starts to be charged, and the cap).
 

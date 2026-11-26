@@ -97,6 +97,17 @@ if rule is None:
     sys.stderr.write("stub: unplanned call: %s %s\\n" % (tool, " ".join(args)))
     sys.exit(97)
 entry["rule"] = rule["name"]
+if "seq" in rule:
+    # One answer per call of this rule, in order; the last one repeats.
+    before = 0
+    if os.path.exists({log!r}):
+        with open({log!r}) as earlier:
+            before = sum(json.loads(line).get("rule") == rule["name"] for line in earlier)
+    rule = dict(rule, **rule["seq"][min(before, len(rule["seq"]) - 1)])
+if rule.get("do") == "input":
+    given = [a for a in args if a.startswith("file://")]
+    with open(given[0][len("file://"):]) as body:
+        entry["input"] = json.load(body)
 if rule.get("do") == "context":
     root = args[-1]
     entry["context"] = sorted(os.path.relpath(os.path.join(d, f), root)
@@ -780,7 +791,7 @@ def deploy_rules(exists: bool, state: str = "DISABLED", target: str = "v1", dige
                  /, **change) -> list:
     """What a deploy asks AWS. `state`, `target` and `digest` are the stack's own
     parameters as they stand; the live schedules are in `state` unless changed."""
-    rules = GUARD_RULES + [
+    rules = [dict(r) for r in GUARD_RULES] + [
         rule("exists", "aws", stack("Stacks[0].StackStatus"),
              "UPDATE_COMPLETE" if exists else "", 0 if exists else 254,
              err="" if exists else NO_STACK),
@@ -854,6 +865,7 @@ def test_the_first_deploy_creates_the_stack_with_no_image_and_the_schedules_disa
     assert bench.names() == ["sts_account", "sts_arn", "exists", "create_set", "wait_set", "table",
                              "set_state", "set_details", "set_target", "execute", "wait_create",
                              "protect", "outputs"]
+    assert done.stdout.endswith("There is no image yet, so there are no schedules.\n")
     assert "invented@example.invalid" not in done.stdout + done.stderr
 
 
@@ -872,11 +884,17 @@ def test_an_update_hands_the_schedules_state_and_the_target_back_unchanged(bench
     assert bench.names() == ["sts_account", "sts_arn", "exists", "state_now", "target_now",
                              "digest_now", "run_state", "check_state", "image", "create_set",
                              "wait_set", "table", "set_state", "set_details", "set_target", "execute",
-                             "wait_update", "protect", "outputs"]
+                             "wait_update", "protect", "outputs", "run_state", "check_state"]
     assert f"deploy: the target stays {target}\n" in done.stdout
     assert f"deploy: this change set's Target is {target}\n" in done.stdout
     # (The prompt has no line end, so the last line starts with it.)
-    assert done.stdout.endswith(f"deploy: done. The target is {target}. The schedules are {state}.\n")
+    assert done.stdout.endswith(f"deploy: done. The target is {target}. Both live schedules are {state}.\n")
+
+
+def tells_to_switch_on(text: str) -> list:
+    """Every line that tells the operator to run `schedules.sh ... on`."""
+    return [line for line in text.splitlines() if re.search(r"schedules\.sh\b.*\bon\b(?!-)", line)
+            and "force-off" not in line]
 
 
 def test_deploy_never_names_enabled_and_names_a_target_only_when_told_to():
@@ -899,7 +917,7 @@ def test_only_change_target_changes_the_target_and_the_script_says_what_changes(
     assert parameters(bench)["ScheduleState"] == "UsePreviousValue=true"
     assert "deploy: THE TARGET CHANGES from v1 to pipeline" in done.stdout
     assert done.stdout.index("THE TARGET CHANGES") < done.stdout.index("Type the stack name")
-    assert done.stdout.endswith("deploy: done. The target is pipeline. The schedules are ENABLED.\n")
+    assert done.stdout.endswith("deploy: done. The target is pipeline. Both live schedules are ENABLED.\n")
 
     done = bench.run("deploy.sh", LATER + ["--change-target", "pipeline"],
                      deploy_rules(True, "ENABLED", "pipeline"), stdin=YES)
@@ -959,7 +977,27 @@ def test_deploy_stops_while_a_live_schedule_is_not_in_the_state_the_stack_says(b
     assert done.returncode == 1 and says in done.stderr, done.stderr
     assert not bench.did("aws", *cfn("create-change-set"))
     if "is ENABLED" in says or "is DISABLED" in says:
-        assert "changed outside the stack" in done.stderr and "schedules.sh" in done.stderr
+        assert "changed outside the stack" in done.stderr
+        assert f"infra/eval/schedules.sh --account {ACCOUNT} force-off" in done.stderr
+        assert tells_to_switch_on(done.stderr) == []
+
+
+@pytest.mark.parametrize("state, later, drifted", [
+    ("DISABLED", {"run_state": "ENABLED"}, "discharge-eval-ws7-run is ENABLED"),
+    ("DISABLED", {"check_state": "ENABLED"}, "discharge-eval-ws7-check is ENABLED"),
+    ("ENABLED", {"check_state": "DISABLED"}, "discharge-eval-ws7-check is DISABLED")])
+def test_deploys_last_line_is_about_the_live_schedules_read_again_after_the_change(bench, state,
+                                                                                   later, drifted):
+    """Ruling H7 (26 Nov 2026), the same class. A schedule that changes between the first
+    read and the end of the deploy is not reported from the earlier read: both are
+    read again, and a difference is a STOP that points to force-off."""
+    change = {name: {"seq": [{"out": state + "\n"}, {"out": now + "\n"}]} for name, now in later.items()}
+    done = bench.run("deploy.sh", LATER + ["--image-digest", IMAGE],
+                     deploy_rules(True, state, **change), stdin=YES)
+    assert done.returncode == 1 and "the stack is deployed, but the live schedule" in done.stderr
+    assert drifted in done.stderr and "force-off" in done.stderr
+    assert tells_to_switch_on(done.stderr) == []
+    assert "deploy: done." not in done.stdout and bench.did("aws", *cfn("execute-change-set"))
 
 
 @pytest.mark.parametrize("digest", ["", "None"])
@@ -967,7 +1005,9 @@ def test_a_stack_with_no_image_has_no_schedules_to_read(bench, digest):
     done = bench.run("deploy.sh", LATER + ["--image-digest", IMAGE],
                      deploy_rules(True, "DISABLED", "v1", digest), stdin=YES)
     assert done.returncode == 0, done.stderr
-    assert "run_state" not in bench.names() and "check_state" not in bench.names()
+    # Not read before the change set (there were none); read once after it, for the banner.
+    assert bench.names().count("run_state") == 1 == bench.names().count("check_state")
+    assert bench.names().index("run_state") > bench.names().index("execute")
 
 
 @pytest.mark.parametrize("exists, state, change, says", [
@@ -1043,7 +1083,7 @@ ONLY_SCHEDULES = ("length(Changes[?ResourceChange.ResourceType=='AWS::Scheduler:
 def schedule_rules(now: str, after: str, /, **change) -> list:
     """`now` is the stack's ScheduleState; `after` is what both live schedules say."""
     state = live_state
-    rules = GUARD_RULES + [
+    rules = [dict(r) for r in GUARD_RULES] + [
         rule("state_now", "aws", stack("Stacks[0]." + STATE_QUERY), now),
         rule("digest", "aws", stack("Stacks[0].Parameters[?ParameterKey=='ImageDigest'].ParameterValue | [0]"),
              IMAGE),
@@ -1145,7 +1185,8 @@ def test_switching_off_needs_no_alarm_check_and_is_confirmed_by_what_the_schedul
     assert not set(bench.names()) & set(ALARM_CHECKS)
     assert parameters(bench)["ScheduleState"] == "ParameterValue=DISABLED"
     done = bench.run("schedules.sh", OFF, schedule_rules("ENABLED", "ENABLED"), stdin="DISABLE\n")
-    assert done.returncode == 1 and "a live schedule is not DISABLED" in done.stderr   # believed only if seen
+    assert done.returncode == 1 and "STOP: not DISABLED" in done.stderr          # believed only if seen
+    assert tells_to_switch_on(done.stderr) == []
 
 
 @pytest.mark.parametrize("argv, now", [(["--account", ACCOUNT, "status"], "DISABLED"),
@@ -1158,36 +1199,194 @@ def test_status_and_a_switch_to_the_state_it_is_in_change_nothing(bench, argv, n
 
 
 LIVE = {"status": ["--account", ACCOUNT, "status"], "on": ON, "off": OFF}
+FORCE = ["--account", ACCOUNT, "force-off"]
+RUN, CHECK = "discharge-eval-ws7-run", "discharge-eval-ws7-check"
 
 
-@pytest.mark.parametrize("action, now, change, first, then", [
+@pytest.mark.parametrize("action, now, change, drifted", [
     # The stack says DISABLED and a live schedule is ENABLED: the dangerous way round.
-    ("status", "DISABLED", {"run_state": {"out": "ENABLED\n"}}, "on", "off"),
-    ("status", "DISABLED", {"check_state": {"out": "ENABLED\n"}}, "on", "off"),
-    ("off", "DISABLED", {"run_state": {"out": "ENABLED\n"}}, "on", "off"),
-    ("off", "DISABLED", {"check_state": {"out": "ENABLED\n"}}, "on", "off"),
+    # The second line is Codex's case: the Wednesday run off, the Thursday check on.
+    ("status", "DISABLED", {"run_state": {"out": "ENABLED\n"}}, [f"{RUN}(ENABLED)"]),
+    ("status", "DISABLED", {"check_state": {"out": "ENABLED\n"}}, [f"{CHECK}(ENABLED)"]),
+    ("off", "DISABLED", {"run_state": {"out": "ENABLED\n"}}, [f"{RUN}(ENABLED)"]),
+    ("off", "DISABLED", {"check_state": {"out": "ENABLED\n"}}, [f"{CHECK}(ENABLED)"]),
+    ("status", "DISABLED", {"run_state": {"out": "ENABLED\n"}, "check_state": {"out": "ENABLED\n"}},
+     [f"{RUN}(ENABLED)", f"{CHECK}(ENABLED)"]),
     # The stack says ENABLED and a live schedule is DISABLED: a run that will not start.
-    ("status", "ENABLED", {"run_state": {"out": "DISABLED\n"}}, "off", "on"),
-    ("status", "ENABLED", {"check_state": {"out": "DISABLED\n"}}, "off", "on"),
-    ("on", "ENABLED", {"run_state": {"out": "DISABLED\n"}}, "off", "on"),
-    ("on", "ENABLED", {"check_state": {"out": "DISABLED\n"}}, "off", "on")])
+    ("status", "ENABLED", {"run_state": {"out": "DISABLED\n"}}, [f"{RUN}(DISABLED)"]),
+    ("status", "ENABLED", {"check_state": {"out": "DISABLED\n"}}, [f"{CHECK}(DISABLED)"]),
+    ("on", "ENABLED", {"run_state": {"out": "DISABLED\n"}}, [f"{RUN}(DISABLED)"]),
+    ("on", "ENABLED", {"check_state": {"out": "DISABLED\n"}}, [f"{CHECK}(DISABLED)"])])
 def test_no_success_is_reported_while_a_live_schedule_differs_from_the_stacks_state(
-        bench, action, now, change, first, then):
-    """Ruling H3 (26 Nov 2026). The class: exit 0 while a live schedule's state differs
-    from the stack's parameter. `status`, and a switch to the state the stack already
-    says, both read the two live schedules; either one out of step is a STOP that
-    gives the two hand commands that put both right through the stack. The partner is
-    the same call with both live schedules in step."""
+        bench, action, now, change, drifted):
+    """Rulings H3 and H7 (26 Nov 2026). The class: exit 0 while a live schedule's state
+    differs from the stack's parameter. `status`, and a switch to the state the stack
+    already says, both read the two live schedules; either one out of step is a STOP
+    that NAMES each drifted schedule and points to `force-off`. NO LINE OF IT TELLS THE
+    OPERATOR TO SWITCH ANYTHING ON: a path to DISABLED never enables on the way. The
+    partner is the same call with both live schedules in step."""
     done = bench.run("schedules.sh", LIVE[action], schedule_rules(now, now, **change))
     assert done.returncode == 1, done.stdout
-    assert f"STOP: a live schedule is not {now}" in done.stderr
-    assert "changed outside the stack" in done.stderr
+    named = one_line(done.stderr, f"STOP: not {now}, which is what the stack's ScheduleState says:")
+    assert named.split(":", 2)[2].split() == drifted
+    assert "Changed outside the stack." in done.stderr
     hand = [line.strip() for line in done.stderr.splitlines() if line.startswith("  infra/eval/")]
-    assert hand == [f"infra/eval/schedules.sh --account {ACCOUNT} {first}     then",
-                    f"infra/eval/schedules.sh --account {ACCOUNT} {then}"]
+    wanted = [f"infra/eval/schedules.sh --account {ACCOUNT} force-off"]
+    if now == "ENABLED":                            # then the stack is brought down to them
+        wanted.append(f"infra/eval/schedules.sh --account {ACCOUNT} off")
+    assert hand == wanted and tells_to_switch_on(done.stderr) == []
     assert not bench.did("aws", *cfn("create-change-set"))             # it reports; it changes nothing
+    assert not bench.did("aws", "scheduler", "update-schedule")
     done = bench.run("schedules.sh", LIVE[action], schedule_rules(now, now))
     assert done.returncode == 0, done.stderr
+
+
+def one_line(text: str, start: str) -> str:
+    found = [line for line in text.splitlines() if line.startswith(start)]
+    assert len(found) == 1, text
+    return found[0]
+
+
+def test_the_check_for_an_instruction_to_switch_on_finds_one():
+    """The control for `tells_to_switch_on`: the instruction this script used to print."""
+    old = f"  infra/eval/schedules.sh --account {ACCOUNT} on     then\n  infra/eval/schedules.sh --account {ACCOUNT} off"
+    assert len(tells_to_switch_on(old)) == 1
+    assert tells_to_switch_on(f"  infra/eval/schedules.sh --account {ACCOUNT} force-off\n"
+                              f"  infra/eval/schedules.sh --account {ACCOUNT} off") == []
+    for script in ("schedules.sh", "deploy.sh"):       # and no script holds such a line to print
+        said = [line for line in (SCRIPTS / script).read_text().splitlines() if "echo" in line or "stop " in line]
+        assert tells_to_switch_on("\n".join(said)) == [], script
+
+
+# ---------------------------------------------------------------- force-off
+
+def definition(name: str, state: str = "ENABLED") -> dict:
+    """A live schedule as `get-schedule` gives it (invented values)."""
+    return {"Arn": f"arn:aws:scheduler:{REGION}:{ACCOUNT}:schedule/discharge-eval/{name}",
+            "CreationDate": "2026-11-28T10:00:00+00:00", "LastModificationDate": "2026-12-01T09:00:00+00:00",
+            "Name": name, "GroupName": "discharge-eval", "State": state,
+            "Description": "WS7 weekly scheduled run (ADR-011 D7).", "ActionAfterCompletion": "NONE",
+            "ScheduleExpression": "cron(0 4 ? * WED *)", "ScheduleExpressionTimezone": "Europe/London",
+            "FlexibleTimeWindow": {"Mode": "OFF"}, "StartDate": None, "EndDate": None, "KmsKeyArn": None,
+            "Target": {"Arn": f"arn:aws:ecs:{REGION}:{ACCOUNT}:cluster/discharge-eval",
+                       "RoleArn": f"arn:aws:iam::{ACCOUNT}:role/discharge-eval-scheduler-role",
+                       "RetryPolicy": {"MaximumRetryAttempts": 0, "MaximumEventAgeInSeconds": 3600},
+                       "EcsParameters": {"TaskDefinitionArn": "arn:invented:task-definition/discharge-eval-ws7:3",
+                                         "LaunchType": "FARGATE", "TaskCount": 1},
+                       "Input": '{"containerOverrides":[{"name":"ws7","command":["python","x","<aws.scheduler.scheduled-time>"]}]}'}}
+
+
+def force_rules(stack_says: str, run: list, check: list, /, **change) -> list:
+    """`run` and `check` are what each live schedule says, read by read."""
+    def whole(name: str) -> list:
+        return ["scheduler", "get-schedule", "--region", REGION, "--group-name", "discharge-eval",
+                "--name", name, "--output", "json"]
+    rules = [dict(r) for r in GUARD_RULES] + [
+        rule("run_state", "aws", live_state(RUN), seq=[{"out": v + "\n"} for v in run]),
+        rule("check_state", "aws", live_state(CHECK), seq=[{"out": v + "\n"} for v in check]),
+        rule("get_run", "aws", whole(RUN), json.dumps(definition(RUN))),
+        rule("get_check", "aws", whole(CHECK), json.dumps(definition(CHECK))),
+        rule("update", "aws", ["scheduler", "update-schedule", "--region", REGION, "--cli-input-json", ANY],
+             do="input"),
+        rule("state_now", "aws", stack("Stacks[0]." + STATE_QUERY), stack_says),
+    ]
+    assert set(change) <= {r["name"] for r in rules}, change
+    for r in rules:
+        r.update(change.get(r["name"], {}))
+    return rules
+
+
+def as_written(name: str) -> dict:
+    """What force-off must write for `name`: the definition, the three fields the
+    service sets and the empty ones left out, and State DISABLED. Nothing else differs."""
+    want = {k: v for k, v in definition(name).items()
+            if k not in ("Arn", "CreationDate", "LastModificationDate") and v is not None}
+    return dict(want, State="DISABLED")
+
+
+def test_force_off_disables_the_one_live_schedule_that_is_on_and_enables_nothing(bench):
+    """Codex's case, to the end: the stack and the Wednesday run are DISABLED and the
+    Thursday check is ENABLED. `status` stops and points here. force-off writes the
+    check back with State DISABLED and its definition otherwise unchanged, does not
+    touch the run or the stack, reads both again, and only then reports success."""
+    done = bench.run("schedules.sh", FORCE,
+                     force_rules("DISABLED", ["DISABLED", "DISABLED"], ["ENABLED", "DISABLED"]), stdin=YES)
+    assert done.returncode == 0, done.stderr
+    assert bench.names() == ["sts_account", "sts_arn", "run_state", "check_state", "get_check", "update",
+                             "run_state", "check_state", "state_now"]
+    written = [c["input"] for c in bench.did("aws", "scheduler", "update-schedule")]
+    assert written == [as_written(CHECK)]
+    assert written[0]["Target"] == definition(CHECK)["Target"]          # the task, the role, the input
+    assert not bench.did("aws", "cloudformation", "--region", REGION, "create-change-set")
+    assert "force-off: both live eval schedules are DISABLED." in done.stdout
+    assert done.stdout.splitlines()[-1] == "The stack's ScheduleState is DISABLED too: nothing more to do."
+    assert tells_to_switch_on(done.stdout + done.stderr) == []
+    assert list(bench.work.glob("ws7-force-off.*")) == []
+
+
+def test_force_off_writes_both_when_both_are_on_and_says_to_bring_the_stack_into_line(bench):
+    done = bench.run("schedules.sh", FORCE,
+                     force_rules("ENABLED", ["ENABLED", "DISABLED"], ["ENABLED", "DISABLED"]), stdin=YES)
+    assert done.returncode == 0, done.stderr
+    assert [c["input"] for c in bench.did("aws", "scheduler", "update-schedule")] == \
+        [as_written(RUN), as_written(CHECK)]
+    assert all(c["input"]["State"] == "DISABLED" for c in bench.did("aws", "scheduler", "update-schedule"))
+    assert done.stdout.splitlines()[-1] == f"  infra/eval/schedules.sh --account {ACCOUNT} off"
+    assert tells_to_switch_on(done.stdout + done.stderr) == []
+
+
+def test_force_off_with_nothing_on_writes_nothing_and_asks_nothing(bench):
+    done = bench.run("schedules.sh", FORCE, force_rules("DISABLED", ["DISABLED"], ["DISABLED"]), stdin="")
+    assert done.returncode == 0, done.stderr
+    assert not bench.did("aws", "scheduler", "update-schedule") and "Type the stack name" not in done.stdout
+
+
+@pytest.mark.parametrize("run, check, left", [
+    (["ENABLED", "ENABLED"], ["DISABLED"], f"{RUN}(ENABLED)"),          # the write did not take
+    (["DISABLED", "ENABLED"], ["ENABLED", "DISABLED"], f"{RUN}(ENABLED)"),   # switched on meanwhile
+    (["ENABLED", "DISABLED"], ["ENABLED", "ENABLED"], f"{CHECK}(ENABLED)")])
+def test_force_off_is_a_success_only_if_both_schedules_read_disabled_afterwards(bench, run, check, left):
+    done = bench.run("schedules.sh", FORCE, force_rules("DISABLED", run, check), stdin=YES)
+    assert done.returncode == 1 and f"STOP: still not DISABLED: {left}" in done.stderr, done.stderr
+    assert "force-off: both live eval schedules are DISABLED." not in done.stdout
+
+
+@pytest.mark.parametrize("typed", ["", "\n", "yes\n", "DISABLE\n", "discharge-eval \n", "discharge-audit\n"])
+def test_force_off_writes_nothing_unless_the_stack_name_is_typed(bench, typed):
+    done = bench.run("schedules.sh", FORCE, force_rules("DISABLED", ["ENABLED"], ["ENABLED"]), stdin=typed)
+    assert done.returncode == 1 and "not confirmed. Nothing was changed." in done.stderr
+    assert not bench.did("aws", "scheduler", "update-schedule")
+    assert not bench.did("aws", "scheduler", "get-schedule", "--region", REGION, "--group-name",
+                         "discharge-eval", "--name", RUN, "--output")
+
+
+@pytest.mark.parametrize("env, change, account", [
+    ({}, {"sts_account": {"out": "999999999999\n"}}, ACCOUNT),
+    ({"AWS_REGION": "us-east-1"}, {}, ACCOUNT),
+    ({"AWS_ENDPOINT_URL_SCHEDULER": "http://127.0.0.1:9"}, {}, ACCOUNT),
+    ({}, {}, "")])
+def test_force_off_is_behind_the_guard(bench, env, change, account):
+    done = bench.run("schedules.sh", ["--account", account, "force-off"],
+                     force_rules("DISABLED", ["ENABLED"], ["ENABLED"], **change), stdin=YES, env=env)
+    assert done.returncode == 1 and "the identity and region check failed" in done.stderr
+    assert not bench.did("aws", "scheduler")
+
+
+@pytest.mark.parametrize("change, says", [
+    ({"run_state": {"seq": [{"status": 255, "out": ""}]}}, "could not be read. Nothing was changed."),
+    ({"run_state": {"seq": [{"out": "PAUSED\n"}]}}, "neither ENABLED nor DISABLED. Nothing was changed."),
+    ({"get_run": {"status": 255, "out": ""}}, "could not be read. It was not changed."),
+    ({"get_run": {"out": "not json\n"}}, "could not be copied. It was not changed."),
+    # The whole definition says something else than the state that was read: not written.
+    ({"get_run": {"out": json.dumps(definition(RUN, "DISABLED"))}}, "could not be copied. It was not changed."),
+    ({"get_run": {"out": json.dumps(definition(CHECK))}}, "could not be copied. It was not changed."),
+    ({"update": {"status": 255}}, "could not be written")])
+def test_force_off_stops_at_the_first_thing_it_cannot_read_or_write(bench, change, says):
+    done = bench.run("schedules.sh", FORCE,
+                     force_rules("DISABLED", ["ENABLED", "DISABLED"], ["DISABLED"], **change), stdin=YES)
+    assert done.returncode == 1 and says in done.stderr, done.stderr
+    if "update" not in change:
+        assert not bench.did("aws", "scheduler", "update-schedule")
 
 
 @pytest.mark.parametrize("change", [{"run_state": {"status": 255, "out": ""}},
@@ -1203,8 +1402,14 @@ def test_only_schedules_sh_can_set_the_schedules_state():
     assert setters == ["schedules.sh"]
     for script in SCRIPTS.glob("*.sh"):
         text = script.read_text()
-        assert "update-schedule" not in text and "create-schedule" not in text, script.name
+        code = "\n".join(line for line in text.splitlines() if not line.lstrip().startswith("#"))
+        # The one direct write to a schedule is force-off's, and what it writes is DISABLED.
+        assert code.count("update-schedule") == (1 if script.name == "schedules.sh" else 0), script.name
+        assert "create-schedule" not in code and "delete-schedule" not in code, script.name
         assert "disable-alarm-actions" not in text and "set-alarm-state" not in text, script.name
+    force = (SCRIPTS / "schedules.sh").read_text()
+    assert 'want["State"] = "DISABLED"' in force and '"ENABLED"' in force.split("python3 -c")[1].split("' \"$TMP")[0]
+    assert force.count('want["State"]') == 1
 
 
 # ========================================================= every guarded call ==
@@ -1268,4 +1473,3 @@ def test_what_zsh_does_with_a_bare_name_before_a_colon():
     done = subprocess.run([zsh, "-f", "-c", 'A=000000000000; print -r -- "x:$A:role" "x:${A}:role"'],
                           capture_output=True, text=True, env={"PATH": "/usr/bin:/bin"})
     assert done.stdout.split() == ["x:000000000000ole", "x:000000000000:role"]
-

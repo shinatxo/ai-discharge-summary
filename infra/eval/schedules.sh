@@ -5,6 +5,15 @@
 #   infra/eval/schedules.sh --account <12 digits> status
 #   infra/eval/schedules.sh --account <12 digits> on
 #   infra/eval/schedules.sh --account <12 digits> off
+#   infra/eval/schedules.sh --account <12 digits> force-off
+#
+# NOTHING ON A PATH TO DISABLED ENABLES ANYTHING (the author's ruling, 26 Nov 2026).
+# When a live schedule is ENABLED and should not be, the answer is `force-off`: it
+# reads each live eval schedule that is ENABLED and writes it back with State
+# DISABLED and its definition otherwise unchanged. It changes nothing else, reads both
+# again, and exits 0 only if both are DISABLED. It does not touch the stack; if the
+# stack's ScheduleState is ENABLED it says to run `off` afterwards. It needs python3
+# to copy the schedule's definition.
 #
 # It changes the stack's ScheduleState parameter through a change set that reuses
 # the deployed template and every other parameter, and it refuses a change set that
@@ -36,11 +45,11 @@ ACCOUNT="" ACTION=""
 while [ "$#" -gt 0 ]; do
   case "$1" in
     --account) [ "$#" -ge 2 ] || stop "--account needs a value"; ACCOUNT="$2"; shift 2 ;;
-    status|on|off) [ -z "$ACTION" ] || stop "give one of status, on, off"; ACTION="$1"; shift ;;
-    *) stop "usage: schedules.sh --account <12 digits> status|on|off" ;;
+    status|on|off|force-off) [ -z "$ACTION" ] || stop "give one of status, on, off, force-off"; ACTION="$1"; shift ;;
+    *) stop "usage: schedules.sh --account <12 digits> status|on|off|force-off" ;;
   esac
 done
-[ -n "$ACTION" ] || stop "usage: schedules.sh --account <12 digits> status|on|off"
+[ -n "$ACTION" ] || stop "usage: schedules.sh --account <12 digits> status|on|off|force-off"
 
 ws7_guard "$ACCOUNT" || stop "the identity and region check failed"
 
@@ -65,34 +74,103 @@ schedule_state() {    # schedule_state <name>: prints ENABLED or DISABLED
   printf '%s' "$value"
 }
 
+SCHEDULES="discharge-eval-ws7-run discharge-eval-ws7-check"
+
 # EVERY SUCCESS THIS SCRIPT REPORTS IS ABOUT THE LIVE SCHEDULES (the author's ruling,
 # 26 Nov 2026). The class it closes: exit 0 while a live schedule's state differs from
 # the stack's parameter (a schedule changed outside the stack, which CloudFormation
 # does not see). `status`, a switch to the state the stack is already in, and a
 # switch that was made all end here: both live states are read, and both must be the
 # wanted one.
+#
+# The STOP names each schedule that is out of step and points to `force-off`. IT NEVER
+# TELLS THE OPERATOR TO SWITCH ANYTHING ON: a path to DISABLED that enables the
+# Wednesday run on the way could start a paid run.
 live_must_be() {      # live_must_be <ENABLED|DISABLED>
-  local name state other wrong=0
-  if [ "$1" = ENABLED ]; then other=off; else other=on; fi
-  for name in discharge-eval-ws7-run discharge-eval-ws7-check; do
+  local name state drifted=""
+  for name in $SCHEDULES; do
     state=$(schedule_state "$name") || stop "the schedule $name could not be read"
     echo "schedule $name is $state"
     if [ "$state" != "$1" ]; then
-      wrong=1
+      drifted="$drifted $name($state)"
     fi
   done
-  if [ "$wrong" -ne 0 ]; then
-    echo "STOP: a live schedule is not $1, which is what the stack's ScheduleState says." >&2
-    echo "It was changed outside the stack. To put both right through the stack, by hand:" >&2
-    echo "  infra/eval/schedules.sh --account $ACCOUNT $other     then" >&2
+  if [ -n "$drifted" ]; then
+    echo "STOP: not $1, which is what the stack's ScheduleState says:$drifted" >&2
+    echo "Changed outside the stack. To switch every live eval schedule off, enabling nothing:" >&2
+    echo "  infra/eval/schedules.sh --account $ACCOUNT force-off" >&2
     if [ "$1" = ENABLED ]; then
-      echo "  infra/eval/schedules.sh --account $ACCOUNT on" >&2
-    else
+      echo "and then, to bring the stack into line with them:" >&2
       echo "  infra/eval/schedules.sh --account $ACCOUNT off" >&2
     fi
     exit 1
   fi
 }
+
+# force-off: every live eval schedule that is ENABLED is written back DISABLED, with
+# its definition otherwise unchanged. Nothing is enabled, and the stack is not touched.
+if [ "$ACTION" = force-off ]; then
+  TMP=$(mktemp -d "${TMPDIR:-/tmp}/ws7-force-off.XXXXXXXX") || stop "no temporary folder could be made"
+  [ -n "$TMP" ] && [ -d "$TMP" ] || stop "no temporary folder could be made"
+  trap 'rm -rf "$TMP"' EXIT
+  todo=""
+  for name in $SCHEDULES; do
+    state=$(schedule_state "$name") || stop "the schedule $name could not be read. Nothing was changed."
+    echo "schedule $name is $state"
+    case "$state" in
+      ENABLED) todo="$todo $name" ;;
+      DISABLED) ;;
+      *) stop "the schedule $name is neither ENABLED nor DISABLED. Nothing was changed." ;;
+    esac
+  done
+  if [ -n "$todo" ]; then
+    printf 'This writes State DISABLED to:%s. Type the stack name to go on: ' "$todo"
+    IFS= read -r answer || answer=""
+    [ "$answer" = "$WS7_STACK" ] || stop "not confirmed. Nothing was changed."
+    for name in $todo; do
+      # The schedule as it is, whole.
+      aws scheduler get-schedule --region "$WS7_REGION" --group-name "$WS7_SCHEDULE_GROUP" \
+        --name "$name" --output json >"$TMP/$name.json" \
+        || stop "the schedule $name could not be read. It was not changed."
+      # The same definition with State DISABLED and nothing else different. The three
+      # fields the service sets itself are left out, and so is a field with no value.
+      python3 -c '
+import json, sys
+have = json.load(open(sys.argv[1]))
+if have.get("Name") != sys.argv[3] or have.get("State") != "ENABLED":
+    sys.exit(1)
+want = {k: v for k, v in have.items()
+        if k not in ("Arn", "CreationDate", "LastModificationDate") and v is not None}
+want["State"] = "DISABLED"
+json.dump(want, open(sys.argv[2], "w"))
+' "$TMP/$name.json" "$TMP/$name.off.json" "$name" \
+        || stop "the definition of $name could not be copied. It was not changed."
+      [ -s "$TMP/$name.off.json" ] || stop "the definition of $name could not be copied. It was not changed."
+      aws scheduler update-schedule --region "$WS7_REGION" \
+        --cli-input-json "file://$TMP/$name.off.json" >/dev/null \
+        || stop "the schedule $name could not be written. Read both schedules again: run force-off once more."
+      echo "schedule $name: written with State DISABLED"
+    done
+  fi
+  # Believed only when read back: both DISABLED, or this is not a success.
+  left=""
+  for name in $SCHEDULES; do
+    state=$(schedule_state "$name") || stop "the schedule $name could not be read after the change"
+    echo "schedule $name is $state"
+    if [ "$state" != DISABLED ]; then
+      left="$left $name($state)"
+    fi
+  done
+  [ -z "$left" ] || stop "still not DISABLED:$left"
+  echo "force-off: both live eval schedules are DISABLED."
+  if NOW=$(stack_parameter ScheduleState) && [ "$NOW" = DISABLED ]; then
+    echo "The stack's ScheduleState is DISABLED too: nothing more to do."
+  else
+    echo "The stack's ScheduleState is not DISABLED (or could not be read). Bring the stack into line:"
+    echo "  infra/eval/schedules.sh --account $ACCOUNT off"
+  fi
+  exit 0
+fi
 
 NOW=$(stack_parameter ScheduleState) || stop "the stack's ScheduleState could not be read"
 case "$NOW" in

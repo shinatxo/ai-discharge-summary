@@ -163,7 +163,7 @@ else
           stop "the live schedule $name could not be read"
         fi
         if [ "$live" != "$WANT_STATE" ]; then
-          stop "the live schedule $name is $live, and the stack's ScheduleState says $WANT_STATE. It was changed outside the stack. Put it right first: infra/eval/schedules.sh --account $ACCOUNT status"
+          stop "the live schedule $name is $live, and the stack's ScheduleState says $WANT_STATE. It was changed outside the stack. To switch every live eval schedule off first, enabling nothing: infra/eval/schedules.sh --account $ACCOUNT force-off"
         fi
       done ;;
     ''|None) ;;      # no image yet, so the stack has no schedules
@@ -259,5 +259,24 @@ cfn update-termination-protection --stack-name "$WS7_STACK" --enable-termination
   >/dev/null || stop "the stack is deployed, but termination protection could not be switched on"
 cfn describe-stacks --stack-name "$WS7_STACK" --query 'Stacks[0].Outputs[].[OutputKey,OutputValue]' \
   --output table || stop "the stack is deployed, but its outputs could not be read"
-echo "deploy: done. The target is $WANT_TARGET. The schedules are $WANT_STATE."
+# The banner is about the live schedules as they are NOW, read again: not the read
+# made before the change set.
+HAS_IMAGE="${DIGEST:-${DIGEST_NOW:-}}"
+case "$HAS_IMAGE" in
+  sha256:*)
+    for name in discharge-eval-ws7-run discharge-eval-ws7-check; do
+      if ! live=$(aws scheduler get-schedule --region "$WS7_REGION" \
+          --group-name "$WS7_SCHEDULE_GROUP" --name "$name" --query State --output text) \
+          || [ -z "$live" ]; then
+        stop "the stack is deployed, but the live schedule $name could not be read"
+      fi
+      echo "schedule $name is $live"
+      if [ "$live" != "$WANT_STATE" ]; then
+        stop "the stack is deployed, but the live schedule $name is $live and the stack's ScheduleState says $WANT_STATE. To switch every live eval schedule off, enabling nothing: infra/eval/schedules.sh --account $ACCOUNT force-off"
+      fi
+    done
+    echo "deploy: done. The target is $WANT_TARGET. Both live schedules are $WANT_STATE." ;;
+  *)
+    echo "deploy: done. The target is $WANT_TARGET. There is no image yet, so there are no schedules." ;;
+esac
 exit 0

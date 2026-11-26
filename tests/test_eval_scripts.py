@@ -348,13 +348,23 @@ def test_a_push_checks_the_image_by_its_id_and_pushes_that_id(bench):
 
 
 def test_the_commit_comes_from_github_with_this_machines_git_configuration_left_out(bench):
+    """Two ways this machine could send the clone somewhere else, each tried alone: a
+    global git configuration, and configuration passed in the environment. Each one
+    rewrites the clone's source to a folder that does not exist. With the script's
+    isolation neither is read, and the clone is the scratch remote's."""
     c = make_remote(bench)["tip"]
-    hostile = bench.tmp / "hostile.gitconfig"
-    hostile.write_text("[core]\n\tautocrlf = true\n[url \"/nowhere/\"]\n\tinsteadOf = https://github.com/\n")
+    elsewhere = f"[url \"{bench.tmp}/nowhere/\"]\n\tinsteadOf = {bench.remote}\n"
+    (Path(bench.env["HOME"]) / ".gitconfig").write_text(elsewhere + "[core]\n\tautocrlf = true\n")
+    by_environment = {"GIT_CONFIG_COUNT": "1", "GIT_CONFIG_KEY_0": f"url.{bench.tmp}/nowhere/.insteadOf",
+                      "GIT_CONFIG_VALUE_0": str(bench.remote)}
+    # The control: real git, without the script's isolation, does follow each of them.
+    for env in ({"HOME": bench.env["HOME"]}, by_environment):
+        moved = subprocess.run([REAL_GIT, "ls-remote", str(bench.remote)], capture_output=True, text=True,
+                               env={"PATH": "/usr/bin:/bin", "HOME": str(bench.tmp / "nohome"),
+                                    "GIT_CONFIG_NOSYSTEM": "1", **env})
+        assert moved.returncode != 0 and "nowhere" in moved.stderr, moved.stderr
     done = bench.run("push-image.sh", ["--account", ACCOUNT, "--commit", c], push_rules(c),
-                     env={"GIT_DIR": str(ROOT / ".git"), "GIT_WORK_TREE": str(ROOT),
-                          "GIT_CONFIG_COUNT": "1", "GIT_CONFIG_KEY_0": "core.autocrlf",
-                          "GIT_CONFIG_VALUE_0": "true", "XDG_CONFIG_HOME": str(bench.tmp)})
+                     env={"GIT_DIR": str(ROOT / ".git"), "GIT_WORK_TREE": str(ROOT), **by_environment})
     assert done.returncode == 0, done.stderr
     gits = bench.did("git")
     clone = gits[0]["args"]
@@ -453,6 +463,25 @@ def test_an_export_that_is_not_the_commits_files_byte_for_byte_is_never_built(be
     assert done.returncode == 1 and says in done.stderr, done.stderr
     assert not bench.did("docker") and not bench.did("aws", "ecr")
     assert list(bench.work.iterdir()) == []
+
+
+def test_an_export_that_holds_a_file_the_commit_does_not_name_is_never_built(bench):
+    """The other direction: every file of the commit is there and right, and there is one
+    more. `tar` is wrapped for this test only, to leave an extra file behind."""
+    c = make_remote(bench)["tip"]
+    real_tar = shutil.which("tar")
+    wrapper = bench.bin / "tar"
+    wrapper.write_text(f"#!/bin/bash\n{real_tar} \"$@\" || exit 1\n"
+                       "for last; do :; done\necho extra > \"$last/src/not_in_the_commit.py\"\n")
+    wrapper.chmod(0o755)
+    done = bench.run("push-image.sh", ["--account", ACCOUNT, "--commit", c], push_rules(c))
+    assert done.returncode == 1, done.stdout
+    assert f"the export holds {len(IMAGE_FILES) + 1} files and the commit names {len(IMAGE_FILES)}" \
+        in done.stderr
+    assert not bench.did("docker") and list(bench.work.iterdir()) == []
+    wrapper.unlink()
+    done = bench.run("push-image.sh", ["--account", ACCOUNT, "--commit", c], push_rules(c))
+    assert done.returncode == 0                                        # the partner
 
 
 # Each check that must stop the push, by the answer that fails it.

@@ -18,8 +18,9 @@ either), so the stub is what runs. A stub answers only the calls a test planned:
 other call is recorded, answered with status 97, and FAILS THE TEST.
 
 `git` is the real git behind a wrapper. The wrapper lets one thing differ: a clone of
-the GitHub URL is given the test's own scratch repository instead, and a clone of
-anything else is a failed test. Every repository, commit, account and digest here
+the GitHub URL is given the test's own scratch repository instead, fetched as a
+remote is (`--no-local`: only what the branch reaches), and a clone of anything else
+is a failed test. Every repository, commit, account and digest here
 is invented.
 """
 
@@ -64,7 +65,12 @@ if tool == "git":
             entry["unexpected"] = True
             note()
             sys.exit(97)
+        note()
+        # The scratch remote in GitHub's place, fetched as a remote is: only what the
+        # branch reaches, never a copy of every object in the folder.
         args[-2] = os.environ["WS7_STUB_REMOTE"]
+        args.insert(args.index("clone") + 1, "--no-local")
+        os.execv({git!r}, [{git!r}] + args)
     note()
     os.execv({git!r}, [{git!r}] + args)
 with open(os.environ["WS7_STUB_PLAN"]) as plan:
@@ -192,9 +198,15 @@ def git(cwd: Path, *args: str) -> str:
 
 
 def make_remote(bench: Bench, change=None) -> dict:
-    """A scratch repository with the image's paths and the protected folders, tracked.
-    Returns the commits: `old` and `tip` on the base branch, `side` on a branch that
-    was never merged, and `tree`, the tip's tree (40 hex that is not a commit)."""
+    """A scratch repository with the image's paths and the protected folders, tracked,
+    and a history shaped like this repository's: a task branch of two commits, merged
+    into the base branch with a merge commit. Returns:
+
+    - `old` and `tip`: the base branch's first-parent chain. `tip` is the merge commit.
+    - `merged_first` and `merged_head`: the task branch's own commits. Both are
+      ancestors of the base branch, and neither is on its first-parent chain.
+    - `side`: a commit on a branch that was never merged.
+    - `tree`: the tip's tree (40 hex that is not a commit)."""
     work = bench.tmp / "remote-work"
     work.mkdir()
     git(work, "init", "--quiet", "--initial-branch", BRANCH)
@@ -204,18 +216,28 @@ def make_remote(bench: Bench, change=None) -> dict:
     git(work, "add", "--all")
     git(work, "commit", "--quiet", "-m", "first")
     old = git(work, "rev-parse", "HEAD")
+    git(work, "checkout", "--quiet", "-b", "task/merged")
+    (work / "prompts" / "p.md").write_text("invented, a first try that review faulted\n")
+    git(work, "commit", "--quiet", "-am", "a head that review found faults in")
+    merged_first = git(work, "rev-parse", "HEAD")
+    (work / "prompts" / "p.md").write_text("invented\n")
     (work / "src" / "app.py").write_text("x = 2\n")
     if change:
         change(work)
     git(work, "add", "--all")
     git(work, "commit", "--quiet", "-m", "second")
+    merged_head = git(work, "rev-parse", "HEAD")
+    git(work, "checkout", "--quiet", BRANCH)
+    git(work, "merge", "--quiet", "--no-ff", "-m", "Merge pull request (invented)", "task/merged")
     tip = git(work, "rev-parse", "HEAD")
+    assert git(work, "rev-list", "--parents", "-n", "1", tip).split() == [tip, old, merged_head]
     git(work, "checkout", "--quiet", "-b", "task/unmerged")
     (work / "src" / "app.py").write_text("x = 3\n")
     git(work, "commit", "--quiet", "-am", "unreviewed")
     side = git(work, "rev-parse", "HEAD")
     git(work, "clone", "--quiet", "--bare", str(work), str(bench.remote))
-    return {"old": old, "tip": tip, "side": side, "tree": git(work, "rev-parse", f"{tip}^{{tree}}")}
+    return {"old": old, "tip": tip, "merged_first": merged_first, "merged_head": merged_head,
+            "side": side, "tree": git(work, "rev-parse", f"{tip}^{{tree}}")}
 
 
 # ------------------------------------------------------------ the push plan
@@ -369,7 +391,7 @@ def test_the_commit_comes_from_github_with_this_machines_git_configuration_left_
     gits = bench.did("git")
     clone = gits[0]["args"]
     assert clone == ["clone", "--quiet", "--bare", "--single-branch", "--branch", BRANCH,
-                     str(bench.remote), clone[-1]]                     # the wrapper saw GitHub's URL
+                     GITHUB, clone[-1]]                                # what the script asked git for
     assert clone[-1].startswith(str(bench.work))
     # Every later git call names the clone; none can read the local checkout.
     assert len(gits) > 5 and all(g["args"][0] == f"--git-dir={clone[-1]}" for g in gits[1:])
@@ -379,21 +401,35 @@ def test_the_commit_comes_from_github_with_this_machines_git_configuration_left_
     assert bench.did("docker", "build")[0]["context"] == IMAGE_FILES
 
 
+NOT_ON_THE_CHAIN = "is not on the first-parent chain of feat/agentic-pipeline as fetched"
+NOT_IN_THE_CLONE = "is not a commit on feat/agentic-pipeline as fetched"
+
+
 @pytest.mark.parametrize("which, says", [
-    ("old", None),                                   # an ancestor of the branch: allowed
-    # A clone of a local folder copies every object, so the unmerged commit is there and
-    # the ancestor rule refuses it. Over HTTPS GitHub sends the branch only, and the
-    # refusal is the one the next line has.
-    ("side", "nor an ancestor of it"),
-    ("tree", "is not a commit on feat/agentic-pipeline as fetched"),
+    ("tip", None),                                   # the merge commit: the branch's head
+    ("old", None),                                   # where the branch itself was before it
+    # The task branch's own commits. Each is in the clone and is an ANCESTOR of the
+    # branch, and is refused: it is not on the first-parent chain.
+    ("merged_head", NOT_ON_THE_CHAIN),
+    ("merged_first", NOT_ON_THE_CHAIN),
+    # Commits that are not in the clone at all: a branch that was never merged, and a
+    # SHA nothing has.
+    ("side", NOT_IN_THE_CLONE),
+    ("unknown", NOT_IN_THE_CLONE),
+    ("tree", NOT_IN_THE_CLONE),                      # 40 hex that is not a commit
     ("short", "must be the full 40-character commit"),
     ("upper", "must be the full 40-character commit"),
-    ("branch", "must be the full 40-character commit"),
-    ("unknown", "is not a commit on feat/agentic-pipeline as fetched")])
-def test_only_a_commit_on_the_base_branch_as_fetched_is_built(bench, which, says):
-    """An image is only ever of a reviewed, merged commit: the branch as fetched, or an
-    ancestor of it. A tree's SHA, an unmerged commit and a name are refused."""
+    ("branch", "must be the full 40-character commit")])
+def test_only_a_commit_on_the_base_branchs_first_parent_chain_is_built(bench, which, says):
+    """An image is only ever of a reviewed, merged commit (the author's ruling, 26 Nov
+    2026). A merge keeps every commit of the task branch in the history, and one of
+    them can be a head that review found faults in. So the commit must be on the
+    branch's first-parent chain in the fresh clone: the merge commit passes, and a
+    commit from the merged side branch is refused, though it is an ancestor."""
     made = make_remote(bench)
+    if which in ("merged_head", "merged_first"):     # the control: it IS an ancestor of the branch
+        assert git(bench.remote, "merge-base", "--is-ancestor", made[which], made["tip"]) == ""
+        assert made[which] not in git(bench.remote, "rev-list", "--first-parent", BRANCH).split()
     commit = {"short": made["tip"][:12], "upper": made["tip"].upper(), "branch": BRANCH,
               "unknown": "1" * 40}.get(which) or made[which]
     plan = push_rules(commit if len(commit) == 40 else made["tip"])
@@ -406,15 +442,16 @@ def test_only_a_commit_on_the_base_branch_as_fetched_is_built(bench, which, says
     assert list(bench.work.iterdir()) == []
 
 
-def test_a_commit_that_is_fetched_but_is_not_an_ancestor_of_the_branch_is_refused(bench):
-    """The ancestor rule alone: the commit is in the clone (a tag reaches it), it is a
-    commit, and it is not the branch or an ancestor of it."""
+def test_the_chain_is_the_branchs_as_fetched_not_as_this_machine_last_knew_it(bench):
+    """The branch on GitHub is one commit behind what was asked for (the merge has not
+    landed there). The clone decides: the commit is refused, and the one the branch
+    is at is built."""
     made = make_remote(bench)
     git(bench.remote, "update-ref", f"refs/heads/{BRANCH}", made["old"])   # the branch, one behind
     git(bench.remote, "tag", "reachable", made["tip"])
     done = bench.run("push-image.sh", ["--account", ACCOUNT, "--commit", made["tip"]],
                      push_rules(made["tip"]))
-    assert done.returncode == 1 and "nor an ancestor of it" in done.stderr
+    assert done.returncode == 1 and NOT_IN_THE_CLONE in done.stderr
     assert not bench.did("docker")
     done = bench.run("push-image.sh", ["--account", ACCOUNT, "--commit", made["old"]],
                      push_rules(made["old"]))                              # the partner

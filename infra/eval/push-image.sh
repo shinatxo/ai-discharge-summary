@@ -14,8 +14,11 @@
 # WHAT IT BUILDS FROM. Never the local checkout. It clones the repository from GitHub
 # into a temporary folder, with this machine's git configuration left out
 # (GIT_CONFIG_GLOBAL=/dev/null, GIT_CONFIG_NOSYSTEM=1), and refuses unless the commit
-# is feat/agentic-pipeline as fetched, or an ancestor of it: an image is only ever of
-# a reviewed, merged commit. It exports only the paths the image is built from, never
+# is on feat/agentic-pipeline's first-parent chain as fetched: the branch's head, or a
+# commit the branch itself was at before. An image is only ever of a reviewed, merged
+# commit. A merge keeps every commit of the task branch in the history, and one of
+# those can be a head that review found faults in, so "an ancestor of the branch" is
+# not enough. It exports only the paths the image is built from, never
 # evals/runs or evals/calibration, and then checks the export against the commit:
 # the same set of files, and each file's bytes hash to the blob the commit names. So
 # the commit label is true of every copied file.
@@ -105,9 +108,20 @@ if ! GOT=$(git --git-dir="$REPO" rev-parse --verify --quiet "$C^{commit}") || [ 
   stop "$C is not a commit on $BRANCH as fetched"
 fi
 [ "$GOT" = "$C" ] || stop "$C does not name a commit by its own SHA"
-# A reviewed, merged commit: the branch as fetched, or an ancestor of it.
-git --git-dir="$REPO" merge-base --is-ancestor "$C" "$TIP" \
-  || stop "$C is not $BRANCH as fetched, nor an ancestor of it"
+# A reviewed, merged commit: one on the branch's FIRST-PARENT chain, which is the
+# branch's head and every commit the branch itself was at before. A commit that came
+# in through a merge's other parent (a task branch's own commit) is an ancestor of the
+# branch and is NOT on that chain: it is refused (the author's ruling, 26 Nov 2026).
+CHAIN="$WORK/first-parent.txt"
+git --git-dir="$REPO" rev-list --first-parent "refs/heads/$BRANCH" >"$CHAIN" \
+  || stop "the first-parent chain of $BRANCH could not be listed"
+on_chain=0
+while IFS= read -r line || [ -n "$line" ]; do
+  if [ "$line" = "$C" ]; then
+    on_chain=1
+  fi
+done <"$CHAIN"
+[ "$on_chain" -eq 1 ] || stop "$C is not on the first-parent chain of $BRANCH as fetched"
 echo "push: commit $C ($BRANCH is at $TIP)"
 
 # ------------------------------------------------------------- the export

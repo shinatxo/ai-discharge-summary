@@ -2530,6 +2530,23 @@ starts; the failed record; the prefixes of success records and retained copies.
 
 ### Part 5b: the manual modes and the resolve command
 
+- **A test for the `call` count of "a call still `sent`"** (found in slice 3, 26 Nov 2026, when
+  the earlier mutations were run again; carried by the author's ruling of that day, with no code
+  change in slice 3). One of PR #9's mutations, "a row still `sent` is not the run's first
+  failure", survives when it is written as `first_failure()` skipping such a row
+  (`evals/ws7_entry.py`): no test fails, not the named one
+  (`test_accounting_that_did_not_finish_leaves_the_entry_unresolved_at_its_reservation`) and not
+  the whole of `tests/test_ws7_entry.py`.
+  - Why: `_judge()` calls `ws7_ledger.report_fault()` straight after `first_failure()`, and for a
+    row still `sent` that gives the same code, `ws7_report_incomplete`. So the run still fails
+    with the right code. What is lost is the stop's `call` count, which names the call, and no
+    test holds it. If a later row has a failure of its own, that row's code would name the run
+    instead.
+  - Written the other way (the whole `sent` branch removed, so the row falls through), the
+    mutation is caught. PR #9's body reports it as caught, so that was most likely the reading
+    used then.
+  - **The behaviour is right; a test is missing.** 5b adds one that holds the `call` count of
+    that stop, and one with a later failing row, so that the first reading is caught too.
 - **The yes** (the author's ruling, 20 Nov 2026; the details are for 5b's plan). A manual mode
   needs, in the invocation itself, the run ID the job derives and the reservation it computes.
   **A manual command without its yes stops with `ws7_manual_not_approved` and prints the run ID
@@ -2624,7 +2641,9 @@ fixing them changes the test file (the author's ruling, 23 Nov 2026):
 ### Slice 3's push script
 
 **Closed by slice 3** (`infra/eval/push-image.sh`; `docs/WS7-RUNBOOK.md`, section 2). The script
-requires `$C` to resolve to a commit, and to itself; it goes by `check5`'s status against the
+requires `$C` to resolve to a commit, and to itself, and to be on `feat/agentic-pipeline`'s
+first-parent chain in a fresh clone (a merge commit of the branch, never a commit from inside a
+merged task branch; the author's ruling, 26 Nov 2026); it goes by `check5`'s status against the
 image ID it pushes; it builds from a clone of GitHub, never from the local checkout; and it
 checks its export against the commit, file by file, so the commit label is true of every copied
 file. `tests/test_eval_scripts.py` holds each refusal.

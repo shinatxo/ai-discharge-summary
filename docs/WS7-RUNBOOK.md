@@ -76,7 +76,7 @@ The image is built from a merged commit of `feat/agentic-pipeline`, which the sc
 GitHub. It never reads this checkout.
 
 ```zsh
-C=<the 40-character merge commit>
+C=<the 40-character merge commit, as `git log --first-parent origin/feat/agentic-pipeline` shows it>
 
 # A rehearsal: builds and runs every check, makes no AWS call, pushes nothing.
 infra/eval/push-image.sh --check-only --commit $C
@@ -89,8 +89,11 @@ What the script does, in order, and it stops at the first thing that fails:
 
 1. The identity and region check.
 2. Clones `feat/agentic-pipeline` from GitHub into a temporary folder, with this machine's git
-   configuration left out. Refuses unless `$C` is a commit, and is that branch as fetched or an
-   ancestor of it.
+   configuration left out. Refuses unless `$C` is a commit **on that branch's first-parent chain
+   as fetched** (`git rev-list --first-parent`): the branch's head, or a commit the branch itself
+   was at before. In practice that is a pull request's merge commit. A commit from inside a merged
+   task branch is refused, though it is an ancestor of the branch: it may be a head that review
+   found faults in (the author's ruling, 26 Nov 2026).
 3. Exports only the image's paths. `evals/runs` and `evals/calibration` are never exported.
 4. Checks the export against the commit: the same files, and each file's bytes hash to the blob
    the commit names.

@@ -1,0 +1,1173 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: >-
+  discharge-eval: the WS7 scheduled re-evaluation (ADR-011). Its own VPC, one Fargate
+  task, an S3 bucket, an alert topic and the drift alarms. Deployed by hand
+  (docs/WS7-RUNBOOK.md), never by CI. It holds no permission on any resource of the
+  live stack. Plain CloudFormation, no transform.
+
+# How this template is deployed (docs/WS7-RUNBOOK.md):
+#   Phase 1, ImageDigest empty: everything except the task definition and the two
+#   schedules. Nothing can run, and there is no placeholder image.
+#   Phase 2, ImageDigest set after the guarded push: the task definition, pinned by
+#   that digest, and the two schedules, DISABLED.
+# tests/test_eval_template.py holds this file to the job's own constants.
+
+Parameters:
+  Target:
+    Type: String
+    AllowedValues: [v1, pipeline]
+    Description: >-
+      What the two schedules run and what every alarm watches (ADR-011 D2): v1 until
+      W11, the pipeline after it. No default: every deploy states it.
+  ImageDigest:
+    Type: String
+    Default: ''
+    AllowedPattern: '^$|^sha256:[0-9a-f]{64}$'
+    Description: >-
+      The digest of the pushed image: the image ID that check 5 passed on
+      (infra/eval/push-image.sh). Empty on the first deploy. It is the image the task
+      runs AND the value of WS7_IMAGE_DIGEST, so the two cannot differ.
+  ScheduleState:
+    Type: String
+    Default: DISABLED
+    AllowedValues: [DISABLED, ENABLED]
+    Description: >-
+      The state of both schedules. DISABLED until slice 6. Only
+      infra/eval/schedules.sh changes it; infra/eval/deploy.sh keeps what is there.
+  AlertEmail:
+    Type: String
+    Default: ''
+    Description: Email subscribed to the alert topic. Passed at deploy time; never stored in the repository.
+
+Conditions:
+  HasImage: !Not [!Equals [!Ref ImageDigest, '']]
+  HasAlertEmail: !Not [!Equals [!Ref AlertEmail, '']]
+
+Resources:
+
+  # --- Network (D6): a public subnet with nothing coming in --------------------
+  Vpc:
+    Type: AWS::EC2::VPC
+    Properties:
+      CidrBlock: 10.71.0.0/24
+      EnableDnsSupport: true
+      EnableDnsHostnames: true
+      Tags: [{Key: Name, Value: discharge-eval}]
+
+  InternetGateway:
+    Type: AWS::EC2::InternetGateway
+    Properties:
+      Tags: [{Key: Name, Value: discharge-eval}]
+
+  GatewayAttachment:
+    Type: AWS::EC2::VPCGatewayAttachment
+    Properties:
+      VpcId: !Ref Vpc
+      InternetGatewayId: !Ref InternetGateway
+
+  PublicSubnet:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref Vpc
+      CidrBlock: 10.71.0.0/26
+      AvailabilityZone: !Select [0, !GetAZs '']
+      # The task is given its public IP by the schedule (AssignPublicIp), not by the subnet.
+      MapPublicIpOnLaunch: false
+      Tags: [{Key: Name, Value: discharge-eval-public}]
+
+  RouteTable:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref Vpc
+      Tags: [{Key: Name, Value: discharge-eval-public}]
+
+  DefaultRoute:
+    Type: AWS::EC2::Route
+    DependsOn: GatewayAttachment
+    Properties:
+      RouteTableId: !Ref RouteTable
+      DestinationCidrBlock: 0.0.0.0/0
+      GatewayId: !Ref InternetGateway
+
+  SubnetRoute:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref PublicSubnet
+      RouteTableId: !Ref RouteTable
+
+  # No inbound rule at all, and HTTPS out only. Stating the egress rule removes the
+  # default allow-all egress. The control is the task role, not the network (D6).
+  TaskSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupName: discharge-eval-task-sg
+      GroupDescription: WS7 eval task. No inbound rules. Outbound HTTPS only.
+      VpcId: !Ref Vpc
+      SecurityGroupEgress:
+        - IpProtocol: tcp
+          FromPort: 443
+          ToPort: 443
+          CidrIp: 0.0.0.0/0
+          Description: HTTPS to AWS service endpoints
+
+  # --- The key (D9): one key for the bucket and the topic ----------------------
+  Key:
+    Type: AWS::KMS::Key
+    # Retain: losing the key makes every object in the retained bucket unreadable.
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
+    Properties:
+      Description: discharge-eval - the WS7 eval bucket and alert topic
+      EnableKeyRotation: true
+      KeyPolicy:
+        Version: '2012-10-17'
+        Statement:
+          # Delegates to IAM, as the live stack's key does. It is what makes the task
+          # role's own KMS statement work and lets the author administer the key.
+          - Sid: EnableIAMUserPermissions
+            Effect: Allow
+            Principal:
+              AWS: !Sub 'arn:${AWS::Partition}:iam::${AWS::AccountId}:root'
+            Action: 'kms:*'
+            Resource: '*'
+          # The fix the live topic needs (ADR-011, finding 5): CloudWatch alarms can
+          # publish to a topic encrypted with a customer-managed key only if the key
+          # policy lets CloudWatch use the key.
+          - Sid: CloudWatchAlarmsUseTheKeyForTheTopic
+            Effect: Allow
+            Principal:
+              Service: cloudwatch.amazonaws.com
+            Action: ['kms:Decrypt', 'kms:GenerateDataKey*']
+            Resource: '*'
+            Condition:
+              StringEquals:
+                'aws:SourceAccount': !Ref AWS::AccountId
+              ArnLike:
+                'aws:SourceArn': !Sub 'arn:${AWS::Partition}:cloudwatch:${AWS::Region}:${AWS::AccountId}:alarm:discharge-eval-*'
+          # No source condition: AWS does not support one for EventBridge publishing
+          # to an encrypted topic (ADR-011 D9). The topic policy names the one rule.
+          - Sid: EventBridgeUsesTheKeyForTheTopic
+            Effect: Allow
+            Principal:
+              Service: events.amazonaws.com
+            Action: ['kms:Decrypt', 'kms:GenerateDataKey*']
+            Resource: '*'
+          # The CI deploy role holds kms:* on every key in this region. It is the live
+          # stack's deploy role and has no business here (ADR-011, known limits).
+          - Sid: DenyTheCiDeployRole
+            Effect: Deny
+            Principal: '*'
+            Action: 'kms:*'
+            Resource: '*'
+            Condition:
+              ArnEquals:
+                'aws:PrincipalArn': !Sub 'arn:${AWS::Partition}:iam::${AWS::AccountId}:role/GitHubActionsDischargeDeploy'
+
+  KeyAlias:
+    Type: AWS::KMS::Alias
+    Properties:
+      AliasName: alias/discharge-eval
+      TargetKeyId: !Ref Key
+
+  # --- The bucket (D8) ---------------------------------------------------------
+  Bucket:
+    Type: AWS::S3::Bucket
+    # Retain: it holds what is kept (baselines, claims, ledgers, incident copies).
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
+    Properties:
+      BucketName: !Sub 'discharge-eval-${AWS::AccountId}-${AWS::Region}'
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: 'aws:kms'
+              KMSMasterKeyID: !GetAtt Key.Arn
+            BucketKeyEnabled: true
+      VersioningConfiguration:
+        Status: Enabled
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+      OwnershipControls:
+        Rules:
+          - ObjectOwnership: BucketOwnerEnforced
+      LifecycleConfiguration:
+        Rules:
+          # ONE rule and ONE prefix. Nothing that is kept sits under it
+          # (tests/test_ws7_store.py). The bucket is versioned, so the expiry only
+          # hides an object: the old version is deleted 30 days later. Those 30 days
+          # are the only undo for a run whose retained/ copy was missed.
+          - Id: expire-scheduled-runs
+            Status: Enabled
+            Prefix: ws7/runs/scheduled/
+            ExpirationInDays: 90
+            NoncurrentVersionExpiration:
+              NoncurrentDays: 30
+
+  BucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket: !Ref Bucket
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Sid: DenyInsecureTransport
+            Effect: Deny
+            Principal: '*'
+            Action: 's3:*'
+            Resource: [!GetAtt Bucket.Arn, !Sub '${Bucket.Arn}/*']
+            Condition:
+              Bool:
+                'aws:SecureTransport': 'false'
+          - Sid: DenyTheCiDeployRole
+            Effect: Deny
+            Principal: '*'
+            Action: 's3:*'
+            Resource: [!GetAtt Bucket.Arn, !Sub '${Bucket.Arn}/*']
+            Condition:
+              ArnEquals:
+                'aws:PrincipalArn': !Sub 'arn:${AWS::Partition}:iam::${AWS::AccountId}:role/GitHubActionsDischargeDeploy'
+
+  # --- The alert topic (D9) ----------------------------------------------------
+  AlertsTopic:
+    Type: AWS::SNS::Topic
+    Properties:
+      TopicName: discharge-eval-alerts
+      DisplayName: Discharge Assistant eval alerts
+      KmsMasterKeyId: !Ref Key
+
+  AlertsTopicPolicy:
+    Type: AWS::SNS::TopicPolicy
+    Properties:
+      Topics: [!Ref AlertsTopic]
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Sid: CloudWatchAlarmsPublish
+            Effect: Allow
+            Principal:
+              Service: cloudwatch.amazonaws.com
+            Action: 'sns:Publish'
+            Resource: !Ref AlertsTopic
+            Condition:
+              StringEquals:
+                'aws:SourceAccount': !Ref AWS::AccountId
+              ArnLike:
+                'aws:SourceArn': !Sub 'arn:${AWS::Partition}:cloudwatch:${AWS::Region}:${AWS::AccountId}:alarm:discharge-eval-*'
+          - Sid: TheTaskStoppedRulePublishes
+            Effect: Allow
+            Principal:
+              Service: events.amazonaws.com
+            Action: 'sns:Publish'
+            Resource: !Ref AlertsTopic
+            Condition:
+              ArnEquals:
+                'aws:SourceArn': !GetAtt TaskStoppedRule.Arn
+          - Sid: DenyTheCiDeployRole
+            Effect: Deny
+            Principal: '*'
+            Action:
+              - 'sns:Publish'
+              - 'sns:Subscribe'
+              - 'sns:SetTopicAttributes'
+              - 'sns:GetTopicAttributes'
+              - 'sns:DeleteTopic'
+              - 'sns:AddPermission'
+              - 'sns:RemovePermission'
+              - 'sns:ListSubscriptionsByTopic'
+            Resource: !Ref AlertsTopic
+            Condition:
+              ArnEquals:
+                'aws:PrincipalArn': !Sub 'arn:${AWS::Partition}:iam::${AWS::AccountId}:role/GitHubActionsDischargeDeploy'
+
+  AlertsEmailSubscription:
+    Type: AWS::SNS::Subscription
+    Condition: HasAlertEmail
+    Properties:
+      TopicArn: !Ref AlertsTopic
+      Protocol: email
+      Endpoint: !Ref AlertEmail
+
+  # --- The expected values (D11) -----------------------------------------------
+  # Plain Strings, written by the author by hand. "unset" is not JSON, so until then
+  # the match check stops the run before its claim (ws7_expected_invalid). NEVER
+  # change Value here: CloudFormation would overwrite what the author wrote.
+  ExpectedPipeline:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: /discharge-eval/ws7/expected/pipeline
+      Type: String
+      Tier: Standard
+      Value: unset
+      Description: WS7 expected values for the pipeline target. Written by hand from the release record.
+
+  ExpectedV1:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: /discharge-eval/ws7/expected/v1
+      Type: String
+      Tier: Standard
+      Value: unset
+      Description: WS7 expected values for the v1 target. Written by hand from the commit deployed on main.
+
+  # --- The image, the cluster, the task (D5, D11) -------------------------------
+  Repository:
+    Type: AWS::ECR::Repository
+    Properties:
+      RepositoryName: discharge-eval
+      # A tag, once pushed, cannot be moved to another image.
+      ImageTagMutability: IMMUTABLE
+      ImageScanningConfiguration:
+        ScanOnPush: true
+      # A stack delete fails while an image is here: tear-down removes them by hand.
+      EmptyOnDelete: false
+      LifecyclePolicy:
+        # ONE rule: an UNTAGGED image expires 14 days after its push. Every pushed
+        # image is tagged and tags are immutable, so the pinned image is never
+        # untagged. Its two children (the arm64 manifest and the attestation) are
+        # untagged, and AWS does not expire an image a manifest list refers to
+        # (docs/WS7-RUNBOOK.md has the check that shows it on this repository).
+        LifecyclePolicyText: |
+          {"rules":[{"rulePriority":1,"description":"untagged images expire 14 days after their push","selection":{"tagStatus":"untagged","countType":"sinceImagePushed","countUnit":"days","countNumber":14},"action":{"type":"expire"}}]}
+
+  Cluster:
+    Type: AWS::ECS::Cluster
+    Properties:
+      ClusterName: discharge-eval
+
+  TaskLogGroup:
+    Type: AWS::Logs::LogGroup
+    DeletionPolicy: Delete
+    UpdateReplacePolicy: Delete
+    Properties:
+      LogGroupName: /discharge-eval/ws7
+      RetentionInDays: 90
+
+  # The control (D6). Trusted by ECS tasks only. Six grants and the key, and nothing
+  # on any resource of the live stack.
+  TaskRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: discharge-eval-task-role
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: ecs-tasks.amazonaws.com
+            Action: 'sts:AssumeRole'
+            Condition:
+              StringEquals:
+                'aws:SourceAccount': !Ref AWS::AccountId
+              ArnLike:
+                'aws:SourceArn': !Sub 'arn:${AWS::Partition}:ecs:${AWS::Region}:${AWS::AccountId}:*'
+      Policies:
+        - PolicyName: ws7-task
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Sid: InvokeTheOnePinnedModel
+                Effect: Allow
+                Action: 'bedrock:InvokeModel'
+                Resource: !Sub 'arn:${AWS::Partition}:bedrock:${AWS::Region}::foundation-model/anthropic.claude-sonnet-4-6'
+              # PutMetricData has no resource level: the namespace condition is the limit.
+              - Sid: PutMetricsInOneNamespace
+                Effect: Allow
+                Action: 'cloudwatch:PutMetricData'
+                Resource: '*'
+                Condition:
+                  StringEquals:
+                    'cloudwatch:namespace': DischargeAssistant/Eval
+              # Get and put under ws7/. No delete: the job cannot remove a claim.
+              - Sid: GetAndPutUnderWs7
+                Effect: Allow
+                Action: ['s3:GetObject', 's3:PutObject']
+                Resource: !Sub '${Bucket.Arn}/ws7/*'
+              - Sid: ListWs7Only
+                Effect: Allow
+                Action: 's3:ListBucket'
+                Resource: !GetAtt Bucket.Arn
+                Condition:
+                  StringLike:
+                    's3:prefix': 'ws7/*'
+              # Read, never write.
+              - Sid: ReadTheExpectedValues
+                Effect: Allow
+                Action: 'ssm:GetParameter'
+                Resource:
+                  - !Sub 'arn:${AWS::Partition}:ssm:${AWS::Region}:${AWS::AccountId}:parameter/discharge-eval/ws7/expected/pipeline'
+                  - !Sub 'arn:${AWS::Partition}:ssm:${AWS::Region}:${AWS::AccountId}:parameter/discharge-eval/ws7/expected/v1'
+              - Sid: PublishToTheEvalTopic
+                Effect: Allow
+                Action: 'sns:Publish'
+                Resource: !Ref AlertsTopic
+              # The key, only through S3 and SNS: the role cannot call KMS directly.
+              - Sid: UseTheKeyThroughS3AndSns
+                Effect: Allow
+                Action: ['kms:Decrypt', 'kms:GenerateDataKey']
+                Resource: !GetAtt Key.Arn
+                Condition:
+                  StringEquals:
+                    'kms:ViaService':
+                      - !Sub 's3.${AWS::Region}.amazonaws.com'
+                      - !Sub 'sns.${AWS::Region}.amazonaws.com'
+
+  # Pull this repository's image and write this task's logs. Nothing else.
+  ExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: discharge-eval-execution-role
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: ecs-tasks.amazonaws.com
+            Action: 'sts:AssumeRole'
+            Condition:
+              StringEquals:
+                'aws:SourceAccount': !Ref AWS::AccountId
+              ArnLike:
+                'aws:SourceArn': !Sub 'arn:${AWS::Partition}:ecs:${AWS::Region}:${AWS::AccountId}:*'
+      Policies:
+        - PolicyName: ws7-execution
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              # AWS gives this one action no resource level.
+              - Sid: EcrLogin
+                Effect: Allow
+                Action: 'ecr:GetAuthorizationToken'
+                Resource: '*'
+              - Sid: PullThisRepository
+                Effect: Allow
+                Action:
+                  - 'ecr:BatchCheckLayerAvailability'
+                  - 'ecr:GetDownloadUrlForLayer'
+                  - 'ecr:BatchGetImage'
+                Resource: !GetAtt Repository.Arn
+              - Sid: WriteThisTasksLogs
+                Effect: Allow
+                Action: ['logs:CreateLogStream', 'logs:PutLogEvents']
+                Resource: !Sub '${TaskLogGroup.Arn}:*'
+
+  TaskDefinition:
+    Type: AWS::ECS::TaskDefinition
+    Condition: HasImage
+    Properties:
+      Family: discharge-eval-ws7
+      RequiresCompatibilities: [FARGATE]
+      NetworkMode: awsvpc
+      Cpu: '512'
+      Memory: '1024'
+      RuntimePlatform:
+        CpuArchitecture: ARM64
+        OperatingSystemFamily: LINUX
+      TaskRoleArn: !GetAtt TaskRole.Arn
+      ExecutionRoleArn: !GetAtt ExecutionRole.Arn
+      ContainerDefinitions:
+        - Name: ws7
+          # Pinned by digest, never by tag.
+          Image: !Sub '${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/${Repository}@${ImageDigest}'
+          Essential: true
+          # With no arguments this is a usage error (exit 2): nothing is built or
+          # sent. Each schedule gives the whole command.
+          Command: [python, evals/ws7_entry.py]
+          # The root file system is left writable: the job writes its batches under
+          # tempfile.mkdtemp(), and the image's own tree is read-only for the app user
+          # by ownership. WS7_GIT_COMMIT IS NOT SET HERE AND MUST NOT BE: the image
+          # sets it when it is built.
+          Environment:
+            - {Name: PYTHONHASHSEED, Value: '0'}
+            - {Name: WS7_BUCKET, Value: !Ref Bucket}
+            - {Name: WS7_BUCKET_OWNER, Value: !Ref AWS::AccountId}
+            - {Name: WS7_ALERT_TOPIC_ARN, Value: !Ref AlertsTopic}
+            - {Name: WS7_IMAGE_DIGEST, Value: !Ref ImageDigest}
+          LogConfiguration:
+            LogDriver: awslogs
+            Options:
+              awslogs-group: !Ref TaskLogGroup
+              awslogs-region: !Ref AWS::Region
+              awslogs-stream-prefix: ws7
+
+  # --- The schedules (D7, D9) ---------------------------------------------------
+  SchedulerRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: discharge-eval-scheduler-role
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: scheduler.amazonaws.com
+            Action: 'sts:AssumeRole'
+            Condition:
+              StringEquals:
+                'aws:SourceAccount': !Ref AWS::AccountId
+              ArnLike:
+                'aws:SourceArn': !Sub 'arn:${AWS::Partition}:scheduler:${AWS::Region}:${AWS::AccountId}:schedule-group/discharge-eval'
+      Policies:
+        - PolicyName: run-the-eval-task
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Sid: RunTheEvalTaskOnTheEvalCluster
+                Effect: Allow
+                Action: 'ecs:RunTask'
+                Resource: !Sub 'arn:${AWS::Partition}:ecs:${AWS::Region}:${AWS::AccountId}:task-definition/discharge-eval-ws7:*'
+                Condition:
+                  ArnEquals:
+                    'ecs:cluster': !GetAtt Cluster.Arn
+              - Sid: PassTheTwoTaskRolesToEcs
+                Effect: Allow
+                Action: 'iam:PassRole'
+                Resource: [!GetAtt TaskRole.Arn, !GetAtt ExecutionRole.Arn]
+                Condition:
+                  StringEquals:
+                    'iam:PassedToService': ecs-tasks.amazonaws.com
+
+  ScheduleGroup:
+    Type: AWS::Scheduler::ScheduleGroup
+    Properties:
+      Name: discharge-eval
+
+  # Wednesday 04:00 Europe/London: clear of both canary windows. No retry (D7). The
+  # job is given the schedule's own scheduled time, never the clock's.
+  RunSchedule:
+    Type: AWS::Scheduler::Schedule
+    Condition: HasImage
+    Properties:
+      Name: discharge-eval-ws7-run
+      GroupName: !Ref ScheduleGroup
+      Description: WS7 weekly scheduled run (ADR-011 D7).
+      ScheduleExpression: cron(0 4 ? * WED *)
+      ScheduleExpressionTimezone: Europe/London
+      FlexibleTimeWindow:
+        Mode: 'OFF'
+      State: !Ref ScheduleState
+      Target:
+        Arn: !GetAtt Cluster.Arn
+        RoleArn: !GetAtt SchedulerRole.Arn
+        RetryPolicy:
+          MaximumRetryAttempts: 0
+          MaximumEventAgeInSeconds: 3600
+        EcsParameters:
+          TaskDefinitionArn: !Ref TaskDefinition
+          LaunchType: FARGATE
+          PlatformVersion: LATEST
+          TaskCount: 1
+          NetworkConfiguration:
+            AwsvpcConfiguration:
+              AssignPublicIp: ENABLED
+              Subnets: [!Ref PublicSubnet]
+              SecurityGroups: [!Ref TaskSecurityGroup]
+        Input: !Sub '{"containerOverrides":[{"name":"ws7","command":["python","evals/ws7_entry.py","scheduled","--target","${Target}","--scheduled-time","<aws.scheduler.scheduled-time>"]}]}'
+
+  # Thursday 10:00 Europe/London: one UTC day after the run, in winter and in summer.
+  CheckSchedule:
+    Type: AWS::Scheduler::Schedule
+    Condition: HasImage
+    Properties:
+      Name: discharge-eval-ws7-check
+      GroupName: !Ref ScheduleGroup
+      Description: WS7 Thursday check (ADR-011 D9). No Bedrock call.
+      ScheduleExpression: cron(0 10 ? * THU *)
+      ScheduleExpressionTimezone: Europe/London
+      FlexibleTimeWindow:
+        Mode: 'OFF'
+      State: !Ref ScheduleState
+      Target:
+        Arn: !GetAtt Cluster.Arn
+        RoleArn: !GetAtt SchedulerRole.Arn
+        RetryPolicy:
+          MaximumRetryAttempts: 0
+          MaximumEventAgeInSeconds: 3600
+        EcsParameters:
+          TaskDefinitionArn: !Ref TaskDefinition
+          LaunchType: FARGATE
+          PlatformVersion: LATEST
+          TaskCount: 1
+          NetworkConfiguration:
+            AwsvpcConfiguration:
+              AssignPublicIp: ENABLED
+              Subnets: [!Ref PublicSubnet]
+              SecurityGroups: [!Ref TaskSecurityGroup]
+        Input: !Sub '{"containerOverrides":[{"name":"ws7","command":["python","evals/ws7_entry.py","check","--target","${Target}","--scheduled-time","<aws.scheduler.scheduled-time>"]}]}'
+
+  # --- Early signals, not relied on (D9) ----------------------------------------
+  # A task on the eval cluster that stopped with an exit code other than 0, or
+  # that failed to start. The message is a fixed line and three fields.
+  TaskStoppedRule:
+    Type: AWS::Events::Rule
+    Properties:
+      Name: discharge-eval-task-stopped
+      Description: An eval task stopped with a non-zero exit code or failed to start.
+      State: ENABLED
+      EventPattern:
+        source: [aws.ecs]
+        detail-type: [ECS Task State Change]
+        detail:
+          clusterArn: [!GetAtt Cluster.Arn]
+          lastStatus: [STOPPED]
+          $or:
+            - stopCode: [TaskFailedToStart]
+            - containers:
+                exitCode: [{anything-but: 0}]
+      Targets:
+        - Id: alerts-topic
+          Arn: !Ref AlertsTopic
+          InputTransformer:
+            InputPathsMap:
+              task: $.detail.taskArn
+              stop: $.detail.stopCode
+              time: $.time
+            InputTemplate: '"WS7 eval task stopped: <task> stopCode <stop> at <time>. See the task log in /discharge-eval/ws7."'
+
+  # --- The alarms (D9) ----------------------------------------------------------
+  # Every alarm's action is the eval topic, and every alarm's actions are on.
+
+  # The backstop heartbeat. It fires when none of the seven most recently completed
+  # London calendar days holds a success. Before the first success it is in ALARM:
+  # that is expected (docs/WS7-RUNBOOK.md).
+  RunOkAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: discharge-eval-RunOk
+      AlarmDescription: No successful WS7 scheduled run in the last seven London calendar days.
+      Namespace: DischargeAssistant/Eval
+      MetricName: RunOk
+      Dimensions:
+        - {Name: Target, Value: !Ref Target}
+      Statistic: Maximum
+      Period: 86400
+      EvaluationPeriods: 7
+      DatapointsToAlarm: 7
+      Threshold: 1
+      ComparisonOperator: LessThanThreshold
+      TreatMissingData: breaching
+      EvaluationWindow:
+        WallClockWindow:
+          Timezone: Europe/London
+      ActionsEnabled: true
+      AlarmActions: [!Ref AlertsTopic]
+      OKActions: [!Ref AlertsTopic]
+
+  # A run with no baseline made no comparison (D9).
+  NoBaselineAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: discharge-eval-NoBaseline
+      AlarmDescription: A WS7 scheduled run found no baseline that matches its keys, and made no comparison.
+      Namespace: DischargeAssistant/Eval
+      MetricName: NoBaseline
+      Dimensions:
+        - {Name: Target, Value: !Ref Target}
+      Statistic: Maximum
+      Period: 300
+      EvaluationPeriods: 1
+      DatapointsToAlarm: 1
+      Threshold: 0
+      ComparisonOperator: GreaterThanThreshold
+      TreatMissingData: notBreaching
+      ActionsEnabled: true
+      AlarmActions: [!Ref AlertsTopic]
+
+  # A tripped spend guard is itself a drift signal (D7), and a tripped run never
+  # compares, so no breach metric can carry it.
+  SpendGuardAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: discharge-eval-SpendGuardTrips
+      AlarmDescription: A WS7 run reached its reservation and the spend guard refused a call.
+      Namespace: DischargeAssistant/Eval
+      MetricName: SpendGuardTrips
+      Dimensions:
+        - {Name: Target, Value: !Ref Target}
+      Statistic: Maximum
+      Period: 300
+      EvaluationPeriods: 1
+      DatapointsToAlarm: 1
+      Threshold: 0
+      ComparisonOperator: GreaterThanThreshold
+      TreatMissingData: notBreaching
+      ActionsEnabled: true
+      AlarmActions: [!Ref AlertsTopic]
+
+  # AWS delivers these two metrics on a best-effort basis (D9).
+  SchedulerTargetErrorAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: discharge-eval-SchedulerTargetError
+      AlarmDescription: EventBridge Scheduler could not start an eval task.
+      Namespace: AWS/Scheduler
+      MetricName: TargetErrorCount
+      Dimensions:
+        - {Name: ScheduleGroup, Value: !Ref ScheduleGroup}
+      Statistic: Sum
+      Period: 300
+      EvaluationPeriods: 1
+      DatapointsToAlarm: 1
+      Threshold: 0
+      ComparisonOperator: GreaterThanThreshold
+      TreatMissingData: notBreaching
+      ActionsEnabled: true
+      AlarmActions: [!Ref AlertsTopic]
+
+  SchedulerDroppedAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: discharge-eval-SchedulerDropped
+      AlarmDescription: EventBridge Scheduler dropped an invocation of an eval schedule.
+      Namespace: AWS/Scheduler
+      MetricName: InvocationDroppedCount
+      Dimensions:
+        - {Name: ScheduleGroup, Value: !Ref ScheduleGroup}
+      Statistic: Sum
+      Period: 300
+      EvaluationPeriods: 1
+      DatapointsToAlarm: 1
+      Threshold: 0
+      ComparisonOperator: GreaterThanThreshold
+      TreatMissingData: notBreaching
+      ActionsEnabled: true
+      AlarmActions: [!Ref AlertsTopic]
+
+  # One alarm for each breach family and kind the job can publish: 7 families by 3
+  # kinds (evals/ws7_publish.py; none for PART C). The job decides the breach and
+  # publishes 0 or 1; the alarm is "above 0". A failed run publishes no breach value,
+  # so MISSING DATA IS NOT A BREACH: RunOk and NoBaseline report a run that did not
+  # compare. A short period: the email goes within minutes and the alarm re-arms.
+  BreachRunKind1Alarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: discharge-eval-BreachRunKind1
+      AlarmDescription: 'WS7 breach: run, kind 1 (zero-tolerance counter).'
+      Namespace: DischargeAssistant/Eval
+      MetricName: BreachRunKind1
+      Dimensions:
+        - {Name: Target, Value: !Ref Target}
+      Statistic: Maximum
+      Period: 300
+      EvaluationPeriods: 1
+      DatapointsToAlarm: 1
+      Threshold: 0
+      ComparisonOperator: GreaterThanThreshold
+      TreatMissingData: notBreaching
+      ActionsEnabled: true
+      AlarmActions: [!Ref AlertsTopic]
+
+  BreachRunKind2Alarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: discharge-eval-BreachRunKind2
+      AlarmDescription: 'WS7 breach: run, kind 2 (per-scenario flip).'
+      Namespace: DischargeAssistant/Eval
+      MetricName: BreachRunKind2
+      Dimensions:
+        - {Name: Target, Value: !Ref Target}
+      Statistic: Maximum
+      Period: 300
+      EvaluationPeriods: 1
+      DatapointsToAlarm: 1
+      Threshold: 0
+      ComparisonOperator: GreaterThanThreshold
+      TreatMissingData: notBreaching
+      ActionsEnabled: true
+      AlarmActions: [!Ref AlertsTopic]
+
+  BreachRunKind3Alarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: discharge-eval-BreachRunKind3
+      AlarmDescription: 'WS7 breach: run, kind 3 (noisy count).'
+      Namespace: DischargeAssistant/Eval
+      MetricName: BreachRunKind3
+      Dimensions:
+        - {Name: Target, Value: !Ref Target}
+      Statistic: Maximum
+      Period: 300
+      EvaluationPeriods: 1
+      DatapointsToAlarm: 1
+      Threshold: 0
+      ComparisonOperator: GreaterThanThreshold
+      TreatMissingData: notBreaching
+      ActionsEnabled: true
+      AlarmActions: [!Ref AlertsTopic]
+
+  BreachSafetyNettingKind1Alarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: discharge-eval-BreachSafetyNettingKind1
+      AlarmDescription: 'WS7 breach: safety-netting, kind 1 (zero-tolerance counter).'
+      Namespace: DischargeAssistant/Eval
+      MetricName: BreachSafetyNettingKind1
+      Dimensions:
+        - {Name: Target, Value: !Ref Target}
+      Statistic: Maximum
+      Period: 300
+      EvaluationPeriods: 1
+      DatapointsToAlarm: 1
+      Threshold: 0
+      ComparisonOperator: GreaterThanThreshold
+      TreatMissingData: notBreaching
+      ActionsEnabled: true
+      AlarmActions: [!Ref AlertsTopic]
+
+  BreachSafetyNettingKind2Alarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: discharge-eval-BreachSafetyNettingKind2
+      AlarmDescription: 'WS7 breach: safety-netting, kind 2 (per-scenario flip).'
+      Namespace: DischargeAssistant/Eval
+      MetricName: BreachSafetyNettingKind2
+      Dimensions:
+        - {Name: Target, Value: !Ref Target}
+      Statistic: Maximum
+      Period: 300
+      EvaluationPeriods: 1
+      DatapointsToAlarm: 1
+      Threshold: 0
+      ComparisonOperator: GreaterThanThreshold
+      TreatMissingData: notBreaching
+      ActionsEnabled: true
+      AlarmActions: [!Ref AlertsTopic]
+
+  BreachSafetyNettingKind3Alarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: discharge-eval-BreachSafetyNettingKind3
+      AlarmDescription: 'WS7 breach: safety-netting, kind 3 (noisy count).'
+      Namespace: DischargeAssistant/Eval
+      MetricName: BreachSafetyNettingKind3
+      Dimensions:
+        - {Name: Target, Value: !Ref Target}
+      Statistic: Maximum
+      Period: 300
+      EvaluationPeriods: 1
+      DatapointsToAlarm: 1
+      Threshold: 0
+      ComparisonOperator: GreaterThanThreshold
+      TreatMissingData: notBreaching
+      ActionsEnabled: true
+      AlarmActions: [!Ref AlertsTopic]
+
+  BreachMedicationsKind1Alarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: discharge-eval-BreachMedicationsKind1
+      AlarmDescription: 'WS7 breach: medications, kind 1 (zero-tolerance counter).'
+      Namespace: DischargeAssistant/Eval
+      MetricName: BreachMedicationsKind1
+      Dimensions:
+        - {Name: Target, Value: !Ref Target}
+      Statistic: Maximum
+      Period: 300
+      EvaluationPeriods: 1
+      DatapointsToAlarm: 1
+      Threshold: 0
+      ComparisonOperator: GreaterThanThreshold
+      TreatMissingData: notBreaching
+      ActionsEnabled: true
+      AlarmActions: [!Ref AlertsTopic]
+
+  BreachMedicationsKind2Alarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: discharge-eval-BreachMedicationsKind2
+      AlarmDescription: 'WS7 breach: medications, kind 2 (per-scenario flip).'
+      Namespace: DischargeAssistant/Eval
+      MetricName: BreachMedicationsKind2
+      Dimensions:
+        - {Name: Target, Value: !Ref Target}
+      Statistic: Maximum
+      Period: 300
+      EvaluationPeriods: 1
+      DatapointsToAlarm: 1
+      Threshold: 0
+      ComparisonOperator: GreaterThanThreshold
+      TreatMissingData: notBreaching
+      ActionsEnabled: true
+      AlarmActions: [!Ref AlertsTopic]
+
+  BreachMedicationsKind3Alarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: discharge-eval-BreachMedicationsKind3
+      AlarmDescription: 'WS7 breach: medications, kind 3 (noisy count).'
+      Namespace: DischargeAssistant/Eval
+      MetricName: BreachMedicationsKind3
+      Dimensions:
+        - {Name: Target, Value: !Ref Target}
+      Statistic: Maximum
+      Period: 300
+      EvaluationPeriods: 1
+      DatapointsToAlarm: 1
+      Threshold: 0
+      ComparisonOperator: GreaterThanThreshold
+      TreatMissingData: notBreaching
+      ActionsEnabled: true
+      AlarmActions: [!Ref AlertsTopic]
+
+  BreachStep2AdviceKind1Alarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: discharge-eval-BreachStep2AdviceKind1
+      AlarmDescription: 'WS7 breach: step-2 advice, kind 1 (zero-tolerance counter).'
+      Namespace: DischargeAssistant/Eval
+      MetricName: BreachStep2AdviceKind1
+      Dimensions:
+        - {Name: Target, Value: !Ref Target}
+      Statistic: Maximum
+      Period: 300
+      EvaluationPeriods: 1
+      DatapointsToAlarm: 1
+      Threshold: 0
+      ComparisonOperator: GreaterThanThreshold
+      TreatMissingData: notBreaching
+      ActionsEnabled: true
+      AlarmActions: [!Ref AlertsTopic]
+
+  BreachStep2AdviceKind2Alarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: discharge-eval-BreachStep2AdviceKind2
+      AlarmDescription: 'WS7 breach: step-2 advice, kind 2 (per-scenario flip).'
+      Namespace: DischargeAssistant/Eval
+      MetricName: BreachStep2AdviceKind2
+      Dimensions:
+        - {Name: Target, Value: !Ref Target}
+      Statistic: Maximum
+      Period: 300
+      EvaluationPeriods: 1
+      DatapointsToAlarm: 1
+      Threshold: 0
+      ComparisonOperator: GreaterThanThreshold
+      TreatMissingData: notBreaching
+      ActionsEnabled: true
+      AlarmActions: [!Ref AlertsTopic]
+
+  BreachStep2AdviceKind3Alarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: discharge-eval-BreachStep2AdviceKind3
+      AlarmDescription: 'WS7 breach: step-2 advice, kind 3 (noisy count).'
+      Namespace: DischargeAssistant/Eval
+      MetricName: BreachStep2AdviceKind3
+      Dimensions:
+        - {Name: Target, Value: !Ref Target}
+      Statistic: Maximum
+      Period: 300
+      EvaluationPeriods: 1
+      DatapointsToAlarm: 1
+      Threshold: 0
+      ComparisonOperator: GreaterThanThreshold
+      TreatMissingData: notBreaching
+      ActionsEnabled: true
+      AlarmActions: [!Ref AlertsTopic]
+
+  BreachCompositionKind1Alarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: discharge-eval-BreachCompositionKind1
+      AlarmDescription: 'WS7 breach: composition, kind 1 (zero-tolerance counter).'
+      Namespace: DischargeAssistant/Eval
+      MetricName: BreachCompositionKind1
+      Dimensions:
+        - {Name: Target, Value: !Ref Target}
+      Statistic: Maximum
+      Period: 300
+      EvaluationPeriods: 1
+      DatapointsToAlarm: 1
+      Threshold: 0
+      ComparisonOperator: GreaterThanThreshold
+      TreatMissingData: notBreaching
+      ActionsEnabled: true
+      AlarmActions: [!Ref AlertsTopic]
+
+  BreachCompositionKind2Alarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: discharge-eval-BreachCompositionKind2
+      AlarmDescription: 'WS7 breach: composition, kind 2 (per-scenario flip).'
+      Namespace: DischargeAssistant/Eval
+      MetricName: BreachCompositionKind2
+      Dimensions:
+        - {Name: Target, Value: !Ref Target}
+      Statistic: Maximum
+      Period: 300
+      EvaluationPeriods: 1
+      DatapointsToAlarm: 1
+      Threshold: 0
+      ComparisonOperator: GreaterThanThreshold
+      TreatMissingData: notBreaching
+      ActionsEnabled: true
+      AlarmActions: [!Ref AlertsTopic]
+
+  BreachCompositionKind3Alarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: discharge-eval-BreachCompositionKind3
+      AlarmDescription: 'WS7 breach: composition, kind 3 (noisy count).'
+      Namespace: DischargeAssistant/Eval
+      MetricName: BreachCompositionKind3
+      Dimensions:
+        - {Name: Target, Value: !Ref Target}
+      Statistic: Maximum
+      Period: 300
+      EvaluationPeriods: 1
+      DatapointsToAlarm: 1
+      Threshold: 0
+      ComparisonOperator: GreaterThanThreshold
+      TreatMissingData: notBreaching
+      ActionsEnabled: true
+      AlarmActions: [!Ref AlertsTopic]
+
+  BreachHaz03Kind1Alarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: discharge-eval-BreachHaz03Kind1
+      AlarmDescription: 'WS7 breach: HAZ-03, kind 1 (zero-tolerance counter).'
+      Namespace: DischargeAssistant/Eval
+      MetricName: BreachHaz03Kind1
+      Dimensions:
+        - {Name: Target, Value: !Ref Target}
+      Statistic: Maximum
+      Period: 300
+      EvaluationPeriods: 1
+      DatapointsToAlarm: 1
+      Threshold: 0
+      ComparisonOperator: GreaterThanThreshold
+      TreatMissingData: notBreaching
+      ActionsEnabled: true
+      AlarmActions: [!Ref AlertsTopic]
+
+  BreachHaz03Kind2Alarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: discharge-eval-BreachHaz03Kind2
+      AlarmDescription: 'WS7 breach: HAZ-03, kind 2 (per-scenario flip).'
+      Namespace: DischargeAssistant/Eval
+      MetricName: BreachHaz03Kind2
+      Dimensions:
+        - {Name: Target, Value: !Ref Target}
+      Statistic: Maximum
+      Period: 300
+      EvaluationPeriods: 1
+      DatapointsToAlarm: 1
+      Threshold: 0
+      ComparisonOperator: GreaterThanThreshold
+      TreatMissingData: notBreaching
+      ActionsEnabled: true
+      AlarmActions: [!Ref AlertsTopic]
+
+  BreachHaz03Kind3Alarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: discharge-eval-BreachHaz03Kind3
+      AlarmDescription: 'WS7 breach: HAZ-03, kind 3 (noisy count).'
+      Namespace: DischargeAssistant/Eval
+      MetricName: BreachHaz03Kind3
+      Dimensions:
+        - {Name: Target, Value: !Ref Target}
+      Statistic: Maximum
+      Period: 300
+      EvaluationPeriods: 1
+      DatapointsToAlarm: 1
+      Threshold: 0
+      ComparisonOperator: GreaterThanThreshold
+      TreatMissingData: notBreaching
+      ActionsEnabled: true
+      AlarmActions: [!Ref AlertsTopic]
+
+  BreachAssemblyKind1Alarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: discharge-eval-BreachAssemblyKind1
+      AlarmDescription: 'WS7 breach: assembly, kind 1 (zero-tolerance counter).'
+      Namespace: DischargeAssistant/Eval
+      MetricName: BreachAssemblyKind1
+      Dimensions:
+        - {Name: Target, Value: !Ref Target}
+      Statistic: Maximum
+      Period: 300
+      EvaluationPeriods: 1
+      DatapointsToAlarm: 1
+      Threshold: 0
+      ComparisonOperator: GreaterThanThreshold
+      TreatMissingData: notBreaching
+      ActionsEnabled: true
+      AlarmActions: [!Ref AlertsTopic]
+
+  BreachAssemblyKind2Alarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: discharge-eval-BreachAssemblyKind2
+      AlarmDescription: 'WS7 breach: assembly, kind 2 (per-scenario flip).'
+      Namespace: DischargeAssistant/Eval
+      MetricName: BreachAssemblyKind2
+      Dimensions:
+        - {Name: Target, Value: !Ref Target}
+      Statistic: Maximum
+      Period: 300
+      EvaluationPeriods: 1
+      DatapointsToAlarm: 1
+      Threshold: 0
+      ComparisonOperator: GreaterThanThreshold
+      TreatMissingData: notBreaching
+      ActionsEnabled: true
+      AlarmActions: [!Ref AlertsTopic]
+
+  BreachAssemblyKind3Alarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: discharge-eval-BreachAssemblyKind3
+      AlarmDescription: 'WS7 breach: assembly, kind 3 (noisy count).'
+      Namespace: DischargeAssistant/Eval
+      MetricName: BreachAssemblyKind3
+      Dimensions:
+        - {Name: Target, Value: !Ref Target}
+      Statistic: Maximum
+      Period: 300
+      EvaluationPeriods: 1
+      DatapointsToAlarm: 1
+      Threshold: 0
+      ComparisonOperator: GreaterThanThreshold
+      TreatMissingData: notBreaching
+      ActionsEnabled: true
+      AlarmActions: [!Ref AlertsTopic]
+
+Outputs:
+  BucketName:
+    Value: !Ref Bucket
+  BucketOwner:
+    Value: !Ref AWS::AccountId
+  KeyArn:
+    Value: !GetAtt Key.Arn
+  AlertsTopicArn:
+    Value: !Ref AlertsTopic
+  RepositoryUri:
+    Value: !GetAtt Repository.RepositoryUri
+  ClusterArn:
+    Value: !GetAtt Cluster.Arn
+  TaskDefinitionArn:
+    Condition: HasImage
+    Value: !Ref TaskDefinition
+  TaskRoleArn:
+    Value: !GetAtt TaskRole.Arn
+  ExecutionRoleArn:
+    Value: !GetAtt ExecutionRole.Arn
+  SubnetId:
+    Value: !Ref PublicSubnet
+  SecurityGroupId:
+    Value: !GetAtt TaskSecurityGroup.GroupId
+  TaskLogGroupName:
+    Value: !Ref TaskLogGroup
+  ScheduleGroupName:
+    Value: !Ref ScheduleGroup
+  ExpectedPipelineParameter:
+    Value: !Ref ExpectedPipeline
+  ExpectedV1Parameter:
+    Value: !Ref ExpectedV1

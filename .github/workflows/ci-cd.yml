@@ -43,7 +43,7 @@ jobs:
         # Warnings (e.g. the deliberate DependsOn-on-log-group W3005, and the
         # expected "needs package CLI" W3002) are printed but do not fail the
         # build; only genuine errors break CI.
-        run: cfn-lint --non-zero-exit-code error infra/template.yaml infra/web-template.yaml
+        run: cfn-lint --non-zero-exit-code error infra/template.yaml infra/web-template.yaml infra/eval-template.yaml
 
   deploy:
     name: Deploy discharge-audit (OIDC)

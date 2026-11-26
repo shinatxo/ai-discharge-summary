@@ -3,8 +3,8 @@
 How the author deploys and operates the WS7 eval stack by hand (ADR-011 D4; slice 3). The design
 is in `docs/adr/ADR-011-ws7-scheduled-eval.md`; the job is described in `docs/WS7-ENTRYPOINT.md`.
 
-**Nothing in this runbook has been run.** It was written and tested offline (24 Nov to 26 Nov
-2026): the template against `cfn-lint`, and the scripts against stubs. Every AWS fact marked
+**Nothing in this runbook has been run.** It was written and tested offline (26 Nov 2026): the
+template against `cfn-lint`, and the scripts against stubs. Every AWS fact marked
 "unchecked" below is from AWS's documentation or from memory, not from this account. The first
 deploy is what checks them, and each section says what to do if AWS disagrees.
 
@@ -113,6 +113,13 @@ the image's manifest list (part 6's checks showed it). The task definition pins 
 passes the same value as `WS7_IMAGE_DIGEST`, so the chain from check 5 to the running task is one
 string. A rebuild of the same commit gives another digest, because the list carries a build
 attestation; that is expected, and the new image is checked again.
+
+- The script logs Docker in to the account's ECR registry (`docker login`). The token lasts 12
+  hours and stays in Docker's credential store; `docker logout <account>.dkr.ecr.eu-west-2.amazonaws.com`
+  removes it.
+- Tags in the repository are immutable. Running the push twice for one commit builds again, gets
+  another image ID and so another tag. Pushing the very same image twice may be refused by ECR
+  (unchecked); nothing is lost if it is.
 
 If step 9 says `DO NOT DEPLOY IT`: Docker on this machine is giving image IDs that are not registry
 digests (the classic image store does). The image in ECR is not pinned by anything and can be

@@ -20,6 +20,8 @@ deploy is what checks them, and each section says what to do if AWS disagrees.
   either stack's buckets, or the SAM bucket.
 - **No real patient data.** The stack evaluates synthetic runs only.
 - **Read each block before you run it.** Run the blocks from the repository's root, in `zsh`.
+  Every variable in a block is written `${NAME}`, never `$NAME`: in zsh a colon after a bare
+  name starts a modifier, so `$ACCOUNT:role` loses its `:r`. A test fails on the bare form.
   Each block is `ws7_guard $ACCOUNT && () { … }`: the guard first, then an anonymous function, so
   that a `STOP` inside it ends the block and not your shell.
 
@@ -47,13 +49,15 @@ source infra/eval/guard.sh
 Phase 1 has no image, so it has no task definition and no schedule. Nothing can run.
 
 ```zsh
-WS7_ALERT_EMAIL=<your address> infra/eval/deploy.sh --account $ACCOUNT --target v1
+WS7_ALERT_EMAIL=<your address> infra/eval/deploy.sh --account ${ACCOUNT} --target v1
 ```
 
 - `--target` is `v1` until W11 and `pipeline` after it (ADR-011 D2). If the stack is not up by about
   30 Nov 2026, the v1 target is dropped (D4): use `pipeline`, and nothing runs until W11.
+- **`--target` is for this first deploy only.** Every later deploy keeps the stack's target and
+  refuses `--target`. The one way to change it is `--change-target` (section 9, at W11).
 - The script makes a change set, prints its table, and waits for you to type the stack name.
-  Read the table first. A first deploy adds 51 resources.
+  Read the table first. A first deploy adds 50 resources.
 - AWS then emails a subscription confirmation. **Confirm it.** An alarm cannot tell you anything
   until you do.
 - The script switches on termination protection.
@@ -79,10 +83,10 @@ GitHub. It never reads this checkout.
 C=<the 40-character merge commit, as `git log --first-parent origin/feat/agentic-pipeline` shows it>
 
 # A rehearsal: builds and runs every check, makes no AWS call, pushes nothing.
-infra/eval/push-image.sh --check-only --commit $C
+infra/eval/push-image.sh --check-only --commit ${C}
 
 # The push.
-infra/eval/push-image.sh --account $ACCOUNT --commit $C
+infra/eval/push-image.sh --account ${ACCOUNT} --commit ${C}
 ```
 
 What the script does, in order, and it stops at the first thing that fails:
@@ -138,43 +142,75 @@ That page says "manifest list", and this build makes an OCI image index, so this
 this repository. It is a preview: it expires nothing.
 
 ```zsh
-ws7_guard $ACCOUNT && () {
+ws7_guard ${ACCOUNT} && () {
   D=<the pushed digest>
-  # A test rule strict enough to catch every untagged image, however new (a count of 1
-  # keeps one). The repository's own rule is not changed.
+  # 1. The children of the pinned list, read from the list itself. Both must be found
+  #    before the preview is worth anything: the arm64 image and the attestation.
+  aws ecr batch-get-image --region eu-west-2 --registry-id ${ACCOUNT} --repository-name discharge-eval \
+    --image-ids imageDigest=${D} --query 'images[0].imageManifest' --output text > /tmp/ws7-index.json \
+    || { echo "STOP: the pinned list could not be read"; return 1; }
+  CHILDREN=$(python3 -c 'import json,sys; print(" ".join(m["digest"] for m in json.load(open("/tmp/ws7-index.json")).get("manifests", [])))') \
+    || { echo "STOP: the pinned list is not an index"; return 1; }
+  KIDS=(${=CHILDREN})
+  print -l -- "children of the pinned list:" ${KIDS}
+  [ ${#KIDS} -eq 2 ] || { echo "STOP: the list does not have exactly two children. The check cannot pass."; return 1; }
+  # 2. A test rule strict enough to catch every untagged image, however new (a count of 1
+  #    keeps one). It is a PREVIEW: the repository's own rule is not changed, and
+  #    nothing expires.
   RULE='{"rules":[{"rulePriority":1,"description":"preview only","selection":{"tagStatus":"untagged","countType":"imageCountMoreThan","countNumber":1},"action":{"type":"expire"}}]}'
-  aws ecr start-lifecycle-policy-preview --region eu-west-2 --repository-name discharge-eval \
-    --lifecycle-policy-text "$RULE" --query status --output text
-  sleep 30
-  # The children of the pinned list.
-  aws ecr batch-get-image --region eu-west-2 --repository-name discharge-eval \
-    --image-ids imageDigest=$D --query 'images[0].imageManifest' --output text \
-    | python3 -c 'import json,sys; [print(m["digest"], m.get("platform")) for m in json.load(sys.stdin)["manifests"]]'
-  # What the preview would expire.
-  aws ecr get-lifecycle-policy-preview --region eu-west-2 --repository-name discharge-eval \
-    --lifecycle-policy-text "$RULE" --query '[status, previewResults[].imageDigest]'
+  aws ecr start-lifecycle-policy-preview --region eu-west-2 --registry-id ${ACCOUNT} --repository-name discharge-eval \
+    --lifecycle-policy-text "${RULE}" --query status --output text \
+    || { echo "STOP: the preview could not be started"; return 1; }
+  # 3. Wait for COMPLETE: up to five minutes. (get-lifecycle-policy-preview takes no
+  #    policy text: it reports the preview that was started.)
+  STATUS=""
+  for TRY in {1..30}; do
+    STATUS=$(aws ecr get-lifecycle-policy-preview --region eu-west-2 --registry-id ${ACCOUNT} \
+      --repository-name discharge-eval --query status --output text) \
+      || { echo "STOP: the preview could not be read"; return 1; }
+    [ "${STATUS}" = COMPLETE ] && break
+    sleep 10
+  done
+  [ "${STATUS}" = COMPLETE ] || { echo "STOP: the preview is ${STATUS}, not COMPLETE. No result."; return 1; }
+  # 4. What the preview would expire, against the pinned list and its two children.
+  WOULD=$(aws ecr get-lifecycle-policy-preview --region eu-west-2 --registry-id ${ACCOUNT} \
+    --repository-name discharge-eval --query 'previewResults[].imageDigest' --output text) \
+    || { echo "STOP: the preview's results could not be read"; return 1; }
+  print -l -- "the preview would expire:" ${=WOULD}
+  for X in ${D} ${KIDS}; do
+    case " ${WOULD} " in *"${X}"*) echo "FAIL: the preview would expire ${X}"; return 1 ;; esac
+  done
+  echo "PASS: the preview is COMPLETE and would expire neither child nor the pinned list"
 }
 ```
 
-- **Pass:** the preview's status is `COMPLETE`, and its list holds neither child digest and not the
-  pinned digest.
+- **Pass:** the last line is `PASS`. That needs all three: both child digests were found in the
+  index first, the preview reached `COMPLETE`, and its list holds neither child nor the pinned
+  digest.
 - **Fail:** a child digest is listed. Then the rule in the template could expire part of the pinned
   image after 14 days. Stop, and tell Claude: the rule is removed from the template before
   phase 2. Nothing has expired yet.
 - With a single image in the repository the preview may list nothing at all. That is a pass only
-  with the status `COMPLETE`.
+  with the status `COMPLETE` and both children found.
+- A preview that paginates its results could hide a digest on a later page. With one or two images
+  it does not; if the repository ever holds many untagged images, read every page.
 
 ## 3. Deploy phase 2: the task and the schedules, DISABLED
 
 ```zsh
-infra/eval/deploy.sh --account $ACCOUNT --target v1 --image-digest <the pushed digest>
+infra/eval/deploy.sh --account ${ACCOUNT} --image-digest <the pushed digest>
 ```
 
-- The change set adds the task definition and the two schedules. **Both schedules are created
+- No `--target`: the stack keeps the one it has, and the script prints it ("the target stays …").
+- The change set adds the task definition, the scheduler's role and the two schedules. **Both schedules are created
   `DISABLED`.** This script never changes their state: at creation it passes `DISABLED`, and on
   every later update it passes the stack's previous value and refuses a change set that would
   change a schedule's `State`.
 - The script first checks that the digest is an image in the eval repository.
+- From the second time on (section 9) it also reads both live schedules before any change set,
+  and stops if either is not in the state the stack's `ScheduleState` says: a schedule changed
+  outside the stack is put right first (`infra/eval/schedules.sh --account $ACCOUNT status` says
+  how).
 
 ## 4. Set the two expected-version parameters
 
@@ -185,15 +221,15 @@ the real values by hand, from the release record. CI does not write them and the
 **v1: once, now.** From the commit deployed on `main` at this time.
 
 ```zsh
-ws7_guard $ACCOUNT && () {
-  M=$(git rev-parse --verify --quiet 'origin/main^{commit}') && [ -n "$M" ] || { echo "STOP: no origin/main"; return 1; }
-  P1=$(git show "$M:src/generate/system_prompt.md" | shasum -a 256 | cut -d' ' -f1)
-  P2=$(git show "$M:src/generate/patient_system_prompt.md" | shasum -a 256 | cut -d' ' -f1)
+ws7_guard ${ACCOUNT} && () {
+  M=$(git rev-parse --verify --quiet 'origin/main^{commit}') && [ -n "${M}" ] || { echo "STOP: no origin/main"; return 1; }
+  P1=$(git show "${M}:src/generate/system_prompt.md" | shasum -a 256 | cut -d' ' -f1)
+  P2=$(git show "${M}:src/generate/patient_system_prompt.md" | shasum -a 256 | cut -d' ' -f1)
   [ ${#P1} -eq 64 ] && [ ${#P2} -eq 64 ] || { echo "STOP: a prompt hash could not be made"; return 1; }
-  V='{"schema": "ws7-expected/1", "target": "v1", "model_id": "anthropic.claude-sonnet-4-6", "prompt_caching": true, "v1_prompt_sha256": {"system_prompt": "'$P1'", "patient_system_prompt": "'$P2'"}, "patient_second_pass": true}'
-  echo "main is at $M"; echo "$V"
+  V='{"schema": "ws7-expected/1", "target": "v1", "model_id": "anthropic.claude-sonnet-4-6", "prompt_caching": true, "v1_prompt_sha256": {"system_prompt": "'${P1}'", "patient_system_prompt": "'${P2}'"}, "patient_second_pass": true}'
+  echo "main is at ${M}"; echo "${V}"
   aws ssm put-parameter --region eu-west-2 --name /discharge-eval/ws7/expected/v1 \
-    --type String --overwrite --value "$V"
+    --type String --overwrite --value "${V}"
 }
 ```
 
@@ -229,7 +265,7 @@ follows the deploy.
 | A2 | The digest chain: check 5's image ID is the image the task ran | Block below, with C10's stopped task | No | No | No | None | Yes |
 | A3 | An alarm email arrives through the encrypted topic | Block below | No | No | No | None | Yes |
 | A4 | `RunOk`'s state before any success | Block below | No | No | About an hour | None | Yes |
-| A5 | The task role allows D6's list and nothing else | Block below (a simulation) | No | No | No | None | Yes |
+| A5 | The task role's policy allows each listed call of D6 and denies each listed call outside it | Block below (a simulation of the listed cases; it does not show "nothing else") | No | No | No | None | Yes |
 | C10 | The bare task: ECS starts it, it exits 2, and the early-signal email arrives | Block below | No | No | No | Under 1p | Yes |
 | L | The lifecycle rule and the pinned image's parts | Section 2 | No | No | No | None | Yes |
 | B0 | In the task: role credentials, a writable temporary folder as uid 10001, arm64, the commit, the command replaced | A task with an inline script (the next pull request) | No | No | No | Under 1p | Yes |
@@ -259,13 +295,13 @@ follows the deploy.
 ### A1. The stack is as designed
 
 ```zsh
-ws7_guard $ACCOUNT && () {
+ws7_guard ${ACCOUNT} && () {
   # No inbound rule; one outbound rule, TCP 443.
   aws ec2 describe-security-groups --region eu-west-2 --filters Name=group-name,Values=discharge-eval-task-sg \
     --query 'SecurityGroups[0].[length(IpPermissions), IpPermissionsEgress[].[IpProtocol,FromPort,ToPort]]'
   # Both schedules DISABLED, Europe/London, no retry.
   for S in discharge-eval-ws7-run discharge-eval-ws7-check; do
-    aws scheduler get-schedule --region eu-west-2 --group-name discharge-eval --name $S \
+    aws scheduler get-schedule --region eu-west-2 --group-name discharge-eval --name ${S} \
       --query '[Name,State,ScheduleExpression,ScheduleExpressionTimezone,Target.RetryPolicy.MaximumRetryAttempts]' --output text
   done
   # The heartbeat alarm as D9 has it: 86400, 7, 7, breaching, a wall clock window in Europe/London.
@@ -278,12 +314,12 @@ ws7_guard $ACCOUNT && () {
   aws ecs describe-task-definition --region eu-west-2 --task-definition discharge-eval-ws7 \
     --query 'taskDefinition.containerDefinitions[0].[image, environment[].name]'
   # The bucket: versioned, encrypted with the stack's key, public access blocked, one lifecycle rule.
-  B=discharge-eval-$ACCOUNT-eu-west-2
-  aws s3api get-bucket-versioning --bucket $B --expected-bucket-owner $ACCOUNT --query Status
-  aws s3api get-bucket-encryption --bucket $B --expected-bucket-owner $ACCOUNT \
+  B=discharge-eval-${ACCOUNT}-eu-west-2
+  aws s3api get-bucket-versioning --bucket ${B} --expected-bucket-owner ${ACCOUNT} --query Status
+  aws s3api get-bucket-encryption --bucket ${B} --expected-bucket-owner ${ACCOUNT} \
     --query 'ServerSideEncryptionConfiguration.Rules[0].ApplyServerSideEncryptionByDefault'
-  aws s3api get-public-access-block --bucket $B --expected-bucket-owner $ACCOUNT
-  aws s3api get-bucket-lifecycle-configuration --bucket $B --expected-bucket-owner $ACCOUNT \
+  aws s3api get-public-access-block --bucket ${B} --expected-bucket-owner ${ACCOUNT}
+  aws s3api get-bucket-lifecycle-configuration --bucket ${B} --expected-bucket-owner ${ACCOUNT} \
     --query 'Rules[].[ID,Filter.Prefix||Prefix,Expiration.Days,NoncurrentVersionExpiration.NoncurrentDays]'
 }
 ```
@@ -300,19 +336,19 @@ With no override the task runs `python evals/ws7_entry.py`, which is a usage err
 and nothing is built or sent. It makes no claim, reads nothing and calls no model.
 
 ```zsh
-ws7_guard $ACCOUNT && () {
+ws7_guard ${ACCOUNT} && () {
   SUBNET=$(aws cloudformation describe-stacks --region eu-west-2 --stack-name discharge-eval \
     --query "Stacks[0].Outputs[?OutputKey=='SubnetId'].OutputValue | [0]" --output text)
   SG=$(aws cloudformation describe-stacks --region eu-west-2 --stack-name discharge-eval \
     --query "Stacks[0].Outputs[?OutputKey=='SecurityGroupId'].OutputValue | [0]" --output text)
-  [ -n "$SUBNET" ] && [ -n "$SG" ] && [ "$SUBNET" != None ] && [ "$SG" != None ] || { echo "STOP: no subnet or group"; return 1; }
+  [ -n "${SUBNET}" ] && [ -n "${SG}" ] && [ "${SUBNET}" != None ] && [ "${SG}" != None ] || { echo "STOP: no subnet or group"; return 1; }
   TASK=$(aws ecs run-task --region eu-west-2 --cluster discharge-eval --task-definition discharge-eval-ws7 \
     --launch-type FARGATE --count 1 \
-    --network-configuration "awsvpcConfiguration={subnets=[$SUBNET],securityGroups=[$SG],assignPublicIp=ENABLED}" \
+    --network-configuration "awsvpcConfiguration={subnets=[${SUBNET}],securityGroups=[${SG}],assignPublicIp=ENABLED}" \
     --query 'tasks[0].taskArn' --output text)
-  echo "task $TASK"
-  aws ecs wait tasks-stopped --region eu-west-2 --cluster discharge-eval --tasks "$TASK"
-  aws ecs describe-tasks --region eu-west-2 --cluster discharge-eval --tasks "$TASK" \
+  echo "task ${TASK}"
+  aws ecs wait tasks-stopped --region eu-west-2 --cluster discharge-eval --tasks "${TASK}"
+  aws ecs describe-tasks --region eu-west-2 --cluster discharge-eval --tasks "${TASK}" \
     --query 'tasks[0].[lastStatus, stopCode, containers[0].exitCode, containers[0].imageDigest, platformFamily, attributes[?name==`ecs.cpu-architecture`].value | [0]]'
   aws logs tail /discharge-eval/ws7 --region eu-west-2 --since 15m
 }
@@ -335,15 +371,15 @@ policy's). The task-stopped rule is an early signal that ADR-011 does not rely o
 ### A2. The digest chain
 
 ```zsh
-ws7_guard $ACCOUNT && () {
+ws7_guard ${ACCOUNT} && () {
   D=<the pushed digest: the image ID check 5 ran on>
   # 1. The task definition pins it, and tells the job the same value.
   aws ecs describe-task-definition --region eu-west-2 --task-definition discharge-eval-ws7 \
     --query 'taskDefinition.containerDefinitions[0].[image, environment[?name==`WS7_IMAGE_DIGEST`].value | [0]]' --output text
   # 2. What ECR holds under that digest hashes to that digest, and names one arm64 image.
-  aws ecr batch-get-image --region eu-west-2 --repository-name discharge-eval --image-ids imageDigest=$D \
+  aws ecr batch-get-image --region eu-west-2 --repository-name discharge-eval --image-ids imageDigest=${D} \
     --query 'images[0].imageManifest' --output text > /tmp/ws7-manifest.json
-  python3 - "$D" <<'PY'
+  python3 - "${D}" <<'PY'
 import hashlib, json, sys
 raw = open("/tmp/ws7-manifest.json", "rb").read().rstrip(b"\n")
 print("sha256 of the stored manifest:", "sha256:" + hashlib.sha256(raw).hexdigest(), "(pinned:", sys.argv[1] + ")")
@@ -352,7 +388,7 @@ arm = [m["digest"] for m in json.loads(raw).get("manifests", [])
 print("arm64 image manifests in it:", arm)
 PY
   # 3. What ECS reported for C10's task.
-  aws ecs describe-tasks --region eu-west-2 --cluster discharge-eval --tasks "$TASK" \
+  aws ecs describe-tasks --region eu-west-2 --cluster discharge-eval --tasks "${TASK}" \
     --query 'tasks[0].containers[0].[image, imageDigest]' --output text
 }
 ```
@@ -371,9 +407,9 @@ This is the fix the live stack's alarms need (ADR-011, finding 5), proved here. 
 subscription first.
 
 ```zsh
-ws7_guard $ACCOUNT && () {
+ws7_guard ${ACCOUNT} && () {
   aws sns list-subscriptions-by-topic --region eu-west-2 \
-    --topic-arn arn:aws:sns:eu-west-2:$ACCOUNT:discharge-eval-alerts \
+    --topic-arn arn:aws:sns:eu-west-2:${ACCOUNT}:discharge-eval-alerts \
     --query 'Subscriptions[].[Protocol,SubscriptionArn]' --output text
   # Force one breach alarm into ALARM. It publishes no metric, and the alarm returns to
   # OK by itself at its next evaluation, within a few minutes.
@@ -392,7 +428,7 @@ is the same failure the live topic is thought to have: the key policy's CloudWat
 ### A4. `RunOk` before any success
 
 ```zsh
-ws7_guard $ACCOUNT && () {
+ws7_guard ${ACCOUNT} && () {
   aws cloudwatch describe-alarms --region eu-west-2 --alarm-names discharge-eval-RunOk \
     --query 'MetricAlarms[0].[StateValue,StateUpdatedTimestamp,StateReason]' --output text
   aws cloudwatch describe-alarm-history --region eu-west-2 --alarm-name discharge-eval-RunOk \
@@ -408,50 +444,51 @@ the first change.
 
 **No set-up check publishes `RunOk`.** A synthetic success would be a false heartbeat.
 
-### A5. The task role allows D6's list and nothing else
+### A5. The task role: the listed allow and deny cases
 
-A simulation, with your own credentials. It makes no call as the role and changes nothing. It
-reads the role's own policy, so it shows what the policy says; the task checks (B1 to B6) show what
-AWS then does.
+A simulation, with your own credentials. It makes no call as the role and changes nothing. **It
+checks the cases listed below, allowed and denied, and no others**: it cannot show that the role
+can do nothing else. `tests/test_eval_template.py` holds the role's statements to D6's list, and
+the task checks (B1 to B6) show what AWS then does.
 
 ```zsh
-ws7_guard $ACCOUNT && () {
-  R=arn:aws:iam::$ACCOUNT:role/discharge-eval-task-role
-  B=arn:aws:s3:::discharge-eval-$ACCOUNT-eu-west-2
+ws7_guard ${ACCOUNT} && () {
+  R=arn:aws:iam::${ACCOUNT}:role/discharge-eval-task-role
+  B=arn:aws:s3:::discharge-eval-${ACCOUNT}-eu-west-2
   Q='EvaluationResults[0].[EvalActionName,EvalResourceName,EvalDecision]'
   sim() {
     if [ -n "${3:-}" ]; then
-      aws iam simulate-principal-policy --policy-source-arn $R --action-names "$1" --resource-arns "$2" \
-        --context-entries "$3" --query "$Q" --output text
+      aws iam simulate-principal-policy --policy-source-arn ${R} --action-names "$1" --resource-arns "$2" \
+        --context-entries "$3" --query "${Q}" --output text
     else
-      aws iam simulate-principal-policy --policy-source-arn $R --action-names "$1" --resource-arns "$2" \
-        --query "$Q" --output text
+      aws iam simulate-principal-policy --policy-source-arn ${R} --action-names "$1" --resource-arns "$2" \
+        --query "${Q}" --output text
     fi
   }
   echo "--- each of these must say allowed"
   sim bedrock:InvokeModel arn:aws:bedrock:eu-west-2::foundation-model/anthropic.claude-sonnet-4-6
-  sim s3:GetObject $B/ws7/x; sim s3:PutObject $B/ws7/x
-  sim s3:ListBucket $B "ContextKeyName=s3:prefix,ContextKeyValues=ws7/ledger/,ContextKeyType=string"
-  sim ssm:GetParameter arn:aws:ssm:eu-west-2:$ACCOUNT:parameter/discharge-eval/ws7/expected/v1
-  sim ssm:GetParameter arn:aws:ssm:eu-west-2:$ACCOUNT:parameter/discharge-eval/ws7/expected/pipeline
-  sim sns:Publish arn:aws:sns:eu-west-2:$ACCOUNT:discharge-eval-alerts
+  sim s3:GetObject ${B}/ws7/x; sim s3:PutObject ${B}/ws7/x
+  sim s3:ListBucket ${B} "ContextKeyName=s3:prefix,ContextKeyValues=ws7/ledger/,ContextKeyType=string"
+  sim ssm:GetParameter arn:aws:ssm:eu-west-2:${ACCOUNT}:parameter/discharge-eval/ws7/expected/v1
+  sim ssm:GetParameter arn:aws:ssm:eu-west-2:${ACCOUNT}:parameter/discharge-eval/ws7/expected/pipeline
+  sim sns:Publish arn:aws:sns:eu-west-2:${ACCOUNT}:discharge-eval-alerts
   sim cloudwatch:PutMetricData '*' "ContextKeyName=cloudwatch:namespace,ContextKeyValues=DischargeAssistant/Eval,ContextKeyType=string"
   echo "--- each of these must say implicitDeny"
   sim bedrock:InvokeModel arn:aws:bedrock:eu-west-2::foundation-model/anthropic.claude-haiku-4-5
   sim bedrock:InvokeModelWithResponseStream arn:aws:bedrock:eu-west-2::foundation-model/anthropic.claude-sonnet-4-6
-  sim s3:DeleteObject $B/ws7/x; sim s3:PutObject $B/retained/x; sim s3:GetObject $B/retained/x
-  sim s3:PutObject $B/x; sim s3:DeleteBucket $B
-  sim s3:ListBucket $B "ContextKeyName=s3:prefix,ContextKeyValues=retained/,ContextKeyType=string"
-  sim s3:ListBucket $B
-  sim ssm:PutParameter arn:aws:ssm:eu-west-2:$ACCOUNT:parameter/discharge-eval/ws7/expected/v1
-  sim ssm:GetParameter arn:aws:ssm:eu-west-2:$ACCOUNT:parameter/discharge-audit/anything
-  sim sns:Publish arn:aws:sns:eu-west-2:$ACCOUNT:discharge-audit-alerts
+  sim s3:DeleteObject ${B}/ws7/x; sim s3:PutObject ${B}/retained/x; sim s3:GetObject ${B}/retained/x
+  sim s3:PutObject ${B}/x; sim s3:DeleteBucket ${B}
+  sim s3:ListBucket ${B} "ContextKeyName=s3:prefix,ContextKeyValues=retained/,ContextKeyType=string"
+  sim s3:ListBucket ${B}
+  sim ssm:PutParameter arn:aws:ssm:eu-west-2:${ACCOUNT}:parameter/discharge-eval/ws7/expected/v1
+  sim ssm:GetParameter arn:aws:ssm:eu-west-2:${ACCOUNT}:parameter/discharge-audit/anything
+  sim sns:Publish arn:aws:sns:eu-west-2:${ACCOUNT}:discharge-audit-alerts
   sim cloudwatch:PutMetricData '*' "ContextKeyName=cloudwatch:namespace,ContextKeyValues=DischargeAssistant/Canary,ContextKeyType=string"
-  sim dynamodb:GetItem "arn:aws:dynamodb:eu-west-2:$ACCOUNT:table/discharge-audit-audit"
-  sim dynamodb:Scan "arn:aws:dynamodb:eu-west-2:$ACCOUNT:table/discharge-audit-results"
-  sim lambda:InvokeFunction "arn:aws:lambda:eu-west-2:$ACCOUNT:function:discharge-audit-generate"
+  sim dynamodb:GetItem "arn:aws:dynamodb:eu-west-2:${ACCOUNT}:table/discharge-audit-audit"
+  sim dynamodb:Scan "arn:aws:dynamodb:eu-west-2:${ACCOUNT}:table/discharge-audit-results"
+  sim lambda:InvokeFunction "arn:aws:lambda:eu-west-2:${ACCOUNT}:function:discharge-audit-generate"
   sim kms:Decrypt "$(aws cloudformation describe-stacks --region eu-west-2 --stack-name discharge-eval --query "Stacks[0].Outputs[?OutputKey=='KeyArn'].OutputValue | [0]" --output text)"
-  sim iam:PassRole $R; sim sts:AssumeRole $R; sim logs:PutLogEvents '*'; sim ecr:BatchGetImage '*'
+  sim iam:PassRole ${R}; sim sts:AssumeRole ${R}; sim logs:PutLogEvents '*'; sim ecr:BatchGetImage '*'
 }
 ```
 
@@ -467,16 +504,16 @@ ws7_guard $ACCOUNT && () {
 frozen baseline (slice 4), and the author's yes.
 
 ```zsh
-infra/eval/schedules.sh --account $ACCOUNT status
-infra/eval/schedules.sh --account $ACCOUNT on      # type ENABLE to confirm
-infra/eval/schedules.sh --account $ACCOUNT off     # type DISABLE to confirm
+infra/eval/schedules.sh --account ${ACCOUNT} status
+infra/eval/schedules.sh --account ${ACCOUNT} on      # type ENABLE to confirm
+infra/eval/schedules.sh --account ${ACCOUNT} off     # type DISABLE to confirm
 ```
 
 - `on` refuses unless **all 26 alarms have their actions on**, each alarm's one action is the eval
   topic, and an email subscription is confirmed. If it names alarms with their actions off:
 
   ```zsh
-  ws7_guard $ACCOUNT && aws cloudwatch enable-alarm-actions --region eu-west-2 --alarm-names \
+  ws7_guard ${ACCOUNT} && aws cloudwatch enable-alarm-actions --region eu-west-2 --alarm-names \
     $(aws cloudwatch describe-alarms --region eu-west-2 --alarm-name-prefix discharge-eval- \
         --query 'MetricAlarms[?ActionsEnabled==`false`].AlarmName' --output text)
   ```
@@ -504,13 +541,13 @@ Management Log's own and start at the alarm.
 2. Read the run's records (your own credentials):
 
    ```zsh
-   ws7_guard $ACCOUNT && () {
+   ws7_guard ${ACCOUNT} && () {
      RUN=<the run ID from the message>
-     B=discharge-eval-$ACCOUNT-eu-west-2
-     aws s3api list-objects-v2 --bucket $B --expected-bucket-owner $ACCOUNT \
-       --prefix ws7/runs/scheduled/$RUN/ --query 'Contents[].Key' --output text | tr '\t' '\n'
-     aws s3api get-object --bucket $B --expected-bucket-owner $ACCOUNT \
-       --key ws7/runs/scheduled/$RUN/comparison.json /tmp/ws7-comparison.json >/dev/null && cat /tmp/ws7-comparison.json
+     B=discharge-eval-${ACCOUNT}-eu-west-2
+     aws s3api list-objects-v2 --bucket ${B} --expected-bucket-owner ${ACCOUNT} \
+       --prefix ws7/runs/scheduled/${RUN}/ --query 'Contents[].Key' --output text | tr '\t' '\n'
+     aws s3api get-object --bucket ${B} --expected-bucket-owner ${ACCOUNT} \
+       --key ws7/runs/scheduled/${RUN}/comparison.json /tmp/ws7-comparison.json >/dev/null && cat /tmp/ws7-comparison.json
      aws logs tail /discharge-eval/ws7 --region eu-west-2 --since 2d
    }
    ```
@@ -521,23 +558,23 @@ Management Log's own and start at the alarm.
    cannot reach `retained/`, and the lifecycle rule does not touch it.
 
    ```zsh
-   ws7_guard $ACCOUNT && () {
+   ws7_guard ${ACCOUNT} && () {
      RUN=<the run ID>
-     B=discharge-eval-$ACCOUNT-eu-west-2
-     case "$RUN" in ''|*/*|*' '*) echo "STOP: not a run ID"; return 1 ;; esac
-     KEYS=$(aws s3api list-objects-v2 --bucket $B --expected-bucket-owner $ACCOUNT \
-       --prefix ws7/runs/scheduled/$RUN/ --query 'Contents[].Key' --output text) || { echo "STOP: the run could not be listed"; return 1; }
-     [ -n "$KEYS" ] && [ "$KEYS" != None ] || { echo "STOP: the run has no objects"; return 1; }
+     B=discharge-eval-${ACCOUNT}-eu-west-2
+     case "${RUN}" in ''|*/*|*' '*) echo "STOP: not a run ID"; return 1 ;; esac
+     KEYS=$(aws s3api list-objects-v2 --bucket ${B} --expected-bucket-owner ${ACCOUNT} \
+       --prefix ws7/runs/scheduled/${RUN}/ --query 'Contents[].Key' --output text) || { echo "STOP: the run could not be listed"; return 1; }
+     [ -n "${KEYS}" ] && [ "${KEYS}" != None ] || { echo "STOP: the run has no objects"; return 1; }
      N=0
      for K in ${=KEYS}; do
-       aws s3api copy-object --bucket $B --expected-bucket-owner $ACCOUNT --expected-source-bucket-owner $ACCOUNT \
-         --copy-source "$B/$K" --key "retained/$RUN/${K#ws7/runs/scheduled/$RUN/}" \
-         --query 'CopyObjectResult.ETag' --output text || { echo "STOP: $K was not copied"; return 1; }
+       aws s3api copy-object --bucket ${B} --expected-bucket-owner ${ACCOUNT} --expected-source-bucket-owner ${ACCOUNT} \
+         --copy-source "${B}/${K}" --key "retained/${RUN}/${K#ws7/runs/scheduled/${RUN}/}" \
+         --query 'CopyObjectResult.ETag' --output text || { echo "STOP: ${K} was not copied"; return 1; }
        N=$((N + 1))
      done
-     M=$(aws s3api list-objects-v2 --bucket $B --expected-bucket-owner $ACCOUNT \
-       --prefix retained/$RUN/ --query 'length(Contents)' --output text)
-     echo "copied $N; retained/$RUN/ now holds $M"
+     M=$(aws s3api list-objects-v2 --bucket ${B} --expected-bucket-owner ${ACCOUNT} \
+       --prefix retained/${RUN}/ --query 'length(Contents)' --output text)
+     echo "copied ${N}; retained/${RUN}/ now holds ${M}"
    }
    ```
 
@@ -572,9 +609,27 @@ Whenever a merged change touches what the image holds (`src/`, `prompts/`, `eval
 
 1. Section 2, with the new merge commit.
 2. The lifecycle check in section 2.
-3. Section 3, with the new digest. The schedules keep their state.
+3. The new digest, **and nothing else**:
+
+   ```zsh
+   infra/eval/deploy.sh --account ${ACCOUNT} --image-digest <the new digest>
+   ```
+
+   The schedules keep their state and the stack keeps its target. The script prints both, and
+   refuses `--target` on a stack that exists: after W11 that argument would have switched the
+   pipeline back to v1.
 4. For the pipeline target, section 4 at each release to `main`.
 5. C10 and A2 again.
+
+**At W11 only: change the target from v1 to the pipeline.** A separate deploy, after the pipeline's
+expected values are written (section 4) and a pipeline baseline is frozen:
+
+```zsh
+infra/eval/deploy.sh --account ${ACCOUNT} --change-target pipeline
+```
+
+It prints "THE TARGET CHANGES from v1 to pipeline" before it asks you to confirm. Both schedules
+and all 26 alarms follow the target.
 
 The old image stays in the repository, tagged. Delete it by hand when you no longer need it
 (`aws ecr batch-delete-image`); never the one the task definition pins.
@@ -587,15 +642,32 @@ Only if the stack is to be removed. Every step is a separate yes.
 2. Delete every image, or the stack delete fails on the repository:
 
    ```zsh
-   ws7_guard $ACCOUNT && aws ecr list-images --region eu-west-2 --repository-name discharge-eval \
-     --query 'imageIds[].imageDigest' --output text
-   # then, for each digest:  aws ecr batch-delete-image --region eu-west-2 --repository-name discharge-eval --image-ids imageDigest=<digest>
+   ws7_guard ${ACCOUNT} && () {
+     DIGESTS=$(aws ecr list-images --region eu-west-2 --registry-id ${ACCOUNT} --repository-name discharge-eval \
+       --query 'imageIds[].imageDigest' --output text) || { echo "STOP: the images could not be listed"; return 1; }
+     [ -n "${DIGESTS}" ] && [ "${DIGESTS}" != None ] || { echo "no images: nothing to delete"; return 0; }
+     print -l -- ${=DIGESTS} | sort -u
+     printf 'Type DELETE to delete every image above from discharge-eval: '
+     read -r ANSWER
+     [ "${ANSWER}" = DELETE ] || { echo "STOP: not confirmed. Nothing was deleted."; return 1; }
+     for D in $(print -l -- ${=DIGESTS} | sort -u); do
+       aws ecr batch-delete-image --region eu-west-2 --registry-id ${ACCOUNT} --repository-name discharge-eval \
+         --image-ids imageDigest=${D} --query '[imageIds[].imageDigest, failures[].failureCode]' --output text \
+         || { echo "STOP: ${D} was not deleted"; return 1; }
+     done
+     aws ecr list-images --region eu-west-2 --registry-id ${ACCOUNT} --repository-name discharge-eval \
+       --query 'length(imageIds)' --output text
+   }
    ```
+
+   Every deletion is inside the guarded block, and names the registry by the account you typed.
+   A list is deleted before the images it refers to are; if a line reports
+   `ImageReferencedByManifestList`, run the block again. Pass: the last line is `0`.
 
 3. Switch termination protection off and delete the stack:
 
    ```zsh
-   ws7_guard $ACCOUNT && () {
+   ws7_guard ${ACCOUNT} && () {
      aws cloudformation update-termination-protection --region eu-west-2 --stack-name discharge-eval --no-enable-termination-protection
      aws cloudformation delete-stack --region eu-west-2 --stack-name discharge-eval
      aws cloudformation wait stack-delete-complete --region eu-west-2 --stack-name discharge-eval
@@ -615,12 +687,22 @@ Only if the stack is to be removed. Every step is a separate yes.
 
 ## Known limits
 
-- **The CI deploy role can change parts of this stack** (`infra/cicd-oidc-role.yaml`). Only a
-  workflow on `main` can assume it. As documented it cannot enable the schedules, because updating
-  a schedule needs `iam:PassRole` for its role and CI may pass only `discharge-audit-*` roles. It
-  can write the two parameters, delete the schedules, and disable or delete the alarms. The
-  bucket, the key and the topic deny that role by name. Narrowing the role is a separate pull
-  request, before slice 6 (ADR-011, "Known limits of the stack").
+- **The CI deploy role can change parts of this stack** (`infra/cicd-oidc-role.yaml`; corrected
+  26 Nov 2026). Only a workflow on `main` can assume it. The bucket, the key and the topic deny
+  that role by name. What it can still do:
+  - **create or update a schedule in the eval schedule group, `ENABLED` included.** It may pass
+    `discharge-audit-canary-scheduler-role`, which EventBridge Scheduler trusts. That role can
+    only invoke the canary Lambda, so such a schedule cannot start an eval task; but an eval
+    schedule can be switched on, or pointed away from the task, from there;
+  - write the two expected-version parameters, delete the schedules, and disable or delete the
+    alarms;
+  - change the email subscription (a filter policy, or an unsubscribe), which the topic's deny
+    does not cover.
+
+  Denying CI the scheduler writes on `schedule-group/discharge-eval` and the subscription
+  changes, and narrowing the rest, is a separate pull request before slice 6 (ADR-011, "Known
+  limits of the stack"). Until then, `infra/eval/schedules.sh status` and `deploy.sh` both stop
+  when a live schedule is not in the state the stack says.
 - **The base image is named by tag**, `python:3.13.13-slim-trixie`, not by digest. Two builds of
   one commit can differ in the base layers. Each pushed image is checked as built.
 - **One subnet, one availability zone.** An outage there is a missed run, which the heartbeat

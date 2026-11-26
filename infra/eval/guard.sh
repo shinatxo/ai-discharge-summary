@@ -4,7 +4,9 @@
 #
 #   ws7_guard <account>    returns 0 only when the credentials in use belong to the
 #                          12-digit account the operator typed, and nothing in the
-#                          shell points the AWS CLI at another region.
+#                          shell points the AWS CLI at another region or at another
+#                          endpoint. It leaves AWS_IGNORE_CONFIGURED_ENDPOINT_URLS=true
+#                          exported, so no later command follows a configured endpoint.
 #
 # It RETURNS; it never exits, so a failed check does not close the operator's shell.
 # A script calls it as:   ws7_guard "$ACCOUNT" || exit 1
@@ -22,7 +24,7 @@ WS7_ALARM_PREFIX=discharge-eval-
 WS7_ALARM_COUNT=26
 
 ws7_guard() {
-  local want="$1" have arn name
+  local want="$1" have arn name all
   case "$want" in
     ''|*[!0-9]*) echo "STOP: give the 12-digit AWS account you mean to act on." >&2; return 1 ;;
   esac
@@ -36,10 +38,24 @@ ws7_guard() {
       return 1
     fi
   done
-  # An endpoint override would send the calls somewhere else.
-  if [ -n "${AWS_ENDPOINT_URL:-}" ]; then
-    echo "STOP: AWS_ENDPOINT_URL is set. Unset it first." >&2; return 1
+  # ANY CONFIGURED ENDPOINT would send the calls somewhere else, STS's answer about
+  # who the caller is included (the author's ruling, 26 Nov 2026). Two forms, both
+  # closed here before the first call:
+  # - a variable: AWS_ENDPOINT_URL, or one for a service (AWS_ENDPOINT_URL_STS, ...).
+  #   Any variable whose name starts AWS_ENDPOINT_URL is a STOP.
+  # - an `endpoint_url` in a profile of the AWS config file. The AWS CLI is told to
+  #   ignore every configured endpoint, and that stays set for every command after
+  #   the guard.
+  if ! all=$(env) || [ -z "$all" ]; then
+    echo "STOP: the environment could not be read. Nothing was done." >&2; return 1
   fi
+  case "
+$all" in
+    *"
+AWS_ENDPOINT_URL"*)
+      echo "STOP: a variable named AWS_ENDPOINT_URL... is set. Unset every one first." >&2; return 1 ;;
+  esac
+  export AWS_IGNORE_CONFIGURED_ENDPOINT_URLS=true
   # Each command is checked before its output is used.
   if ! have=$(aws sts get-caller-identity --region "$WS7_REGION" --query Account --output text) \
       || [ -z "$have" ]; then

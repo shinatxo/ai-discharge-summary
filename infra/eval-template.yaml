@@ -6,8 +6,8 @@ Description: >-
   live stack. Plain CloudFormation, no transform.
 
 # How this template is deployed (docs/WS7-RUNBOOK.md):
-#   Phase 1, ImageDigest empty: everything except the task definition and the two
-#   schedules. Nothing can run, and there is no placeholder image.
+#   Phase 1, ImageDigest empty: everything except the task definition, the scheduler's
+#   role and the two schedules. Nothing can run, and there is no placeholder image.
 #   Phase 2, ImageDigest set after the guarded push: the task definition, pinned by
 #   that digest, and the two schedules, DISABLED.
 # tests/test_eval_template.py holds this file to the job's own constants.
@@ -498,8 +498,11 @@ Resources:
               awslogs-stream-prefix: ws7
 
   # --- The schedules (D7, D9) ---------------------------------------------------
+  # Exists only with an image, like the task definition it names: it may run that one
+  # revision and no other.
   SchedulerRole:
     Type: AWS::IAM::Role
+    Condition: HasImage
     Properties:
       RoleName: discharge-eval-scheduler-role
       AssumeRolePolicyDocument:
@@ -522,7 +525,7 @@ Resources:
               - Sid: RunTheEvalTaskOnTheEvalCluster
                 Effect: Allow
                 Action: 'ecs:RunTask'
-                Resource: !Sub 'arn:${AWS::Partition}:ecs:${AWS::Region}:${AWS::AccountId}:task-definition/discharge-eval-ws7:*'
+                Resource: !Ref TaskDefinition
                 Condition:
                   ArnEquals:
                     'ecs:cluster': !GetAtt Cluster.Arn

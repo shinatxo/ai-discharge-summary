@@ -65,12 +65,33 @@ schedule_state() {    # schedule_state <name>: prints ENABLED or DISABLED
   printf '%s' "$value"
 }
 
-show() {
-  local name state
+# EVERY SUCCESS THIS SCRIPT REPORTS IS ABOUT THE LIVE SCHEDULES (the author's ruling,
+# 26 Nov 2026). The class it closes: exit 0 while a live schedule's state differs from
+# the stack's parameter (a schedule changed outside the stack, which CloudFormation
+# does not see). `status`, a switch to the state the stack is already in, and a
+# switch that was made all end here: both live states are read, and both must be the
+# wanted one.
+live_must_be() {      # live_must_be <ENABLED|DISABLED>
+  local name state other wrong=0
+  if [ "$1" = ENABLED ]; then other=off; else other=on; fi
   for name in discharge-eval-ws7-run discharge-eval-ws7-check; do
     state=$(schedule_state "$name") || stop "the schedule $name could not be read"
     echo "schedule $name is $state"
+    if [ "$state" != "$1" ]; then
+      wrong=1
+    fi
   done
+  if [ "$wrong" -ne 0 ]; then
+    echo "STOP: a live schedule is not $1, which is what the stack's ScheduleState says." >&2
+    echo "It was changed outside the stack. To put both right through the stack, by hand:" >&2
+    echo "  infra/eval/schedules.sh --account $ACCOUNT $other     then" >&2
+    if [ "$1" = ENABLED ]; then
+      echo "  infra/eval/schedules.sh --account $ACCOUNT on" >&2
+    else
+      echo "  infra/eval/schedules.sh --account $ACCOUNT off" >&2
+    fi
+    exit 1
+  fi
 }
 
 NOW=$(stack_parameter ScheduleState) || stop "the stack's ScheduleState could not be read"
@@ -86,14 +107,14 @@ esac
 
 if [ "$ACTION" = status ]; then
   echo "the stack's ScheduleState is $NOW"
-  show
+  live_must_be "$NOW"
   exit 0
 fi
 
 if [ "$ACTION" = on ]; then WANT=ENABLED WORD=ENABLE; else WANT=DISABLED WORD=DISABLE; fi
 if [ "$NOW" = "$WANT" ]; then
   echo "the stack's ScheduleState is already $WANT"
-  show
+  live_must_be "$WANT"
   exit 0
 fi
 
@@ -181,10 +202,6 @@ cfn execute-change-set --stack-name "$WS7_STACK" --change-set-name "$NAME" \
   || stop "the change set could not be executed"
 cfn wait stack-update-complete --stack-name "$WS7_STACK" || stop "the stack did not finish updating"
 
-for name in discharge-eval-ws7-run discharge-eval-ws7-check; do
-  state=$(schedule_state "$name") || stop "the schedule $name could not be read after the change"
-  [ "$state" = "$WANT" ] || stop "the schedule $name is $state, not $WANT"
-  echo "schedule $name is $state"
-done
+live_must_be "$WANT"
 echo "schedules: done. Both are $WANT."
 exit 0

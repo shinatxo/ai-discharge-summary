@@ -56,8 +56,12 @@ STUB = '''#!{python}
 import json, os, signal, sys
 tool, args = os.path.basename(sys.argv[0]), sys.argv[1:]
 entry = {{"tool": tool, "args": args}}
+if tool == "aws":
+    entry["ignores_endpoints"] = os.environ.get("AWS_IGNORE_CONFIGURED_ENDPOINT_URLS")
+if tool == "git":
+    entry["environment"] = sorted(os.environ)
 def note():
-    with open(os.environ["WS7_STUB_LOG"], "a") as log:
+    with open({log!r}, "a") as log:
         log.write(json.dumps(entry) + "\\n")
 if tool == "git":
     if "clone" in args:
@@ -68,12 +72,12 @@ if tool == "git":
         note()
         # The scratch remote in GitHub's place, fetched as a remote is: only what the
         # branch reaches, never a copy of every object in the folder.
-        args[-2] = os.environ["WS7_STUB_REMOTE"]
+        args[-2] = {remote!r}
         args.insert(args.index("clone") + 1, "--no-local")
         os.execv({git!r}, [{git!r}] + args)
     note()
     os.execv({git!r}, [{git!r}] + args)
-with open(os.environ["WS7_STUB_PLAN"]) as plan:
+with open({plan!r}) as plan:
     rules = json.load(plan)
 def fits(rule):
     want = list(rule["args"])
@@ -125,9 +129,15 @@ class Bench:
         shutil.copy2(ROOT / "infra" / "eval-template.yaml", self.repo / "infra" / "eval-template.yaml")
         self.bin = tmp_path / "stubs"
         self.bin.mkdir()
+        self.log, self.plan = tmp_path / "calls.jsonl", tmp_path / "plan.json"
+        self.remote = tmp_path / "remote.git"
+        # The stubs are told where their log, plan and remote are when they are written,
+        # not through the environment: the script runs git with an environment of its own.
         for name in ("docker", "aws", "git"):
             stub = self.bin / name
-            stub.write_text(STUB.format(python=sys.executable, github=GITHUB, git=REAL_GIT))
+            stub.write_text(STUB.format(python=sys.executable, github=GITHUB, git=REAL_GIT,
+                                        log=str(self.log), plan=str(self.plan),
+                                        remote=str(self.remote)))
             stub.chmod(stub.stat().st_mode | stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH)
         self.work = tmp_path / "tmp"
         self.work.mkdir()
@@ -136,16 +146,12 @@ class Bench:
         self.empty = [tmp_path / "aws-config", tmp_path / "aws-credentials"]
         for path in self.empty:
             path.write_bytes(b"")
-        self.log, self.plan = tmp_path / "calls.jsonl", tmp_path / "plan.json"
-        self.remote = tmp_path / "remote.git"
         self.socket = tmp_path / "no-such-docker.sock"
         # Built from nothing: nothing of the developer's or the runner's own environment.
         self.env = {"PATH": f"{self.bin}:/usr/bin:/bin", "HOME": str(home), "TMPDIR": str(self.work),
                     "LC_ALL": "C", "AWS_CONFIG_FILE": str(self.empty[0]),
                     "AWS_SHARED_CREDENTIALS_FILE": str(self.empty[1]),
-                    "DOCKER_HOST": f"unix://{self.socket}",
-                    "WS7_STUB_LOG": str(self.log), "WS7_STUB_PLAN": str(self.plan),
-                    "WS7_STUB_REMOTE": str(self.remote)}
+                    "DOCKER_HOST": f"unix://{self.socket}"}
 
     def run(self, script: str, argv: list, rules: list, stdin: str = "", env: dict | None = None,
             allow_unplanned: bool = False):
@@ -168,6 +174,11 @@ class Bench:
 
     def names(self) -> list:
         return [c.get("rule") for c in self.calls if c["tool"] != "git"]
+
+    def left_behind(self) -> list:
+        """The push script's work folders still in TMPDIR. Other files there are not
+        the script's: on a Mac /usr/bin/git itself leaves an `xcrun_db` behind."""
+        return sorted(path.name for path in self.work.glob("ws7-push.*"))
 
 
 @pytest.fixture
@@ -306,7 +317,7 @@ def test_the_scripts_run_against_the_stubs_and_nothing_else(bench):
     assert aws_names == ["AWS_CONFIG_FILE", "AWS_SHARED_CREDENTIALS_FILE"]
     assert all(path.read_bytes() == b"" for path in bench.empty)
     assert bench.env["DOCKER_HOST"] == f"unix://{bench.socket}" and not bench.socket.exists()
-    assert not any(name.startswith(("DOCKER_CONFIG", "GIT_")) for name in bench.env)
+    assert not any(name.startswith(("DOCKER_CONFIG", "GIT_", "WS7_")) for name in bench.env)
     # A call nobody planned is answered 97 and recorded as unexpected.
     done = bench.run("push-image.sh", ["--account", ACCOUNT, "--commit", "0" * 40], [],
                      allow_unplanned=True)
@@ -331,6 +342,9 @@ def test_the_scripts_call_docker_and_aws_by_name_only():
         text = script.read_text()
         assert paths_to(text) == [], script.name
         code = "\n".join(line for line in text.splitlines() if not line.lstrip().startswith("#"))
+        # The one PATH the scripts write is git's, and it is the caller's own, unchanged.
+        assert code.count("PATH=") == code.count('PATH="$PATH"') == (1 if script.name == "push-image.sh" else 0)
+        code = code.replace('PATH="$PATH"', "")
         for way_round in ("command -v", "which docker", "which aws", "type -p", "env docker",
                           "env aws", "exec -a", "PATH="):
             assert way_round not in code, (script.name, way_round)
@@ -366,7 +380,7 @@ def test_a_push_checks_the_image_by_its_id_and_pushes_that_id(bench):
     assert built["context"] == IMAGE_FILES
     assert built["args"][-1].startswith(str(bench.work))               # the export, never the checkout
     assert bench.did("docker", "login")[0]["stdin"] == "invented-password\n"
-    assert list(bench.work.iterdir()) == []                            # the temporary folder is gone
+    assert bench.left_behind() == []                            # the temporary folder is gone
 
 
 def test_the_commit_comes_from_github_with_this_machines_git_configuration_left_out(bench):
@@ -397,8 +411,87 @@ def test_the_commit_comes_from_github_with_this_machines_git_configuration_left_
     assert len(gits) > 5 and all(g["args"][0] == f"--git-dir={clone[-1]}" for g in gits[1:])
     script = (SCRIPTS / "push-image.sh").read_text()
     assert f"REMOTE={GITHUB}\n" in script and f"BRANCH={BRANCH}\n" in script
-    assert "export GIT_CONFIG_GLOBAL=/dev/null GIT_CONFIG_NOSYSTEM=1" in script
+    assert "GIT_CONFIG_GLOBAL=/dev/null GIT_CONFIG_NOSYSTEM=1" in script
     assert bench.did("docker", "build")[0]["context"] == IMAGE_FILES
+
+
+GIT_ALLOWED = {"GIT_ATTR_NOSYSTEM", "GIT_CONFIG_GLOBAL", "GIT_CONFIG_NOSYSTEM", "GIT_TERMINAL_PROMPT",
+               "HOME", "LC_ALL", "PATH", "TMPDIR"}
+# Not inherited: macOS gives the first to every process, and the stub's own Python
+# sets the second when it starts in the C locale.
+ADDED_BY_THE_SYSTEM = {"__CF_USER_TEXT_ENCODING", "LC_CTYPE"}
+
+
+def _graft(bench, made) -> dict:
+    """A graft file that swaps the merge's parents, so the task branch's head is the
+    merge's FIRST parent. Returns the environment that names it."""
+    grafts = bench.tmp / "grafts"
+    grafts.write_text(f"{made['tip']} {made['merged_head']} {made['old']}\n")
+    return {"GIT_GRAFT_FILE": str(grafts)}
+
+
+INHERITED = {
+    "GIT_GRAFT_FILE": _graft,
+    "GIT_REPLACE_REF_BASE": lambda bench, made: {"GIT_REPLACE_REF_BASE": "refs/heads/"},
+    "GIT_DIR": lambda bench, made: {"GIT_DIR": str(ROOT / ".git"), "GIT_WORK_TREE": str(ROOT)},
+    "GIT_OBJECT_DIRECTORY": lambda bench, made: {
+        "GIT_OBJECT_DIRECTORY": str(bench.tmp / "remote-work" / ".git" / "objects"),
+        "GIT_ALTERNATE_OBJECT_DIRECTORIES": str(bench.tmp / "remote-work" / ".git" / "objects")},
+    "GIT_NAMESPACE and others": lambda bench, made: {
+        "GIT_NAMESPACE": "elsewhere", "GIT_INDEX_FILE": str(bench.tmp / "an-index"),
+        "GIT_CEILING_DIRECTORIES": "/", "GIT_EXEC_PATH": str(bench.tmp / "nowhere"),
+        "GIT_SSH_COMMAND": "false", "GIT_TRACE": "1", "GIT_SHALLOW_FILE": str(bench.tmp / "shallow")},
+}
+
+
+def test_the_control_a_graft_in_the_environment_does_put_a_side_branch_commit_on_the_chain(bench):
+    """Why the next test matters. With GIT_GRAFT_FILE inherited, plain git lists the task
+    branch's head on the base branch's first-parent chain. Without it, it does not."""
+    made = make_remote(bench)
+
+    def chain(env: dict) -> list:
+        done = subprocess.run([REAL_GIT, f"--git-dir={bench.remote}", "rev-list", "--first-parent", BRANCH],
+                              capture_output=True, text=True, env={**GIT_ENV, **env})
+        assert done.returncode == 0, done.stderr
+        return done.stdout.split()
+    assert made["merged_head"] not in chain({})
+    assert made["merged_head"] in chain(_graft(bench, made))
+
+
+@pytest.mark.parametrize("inherited", list(INHERITED))
+def test_nothing_inherited_from_the_environment_changes_what_git_reads(bench, inherited):
+    """The author's ruling H1 (26 Nov 2026). The class: anything in the caller's
+    environment that changes what git reads. Every git command runs under `env -i`
+    with a fixed list of variables, so none of these reaches git: the task branch's
+    head is still refused, and the merge commit is still built from the clone."""
+    made = make_remote(bench)
+    env = INHERITED[inherited](bench, made)
+    done = bench.run("push-image.sh", ["--account", ACCOUNT, "--commit", made["merged_head"]],
+                     push_rules(made["merged_head"]), env=env)
+    assert done.returncode == 1 and NOT_ON_THE_CHAIN in done.stderr, done.stderr
+    assert not bench.did("docker") and bench.left_behind() == []
+    # What every git call was given, by name: the allowed list and nothing else.
+    gits = bench.did("git")
+    assert len(gits) >= 4
+    for call in gits:
+        assert set(call["environment"]) - ADDED_BY_THE_SYSTEM == GIT_ALLOWED, call["environment"]
+
+    done = bench.run("push-image.sh", ["--account", ACCOUNT, "--commit", made["tip"]],
+                     push_rules(made["tip"]), env=env)                 # the partner
+    assert done.returncode == 0, done.stderr
+    assert bench.did("docker", "build")[0]["context"] == IMAGE_FILES
+
+
+def test_gits_home_and_temporary_folder_are_inside_the_work_folder_and_go_with_it(bench):
+    c = make_remote(bench)["tip"]
+    script = (SCRIPTS / "push-image.sh").read_text()
+    assert 'env -i PATH="$PATH" HOME="$WORK/home" TMPDIR="$WORK/tmp" LC_ALL=C' in script
+    code = [line for line in script.splitlines()
+            if not line.lstrip().startswith("#") and re.search(r"\bgit ", line)]
+    assert code == ['    git "$@"']                    # the one place git is called: inside g()
+    assert "unset GIT_" not in script
+    done = bench.run("push-image.sh", ["--account", ACCOUNT, "--commit", c], push_rules(c))
+    assert done.returncode == 0 and bench.left_behind() == []
 
 
 NOT_ON_THE_CHAIN = "is not on the first-parent chain of feat/agentic-pipeline as fetched"
@@ -439,7 +532,7 @@ def test_only_a_commit_on_the_base_branchs_first_parent_chain_is_built(bench, wh
         return
     assert done.returncode == 1 and says in done.stderr and "Nothing was pushed." in done.stderr
     assert not bench.did("docker") and not bench.did("aws", "ecr")
-    assert list(bench.work.iterdir()) == []
+    assert bench.left_behind() == []
 
 
 def test_the_chain_is_the_branchs_as_fetched_not_as_this_machine_last_knew_it(bench):
@@ -499,7 +592,7 @@ def test_an_export_that_is_not_the_commits_files_byte_for_byte_is_never_built(be
     done = bench.run("push-image.sh", ["--account", ACCOUNT, "--commit", c], push_rules(c))
     assert done.returncode == 1 and says in done.stderr, done.stderr
     assert not bench.did("docker") and not bench.did("aws", "ecr")
-    assert list(bench.work.iterdir()) == []
+    assert bench.left_behind() == []
 
 
 def test_an_export_that_holds_a_file_the_commit_does_not_name_is_never_built(bench):
@@ -515,7 +608,7 @@ def test_an_export_that_holds_a_file_the_commit_does_not_name_is_never_built(ben
     assert done.returncode == 1, done.stdout
     assert f"the export holds {len(IMAGE_FILES) + 1} files and the commit names {len(IMAGE_FILES)}" \
         in done.stderr
-    assert not bench.did("docker") and list(bench.work.iterdir()) == []
+    assert not bench.did("docker") and bench.left_behind() == []
     wrapper.unlink()
     done = bench.run("push-image.sh", ["--account", ACCOUNT, "--commit", c], push_rules(c))
     assert done.returncode == 0                                        # the partner
@@ -569,7 +662,7 @@ def test_no_image_is_pushed_unless_every_check_and_then_check_5_passed_on_it(ben
     assert says in done.stderr and "Nothing was pushed." in done.stderr
     assert "PUSHED" not in done.stdout
     nothing_reached_the_registry(bench)
-    assert list(bench.work.iterdir()) == []
+    assert bench.left_behind() == []
 
 
 def test_check_5_is_judged_by_its_status_and_not_by_what_it_printed(bench):
@@ -608,7 +701,7 @@ def test_what_is_pushed_is_the_image_the_checks_ran_on_or_no_digest_is_given(ben
     assert done.returncode == 1 and says in done.stderr, done.stderr
     assert "PUSHED" not in done.stdout and "digest sha256" not in done.stdout
     assert bool(bench.did("docker", "push")) is pushed
-    assert list(bench.work.iterdir()) == []
+    assert bench.left_behind() == []
 
 
 @pytest.mark.parametrize("env, change, argv_account, says", [
@@ -617,7 +710,11 @@ def test_what_is_pushed_is_the_image_the_checks_ran_on_or_no_digest_is_given(ben
     ({}, {"sts_account": {"out": ""}}, ACCOUNT, "identity could not be read"),
     ({"AWS_REGION": "us-east-1"}, {}, ACCOUNT, "set for region us-east-1"),
     ({"AWS_DEFAULT_REGION": "eu-west-1"}, {}, ACCOUNT, "set for region eu-west-1"),
-    ({"AWS_ENDPOINT_URL": "http://127.0.0.1:9"}, {}, ACCOUNT, "AWS_ENDPOINT_URL is set"),
+    ({"AWS_ENDPOINT_URL": "http://127.0.0.1:9"}, {}, ACCOUNT, "AWS_ENDPOINT_URL... is set"),
+    ({"AWS_ENDPOINT_URL_STS": "http://127.0.0.1:9"}, {}, ACCOUNT, "AWS_ENDPOINT_URL... is set"),
+    ({"AWS_ENDPOINT_URL_ECR": "http://127.0.0.1:9"}, {}, ACCOUNT, "AWS_ENDPOINT_URL... is set"),
+    ({"AWS_ENDPOINT_URL_CLOUDFORMATION": "x"}, {}, ACCOUNT, "AWS_ENDPOINT_URL... is set"),
+    ({"AWS_ENDPOINT_URL_S3": ""}, {}, ACCOUNT, "AWS_ENDPOINT_URL... is set"),
     ({}, {}, "12345", "12-digit AWS account"),
     ({}, {}, "", "12-digit AWS account")])
 def test_the_identity_and_region_check_comes_before_everything(bench, env, change, argv_account, says):
@@ -626,9 +723,11 @@ def test_the_identity_and_region_check_comes_before_everything(bench, env, chang
                      push_rules(c, **change), env=env)
     assert done.returncode == 1 and says in done.stderr, done.stderr
     assert not bench.did("git") and not bench.did("docker") and not bench.did("aws", "ecr")
+    if any(name.startswith("AWS_ENDPOINT_URL") for name in env):
+        assert not bench.did("aws")                 # refused before STS is asked anything
     done = bench.run("push-image.sh", ["--account", ACCOUNT, "--commit", c], push_rules(c),
-                     env={"AWS_REGION": REGION})                       # the partner
-    assert done.returncode == 0
+                     env={"AWS_REGION": REGION, "AWS_ENDPOINT": "not-a-name-the-guard-refuses"})
+    assert done.returncode == 0                                        # the partner
 
 
 def test_check_only_builds_and_checks_and_makes_no_aws_call(bench):
@@ -648,7 +747,7 @@ def test_the_temporary_folder_is_removed_when_the_script_is_killed(bench):
     done = bench.run("push-image.sh", ["--account", ACCOUNT, "--commit", c],
                      push_rules(c, build={"do": "sigterm"}))
     assert done.returncode == 143 and bench.did("docker", "build")
-    assert not bench.did("docker", "push") and list(bench.work.iterdir()) == []
+    assert not bench.did("docker", "push") and bench.left_behind() == []
 
 
 # ============================================================== the deploy ==
@@ -662,18 +761,34 @@ NO_STACK = ("\nAn error occurred (ValidationError) when calling the DescribeStac
             "Stack with id discharge-eval does not exist\n")
 SET = ["--stack-name", "discharge-eval", "--change-set-name", ANY]
 STATE_QUERY = "Parameters[?ParameterKey=='ScheduleState'].ParameterValue | [0]"
+TARGET_QUERY = "Parameters[?ParameterKey=='Target'].ParameterValue | [0]"
+DIGEST_QUERY = "Parameters[?ParameterKey=='ImageDigest'].ParameterValue | [0]"
 DETAIL_QUERY = ("length(Changes[?ResourceChange.ResourceType=='AWS::Scheduler::Schedule']"
                 ".ResourceChange.Details[] | [?Target.Name=='State'])")
 
 
-def deploy_rules(exists: bool, state: str = "DISABLED", /, **change) -> list:
+def live_state(name: str) -> list:
+    return ["scheduler", "get-schedule", "--region", REGION, "--group-name", "discharge-eval",
+            "--name", name, "--query", "State", "--output", "text"]
+
+
+def stack(query: str) -> list:
+    return cfn("describe-stacks", "--stack-name", "discharge-eval", "--query", query, "--output", "text")
+
+
+def deploy_rules(exists: bool, state: str = "DISABLED", target: str = "v1", digest: str = IMAGE,
+                 /, **change) -> list:
+    """What a deploy asks AWS. `state`, `target` and `digest` are the stack's own
+    parameters as they stand; the live schedules are in `state` unless changed."""
     rules = GUARD_RULES + [
-        rule("exists", "aws", cfn("describe-stacks", "--stack-name", "discharge-eval", "--query",
-                                  "Stacks[0].StackStatus", "--output", "text"),
+        rule("exists", "aws", stack("Stacks[0].StackStatus"),
              "UPDATE_COMPLETE" if exists else "", 0 if exists else 254,
              err="" if exists else NO_STACK),
-        rule("state_now", "aws", cfn("describe-stacks", "--stack-name", "discharge-eval", "--query",
-                                     "Stacks[0]." + STATE_QUERY, "--output", "text"), state),
+        rule("state_now", "aws", stack("Stacks[0]." + STATE_QUERY), state),
+        rule("target_now", "aws", stack("Stacks[0]." + TARGET_QUERY), target),
+        rule("digest_now", "aws", stack("Stacks[0]." + DIGEST_QUERY), digest),
+        rule("run_state", "aws", live_state("discharge-eval-ws7-run"), state),
+        rule("check_state", "aws", live_state("discharge-eval-ws7-check"), state),
         rule("image", "aws", ["ecr", "describe-images", "--region", REGION, "--registry-id", ACCOUNT,
                               "--repository-name", "discharge-eval", "--image-ids",
                               f"imageDigest={IMAGE}", "--query", "imageDetails[0].imageDigest",
@@ -687,6 +802,8 @@ def deploy_rules(exists: bool, state: str = "DISABLED", /, **change) -> list:
                                      "text"), state),
         rule("set_details", "aws", cfn("describe-change-set", *SET, "--query", DETAIL_QUERY,
                                        "--output", "text"), "0"),
+        rule("set_target", "aws", cfn("describe-change-set", *SET, "--query", TARGET_QUERY, "--output",
+                                      "text"), target),
         rule("reason", "aws", cfn("describe-change-set", *SET, "--query", "StatusReason", "--output",
                                   "text"), "invented reason"),
         rule("discard", "aws", cfn("delete-change-set", *SET)),
@@ -718,11 +835,13 @@ def parameters(bench: Bench) -> dict:
 
 
 EMAIL = {"WS7_ALERT_EMAIL": "invented@example.invalid"}
-DEPLOY = ["--account", ACCOUNT, "--target", "v1"]
+FIRST = ["--account", ACCOUNT, "--target", "v1"]           # the first deploy
+LATER = ["--account", ACCOUNT]                              # every later one
+YES = "discharge-eval\n"
 
 
 def test_the_first_deploy_creates_the_stack_with_no_image_and_the_schedules_disabled(bench):
-    done = bench.run("deploy.sh", DEPLOY, deploy_rules(False), stdin="discharge-eval\n", env=EMAIL)
+    done = bench.run("deploy.sh", FIRST, deploy_rules(False), stdin=YES, env=EMAIL)
     assert done.returncode == 0, done.stderr
     assert parameters(bench) == {"Target": "ParameterValue=v1", "ImageDigest": "ParameterValue=",
                                  "ScheduleState": "ParameterValue=DISABLED",
@@ -732,30 +851,123 @@ def test_the_first_deploy_creates_the_stack_with_no_image_and_the_schedules_disa
     assert made[made.index("--template-body") + 1] == \
         f"file://{bench.repo}/infra/eval/../eval-template.yaml"
     assert "--template-url" not in made and "--capabilities" in made
-    assert bench.names()[-5:] == ["set_details", "execute", "wait_create", "protect", "outputs"]
+    assert bench.names() == ["sts_account", "sts_arn", "exists", "create_set", "wait_set", "table",
+                             "set_state", "set_details", "set_target", "execute", "wait_create",
+                             "protect", "outputs"]
     assert "invented@example.invalid" not in done.stdout + done.stderr
 
 
 @pytest.mark.parametrize("state", ["DISABLED", "ENABLED"])
-def test_an_update_hands_the_schedules_state_back_unchanged(bench, state):
-    """Otherwise every image release after slice 6 would switch both schedules off."""
-    done = bench.run("deploy.sh", DEPLOY + ["--image-digest", IMAGE], deploy_rules(True, state),
-                     stdin="discharge-eval\n")
+@pytest.mark.parametrize("target", ["v1", "pipeline"])
+def test_an_update_hands_the_schedules_state_and_the_target_back_unchanged(bench, state, target):
+    """Otherwise every image release after slice 6 would switch both schedules off, and
+    every one after W11 would switch the pipeline back to v1 (ruling H4, 26 Nov 2026)."""
+    done = bench.run("deploy.sh", LATER + ["--image-digest", IMAGE],
+                     deploy_rules(True, state, target), stdin=YES)
     assert done.returncode == 0, done.stderr
-    assert parameters(bench) == {"Target": "ParameterValue=v1", "ScheduleState": "UsePreviousValue=true",
+    assert parameters(bench) == {"Target": "UsePreviousValue=true",
+                                 "ScheduleState": "UsePreviousValue=true",
                                  "ImageDigest": f"ParameterValue={IMAGE}",
                                  "AlertEmail": "UsePreviousValue=true"}
-    assert bench.names()[-4:] == ["execute", "wait_update", "protect", "outputs"]
+    assert bench.names() == ["sts_account", "sts_arn", "exists", "state_now", "target_now",
+                             "digest_now", "run_state", "check_state", "image", "create_set",
+                             "wait_set", "table", "set_state", "set_details", "set_target", "execute",
+                             "wait_update", "protect", "outputs"]
+    assert f"deploy: the target stays {target}\n" in done.stdout
+    assert f"deploy: this change set's Target is {target}\n" in done.stdout
     # (The prompt has no line end, so the last line starts with it.)
-    assert done.stdout.endswith(f"deploy: done. The schedules are {state}.\n")
+    assert done.stdout.endswith(f"deploy: done. The target is {target}. The schedules are {state}.\n")
 
 
-def test_deploy_never_names_enabled():
+def test_deploy_never_names_enabled_and_names_a_target_only_when_told_to():
     text = (SCRIPTS / "deploy.sh").read_text()
     code = "\n".join(line for line in text.splitlines() if not line.lstrip().startswith("#"))
     assert "ParameterKey=ScheduleState,ParameterValue=DISABLED" in code
     assert "ParameterKey=ScheduleState,UsePreviousValue=true" in code
     assert code.count("ParameterKey=ScheduleState") == 2 and "ParameterValue=ENABLED" not in code
+    assert sorted(re.findall(r"ParameterKey=Target,(\S+?)\"", code)) == \
+        ["ParameterValue=$NEW_TARGET", "ParameterValue=$TARGET", "UsePreviousValue=true"]
+
+
+def test_only_change_target_changes_the_target_and_the_script_says_what_changes(bench):
+    """W11. The one way the target changes after the first deploy, and it is said before
+    the confirmation. Naming the target the stack already has changes nothing."""
+    done = bench.run("deploy.sh", LATER + ["--change-target", "pipeline"],
+                     deploy_rules(True, "ENABLED", "v1", set_target={"out": "pipeline\n"}), stdin=YES)
+    assert done.returncode == 0, done.stderr
+    assert parameters(bench)["Target"] == "ParameterValue=pipeline"
+    assert parameters(bench)["ScheduleState"] == "UsePreviousValue=true"
+    assert "deploy: THE TARGET CHANGES from v1 to pipeline" in done.stdout
+    assert done.stdout.index("THE TARGET CHANGES") < done.stdout.index("Type the stack name")
+    assert done.stdout.endswith("deploy: done. The target is pipeline. The schedules are ENABLED.\n")
+
+    done = bench.run("deploy.sh", LATER + ["--change-target", "pipeline"],
+                     deploy_rules(True, "ENABLED", "pipeline"), stdin=YES)
+    assert done.returncode == 0 and parameters(bench)["Target"] == "UsePreviousValue=true"
+    assert "deploy: the target stays pipeline\n" in done.stdout
+
+
+@pytest.mark.parametrize("argv, exists, target, change, says", [
+    # --target is the first deploy's. On a stack that exists it is refused, whatever it names.
+    (LATER + ["--target", "v1"], True, "pipeline", {}, "leave --target out"),
+    (LATER + ["--target", "pipeline"], True, "pipeline", {}, "leave --target out"),
+    (LATER + ["--target", "v1", "--image-digest", IMAGE], True, "pipeline", {}, "leave --target out"),
+    # --change-target is a later deploy's.
+    (LATER + ["--change-target", "pipeline"], False, "v1", {}, "takes --target, not --change-target"),
+    (LATER, False, "v1", {}, "the first deploy needs --target"),
+    (LATER + ["--target", "v1", "--change-target", "pipeline"], True, "v1", {}, "not both"),
+    (LATER + ["--change-target", "main"], True, "v1", {}, "--change-target must be v1 or pipeline"),
+    (LATER + ["--target", "main"], False, "v1", {}, "--target must be v1 or pipeline"),
+    (LATER, True, "v1", {"target_now": {"out": "None\n"}}, "neither v1 nor pipeline"),
+    (LATER, True, "v1", {"target_now": {"status": 255, "out": ""}}, "Target could not be read")])
+def test_the_target_is_never_changed_by_an_argument_that_does_not_say_so(bench, argv, exists, target,
+                                                                        change, says):
+    done = bench.run("deploy.sh", argv, deploy_rules(exists, "ENABLED", target, **change), stdin=YES,
+                     env=EMAIL)
+    assert done.returncode == 1 and says in done.stderr, done.stderr
+    assert not bench.did("aws", *cfn("create-change-set"))
+
+
+@pytest.mark.parametrize("target, change", [
+    ("pipeline", {"set_target": {"out": "v1\n"}}),             # the change set would move it
+    ("v1", {"set_target": {"out": "pipeline\n"}}),
+    ("pipeline", {"set_target": {"status": 255, "out": ""}}),
+    ("pipeline", {"set_target": {"out": ""}})])
+def test_a_change_set_whose_target_is_not_the_one_meant_is_never_executed(bench, target, change):
+    done = bench.run("deploy.sh", LATER, deploy_rules(True, "ENABLED", target, **change), stdin=YES)
+    assert done.returncode == 1, done.stdout
+    assert "would set Target to" in done.stderr or "Target could not be read" in done.stderr
+    assert not bench.did("aws", *cfn("execute-change-set")) and bench.did("aws", *cfn("delete-change-set"))
+
+
+@pytest.mark.parametrize("state, change, says", [
+    ("DISABLED", {"run_state": {"out": "ENABLED\n"}}, "discharge-eval-ws7-run is ENABLED"),
+    ("DISABLED", {"check_state": {"out": "ENABLED\n"}}, "discharge-eval-ws7-check is ENABLED"),
+    ("ENABLED", {"run_state": {"out": "DISABLED\n"}}, "discharge-eval-ws7-run is DISABLED"),
+    ("ENABLED", {"check_state": {"out": "DISABLED\n"}}, "discharge-eval-ws7-check is DISABLED"),
+    ("ENABLED", {"run_state": {"status": 255, "out": ""}}, "discharge-eval-ws7-run could not be read"),
+    ("ENABLED", {"check_state": {"out": ""}}, "discharge-eval-ws7-check could not be read"),
+    ("ENABLED", {"digest_now": {"status": 255, "out": ""}}, "ImageDigest could not be read"),
+    ("ENABLED", {"digest_now": {"out": "latest\n"}}, "ImageDigest could not be read")])
+def test_deploy_stops_while_a_live_schedule_is_not_in_the_state_the_stack_says(bench, state, change,
+                                                                               says):
+    """Ruling H3 (26 Nov 2026). The class: success reported while a live schedule's state
+    differs from the stack's. CloudFormation cannot see a schedule changed outside the
+    stack, so the script reads both live states itself, before any change set."""
+    done = bench.run("deploy.sh", LATER + ["--image-digest", IMAGE],
+                     deploy_rules(True, state, **change), stdin=YES)
+    assert done.returncode == 1 and says in done.stderr, done.stderr
+    assert not bench.did("aws", *cfn("create-change-set"))
+    if "is ENABLED" in says or "is DISABLED" in says:
+        assert "changed outside the stack" in done.stderr and "schedules.sh" in done.stderr
+
+
+@pytest.mark.parametrize("digest", ["", "None"])
+def test_a_stack_with_no_image_has_no_schedules_to_read(bench, digest):
+    done = bench.run("deploy.sh", LATER + ["--image-digest", IMAGE],
+                     deploy_rules(True, "DISABLED", "v1", digest), stdin=YES)
+    assert done.returncode == 0, done.stderr
+    assert "run_state" not in bench.names() and "check_state" not in bench.names()
 
 
 @pytest.mark.parametrize("exists, state, change, says", [
@@ -771,8 +983,8 @@ def test_deploy_never_names_enabled():
     (True, "ENABLED", {"wait_set": {"status": 255}}, "the change set was not created")])
 def test_a_change_set_that_would_change_a_schedules_state_is_never_executed(bench, exists, state,
                                                                             change, says):
-    done = bench.run("deploy.sh", DEPLOY, deploy_rules(exists, state, **change),
-                     stdin="discharge-eval\n", env=EMAIL)
+    done = bench.run("deploy.sh", LATER if exists else FIRST, deploy_rules(exists, state, **change),
+                     stdin=YES, env=EMAIL)
     assert done.returncode == 1 and says in done.stderr, done.stderr
     assert not bench.did("aws", *cfn("execute-change-set"))
     assert bench.did("aws", *cfn("delete-change-set"))                 # and it is not left behind
@@ -780,29 +992,27 @@ def test_a_change_set_that_would_change_a_schedules_state_is_never_executed(benc
 
 @pytest.mark.parametrize("typed", ["", "yes\n", "discharge-eval \n", "DISCHARGE-EVAL\n", "discharge-audit\n"])
 def test_a_change_set_is_executed_only_when_the_stack_name_is_typed(bench, typed):
-    done = bench.run("deploy.sh", DEPLOY, deploy_rules(True), stdin=typed)
+    done = bench.run("deploy.sh", LATER, deploy_rules(True), stdin=typed)
     assert done.returncode == 1 and "not confirmed" in done.stderr
     assert not bench.did("aws", *cfn("execute-change-set")) and bench.did("aws", *cfn("delete-change-set"))
 
 
 @pytest.mark.parametrize("argv, env, change, says", [
-    (["--account", ACCOUNT, "--target", "main"], EMAIL, {}, "--target must be v1 or pipeline"),
-    (["--account", ACCOUNT], EMAIL, {}, "--target must be v1 or pipeline"),
-    (DEPLOY + ["--image-digest", "latest"], EMAIL, {}, "--image-digest must be sha256:"),
-    (DEPLOY + ["--image-digest", "sha256:abc"], EMAIL, {}, "--image-digest must be sha256:"),
-    (DEPLOY + ["--schedule-state", "ENABLED"], EMAIL, {}, "usage: deploy.sh"),
-    (DEPLOY, {}, {"exists": {"status": 254, "err": NO_STACK, "out": ""}}, "set WS7_ALERT_EMAIL"),
-    (DEPLOY, EMAIL, {"exists": {"status": 254, "err": "AccessDenied\n", "out": ""}},
+    (LATER + ["--image-digest", "latest"], EMAIL, {}, "--image-digest must be sha256:"),
+    (LATER + ["--image-digest", "sha256:abc"], EMAIL, {}, "--image-digest must be sha256:"),
+    (LATER + ["--schedule-state", "ENABLED"], EMAIL, {}, "usage: deploy.sh"),
+    (FIRST, {}, {"exists": {"status": 254, "err": NO_STACK, "out": ""}}, "set WS7_ALERT_EMAIL"),
+    (LATER, EMAIL, {"exists": {"status": 254, "err": "AccessDenied\n", "out": ""}},
      "the stack's state could not be read"),
-    (DEPLOY, EMAIL, {"state_now": {"out": "None\n"}}, "neither DISABLED nor ENABLED"),
-    (DEPLOY, EMAIL, {"state_now": {"status": 255, "out": ""}}, "ScheduleState could not be read"),
-    (DEPLOY + ["--image-digest", IMAGE], EMAIL, {"image": {"status": 254, "out": ""}},
+    (LATER, EMAIL, {"state_now": {"out": "None\n"}}, "neither DISABLED nor ENABLED"),
+    (LATER, EMAIL, {"state_now": {"status": 255, "out": ""}}, "ScheduleState could not be read"),
+    (LATER + ["--image-digest", IMAGE], EMAIL, {"image": {"status": 254, "out": ""}},
      "not an image in the eval repository"),
-    (DEPLOY + ["--image-digest", IMAGE], EMAIL, {"image": {"out": OTHER_IMAGE + "\n"}},
+    (LATER + ["--image-digest", IMAGE], EMAIL, {"image": {"out": OTHER_IMAGE + "\n"}},
      "not an image in the eval repository")])
 def test_deploy_stops_before_any_change_set_when_it_is_given_or_finds_something_wrong(
         bench, argv, env, change, says):
-    done = bench.run("deploy.sh", argv, deploy_rules(True, **change), stdin="discharge-eval\n", env=env)
+    done = bench.run("deploy.sh", argv, deploy_rules(True, **change), stdin=YES, env=env)
     assert done.returncode == 1 and says in done.stderr, done.stderr
     assert not bench.did("aws", *cfn("create-change-set"))
 
@@ -811,10 +1021,10 @@ def test_a_template_over_the_inline_limit_stops_the_deploy_and_no_bucket_is_chos
     template = bench.repo / "infra" / "eval-template.yaml"
     body = template.read_bytes()
     template.write_bytes(body + b"#" * (51_200 - len(body)))            # exactly at the limit
-    done = bench.run("deploy.sh", DEPLOY, deploy_rules(True), stdin="discharge-eval\n")
+    done = bench.run("deploy.sh", LATER, deploy_rules(True), stdin=YES)
     assert done.returncode == 0, done.stderr
     template.write_bytes(body + b"#" * (51_201 - len(body)))            # one byte over
-    done = bench.run("deploy.sh", DEPLOY, deploy_rules(True), stdin="discharge-eval\n")
+    done = bench.run("deploy.sh", LATER, deploy_rules(True), stdin=YES)
     assert done.returncode == 1 and "is 51201 bytes" in done.stderr and "no bucket is chosen" in done.stderr
     assert bench.calls == []                                            # before the guard, even
     text = (SCRIPTS / "deploy.sh").read_text()
@@ -831,12 +1041,8 @@ ONLY_SCHEDULES = ("length(Changes[?ResourceChange.ResourceType=='AWS::Scheduler:
 
 
 def schedule_rules(now: str, after: str, /, **change) -> list:
-    def stack(query: str) -> list:
-        return cfn("describe-stacks", "--stack-name", "discharge-eval", "--query", query, "--output", "text")
-
-    def state(name: str) -> list:
-        return ["scheduler", "get-schedule", "--region", REGION, "--group-name", "discharge-eval",
-                "--name", name, "--query", "State", "--output", "text"]
+    """`now` is the stack's ScheduleState; `after` is what both live schedules say."""
+    state = live_state
     rules = GUARD_RULES + [
         rule("state_now", "aws", stack("Stacks[0]." + STATE_QUERY), now),
         rule("digest", "aws", stack("Stacks[0].Parameters[?ParameterKey=='ImageDigest'].ParameterValue | [0]"),
@@ -939,7 +1145,7 @@ def test_switching_off_needs_no_alarm_check_and_is_confirmed_by_what_the_schedul
     assert not set(bench.names()) & set(ALARM_CHECKS)
     assert parameters(bench)["ScheduleState"] == "ParameterValue=DISABLED"
     done = bench.run("schedules.sh", OFF, schedule_rules("ENABLED", "ENABLED"), stdin="DISABLE\n")
-    assert done.returncode == 1 and "is ENABLED, not DISABLED" in done.stderr     # believed only if seen
+    assert done.returncode == 1 and "a live schedule is not DISABLED" in done.stderr   # believed only if seen
 
 
 @pytest.mark.parametrize("argv, now", [(["--account", ACCOUNT, "status"], "DISABLED"),
@@ -951,6 +1157,46 @@ def test_status_and_a_switch_to_the_state_it_is_in_change_nothing(bench, argv, n
     assert f"schedule discharge-eval-ws7-run is {now}" in done.stdout
 
 
+LIVE = {"status": ["--account", ACCOUNT, "status"], "on": ON, "off": OFF}
+
+
+@pytest.mark.parametrize("action, now, change, first, then", [
+    # The stack says DISABLED and a live schedule is ENABLED: the dangerous way round.
+    ("status", "DISABLED", {"run_state": {"out": "ENABLED\n"}}, "on", "off"),
+    ("status", "DISABLED", {"check_state": {"out": "ENABLED\n"}}, "on", "off"),
+    ("off", "DISABLED", {"run_state": {"out": "ENABLED\n"}}, "on", "off"),
+    ("off", "DISABLED", {"check_state": {"out": "ENABLED\n"}}, "on", "off"),
+    # The stack says ENABLED and a live schedule is DISABLED: a run that will not start.
+    ("status", "ENABLED", {"run_state": {"out": "DISABLED\n"}}, "off", "on"),
+    ("status", "ENABLED", {"check_state": {"out": "DISABLED\n"}}, "off", "on"),
+    ("on", "ENABLED", {"run_state": {"out": "DISABLED\n"}}, "off", "on"),
+    ("on", "ENABLED", {"check_state": {"out": "DISABLED\n"}}, "off", "on")])
+def test_no_success_is_reported_while_a_live_schedule_differs_from_the_stacks_state(
+        bench, action, now, change, first, then):
+    """Ruling H3 (26 Nov 2026). The class: exit 0 while a live schedule's state differs
+    from the stack's parameter. `status`, and a switch to the state the stack already
+    says, both read the two live schedules; either one out of step is a STOP that
+    gives the two hand commands that put both right through the stack. The partner is
+    the same call with both live schedules in step."""
+    done = bench.run("schedules.sh", LIVE[action], schedule_rules(now, now, **change))
+    assert done.returncode == 1, done.stdout
+    assert f"STOP: a live schedule is not {now}" in done.stderr
+    assert "changed outside the stack" in done.stderr
+    hand = [line.strip() for line in done.stderr.splitlines() if line.startswith("  infra/eval/")]
+    assert hand == [f"infra/eval/schedules.sh --account {ACCOUNT} {first}     then",
+                    f"infra/eval/schedules.sh --account {ACCOUNT} {then}"]
+    assert not bench.did("aws", *cfn("create-change-set"))             # it reports; it changes nothing
+    done = bench.run("schedules.sh", LIVE[action], schedule_rules(now, now))
+    assert done.returncode == 0, done.stderr
+
+
+@pytest.mark.parametrize("change", [{"run_state": {"status": 255, "out": ""}},
+                                    {"check_state": {"out": ""}}])
+def test_a_live_schedule_that_cannot_be_read_is_not_a_success(bench, change):
+    done = bench.run("schedules.sh", LIVE["status"], schedule_rules("DISABLED", "DISABLED", **change))
+    assert done.returncode == 1 and "could not be read" in done.stderr
+
+
 def test_only_schedules_sh_can_set_the_schedules_state():
     setters = [s.name for s in sorted(SCRIPTS.glob("*.sh"))
                if "ParameterKey=ScheduleState,ParameterValue=$WANT" in s.read_text()]
@@ -959,3 +1205,67 @@ def test_only_schedules_sh_can_set_the_schedules_state():
         text = script.read_text()
         assert "update-schedule" not in text and "create-schedule" not in text, script.name
         assert "disable-alarm-actions" not in text and "set-alarm-state" not in text, script.name
+
+
+# ========================================================= every guarded call ==
+
+@pytest.mark.parametrize("script", ["push-image.sh", "deploy.sh", "schedules.sh"])
+def test_every_aws_call_is_made_with_configured_endpoints_ignored(bench, script):
+    """Ruling H2 (26 Nov 2026). The class: any configured endpoint. A variable is refused
+    by the guard (the identity test above). An `endpoint_url` in a profile cannot be
+    seen from a variable, so the guard tells the AWS CLI to ignore every configured
+    endpoint BEFORE its first call, and that stays set for every call after it: here,
+    for a whole run of each script, with the caller's own setting saying the opposite."""
+    contrary = {"AWS_IGNORE_CONFIGURED_ENDPOINT_URLS": "false"}
+    if script == "push-image.sh":
+        c = make_remote(bench)["tip"]
+        done = bench.run(script, ["--account", ACCOUNT, "--commit", c], push_rules(c), env=contrary)
+    elif script == "deploy.sh":
+        done = bench.run(script, LATER + ["--image-digest", IMAGE], deploy_rules(True), stdin=YES,
+                         env=contrary)
+    else:
+        done = bench.run(script, ON, schedule_rules("DISABLED", "ENABLED"), stdin="ENABLE\n", env=contrary)
+    assert done.returncode == 0, done.stderr
+    calls = bench.did("aws")
+    assert len(calls) >= 4 and calls[0]["args"][:2] == ["sts", "get-caller-identity"]
+    assert [c["ignores_endpoints"] for c in calls] == ["true"] * len(calls)
+
+
+# ================================================================ the runbook ==
+
+RUNBOOK = ROOT / "docs" / "WS7-RUNBOOK.md"
+
+
+def zsh_blocks(text: str) -> list:
+    return re.findall(r"^ *```zsh\n(.*?)^ *```", text, re.S | re.M)
+
+
+def bare_before_a_colon(block: str) -> list:
+    """Every `$NAME` written without braces and followed by a colon. In zsh that colon
+    starts a modifier: `$ACCOUNT:role` is `$ACCOUNT` with `:r` applied, then `ole`."""
+    return re.findall(r"\$[A-Za-z_][A-Za-z0-9_]*:", block)
+
+
+def test_no_zsh_block_in_the_runbook_writes_a_bare_name_before_a_colon():
+    """Ruling R2 (26 Nov 2026). The class: any `$NAME` followed by `:` in a zsh block
+    (`:r`, `:t`, `:p`, `:h`, `:e` and the rest are all modifiers). The runbook writes
+    `${NAME}` throughout, so the next block that is added cannot fall in."""
+    assert bare_before_a_colon("arn:aws:iam::$ACCOUNT:role/x $B:t ${ACCOUNT}:role $1:x") == \
+        ["$ACCOUNT:", "$B:"]                                            # the control
+    blocks = zsh_blocks(RUNBOOK.read_text(encoding="utf-8"))
+    assert len(blocks) >= 15
+    for block in blocks:
+        assert bare_before_a_colon(block) == [], block[:200]
+        # Throughout: no bare name at all, so the rule does not depend on what follows it.
+        assert re.findall(r"\$[A-Za-z_][A-Za-z0-9_]*", block) == [], block[:200]
+
+
+def test_what_zsh_does_with_a_bare_name_before_a_colon():
+    """The control for the rule above, in zsh itself, where zsh is installed."""
+    zsh = shutil.which("zsh")
+    if zsh is None:
+        pytest.skip("zsh is not installed here; the runbook's blocks are for the author's Mac")
+    done = subprocess.run([zsh, "-f", "-c", 'A=000000000000; print -r -- "x:$A:role" "x:${A}:role"'],
+                          capture_output=True, text=True, env={"PATH": "/usr/bin:/bin"})
+    assert done.stdout.split() == ["x:000000000000ole", "x:000000000000:role"]
+

@@ -221,31 +221,51 @@ role.
 - **The first deploy has no image** (slice 3; the author's ruling, 26 Nov 2026). The task
   definition pins the image by digest, and no image can be pushed before its repository exists.
   So the template is deployed twice. With no digest it creates everything except the task
-  definition and the two schedules: nothing can run, and there is no placeholder image. After
+  definition, the scheduler's role and the two schedules: nothing can run, and there is no placeholder image. After
   the guarded push, the digest is given and they are created, the schedules `DISABLED`.
 - **The schedules' state is one stack parameter.** Only `infra/eval/schedules.sh` changes it.
   `infra/eval/deploy.sh` hands back the previous value and refuses a change set that would change
   a schedule's `State`, so an image release cannot switch the schedules off.
+- **The target is kept the same way** (the author's ruling, 26 Nov 2026). `--target` is the first
+  deploy's. A later deploy hands the stack's `Target` back unchanged, so a new image after W11
+  cannot switch the pipeline back to v1; only `--change-target` changes it.
+- **The scheduler's role may run one task definition revision**, the one the stack pins (the same
+  ruling). It exists only once there is an image.
 
 **Known limits of the stack: the CI deploy role** (found in slice 3; the author's ruling,
 26 Nov 2026). `infra/cicd-oidc-role.yaml` gives the role `s3:*`, `kms:*`, `sns:*`, `scheduler:*`,
 `cloudwatch:*` and `ssm:PutParameter` on every resource in `eu-west-2`. Only a workflow on `main`
 can assume it (`infra/cicd-oidc-role.yaml:66`).
 
-- **What it cannot do, as documented:** enable the schedules. Updating a schedule depends on
-  `iam:PassRole` for its role (AWS, *Service Authorization Reference*, Amazon EventBridge
-  Scheduler: `CreateSchedule` and `UpdateSchedule` list `iam:PassRole` as a dependent action), and
-  CI may pass only `discharge-audit-*` roles.
+- **Corrected 26 Nov 2026 (the author's ruling, after Codex's review of PR #11).** This section
+  said the role cannot enable the schedules, because updating a schedule needs `iam:PassRole` for
+  its role and CI may pass only `discharge-audit-*` roles. That was wrong: one such role is
+  trusted by EventBridge Scheduler.
+- **It CAN create or update a schedule in the eval schedule group, `ENABLED` included**, by
+  passing `discharge-audit-canary-scheduler-role` (`infra/template.yaml`, `CanarySchedulerRole`:
+  a `discharge-audit-*` role trusted by `scheduler.amazonaws.com`). `CreateSchedule` and
+  `UpdateSchedule` need `iam:PassRole` for the role the schedule names (AWS, *Service
+  Authorization Reference*, Amazon EventBridge Scheduler), and that one it may pass.
+  - That role can only invoke the canary Lambda. So a schedule CI writes **cannot start an eval
+    task**. But an eval schedule can be switched on, or pointed away from the eval task, from
+    there.
+  - What notices: `infra/eval/schedules.sh` (every exit 0, `status` included) and
+    `infra/eval/deploy.sh` read both live schedules and stop if either is not in the state the
+    stack's parameter says.
+- **It can change the email subscription** (a filter policy, or an unsubscribe). The topic's deny
+  covers the topic's own actions, not a subscription's.
 - **What it could do without a control:** write the two expected-version parameters, delete the
   schedules, disable or delete the alarms, read, write or delete anything in the eval bucket
   (`retained/` included), and schedule the eval key's deletion.
 - **What the template now denies:** the bucket policy, the key policy and the topic policy each
   deny that role by name (`aws:PrincipalArn`), and a test pins each. An explicit deny wins over
   the role's own allow.
-- **What is left, as a known limit:** the parameters, deleting the schedules, and the alarms.
-  None has a resource policy, so none can be protected from inside this stack. "CI does not
-  write them" (D11) is a practice, not a permission.
-- **Narrowing the CI role is a separate pull request, before slice 6.**
+- **What is left, as a known limit:** writing a schedule in the eval group (above), the
+  subscription, the parameters, deleting the schedules, and the alarms. None has a resource
+  policy, so none can be protected from inside this stack. "CI does not write them" (D11) is a
+  practice, not a permission.
+- **The CI-role pull request, before slice 6:** deny CI the scheduler writes on
+  `schedule-group/discharge-eval` and the subscription changes, and narrow the rest.
 
 *AWS concept:* a CloudFormation stack is a unit of lifecycle. Separate stacks are created, changed
 and deleted separately.

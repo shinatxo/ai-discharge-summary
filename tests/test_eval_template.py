@@ -194,7 +194,7 @@ def test_the_image_is_pinned_by_the_same_digest_the_job_is_told(text, res):
         assert not pattern.fullmatch(bad), bad
     # Nothing that needs an image exists without one: no task definition, no schedule.
     conditional = sorted(name for name, block in blocks(text).items() if "Condition: HasImage\n" in block)
-    assert conditional == ["CheckSchedule", "RunSchedule", "TaskDefinition"]
+    assert conditional == ["CheckSchedule", "RunSchedule", "SchedulerRole", "TaskDefinition"]
 
 
 def test_the_repository_scans_on_push_and_its_one_rule_touches_untagged_images_only(res):
@@ -262,13 +262,24 @@ def test_the_execution_role_pulls_this_repository_and_writes_this_tasks_logs(res
     assert policy.count("Resource: '*'") == 1                # ecr:GetAuthorizationToken only
 
 
-def test_the_scheduler_role_can_only_run_this_task_on_this_cluster(res):
+def test_the_scheduler_role_can_only_run_this_exact_task_revision_on_this_cluster(res):
+    """Ruling H5 (26 Nov 2026). The class: a task definition the scheduler's role may run
+    that is not the one the stack pins by digest. `!Ref TaskDefinition` is one revision's
+    ARN: no wildcard, so an older revision, or one registered by hand under the same
+    family, cannot be started with this role. The role exists only with an image."""
     role = res["SchedulerRole"]
+    assert "Condition: HasImage\n" in role
     trust, policy = role.split("      Policies:\n")
     assert "Service: scheduler.amazonaws.com\n" in trust
     assert trust.rstrip().endswith(":schedule-group/discharge-eval'")
     assert actions(policy) == {"ecs:RunTask", "iam:PassRole"}
-    assert ":task-definition/discharge-eval-ws7:*'" in policy and "'ecs:cluster': !GetAtt Cluster.Arn" in policy
+    run = re.search(r"- Sid: RunTheEvalTaskOnTheEvalCluster\n(.*?)- Sid: ", policy, re.S).group(1)
+    assert one(r"Resource: (.+)\n", run) == "!Ref TaskDefinition"
+    assert "task-definition/" not in policy and "*" not in run
+    assert "'ecs:cluster': !GetAtt Cluster.Arn" in run
+    # The same revision the two schedules start.
+    for name in ("RunSchedule", "CheckSchedule"):
+        assert "TaskDefinitionArn: !Ref TaskDefinition\n" in res[name]
     assert "Resource: [!GetAtt TaskRole.Arn, !GetAtt ExecutionRole.Arn]\n" in policy
     assert "'iam:PassedToService': ecs-tasks.amazonaws.com\n" in policy
 

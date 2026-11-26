@@ -12,8 +12,9 @@
 # image ID, the script says so and prints no digest to deploy.
 #
 # WHAT IT BUILDS FROM. Never the local checkout. It clones the repository from GitHub
-# into a temporary folder, with this machine's git configuration left out
-# (GIT_CONFIG_GLOBAL=/dev/null, GIT_CONFIG_NOSYSTEM=1), and refuses unless the commit
+# into a temporary folder. Every git command runs under `env -i` with a short list of
+# variables it is given, so this machine's git configuration and anything else in the
+# caller's environment are left out. It refuses unless the commit
 # is on feat/agentic-pipeline's first-parent chain as fetched: the branch's head, or a
 # commit the branch itself was at before. An image is only ever of a reviewed, merged
 # commit. A merge keeps every commit of the task branch in the history, and one of
@@ -82,29 +83,38 @@ fi
 
 # ------------------------------------------------- the commit, from GitHub
 
-# This machine's git configuration is left out, and nothing in the environment may
-# point git at another repository, index or configuration.
-unset GIT_DIR GIT_WORK_TREE GIT_INDEX_FILE GIT_OBJECT_DIRECTORY GIT_ALTERNATE_OBJECT_DIRECTORIES \
-  GIT_NAMESPACE GIT_CONFIG GIT_CONFIG_PARAMETERS GIT_CONFIG_COUNT GIT_CEILING_DIRECTORIES \
-  GIT_TEMPLATE_DIR GIT_EXEC_PATH
-export GIT_CONFIG_GLOBAL=/dev/null GIT_CONFIG_NOSYSTEM=1 GIT_ATTR_NOSYSTEM=1 GIT_TERMINAL_PROMPT=0
-
 if ! WORK=$(mktemp -d "${TMPDIR:-/tmp}/ws7-push.XXXXXXXX") || [ -z "$WORK" ] || [ ! -d "$WORK" ]; then
   WORK=""; stop "no temporary folder could be made"
 fi
 REPO="$WORK/repo.git" EXPORT="$WORK/export"
-mkdir "$EXPORT" || stop "the export folder could not be made"
+mkdir "$EXPORT" "$WORK/home" "$WORK/tmp" || stop "the work folders could not be made"
+
+# EVERY git COMMAND RUNS IN AN ENVIRONMENT BUILT FROM NOTHING (the author's ruling,
+# 26 Nov 2026). The class it closes: anything inherited from the caller's environment
+# that changes what git reads. A list of variables to unset cannot be shown to be
+# complete (GIT_GRAFT_FILE, which changes the parents `rev-list --first-parent` sees,
+# was not on the first one). So nothing is inherited: `env -i`, and only these go in.
+#   PATH     the caller's, so that `git` is found by name
+#   HOME     an empty folder inside the work folder: no ~/.gitconfig
+#   TMPDIR   a folder inside the work folder
+#   LC_ALL   C
+#   and git's own switches that leave out the global and system configuration.
+g() {
+  env -i PATH="$PATH" HOME="$WORK/home" TMPDIR="$WORK/tmp" LC_ALL=C \
+    GIT_CONFIG_GLOBAL=/dev/null GIT_CONFIG_NOSYSTEM=1 GIT_ATTR_NOSYSTEM=1 GIT_TERMINAL_PROMPT=0 \
+    git "$@"
+}
 
 echo "push: cloning $BRANCH from $REMOTE"
-git clone --quiet --bare --single-branch --branch "$BRANCH" "$REMOTE" "$REPO" \
+g clone --quiet --bare --single-branch --branch "$BRANCH" "$REMOTE" "$REPO" \
   || stop "the clone from GitHub failed"
 
-if ! TIP=$(git --git-dir="$REPO" rev-parse --verify --quiet "refs/heads/$BRANCH^{commit}") \
+if ! TIP=$(g --git-dir="$REPO" rev-parse --verify --quiet "refs/heads/$BRANCH^{commit}") \
     || [ -z "$TIP" ]; then
   stop "$BRANCH was not found in the clone"
 fi
 # $C must resolve to a commit (a tree's or a blob's SHA does not), and to itself.
-if ! GOT=$(git --git-dir="$REPO" rev-parse --verify --quiet "$C^{commit}") || [ -z "$GOT" ]; then
+if ! GOT=$(g --git-dir="$REPO" rev-parse --verify --quiet "$C^{commit}") || [ -z "$GOT" ]; then
   stop "$C is not a commit on $BRANCH as fetched"
 fi
 [ "$GOT" = "$C" ] || stop "$C does not name a commit by its own SHA"
@@ -113,7 +123,7 @@ fi
 # in through a merge's other parent (a task branch's own commit) is an ancestor of the
 # branch and is NOT on that chain: it is refused (the author's ruling, 26 Nov 2026).
 CHAIN="$WORK/first-parent.txt"
-git --git-dir="$REPO" rev-list --first-parent "refs/heads/$BRANCH" >"$CHAIN" \
+g --git-dir="$REPO" rev-list --first-parent "refs/heads/$BRANCH" >"$CHAIN" \
   || stop "the first-parent chain of $BRANCH could not be listed"
 on_chain=0
 while IFS= read -r line || [ -n "$line" ]; do
@@ -128,7 +138,7 @@ echo "push: commit $C ($BRANCH is at $TIP)"
 
 # What the image is built from. evals/runs and evals/calibration are never exported.
 LIST="$WORK/tree.txt"
-if ! git --git-dir="$REPO" ls-tree -r --full-tree "$C" -- \
+if ! g --git-dir="$REPO" ls-tree -r --full-tree "$C" -- \
     Dockerfile .dockerignore requirements-eval.txt src prompts evals tests >"$LIST"; then
   stop "the commit's tree could not be listed"
 fi
@@ -165,7 +175,7 @@ while IFS= read -r line || [ -n "$line" ]; do
 done <"$LIST"
 [ "$count" -gt 0 ] || stop "the commit holds none of the image's files"
 
-git --git-dir="$REPO" archive --format=tar "$C" -- \
+g --git-dir="$REPO" archive --format=tar "$C" -- \
   Dockerfile .dockerignore requirements-eval.txt src prompts evals tests \
   ':(exclude)evals/runs' ':(exclude)evals/calibration' >"$WORK/export.tar" \
   || stop "the commit could not be exported"
@@ -180,7 +190,7 @@ while IFS= read -r line || [ -n "$line" ]; do
   if [ -L "$file" ] || [ ! -f "$file" ]; then
     stop "the export is missing a file of the commit: $path"
   fi
-  if ! have=$(git --git-dir="$REPO" hash-object --no-filters -- "$file") || [ -z "$have" ]; then
+  if ! have=$(g --git-dir="$REPO" hash-object --no-filters -- "$file") || [ -z "$have" ]; then
     stop "a file of the export could not be hashed: $path"
   fi
   [ "$have" = "$sha" ] || stop "the export's bytes are not the commit's: $path"

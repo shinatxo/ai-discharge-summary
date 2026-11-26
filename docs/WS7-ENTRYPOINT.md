@@ -2641,6 +2641,8 @@ fixing them changes the test file (the author's ruling, 23 Nov 2026):
 ### Slice 3's push script
 
 **Closed by slice 3** (`infra/eval/push-image.sh`; `docs/WS7-RUNBOOK.md`, section 2). The script
+runs every git command in an environment built from nothing (`env -i` and a short list), so
+nothing inherited changes what git reads; it
 requires `$C` to resolve to a commit, and to itself, and to be on `feat/agentic-pipeline`'s
 first-parent chain in a fresh clone (a merge commit of the branch, never a commit from inside a
 merged task branch; the author's ruling, 26 Nov 2026); it goes by `check5`'s status against the
@@ -2674,12 +2676,41 @@ file. `tests/test_eval_scripts.py` holds each refusal.
 | The bucket name, `WS7_ALERT_TOPIC_ARN`, `WS7_IMAGE_DIGEST`, the image pinned by that digest, `PYTHONHASHSEED=0`, the command | The task definition |
 | The task definition must not set `WS7_GIT_COMMIT` | It does not, and a test fails if it does |
 | A writable temporary directory | The root file system is left writable. A read-only root needs a volume, which Fargate mounts owned by root unless the `Dockerfile` declares it |
-| The check's schedule one UTC day after the run's; each passes its subcommand and its own scheduled time | The two schedules, created `DISABLED` |
+| The check's schedule one UTC day after the run's; each passes its subcommand and its own scheduled time | The two schedules, created `DISABLED`. The scheduler's role may run the one pinned task definition revision |
 | An alarm on a breach metric must not treat missing data as a breach | The 21 breach alarms |
 | `ExpectedBucketOwner` on every S3 call | "Slice 3: the bucket's owner", below |
 | The guarded push, from a clean export, with the machine's git configuration isolated | `infra/eval/push-image.sh` |
 | The copy to `retained/<run_id>/` | The runbook, section 7 |
 | The set-up checks in both "cannot prove" sections | The runbook, section 5. Those that need a task script are the next pull request |
+
+### Slice 3, PR 2
+
+Follow-ups from Codex's review of PR #11 (the stack's first pull request), ruled by the author
+on 26 Nov 2026 as not holding that merge. Each is for the set-up checks pull request unless it
+says otherwise.
+
+- **Check the alarms by name, not by count** (Astra, P2). `infra/eval/schedules.sh on` counts 26
+  alarms under the prefix `discharge-eval-`. An alarm deleted and another made by hand under that
+  prefix would still count 26. Compare the alarm names with the template's own list.
+- **A confirmed and unfiltered subscription for the configured email.** `schedules.sh on` asks
+  only for some confirmed email subscription. It should be the stack's `AlertEmail`, confirmed,
+  with no filter policy that could drop an alarm.
+- **The bucket policy is not retained with the bucket.** The bucket has `DeletionPolicy: Retain`
+  and its policy does not, so after a tear-down the retained bucket loses the two denies
+  (insecure transport, the CI role).
+- **A2's fallback does not verify the manifest's hash.** If the CLI reformats the manifest, the
+  runbook falls back to `describe-images`, which shows the digest exists but not that the stored
+  bytes hash to it.
+- **The export's path spelling.** `push-image.sh` refuses a protected folder under another case,
+  and a name that is not plain ASCII. It does not compare the case of every exported path with
+  the commit's on a volume that ignores case.
+- **`docker push` prints a digest before the script has compared it.** The script's own `PUSHED`
+  line comes only after the comparison, but Docker's output above it shows a digest either way.
+  Say so where it is printed, or quiet the push.
+- **The set-up table's claims for C6, C7, and the CloudWatch and SNS error shapes and size
+  limits.** State for each exactly what is observed on AWS and what stays covered offline only.
+- **For the next docs pull request: the KMS rotation wording** in ADR-011's Costs and
+  `docs/COST.md` (when a rotated key version starts to be charged, and the cap).
 
 ## Slice 3: the bucket's owner
 

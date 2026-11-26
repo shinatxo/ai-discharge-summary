@@ -36,6 +36,12 @@ unknown query parameter or another bucket is a FAULT. A fault is answered with
 501 and fails the test when the fake stops. Extra request HEADERS are ignored:
 botocore adds some (checksums, user agent) and a newer botocore may add more.
 
+EVERY REQUEST MUST NAME THE BUCKET'S OWNER (slice 3). A request with no
+`x-amz-expected-bucket-owner` header is a FAULT (`no_expected_bucket_owner`),
+whatever else it asks for: WS7 never sends one. A request that names another
+account is answered as S3 answers it, 403 AccessDenied, and nothing is read or
+written. The header of every request is recorded (`owners`).
+
 ETags are deliberately not the MD5 of the body. The real bucket is encrypted
 with a KMS key, where an ETag is opaque, so code that computed one would pass
 against MD5 ETags and fail in production.
@@ -77,6 +83,8 @@ from xml.sax.saxutils import escape
 
 JOIN_LIMIT_S = 5.0
 BUCKET = "ws7-fake-eval-bucket"          # invented
+OWNER = "000000000000"                   # the invented account that owns the fake's bucket
+OWNER_HEADER = "x-amz-expected-bucket-owner"
 
 # What a scripted PUT does instead of the ordinary thing.
 CONFLICT_409 = "conflict_409"            # answer 409 ConditionalRequestConflict; write nothing
@@ -223,9 +231,11 @@ SERVER_ERROR = (500, "InternalError", {}, "")
 class S3Fake(_Fake):
     """One bucket, in memory. See the module docstring for what it implements."""
 
-    def __init__(self, bucket: str = BUCKET):
+    def __init__(self, bucket: str = BUCKET, owner: str = OWNER):
         super().__init__()
         self.bucket = bucket
+        self.owner = owner               # the account that owns this bucket
+        self.owners: list = []           # the expected-owner header of each request, in order
         self.missing_status = 404        # or 403: what a GET for a missing key answers
         self.truncate_listing = False    # answer a listing as truncated
         self.requests: list = []         # (method, key or "?list") per request received, in order
@@ -311,6 +321,14 @@ class S3Fake(_Fake):
             scope = headers.get("Authorization", "").partition("Credential=")[2].split("/")
             self.signed_regions.append(scope[2] if len(scope) > 2 else None)
             self._note(f"{method} {key or '?list'}")
+            named = headers.get(OWNER_HEADER)
+            self.owners.append(named)
+            if named is None:            # WS7 never sends a request that does not name the owner
+                self.requests.append((method, key or "?list"))
+                return self._fault("no_expected_bucket_owner")
+            if named != self.owner:      # as S3 answers: 403, and nothing is read or written
+                self.requests.append((method, key or "?list"))
+                return 403, {"Content-Type": "application/xml"}, _s3_error("AccessDenied")
             if self._any_script and method in ("GET", "PUT"):
                 status, code, extra_headers, extra = self._any_script.pop(0)
                 self.requests.append((method, key or "?list"))

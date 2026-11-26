@@ -10,7 +10,8 @@ SNS client or names an S3 key:
    eu-west-2 only, and endpoint URLs set in the environment or the AWS config
    file are ignored. A test endpoint must be http://127.0.0.1:<port>.
 2. `Store`: list, get and two conditional puts. THERE IS NO UNCONDITIONAL
-   WRITE and no delete. Every key must sit under `ws7/`.
+   WRITE and no delete. Every key must sit under `ws7/`, and every request
+   names the account that owns the bucket.
 3. The key layout: claims, ledgers, run prefixes, success records and failed
    records (docs/WS7-ENTRYPOINT.md, "The S3 layout"). The retained prefix for
    incident copies is named here and sits OUTSIDE `ws7/`, so this store can
@@ -71,6 +72,14 @@ for a write it is not ambiguous: a redirect did not land.
 An ETag is opaque here. The eval bucket is encrypted with a KMS key (D8, D9), so
 an ETag is not the MD5 of the object; WS7 only hands back the one it was given.
 
+EVERY S3 REQUEST NAMES THE BUCKET'S OWNER (slice 3; the author's ruling, 23 Nov
+2026). A `Store` is built with the 12-digit account ID the task definition
+supplies, and its three S3 calls (list, get, put) each pass it as
+`ExpectedBucketOwner`. S3 then answers 403 for a bucket that another account
+owns, so a mistyped bucket name can never read from or write into someone
+else's bucket. A missing or malformed account ID is refused when the `Store` is
+built, before any request (`ws7_store_owner_refused`).
+
 No AWS call is made by importing this module.
 """
 
@@ -115,6 +124,8 @@ CONTENT_TYPES = {".json": JSON_TYPE, ".md": MARKDOWN_TYPE}
 # "--", which rules out directory buckets (--x-s3) and the other suffixes that make
 # botocore choose a different endpoint.
 _BUCKET_RE = re.compile(r"[a-z0-9](?:[a-z0-9]|-(?!-)){1,61}[a-z0-9]")
+# The account that owns the bucket: twelve ASCII digits, as AWS writes an account ID.
+_OWNER_RE = re.compile(r"[0-9]{12}")
 _KEY_RE = re.compile(r"ws7/[A-Za-z0-9._/-]{1,200}")
 ID_RE = re.compile(r"[A-Za-z0-9._:-]{1,64}")        # the comparator's ID pattern
 _LABEL_RE = re.compile(r"[a-z0-9_]{1,64}")
@@ -133,6 +144,7 @@ CREATED, TAKEN = "created", "taken"
 
 ENDPOINT_REFUSED = "ws7_store_endpoint_refused"
 BUCKET_REFUSED = "ws7_store_bucket_refused"
+OWNER_REFUSED = "ws7_store_owner_refused"
 KEY_REFUSED = "ws7_store_key_refused"
 LIST_FAILED = "ws7_store_list_failed"
 LIST_TRUNCATED = "ws7_store_list_truncated"
@@ -143,9 +155,9 @@ OBJECT_MISSING = "ws7_store_object_missing"
 CREATE_UNSURE = "ws7_store_create_unsure"
 WRONG_REGION = "ws7_store_wrong_region"
 RESEND_REFUSED = "ws7_store_resend_refused"
-CODES = (ENDPOINT_REFUSED, BUCKET_REFUSED, KEY_REFUSED, LIST_FAILED, LIST_TRUNCATED, GET_FAILED,
-         OBJECT_TOO_LARGE, PUT_REFUSED, OBJECT_MISSING, CREATE_UNSURE, WRONG_REGION,
-         RESEND_REFUSED)
+CODES = (ENDPOINT_REFUSED, BUCKET_REFUSED, OWNER_REFUSED, KEY_REFUSED, LIST_FAILED,
+         LIST_TRUNCATED, GET_FAILED, OBJECT_TOO_LARGE, PUT_REFUSED, OBJECT_MISSING, CREATE_UNSURE,
+         WRONG_REGION, RESEND_REFUSED)
 
 # What S3 answers when it wants the request sent somewhere else, or signed for
 # another region: the answers botocore's redirector acts on.
@@ -398,13 +410,19 @@ def _never_followed(exc: BaseException) -> str | None:
 
 
 class Store:
-    """The eval bucket's `ws7/` prefix, through one S3 client."""
+    """The eval bucket's `ws7/` prefix, through one S3 client.
 
-    def __init__(self, client, bucket: str):
+    `owner` is the account that owns the bucket. Every request names it
+    (`ExpectedBucketOwner`), and S3 refuses the request if another account does."""
+
+    def __init__(self, client, bucket: str, owner: str):
         if type(bucket) is not str or not _BUCKET_RE.fullmatch(bucket):
             raise StoreError(BUCKET_REFUSED)
+        if type(owner) is not str or not _OWNER_RE.fullmatch(owner):
+            raise StoreError(OWNER_REFUSED)
         self._s3 = client
         self.bucket = bucket
+        self.owner = owner
 
     @staticmethod
     def _check_key(key: object) -> None:
@@ -416,7 +434,8 @@ class Store:
         key it left out would be read as absent."""
         self._check_key(prefix)
         try:
-            page = self._s3.list_objects_v2(Bucket=self.bucket, Prefix=prefix)
+            page = self._s3.list_objects_v2(Bucket=self.bucket, Prefix=prefix,
+                                            ExpectedBucketOwner=self.owner)
         except (ClientError, BotoCoreError, ResendRefused) as exc:
             raise StoreError(_never_followed(exc) or LIST_FAILED) from None
         if page.get("IsTruncated") is not False:
@@ -431,7 +450,8 @@ class Store:
         returned: any error here, a 404 and a 403 alike, is a failure."""
         self._check_key(key)
         try:
-            reply = self._s3.get_object(Bucket=self.bucket, Key=key)
+            reply = self._s3.get_object(Bucket=self.bucket, Key=key,
+                                        ExpectedBucketOwner=self.owner)
             body = reply["Body"].read(MAX_OBJECT_BYTES + 1)
         except (ClientError, BotoCoreError, ResendRefused) as exc:
             raise StoreError(_never_followed(exc) or GET_FAILED) from None
@@ -463,7 +483,8 @@ class Store:
             raise StoreError(PUT_REFUSED)               # never sent
         try:
             reply = self._s3.put_object(Bucket=self.bucket, Key=key, Body=body,
-                                        ContentType=kind, **condition)
+                                        ContentType=kind, ExpectedBucketOwner=self.owner,
+                                        **condition)
         except ResendRefused:
             raise StoreError(RESEND_REFUSED) from None
         except ClientError as exc:

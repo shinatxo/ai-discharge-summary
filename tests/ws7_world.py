@@ -362,7 +362,8 @@ class World:
         self.frozen = tmp_path / "frozen"
         self.runs_dir.mkdir()
         self.frozen.mkdir()
-        self.environ = {entry.BUCKET_VARIABLE: BUCKET, entry.TOPIC_VARIABLE: TOPIC,
+        self.environ = {entry.BUCKET_VARIABLE: BUCKET, entry.OWNER_VARIABLE: fakes.OWNER,
+                        entry.TOPIC_VARIABLE: TOPIC,
                         wm.COMMIT_VARIABLE: COMMIT, wm.DIGEST_VARIABLE: DIGEST}
         self.endpoints = {"s3": self.s3.url, "ssm": self.ssm.url, "cloudwatch": self.cw.url,
                           "sns": self.sns.url}

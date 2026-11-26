@@ -645,7 +645,7 @@ def test_one_sequence_log_holds_the_order_of_requests_across_every_server(_offli
                              ("bedrock", bedrock)):
             log.watch(name, server)
         pub = publisher("v1", cw, sns)
-        st = store.Store(store.build_client("s3", endpoint_url=s3.url), fakes.BUCKET)
+        st = store.Store(store.build_client("s3", endpoint_url=s3.url), fakes.BUCKET, fakes.OWNER)
         ssm.put("/invented", "x")
         pub.alert(GOOD_SUBJECT, GOOD_SUBJECT)
         st.put_if_absent("ws7/ledger/2026-12.json", b"{}")

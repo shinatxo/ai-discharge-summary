@@ -72,6 +72,32 @@ Since the bill is ~99% Bedrock, every meaningful lever is about Bedrock tokens:
 At the floor (no canary, idle app) this deployment costs roughly the price of the KMS key
 (~£1/month). The cost *is* the assurance.
 
+## The eval stack (`discharge-eval`, ADR-011): designed, not deployed
+
+Added 26 Nov 2026 (WS7 slice 3). **These are estimates from ADR-011's Costs, not actuals: the
+stack is not deployed.** It is a separate stack, deployed by hand (`docs/WS7-RUNBOOK.md`), and
+none of it is in the table above. Converted at £0.80 to $1.
+
+| Item | £/month | Basis |
+|---|---:|---|
+| **Fixed: the customer-managed KMS key** | 0.80 | $1 a key; AWS price list for London, 8 Nov 2026. Rotation is on, so each rotated key version adds its own charge, from a year after the deploy |
+| **Fixed: 26 CloudWatch alarms** | 1.84 to 2.08 | $0.10 each beyond the first ten; London, 16 Nov 2026. £1.84 if three of the free ten are left after the live stack's seven; £2.08 if none. **How many are left is unchecked** |
+| Fargate (0.5 vCPU, 1 GB, arm64), the weekly run and the Thursday check | under 0.05 | AWS price list for London, 11 Nov 2026 |
+| The task's public IPv4 address, while a task runs | about 0.01 | London, 5 Nov 2026 |
+| Custom metrics, logs, S3, ECR | pennies | Metric, log and ECR rates checked; **S3 and ECR storage unchecked**. One image in ECR is about 2 pence |
+| The VPC, internet gateway, schedules, EventBridge rule, email notifications, two SSM parameters | 0 | **Unchecked**: my reading of each service's free tier at this volume |
+| **Fixed total** | **about 2.70 to 2.90** | Not in the WS7 ledger |
+| Model spend, the weekly run | 3.30 to 9.90 expected (pipeline); up to 5.74 (v1) | Capped at **£15 a month** by the job's own ledger (ADR-011 D7). Priced at the repository's constants, **not confirmed on AWS's price page** |
+
+- A NAT gateway (about £26 a month) and interface endpoints (about £32) were not chosen: the task
+  has a public IP and no inbound rule (ADR-011 D6).
+- After tear-down the retained key keeps costing £0.80 a month until it is scheduled for
+  deletion, and scheduling it makes the retained bucket unreadable (`docs/WS7-RUNBOOK.md`,
+  section 10).
+- Replace this table with Cost Explorer actuals a month after the deploy. Use no Service filter
+  for the model's cost: Anthropic models are billed under a service name of their own (ADR-011
+  D7, point 4).
+
 ## Getting the real numbers
 
 Replace the estimates above with actuals from Cost Explorer (last 30 days, by service):

@@ -30,7 +30,9 @@ follow-ups from the reviews of PR #4 and PR #6; the run summary and the candidat
 entrypoint's scheduled run and Thursday check, with the comparator call and publishing; the
 image changes: the commit as a build argument, `evals/calibration` kept out, and a default
 command of the nine WS7 test files). Part 5b (the manual modes and the resolve command) is not
-built. No image has been pushed to a registry; nothing is deployed or run.
+built. Of slice 3, the stack's template (`infra/eval-template.yaml`), the hand-deploy runbook
+(`docs/WS7-RUNBOOK.md`) and the guarded push script are written and tested offline. No image has
+been pushed to a registry; nothing is deployed or run.
 
 ## Adding a new ADR
 

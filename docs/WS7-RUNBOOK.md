@@ -20,6 +20,8 @@ deploy is what checks them, and each section says what to do if AWS disagrees.
   either stack's buckets, or the SAM bucket.
 - **No real patient data.** The stack evaluates synthetic runs only.
 - **Read each block before you run it.** Run the blocks from the repository's root, in `zsh`.
+  Each block is `ws7_guard $ACCOUNT && () { … }`: the guard first, then an anonymous function, so
+  that a `STOP` inside it ends the block and not your shell.
 
 Set this once in the shell you use. The account is the one in `.github/workflows/ci-cd.yml`.
 
@@ -126,7 +128,7 @@ That page says "manifest list", and this build makes an OCI image index, so this
 this repository. It is a preview: it expires nothing.
 
 ```zsh
-ws7_guard $ACCOUNT && {
+ws7_guard $ACCOUNT && () {
   D=<the pushed digest>
   # A test rule strict enough to catch every untagged image, however new (a count of 1
   # keeps one). The repository's own rule is not changed.
@@ -173,7 +175,7 @@ the real values by hand, from the release record. CI does not write them and the
 **v1: once, now.** From the commit deployed on `main` at this time.
 
 ```zsh
-ws7_guard $ACCOUNT && {
+ws7_guard $ACCOUNT && () {
   M=$(git rev-parse --verify --quiet 'origin/main^{commit}') && [ -n "$M" ] || { echo "STOP: no origin/main"; return 1; }
   P1=$(git show "$M:src/generate/system_prompt.md" | shasum -a 256 | cut -d' ' -f1)
   P2=$(git show "$M:src/generate/patient_system_prompt.md" | shasum -a 256 | cut -d' ' -f1)
@@ -247,7 +249,7 @@ follows the deploy.
 ### A1. The stack is as designed
 
 ```zsh
-ws7_guard $ACCOUNT && {
+ws7_guard $ACCOUNT && () {
   # No inbound rule; one outbound rule, TCP 443.
   aws ec2 describe-security-groups --region eu-west-2 --filters Name=group-name,Values=discharge-eval-task-sg \
     --query 'SecurityGroups[0].[length(IpPermissions), IpPermissionsEgress[].[IpProtocol,FromPort,ToPort]]'
@@ -288,7 +290,7 @@ With no override the task runs `python evals/ws7_entry.py`, which is a usage err
 and nothing is built or sent. It makes no claim, reads nothing and calls no model.
 
 ```zsh
-ws7_guard $ACCOUNT && {
+ws7_guard $ACCOUNT && () {
   SUBNET=$(aws cloudformation describe-stacks --region eu-west-2 --stack-name discharge-eval \
     --query "Stacks[0].Outputs[?OutputKey=='SubnetId'].OutputValue | [0]" --output text)
   SG=$(aws cloudformation describe-stacks --region eu-west-2 --stack-name discharge-eval \
@@ -323,7 +325,7 @@ policy's). The task-stopped rule is an early signal that ADR-011 does not rely o
 ### A2. The digest chain
 
 ```zsh
-ws7_guard $ACCOUNT && {
+ws7_guard $ACCOUNT && () {
   D=<the pushed digest: the image ID check 5 ran on>
   # 1. The task definition pins it, and tells the job the same value.
   aws ecs describe-task-definition --region eu-west-2 --task-definition discharge-eval-ws7 \
@@ -359,7 +361,7 @@ This is the fix the live stack's alarms need (ADR-011, finding 5), proved here. 
 subscription first.
 
 ```zsh
-ws7_guard $ACCOUNT && {
+ws7_guard $ACCOUNT && () {
   aws sns list-subscriptions-by-topic --region eu-west-2 \
     --topic-arn arn:aws:sns:eu-west-2:$ACCOUNT:discharge-eval-alerts \
     --query 'Subscriptions[].[Protocol,SubscriptionArn]' --output text
@@ -380,7 +382,7 @@ is the same failure the live topic is thought to have: the key policy's CloudWat
 ### A4. `RunOk` before any success
 
 ```zsh
-ws7_guard $ACCOUNT && {
+ws7_guard $ACCOUNT && () {
   aws cloudwatch describe-alarms --region eu-west-2 --alarm-names discharge-eval-RunOk \
     --query 'MetricAlarms[0].[StateValue,StateUpdatedTimestamp,StateReason]' --output text
   aws cloudwatch describe-alarm-history --region eu-west-2 --alarm-name discharge-eval-RunOk \
@@ -403,11 +405,19 @@ reads the role's own policy, so it shows what the policy says; the task checks (
 AWS then does.
 
 ```zsh
-ws7_guard $ACCOUNT && {
+ws7_guard $ACCOUNT && () {
   R=arn:aws:iam::$ACCOUNT:role/discharge-eval-task-role
   B=arn:aws:s3:::discharge-eval-$ACCOUNT-eu-west-2
-  sim() { aws iam simulate-principal-policy --policy-source-arn $R --action-names "$1" --resource-arns "$2" \
-            ${3:+--context-entries "$3"} --query 'EvaluationResults[0].[EvalActionName,EvalResourceName,EvalDecision]' --output text; }
+  Q='EvaluationResults[0].[EvalActionName,EvalResourceName,EvalDecision]'
+  sim() {
+    if [ -n "${3:-}" ]; then
+      aws iam simulate-principal-policy --policy-source-arn $R --action-names "$1" --resource-arns "$2" \
+        --context-entries "$3" --query "$Q" --output text
+    else
+      aws iam simulate-principal-policy --policy-source-arn $R --action-names "$1" --resource-arns "$2" \
+        --query "$Q" --output text
+    fi
+  }
   echo "--- each of these must say allowed"
   sim bedrock:InvokeModel arn:aws:bedrock:eu-west-2::foundation-model/anthropic.claude-sonnet-4-6
   sim s3:GetObject $B/ws7/x; sim s3:PutObject $B/ws7/x
@@ -484,7 +494,7 @@ Management Log's own and start at the alarm.
 2. Read the run's records (your own credentials):
 
    ```zsh
-   ws7_guard $ACCOUNT && {
+   ws7_guard $ACCOUNT && () {
      RUN=<the run ID from the message>
      B=discharge-eval-$ACCOUNT-eu-west-2
      aws s3api list-objects-v2 --bucket $B --expected-bucket-owner $ACCOUNT \
@@ -501,7 +511,7 @@ Management Log's own and start at the alarm.
    cannot reach `retained/`, and the lifecycle rule does not touch it.
 
    ```zsh
-   ws7_guard $ACCOUNT && {
+   ws7_guard $ACCOUNT && () {
      RUN=<the run ID>
      B=discharge-eval-$ACCOUNT-eu-west-2
      case "$RUN" in ''|*/*|*' '*) echo "STOP: not a run ID"; return 1 ;; esac
@@ -575,7 +585,7 @@ Only if the stack is to be removed. Every step is a separate yes.
 3. Switch termination protection off and delete the stack:
 
    ```zsh
-   ws7_guard $ACCOUNT && {
+   ws7_guard $ACCOUNT && () {
      aws cloudformation update-termination-protection --region eu-west-2 --stack-name discharge-eval --no-enable-termination-protection
      aws cloudformation delete-stack --region eu-west-2 --stack-name discharge-eval
      aws cloudformation wait stack-delete-complete --region eu-west-2 --stack-name discharge-eval

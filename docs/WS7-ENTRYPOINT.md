@@ -2217,7 +2217,9 @@ No command here pushes anything or needs AWS, and every `docker run` is `--netwo
     plain name must be plain and `runſ` must not be. If any of the four fails, it prints `STOP`
     and stops.
   - **A pass is counted, not assumed.** The script ends with status 0 only if nothing bad was
-    found **and** it printed four `absent` lines **and** it counted exactly the five names.
+    found **and** it counted four folders as absent **and** it counted exactly the five names.
+    No count depends on its line having been written (the script does not stop when a line
+    cannot be written), so the status does not show that any line was printed.
   - Every command, and what happens when it fails:
 
     | Command | Where | Used for | If it fails |
@@ -2745,6 +2747,12 @@ PYTHONDONTWRITEBYTECODE=1 python -m pytest -p no:cacheprovider -q tests/test_eva
   with an ordinary client as the positive control. S3 pointing at another region: one request at
   the server and a fixed code, with an ordinary client that does send twice as the control. The
   key layout, and `Stop`.
+- `tests/test_ws7_store.py`, the bucket's owner (slice 3): at the server, every request of every
+  store call carries the owner; an ordinary client that leaves it out is a fault for each kind of
+  request (the positive control); a bucket another account owns is refused with nothing read or
+  written, and a refused write is never ambiguous; a store is not built without twelve ASCII
+  digits. `tests/test_ws7_entry.py`: the run and the check name the owner the variable gives, on
+  every request; with the variable missing or malformed neither sends an S3 request.
 - `tests/test_ws7_ledger.py`: the claim (a duplicate, a manual run on the scheduled date, two
   deliveries at once, a write that landed but whose reply failed); the compare-and-swap at
   `ledger_cas_attempts` and one below; admission at the cap and one micro-dollar over; the

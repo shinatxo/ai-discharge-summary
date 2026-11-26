@@ -162,7 +162,7 @@ def test_the_task_definition_is_d5s_and_sets_exactly_the_variables_the_job_reads
     assert "Condition: HasImage\n" in task
     assert "RequiresCompatibilities: [FARGATE]\n" in task and "CpuArchitecture: ARM64\n" in task
     assert "Cpu: '512'\n" in task and "Memory: '1024'\n" in task
-    env = dict(re.findall(r"- \{Name: (\w+), Value: (.+)\}", task))
+    env = dict(re.findall(r"- Name: (\w+)\n +Value: (.+)\n", task.split("Environment:\n")[1]))
     assert env == {"PYTHONHASHSEED": "'0'",
                    entry.BUCKET_VARIABLE: "!Ref Bucket",
                    entry.OWNER_VARIABLE: "!Ref AWS::AccountId",
@@ -370,7 +370,7 @@ def test_each_schedule_passes_its_subcommand_the_target_and_its_own_scheduled_ti
         given = json.loads(one(r"Input: !Sub '(.+)'", block).replace("${Target}", target))
         assert list(given) == ["containerOverrides"] and len(given["containerOverrides"]) == 1
         override = given["containerOverrides"][0]
-        assert override["name"] == one(r"- Name: (\w+)\n", res["TaskDefinition"])
+        assert override["name"] == one(r"^        - Name: (\w+)\n", res["TaskDefinition"])   # the container
         command = override["command"]
         assert command == ["python", "evals/ws7_entry.py", mode, "--target", target,
                            "--scheduled-time", "<aws.scheduler.scheduled-time>"]
@@ -439,7 +439,7 @@ def test_there_is_one_breach_alarm_for_each_family_and_kind_the_job_can_publish(
     for name in published:
         block = alarms[name]
         assert f"Namespace: {publish.NAMESPACE}\n" in block
-        assert f"- {{Name: {publish.DIMENSION}, Value: !Ref Target}}\n" in block
+        assert f"- Name: {publish.DIMENSION}\n          Value: !Ref Target\n" in block
         assert "Statistic: Maximum\n" in block and "Threshold: 0\n" in block
         assert "ComparisonOperator: GreaterThanThreshold\n" in block
         assert "EvaluationPeriods: 1\n" in block and "DatapointsToAlarm: 1\n" in block
@@ -456,7 +456,8 @@ def test_only_the_heartbeat_treats_missing_data_as_a_breach(res):
 
 def test_the_heartbeat_alarm_is_d9s_table(res):
     block = metric_alarms(res)[publish.RUN_OK]
-    for line in (f"Namespace: {publish.NAMESPACE}", f"- {{Name: {publish.DIMENSION}, Value: !Ref Target}}",
+    for line in (f"Namespace: {publish.NAMESPACE}",
+                 f"Dimensions:\n        - Name: {publish.DIMENSION}\n          Value: !Ref Target",
                  "Statistic: Maximum", "Period: 86400", "EvaluationPeriods: 7", "DatapointsToAlarm: 7",
                  "Threshold: 1", "ComparisonOperator: LessThanThreshold", "TreatMissingData: breaching",
                  "EvaluationWindow:\n        WallClockWindow:\n          Timezone: Europe/London"):
@@ -473,7 +474,7 @@ def test_no_baseline_and_the_spend_guard_each_have_an_alarm_on_the_name_the_job_
         {"TargetErrorCount", "InvocationDroppedCount"}
     for name in ("TargetErrorCount", "InvocationDroppedCount"):
         assert "Namespace: AWS/Scheduler\n" in alarms[name]
-        assert "- {Name: ScheduleGroup, Value: !Ref ScheduleGroup}\n" in alarms[name]
+        assert "- Name: ScheduleGroup\n          Value: !Ref ScheduleGroup\n" in alarms[name]
 
 
 def test_the_early_signal_rule_watches_this_cluster_for_a_task_that_failed(res):

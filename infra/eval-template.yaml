@@ -480,11 +480,16 @@ Resources:
           # by ownership. WS7_GIT_COMMIT IS NOT SET HERE AND MUST NOT BE: the image
           # sets it when it is built.
           Environment:
-            - {Name: PYTHONHASHSEED, Value: '0'}
-            - {Name: WS7_BUCKET, Value: !Ref Bucket}
-            - {Name: WS7_BUCKET_OWNER, Value: !Ref AWS::AccountId}
-            - {Name: WS7_ALERT_TOPIC_ARN, Value: !Ref AlertsTopic}
-            - {Name: WS7_IMAGE_DIGEST, Value: !Ref ImageDigest}
+            - Name: PYTHONHASHSEED
+              Value: '0'
+            - Name: WS7_BUCKET
+              Value: !Ref Bucket
+            - Name: WS7_BUCKET_OWNER
+              Value: !Ref AWS::AccountId
+            - Name: WS7_ALERT_TOPIC_ARN
+              Value: !Ref AlertsTopic
+            - Name: WS7_IMAGE_DIGEST
+              Value: !Ref ImageDigest
           LogConfiguration:
             LogDriver: awslogs
             Options:
@@ -640,7 +645,8 @@ Resources:
       Namespace: DischargeAssistant/Eval
       MetricName: RunOk
       Dimensions:
-        - {Name: Target, Value: !Ref Target}
+        - Name: Target
+          Value: !Ref Target
       Statistic: Maximum
       Period: 86400
       EvaluationPeriods: 7
@@ -664,7 +670,8 @@ Resources:
       Namespace: DischargeAssistant/Eval
       MetricName: NoBaseline
       Dimensions:
-        - {Name: Target, Value: !Ref Target}
+        - Name: Target
+          Value: !Ref Target
       Statistic: Maximum
       Period: 300
       EvaluationPeriods: 1
@@ -685,7 +692,8 @@ Resources:
       Namespace: DischargeAssistant/Eval
       MetricName: SpendGuardTrips
       Dimensions:
-        - {Name: Target, Value: !Ref Target}
+        - Name: Target
+          Value: !Ref Target
       Statistic: Maximum
       Period: 300
       EvaluationPeriods: 1
@@ -705,7 +713,8 @@ Resources:
       Namespace: AWS/Scheduler
       MetricName: TargetErrorCount
       Dimensions:
-        - {Name: ScheduleGroup, Value: !Ref ScheduleGroup}
+        - Name: ScheduleGroup
+          Value: !Ref ScheduleGroup
       Statistic: Sum
       Period: 300
       EvaluationPeriods: 1
@@ -724,7 +733,8 @@ Resources:
       Namespace: AWS/Scheduler
       MetricName: InvocationDroppedCount
       Dimensions:
-        - {Name: ScheduleGroup, Value: !Ref ScheduleGroup}
+        - Name: ScheduleGroup
+          Value: !Ref ScheduleGroup
       Statistic: Sum
       Period: 300
       EvaluationPeriods: 1
@@ -748,7 +758,8 @@ Resources:
       Namespace: DischargeAssistant/Eval
       MetricName: BreachRunKind1
       Dimensions:
-        - {Name: Target, Value: !Ref Target}
+        - Name: Target
+          Value: !Ref Target
       Statistic: Maximum
       Period: 300
       EvaluationPeriods: 1
@@ -767,7 +778,8 @@ Resources:
       Namespace: DischargeAssistant/Eval
       MetricName: BreachRunKind2
       Dimensions:
-        - {Name: Target, Value: !Ref Target}
+        - Name: Target
+          Value: !Ref Target
       Statistic: Maximum
       Period: 300
       EvaluationPeriods: 1
@@ -786,7 +798,8 @@ Resources:
       Namespace: DischargeAssistant/Eval
       MetricName: BreachRunKind3
       Dimensions:
-        - {Name: Target, Value: !Ref Target}
+        - Name: Target
+          Value: !Ref Target
       Statistic: Maximum
       Period: 300
       EvaluationPeriods: 1
@@ -805,7 +818,8 @@ Resources:
       Namespace: DischargeAssistant/Eval
       MetricName: BreachSafetyNettingKind1
       Dimensions:
-        - {Name: Target, Value: !Ref Target}
+        - Name: Target
+          Value: !Ref Target
       Statistic: Maximum
       Period: 300
       EvaluationPeriods: 1
@@ -824,7 +838,8 @@ Resources:
       Namespace: DischargeAssistant/Eval
       MetricName: BreachSafetyNettingKind2
       Dimensions:
-        - {Name: Target, Value: !Ref Target}
+        - Name: Target
+          Value: !Ref Target
       Statistic: Maximum
       Period: 300
       EvaluationPeriods: 1
@@ -843,7 +858,8 @@ Resources:
       Namespace: DischargeAssistant/Eval
       MetricName: BreachSafetyNettingKind3
       Dimensions:
-        - {Name: Target, Value: !Ref Target}
+        - Name: Target
+          Value: !Ref Target
       Statistic: Maximum
       Period: 300
       EvaluationPeriods: 1
@@ -862,7 +878,8 @@ Resources:
       Namespace: DischargeAssistant/Eval
       MetricName: BreachMedicationsKind1
       Dimensions:
-        - {Name: Target, Value: !Ref Target}
+        - Name: Target
+          Value: !Ref Target
       Statistic: Maximum
       Period: 300
       EvaluationPeriods: 1
@@ -881,7 +898,8 @@ Resources:
       Namespace: DischargeAssistant/Eval
       MetricName: BreachMedicationsKind2
       Dimensions:
-        - {Name: Target, Value: !Ref Target}
+        - Name: Target
+          Value: !Ref Target
       Statistic: Maximum
       Period: 300
       EvaluationPeriods: 1
@@ -900,7 +918,8 @@ Resources:
       Namespace: DischargeAssistant/Eval
       MetricName: BreachMedicationsKind3
       Dimensions:
-        - {Name: Target, Value: !Ref Target}
+        - Name: Target
+          Value: !Ref Target
       Statistic: Maximum
       Period: 300
       EvaluationPeriods: 1
@@ -919,7 +938,8 @@ Resources:
       Namespace: DischargeAssistant/Eval
       MetricName: BreachStep2AdviceKind1
       Dimensions:
-        - {Name: Target, Value: !Ref Target}
+        - Name: Target
+          Value: !Ref Target
       Statistic: Maximum
       Period: 300
       EvaluationPeriods: 1
@@ -938,7 +958,8 @@ Resources:
       Namespace: DischargeAssistant/Eval
       MetricName: BreachStep2AdviceKind2
       Dimensions:
-        - {Name: Target, Value: !Ref Target}
+        - Name: Target
+          Value: !Ref Target
       Statistic: Maximum
       Period: 300
       EvaluationPeriods: 1
@@ -957,7 +978,8 @@ Resources:
       Namespace: DischargeAssistant/Eval
       MetricName: BreachStep2AdviceKind3
       Dimensions:
-        - {Name: Target, Value: !Ref Target}
+        - Name: Target
+          Value: !Ref Target
       Statistic: Maximum
       Period: 300
       EvaluationPeriods: 1
@@ -976,7 +998,8 @@ Resources:
       Namespace: DischargeAssistant/Eval
       MetricName: BreachCompositionKind1
       Dimensions:
-        - {Name: Target, Value: !Ref Target}
+        - Name: Target
+          Value: !Ref Target
       Statistic: Maximum
       Period: 300
       EvaluationPeriods: 1
@@ -995,7 +1018,8 @@ Resources:
       Namespace: DischargeAssistant/Eval
       MetricName: BreachCompositionKind2
       Dimensions:
-        - {Name: Target, Value: !Ref Target}
+        - Name: Target
+          Value: !Ref Target
       Statistic: Maximum
       Period: 300
       EvaluationPeriods: 1
@@ -1014,7 +1038,8 @@ Resources:
       Namespace: DischargeAssistant/Eval
       MetricName: BreachCompositionKind3
       Dimensions:
-        - {Name: Target, Value: !Ref Target}
+        - Name: Target
+          Value: !Ref Target
       Statistic: Maximum
       Period: 300
       EvaluationPeriods: 1
@@ -1033,7 +1058,8 @@ Resources:
       Namespace: DischargeAssistant/Eval
       MetricName: BreachHaz03Kind1
       Dimensions:
-        - {Name: Target, Value: !Ref Target}
+        - Name: Target
+          Value: !Ref Target
       Statistic: Maximum
       Period: 300
       EvaluationPeriods: 1
@@ -1052,7 +1078,8 @@ Resources:
       Namespace: DischargeAssistant/Eval
       MetricName: BreachHaz03Kind2
       Dimensions:
-        - {Name: Target, Value: !Ref Target}
+        - Name: Target
+          Value: !Ref Target
       Statistic: Maximum
       Period: 300
       EvaluationPeriods: 1
@@ -1071,7 +1098,8 @@ Resources:
       Namespace: DischargeAssistant/Eval
       MetricName: BreachHaz03Kind3
       Dimensions:
-        - {Name: Target, Value: !Ref Target}
+        - Name: Target
+          Value: !Ref Target
       Statistic: Maximum
       Period: 300
       EvaluationPeriods: 1
@@ -1090,7 +1118,8 @@ Resources:
       Namespace: DischargeAssistant/Eval
       MetricName: BreachAssemblyKind1
       Dimensions:
-        - {Name: Target, Value: !Ref Target}
+        - Name: Target
+          Value: !Ref Target
       Statistic: Maximum
       Period: 300
       EvaluationPeriods: 1
@@ -1109,7 +1138,8 @@ Resources:
       Namespace: DischargeAssistant/Eval
       MetricName: BreachAssemblyKind2
       Dimensions:
-        - {Name: Target, Value: !Ref Target}
+        - Name: Target
+          Value: !Ref Target
       Statistic: Maximum
       Period: 300
       EvaluationPeriods: 1
@@ -1128,7 +1158,8 @@ Resources:
       Namespace: DischargeAssistant/Eval
       MetricName: BreachAssemblyKind3
       Dimensions:
-        - {Name: Target, Value: !Ref Target}
+        - Name: Target
+          Value: !Ref Target
       Statistic: Maximum
       Period: 300
       EvaluationPeriods: 1

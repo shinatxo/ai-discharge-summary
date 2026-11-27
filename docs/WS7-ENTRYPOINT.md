@@ -2723,9 +2723,14 @@ says otherwise.
 - **The target-change confirmation says "every alarm" follows the target.** It is both schedules
   and 24 alarms, not 26: the two scheduler alarms have no `Target` dimension. The runbook's
   section 9 says "all 26" as well.
-- **Codex's re-check 2 of PR #11, new findings 3 and 4** (the author's ruling, 27 Nov 2026:
-  follow-ups for this pull request). Their text is in Codex's re-check 2 reply on PR #11; it
-  is not copied here.
+- **`deploy.sh` names only the first drifted schedule** (Codex's re-check 2 of PR #11, finding
+  3; the author's ruling, 27 Nov 2026). With both drifted, the preflight and the final check
+  stop after reading the Wednesday run and leave the Thursday check out of the STOP. Collect
+  both, as `schedules.sh` does.
+- **ADR-011's claim about `schedules.sh`'s exit 0 is too wide** (re-check 2, finding 4; the same
+  ruling). ADR-011 says every successful `schedules.sh` exit means the live schedules agree
+  with the stack, but `force-off` exits 0 when both read `DISABLED` even if the stack says
+  `ENABLED` or its parameter cannot be read. Limit that claim to `status`, `on` and `off`.
 - **`force-off` pins `GroupName` to `discharge-eval` in what it writes** (the same ruling). It
   writes back the group name that `get-schedule` returned; it should write the one it asked
   for.

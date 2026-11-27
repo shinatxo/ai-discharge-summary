@@ -1216,14 +1216,17 @@ slice 6, so each is fixed before the first moment it can happen. The schedules a
 on until all three are done.
 
 1. **The CI-role pull request** ("Known limits of the stack: the CI deploy role", D4).
-2. **`schedules.sh off` can roll back to `ENABLED`.** If the stack update that `off` starts
-   fails, CloudFormation rolls the schedules back to the state they were in, `ENABLED`. `off`
-   must end with both live schedules `DISABLED` or say plainly that they are not and what to
-   run.
-3. **A deploy in flight can re-apply `ENABLED` after `force-off`.** A stack update that is
-   still running when `force-off` writes `DISABLED` can write a schedule again from the stack's
-   `ENABLED` parameter. `force-off` and a running stack update must not overlap, or `force-off`
-   must notice and say so.
+2. **`schedules.sh off` can roll back to `ENABLED`.** If one schedule's update succeeds and the
+   other's fails, CloudFormation's rollback restores the first to `ENABLED`, and the failed
+   waiter exits before any live read. Before slice 6, `off` disables both live schedules
+   directly first, then reconciles the stack only in a way that does not rewrite them; if that
+   cannot be shown, it stops with both live schedules `DISABLED` and says so.
+3. **A deploy in flight can re-apply `ENABLED` after `force-off`.** Interrupting `deploy.sh`'s
+   waiter leaves its stack update running, and that update can write a schedule with `State`
+   `ENABLED` after `force-off` has verified both `DISABLED`; in the other order, `force-off`
+   can write back an older target definition. Before slice 6, recovery and deploys are
+   serialised through the end of the AWS operation, including one left by an interrupted
+   waiter, and a prepared deploy is checked again just before it executes.
 
 **Acceptance check for slice 2: one request per step, counted at the server.** A local HTTP stub
 stands in for Bedrock and counts the requests it receives. For **both runners**, it shows exactly

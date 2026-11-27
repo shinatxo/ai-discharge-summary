@@ -131,6 +131,25 @@ CI and on Shina's machine. Never report a test as passed unless you ran it.
 - Do no R1 work until Shina gives the R1 handoff.
 - Never run the renderer or the scorer on saved batch records.
 
+### The git rule
+
+From 17 Nov 2026; `-q` added 19 Nov 2026. In a locked session git sees the protected folders as
+deleted, so:
+
+- use `-q` on every branch switch;
+- compare commit to commit, never against the working tree;
+- pathspec-limit every git command that lists files;
+- stage named paths only (never `git add -A`, `git add .` or `git commit -a`);
+- before every push, run and report both checks with the PR's files written out in full (in zsh
+  an unquoted variable does not split):
+
+  ```
+  git diff --name-only <base>..HEAD -- <those files>
+  git diff --name-only <base>..HEAD -- . ':(exclude)<each file>' | wc -l
+  ```
+
+  The second must print 0.
+
 ## i) No spend, no deploys
 
 No AWS deploy, no Bedrock call and no command that costs money without Shina's explicit yes in

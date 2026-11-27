@@ -69,7 +69,7 @@ def ssm(_offline):
 @pytest.fixture
 def s3(_offline):
     fake = stubs.started(fakes.S3Fake(), _offline)
-    fake.store = store.Store(store.build_client("s3", endpoint_url=fake.url), fakes.BUCKET)
+    fake.store = store.Store(store.build_client("s3", endpoint_url=fake.url), fakes.BUCKET, fakes.OWNER)
     yield fake
     fake.stop()
 

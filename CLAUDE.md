@@ -33,12 +33,17 @@ Where data lives:
 - **Ledger:** an S3 bucket with Object Lock (WORM) holds a copy of every audit change.
 - **Step traces:** the DynamoDB traces table (`<stack>-traces`) holds the pipeline's step
   traces. It has a TTL and is never served to the SPA.
-- **S3:** only two buckets exist, the WORM ledger and the SPA bucket.
+- **S3:** three buckets. The live system has two, the WORM ledger and the SPA bucket. The
+  `discharge-eval` stack has the third, the eval bucket, which holds synthetic eval runs only.
 - All three tables and the ledger bucket are encrypted with one KMS customer-managed key.
 
 Infrastructure:
 
 - Plain CloudFormation. No SAM transform, no Terraform. `infra/samconfig.toml` is not used by CI.
+- `infra/eval-template.yaml` is the `discharge-eval` stack (ADR-011): the WS7 scheduled
+  re-evaluation, a Fargate task in its own VPC with its own bucket, key, alert topic and alarms.
+  It is deployed by hand from `docs/WS7-RUNBOOK.md`, never by CI, and holds no permission on any
+  resource of the live stack. It is not deployed yet.
 - `infra/template.yaml` is the `discharge-audit` stack. `infra/web-template.yaml` is the
   `discharge-web` stack. CI deploys only `discharge-audit`; `discharge-web` is deployed by hand.
 - Region `eu-west-2`. The one exception is the CloudFront viewer certificate (ACM, `us-east-1`).
@@ -56,6 +61,8 @@ through the deployed path on a schedule. `evals/` holds the eval and scoring scr
 - Python 3.13 Lambdas (arm64), `boto3`; tests with `pytest` and hand-rolled AWS mocks
   (`tests/conftest.py`)
 - React 18 + Vite + TypeScript SPA with Amplify Auth (`ui-spa/`)
+- The eval stack only: ECS on Fargate (arm64), ECR, a VPC, SSM Parameter Store; a container
+  image built from the `Dockerfile`
 - AWS: Bedrock, Lambda, API Gateway (HTTP API), Cognito, DynamoDB (+ Streams), S3, KMS,
   CloudFront, Route 53, ACM, EventBridge Scheduler, CloudWatch, SNS, CloudFormation
 - GitHub Actions with OIDC (no stored AWS keys)
@@ -67,7 +74,7 @@ Use Python 3.13 (the `discharge-313` environment).
 - Full suite: `PYTHONDONTWRITEBYTECODE=1 python -m pytest -p no:cacheprovider -q`
 - One file or one test: add `tests/test_dispatcher.py` or `tests/test_dispatcher.py::test_name`
 - CI also runs: `python src/canary/build_scenarios.py --check`
-- CI also runs: `cfn-lint --non-zero-exit-code error infra/template.yaml infra/web-template.yaml`
+- CI also runs: `cfn-lint --non-zero-exit-code error infra/template.yaml infra/web-template.yaml infra/eval-template.yaml`
 
 The full suite cannot pass inside a locked Claude session, because some tests read
 `evals/runs/` and that folder is blocked. That is expected. Claude runs focused tests only: the
@@ -123,6 +130,25 @@ CI and on Shina's machine. Never report a test as passed unless you ran it.
     finished, ask before changing any file there.
 - Do no R1 work until Shina gives the R1 handoff.
 - Never run the renderer or the scorer on saved batch records.
+
+### The git rule
+
+From 17 Nov 2026; `-q` added 19 Nov 2026. In a locked session git sees the protected folders as
+deleted, so:
+
+- use `-q` on every branch switch;
+- compare commit to commit, never against the working tree;
+- pathspec-limit every git command that lists files;
+- stage named paths only (never `git add -A`, `git add .` or `git commit -a`);
+- before every push, run and report both checks with the PR's files written out in full (in zsh
+  an unquoted variable does not split):
+
+  ```
+  git diff --name-only <base>..HEAD -- <those files>
+  git diff --name-only <base>..HEAD -- . ':(exclude)<each file>' | wc -l
+  ```
+
+  The second must print 0.
 
 ## i) No spend, no deploys
 

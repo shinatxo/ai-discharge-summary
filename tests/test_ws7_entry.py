@@ -372,13 +372,22 @@ def _lose_bucket(world, _target):
     del world.environ[entry.BUCKET_VARIABLE]
 
 
+def _lose_owner(world, _target):
+    del world.environ[entry.OWNER_VARIABLE]
+
+
+def _mistype_owner(world, _target):
+    world.environ[entry.OWNER_VARIABLE] = "00000000000"         # eleven digits
+
+
 def _lose_expected(world, target):
     del world.ssm.parameters[wm.EXPECTED_PARAMETER[target]]
 
 
 @pytest.mark.parametrize("break_it, code", [
     (_lose_identity, wm.IDENTITY_MISSING), (_lose_topic, publish.TOPIC_REFUSED),
-    (_lose_bucket, store.BUCKET_REFUSED), (_lose_expected, wm.EXPECTED_UNREADABLE)])
+    (_lose_bucket, store.BUCKET_REFUSED), (_lose_owner, store.OWNER_REFUSED),
+    (_mistype_owner, store.OWNER_REFUSED), (_lose_expected, wm.EXPECTED_UNREADABLE)])
 def test_a_stop_before_the_claim_writes_nothing_and_publishes_runrefused_alone(
         ready, world, break_it, code):
     """Before the claim a process cannot know it is not a duplicate, so it publishes
@@ -4252,6 +4261,61 @@ def test_a_check_that_cannot_read_s3_says_so_on_the_topic_and_exits_1(thursday):
     assert check_lines(world) == [f"WS7 check - target {target} - the check failed",
                                   f"code {wl.LEDGER_UNAVAILABLE}; see the task log"]
     assert world.cw.bodies == []
+
+
+@pytest.mark.parametrize("break_it", [_lose_owner, _mistype_owner])
+def test_a_check_without_the_buckets_owner_fails_and_sends_no_s3_request(thursday, break_it):
+    """Slice 3. The check builds its store from the same two variables as the run. With
+    the owner missing or malformed it reads nothing: it says on the topic that it
+    failed, and exits 1. The partner is the same check with the variable as given."""
+    world, target = thursday, "v1"
+    assert world.check(target) == 0 and world.s3.requests                # the partner
+    world.sns.messages.clear()
+    before = len(world.s3.requests)
+    break_it(world, target)
+    assert world.check(target) == 1
+    assert len(world.s3.requests) == before
+    assert check_lines(world) == [f"WS7 check - target {target} - the check failed",
+                                  f"code {store.OWNER_REFUSED}; see the task log"]
+
+
+@pytest.mark.parametrize("target", TARGETS)
+def test_the_run_and_the_check_name_the_owner_the_task_definition_gave_on_every_s3_request(
+        ready, world, target):
+    """Ruling 1 (23 Nov 2026), end to end. The owner is the one in WS7_BUCKET_OWNER, not
+    a constant: the bucket is given to another invented account, the variable names
+    it, and every S3 request of a whole run and of the check that follows carries it.
+    Every other test in this file is the control for a request without it: the fake
+    faults on one, and a fault fails the test."""
+    other = "222222222222"
+    ready(target)
+    world.s3.owner = other
+    world.environ[entry.OWNER_VARIABLE] = other
+    assert world.run(target) == 0
+    ran = len(world.s3.owners)
+    assert ran > 10 and set(world.s3.owners) == {other}
+    world.clock.start = THURSDAY
+    assert world.check(target) == 0
+    assert len(world.s3.owners) > ran and set(world.s3.owners) == {other}
+
+
+@pytest.mark.parametrize("mode", ["scheduled", "check"])
+def test_a_bucket_that_is_not_the_named_accounts_is_never_read_or_written(ready, world, mode):
+    """The case the rule is for: the bucket name is right for someone else's bucket.
+    S3 refuses the first request, and the job stops with nothing read or written."""
+    target = "v1"
+    ready(target)
+    world.s3.owner = "333333333333"                 # the bucket is another account's
+    before = world.s3.keys()
+    if mode == "check":
+        world.clock.start = THURSDAY
+        assert world.check(target) == 1
+        assert check_lines(world)[1] == f"code {wl.LEDGER_UNAVAILABLE}; see the task log"
+    else:
+        assert world.run(target) == 1
+        assert world.bedrock_requests() == 0 and "RunOk" not in world.published()
+    assert world.s3.keys() == before and world.s3.puts == []
+    assert set(world.s3.owners) == {fakes.OWNER}    # what the job named; S3 answered 403
 
 
 def test_a_check_that_cannot_reach_the_topic_exits_1(thursday):

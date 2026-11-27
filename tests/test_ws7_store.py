@@ -35,6 +35,8 @@ KEY = "ws7/ledger/2026-12.json"          # invented
 OTHER = b'{"writer":"another"}'
 MINE = b'{"writer":"this one"}'
 CALL_LIMIT_S = 10.0                      # one call to a local fake never takes this long
+# What a raw client must add to every request: the fake faults on a request without it.
+OWNED = {"ExpectedBucketOwner": fakes.OWNER}
 
 
 @pytest.fixture(autouse=True)
@@ -52,7 +54,7 @@ def s3(_offline):
 
 @pytest.fixture
 def st(s3):
-    return store.Store(store.build_client("s3", endpoint_url=s3.url), fakes.BUCKET)
+    return store.Store(store.build_client("s3", endpoint_url=s3.url), fakes.BUCKET, fakes.OWNER)
 
 
 def code_of(call) -> str:
@@ -134,7 +136,7 @@ def test_the_fake_faults_on_an_unconditional_put_and_stores_nothing(s3):
     not pass quietly."""
     raw = store.build_client("s3", endpoint_url=s3.url)
     with pytest.raises(ClientError):
-        raw.put_object(Bucket=fakes.BUCKET, Key=KEY, Body=MINE)
+        raw.put_object(Bucket=fakes.BUCKET, Key=KEY, Body=MINE, **OWNED)
     assert s3.faults == ["unconditional_put"] and KEY not in s3.keys()
     s3.faults.clear()                                                     # expected: do not fail teardown
 
@@ -142,11 +144,11 @@ def test_the_fake_faults_on_an_unconditional_put_and_stores_nothing(s3):
 def test_the_fake_faults_on_what_it_does_not_implement(s3):
     raw = store.build_client("s3", endpoint_url=s3.url)
     calls = [lambda: raw.put_object(Bucket=fakes.BUCKET, Key=KEY, Body=MINE, IfNoneMatch="*",
-                                    IfMatch='"x"'),
-             lambda: raw.delete_object(Bucket=fakes.BUCKET, Key=KEY),
-             lambda: raw.head_object(Bucket=fakes.BUCKET, Key=KEY),
-             lambda: raw.get_object(Bucket=fakes.BUCKET, Key=KEY, VersionId="v1"),
-             lambda: raw.list_objects_v2(Bucket=fakes.BUCKET, Prefix="ws7/", Delimiter="/"),
+                                    IfMatch='"x"', **OWNED),
+             lambda: raw.delete_object(Bucket=fakes.BUCKET, Key=KEY, **OWNED),
+             lambda: raw.head_object(Bucket=fakes.BUCKET, Key=KEY, **OWNED),
+             lambda: raw.get_object(Bucket=fakes.BUCKET, Key=KEY, VersionId="v1", **OWNED),
+             lambda: raw.list_objects_v2(Bucket=fakes.BUCKET, Prefix="ws7/", Delimiter="/", **OWNED),
              lambda: raw.get_object(Bucket="another-invented-bucket", Key=KEY)]
     for call in calls:
         with pytest.raises(ClientError):
@@ -162,8 +164,96 @@ def test_the_fake_ignores_extra_request_headers(s3):
     raw = store.build_client("s3", endpoint_url=s3.url)
     raw.put_object(Bucket=fakes.BUCKET, Key=KEY, Body=MINE, IfNoneMatch="*",
                    Metadata={"invented": "header"}, CacheControl="no-store",
-                   ChecksumAlgorithm="SHA256")
+                   ChecksumAlgorithm="SHA256", **OWNED)
     assert s3.body(KEY) == MINE and not s3.faults
+
+
+# ------------------------------------------------- the bucket's owner (slice 3)
+
+# What the store does, by name, with an ETag that the put-if-match needs.
+EVERY_CALL = {
+    "list": lambda st, etag: st.list_keys(store.LEDGER_PREFIX),
+    "get": lambda st, etag: st.get(KEY),
+    "put_if_absent": lambda st, etag: st.put_if_absent("ws7/ledger/2026-11.json", MINE),
+    "put_if_match": lambda st, etag: st.put_if_match(KEY, MINE, etag),
+    "create": lambda st, etag: st.create("ws7/ledger/2026-10.json", MINE, attempts=2),
+}
+
+
+def test_the_fake_faults_on_any_request_that_does_not_name_the_buckets_owner(s3):
+    """The positive control for the rule below: an ordinary client that leaves
+    `ExpectedBucketOwner` out is a fault, for every kind of request the fake
+    implements, and nothing is read or written. The partner names the owner."""
+    etag = s3.seed(KEY, OTHER)
+    raw = store.build_client("s3", endpoint_url=s3.url)
+    calls = {"list": lambda **kw: raw.list_objects_v2(Bucket=fakes.BUCKET, Prefix="ws7/", **kw),
+             "get": lambda **kw: raw.get_object(Bucket=fakes.BUCKET, Key=KEY, **kw),
+             "put_if_absent": lambda **kw: raw.put_object(Bucket=fakes.BUCKET, Key="ws7/new",
+                                                          Body=MINE, IfNoneMatch="*", **kw),
+             "put_if_match": lambda **kw: raw.put_object(Bucket=fakes.BUCKET, Key=KEY, Body=MINE,
+                                                         IfMatch=etag, **kw)}
+    for call in calls.values():
+        with pytest.raises(ClientError):
+            call()
+    assert s3.faults == ["no_expected_bucket_owner"] * 4
+    assert s3.owners == [None] * 4
+    assert s3.keys() == [KEY] and s3.body(KEY) == OTHER and s3.puts == []
+    s3.faults.clear()                                                     # expected
+
+    for call in calls.values():                                           # the partner
+        call(**OWNED)
+    assert not s3.faults and s3.owners[4:] == [fakes.OWNER] * 4
+    assert s3.keys() == [KEY, "ws7/new"] and s3.body(KEY) == MINE
+
+
+@pytest.mark.parametrize("operation", list(EVERY_CALL))
+def test_every_s3_request_the_store_sends_names_the_buckets_owner(s3, st, operation):
+    """Ruling 1 (23 Nov 2026). Checked where it arrives, at the server: every request
+    of every store call carries `x-amz-expected-bucket-owner` with the store's owner."""
+    etag = s3.seed(KEY, OTHER)
+    EVERY_CALL[operation](st, etag)
+    assert s3.requests and len(s3.owners) == len(s3.requests)
+    assert set(s3.owners) == {fakes.OWNER}
+    assert st.owner == fakes.OWNER
+
+
+@pytest.mark.parametrize("operation", list(EVERY_CALL))
+def test_a_bucket_another_account_owns_is_refused_and_nothing_is_read_or_written(s3, operation):
+    """S3 answers 403 when the bucket's owner is not the account named. For a read
+    that is a failure; for a write it is a refusal that did not land, never an
+    ambiguous write. The partner is the same call from a store that names the owner."""
+    etag = s3.seed(KEY, OTHER)
+    client = store.build_client("s3", endpoint_url=s3.url)
+    mine, theirs = store.Store(client, fakes.BUCKET, fakes.OWNER), \
+        store.Store(client, fakes.BUCKET, "111111111111")
+    expected = {"list": store.LIST_FAILED, "get": store.GET_FAILED,
+                "put_if_absent": store.PUT_REFUSED, "put_if_match": store.PUT_REFUSED,
+                "create": store.PUT_REFUSED}
+    assert code_of(lambda: EVERY_CALL[operation](theirs, etag)) == expected[operation]
+    assert len(s3.requests) == 1 and s3.owners == ["111111111111"]        # one request, refused
+    assert s3.keys() == [KEY] and s3.body(KEY) == OTHER and s3.puts == []
+    assert not s3.faults                                                  # a 403, not a fault
+
+    EVERY_CALL[operation](mine, etag)                                     # the partner
+    assert s3.owners[1:] and set(s3.owners[1:]) == {fakes.OWNER}
+
+
+@pytest.mark.parametrize("owner", [None, "", "00000000000", "0000000000000", "00000000000a",
+                                   " 000000000000", "000000000000\n", "0000-0000-0000",
+                                   "\u0660" * 12, 0, 123456789012, b"000000000000", True])
+def test_a_store_is_not_built_without_the_twelve_digit_account_that_owns_the_bucket(s3, owner):
+    """Missing or malformed, the owner is refused when the store is built, before any
+    request. Twelve ASCII digits and nothing else; a number is not a string."""
+    client = store.build_client("s3", endpoint_url=s3.url)
+    assert store.Store(client, fakes.BUCKET, "123456789012").owner == "123456789012"   # the partner
+    assert code_of(lambda: store.Store(client, fakes.BUCKET, owner)) == store.OWNER_REFUSED
+    assert s3.requests == []
+
+
+def test_a_store_cannot_be_built_with_the_owner_left_out():
+    """There is no default: a caller that does not give the owner does not get a store."""
+    with pytest.raises(TypeError):
+        store.Store(object(), fakes.BUCKET)        # noqa: the missing argument is the test
 
 
 # ================================================= absence and the listing ==
@@ -224,8 +314,8 @@ def test_a_key_outside_the_ws7_prefix_is_refused_before_any_request(s3, st, key)
 @pytest.mark.parametrize("bucket", ["Has-Capitals", "has.dots.in-it", "ab", "a--x-s3", "name--x-s3",
                                     "arn:aws:s3:::bucket", "", None])
 def test_only_an_ordinary_bucket_name_is_accepted(bucket):
-    assert store.Store(object(), "ws7-fake-eval-bucket")                  # the partner
-    assert code_of(lambda: store.Store(object(), bucket)) == store.BUCKET_REFUSED
+    assert store.Store(object(), "ws7-fake-eval-bucket", fakes.OWNER)     # the partner
+    assert code_of(lambda: store.Store(object(), bucket, fakes.OWNER)) == store.BUCKET_REFUSED
 
 
 def test_a_body_must_be_bytes_within_the_size_limit(s3, st):
@@ -416,11 +506,11 @@ def test_only_s3_ssm_cloudwatch_and_sns_clients_are_built():
 def test_the_offline_fixture_lets_the_store_reach_only_its_fake(s3, _offline):
     """The control for "no test can reach AWS": a client aimed at another loopback
     port is stopped by the fixture, and one aimed at the fake is not."""
-    elsewhere = store.Store(store.build_client("s3", endpoint_url="http://127.0.0.1:9"), fakes.BUCKET)
+    elsewhere = store.Store(store.build_client("s3", endpoint_url="http://127.0.0.1:9"), fakes.BUCKET, fakes.OWNER)
     assert code_of(lambda: elsewhere.list_keys(store.LEDGER_PREFIX)) == store.LIST_FAILED
     assert _offline.refused == [("127.0.0.1", 9)]
     _offline.refused.clear()                                              # expected
-    here = store.Store(store.build_client("s3", endpoint_url=s3.url), fakes.BUCKET)
+    here = store.Store(store.build_client("s3", endpoint_url=s3.url), fakes.BUCKET, fakes.OWNER)
     assert here.list_keys(store.LEDGER_PREFIX) == []
 
 
@@ -620,10 +710,10 @@ def test_the_control_an_ordinary_s3_client_does_send_the_request_again(s3, answe
     s3.seed(KEY, OTHER)
     plain = _plain_s3(s3.url)
     s3.script_any(answer)
-    assert plain.get_object(Bucket=fakes.BUCKET, Key=KEY)["Body"].read() == OTHER
+    assert plain.get_object(Bucket=fakes.BUCKET, Key=KEY, **OWNED)["Body"].read() == OTHER
     assert s3.requests == [("GET", KEY), ("GET", KEY)]                    # sent twice
     assert s3.signed_regions == ["eu-west-2", "eu-west-1"]                # the second for another region
-    plain.get_object(Bucket=fakes.BUCKET, Key=KEY)
+    plain.get_object(Bucket=fakes.BUCKET, Key=KEY, **OWNED)
     assert s3.signed_regions[-1] == "eu-west-1"                           # and it stays moved
 
 
@@ -659,12 +749,12 @@ def test_a_ws7_s3_client_never_sends_one_call_twice_whatever_asks_for_it(s3):
     plain = _plain_s3(s3.url)
     _ask_again_after_a_500(plain)
     s3.script_any(fakes.SERVER_ERROR)
-    assert plain.get_object(Bucket=fakes.BUCKET, Key=KEY)["Body"].read() == OTHER
+    assert plain.get_object(Bucket=fakes.BUCKET, Key=KEY, **OWNED)["Body"].read() == OTHER
     assert s3.requests == [("GET", KEY), ("GET", KEY)]                    # the control: sent twice
 
     client = store.build_client("s3", endpoint_url=s3.url)
     _ask_again_after_a_500(client)
-    ours = store.Store(client, fakes.BUCKET)
+    ours = store.Store(client, fakes.BUCKET, fakes.OWNER)
     for call in (lambda: ours.get(KEY), lambda: ours.list_keys(store.LEDGER_PREFIX),
                  lambda: ours.put_if_absent("ws7/ledger/2026-11.json", MINE)):
         seen = len(s3.requests)

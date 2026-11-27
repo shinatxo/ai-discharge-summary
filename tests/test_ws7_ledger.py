@@ -83,7 +83,7 @@ def _offline(offline_aws):  # noqa: F811
 
 def make_world(net, cfg=CFG):
     fake = stubs.started(fakes.S3Fake(), net)
-    st = store.Store(store.build_client("s3", endpoint_url=fake.url), fakes.BUCKET)
+    st = store.Store(store.build_client("s3", endpoint_url=fake.url), fakes.BUCKET, fakes.OWNER)
     clock = Clock(W3)
     return SimpleNamespace(fake=fake, store=st, clock=clock, cfg=cfg,
                            ledger=wl.Ledger(st, cfg, clock=clock))
@@ -322,7 +322,7 @@ def test_two_deliveries_at_once_give_exactly_one_claim(world, _offline):
     barrier, results = threading.Barrier(2, timeout=JOIN_LIMIT_S), []
 
     def deliver():
-        st = store.Store(store.build_client("s3", endpoint_url=world.fake.url), fakes.BUCKET)
+        st = store.Store(store.build_client("s3", endpoint_url=world.fake.url), fakes.BUCKET, fakes.OWNER)
         barrier.wait()
         try:
             results.append(("held", wl.claim(st, CFG, target="pipeline", mode="scheduled",

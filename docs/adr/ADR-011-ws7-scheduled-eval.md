@@ -22,7 +22,12 @@ was delivered before a later failure left to stand; and a `RunOk` = 1 that Cloud
 fails the run, with a failed record; and once a run has failed, a file that may not be stored
 is left out and counted, and does not stop the rest. Updated 23 Nov 2026 with the ruling on
 part 6: the image's default command is the nine WS7 test files, and the full suite stays with
-CI and the author's machine.
+CI and the author's machine. Updated 26 Nov 2026 with the rulings on slice 3: every S3 request
+names the bucket's owner; the first deploy has no image and so no task; the pinned digest is
+the image ID check 5 ran on; all 21 breach alarms; old versions of expired runs are deleted
+30 days later; the CI deploy role is denied the bucket, the key and the topic by name, and
+what it can still do is a known limit; and which set-up checks need a Bedrock call and a
+frozen baseline.
 
 This is a design. Slice 1, the offline comparator, is built (`docs/WS7-COMPARATOR.md`). Of slice 2,
 parts 1 to 4, part 5a and part 6 are built (`docs/WS7-ENTRYPOINT.md`): the client wrapper and the
@@ -31,7 +36,10 @@ reviews of PR #4 and PR #6; the run summary and the candidate baseline; the entr
 scheduled run and Thursday check, with the comparator call and publishing; and the image
 changes (the commit as a build argument with no default, `evals/calibration` kept out of the
 image, the header, and the default command). Part 5b (the manual baseline, the manual confirm
-and the resolve command) is not built. No image has been pushed to a registry.
+and the resolve command) is not built. Of slice 3, the template, the runbook, the push script
+and the operator's set-up checks are written and tested offline (`infra/eval-template.yaml`,
+`docs/WS7-RUNBOOK.md`); the set-up checks that need a task script are the next pull request.
+No image has been pushed to a registry.
 Nothing is deployed or run. Every deploy, and every run that costs
 money, needs the author's explicit yes at the time. No number in a breach rule is set here: the
 author sets them before the first live run, and they change only by pull request.
@@ -93,7 +101,8 @@ tags.
    fixed by this ADR**. The check is read-only:
    `aws cloudwatch describe-alarm-history --alarm-name discharge-audit-canary-success-low --history-item-type Action`.
 6. **The CI deploy role cannot build this.** It has no ECS, ECR or EC2 permissions and may manage
-   only roles named `discharge-audit-*` (`infra/cicd-oidc-role.yaml`).
+   only roles named `discharge-audit-*` (`infra/cicd-oidc-role.yaml`). It can still change parts
+   of the stack once it exists (D4, "Known limits of the stack").
 7. **A CloudWatch alarm can look back seven days at most** (period multiplied by evaluation
    periods, for periods of an hour or more). A weekly job sits exactly on that limit. With the
    default sliding window, one datapoint a week leaves no slack at all (D9).
@@ -209,6 +218,85 @@ role.
 - Its roles are named `discharge-eval-*`, so the CI deploy role cannot change them.
 - **If the stack is not up by about 30 Nov 2026, the v1 target is dropped** and WS7 starts with the
   pipeline after W11.
+- **The first deploy has no image** (slice 3; the author's ruling, 26 Nov 2026). The task
+  definition pins the image by digest, and no image can be pushed before its repository exists.
+  So the template is deployed twice. With no digest it creates everything except the task
+  definition, the scheduler's role and the two schedules: nothing can run, and there is no placeholder image. After
+  the guarded push, the digest is given and they are created, the schedules `DISABLED`.
+- **The schedules' state is one stack parameter.** Only `infra/eval/schedules.sh` changes it.
+  `infra/eval/deploy.sh` hands back the previous value and refuses a change set that would change
+  a schedule's `State`, so an image release cannot switch the schedules off.
+- **The target is kept the same way** (the author's ruling, 26 Nov 2026). `--target` is the first
+  deploy's. A later deploy hands the stack's `Target` back unchanged, so a new image after W11
+  cannot switch the pipeline back to v1; only `--change-target` changes it.
+- **The scheduler's role may run one task definition revision**, the one the stack pins (the same
+  ruling). It exists only once there is an image.
+
+**Known limits of the stack: the CI deploy role** (found in slice 3; the author's rulings,
+26 and 27 Nov 2026). `infra/cicd-oidc-role.yaml` gives the role `cloudformation:*`, `s3:*`,
+`kms:*`, `sns:*`, `scheduler:*`, `cloudwatch:*` and `ssm:PutParameter` on every resource in
+`eu-west-2`, and the IAM actions that create, edit and pass any `discharge-audit-*` role
+(`iam:PutRolePolicy` and `iam:PassRole` among them).
+
+- **What stands between that role and this stack is who can assume it, and nothing else.** Only
+  a workflow on `main` can assume it (`infra/cicd-oidc-role.yaml:66`), `main` moves only by the
+  author's own reviewed pushes, and its one workflow deploys `discharge-audit` only. That is a
+  practice. It is not a permission, and this section does not argue that CI cannot do something.
+
+- **Corrected 26 Nov 2026 (the author's ruling, after Codex's review of PR #11).** This section
+  said the role cannot enable the schedules, because updating a schedule needs `iam:PassRole` for
+  its role and CI may pass only `discharge-audit-*` roles. That was wrong: one such role is
+  trusted by EventBridge Scheduler.
+- **It CAN create or update a schedule in the eval schedule group, `ENABLED` included**, by
+  passing `discharge-audit-canary-scheduler-role` (`infra/template.yaml`, `CanarySchedulerRole`:
+  a `discharge-audit-*` role trusted by `scheduler.amazonaws.com`). `CreateSchedule` and
+  `UpdateSchedule` need `iam:PassRole` for the role the schedule names (AWS, *Service
+  Authorization Reference*, Amazon EventBridge Scheduler), and that one it may pass.
+  - **Corrected 27 Nov 2026 (the author's ruling, after Codex's third re-check of PR #11).**
+    This said such a schedule "cannot start an eval task", because that role can only invoke
+    the canary Lambda. That was too strong: CI can edit that role.
+  - **A workflow on `main` could make a schedule that starts an eval task.** The role can edit
+    the inline policies of every `discharge-audit-*` role, the canary scheduler role included
+    (`iam:PutRolePolicy`), so it could give that role `ecs:RunTask` and the pass-role it needs
+    and write a schedule that uses it. It can also update the `discharge-eval` stack itself
+    (`cloudformation:*` in the region), its `ScheduleState` parameter included.
+  - **Such a run is still the job's own code.** It claims, books and settles through the
+    ledger, so its spend is counted and capped (D8), and it alerts as usual. What is lost is
+    the author's say over when a run starts, not the cap.
+  - What notices: `infra/eval/schedules.sh` (every exit 0, `status` included) and
+    `infra/eval/deploy.sh` (before its change set, and again in its last line) read both live
+    schedules and stop if either is not in the state the stack's parameter says.
+  - **A schedule is created `DISABLED` or not at all** (the author's ruling, 27 Nov 2026).
+    `deploy.sh` stops, before any change set, on a stack with no image whose `ScheduleState` is
+    not `DISABLED`: no script sets it there, so something else did, and phase 2 would create
+    both schedules `ENABLED`. It also refuses to execute a change set that creates a schedule
+    unless the state that change set carries is `DISABLED`.
+  - What puts it right: `infra/eval/schedules.sh force-off` writes each live eval schedule that
+    is `ENABLED` back with `State` `DISABLED` and its definition otherwise unchanged. **Nothing on
+    a path to `DISABLED` enables anything** (the author's ruling, 26 Nov 2026): a recovery that
+    switched on first could start a paid run.
+- **It can change the email subscription** (a filter policy, or an unsubscribe). The topic's deny
+  covers the topic's own actions, not a subscription's.
+- **What it could do without a control:** write the two expected-version parameters, delete the
+  schedules, disable or delete the alarms, read, write or delete anything in the eval bucket
+  (`retained/` included), and schedule the eval key's deletion.
+- **What the template now denies:** the bucket policy, the key policy and the topic policy each
+  deny that role by name (`aws:PrincipalArn`), and a test pins each. An explicit deny wins over
+  the role's own allow.
+- **What is left, as a known limit:** updating the `discharge-eval` stack, writing a schedule
+  in the eval group or one elsewhere that starts an eval task (above), the subscription, the
+  parameters, deleting the schedules, and the alarms. None has a resource policy, so none can be
+  protected from inside this stack. "CI does not write them" (D11) is a practice, not a
+  permission.
+- **The CI-role pull request, before slice 6, must close it** (the author's ruling,
+  27 Nov 2026):
+  - a deny on `stack/discharge-eval/*`;
+  - a deny on scheduler writes outside `discharge-audit`'s own schedules. For the eval group
+    the resource is `schedule/discharge-eval/*`, not `schedule-group/discharge-eval`:
+    `CreateSchedule` and `UpdateSchedule` authorise against the schedule's ARN (corrected here;
+    this line named the group);
+  - a permissions boundary, or an equal control, on the roles CI may edit;
+  - a deny on the subscription changes, and the rest narrowed.
 
 *AWS concept:* a CloudFormation stack is a unit of lifecycle. Separate stacks are created, changed
 and deleted separately.
@@ -232,6 +320,13 @@ run only from `main`, publish their logs, and need a GitHub-to-AWS role that can
   ruling, 19 Nov 2026; slice 3 grants it; D7, "Permissions", says why); read the
   expected-version parameters; publish to the eval topic. It has **no
   permission on any `discharge-audit` resource**.
+- **Every S3 request names the bucket's owner** (slice 3; the author's ruling, 23 Nov 2026). The
+  task definition gives the job the account ID (`WS7_BUCKET_OWNER`), and the job passes it as
+  `ExpectedBucketOwner` on every S3 call, so a mistyped bucket name can never reach another
+  account's bucket.
+- **The key is granted through S3 and SNS only** (as built, slice 3): `kms:Decrypt` and
+  `kms:GenerateDataKey` on the stack's key, with `kms:ViaService`. The role cannot call KMS
+  directly.
 - A NAT gateway or interface endpoints would add a fixed monthly cost many times the cost of the
   runs themselves (see Costs).
 
@@ -616,6 +711,11 @@ object is absent, or unchanged since it was read.
 - Encrypted with the eval stack's own key (D9). Block Public Access on.
 - Scheduled runs expire after **90 days**. Baseline batches are kept. So are the claims, the
   monthly ledgers and the success records (D7, D9): they are small and hold no generated text.
+- **The bucket is versioned, so the expiry alone deletes nothing** (slice 3; the author's ruling,
+  26 Nov 2026). At 90 days a scheduled run's objects are hidden behind a delete marker. The one
+  lifecycle rule also deletes the old versions **30 days later**. Those 30 days are the only undo
+  for a run whose `retained/` copy was missed, and they cost pennies. It is still one rule on one
+  prefix.
 - **The prefixes follow that rule** (the author's ruling, 19 Nov 2026). A lifecycle rule selects
   by prefix, so a scheduled run's records go under `ws7/runs/scheduled/<run_id>/` and a manual
   run's under `ws7/runs/manual/<run_id>/`. The rule expires `ws7/runs/scheduled/` only, and
@@ -656,6 +756,14 @@ Per-scenario detail goes to the run summary in S3, not into metric dimensions.
 - A run that fails publishes no breach value, because it made no comparison. So an alarm on a
   breach metric must not treat missing data as a breach; `RunOk` and "no baseline" report a run
   that did not compare.
+- **The alarms, as built** (slice 3; the author's ruling, 26 Nov 2026). 26 in all, each with the
+  eval topic as its one action and its actions on:
+  - one for each of the 21 breach names, whichever kinds slice 4's rules turn out to use. An
+    alarm on a metric that is never published can never fire; a published metric with no alarm
+    is a silent gap. Maximum above 0 over five minutes, missing data not a breach;
+  - `RunOk` (the table below), `NoBaseline`, and `SpendGuardTrips`. A tripped spend guard is a
+    drift signal (D7), and a tripped run never compares, so no breach metric can carry it;
+  - the two scheduler alarms under "Early signals".
 - **Each metric is published at most once per run** (as built, 21 Nov 2026). A run publishes its
   counters and breach values, then sends its breach message, writes its success record and
   publishes `RunOk` = 1. If a step after the first fails, the run fails, and **what was already
@@ -781,8 +889,18 @@ two acts are to write a success record to S3 and then to publish `RunOk` = 1.
   API refuses that with a wall clock window, the fallback is a single one-week period, which
   evaluates Monday to Monday. Its worst case is the following Monday at about 01:00: **4 days and
   21 hours** after the scheduled start.
-- **Not checked:** whether CloudFormation's alarm resource exposes `EvaluationWindow`. If it does
-  not, the runbook creates this one alarm with the CLI.
+- **CloudFormation's alarm resource exposes `EvaluationWindow`** (checked in slice 3). AWS's
+  template reference lists `EvaluationWindow` and `WallClockWindow` with `Timezone` (*AWS::CloudWatch::Alarm
+  EvaluationWindow*,
+  <https://docs.aws.amazon.com/AWSCloudFormation/latest/TemplateReference/aws-properties-cloudwatch-alarm-evaluationwindow.html>,
+  read 26 Nov 2026), and `cfn-lint` 1.61.0 accepts it in `infra/eval-template.yaml`. Whether the
+  API accepts seven one-day periods with it is still shown only by the deploy.
+- **From the deploy until the first success the alarm is in `ALARM`** (slice 3). No success
+  exists and missing data is a breach, so it moves there at its first evaluation and sends one
+  email. An alarm that is already in `ALARM` sends nothing more, so until the first successful
+  run takes it to OK, the Thursday check is the only heartbeat. Its actions are on throughout,
+  and the schedules cannot be switched on unless every alarm's are (`infra/eval/schedules.sh`).
+  **No set-up check publishes `RunOk`:** a synthetic success would be a false heartbeat.
 - Sources, read 17 Nov 2026: AWS, *Configuring how CloudWatch alarms treat missing data*,
   <https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/alarms-and-missing-data.html>;
   *Alarm evaluation*,
@@ -905,6 +1023,16 @@ String parameter for each target, `/discharge-eval/ws7/expected/pipeline` and
 running Lambda does. The status endpoint does not return `pipeline_version`, so the canary cannot
 close that gap today.
 
+**Which digest** (slice 3; the author's ruling, 26 Nov 2026). The build makes a manifest list:
+the arm64 image manifest and a build attestation. Part 6's checks showed that check 5's image ID
+is the list's digest, and that the list changes on every build while the image manifest does
+not. **The task definition pins the list's digest, and `WS7_IMAGE_DIGEST` carries it**: it is the
+image ID check 5 passed on, so the chain from check 5 to the push, the pin and the job's records
+is one string compared for equality, and it names the one arm64 image by digest. AWS's
+`DescribeTasks` reference does not say which digest ECS reports for a manifest list, so the
+set-up check accepts the pinned digest or the list's one arm64 manifest, records which, and
+fails on anything else (`docs/WS7-RUNBOOK.md`, A2).
+
 *AWS concept:* an ECR image digest is a hash of the image's content. SSM Parameter Store holds
 small named values.
 
@@ -959,9 +1087,9 @@ at the cache-write rate ($3.75 per million, plus 10%).
 | Customer-managed KMS key | n/a | n/a | £0.80 | $1 per key, AWS price list for London, 8 Nov 2026 |
 | Fargate, ARM, 0.5 vCPU / 1 GB (the run and the Thursday check) | under £0.01 | n/a | under £0.05 | AWS price list for London, 11 Nov 2026 |
 | Public IPv4 address | under £0.01 | n/a | about £0.01 | AWS price list for London, 5 Nov 2026 |
-| CloudWatch alarms, about 12 | n/a | n/a | up to £1.00 | $0.10 each beyond the first ten; London, 16 Nov 2026 |
+| CloudWatch alarms, 26 (corrected in slice 3; it said about 12, up to £1.00) | n/a | n/a | £1.84 to £2.08 | $0.10 each beyond the first ten; London, 16 Nov 2026. £1.84 if three of the free ten are left after the live stack's seven; £2.08 if none. **How many of the ten are left is not checked** |
 | Metrics, logs, S3, ECR | pennies | n/a | pennies | Metric, log and ECR rates checked; S3 not checked |
-| **Total as designed** | | | **expected about £5–12; ceiling £15 a month of model spend, as worded below** | |
+| **Total as designed** | | | **expected about £6–13 (corrected in slice 3: the fixed items are about £2.70 to £2.90, not £2); ceiling £15 a month of model spend, as worded below** | |
 | *Not chosen:* NAT gateway | | | about £26 fixed | US rate; London not checked |
 | *Not chosen:* five interface endpoints | | | about £32 fixed | AWS price list for London, 5 Nov 2026 |
 
@@ -978,8 +1106,8 @@ at the cache-write rate ($3.75 per million, plus 10%).
   in an unresolved entry, which blocks later scheduled runs until the author resolves it. AWS
   Budgets is an alert only. The month's spend passes £15 by at most one call **only while every
   settled entry in it is its actual metered cost or a defensible upper bound**; an entry resolved
-  as `estimate_accepted` waives that for its month (D7, points 3 and 4). The fixed items, about £2
-  a month, are not in the ledger.
+  as `estimate_accepted` waives that for its month (D7, points 3 and 4). The fixed items, about
+  £2.70 to £2.90 a month (the key, £0.80, and 26 alarms), are not in the ledger.
 - **What the ceiling allows.** A run starts only while the month's ledger total is £8.38 or less.
   Three runs at the top of the expected range total £6.84, so four Wednesdays start. **In a month
   with five Wednesdays the fifth run starts only if the first four averaged £2.09 or less. At the
@@ -1003,7 +1131,12 @@ at the cache-write rate ($3.75 per million, plus 10%).
     - An unmetered run, accepted at a counted total of £2.00, say: one more run can start, and
       a third only if the second cost £6.38 or less. A lower estimate leaves more room, and the
       true cost may be further above it.
-- If key rotation is on, each rotated key version adds its own monthly charge.
+- Key rotation is on (as built, slice 3), so each rotated key version adds its own monthly
+  charge, from a year after the deploy.
+- **Unchecked prices** (slice 3): how many free alarms are left; ECR and S3 storage; and that
+  the VPC, the internet gateway, the schedules, the EventBridge rule, the email notifications and
+  the two parameters cost nothing at this volume. The alarm, key, Fargate and IPv4 prices are as
+  checked on the dates in the table.
 
 ## Consequences
 
@@ -1031,6 +1164,7 @@ limit, and the figures are provisional until the baseline.
 
 - CLAUDE.md section (b) says only two buckets exist. The eval bucket makes three. Section (c)
   gains ECS, ECR and Fargate.
+  - **As built (slice 3):** both sections are changed in the pull request that adds the template.
 - `.dockerignore` must exclude `evals/calibration`, unless a script the job runs reads it,
   **before any image is pushed to a registry**. A search of the source on 17 Nov 2026 found that
   none of the scripts the job runs, nor anything they import, names that folder; the scripts that
@@ -1050,11 +1184,16 @@ limit, and the figures are provisional until the baseline.
     offline; the ECS task (slice 3) overrides it to run `evals/ws7_entry.py`, which calls
     Bedrock, S3, SSM, CloudWatch and SNS with the task role; and no credentials are baked in.
 - `PYTHONHASHSEED=0` is set in the task definition. `evals/score_batch.py` is left as it is.
+  - **As built (slice 3):** set in `infra/eval-template.yaml`; `tests/test_eval_template.py` holds
+    the task definition's variables to the ones the job reads.
 - `docs/COST.md` gains the eval stack.
+  - **As built (slice 3):** done.
 - `docs/WS4-SAFETY-INCIDENT-LOG.md` gains the alarm route, the rule that the alarm time is the
   report time, and the three outcomes. That is a controlled document and needs CSO approval, and
   the schedule is not switched on without it.
 - Linting the new template in CI means changing the workflow, which needs the author's approval.
+  - **As built (slice 3; the author's ruling 2, 23 Nov 2026):** `infra/eval-template.yaml` is the
+    third file in the existing `cfn-lint` step. No other workflow change.
 
 **The order of work.**
 
@@ -1065,11 +1204,29 @@ limit, and the figures are provisional until the baseline.
 | 3 | `infra/eval-template.yaml`, a hand-deploy runbook, and the set-up acceptance checks below | The author's yes to deploy |
 | 4 | Baseline batch, the rule numbers, the input allowance and margin, the baseline pull request | The author's yes to spend |
 | 5 | Incident-log wording | CSO approval |
-| 6 | Schedule switched on | Slice 5's CSO approval, and the author's yes |
+| 6 | Schedule switched on | Slice 5's CSO approval, the author's yes, and the three conditions below |
 | 7 | Subgroup tags | Nothing |
 | 8 | Metric filters on worker logs | W11 |
 | 9 | PART C metrics | Blocked until the author says |
 | 10 | The orchestrator-driven runner | After R1 |
+
+**Conditions for slice 6** (the author's rulings, 26 and 27 Nov 2026, from Codex's re-checks of
+PR #11). Each needs the stack's `ScheduleState` to be `ENABLED`, which nothing sets before
+slice 6, so each is fixed before the first moment it can happen. The schedules are not switched
+on until all three are done.
+
+1. **The CI-role pull request** ("Known limits of the stack: the CI deploy role", D4).
+2. **`schedules.sh off` can roll back to `ENABLED`.** If one schedule's update succeeds and the
+   other's fails, CloudFormation's rollback restores the first to `ENABLED`, and the failed
+   waiter exits before any live read. Before slice 6, `off` disables both live schedules
+   directly first, then reconciles the stack only in a way that does not rewrite them; if that
+   cannot be shown, it stops with both live schedules `DISABLED` and says so.
+3. **A deploy in flight can re-apply `ENABLED` after `force-off`.** Interrupting `deploy.sh`'s
+   waiter leaves its stack update running, and that update can write a schedule with `State`
+   `ENABLED` after `force-off` has verified both `DISABLED`; in the other order, `force-off`
+   can write back an older target definition. Before slice 6, recovery and deploys are
+   serialised through the end of the AWS operation, including one left by an interrupted
+   waiter, and a prepared deploy is checked again just before it executes.
 
 **Acceptance check for slice 2: one request per step, counted at the server.** A local HTTP stub
 stands in for Bedrock and counts the requests it receives. For **both runners**, it shows exactly
@@ -1077,16 +1234,30 @@ one request per model step when the stub answers with a throttle, with a 500, an
 timeout. A stub that reports inflated input usage shows the wrapper refusing calls once the
 reservation is reached. No AWS and no spend.
 
-**Set-up acceptance checks for slice 3.** None of them needs a Bedrock call.
+**Set-up acceptance checks for slice 3.** Corrected in slice 3 (the author's ruling, 26 Nov
+2026): this said "None of them needs a Bedrock call". **Two do, and both also need a frozen
+baseline:** the first success, and a late-finishing run (its "still counts for Wednesday" half is
+a success, so it compares). The rest need neither. `docs/WS7-RUNBOOK.md`, section 5, lists every
+check with how it is run, what it costs, and whether it needs a Bedrock call, a baseline or a
+calendar event.
 
 - **First run after deploy.** The state of the `RunOk` alarm before any success exists is known
-  and expected. After the first success it returns to OK at the next London midnight.
+  and expected: `ALARM` (D9). After the first success it returns to OK at the next London
+  midnight. **The first success needs a Bedrock call and a frozen baseline.** The state before
+  it needs neither.
 - **A skipped Wednesday.** With the schedule off for one Wednesday, the backstop alarm and the
   Thursday check both alert. The actual times are recorded against the 21 and 30 hours above.
 - **A late-finishing run.** A run that ends at the wall-clock limit still counts for Wednesday. A
-  run that would pass midnight is stopped by the limit and reported as failed.
+  run that would pass midnight is stopped by the limit and reported as failed. **It needs a
+  Bedrock call and a frozen baseline, and it is not provoked** (the author's ruling, 26 Nov
+  2026). **Not proved on AWS; covered by the offline deadline tests and the config's figures:**
+  a run starts within 3,600 seconds of 04:00 and its wall-clock limit is 7,200 seconds
+  (`evals/ws7_config.json`), so it ends by 07:00 London on Wednesday.
 - **A duplicate delivery.** A second start for the same Wednesday exits as a duplicate and spends
-  nothing.
+  nothing. As a set-up check it makes no Bedrock call **only if the seeded claim is found**: if
+  the run does not find it, it claims, reserves and generates, up to the target's reservation
+  (£1.96 for v1), before it fails for want of a baseline. So it needs the author's yes at the
+  time, and the check confirms the exact claim key from a listing before it starts the run.
 - **The bucket, with the task role** (slice 2 part 2 was tested against local fakes only; the
   full list is in `docs/WS7-ENTRYPOINT.md`, "What the fakes cannot prove"). Real S3 answers a
   conditional write as documented on the KMS-encrypted bucket; the role can list, get and put

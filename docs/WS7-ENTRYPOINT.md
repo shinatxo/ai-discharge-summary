@@ -14,6 +14,9 @@ each one.
 | 5b | The manual baseline, the manual confirm and the resolve command | Not built |
 | 6 | The image changes | **Built** |
 
+Slice 3 (the stack, `docs/WS7-RUNBOOK.md`) changes one thing in the job: every S3 request names
+the bucket's owner ("Slice 3: the bucket's owner", below).
+
 Nothing here makes an AWS call or a model call, and nothing has been deployed or run live. No
 image has been pushed to a registry.
 Every reply, usage figure and request text in the tests is invented.
@@ -394,6 +397,11 @@ Every key WS7 writes is under `ws7/`, the task role's whole reach in the bucket 
   endpoint is for the tests' fakes and must be `http://127.0.0.1:<port>`. The S3 addressing style
   and the accelerate option are set in code, so an `s3 =` section in a config file cannot change
   them.
+- **Every request names the bucket's owner** (slice 3; the author's ruling, 23 Nov 2026). A
+  `Store` is built with the bucket and the 12-digit account that owns it, and its three S3 calls
+  pass that account as `ExpectedBucketOwner`. S3 answers 403 for a bucket another account owns, so
+  a mistyped bucket name can never read from or write into someone else's bucket. A missing or
+  malformed account is refused when the store is built (`ws7_store_owner_refused`).
 - **There is no unconditional write and no delete.** The store has `list_keys`, `get`,
   `put_if_absent` (`If-None-Match: *`) and `put_if_match` (`If-Match: <ETag>`), and `create`,
   which is `put_if_absent` with the read-back below.
@@ -875,14 +883,16 @@ publishes them.
 | Any ledger write | `ws7_ledger_conflict`, `ws7_ledger_unavailable`, `ws7_ledger_invalid`, `ws7_ledger_write_invalid` |
 | Settling and resolving | `ws7_admission_invalid`, `ws7_entry_unknown`, `ws7_entry_not_open`, `ws7_entry_not_unresolved`, `ws7_report_invalid`, `ws7_report_incomplete`, `ws7_report_inconsistent`, `ws7_basis_unknown`, `ws7_settled_figure_invalid`, `ws7_estimate_differs` |
 | The match check and the manifest | `ws7_runner_argv_invalid`, `ws7_expected_unreadable`, `ws7_expected_invalid`, `ws7_match_differs`, `ws7_identity_missing`, `ws7_manifest_invalid`, `ws7_manifest_exists`, `ws7_manifest_unavailable` |
-| The store | `ws7_store_endpoint_refused`, `ws7_store_bucket_refused`, `ws7_store_key_refused`, `ws7_store_list_failed`, `ws7_store_list_truncated`, `ws7_store_get_failed`, `ws7_store_object_too_large`, `ws7_store_put_refused`, `ws7_store_object_missing`, `ws7_store_create_unsure`, `ws7_store_wrong_region`, `ws7_store_resend_refused` |
+| The store | `ws7_store_endpoint_refused`, `ws7_store_bucket_refused`, `ws7_store_owner_refused` (slice 3), `ws7_store_key_refused`, `ws7_store_list_failed`, `ws7_store_list_truncated`, `ws7_store_get_failed`, `ws7_store_object_too_large`, `ws7_store_put_refused`, `ws7_store_object_missing`, `ws7_store_create_unsure`, `ws7_store_wrong_region`, `ws7_store_resend_refused` |
 
 ### What the fakes cannot prove
 
 The S3 fake answers a conditional write as AWS documents it, handles one request at a time, and
 faults on anything it does not implement: an unconditional PUT, a PUT with both conditions, a
 delete, any other method or query parameter. It ignores request headers it does not know, because
-botocore adds some and a newer botocore may add more. Its ETags are deliberately not MD5s. It can
+botocore adds some and a newer botocore may add more. One header it requires (slice 3): a request
+with no `x-amz-expected-bucket-owner` is a fault, and one that names another account is answered
+403, as S3 answers it. Its ETags are deliberately not MD5s. It can
 answer a GET for a missing key with 404 or with 403, and a test shows WS7 behaves the same either
 way. It can answer any request as S3 does when a bucket is in another region, and it records the
 region each request was signed for. The SSM fake implements `GetParameter` only.
@@ -1284,7 +1294,7 @@ python evals/ws7_entry.py check     --target v1 --scheduled-time 2026-12-17T10:0
 | From | What |
 |---|---|
 | The schedule, as arguments | The mode (the subcommand), `--target`, `--scheduled-time` |
-| The task definition, as environment variables | `WS7_BUCKET`, `WS7_ALERT_TOPIC_ARN`, `WS7_IMAGE_DIGEST` |
+| The task definition, as environment variables | `WS7_BUCKET`, `WS7_BUCKET_OWNER` (slice 3: the 12-digit account that owns the bucket), `WS7_ALERT_TOPIC_ARN`, `WS7_IMAGE_DIGEST` |
 | The image, set when it is built | `WS7_GIT_COMMIT` (part 6). The task definition must not set it |
 
 - There is no argument for an endpoint, a bucket, a baseline, rules, config or corpus path, a
@@ -1805,7 +1815,7 @@ stops or raises is logged, and the next is still tried.
 | Stage | Codes | Failed record | `RunOk` = 0 |
 |---|---|---|---|
 | A usage error | Exit code 2 | No | No |
-| Before the claim | `ws7_config_invalid`, `ws7_topic_refused`, `ws7_store_bucket_refused`, `ws7_identity_missing`, the endpoint refusals, `ws7_corpus_unreadable`, `ws7_precheck_failed`, `ws7_preflight_scenario_unknown`, `ws7_scenarios_not_distinct`, the match check's codes, the claim's own refusals | No | No (`RunRefused` only) |
+| Before the claim | `ws7_config_invalid`, `ws7_topic_refused`, `ws7_store_bucket_refused`, `ws7_store_owner_refused`, `ws7_identity_missing`, the endpoint refusals, `ws7_corpus_unreadable`, `ws7_precheck_failed`, `ws7_preflight_scenario_unknown`, `ws7_scenarios_not_distinct`, the match check's codes, the claim's own refusals | No | No (`RunRefused` only) |
 | A duplicate | `ws7_duplicate` | No | No |
 | Admission | The ledger's codes | Yes | Yes |
 | Dispatch | `ws7_deadline`, `ws7_runner_refused`, `ws7_runner_crashed`, `ws7_runner_stopped_early` | Yes | Yes |
@@ -1982,7 +1992,7 @@ a string that matched an ID pattern. The job never formats an object it did not 
   | Rule | |
   |---|---|
   | Its class | Exactly one of the job's own three: `ws7_store.Stop`, `ws7_store.StoreError` (what the store raises) or `ws7_ledger.Duplicate` (what the claim raises). **A subclass of any of them is not one** |
-  | Its code | One of the job's fixed codes: every module's own list (110 codes; a test holds the list to the modules) |
+  | Its code | One of the job's fixed codes: every module's own list (113 codes; a test holds the list to the modules) |
   | Its IDs | A tuple of at most 256 strings, each matching the ID pattern |
   | Its counts | Fixed labels to whole numbers within ±(2^63 - 1) |
 
@@ -2018,7 +2028,7 @@ settles, writes its failed record and publishes `RunOk` = 0.
 
 - The manual baseline, the manual confirm and the resolve command (5b).
 - It writes nothing under `retained/`.
-- It does not pass `ExpectedBucketOwner` (slice 3).
+- It did not pass `ExpectedBucketOwner`. Slice 3 added it ("Slice 3: the bucket's owner").
 - It does not end a process that hangs. The guard's deadline ends the model calls; scoring and
   storing after it are bounded only by the clients' timeouts.
 
@@ -2179,10 +2189,19 @@ No command here pushes anything or needs AWS, and every `docker run` is `--netwo
     either level is anything but plain ASCII.
   - A folder that cannot be listed, or lists nothing, is a `STOP`. So is an image root that
     does not hold exactly the five names.
-- **Check 5 has a status** (Codex P3, the same re-check). `check5` returns zero only when it
-  printed the image line, four `absent` lines and the five names. Any `PRESENT` or `STOP` line
-  makes it non-zero, and so does a `docker run` that fails. It is a function that returns: it
-  never exits the shell. The script it runs in the image is POSIX `sh`.
+- **Check 5 has a status, and the status is the result** (Codex P3, the same re-check; the
+  wording corrected in slice 3 after Codex's fourth re-check of PR #10). `check5` returns zero
+  only when the in-image script found neither protected folder under any spelling, counted four
+  folders as absent and counted exactly the five names. Anything else is not zero: a protected
+  name, a `STOP`, or a `docker run` that fails. It is a function that returns: it never exits
+  the shell. The script it runs in the image is POSIX `sh`.
+  - **The status reflects what the script found in the image's file system. It does not show
+    that any line was printed.** With stdout closed, a clean image still returns 0 and prints
+    nothing; a protected name still returns 1.
+  - **A run that fails can leave partial output.** `check5` prints the `image` line before
+    `docker run` starts, and a script that stops part-way has already printed the lines before
+    it stopped. So lines on the screen are for the reader; a caller goes by the status alone, as
+    slice 3's push script does (`infra/eval/push-image.sh`).
 - **No command in check 5 can fail and turn a match into a miss** (Codex P1, third re-check of
   PR #10; the author's ruling, 25 Nov 2026). The standing rule: a check never tests a command
   substitution's output without first checking that the command succeeded.
@@ -2198,13 +2217,15 @@ No command here pushes anything or needs AWS, and every `docker run` is `--netwo
     plain name must be plain and `runſ` must not be. If any of the four fails, it prints `STOP`
     and stops.
   - **A pass is counted, not assumed.** The script ends with status 0 only if nothing bad was
-    found **and** it printed four `absent` lines **and** it counted exactly the five names.
+    found **and** it counted four folders as absent **and** it counted exactly the five names.
+    No count depends on its line having been written (the script does not stop when a line
+    cannot be written), so the status does not show that any line was printed.
   - Every command, and what happens when it fails:
 
     | Command | Where | Used for | If it fails |
     |---|---|---|---|
     | `docker image inspect` | `check5` | The image ID | Its status is checked first, and an empty ID is a failure too: `STOP`, status 1 |
-    | `docker run` | `check5` | Runs the script | Its status is `check5`'s status: not 0. No pass lines are printed |
+    | `docker run` | `check5` | Runs the script | Its status is `check5`'s status: not 0. The `image` line was already printed, and the script may have printed some of its lines before it failed: partial output is not a pass |
     | `sh` in the image | `docker run` | Runs the script | `docker run` fails, as above. A syntax error ends the script with a status that is not 0 |
     | `ls -A` (the one outside command in the script) | The script | Its status only: can the folder be listed? Its output is discarded | `STOP: cannot list …`, status 1. If it wrongly succeeds on a folder that cannot be read, the glob finds nothing: `STOP: evals/ lists no entries`, or for the root the five names are not counted |
     | The globs (`"$dir"/*` and the two dot-file forms) | The script | The names | A folder that gives no names is a `STOP`, as above |
@@ -2301,9 +2322,10 @@ else
 fi
 
 # 5. THE CONTROL: what the image holds. No image is pushed unless this has passed on
-#    that same image, after its last build. A pass is ALL of: the "image" line with the
-#    image ID it ran against; four "absent" lines; the five names, one a line (evals,
-#    prompts, requirements-eval.txt, src, tests); and "check 5 status 0".
+#    that same image, after its last build. THE STATUS IS THE RESULT: "check 5 status 0".
+#    A pass also prints the "image" line with the image ID it ran against, four "absent"
+#    lines and the five names, one a line (evals, prompts, requirements-eval.txt, src,
+#    tests), but lines alone are not a pass: a run that fails can leave some behind.
 #    A "PRESENT" line or a "STOP" line is a failure, and the status is then not 0.
 #    Inside the image it lists /app and /app/evals and compares every name, whatever
 #    its case, with docs and infra (in /app) and runs and calibration (in /app/evals).
@@ -2459,9 +2481,10 @@ From Codex's review and re-check of PR #10, and the author's ruling of 23 Nov 20
 
 - It pushes no image and creates no registry (slice 3).
 - It does not change `CLAUDE.md` sections (b) and (c), `docs/COST.md` or any template (slice 3).
-- It does not correct the docstring of `evals/ws7_entry.py` (lines 8 to 11), which still lists
-  the commit among the task definition's variables. No `evals/ws7_*.py` file was to change in
-  this part; part 5b changes that file and corrects it ("Notes for later parts").
+- It did not correct the docstring of `evals/ws7_entry.py` (lines 8 to 11), which listed the
+  commit among the task definition's variables. No `evals/ws7_*.py` file was to change in this
+  part. Slice 3 corrected it, in the sentence it had to change anyway (the author's ruling,
+  26 Nov 2026).
 
 ### What the test cannot prove
 
@@ -2507,10 +2530,23 @@ starts; the failed record; the prefixes of success records and retained copies.
 
 ### Part 5b: the manual modes and the resolve command
 
-- **Correct the docstring of `evals/ws7_entry.py`** (lines 8 to 11). It lists `WS7_GIT_COMMIT`
-  among the variables the task definition sets. The image sets it (part 6); the task definition
-  sets the bucket, the alert topic and the image digest. Part 6 changed no `evals/ws7_*.py`
-  file, so the correction is 5b's.
+- **A test for the `call` count of "a call still `sent`"** (found in slice 3, 26 Nov 2026, when
+  the earlier mutations were run again; carried by the author's ruling of that day, with no code
+  change in slice 3). One of PR #9's mutations, "a row still `sent` is not the run's first
+  failure", survives when it is written as `first_failure()` skipping such a row
+  (`evals/ws7_entry.py`): no test fails, not the named one
+  (`test_accounting_that_did_not_finish_leaves_the_entry_unresolved_at_its_reservation`) and not
+  the whole of `tests/test_ws7_entry.py`.
+  - Why: `_judge()` calls `ws7_ledger.report_fault()` straight after `first_failure()`, and for a
+    row still `sent` that gives the same code, `ws7_report_incomplete`. So the run still fails
+    with the right code. What is lost is the stop's `call` count, which names the call, and no
+    test holds it. If a later row has a failure of its own, that row's code would name the run
+    instead.
+  - Written the other way (the whole `sent` branch removed, so the row falls through), the
+    mutation is caught. PR #9's body reports it as caught, so that was most likely the reading
+    used then.
+  - **The behaviour is right; a test is missing.** 5b adds one that holds the `call` count of
+    that stop, and one with a later failing row, so that the first reading is caught too.
 - **The yes** (the author's ruling, 20 Nov 2026; the details are for 5b's plan). A manual mode
   needs, in the invocation itself, the run ID the job derives and the reservation it computes.
   **A manual command without its yes stops with `ws7_manual_not_approved` and prints the run ID
@@ -2604,13 +2640,15 @@ fixing them changes the test file (the author's ruling, 23 Nov 2026):
 
 ### Slice 3's push script
 
-- **Require `$C` to resolve to a commit** (Codex P3, second re-check of PR #10; a follow-up by
-  the author's ruling, 25 Nov 2026). `ok_to_build` (part 6) accepts any 40 hexadecimal
-  characters that hold the two files, so a tree's SHA passes it. In part 6's block `$C` comes
-  from `git rev-parse HEAD`, which is a commit. A push script that takes `$C` from anywhere
-  else must check it first: `git rev-parse --verify --quiet "$C^{commit}"`.
-- It uses `check5`'s status, against the image ID it pushes (part 6, "Building and checking
-  it").
+**Closed by slice 3** (`infra/eval/push-image.sh`; `docs/WS7-RUNBOOK.md`, section 2). The script
+runs every git command in an environment built from nothing (`env -i` and a short list), so
+nothing inherited changes what git reads; it
+requires `$C` to resolve to a commit, and to itself, and to be on `feat/agentic-pipeline`'s
+first-parent chain in a fresh clone (a merge commit of the branch, never a commit from inside a
+merged task branch; the author's ruling, 26 Nov 2026); it goes by `check5`'s status against the
+image ID it pushes; it builds from a clone of GitHub, never from the local checkout; and it
+checks its export against the commit, file by file, so the commit label is true of every copied
+file. `tests/test_eval_scripts.py` holds each refusal.
 
 ### Slice 4: the baseline
 
@@ -2628,47 +2666,106 @@ fixing them changes the test file (the author's ruling, 23 Nov 2026):
 
 ### Slice 3: the stack
 
-- The task role gains `s3:ListBucket` on the eval bucket, limited to the `ws7/` prefix (ADR-011
-  D6; the author's ruling, 19 Nov 2026).
-- The lifecycle rule that expires scheduled runs selects `ws7/runs/scheduled/` and nothing else.
-- The task definition sets the bucket name and `WS7_IMAGE_DIGEST`, and pins the image by that
-  digest.
-- The set-up checks in "What the fakes cannot prove" (part 2) and "What the new fakes cannot
-  prove" (part 5a).
-- The task definition also sets `WS7_BUCKET` and `WS7_ALERT_TOPIC_ARN` (part 5a). The topic must
-  be in `eu-west-2`.
-- The task role may `cloudwatch:PutMetricData` in the namespace `DischargeAssistant/Eval` and
-  `sns:Publish` to the eval topic.
-- The check's schedule is one UTC day after the run's (`CHECK_LOOKBACK_DAYS`, part 5a). Each
-  schedule passes its own scheduled time and its subcommand: `scheduled` or `check`.
-- An alarm on a breach metric must not treat missing data as a breach: a failed run publishes
-  no breach value. `RunOk` and `NoBaseline` are what report a run that did not compare.
-- The runbook's triage step copies an incident's run to `retained/<run_id>/` by hand, with the
-  author's own credentials.
-- **Pass `ExpectedBucketOwner` on every S3 call.** The task definition supplies the account ID,
-  so a mistyped bucket name can never write into another account's bucket.
-- **The task definition must not set `WS7_GIT_COMMIT`.** The image sets it (part 6). An override
-  would let a task claim a commit its image was not built from.
-- The task definition gives the command, `python evals/ws7_entry.py` with the schedule's
-  arguments. The image's own default command is the nine WS7 test files.
-- The task definition sets `PYTHONHASHSEED=0` (ADR-011). The image does not.
-- **The task needs a writable temporary directory.** The job writes its batches under
-  `tempfile.mkdtemp()` (`evals/ws7_entry.py`), and the image's own tree is read-only for `app`.
-  So a read-only root file system needs a writable mount for it.
-- The image is built from a clean checkout of the release commit, for `linux/arm64`, with
-  `--build-arg WS7_GIT_COMMIT` (part 6, "Building and checking it"). The set-up checks show
-  that the pushed image's `WS7_GIT_COMMIT` is the release commit and its architecture is arm64.
-  - **The push is a guarded step: it runs part 6's check 5 against the image ID it pushes, and
-    pushes nothing unless its status is zero** (the author's rulings, 23 and 25 Nov 2026, after
-    Codex's re-checks of PR #10). No image is pushed unless check 5 has passed on that same image, identified by
-    its image ID, after its last build. That is the control for the protected folders.
-  - **The runbook builds from a clean export of the release commit, with the machine's git
-    configuration isolated**, so that the commit label is true of every copied file. Part 6's
-    checks 0 to 1b and its build guards read git's view of a working folder, which local
-    configuration can change (part 6, "Known limits"). The runbook keeps what still applies as
-    early checks, not as the control: the clean-tree checks 1 and 1b wherever it builds from a
-    working folder, and no build while a `Dockerfile.dockerignore` exists or unless the raw
-    bytes of the `Dockerfile` and `.dockerignore` are the commit's.
+**Built, not deployed** (`infra/eval-template.yaml`, `docs/WS7-RUNBOOK.md`,
+`tests/test_eval_template.py`). Every note that stood here is in the template or the runbook:
+
+| Note | Where it is now |
+|---|---|
+| `s3:ListBucket` limited to `ws7/`; `PutMetricData` in one namespace; `sns:Publish` to the eval topic | The task role, held to the job's constants by the template test |
+| The lifecycle rule selects `ws7/runs/scheduled/` and nothing else | The bucket. Versioned, so the rule also deletes the old version 30 days later (the author's ruling, 26 Nov 2026) |
+| The bucket name, `WS7_ALERT_TOPIC_ARN`, `WS7_IMAGE_DIGEST`, the image pinned by that digest, `PYTHONHASHSEED=0`, the command | The task definition |
+| The task definition must not set `WS7_GIT_COMMIT` | It does not, and a test fails if it does |
+| A writable temporary directory | The root file system is left writable. A read-only root needs a volume, which Fargate mounts owned by root unless the `Dockerfile` declares it |
+| The check's schedule one UTC day after the run's; each passes its subcommand and its own scheduled time | The two schedules, created `DISABLED`. The scheduler's role may run the one pinned task definition revision |
+| An alarm on a breach metric must not treat missing data as a breach | The 21 breach alarms |
+| `ExpectedBucketOwner` on every S3 call | "Slice 3: the bucket's owner", below |
+| The guarded push, from a clean export, with the machine's git configuration isolated | `infra/eval/push-image.sh` |
+| The copy to `retained/<run_id>/` | The runbook, section 7 |
+| The set-up checks in both "cannot prove" sections | The runbook, section 5. Those that need a task script are the next pull request |
+
+### Slice 3, PR 2
+
+Follow-ups from Codex's review of PR #11 (the stack's first pull request), ruled by the author
+on 26 Nov 2026 as not holding that merge. Each is for the set-up checks pull request unless it
+says otherwise.
+
+- **Check the alarms by name, not by count** (Astra, P2). `infra/eval/schedules.sh on` counts 26
+  alarms under the prefix `discharge-eval-`. An alarm deleted and another made by hand under that
+  prefix would still count 26. Compare the alarm names with the template's own list.
+- **A confirmed and unfiltered subscription for the configured email.** `schedules.sh on` asks
+  only for some confirmed email subscription. It should be the stack's `AlertEmail`, confirmed,
+  with no filter policy that could drop an alarm.
+- **The bucket policy is not retained with the bucket.** The bucket has `DeletionPolicy: Retain`
+  and its policy does not, so after a tear-down the retained bucket loses the two denies
+  (insecure transport, the CI role).
+- **A2's fallback does not verify the manifest's hash.** If the CLI reformats the manifest, the
+  runbook falls back to `describe-images`, which shows the digest exists but not that the stored
+  bytes hash to it.
+- **The export's path spelling.** `push-image.sh` refuses a protected folder under another case,
+  and a name that is not plain ASCII. It does not compare the case of every exported path with
+  the commit's on a volume that ignores case.
+- **`docker push` prints a digest before the script has compared it.** The script's own `PUSHED`
+  line comes only after the comparison, but Docker's output above it shows a digest either way.
+  Say so where it is printed, or quiet the push.
+- **The set-up table's claims for C6, C7, and the CloudWatch and SNS error shapes and size
+  limits.** State for each exactly what is observed on AWS and what stays covered offline only.
+- **`guard.sh` reads `all=$(env)`** (Codex's re-check of PR #11, 26 Nov 2026). With shell tracing
+  on, that would print every exported value, credentials included. Read the variable NAMES
+  only, and keep the refusal if they cannot be listed.
+- **The future CI deny must name `schedule/discharge-eval/*`, not
+  `schedule-group/discharge-eval`.** `CreateSchedule` and `UpdateSchedule` authorise against the
+  schedule's ARN. **Done in PR #11** (the author's ruling, 27 Nov 2026): ADR-011 and the
+  runbook now name the schedule's ARN. The deny itself is still the CI-role pull request's.
+- **Tear-down's final image count must be an explicit success condition.** An image-level failure
+  inside a successful `BatchDeleteImage` reply left one image and exit 0: the block prints the
+  count and does not test it.
+- **The lifecycle status poll: `--no-paginate` on the status query only.**
+- **The target-change confirmation says "every alarm" follows the target.** It is both schedules
+  and 24 alarms, not 26: the two scheduler alarms have no `Target` dimension. The runbook's
+  section 9 says "all 26" as well.
+- **`deploy.sh` names only the first drifted schedule** (Codex's re-check 2 of PR #11, finding
+  3; the author's ruling, 27 Nov 2026). With both drifted, the preflight and the final check
+  stop after reading the Wednesday run and leave the Thursday check out of the STOP. Collect
+  both, as `schedules.sh` does.
+- **ADR-011's claim about `schedules.sh`'s exit 0 is too wide** (re-check 2, finding 4; the same
+  ruling). ADR-011 says every successful `schedules.sh` exit means the live schedules agree
+  with the stack, but `force-off` exits 0 when both read `DISABLED` even if the stack says
+  `ENABLED` or its parameter cannot be read. Limit that claim to `status`, `on` and `off`.
+- **`force-off` pins `GroupName` to `discharge-eval` in what it writes** (the same ruling). It
+  writes back the group name that `get-schedule` returned; it should write the one it asked
+  for.
+- **`force-off` can write back an older target definition** (the same ruling). It reads a
+  schedule and then writes it; a stack update between the two that changed the schedule's
+  target is undone by the write. The schedule is left `DISABLED` either way.
+- **Not for this pull request: the two conditions on slice 6** (`off` can roll back to
+  `ENABLED`; a deploy in flight can re-apply `ENABLED` after `force-off`). They are in ADR-011,
+  "The order of work", beside the CI-role pull request.
+- **For the next docs pull request: the KMS rotation wording** in ADR-011's Costs and
+  `docs/COST.md` (when a rotated key version starts to be charged, and the cap).
+
+## Slice 3: the bucket's owner
+
+The one change slice 3 makes to the job (the author's ruling 1, 23 Nov 2026). Two modules change,
+`evals/ws7_store.py` and `evals/ws7_entry.py`, and for this alone.
+
+- **The variable is `WS7_BUCKET_OWNER`**: the 12-digit account that owns the eval bucket. The task
+  definition sets it from the stack's own account ID.
+- **`Store(client, bucket, owner)`.** There is no default. A missing or malformed owner (anything
+  but twelve ASCII digits in a string) is refused when the store is built, before any request:
+  `ws7_store_owner_refused`.
+- **Every S3 request the job sends carries it.** The store's three S3 calls (list, get, put) pass
+  `ExpectedBucketOwner`, and nothing else in WS7 calls S3. The scheduled run and the Thursday
+  check both build their store from the variable.
+- **What S3 does with it.** A request for a bucket that another account owns is answered 403. For
+  a read that is a failure (`ws7_store_list_failed`, `ws7_store_get_failed`). For a write it is a
+  refusal that did not land (`ws7_store_put_refused`), never an ambiguous write.
+- **The fake.** A request without the header is a fault, whatever it asks for, so every test that
+  uses the fake is a control for a request that left it out. A request naming another account is
+  answered 403 and nothing is read or written.
+- **Because the job's code changed, the image is built from this change's merge commit**, not
+  from part 6's.
+- **What the fake cannot prove:** that real S3 answers 403 for another account's bucket under
+  these exact calls. The set-up check B2 sends a request with a wrong owner to the real bucket.
 
 ## Tests
 
@@ -2677,6 +2774,19 @@ PYTHONDONTWRITEBYTECODE=1 python -m pytest -p no:cacheprovider -q tests/test_ws7
 ```
 
 - `tests/test_ws7_compare.py`: the comparator (`docs/WS7-COMPARATOR.md`, "Tests").
+
+Slice 3 adds two test files that are not among the image's nine, because they read `infra/` and
+`docs/`, which are not in the image:
+
+```zsh
+PYTHONDONTWRITEBYTECODE=1 python -m pytest -p no:cacheprovider -q tests/test_eval_template.py tests/test_eval_scripts.py
+```
+
+- `tests/test_eval_template.py`: `infra/eval-template.yaml` held to the job's own constants (the
+  prefix, the namespace, the 21 breach names, the two parameter names, the variable names, the
+  model), to ADR-011's rules, and to 51,200 bytes.
+- `tests/test_eval_scripts.py`: the operator's scripts against stubs of `docker` and `aws` and a
+  scratch repository. No test can reach a real `docker` or a real `aws`.
 
 - `tests/test_ws7_reserve.py`: the cited lines, the plan, the prices, the reservation against
   ADR-011's figures, the cost of a call, and the config loader. Each refusal has a partner that
@@ -2718,6 +2828,12 @@ PYTHONDONTWRITEBYTECODE=1 python -m pytest -p no:cacheprovider -q tests/test_ws7
   with an ordinary client as the positive control. S3 pointing at another region: one request at
   the server and a fixed code, with an ordinary client that does send twice as the control. The
   key layout, and `Stop`.
+- `tests/test_ws7_store.py`, the bucket's owner (slice 3): at the server, every request of every
+  store call carries the owner; an ordinary client that leaves it out is a fault for each kind of
+  request (the positive control); a bucket another account owns is refused with nothing read or
+  written, and a refused write is never ambiguous; a store is not built without twelve ASCII
+  digits. `tests/test_ws7_entry.py`: the run and the check name the owner the variable gives, on
+  every request; with the variable missing or malformed neither sends an S3 request.
 - `tests/test_ws7_ledger.py`: the claim (a duplicate, a manual run on the scheduled date, two
   deliveries at once, a write that landed but whose reply failed); the compare-and-swap at
   `ledger_cas_attempts` and one below; admission at the cap and one micro-dollar over; the

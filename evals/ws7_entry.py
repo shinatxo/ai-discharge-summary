@@ -6,9 +6,11 @@ part 5a). The manual modes and the resolve command are part 5b and are not here.
     python evals/ws7_entry.py check     --target v1 --scheduled-time 2026-12-17T10:00:00Z
 
 The target and the scheduled time come from the schedule, as arguments. The bucket,
-the alert topic, the commit and the image digest come from the task definition, as
-environment variables (WS7_BUCKET, WS7_ALERT_TOPIC_ARN, WS7_GIT_COMMIT,
-WS7_IMAGE_DIGEST). Nothing comes from the clock or from a default. There is no
+the account that owns it, the alert topic and the image digest come from the task
+definition, as environment variables (WS7_BUCKET, WS7_BUCKET_OWNER,
+WS7_ALERT_TOPIC_ARN, WS7_IMAGE_DIGEST); the commit comes from the image, which sets
+WS7_GIT_COMMIT when it is built, and the task definition must not set it. Nothing
+comes from the clock or from a default. There is no
 argument for an endpoint, a path, a clock or a mode: the mode is the subcommand, and
 `scheduled` fixes it in code.
 
@@ -194,6 +196,9 @@ from ws7_store import SCHEDULED, Stop  # noqa: E402
 rce, rpe = reserve.rce, reserve.rpe
 
 BUCKET_VARIABLE = "WS7_BUCKET"
+# The account that owns the bucket: every S3 request names it (`ExpectedBucketOwner`),
+# so a mistyped bucket name can never reach another account's bucket (slice 3).
+OWNER_VARIABLE = "WS7_BUCKET_OWNER"
 TOPIC_VARIABLE = "WS7_ALERT_TOPIC_ARN"
 
 # The guard's deadline is this long before `Admission.deadline_at`, so that the last
@@ -962,7 +967,8 @@ class _Scheduled:
             sns=store.build_client("sns", endpoint_url=ends.get("sns")),
             topic=publish.topic_arn(self.environ.get(TOPIC_VARIABLE)))
         self.st = store.Store(store.build_client("s3", endpoint_url=ends.get("s3")),
-                              self.environ.get(BUCKET_VARIABLE))
+                              self.environ.get(BUCKET_VARIABLE),
+                              self.environ.get(OWNER_VARIABLE))
         ssm = store.build_client("ssm", endpoint_url=ends.get("ssm"))
         self.who = wm.identity(self.environ)
         self.plan = reserve.plan(target)
@@ -1851,7 +1857,7 @@ def check(target: str, scheduled_time: str, deps: Deps, latch: _Latch | None = N
         except reserve.ReserveError:
             raise Stop(CONFIG_INVALID) from None
         st = store.Store(store.build_client("s3", endpoint_url=deps.endpoints.get("s3")),
-                         environ.get(BUCKET_VARIABLE))
+                         environ.get(BUCKET_VARIABLE), environ.get(OWNER_VARIABLE))
         day = wl.parse_scheduled_time(scheduled_time) - timedelta(days=CHECK_LOOKBACK_DAYS)
         ledger = wl.Ledger(st, cfg, clock=deps.wall)
         # expire() first: a run that died on Wednesday is abandoned by this call, and

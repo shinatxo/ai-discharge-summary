@@ -207,6 +207,14 @@ infra/eval/deploy.sh --account ${ACCOUNT} --image-digest <the pushed digest>
   every later update it passes the stack's previous value and refuses a change set that would
   change a schedule's `State`.
 - The script first checks that the digest is an image in the eval repository.
+- **A schedule is created `DISABLED` or not at all.** Two STOPs guard it:
+  - "the stack has no image … and yet its ScheduleState says ENABLED. Something other than
+    schedules.sh changed it." No script sets it on a stack with no image, so find out what did
+    (CloudTrail, `UpdateStack` and `ExecuteChangeSet` on `discharge-eval`) before anything
+    else. Nothing was changed. **Stop and tell Shina: no script puts this right**, and
+    `schedules.sh` refuses a stack with no image.
+  - "this change set would create … schedule(s) with State ENABLED." The change set was
+    deleted, not executed.
 - From the second time on (section 9) it also reads both live schedules before any change set,
   and stops if either is not in the state the stack's `ScheduleState` says: a schedule changed
   outside the stack is put right first (`infra/eval/schedules.sh force-off`, section 6,
@@ -713,22 +721,33 @@ Only if the stack is to be removed. Every step is a separate yes.
 ## Known limits
 
 - **The CI deploy role can change parts of this stack** (`infra/cicd-oidc-role.yaml`; corrected
-  26 Nov 2026). Only a workflow on `main` can assume it. The bucket, the key and the topic deny
-  that role by name. What it can still do:
+  26 and 27 Nov 2026). The bucket, the key and the topic deny that role by name. Nothing else
+  here does. Only a workflow on `main` can assume it, `main` moves only by the author's own
+  reviewed pushes, and its one workflow deploys `discharge-audit` only: that is a practice, not
+  a permission. What a workflow on `main` could do:
+  - **update the `discharge-eval` stack itself** (`cloudformation:*` in the region), its
+    `ScheduleState` parameter included;
   - **create or update a schedule in the eval schedule group, `ENABLED` included.** It may pass
-    `discharge-audit-canary-scheduler-role`, which EventBridge Scheduler trusts. That role can
-    only invoke the canary Lambda, so such a schedule cannot start an eval task; but an eval
-    schedule can be switched on, or pointed away from the task, from there;
+    `discharge-audit-canary-scheduler-role`, which EventBridge Scheduler trusts;
+  - **make a schedule that starts an eval task.** It can edit the inline policies of every
+    `discharge-audit-*` role, that scheduler role included, and write schedules. Such a run is
+    still the job's own code: it claims, books and settles through the ledger, so its spend is
+    counted and capped, and it alerts as usual;
   - write the two expected-version parameters, delete the schedules, and disable or delete the
     alarms;
   - change the email subscription (a filter policy, or an unsubscribe), which the topic's deny
     does not cover.
 
-  Denying CI the scheduler writes on `schedule-group/discharge-eval` and the subscription
-  changes, and narrowing the rest, is a separate pull request before slice 6 (ADR-011, "Known
-  limits of the stack"). Until then, `infra/eval/schedules.sh status` and `deploy.sh` both stop
-  when a live schedule is not in the state the stack says, and `force-off` switches such a
-  schedule off without switching anything on.
+  A separate pull request before slice 6 must close this (ADR-011, "Known limits of the
+  stack"): denies on `stack/discharge-eval/*` and on scheduler writes outside
+  `discharge-audit`'s own schedules (`schedule/discharge-eval/*` for the eval group), a
+  permissions boundary or an equal control on the roles CI may edit, and a deny on the
+  subscription changes. Until then:
+  - `infra/eval/schedules.sh status` and `deploy.sh` both stop when a live schedule is not in
+    the state the stack says, and `force-off` switches such a schedule off without switching
+    anything on;
+  - `deploy.sh` stops on a stack with no image whose `ScheduleState` is not `DISABLED`, and
+    never executes a change set that creates a schedule in any state but `DISABLED`.
 - **The base image is named by tag**, `python:3.13.13-slim-trixie`, not by digest. Two builds of
   one commit can differ in the base layers. Each pushed image is checked as built.
 - **One subnet, one availability zone.** An outage there is a missed run, which the heartbeat

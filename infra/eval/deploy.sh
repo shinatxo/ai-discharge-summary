@@ -17,6 +17,15 @@
 # before any change set, if either live schedule is not in the state the stack's
 # parameter says: a schedule changed outside the stack is put right first.
 #
+# A SCHEDULE IS CREATED DISABLED OR NOT AT ALL (the author's ruling, 27 Nov 2026). Two
+# rules, for a stored ScheduleState that no script set:
+# - a stack with no image has no schedules, and schedules.sh refuses it, so its
+#   ScheduleState must read DISABLED. If it does not, this script STOPS before any
+#   change set: phase 2 would otherwise create both schedules ENABLED.
+# - a change set that creates a schedule (an Add, or a replacement) is not executed
+#   unless the state it carries is DISABLED. The check on a schedule's State above
+#   reads the details of a Modify, and a new schedule has none.
+#
 # THE TARGET IS KEPT TOO (the author's ruling, 26 Nov 2026). --target is for the first
 # deploy only. On an update the stack's Target is handed back unchanged, so a new
 # image after W11 cannot switch the pipeline back to v1. Only --change-target changes
@@ -166,7 +175,12 @@ else
           stop "the live schedule $name is $live, and the stack's ScheduleState says $WANT_STATE. It was changed outside the stack. To switch every live eval schedule off first, enabling nothing: infra/eval/schedules.sh --account $ACCOUNT force-off"
         fi
       done ;;
-    ''|None) ;;      # no image yet, so the stack has no schedules
+    ''|None)         # no image yet, so the stack has no schedules
+      # No script sets ScheduleState on such a stack: deploy.sh creates it DISABLED
+      # and hands it back, and schedules.sh refuses a stack with no image.
+      if [ "$WANT_STATE" != DISABLED ]; then
+        stop "the stack has no image, so it has no schedules, and yet its ScheduleState says $WANT_STATE. Something other than schedules.sh changed it. Nothing was changed. Tell Shina: an image deployed now would create both schedules $WANT_STATE."
+      fi ;;
     *) stop "the stack's ImageDigest could not be read" ;;
   esac
   if [ -n "$DIGEST" ]; then
@@ -223,6 +237,7 @@ fi
 if [ "$GOT" != "$WANT_STATE" ]; then
   discard; stop "this change set would set ScheduleState to $GOT. Only schedules.sh changes it."
 fi
+SET_STATE="$GOT"
 if ! GOT=$(cfn describe-change-set --stack-name "$WS7_STACK" --change-set-name "$NAME" \
     --query "length(Changes[?ResourceChange.ResourceType=='AWS::Scheduler::Schedule'].ResourceChange.Details[] | [?Target.Name=='State'])" \
     --output text) || [ -z "$GOT" ]; then
@@ -230,6 +245,20 @@ if ! GOT=$(cfn describe-change-set --stack-name "$WS7_STACK" --change-set-name "
 fi
 if [ "$GOT" != "0" ]; then
   discard; stop "this change set would change a schedule's State. Only schedules.sh changes it."
+fi
+# A schedule this change set CREATES (an Add, or a Modify that replaces it) takes its
+# State from the change set's ScheduleState: the template gives both schedules
+# `State: !Ref ScheduleState`, and a test pins that. It is created DISABLED or not at all.
+if ! GOT=$(cfn describe-change-set --stack-name "$WS7_STACK" --change-set-name "$NAME" \
+    --query "length(Changes[?ResourceChange.ResourceType=='AWS::Scheduler::Schedule' && ResourceChange.Action!='Remove' && (ResourceChange.Action!='Modify' || ResourceChange.Replacement!='False')])" \
+    --output text); then
+  discard; stop "the change set's new schedules could not be read"
+fi
+case "$GOT" in
+  ''|*[!0-9]*) discard; stop "the change set's new schedules could not be read" ;;
+esac
+if [ "$GOT" != "0" ] && [ "$SET_STATE" != DISABLED ]; then
+  discard; stop "this change set would create $GOT schedule(s) with State $SET_STATE. A schedule is created DISABLED or not at all. Switch the schedules off first: infra/eval/schedules.sh --account $ACCOUNT off"
 fi
 # The target: the change set carries the one this script meant, and says so.
 if ! GOT=$(cfn describe-change-set --stack-name "$WS7_STACK" --change-set-name "$NAME" \

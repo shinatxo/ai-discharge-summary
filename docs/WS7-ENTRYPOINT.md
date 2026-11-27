@@ -2714,8 +2714,8 @@ says otherwise.
   only, and keep the refusal if they cannot be listed.
 - **The future CI deny must name `schedule/discharge-eval/*`, not
   `schedule-group/discharge-eval`.** `CreateSchedule` and `UpdateSchedule` authorise against the
-  schedule's ARN. ADR-011 and the runbook say `schedule-group/discharge-eval`: correct that
-  wording here, or in the CI-role pull request if that comes first.
+  schedule's ARN. **Done in PR #11** (the author's ruling, 27 Nov 2026): ADR-011 and the
+  runbook now name the schedule's ARN. The deny itself is still the CI-role pull request's.
 - **Tear-down's final image count must be an explicit success condition.** An image-level failure
   inside a successful `BatchDeleteImage` reply left one image and exit 0: the block prints the
   count and does not test it.
@@ -2723,6 +2723,18 @@ says otherwise.
 - **The target-change confirmation says "every alarm" follows the target.** It is both schedules
   and 24 alarms, not 26: the two scheduler alarms have no `Target` dimension. The runbook's
   section 9 says "all 26" as well.
+- **Codex's re-check 2 of PR #11, new findings 3 and 4** (the author's ruling, 27 Nov 2026:
+  follow-ups for this pull request). Their text is in Codex's re-check 2 reply on PR #11; it
+  is not copied here.
+- **`force-off` pins `GroupName` to `discharge-eval` in what it writes** (the same ruling). It
+  writes back the group name that `get-schedule` returned; it should write the one it asked
+  for.
+- **`force-off` can write back an older target definition** (the same ruling). It reads a
+  schedule and then writes it; a stack update between the two that changed the schedule's
+  target is undone by the write. The schedule is left `DISABLED` either way.
+- **Not for this pull request: the two conditions on slice 6** (`off` can roll back to
+  `ENABLED`; a deploy in flight can re-apply `ENABLED` after `force-off`). They are in ADR-011,
+  "The order of work", beside the CI-role pull request.
 - **For the next docs pull request: the KMS rotation wording** in ADR-011's Costs and
   `docs/COST.md` (when a rotated key version starts to be charged, and the cap).
 

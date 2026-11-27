@@ -232,10 +232,16 @@ role.
 - **The scheduler's role may run one task definition revision**, the one the stack pins (the same
   ruling). It exists only once there is an image.
 
-**Known limits of the stack: the CI deploy role** (found in slice 3; the author's ruling,
-26 Nov 2026). `infra/cicd-oidc-role.yaml` gives the role `s3:*`, `kms:*`, `sns:*`, `scheduler:*`,
-`cloudwatch:*` and `ssm:PutParameter` on every resource in `eu-west-2`. Only a workflow on `main`
-can assume it (`infra/cicd-oidc-role.yaml:66`).
+**Known limits of the stack: the CI deploy role** (found in slice 3; the author's rulings,
+26 and 27 Nov 2026). `infra/cicd-oidc-role.yaml` gives the role `cloudformation:*`, `s3:*`,
+`kms:*`, `sns:*`, `scheduler:*`, `cloudwatch:*` and `ssm:PutParameter` on every resource in
+`eu-west-2`, and the IAM actions that create, edit and pass any `discharge-audit-*` role
+(`iam:PutRolePolicy` and `iam:PassRole` among them).
+
+- **What stands between that role and this stack is who can assume it, and nothing else.** Only
+  a workflow on `main` can assume it (`infra/cicd-oidc-role.yaml:66`), `main` moves only by the
+  author's own reviewed pushes, and its one workflow deploys `discharge-audit` only. That is a
+  practice. It is not a permission, and this section does not argue that CI cannot do something.
 
 - **Corrected 26 Nov 2026 (the author's ruling, after Codex's review of PR #11).** This section
   said the role cannot enable the schedules, because updating a schedule needs `iam:PassRole` for
@@ -246,12 +252,25 @@ can assume it (`infra/cicd-oidc-role.yaml:66`).
   a `discharge-audit-*` role trusted by `scheduler.amazonaws.com`). `CreateSchedule` and
   `UpdateSchedule` need `iam:PassRole` for the role the schedule names (AWS, *Service
   Authorization Reference*, Amazon EventBridge Scheduler), and that one it may pass.
-  - That role can only invoke the canary Lambda. So a schedule CI writes **cannot start an eval
-    task**. But an eval schedule can be switched on, or pointed away from the eval task, from
-    there.
+  - **Corrected 27 Nov 2026 (the author's ruling, after Codex's third re-check of PR #11).**
+    This said such a schedule "cannot start an eval task", because that role can only invoke
+    the canary Lambda. That was too strong: CI can edit that role.
+  - **A workflow on `main` could make a schedule that starts an eval task.** The role can edit
+    the inline policies of every `discharge-audit-*` role, the canary scheduler role included
+    (`iam:PutRolePolicy`), so it could give that role `ecs:RunTask` and the pass-role it needs
+    and write a schedule that uses it. It can also update the `discharge-eval` stack itself
+    (`cloudformation:*` in the region), its `ScheduleState` parameter included.
+  - **Such a run is still the job's own code.** It claims, books and settles through the
+    ledger, so its spend is counted and capped (D8), and it alerts as usual. What is lost is
+    the author's say over when a run starts, not the cap.
   - What notices: `infra/eval/schedules.sh` (every exit 0, `status` included) and
     `infra/eval/deploy.sh` (before its change set, and again in its last line) read both live
     schedules and stop if either is not in the state the stack's parameter says.
+  - **A schedule is created `DISABLED` or not at all** (the author's ruling, 27 Nov 2026).
+    `deploy.sh` stops, before any change set, on a stack with no image whose `ScheduleState` is
+    not `DISABLED`: no script sets it there, so something else did, and phase 2 would create
+    both schedules `ENABLED`. It also refuses to execute a change set that creates a schedule
+    unless the state that change set carries is `DISABLED`.
   - What puts it right: `infra/eval/schedules.sh force-off` writes each live eval schedule that
     is `ENABLED` back with `State` `DISABLED` and its definition otherwise unchanged. **Nothing on
     a path to `DISABLED` enables anything** (the author's ruling, 26 Nov 2026): a recovery that
@@ -264,12 +283,20 @@ can assume it (`infra/cicd-oidc-role.yaml:66`).
 - **What the template now denies:** the bucket policy, the key policy and the topic policy each
   deny that role by name (`aws:PrincipalArn`), and a test pins each. An explicit deny wins over
   the role's own allow.
-- **What is left, as a known limit:** writing a schedule in the eval group (above), the
-  subscription, the parameters, deleting the schedules, and the alarms. None has a resource
-  policy, so none can be protected from inside this stack. "CI does not write them" (D11) is a
-  practice, not a permission.
-- **The CI-role pull request, before slice 6:** deny CI the scheduler writes on
-  `schedule-group/discharge-eval` and the subscription changes, and narrow the rest.
+- **What is left, as a known limit:** updating the `discharge-eval` stack, writing a schedule
+  in the eval group or one elsewhere that starts an eval task (above), the subscription, the
+  parameters, deleting the schedules, and the alarms. None has a resource policy, so none can be
+  protected from inside this stack. "CI does not write them" (D11) is a practice, not a
+  permission.
+- **The CI-role pull request, before slice 6, must close it** (the author's ruling,
+  27 Nov 2026):
+  - a deny on `stack/discharge-eval/*`;
+  - a deny on scheduler writes outside `discharge-audit`'s own schedules. For the eval group
+    the resource is `schedule/discharge-eval/*`, not `schedule-group/discharge-eval`:
+    `CreateSchedule` and `UpdateSchedule` authorise against the schedule's ARN (corrected here;
+    this line named the group);
+  - a permissions boundary, or an equal control, on the roles CI may edit;
+  - a deny on the subscription changes, and the rest narrowed.
 
 *AWS concept:* a CloudFormation stack is a unit of lifecycle. Separate stacks are created, changed
 and deleted separately.
@@ -1177,11 +1204,26 @@ limit, and the figures are provisional until the baseline.
 | 3 | `infra/eval-template.yaml`, a hand-deploy runbook, and the set-up acceptance checks below | The author's yes to deploy |
 | 4 | Baseline batch, the rule numbers, the input allowance and margin, the baseline pull request | The author's yes to spend |
 | 5 | Incident-log wording | CSO approval |
-| 6 | Schedule switched on | Slice 5's CSO approval, and the author's yes |
+| 6 | Schedule switched on | Slice 5's CSO approval, the author's yes, and the three conditions below |
 | 7 | Subgroup tags | Nothing |
 | 8 | Metric filters on worker logs | W11 |
 | 9 | PART C metrics | Blocked until the author says |
 | 10 | The orchestrator-driven runner | After R1 |
+
+**Conditions for slice 6** (the author's rulings, 26 and 27 Nov 2026, from Codex's re-checks of
+PR #11). Each needs the stack's `ScheduleState` to be `ENABLED`, which nothing sets before
+slice 6, so each is fixed before the first moment it can happen. The schedules are not switched
+on until all three are done.
+
+1. **The CI-role pull request** ("Known limits of the stack: the CI deploy role", D4).
+2. **`schedules.sh off` can roll back to `ENABLED`.** If the stack update that `off` starts
+   fails, CloudFormation rolls the schedules back to the state they were in, `ENABLED`. `off`
+   must end with both live schedules `DISABLED` or say plainly that they are not and what to
+   run.
+3. **A deploy in flight can re-apply `ENABLED` after `force-off`.** A stack update that is
+   still running when `force-off` writes `DISABLED` can write a schedule again from the stack's
+   `ENABLED` parameter. `force-off` and a running stack update must not overlap, or `force-off`
+   must notice and say so.
 
 **Acceptance check for slice 2: one request per step, counted at the server.** A local HTTP stub
 stands in for Bedrock and counts the requests it receives. For **both runners**, it shows exactly

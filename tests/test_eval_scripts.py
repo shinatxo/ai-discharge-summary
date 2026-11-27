@@ -776,6 +776,10 @@ TARGET_QUERY = "Parameters[?ParameterKey=='Target'].ParameterValue | [0]"
 DIGEST_QUERY = "Parameters[?ParameterKey=='ImageDigest'].ParameterValue | [0]"
 DETAIL_QUERY = ("length(Changes[?ResourceChange.ResourceType=='AWS::Scheduler::Schedule']"
                 ".ResourceChange.Details[] | [?Target.Name=='State'])")
+# Every schedule the change set creates: an Add, or a Modify that replaces (or may replace) it.
+CREATED_QUERY = ("length(Changes[?ResourceChange.ResourceType=='AWS::Scheduler::Schedule' && "
+                 "ResourceChange.Action!='Remove' && (ResourceChange.Action!='Modify' || "
+                 "ResourceChange.Replacement!='False')])")
 
 
 def live_state(name: str) -> list:
@@ -812,6 +816,8 @@ def deploy_rules(exists: bool, state: str = "DISABLED", target: str = "v1", dige
         rule("set_state", "aws", cfn("describe-change-set", *SET, "--query", STATE_QUERY, "--output",
                                      "text"), state),
         rule("set_details", "aws", cfn("describe-change-set", *SET, "--query", DETAIL_QUERY,
+                                       "--output", "text"), "0"),
+        rule("set_created", "aws", cfn("describe-change-set", *SET, "--query", CREATED_QUERY,
                                        "--output", "text"), "0"),
         rule("set_target", "aws", cfn("describe-change-set", *SET, "--query", TARGET_QUERY, "--output",
                                       "text"), target),
@@ -863,8 +869,8 @@ def test_the_first_deploy_creates_the_stack_with_no_image_and_the_schedules_disa
         f"file://{bench.repo}/infra/eval/../eval-template.yaml"
     assert "--template-url" not in made and "--capabilities" in made
     assert bench.names() == ["sts_account", "sts_arn", "exists", "create_set", "wait_set", "table",
-                             "set_state", "set_details", "set_target", "execute", "wait_create",
-                             "protect", "outputs"]
+                             "set_state", "set_details", "set_created", "set_target", "execute",
+                             "wait_create", "protect", "outputs"]
     assert done.stdout.endswith("There is no image yet, so there are no schedules.\n")
     assert "invented@example.invalid" not in done.stdout + done.stderr
 
@@ -883,8 +889,9 @@ def test_an_update_hands_the_schedules_state_and_the_target_back_unchanged(bench
                                  "AlertEmail": "UsePreviousValue=true"}
     assert bench.names() == ["sts_account", "sts_arn", "exists", "state_now", "target_now",
                              "digest_now", "run_state", "check_state", "image", "create_set",
-                             "wait_set", "table", "set_state", "set_details", "set_target", "execute",
-                             "wait_update", "protect", "outputs", "run_state", "check_state"]
+                             "wait_set", "table", "set_state", "set_details", "set_created",
+                             "set_target", "execute", "wait_update", "protect", "outputs", "run_state",
+                             "check_state"]
     assert f"deploy: the target stays {target}\n" in done.stdout
     assert f"deploy: this change set's Target is {target}\n" in done.stdout
     # (The prompt has no line end, so the last line starts with it.)
@@ -1002,12 +1009,64 @@ def test_deploys_last_line_is_about_the_live_schedules_read_again_after_the_chan
 
 @pytest.mark.parametrize("digest", ["", "None"])
 def test_a_stack_with_no_image_has_no_schedules_to_read(bench, digest):
+    """The ordinary phase 2: the change set adds both schedules, and the state it carries
+    is DISABLED."""
     done = bench.run("deploy.sh", LATER + ["--image-digest", IMAGE],
-                     deploy_rules(True, "DISABLED", "v1", digest), stdin=YES)
+                     deploy_rules(True, "DISABLED", "v1", digest, set_created={"out": "2\n"}), stdin=YES)
     assert done.returncode == 0, done.stderr
+    assert done.stdout.endswith("deploy: done. The target is v1. Both live schedules are DISABLED.\n")
     # Not read before the change set (there were none); read once after it, for the banner.
     assert bench.names().count("run_state") == 1 == bench.names().count("check_state")
     assert bench.names().index("run_state") > bench.names().index("execute")
+
+
+@pytest.mark.parametrize("digest", ["", "None"])
+@pytest.mark.parametrize("argv", [LATER, LATER + ["--image-digest", IMAGE],
+                                  LATER + ["--change-target", "pipeline"]])
+def test_a_stack_with_no_image_whose_schedule_state_is_not_disabled_is_left_alone(bench, digest, argv):
+    """Ruling F1 (27 Nov 2026). The class: a stored ScheduleState that no script set. A
+    stack with no image has no schedules, deploy.sh created it DISABLED and schedules.sh
+    refuses it, so ENABLED there was written by something else, and phase 2 would
+    create both schedules ENABLED. It is a STOP before any change set, whatever the
+    deploy was for."""
+    done = bench.run("deploy.sh", argv, deploy_rules(True, "ENABLED", "v1", digest), stdin=YES)
+    assert done.returncode == 1, done.stdout
+    assert "its ScheduleState says ENABLED" in done.stderr
+    assert "Something other than schedules.sh changed it. Nothing was changed." in done.stderr
+    assert bench.names() == ["sts_account", "sts_arn", "exists", "state_now", "target_now", "digest_now"]
+    assert tells_to_switch_on(done.stderr) == []
+
+
+@pytest.mark.parametrize("state, created, code, says", [
+    # A schedule created while the state the change set carries is ENABLED: never executed.
+    ("ENABLED", "1\n", 1, "would create 1 schedule(s) with State ENABLED"),
+    ("ENABLED", "2\n", 1, "would create 2 schedule(s) with State ENABLED"),
+    # What cannot be read is not taken for none, in either state.
+    ("ENABLED", "", 1, "new schedules could not be read"),
+    ("ENABLED", "None\n", 1, "new schedules could not be read"),
+    ("DISABLED", "None\n", 1, "new schedules could not be read"),
+    ("DISABLED", {"status": 255, "out": ""}, 1, "new schedules could not be read"),
+    # Created DISABLED, or nothing created: the deploy goes on.
+    ("DISABLED", "1\n", 0, ""),
+    ("DISABLED", "2\n", 0, ""),
+    ("ENABLED", "0\n", 0, "")])
+def test_a_change_set_that_creates_a_schedule_is_executed_only_if_it_is_created_disabled(
+        bench, state, created, code, says):
+    """Ruling F1 (27 Nov 2026). The class: a schedule created, rather than modified, in any
+    state but DISABLED. The check on a schedule's State reads a Modify's details, and an
+    Add has none; so every schedule a change set creates is counted, and the state the
+    change set carries decides."""
+    change = created if isinstance(created, dict) else {"out": created}
+    done = bench.run("deploy.sh", LATER + ["--image-digest", IMAGE],
+                     deploy_rules(True, state, set_created=change), stdin=YES)
+    assert done.returncode == code, done.stderr
+    if code == 0:
+        assert bench.did("aws", *cfn("execute-change-set"))
+        return
+    assert says in done.stderr, done.stderr
+    assert not bench.did("aws", *cfn("execute-change-set"))
+    assert bench.did("aws", *cfn("delete-change-set"))
+    assert tells_to_switch_on(done.stderr) == []
 
 
 @pytest.mark.parametrize("exists, state, change, says", [
